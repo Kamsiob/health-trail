@@ -40,7 +40,7 @@ These are exactly the values in the mockups.
 | `card` | `#FFFFFF` | Card and sheet surfaces. |
 | `sand` | `#F1EBDC` | Recessed surfaces: icon tiles, avatars, inset rows, disabled chips. |
 | `ink` | `#22384A` | Primary text. |
-| `ink2` | `#5C6F7E` | Secondary text. |
+| `ink2` | `#5A6D7C` | Secondary text. Corrected from `#5C6F7E`, see 2.3. |
 | `ink3` | `#96A4AE` | **Non-text only.** See 2.3. |
 | `blue` | `#2F6F8F` | The single accent. Actions, filled buttons, links, the PT thread. |
 | `blue_deep` | `#245A75` | Pressed state, text on `blue_soft`. |
@@ -64,17 +64,25 @@ Care thread route colors, light theme: physical therapy `#2F6F8F`, occupational 
 - **Color is never the only carrier of meaning.** Every state that has a color also has a word, a shape, or an icon. An incident is not "the red one," it is the one whose pill says OPEN.
 - **No pure black, no pure white background.** `card` is white as a surface on warm paper, which is different and intended.
 
-### 2.3 Text contrast corrections, required
+### 2.3 Text contrast corrections, measured
 
 The mockups use several colors as small text that do not meet WCAG AA at real text sizes. These are corrections, not suggestions, and they are the reason this section exists.
 
-| Problem in the mockups | Correction |
-|---|---|
-| `ink3` `#96A4AE` used for eyebrows and timestamps. Roughly 2.3:1 on paper. | Any `ink3` **text** uses `#5E6E79` (about 4.8:1). The original `#96A4AE` remains valid for non-text only: hairline rules, dividers, inactive icon strokes, which need 3:1 as UI components. |
-| `blaze` `#D99D2B` as text. Roughly 2.2:1. | Gold text is `#9A6E14` (about 4.9:1), which is what the mockups already use inside gold tonal cards. `blaze` itself never renders text. |
-| `leaf` `#4E8A5C` as text. Roughly 3.8:1. | Green text is `#3D7049` (about 5.1:1). `leaf` remains the shape color. |
+**Everything below is measured rather than calculated,** by `tools/checks/check_contrast.py`, which reads the tokens out of the theme itself and runs on every push. An earlier version of this section carried calculated numbers and said plainly that the measurement was what counted. It was right to: three of its four proposed corrections did not clear the floor once measured against the actual surfaces, because they had been calculated against white rather than against warm paper.
 
-**Every value in both themes must be verified with a contrast checker during Phase 0**, at the real sp sizes, and the measured ratios recorded in DECISIONS.md. The numbers above are calculated, not measured, and the measurement is what counts. Floors: 4.5:1 for text under 18sp, 3:1 for text 18sp and above and for UI component boundaries.
+| Problem in the mockups | Correction | Measured, at its tightest surface |
+|---|---|---|
+| `ink3` `#96A4AE` used for eyebrows and timestamps, about 2.4:1 on paper. | `ink3` **text** uses `#5C6C77`. The original stays valid for non-text only. | 4.57:1 on `sand` |
+| `ink2` `#5C6F7E` measured 4.38:1 on `sand`, just under the floor. | `#5A6D7C` | 4.51:1 on `sand` |
+| `blaze` `#D99D2B` as text, about 2.2:1. | Gold text is `#8F6309`. `blaze` itself never renders text. | 4.52:1 inside a gold tonal card |
+| `leaf` `#4E8A5C` as text, about 3.8:1. | Green text is `#3D7049`. `leaf` remains the shape color. | 4.92:1 inside a green tonal chip |
+| `alert` `#B84A2E` measured 4.22:1 as text inside a red tonal pill. | Alert text is `#B34529`. `alert` remains the shape color. | 4.50:1 inside a red tonal pill |
+
+**Floors.** 4.5:1 for text under 18sp. 3:1 for text at 18sp and above, and for user interface components and graphical objects required to understand content.
+
+**What is decorative, and why that is not a loophole.** A hairline rule, the dashed trail line, a timeline node, and a care thread route are measured and reported but are not held to 3:1. WCAG 1.4.11 covers interface components and graphics required to understand content, and none of these are: remove a hairline and nothing becomes unreadable, and a node's color is never the only thing carrying its meaning, because section 2.2 requires a word, a shape, or an icon alongside it.
+
+The alternative would be forcing the trail to stop being gold, and gold is the entire metaphor. So these are measured on every run, printed, and reviewed by eye on a device rather than ignored. For the record, in light theme the trail line sits at 2.21:1 on paper and a hairline at 2.37:1.
 
 ### 2.4 Dark theme
 
@@ -87,7 +95,7 @@ The dark theme is a trail map at dusk, not an inverted document. Surfaces get li
 | `sand` | `#223038` | Recessed surfaces read as slightly lighter here, the opposite of light theme, which is correct for dark surfaces. |
 | `ink` | `#E9EEF1` | Primary text. Never pure white. |
 | `ink2` | `#A6B4BD` | Secondary. |
-| `ink3` | `#7F9099` | Text safe in this theme. Non-text may go to `#66757E`. |
+| `ink3` | `#8798A1` | Text safe in this theme, measured 4.55:1 on `sand`, which is the tightest pairing in the dark theme. `#7F9099` measured 4.10:1 and was not safe. Non-text may go to `#66757E`. |
 | `blue` | `#7FB6D4` | Lightened so it carries text contrast on dark. |
 | `blue_deep` | `#9BCBE4` | Pressed and emphasis. |
 | `on_blue` | `#0B171E` | Dark text on the light blue fill. Filled buttons invert in dark mode. |
@@ -106,6 +114,8 @@ Thread routes, dark: PT `#7FB6D4`, OT `#74B383`, speech `#D0946A`, nursing `#9CA
 
 The capture button stays gold in both themes. It is the one element whose color does not shift meaning between themes, because it is the single way data enters the app and it must be findable without thought.
 
+**Its glyph is not white.** White on `blaze` measures 2.38:1 in light and 1.97:1 in dark, well under the 3:1 a control needs. The fill stays gold, which is what carries the meaning, and the glyph darkens: `#22384A` in light, measuring 5.08:1, and `#0B171E` in dark, measuring 9.25:1. This matters more than it would on most buttons, because this is the one control the app cannot afford to have anyone miss.
+
 ### 2.5 Elevation
 
 Light theme, the mockup shadow, two layers: `0 8dp 24dp rgba(50,62,42,0.09)` plus `0 2dp 5dp rgba(50,62,42,0.05)`. Soft, warm, low contrast. Never a hard drop shadow.
@@ -123,7 +133,7 @@ Every difference, with its reason. Nothing else differs.
 1. **Text contrast**, section 2.3. The mockups were drawn at a reduced scale where the light grays read acceptably. At real text sizes they fail AA.
 2. **Dark theme**, section 2.4. Does not exist in the mockups.
 3. **Real dp and sp values**, section 4. The mockups are drawn inside a 252px-wide phone frame representing roughly 393dp, so every pixel value in the HTML is about 0.64 of its real value. Do not multiply blindly; use the token scale in section 4, which was derived from the mockups and then rounded onto the 4dp grid.
-4. **Minimum text size is 13sp.** Several mockup labels scale to 11sp or less. Those move up to 13sp, and the layout absorbs it. Nothing in this app is too dense to read.
+4. **Minimum text size is 13sp,** with exactly two exemptions, listed in section 4.3 and nowhere else. Several mockup labels scale to 11sp or less. Those move up to 13sp, and the layout absorbs it. Nothing in this app is too dense to read.
 5. **Touch targets are 48dp minimum** regardless of the visual size of the thing being tapped. Several mockup rows are visually shorter than that and get invisible padding to reach it.
 6. **Care thread accent bars are removed**, replaced by dashed route lines. Already corrected in the reference file; stated here so it is never reintroduced.
 7. **The capture overlay is a real bottom sheet**, not the dimmed-background composite shown in two mockup screens. The mockups show it that way only because a static image cannot show a transition.
@@ -151,8 +161,16 @@ Card 20dp. Inset tile, icon tile, chip container 12dp. Thumbnail 8dp. Bottom she
 | Body M | Atkinson Hyperlegible | 14sp / 21 | 400 | Subtitles, supporting text, list rows |
 | Body S | Atkinson Hyperlegible | 13sp / 19 | 400 | Tertiary detail. The floor. |
 | Label | Atkinson Hyperlegible | 14sp / 18 | 700 | Buttons, chips, emphasis inside body text |
-| Nav label | Atkinson Hyperlegible | 11sp / 14 | 700 | Bottom navigation only, which is exempt from the 13sp floor because it is paired with an icon and a content description |
-| Mono | JetBrains Mono | 11sp / 16 | 400, tracking 0.12em, uppercase | Eyebrow labels, timestamps, counts, metadata |
+| Nav label | Atkinson Hyperlegible | 11sp / 14 | 700 | Bottom navigation only. Exempt from the 13sp floor, see below |
+| Mono | JetBrains Mono | 11sp / 16 | 400, tracking 0.12em, uppercase | Eyebrow labels, timestamps, counts, metadata. Exempt from the 13sp floor, see below |
+
+**The two exemptions from the 13sp floor, and why they are the only two.** Section 3 item 4 sets a 13sp minimum. The nav label and the Mono metadata style sit below it, and both are deliberate.
+
+Neither ever carries information on its own. A nav label is always paired with an icon and a content description. A Mono eyebrow, timestamp, or count is always directly above or beside the content it labels, and it labels rather than states: removing it would cost context, not meaning. Both are short, and Mono is uppercase and tracked, which raises its cap height and letter distinction well above what 11sp lowercase body text would give.
+
+Both scale with dynamic type like everything else, so a person who has raised their system font size gets them larger, which is the case the floor exists to protect.
+
+Nothing else may be added to this list. If a third candidate appears, that is a sign the layout is too dense, and the layout gets fixed rather than the floor lowered.
 
 **Atkinson Hyperlegible is a deliberate choice, not an aesthetic one.** It was designed by the Braille Institute for maximum character distinction for low-vision readers. The audience for this app is stressed, frequently older, and often reading in bad light. Verify the current release name and license at build time and bundle it.
 
@@ -203,7 +221,7 @@ An action keeps the same word through its whole flow. The button that says Expor
 
 Four destinations, always in this order: Today, Notebook, Projects, More. `card` container, 24dp radius, 8dp inset from the screen edges, elevated. Icon 20dp above an 11sp label. Active state is `blue_deep` on both icon and label, plus the label at weight 700, so color is not the only signal.
 
-The capture button sits in the center of the navigation container, overlapping its top edge by 16dp: 56dp circle, `blaze` fill, white plus glyph, present on every screen in all four tabs. It is the only way data enters the app and it never moves, never hides on scroll, and never changes color.
+The capture button sits in the center of the navigation container, overlapping its top edge by 16dp: 56dp circle, `blaze` fill, dark plus glyph in `onBlaze`, present on every screen in all four tabs. The glyph is deliberately not white, for the contrast reason given in 2.4. It is the only way data enters the app and it never moves, never hides on scroll, and never changes color.
 
 ### 5.6 Pills
 

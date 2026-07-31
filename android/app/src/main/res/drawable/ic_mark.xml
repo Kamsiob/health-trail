@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The mark, for the app bar at 22dp and the launch and About screens at 44dp. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="#D99D2B">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M43.5,37 H64.5 A5.5,5.5 0 0 1 70,42.5 V42.5 A5.5,5.5 0 0 1 64.5,48 H43.5 A5.5,5.5 0 0 1 38,42.5 V42.5 A5.5,5.5 0 0 1 43.5,37 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36.5,55 H71.5 A5.5,5.5 0 0 1 77,60.5 V60.5 A5.5,5.5 0 0 1 71.5,66 H36.5 A5.5,5.5 0 0 1 31,60.5 V60.5 A5.5,5.5 0 0 1 36.5,55 Z" />
+</vector>

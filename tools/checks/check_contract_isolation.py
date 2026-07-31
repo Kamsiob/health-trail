@@ -54,6 +54,27 @@ SCHEMA_ALLOWED = {
     "tools/checks/check_schema.py",
 }
 
+# Test sources are exempt as a category rather than file by file.
+#
+# The thing this check exists to prevent is production code declaring tables,
+# because that is what makes the second platform a reimplementation. A test that
+# asserts the schema contains "CREATE TABLE IF NOT EXISTS change_log", or that
+# counts "CREATE TRIGGER" occurrences, is doing the opposite: it is holding the
+# real schema to its contract. Flagging those would train whoever reads this
+# check to ignore it, which is worse than not having it.
+#
+# A test cannot substitute a schema for the app either. The app builds its
+# database from the copied asset, and which file that is comes from the build,
+# not from a test source set.
+TEST_PATH_MARKERS = ("/src/test/", "/src/androidtest/", "/tests/", "/test/")
+
+# Agent definitions and hooks are instructions, not source. The sweeper's
+# definition necessarily quotes the rule it sweeps for, which is the same
+# situation as the checks quoting the pattern they look for. Nothing under
+# .claude is compiled, packaged, or read by the app, so a schema could not
+# reach a device from here even if someone put one in.
+INSTRUCTION_PATH_MARKERS = ("/.claude/",)
+
 TEXT_SUFFIXES = {".md", ".sql", ".json", ".yml", ".yaml", ".kt", ".kts", ".py",
                  ".js", ".ts", ".html", ".xml", ".sh"}
 
@@ -105,6 +126,11 @@ def main():
         if relative.startswith("contract/"):
             continue
         if relative in SCHEMA_ALLOWED:
+            continue
+        lowered = f"/{relative.lower()}"
+        if any(marker in lowered for marker in TEST_PATH_MARKERS):
+            continue
+        if any(marker in lowered for marker in INSTRUCTION_PATH_MARKERS):
             continue
         try:
             text = path.read_text(encoding="utf-8")

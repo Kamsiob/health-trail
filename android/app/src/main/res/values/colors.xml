@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Only the values the platform needs before Compose starts. Every other color in
+  the app lives in ui/theme/Color.kt, which is the single definition. Do not add
+  to this file: two color definitions guarantee they eventually disagree.
+-->
+<resources>
+    <color name="paper">#FAF6EE</color>
+    <color name="paper_dark">#121A20</color>
+</resources>

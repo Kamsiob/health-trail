@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The app introduces itself by its full name. Not translated: it is a name. -->
+    <string name="app_name" translatable="false">Health Trail</string>
+
+    <!--
+      Phase 0 only. This screen exists to prove the app launches and that the
+      shared contract genuinely reached the device, and it is replaced by the
+      disclaimer gate and the Today screen in Phase 1.
+    -->
+    <string name="foundation_title">Foundation</string>
+    <string name="foundation_subtitle">Phase 0. The parts that have to be right before anything is built on top of them.</string>
+    <string name="foundation_contract_heading">The shared contract</string>
+    <string name="foundation_schema_tables">Tables in the schema: %1$d</string>
+    <string name="foundation_schema_views">Views that filter deleted rows: %1$d</string>
+    <string name="foundation_templates">Templates read from the catalog: %1$d</string>
+    <string name="foundation_contract_missing">The shared contract did not reach the device. This is a build problem rather than something you did.</string>
+    <string name="foundation_note">Nothing here is the app yet. There is no notebook to write in until the next phase.</string>
+</resources>

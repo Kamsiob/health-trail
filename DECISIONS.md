@@ -186,6 +186,96 @@ The cost is that the log row is written even when the application would rather i
 
 **Revisit if.** A trigger is measured to be a real cost in a bulk operation, in which case the fix is to batch inside one transaction, not to move the guarantee into application code.
 
+### D15. SDK levels: compile against 37, target 36, minimum 26
+
+**Decision.** `compileSdk = 37`, `targetSdk = 36`, `minSdk = 26`. Gradle 9.6.1, Android Gradle Plugin 9.3.1, Kotlin 2.4.10, Compose BOM 2026.06.01, JDK 21.
+
+**How the numbers were arrived at,** rather than assumed:
+
+**targetSdk 36.** Google Play requires new apps and updates to target Android 16, API 36, or higher from 31 August 2026, which is one month from now. Verified against the Play Console help and the Android developer documentation on 2026-07-31 rather than taken from any document in this folder.
+
+Targeting 37 was considered and rejected for now. `targetSdk` opts the app into a platform version's runtime behavior changes, so raising it is a decision that should follow testing on a device, not one that follows an SDK release. It moves to 37 deliberately, after the behavior changes have been walked through. Android lint disagrees and raises `OldTargetApi`, which is disabled with that reasoning written at the point where it is disabled.
+
+**compileSdk 37,** which is a separate concern: it decides which APIs the code may call. It is 37 because `androidx.core:core:1.19.0` and `androidx.lifecycle:lifecycle-runtime-compose:2.11.0` both refuse to be consumed by a project compiling against less. That was discovered by the build failing, not predicted.
+
+**minSdk 26,** Android 8.0. Chosen for the audience rather than for convenience. These are frequently older, cheaper, hand-me-down phones. 26 also means `java.time` is available without desugaring, which removes a class of date handling bugs from an app whose entire subject is dates.
+
+**Versions.** Every one was read from its actual Maven metadata on 2026-07-31. Gradle is 9.6.1, the current release. AGP 9.3.1 is the newest stable; 9.4.0-alpha07 exists and was not used.
+
+**One thing that surprised the build.** AGP 9 carries its own Kotlin support and refuses the `org.jetbrains.kotlin.android` plugin outright, with an error saying so. The Kotlin version in the catalog is now only for the Compose compiler plugin, and the catalog says so where the version is declared.
+
+**Revisit if.** Play raises the requirement again, which it does annually, or a dependency forces `compileSdk` higher.
+
+### D16. No Room, and no ORM. Raw SQLite behind androidx.sqlite
+
+**Decision.** The database layer is `androidx.sqlite` plus SQLCipher for the encrypted implementation, with hand written mappers. There is no Room, no SQLDelight, and no other library that generates or declares a schema.
+
+**Alternatives considered.** Room, which is the default choice for an Android app this size and would save real work. SQLDelight, which generates Kotlin from `.sq` files.
+
+**Reasoning.** Both of them require the schema to be declared a second time in the platform's own language: Room as annotated entity classes, SQLDelight as `.sq` files. `PROJECT-DELTAS.md` section 2 says plainly that the schema is not defined in Kotlin, and the data contract explains why: a schema that exists only as platform code makes the web version a reimplementation rather than a second reader, and the two drift apart within weeks.
+
+Room's compile time verification would also fight the arrangement rather than help it. Room validates the database against its own generated schema and treats anything else as corruption, so a database created by executing `contract/schema.sql` would either be rejected or require the entity definitions to be kept manually identical to the SQL, which is precisely the second copy the contract forbids, with the added problem that it would look verified.
+
+The cost is real and accepted: hand written mappers, no compile time query checking, and more test surface. That cost is paid once. Schema drift between two platforms is paid forever.
+
+**Revisit if.** Never, without an owner decision, since it follows directly from the data contract.
+
+### D17. Two lint checks disabled, each with its reason at the point of disabling
+
+**Decision.** `warningsAsErrors = true`, `abortOnError = true`, no lint baseline, and exactly two checks disabled.
+
+**Why no baseline.** A baseline file is how a project accumulates warnings nobody ever looks at again. Every lint finding is either fixed or disabled deliberately with a reason.
+
+**`OldTargetApi`,** disabled for the reasoning in D15.
+
+**`ObsoleteSdkInt`,** disabled because it is right in principle and wrong in practice here. It argues that the `v26` qualifier on `res/mipmap-anydpi-v26` is redundant now that `minSdk` is 26. Removing the qualifier was tried, and AAPT2 then skips the folder entirely: the launcher icon does not link and the build fails with `resource mipmap/ic_launcher not found`. Verified by doing it and reading the merged resource output, not by reasoning about it.
+
+**The other three findings were fixed rather than disabled:** Robolectric moved to 4.16.1, and two genuinely unused resources were deleted rather than suppressed. They come back when something uses them.
+
+**Revisit if.** A future AGP makes the `anydpi` folder work without the qualifier, in which case `ObsoleteSdkInt` should be re-enabled and the folder renamed.
+
+### D18. Android 17 platforms carry minor API levels, and the package id is android-37.0
+
+**What was found.** `compileSdk = 37` resolves to the SDK package `platforms;android-37.0`, not `platforms;android-37`. From Android 16 onward the platforms carry minor API levels, so the public repository publishes `android-36`, `android-36.1`, `android-37.0`, and `android-37.1`, with no plain `android-37` at all.
+
+**Why it is worth recording.** Asking `sdkmanager` for `platforms;android-37` fails with `Failed to find package`, which reads exactly like the platform being unreleased or the tooling being out of date. Two continuous integration runs were spent on that reading: first updating the command line tools, then switching to `android-actions/setup-android` to update them properly. Neither was the problem. The package id was.
+
+Confirmed by reading `repository2-3.xml` from the Google SDK repository directly, and by the local SDK, where `platforms/android-37.0/source.properties` reports `AndroidVersion.ApiLevel=37.0` and `Pkg.Desc=Android SDK Platform 17`.
+
+**What this means going forward.** Any workflow, script, or document naming an SDK platform package for API 37 or later uses the minor form. The device the app is verified on runs Android 17.
+
+**Revisit if.** Nothing. This is a fact about the platform, recorded so the next session does not spend the same two runs on it.
+
+### D19. Contrast measured, five tokens corrected, and the capture button glyph is no longer white
+
+`DESIGN.md` section 2.3 gave three text contrast corrections and then said something that turned out to matter: its numbers were calculated rather than measured, and the measurement is what counts. This is that measurement, and the document was right to hedge.
+
+**Decision.** Measure every color pair the app actually renders, in both themes, as an automated check rather than a one time exercise. `tools/checks/check_contrast.py` reads the tokens out of the theme itself and runs on every push, because a ratio recorded in a document stops being true the first time somebody adjusts a token and nothing notices.
+
+**What the measurement found.** 80 pairs measured. Five tokens needed correcting, including two of the corrections `DESIGN.md` had already proposed:
+
+| Token | Was | Now | Why |
+|---|---|---|---|
+| `ink2` light | `#5C6F7E` | `#5A6D7C` | 4.38:1 on `sand` |
+| `ink3Text` light | `#5E6E79` | `#5C6C77` | 4.43:1 on `sand`. This was already a correction and was still short |
+| `blazeText` light | `#9A6E14` | `#8F6309` | 4.22:1 on paper, 3.87:1 in a gold tonal card, against the roughly 4.9:1 calculated |
+| `alertText` light | `#B84A2E` | `#B34529` | 4.22:1 inside a red tonal pill |
+| `ink3Text` dark | `#7F9099` | `#8798A1` | 4.10:1 on `sand`, the tightest pairing in the dark theme |
+
+The pattern behind four of these: the original ratios were calculated against white, and this app has no white background. `paper` is `#FAF6EE` and `sand` is `#F1EBDC`, both warmer and darker than white, so every calculation against white was optimistic.
+
+**The capture button glyph, which nothing had flagged.** `DESIGN.md` section 5.5 specified a white plus glyph on the gold circle. White on `blaze` measures 2.38:1 in light and 1.97:1 in dark, well under the 3:1 a control requires.
+
+This is the most important control in the app. It is the single way data enters, it is on every screen, and the person using it is tired, often in bad light, and frequently older. So the fill stays gold in both themes, which is what carries the meaning and what section 2.4 protects, and the glyph darkens to `#22384A` in light, 5.08:1, and `#0B171E` in dark, 9.25:1. A new `onBlaze` token carries it. `DESIGN.md` sections 2.4 and 5.5 are corrected.
+
+**Decorative is a category, not a loophole.** A hairline rule, the dashed trail line, a timeline node, and a care thread route are measured and reported but not held to 3:1. WCAG 1.4.11 covers interface components and graphical objects required to understand content, and none of these qualify: remove a hairline and nothing becomes unreadable, and a node's color is never the only carrier of its meaning because section 2.2 requires a word, a shape, or an icon alongside it.
+
+The honest alternative was forcing the trail to stop being gold, and gold is the entire metaphor. So they are measured on every run, printed lowest first, and reviewed by eye on a device rather than quietly exempted. In light theme the trail line sits at 2.21:1 on paper and a hairline at 2.37:1.
+
+**One bug in the check itself, worth recording** because it looked like a theme fault. The first version parsed `threadRoutes = listOf(...)` with a non-greedy match, which stops at the parenthesis closing `Color(...)`, so it found route zero and reported the other three as undefined. Fixed by scanning to the matching parenthesis. A check that reports a false failure trains whoever reads it to ignore it.
+
+**Revisit if.** A token changes, which the check will catch, or the floors change.
+
 ---
 
 ## BLOCKED

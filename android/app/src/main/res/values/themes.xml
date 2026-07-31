@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      The platform theme exists only to paint the window before Compose takes
+      over, so it carries the paper background rather than the platform default.
+      Everything visual after that comes from HealthTrailTheme.
+    -->
+    <style name="Theme.HealthTrail" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/paper</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>
