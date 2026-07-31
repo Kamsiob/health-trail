@@ -2,7 +2,7 @@
 
 Rewritten to current truth on every commit. If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then read `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last updated:** 2026-07-31, branch `feat/11-android-scaffold`, the Android project.
+**Last updated:** 2026-07-31, after merging #24. Seven of nineteen Phase 0 issues done.
 
 ---
 
@@ -10,33 +10,29 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 
 **Phase:** 0, foundation, contract, and repository.
 
-**Where exactly:** there is a working Android application. It builds, installs on the connected Pixel, launches, and executes the shared schema on the device. Six instrumented tests pass on real hardware. The web scaffold does not exist yet.
+**Where exactly:** the foundation is built and running on real hardware. Seven of the nineteen Phase 0 issues are closed and device verified. There is no notebook to write in yet, which is Phase 1.
 
-**Just completed, and how it was verified:**
+**Done and verified:** #2 documentation, #3 continuous integration, #4 monorepo layout, #5 the schema, #11 the Android project and design tokens, #19 the subagent definitions, #20 the smoke test. Plus #22, a content bug found by the template validator.
 
-- The three safety guards. Guard 1 at `.claude/hooks/block-destructive.py`, wired as a `PreToolUse` hook on Bash. Verified by feeding it 25 hook payloads directly: 13 destructive commands refused with exit code 2 and a plain reason, 12 legitimate commands allowed through including `git push origin main`, `git checkout -b`, `git restore --staged`, `git merge`, and `./gradlew clean`. That test exercises the distinction between `git restore .` and `git restore --staged`, and between `git branch -D` and `git branch -d`. Guard 2 at `.claude/hooks/precompact-save-state.sh`, wired as a `PreCompact` hook, not yet observed firing because no compaction has happened. Guard 3 at `.claude/hooks/retry-guard.py`, verified across four attempts on one label, escalating on the fourth.
-- Repository live at https://github.com/Kamsiob/health-trail, public, 14 topics set, first commit pushed and signature verified as good.
-- Tracker: 21 issues. #1 is the Phase 0 parent with 19 children, #21 is the pinned roadmap. Every issue carries acceptance criteria in checkable terms. Milestone `v0.1.0 Foundation` created and applied to all Phase 0 issues.
-- Labels: 19, being 5 `type:` labels, 10 `area:` labels, plus `release-blocking`, `blocked`, `good first issue`, and `help wanted`. GitHub's default noise labels deleted.
-- Board at https://github.com/users/Kamsiob/projects/2, 20 items, every one carrying Status, Platform, Area, Priority, and Size. Fields and their options were configured before any item was added. Description and README written.
-- Documentation: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, CHANGELOG, LICENSE, plus two issue templates, an issue template config, a pull request template, and FUNDING.yml.
-- Compliance verified by grep across the whole repository: zero em dashes, zero en dashes, zero British spellings. Three issue bodies used the British spelling of color, were corrected, and all 21 issues re-verified clean.
+**Still open in Phase 0, in the order I would take them:**
 
-**In progress right now:** issue #11 on branch `feat/11-android-scaffold`.
+| Issue | What | Why this order |
+|---|---|---|
+| #14 | Encrypted database, SQLCipher, key in the Keystore, schema from the copied asset | Everything else that stores anything sits on top of it |
+| #6 | Locally generated collision safe time ordered ids | Needed by the first insert #14 makes |
+| #8 | Repository layer that makes tombstone filtering structural | The only safe way to read, so it comes before anything reads |
+| #7 | Prove the change log append is transactional through Kotlin | The schema already proves it. This proves the Kotlin path |
+| #13 | Four locale catalogs, ICU MessageFormat, right to left verified on a screen | The engine composes from these, so they precede it |
+| #15 | Golden test vectors both platforms run | Defines correct before the engine exists |
+| #9 | Export container, manifest, encryption, round trip equality | Needs the database and the repository layer |
+| #10 | `SyncTransport` with the file implementation behind it | Needs the export container |
+| #16 | Web scaffold opening the same schema | Needs nothing else, can be done any time. `npm` is absent, see question 5 |
+| #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
+| #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**What that branch contains, and how each part was verified:**
+**The precise next action:** issue #14. Create a branch, add SQLCipher with a key generated in and held by the Android Keystore, and open the database by executing the schema from the copied asset. There must be no Kotlin schema definition, which is why there is no Room here, see DECISIONS.md D16. Two things to get right the first time: a test asserting the file on disk is not readable as plain SQLite, and a migration test proving an upgrade preserves every row, because uninstalling to work around a migration is never allowed on this project.
 
-- The Gradle project. Gradle 9.6.1, AGP 9.3.1, Kotlin 2.4.10, Compose BOM 2026.06.01, JDK 21, compileSdk 37, targetSdk 36, minSdk 26. Every version read from its actual Maven metadata rather than assumed. See DECISIONS.md D15.
-- Every design token from `DESIGN.md` sections 2.1, 2.3, 2.4, 4.1, 4.2, 4.3, and 6, as Kotlin tokens rather than literals. Contrast ratios are **not** measured yet, which is the remaining criterion on #11.
-- The build copies `contract/schema.sql`, `contract/export-format.md`, and the template JSON into assets. **Verified two ways:** the schema inside the built APK is byte identical to `contract/schema.sql`, and moving the schema aside makes the build fail with a message naming the missing file and saying there is nothing to fall back to. That failure is now asserted in continuous integration rather than trusted.
-- The app installs and launches on the Pixel 10 Pro XL running Android 17. On device it reports 40 tables, 34 tombstone filtering views, and 57 templates. 40 rather than 39 because Android adds `android_metadata` to every database it creates.
-- Six instrumented tests pass on that device. Four unit tests pass. Lint passes with `warningsAsErrors`.
-- `tools/screenshot.sh` refuses to capture unless this app is the focused window, checked immediately before and again immediately after, discarding the image if the foreground changed. **The refusal path was tested,** not just the success path.
-- The Android job is added to continuous integration, which is what unblocks #3.
-
-**The precise next action:** open the pull request for `feat/11-android-scaffold`, confirm the new Android job passes on the runner, and merge. The runner has to install `platforms;android-37`, which is the most likely thing to fail there and has not been exercised yet.
-
-Then the remaining #11 criterion: measure every color pair with a contrast checker at real sp sizes and record the ratios in DECISIONS.md. After that, #12 fonts, then #14 the encrypted database.
+**One thing to know before writing that code.** Android's `execSQL` refuses any statement that returns rows, and `PRAGMA journal_mode` returns one. `ContractAssets.splitStatements` already handles the statement splitting including trigger bodies, and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
 ---
 

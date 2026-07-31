@@ -23,9 +23,13 @@ It is a record-keeping app. It is not a medical app, and it gives no medical adv
 
 ## What it looks like
 
-Real screenshots go here once there are screens to capture, and are recaptured whenever a screen changes. Nothing in this section will ever be a mockup or a rendering of a design file.
+Not much yet. The app currently has one screen, and it exists to prove the foundation runs rather than to be used:
 
-Until then, `reference/screen-grid.html` holds the 27 approved screens as the binding visual reference, and `DESIGN.md` holds the tokens, type scale, motion, and copy rules the built app is held to.
+<img src="docs/screenshots/foundation-dark.png" width="300" alt="The Phase 0 foundation screen, showing the counts read from the shared schema and template catalog on the device.">
+
+That is a real capture from the running app on a device, as every screenshot here will be. Nothing in this section is ever a mockup or a rendering of a design file, and the capture script refuses to run unless this app is the focused window.
+
+`reference/screen-grid.html` holds the 27 approved screens as the binding visual reference, and `DESIGN.md` holds the tokens, type scale, motion, and copy rules the built app is held to. Screenshots of the real screens replace this one as they are built.
 
 ## What it can do
 
