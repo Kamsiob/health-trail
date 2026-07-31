@@ -246,7 +246,31 @@ Line for continuous measures, plotted in `blue` at 2.5dp with a 3.5dp end point.
 
 **Charts obey the content rules absolutely.** No target band, no normal range, no threshold line, no color coding by value, no red or green points, no arrows, no judgment of any kind. A gap in the data renders as a gap, with the line broken, never interpolated, and never annotated as a lapse. Where a value carries a clinician's assessment, the label says so.
 
-### 5.9 Empty states
+### 5.9 Text fields
+
+**A new pattern, defined here once because nothing existing could carry it.** The reference file shows filled fields inside screens but never specifies the component, and every capture screen needs one. Defined per section 10: stated with its states, then used everywhere the pattern applies. Nothing else may be invented for text entry.
+
+**Geometry.** Full width. `sand` surface, 12dp radius, matching the inset tile. 16dp horizontal and 14dp vertical padding, giving a 48dp minimum height. No border in the resting state, because a 1px gray outline as a field's only definition is on the banned list in section 1. The recessed surface is what says it is a field.
+
+**The label sits above the field,** in Body M, `ink2`, with 8dp between it and the field. Never a floating label that moves on focus, and never a placeholder standing in for a label: a placeholder disappears exactly when the person needs it, which for this audience is the moment they were interrupted.
+
+**Text inside** is Body L in `ink`. The hint is Body L in `ink3` text safe, and it is genuine guidance rather than a repeat of the label. "Whatever you call them is fine" is a hint. "Name" is not.
+
+**States, all of them:**
+
+| State | Treatment |
+|---|---|
+| Empty | `sand` surface, hint visible |
+| Filled | `sand` surface, value in `ink` |
+| Focused | 2dp `blue` outline offset 2dp, the same focus treatment as every other focusable thing |
+| Disabled | `sand` at reduced opacity, label and text in `ink3` text safe. Rare, because fields in this app are almost never disabled |
+| Multi line | Grows with content up to a stated maximum, then scrolls internally. Never a fixed height that clips a long note |
+
+**There is deliberately no error state, and that is a rule rather than an omission.** Every capture field is optional and partial is a finished state. A field cannot be wrong, so it never turns red, never shows a warning glyph, and never blocks saving. Where a value genuinely cannot be interpreted, such as an unparseable date, the app keeps what the person typed and says what it could not read, below the field, in `ink2`. It does not discard the input and it does not scold.
+
+**Optional is stated once per screen, not per field,** because every field is optional and repeating it on each one turns a reassurance into noise.
+
+### 5.10 Empty states
 
 Every list has one, written as an invitation rather than an absence. The Today screen's empty state is a coached three-step list, per the reference file, and its first item is always filling in the Emergency Card, because that is the highest value two minutes a new user can spend.
 
@@ -333,6 +357,16 @@ The text scrolls and the action does not. That is what keeps the accept button i
 The mark carries no content description here. The heading immediately below it already says where the person is, and a screen reader announcing a logo before every title is noise.
 
 Tracked on issue #28.
+
+**Essentials first setup.** Asks three things and lets everything else wait: who you are looking after, where they are, and one phone number worth having in a hurry.
+
+Every field is optional, including the name, and continuing with all of them blank is a real path that produces a working notebook. There is no required field marker, no validation, no error state, and no progress indicator, because a progress indicator on setup frames an unfinished form as a deficiency.
+
+One screen rather than a three step wizard. A wizard means three taps before anything is written down and hides how little is being asked. One short scrolling screen shows the whole ask at once, which is what makes it possible to see that it is nearly nothing. The word Optional appears once at the top rather than beside each field.
+
+**Section headings and field labels are never the same words.** Built with them shared, the screen showed "Where are they right now" twice in a row, once as a heading and once as the label beneath it. It read as a bug and a screen reader announced it twice.
+
+Composed from Display L, Display S, Body M, the text field from section 5.9, one filled button, and one text action. Tracked on issue #30.
 
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 

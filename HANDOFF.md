@@ -32,7 +32,9 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** merge `feat/phase1-disclaimer-gate`, then build **essentials-first setup**, which is what the accept button should lead to. It asks three things, per `MASTER_SPEC.md` section 4.1: who you are looking after, where they are, and one phone number you would need in an emergency. Everything else is offered and skippable. A situation template is chosen and applied. None of those screens are mocked up, so each one is composed from the existing components and logged in three places the moment it is built, per `DESIGN.md` section 10.
+**The precise next action:** open and merge the pull request for `feat/phase1-setup`, then build the **situation template picker**, which is what setup should lead to. It applies a template's sections, roles, threads, first days checklist, and document slots, all editable and deletable afterward, per `MASTER_SPEC.md` section 4.1 and 4.10. That screen has no mockup either.
+
+**Device state when this was written:** the app is installed, exactly one package, launching, and the phone is safe to disconnect. Nothing is mid operation. Instrumented tests need it reconnected; unit tests, lint, and the compliance checks do not.
 
 **Build each screen, install it over ADB, open it, and look at it before closing its issue.** Two real bugs in this increment were invisible in review and obvious on the device, recorded as D28.
 
@@ -163,6 +165,7 @@ This list exists so the owner can review them all in one sitting instead of arch
 | Screen | Built | Issue | Composed from | Reviewed |
 |---|---|---|---|---|
 | Disclaimer gate | 2026-07-31 | #28 | Mark, Display L, Body L, filled button | not yet |
+| Essentials first setup | 2026-07-31 | #30 | Display L, Display S, Body M, text field 5.9, filled button, text action | not yet |
 
 **Known ahead:** the template library, the four template pickers, the template detail view, and the template editor. All of them land in Phase 1 or Phase 4 and none is drawn. `MASTER_SPEC.md` section 4.10 carries their requirements in detail, including that all four template kinds share one presentation and that browsing, previewing, and applying must be visually distinct.
 

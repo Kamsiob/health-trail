@@ -25,6 +25,8 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.screens.DisclaimerScreen
+import com.kamsiob.healthtrail.ui.screens.SetupAnswers
+import com.kamsiob.healthtrail.ui.screens.SetupScreen
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -62,10 +64,10 @@ fun AppRoot() {
         state = try {
             val repository = Repository.open(context)
             val accepted = repository.settingTimestamp(Repository.KEY_DISCLAIMER_ACCEPTED)
-            if (accepted == null) {
-                RootState.Gate(repository)
-            } else {
-                RootState.Ready(repository)
+            when {
+                accepted == null -> RootState.Gate(repository)
+                repository.activeSubject() == null -> RootState.Setup(repository)
+                else -> RootState.Ready(repository)
             }
         } catch (_: DatabaseKeyLost) {
             RootState.Unrecoverable
@@ -94,7 +96,38 @@ fun AppRoot() {
                         Repository.KEY_DISCLAIMER_ACCEPTED,
                         System.currentTimeMillis(),
                     )
-                    state = RootState.Ready(current.repository)
+                    state = RootState.Setup(current.repository)
+                }
+            }
+
+            is RootState.Setup -> SetupScreen(
+                onContinue = { answers -> state = RootState.Saving(current.repository, answers) },
+                // Skipping still creates the notebook, with nothing in it. The
+                // alternative is an app with nowhere to write, which turns a
+                // skipped question into a dead end.
+                onSkip = { state = RootState.Saving(current.repository, SetupAnswers("", "", "", "", "")) },
+            )
+
+            is RootState.Saving -> {
+                OpeningScreen()
+                LaunchedEffect(Unit) {
+                    val repository = current.repository
+                    val answers = current.answers
+                    val subjectId = repository.createSubject(
+                        displayName = answers.name,
+                        relationship = answers.relationship,
+                    )
+                    if (answers.where.isNotBlank()) {
+                        repository.createChapter(subjectId, answers.where)
+                    }
+                    if (answers.phoneName.isNotBlank() || answers.phoneNumber.isNotBlank()) {
+                        repository.createPerson(
+                            subjectId = subjectId,
+                            displayName = answers.phoneName,
+                            phone = answers.phoneNumber,
+                        )
+                    }
+                    state = RootState.Ready(repository)
                 }
             }
 
@@ -107,6 +140,8 @@ private sealed interface RootState {
     data object Opening : RootState
     data object Unrecoverable : RootState
     data class Gate(val repository: Repository) : RootState
+    data class Setup(val repository: Repository) : RootState
+    data class Saving(val repository: Repository, val answers: SetupAnswers) : RootState
     data class Accepting(val repository: Repository) : RootState
     data class Ready(val repository: Repository) : RootState
 }

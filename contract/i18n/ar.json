@@ -73,5 +73,9 @@
   "common.close": "إغلاق",
   "common.retry": "حاول مرة أخرى",
   "common.loading": "جارٍ التحميل",
-  "common.error.generic": "لم ينجح ذلك. لم يتغير شيء."
+  "common.error.generic": "لم ينجح ذلك. لم يتغير شيء.",
+  "subject.unnamed": "الشخص الذي ترعاه",
+  "setup.where.label": "المكان أو المنشأة",
+  "setup.phone.person.label": "لمن هذا الرقم",
+  "setup.phone.number.label": "رقم الهاتف"
 }

@@ -73,5 +73,9 @@
   "common.close": "Close",
   "common.retry": "Try again",
   "common.loading": "Loading",
-  "common.error.generic": "That did not work. Nothing was changed."
+  "common.error.generic": "That did not work. Nothing was changed.",
+  "subject.unnamed": "The person you are looking after",
+  "setup.where.label": "Place or facility",
+  "setup.phone.person.label": "Whose number it is",
+  "setup.phone.number.label": "Phone number"
 }

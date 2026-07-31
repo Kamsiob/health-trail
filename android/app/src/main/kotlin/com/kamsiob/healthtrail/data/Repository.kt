@@ -82,6 +82,136 @@ class Repository private constructor(
     suspend fun putSettingTimestamp(key: String, millis: Long) =
         putSetting(key, millis.toString())
 
+    // -- writing ----------------------------------------------------------
+
+    /**
+     * Inserts a row, setting the six columns the data contract requires.
+     *
+     * Every entity write goes through here rather than building its own SQL, so
+     * none of them can forget a column. The change log is not touched: triggers
+     * in the schema append it in the same transaction, which is a guarantee the
+     * database makes rather than one this layer keeps.
+     *
+     * Returns the generated id.
+     */
+    private suspend fun insert(table: String, values: Map<String, Any?>): String =
+        withContext(Dispatchers.IO) {
+            val id = Ids.new()
+            val now = System.currentTimeMillis()
+            val all = LinkedHashMap<String, Any?>()
+            all["id"] = id
+            all["created_at"] = now
+            all["updated_at"] = now
+            all["origin_device"] = db().deviceId
+            all["rev"] = 1
+            all.putAll(values)
+
+            val columns = all.keys.joinToString(", ")
+            val placeholders = all.keys.joinToString(", ") { "?" }
+            db().database.execSQL(
+                "INSERT INTO $table ($columns) VALUES ($placeholders)",
+                all.values.toTypedArray(),
+            )
+            id
+        }
+
+    /**
+     * The person being looked after.
+     *
+     * Every field except the name is optional, and the name itself is whatever
+     * the person calls them rather than a legal name. Setup asks for three
+     * things and lets everything else wait, so this has to be creatable from
+     * almost nothing.
+     */
+    data class Subject(
+        val id: String,
+        val displayName: String,
+        val relationship: String?,
+        val situationTemplateId: String?,
+    )
+
+    suspend fun createSubject(
+        displayName: String,
+        relationship: String? = null,
+        situationTemplateId: String? = null,
+    ): String = insert(
+        "subject",
+        mapOf(
+            "display_name" to displayName,
+            "relationship" to relationship?.ifBlank { null },
+            "situation_template_id" to situationTemplateId,
+            "is_active" to 1,
+        ),
+    )
+
+    /** One subject by id. Used where a caller knows which one it means. */
+    suspend fun subject(id: String): Subject? = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, display_name, relationship, situation_template_id " +
+                "FROM live_subject WHERE id = ?",
+            arrayOf(id),
+        ).use { cursor ->
+            if (!cursor.moveToFirst()) return@use null
+            Subject(
+                id = cursor.getString(0),
+                displayName = cursor.getString(1),
+                relationship = cursor.getString(2),
+                situationTemplateId = cursor.getString(3),
+            )
+        }
+    }
+
+    /** The active subject, or null when setup has not happened yet. */
+    suspend fun activeSubject(): Subject? = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, display_name, relationship, situation_template_id " +
+                "FROM live_subject WHERE is_active = 1 ORDER BY created_at LIMIT 1",
+            null,
+        ).use { cursor ->
+            if (!cursor.moveToFirst()) return@use null
+            Subject(
+                id = cursor.getString(0),
+                displayName = cursor.getString(1),
+                relationship = cursor.getString(2),
+                situationTemplateId = cursor.getString(3),
+            )
+        }
+    }
+
+    /**
+     * A chapter is a place and a period. Setup creates the first one from the
+     * answer to "where are they right now", with no dates, because someone
+     * standing in a corridor does not know when this started or when it ends.
+     */
+    suspend fun createChapter(subjectId: String, name: String): String = insert(
+        "chapter",
+        mapOf(
+            "subject_id" to subjectId,
+            "name" to name,
+            "started_at" to System.currentTimeMillis(),
+        ),
+    )
+
+    /**
+     * One phone number worth having in a hurry. Stored as a care team person
+     * rather than as a loose string, so it is already on the emergency card and
+     * already links to every call involving them.
+     */
+    suspend fun createPerson(
+        subjectId: String,
+        displayName: String,
+        phone: String? = null,
+        roleLabel: String? = null,
+    ): String = insert(
+        "person",
+        mapOf(
+            "subject_id" to subjectId,
+            "display_name" to displayName,
+            "phone" to phone?.ifBlank { null },
+            "role_label" to roleLabel,
+        ),
+    )
+
     // -- counting, for the table of contents ------------------------------
 
     /**
