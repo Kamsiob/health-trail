@@ -52,17 +52,17 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.4 | Monorepo layout: `/contract`, `/templates`, `/android`, `/web`, `/tools` | **partial.** All five directories exist. `/contract` holds the schema and the export format. `/android` and `/web` are empty until #11 and #16. Issue #4 |
 | 0.5 | Repository documents: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, LICENSE, CHANGELOG | **verified.** Issue #2. ARCHITECTURE marks each subsystem pending rather than describing it as built |
 | 0.6 | `.github`: issue templates, pull request template, FUNDING.yml | **verified.** Issue #2 |
-| 0.7 | Continuous integration workflow compiling every test source set | **partial.** Compliance, documentation, and Android jobs written. The Android job compiles the instrumented suite and asserts the build fails without the contract. Not yet observed passing on the runner. Issue #3 |
+| 0.7 | Continuous integration workflow compiling every test source set | **verified.** Three jobs, all green on the runner. The Android job assembles, runs unit tests, compiles the instrumented suite, lints, asserts the build fails without the contract, and compares the schema inside the APK to the contract file. Issue #3 |
 | 0.8 | Release workflow with artifact provenance | not started, deferred to Phase 8 where there is an artifact to attest |
 | 0.9 | Labels, milestone, project board with single-select status and automation configured before population | **partial.** Labels, milestone, board, fields, and all 20 items done. The two built-in board automations are BLOCKED B2, owner action, one minute |
 | 0.10 | Pinned roadmap issue including the deliberate exclusions | **verified.** Issue #21, pinned |
-| 0.11 | Branch protection on status checks, no review requirement | not started. Needs a status check to exist first, so it follows issue #3 |
+| 0.11 | Branch protection on status checks, no review requirement | **verified.** Both checks required, force pushes and deletion refused, no review requirement. Administrator enforcement deliberately off so documentation fixes can go direct while behavior changes go through a pull request |
 | 0.12 | `contract/schema.sql`: every column from data contract section 3 on every user data table, plus `change_log` and `conflict_log` | **verified by test.** 34 user data tables, all six columns each, no AUTOINCREMENT, 34 live views, 68 triggers. `tools/checks/check_schema.py` asserts it and was negative tested. Issue #5 |
 | 0.13 | `contract/export-format.md` | **verified.** Written. The container, the manifest, encryption as separate from at-rest encryption, atomic and honest import, and the eight hostile files that must fail cleanly |
 | 0.14 | `contract/i18n/` four locale catalogs, ICU MessageFormat | not started |
 | 0.15 | `contract/test-vectors/` covering empty, one entry, two entries, gap, plural boundaries | not started |
 | 0.16 | Android Gradle project, single activity, Compose, minimum and target SDK verified against current Play requirement | **verified on device.** Builds, installs, launches on the Pixel 10 Pro XL. Issue #11 |
-| 0.17 | Design tokens for both themes, contrast measured and ratios recorded in DECISIONS.md | **partial.** Every token implemented at its exact value in both themes. Ratios not measured yet, which is the open criterion on #11 |
+| 0.17 | Design tokens for both themes, contrast measured and ratios recorded in DECISIONS.md | **verified.** 80 pairs measured across both themes by `tools/checks/check_contrast.py`, which runs on every push. Five tokens corrected, and the capture button glyph is no longer white. Ratios in DECISIONS.md D19 and DESIGN.md section 2.3. Issue #11 |
 | 0.18 | Fonts: display and body faces confirmed by current name and license, Noto fallback chain for four scripts | not started |
 | 0.19 | Four-locale i18n scaffold with RTL working | not started |
 | 0.20 | Database layer: SQLCipher, key in Keystore, schema applied from the copied `schema.sql` asset, no second copy in Kotlin | not started |
