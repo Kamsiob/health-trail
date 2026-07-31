@@ -59,6 +59,17 @@ data class HealthTrailColors(
 
     /** Shapes only: the mark, the trail line, timeline nodes, the capture button. */
     val blaze: Color,
+    /**
+     * The glyph on the capture button.
+     *
+     * Not white. DESIGN.md section 5.5 originally said white, and measurement
+     * put white on [blaze] at 2.38:1 in light and 1.97:1 in dark, well under
+     * the 3:1 a control needs. The capture button is the single way data enters
+     * this app and it has to be findable without thought by someone tired, in
+     * bad light, and often older. So the fill stays gold in both themes, which
+     * is what carries the meaning, and the glyph darkens.
+     */
+    val onBlaze: Color,
     /** Gold text. [blaze] itself never renders text. */
     val blazeText: Color,
     val blazeSoft: Color,
@@ -93,8 +104,13 @@ val LightColors = HealthTrailColors(
     sand = Color(0xFFF1EBDC),
 
     ink = Color(0xFF22384A),
-    ink2 = Color(0xFF5C6F7E),
-    ink3Text = Color(0xFF5E6E79),
+    // 5C6F7E measured 4.38:1 on sand, just under the floor. Darkened until it
+    // clears on all three surfaces it lands on.
+    ink2 = Color(0xFF5A6D7C),
+    // 5E6E79, the correction DESIGN.md section 2.3 proposed, measured 4.43:1 on
+    // sand. The document says its own numbers are calculated and the
+    // measurement is what counts, and this is the measurement.
+    ink3Text = Color(0xFF5C6C77),
     ink3NonText = Color(0xFF96A4AE),
 
     blue = Color(0xFF2F6F8F),
@@ -103,7 +119,11 @@ val LightColors = HealthTrailColors(
     blueSoft = Color(0xFFE3EEF3),
 
     blaze = Color(0xFFD99D2B),
-    blazeText = Color(0xFF9A6E14),
+    onBlaze = Color(0xFF22384A),
+    // 9A6E14 measured 4.22:1 on paper and 3.87:1 inside a gold tonal card,
+    // against the roughly 4.9:1 DESIGN.md calculated. That calculation was
+    // against white rather than against warm paper.
+    blazeText = Color(0xFF8F6309),
     blazeSoft = Color(0xFFF7ECD1),
 
     leaf = Color(0xFF4E8A5C),
@@ -111,7 +131,10 @@ val LightColors = HealthTrailColors(
     leafSoft = Color(0xFFE4EFE5),
 
     alert = Color(0xFFB84A2E),
-    alertText = Color(0xFFB84A2E),
+    // The shape color measured 4.22:1 as text inside a red tonal pill, so text
+    // gets its own slightly darker value, the same split already used for gold
+    // and green.
+    alertText = Color(0xFFB34529),
     alertFill = Color(0xFFB84A2E),
     onAlertFill = Color(0xFFFFFFFF),
     alertSoft = Color(0xFFF8E4DB),
@@ -141,7 +164,9 @@ val DarkColors = HealthTrailColors(
 
     ink = Color(0xFFE9EEF1),
     ink2 = Color(0xFFA6B4BD),
-    ink3Text = Color(0xFF7F9099),
+    // 7F9099 measured 4.10:1 on sand, which is the lightest dark surface and
+    // therefore the tightest pairing in this theme.
+    ink3Text = Color(0xFF8798A1),
     ink3NonText = Color(0xFF66757E),
 
     blue = Color(0xFF7FB6D4),
@@ -150,6 +175,7 @@ val DarkColors = HealthTrailColors(
     blueSoft = Color(0xFF1E323D),
 
     blaze = Color(0xFFE3B155),
+    onBlaze = Color(0xFF0B171E),
     blazeText = Color(0xFFE9BE6E),
     blazeSoft = Color(0xFF33290F),
 

@@ -2,7 +2,9 @@
 
 How Health Trail is put together, for someone who wants to understand or modify it.
 
-**Status marker.** This document describes the app as it currently is. Phase 0 is in progress, so most of what follows is designed and specified but not yet built. Every section says which. Nothing here is described as built until it is, because a document that overstates completion is worse than one admitting something is half finished.
+**Status marker.** This document describes the app as it currently is. Phase 0 is in progress, so much of what follows is designed and specified but not yet built. Every section says which. Nothing here is described as built until it is, because a document that overstates completion is worse than one admitting something is half finished.
+
+**What exists right now:** the monorepo layout, the canonical schema with its change log triggers and tombstone filtering views, the export format specification, an Android application that builds and runs the schema on a device, the design tokens for both themes, and the compliance checks. **What does not:** the encrypted database, the repository layer, the deterministic engine, the export container, the web scaffold, the fixture generator, and every screen of the actual app.
 
 ---
 
@@ -10,12 +12,12 @@ How Health Trail is put together, for someone who wants to understand or modify 
 
 ```
 contract/          platform neutral. The source of truth for anything shared.
-  schema.sql       the canonical schema as DDL, with comments        [pending]
-  export-format.md the export container specification                [pending]
+  schema.sql       the canonical schema as DDL, with comments        [exists]
+  export-format.md the export container specification                [exists]
   i18n/            message catalogs, ICU MessageFormat               [pending]
   test-vectors/    golden input and expected output per locale       [pending]
 templates/         57 care templates as JSON                         [exists]
-android/           the Kotlin application                            [pending]
+android/           the Kotlin application                            [partial]
 web/               scaffold proving the contract, no features        [pending]
 tools/             fixture generator, compliance checks              [partial]
 ```
@@ -41,7 +43,9 @@ Almost every structural decision in this app traces to one of four constraints. 
 
 ## 3. Data storage and protection
 
-**Status: designed, not yet built.**
+**Status: the schema exists and runs. The encrypted database and the repository layer do not.**
+
+`contract/schema.sql` is written, and the Android app executes it on the device. What is still missing is SQLCipher, the Keystore key, and the Kotlin repository layer, which are issues #14 and #8.
 
 One SQLite database is the entire data store, encrypted at rest with SQLCipher using a key generated in and held by the Android Keystore. The key never leaves the device and is never written to preferences, a file, or a log.
 
@@ -70,7 +74,13 @@ This is not fussiness. One forgotten `deleted_at IS NULL` is a data leak of some
 
 ### The change log
 
+**Status: built and enforced by the database itself.**
+
 One append-only table records every insert, update, and delete, written **in the same transaction as the write itself**. A write that succeeds while its log entry fails would be a silent hole in the record.
+
+This is enforced by two triggers per user data table, written into `schema.sql`, rather than by the repository layer. A repository layer satisfies the requirement right up until someone adds a write path that forgets, which happens once, silently. A trigger cannot be forgotten and cannot run in a different transaction than the statement that fired it. It also means the guarantee holds on the web platform without being reimplemented there. Reasoning in DECISIONS.md D14.
+
+The `delete` operation is derived rather than declared: deletion here is an update that sets `deleted_at`, so the update trigger records `delete` when `deleted_at` moves from null to set, and `update` otherwise. Undeleting records an `update`, which is correct, because a peer needs to know the tombstone was lifted.
 
 It exists for a future sync, where it answers the only useful question a peer can ask, which is give me everything after sequence N. Without it, sync means diffing whole tables and cannot tell an edit from a delete then recreate. It is also useful immediately: it is what tells the Today digest what changed since the person was last here.
 
@@ -147,9 +157,11 @@ The test that matters is not whether import completes. It is field by field equa
 
 ## 8. Threading and lifecycle
 
-**Status: designed, not yet built.**
+**Status: the single activity and the theme exist. The rest is designed.**
 
-Single activity, Jetpack Compose, Material 3 with a fully custom theme.
+Single activity, Jetpack Compose, Material 3 with a fully custom theme, all built. Dynamic color is deliberately not used: the palette carries meaning, gold means the trail and red means the emergency card, and letting the wallpaper reassign those would break the one rule keeping the app from looking clinical.
+
+The build copies `contract/schema.sql` and the template JSON into assets and fails loudly if it cannot read them. That failure is asserted in continuous integration rather than trusted, along with a byte comparison between the schema inside the built APK and the contract file.
 
 Database work happens off the main thread. Anything not instantaneous shows that something is happening from the moment it is triggered rather than after a delay, and anything slow is cancellable in a way that genuinely stops the underlying work.
 

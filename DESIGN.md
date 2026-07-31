@@ -40,7 +40,7 @@ These are exactly the values in the mockups.
 | `card` | `#FFFFFF` | Card and sheet surfaces. |
 | `sand` | `#F1EBDC` | Recessed surfaces: icon tiles, avatars, inset rows, disabled chips. |
 | `ink` | `#22384A` | Primary text. |
-| `ink2` | `#5C6F7E` | Secondary text. |
+| `ink2` | `#5A6D7C` | Secondary text. Corrected from `#5C6F7E`, see 2.3. |
 | `ink3` | `#96A4AE` | **Non-text only.** See 2.3. |
 | `blue` | `#2F6F8F` | The single accent. Actions, filled buttons, links, the PT thread. |
 | `blue_deep` | `#245A75` | Pressed state, text on `blue_soft`. |
@@ -64,17 +64,25 @@ Care thread route colors, light theme: physical therapy `#2F6F8F`, occupational 
 - **Color is never the only carrier of meaning.** Every state that has a color also has a word, a shape, or an icon. An incident is not "the red one," it is the one whose pill says OPEN.
 - **No pure black, no pure white background.** `card` is white as a surface on warm paper, which is different and intended.
 
-### 2.3 Text contrast corrections, required
+### 2.3 Text contrast corrections, measured
 
 The mockups use several colors as small text that do not meet WCAG AA at real text sizes. These are corrections, not suggestions, and they are the reason this section exists.
 
-| Problem in the mockups | Correction |
-|---|---|
-| `ink3` `#96A4AE` used for eyebrows and timestamps. Roughly 2.3:1 on paper. | Any `ink3` **text** uses `#5E6E79` (about 4.8:1). The original `#96A4AE` remains valid for non-text only: hairline rules, dividers, inactive icon strokes, which need 3:1 as UI components. |
-| `blaze` `#D99D2B` as text. Roughly 2.2:1. | Gold text is `#9A6E14` (about 4.9:1), which is what the mockups already use inside gold tonal cards. `blaze` itself never renders text. |
-| `leaf` `#4E8A5C` as text. Roughly 3.8:1. | Green text is `#3D7049` (about 5.1:1). `leaf` remains the shape color. |
+**Everything below is measured rather than calculated,** by `tools/checks/check_contrast.py`, which reads the tokens out of the theme itself and runs on every push. An earlier version of this section carried calculated numbers and said plainly that the measurement was what counted. It was right to: three of its four proposed corrections did not clear the floor once measured against the actual surfaces, because they had been calculated against white rather than against warm paper.
 
-**Every value in both themes must be verified with a contrast checker during Phase 0**, at the real sp sizes, and the measured ratios recorded in DECISIONS.md. The numbers above are calculated, not measured, and the measurement is what counts. Floors: 4.5:1 for text under 18sp, 3:1 for text 18sp and above and for UI component boundaries.
+| Problem in the mockups | Correction | Measured, at its tightest surface |
+|---|---|---|
+| `ink3` `#96A4AE` used for eyebrows and timestamps, about 2.4:1 on paper. | `ink3` **text** uses `#5C6C77`. The original stays valid for non-text only. | 4.57:1 on `sand` |
+| `ink2` `#5C6F7E` measured 4.38:1 on `sand`, just under the floor. | `#5A6D7C` | 4.51:1 on `sand` |
+| `blaze` `#D99D2B` as text, about 2.2:1. | Gold text is `#8F6309`. `blaze` itself never renders text. | 4.52:1 inside a gold tonal card |
+| `leaf` `#4E8A5C` as text, about 3.8:1. | Green text is `#3D7049`. `leaf` remains the shape color. | 4.92:1 inside a green tonal chip |
+| `alert` `#B84A2E` measured 4.22:1 as text inside a red tonal pill. | Alert text is `#B34529`. `alert` remains the shape color. | 4.50:1 inside a red tonal pill |
+
+**Floors.** 4.5:1 for text under 18sp. 3:1 for text at 18sp and above, and for user interface components and graphical objects required to understand content.
+
+**What is decorative, and why that is not a loophole.** A hairline rule, the dashed trail line, a timeline node, and a care thread route are measured and reported but are not held to 3:1. WCAG 1.4.11 covers interface components and graphics required to understand content, and none of these are: remove a hairline and nothing becomes unreadable, and a node's color is never the only thing carrying its meaning, because section 2.2 requires a word, a shape, or an icon alongside it.
+
+The alternative would be forcing the trail to stop being gold, and gold is the entire metaphor. So these are measured on every run, printed, and reviewed by eye on a device rather than ignored. For the record, in light theme the trail line sits at 2.21:1 on paper and a hairline at 2.37:1.
 
 ### 2.4 Dark theme
 
@@ -87,7 +95,7 @@ The dark theme is a trail map at dusk, not an inverted document. Surfaces get li
 | `sand` | `#223038` | Recessed surfaces read as slightly lighter here, the opposite of light theme, which is correct for dark surfaces. |
 | `ink` | `#E9EEF1` | Primary text. Never pure white. |
 | `ink2` | `#A6B4BD` | Secondary. |
-| `ink3` | `#7F9099` | Text safe in this theme. Non-text may go to `#66757E`. |
+| `ink3` | `#8798A1` | Text safe in this theme, measured 4.55:1 on `sand`, which is the tightest pairing in the dark theme. `#7F9099` measured 4.10:1 and was not safe. Non-text may go to `#66757E`. |
 | `blue` | `#7FB6D4` | Lightened so it carries text contrast on dark. |
 | `blue_deep` | `#9BCBE4` | Pressed and emphasis. |
 | `on_blue` | `#0B171E` | Dark text on the light blue fill. Filled buttons invert in dark mode. |
@@ -105,6 +113,8 @@ The dark theme is a trail map at dusk, not an inverted document. Surfaces get li
 Thread routes, dark: PT `#7FB6D4`, OT `#74B383`, speech `#D0946A`, nursing `#9CAE85`.
 
 The capture button stays gold in both themes. It is the one element whose color does not shift meaning between themes, because it is the single way data enters the app and it must be findable without thought.
+
+**Its glyph is not white.** White on `blaze` measures 2.38:1 in light and 1.97:1 in dark, well under the 3:1 a control needs. The fill stays gold, which is what carries the meaning, and the glyph darkens: `#22384A` in light, measuring 5.08:1, and `#0B171E` in dark, measuring 9.25:1. This matters more than it would on most buttons, because this is the one control the app cannot afford to have anyone miss.
 
 ### 2.5 Elevation
 
@@ -211,7 +221,7 @@ An action keeps the same word through its whole flow. The button that says Expor
 
 Four destinations, always in this order: Today, Notebook, Projects, More. `card` container, 24dp radius, 8dp inset from the screen edges, elevated. Icon 20dp above an 11sp label. Active state is `blue_deep` on both icon and label, plus the label at weight 700, so color is not the only signal.
 
-The capture button sits in the center of the navigation container, overlapping its top edge by 16dp: 56dp circle, `blaze` fill, white plus glyph, present on every screen in all four tabs. It is the only way data enters the app and it never moves, never hides on scroll, and never changes color.
+The capture button sits in the center of the navigation container, overlapping its top edge by 16dp: 56dp circle, `blaze` fill, dark plus glyph in `onBlaze`, present on every screen in all four tabs. The glyph is deliberately not white, for the contrast reason given in 2.4. It is the only way data enters the app and it never moves, never hides on scroll, and never changes color.
 
 ### 5.6 Pills
 

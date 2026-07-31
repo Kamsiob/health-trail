@@ -246,6 +246,36 @@ Confirmed by reading `repository2-3.xml` from the Google SDK repository directly
 
 **Revisit if.** Nothing. This is a fact about the platform, recorded so the next session does not spend the same two runs on it.
 
+### D19. Contrast measured, five tokens corrected, and the capture button glyph is no longer white
+
+`DESIGN.md` section 2.3 gave three text contrast corrections and then said something that turned out to matter: its numbers were calculated rather than measured, and the measurement is what counts. This is that measurement, and the document was right to hedge.
+
+**Decision.** Measure every color pair the app actually renders, in both themes, as an automated check rather than a one time exercise. `tools/checks/check_contrast.py` reads the tokens out of the theme itself and runs on every push, because a ratio recorded in a document stops being true the first time somebody adjusts a token and nothing notices.
+
+**What the measurement found.** 80 pairs measured. Five tokens needed correcting, including two of the corrections `DESIGN.md` had already proposed:
+
+| Token | Was | Now | Why |
+|---|---|---|---|
+| `ink2` light | `#5C6F7E` | `#5A6D7C` | 4.38:1 on `sand` |
+| `ink3Text` light | `#5E6E79` | `#5C6C77` | 4.43:1 on `sand`. This was already a correction and was still short |
+| `blazeText` light | `#9A6E14` | `#8F6309` | 4.22:1 on paper, 3.87:1 in a gold tonal card, against the roughly 4.9:1 calculated |
+| `alertText` light | `#B84A2E` | `#B34529` | 4.22:1 inside a red tonal pill |
+| `ink3Text` dark | `#7F9099` | `#8798A1` | 4.10:1 on `sand`, the tightest pairing in the dark theme |
+
+The pattern behind four of these: the original ratios were calculated against white, and this app has no white background. `paper` is `#FAF6EE` and `sand` is `#F1EBDC`, both warmer and darker than white, so every calculation against white was optimistic.
+
+**The capture button glyph, which nothing had flagged.** `DESIGN.md` section 5.5 specified a white plus glyph on the gold circle. White on `blaze` measures 2.38:1 in light and 1.97:1 in dark, well under the 3:1 a control requires.
+
+This is the most important control in the app. It is the single way data enters, it is on every screen, and the person using it is tired, often in bad light, and frequently older. So the fill stays gold in both themes, which is what carries the meaning and what section 2.4 protects, and the glyph darkens to `#22384A` in light, 5.08:1, and `#0B171E` in dark, 9.25:1. A new `onBlaze` token carries it. `DESIGN.md` sections 2.4 and 5.5 are corrected.
+
+**Decorative is a category, not a loophole.** A hairline rule, the dashed trail line, a timeline node, and a care thread route are measured and reported but not held to 3:1. WCAG 1.4.11 covers interface components and graphical objects required to understand content, and none of these qualify: remove a hairline and nothing becomes unreadable, and a node's color is never the only carrier of its meaning because section 2.2 requires a word, a shape, or an icon alongside it.
+
+The honest alternative was forcing the trail to stop being gold, and gold is the entire metaphor. So they are measured on every run, printed lowest first, and reviewed by eye on a device rather than quietly exempted. In light theme the trail line sits at 2.21:1 on paper and a hairline at 2.37:1.
+
+**One bug in the check itself, worth recording** because it looked like a theme fault. The first version parsed `threadRoutes = listOf(...)` with a non-greedy match, which stops at the parenthesis closing `Color(...)`, so it found route zero and reported the other three as undefined. Fixed by scanning to the matching parenthesis. A check that reports a false failure trains whoever reads it to ignore it.
+
+**Revisit if.** A token changes, which the check will catch, or the floors change.
+
 ---
 
 ## BLOCKED
