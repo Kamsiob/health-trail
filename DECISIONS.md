@@ -276,6 +276,22 @@ The honest alternative was forcing the trail to stop being gold, and gold is the
 
 **Revisit if.** A token changes, which the check will catch, or the floors change.
 
+### D20. The board is run for transparency, not as a simulated scrum team
+
+**Decision.** Keep Status, Platform, Area, Priority, Size, and Actual. No sprint or iteration field, no story points, no velocity, no burndown. The board is public, and its README explains how to read it, what Done means, and how to check any claim on it by following the chain from issue to commit to pull request to a closing comment naming the device.
+
+**How this was arrived at,** because the path matters more than the outcome here. The owner asked for the board to be managed like a professionally run Agile or Scrum project. `kamsiob-project-template.md` section A4b argues directly against that: no iteration or sprint fields, because time boxing has no meaning for one person working continuously and an iteration field that does not reflect a real cadence is the clearest possible example of process being performed rather than run. No story points. No delivery metrics designed to assess engineering organizations.
+
+An owner instruction outranks the template, so a two week `Sprint` iteration field was created and configured. Before any item was assigned to it, the owner clarified: the goal is professionalism, visibility, and transparency, and he is not pretending there is an actual human team. The field was deleted, with nothing ever assigned to it.
+
+**Reasoning, now that both statements are on the table.** They are not in conflict once the word professional is unpacked. What reads as professional on a public repository is that every claim can be checked: acceptance criteria ticked as each is verified rather than all at once, working notes written while the work happens rather than reconstructed, commits referencing issues, and Done meaning verified on hardware. What does not read as professional is a board carrying sprint numbers, velocity, and a burndown chart for a team of nobody. The second is decoration, and decoration on a tracker is worse than absence because it invites a reader to trust a signal that means nothing.
+
+So the discipline is kept in full and the ceremony is dropped, and the board README says which is missing and why rather than leaving a visitor to wonder.
+
+**What was added rather than removed.** The board README now carries the definition of done in short form, a section on how to check any claim by following the chain backward, and an explicit list of what is deliberately absent. The board was also made public, which it needed to be regardless: the README and the pinned roadmap both linked to it and those links reached a private page for everyone except the owner.
+
+**Revisit if.** More than one person ever works on this. Then the cadence would be real and the fields would carry information.
+
 ---
 
 ## BLOCKED
