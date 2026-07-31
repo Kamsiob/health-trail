@@ -1,0 +1,83 @@
+name: Bug report
+description: Something in the app behaves incorrectly
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time. Health Trail keeps records people depend on, so a bug report about data going missing or coming back wrong is the most valuable kind.
+
+        Please do not paste anything from your own notebook into this form. Screenshots and logs from a real notebook contain private health information about a real person. Describe what happened instead, or reproduce it with made up names first.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did the app do that it should not have, or fail to do that it should have?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce it
+      description: The steps, in order, starting from a state someone else could get to.
+      placeholder: |
+        1. Open the notebook and go to ...
+        2. Tap ...
+        3. The screen shows ...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Settings, then About, at the bottom.
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: For example, Pixel 8a on Android 15
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Which language is the app set to
+      options:
+        - English
+        - Spanish
+        - Chinese
+        - Arabic
+    validations:
+      required: true
+
+  - type: dropdown
+    id: data-loss
+    attributes:
+      label: Did anything you had written disappear, change, or come back wrong
+      description: This decides how urgently it gets looked at.
+      options:
+        - "No"
+        - "Yes, something is missing or wrong"
+        - "I am not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else worth knowing
+      description: Whether it happens every time, when it started, or what you were doing just before.

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security or privacy problem privately
+    url: https://github.com/Kamsiob/health-trail/security/advisories/new
+    about: Anything that could expose someone's records goes here rather than in a public issue. See SECURITY.md.
+  - name: Email
+    url: mailto:hello@kamsiob.com
+    about: One person builds this. Everything gets read, and not everything gets a reply.

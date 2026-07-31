@@ -74,6 +74,48 @@ Generating a second key was rejected because the owner would then have two keys 
 
 **Revisit if.** The owner says the web scaffold is also out of scope, in which case the contract's section 10 criterion 8 needs an explicit owner decision to drop, since the data contract cannot be revised without one.
 
+### D7. Type labels stand in for GitHub issue types
+
+**Decision.** Carry the kind of work on a small set of `type:` labels rather than on GitHub's issue type field. One is applied to every issue. No second label holds the same meaning.
+
+**Alternatives considered.** Using the issue type field as template A4b prescribes.
+
+**Reasoning.** Issue types are an organization-level feature. This repository is under a personal account, confirmed by `gh api repos/Kamsiob/health-trail --jq .owner.type` returning `User`, and `gh api orgs/Kamsiob/issue-types` returning 404. The feature is genuinely unavailable rather than merely unconfigured. A4b says to adapt deliberately and record what was adapted and why, which is what this is. The discipline the field was there to enforce, meaning every issue carries exactly one kind and the kinds are consistent, is preserved by the labels.
+
+**Revisit if.** The repository moves under an organization account, at which point the type field becomes available and the `type:` labels should be migrated to it and deleted, since holding the same meaning in two places guarantees they eventually disagree.
+
+### D8. Board field set, and the built-in automation that could not be configured
+
+**Decision.** The board carries Status, Platform, Area, Priority, Size, and Actual, all single select. Status is Todo, In progress, Blocked, Done. The board was configured with all of its fields and options before any item was added to it.
+
+**Alternatives considered.** Accepting the default Status of Todo, In Progress, Done without a Blocked value.
+
+**Reasoning.** `RUN-SAFETY.md` requires every blocked item to name what it is waiting on, and a board with no Blocked status cannot show that without abusing another field. Configuring fields before populating is A4b's explicit instruction and is also simply correct, because reshaping a single select's options after items reference them risks losing values.
+
+Two notes on what happened. The `gh project create` command produced project number 2, and an early command in this run listed the fields of project number 1 by mistake, which is the owner's existing Kam AI board. Nothing on project 1 was modified: the mistake surfaced as a KeyError before any mutation ran, and project 1's fields were checked afterward and are unchanged. Recorded because a later session reading the history should not have to wonder.
+
+Second, `Done` on this board means verified on a device or an emulator. Code being written is not grounds for moving anything there, and the board description says so.
+
+**What could not be done.** GitHub's built-in project workflows, meaning auto-add new issues to the board and move an item to Done when its issue closes, have no public API and no `gh` command. They are configurable only through the web interface. See BLOCKED B2.
+
+**Revisit if.** GitHub adds API support for the built-in workflows.
+
+### D9. There is no canonical hosted privacy policy yet
+
+**Decision.** `PRIVACY.md` in the repository is currently the only version of the policy, with an effective date of 31 July 2026. The About screen's privacy row will point at the hosted canonical version once it exists.
+
+**Reasoning.** Template A6 requires the About screen to link the single canonical hosted policy so no second copy can drift, and requires `PRIVACY.md` to mirror it word for word with the same effective date. Nothing is hosted yet, and there is no About screen yet either, so nothing is currently inconsistent. This becomes a real requirement at release rather than now. Recorded so it is not discovered late. See BLOCKED B3.
+
+**Revisit if.** Nothing. It gets done at release.
+
+### D10. The repository README carries no continuous integration badge yet
+
+**Decision.** Ship the README with license and status badges only. Add the continuous integration badge in the same commit that adds a workflow which genuinely passes.
+
+**Reasoning.** A4b is explicit that badges must reflect real state, and that a badge showing a passing build while the build fails is worse than no badge. There is no Android project yet, so a workflow added now would be red for reasons that are not defects. The first workflow therefore covers only what exists and can genuinely pass, which is the content compliance checks, and it grows as the app does.
+
+**Revisit if.** Nothing.
+
 ---
 
 ## BLOCKED
@@ -97,3 +139,27 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 **What happens after.** Every commit already made will show as verified, not only new ones, because GitHub checks signatures against currently registered keys when it displays them. Nothing needs redoing.
 
 **Impact while blocked.** Cosmetic only. The commits are genuinely signed and the history is sound. Nothing about the build depends on this.
+
+### B2. Two board automations need one visit to the project settings
+
+**What is happening.** The project board at https://github.com/users/Kamsiob/projects/2 is fully configured and populated, but its two built-in automations are off. That means a new issue does not appear on the board by itself, and closing an issue does not move its card to Done. Both are being done by hand in the meantime, which works but will go stale during a long run, which is exactly what the automation exists to prevent.
+
+**Why it is blocked here.** GitHub has no API and no command line support for the built-in project workflows. They can only be switched on in the web interface.
+
+**What the owner needs to do,** once, about a minute:
+
+1. Open https://github.com/users/Kamsiob/projects/2
+2. Click the three dots at the top right, then **Workflows**
+3. Click **Item added to project**, set the status to **Todo**, and turn it on
+4. Click **Item closed**, set the status to **Done**, and turn it on
+5. Click **Auto-add to project**, set the filter to `repo:Kamsiob/health-trail is:issue`, and turn it on
+
+**Impact while blocked.** The board stays correct because it is being maintained by hand, but by hand is the failure mode A4b names: status maintained by hand during a long unattended run goes stale, status derived from issue state cannot.
+
+### B3. A hosted privacy policy URL is needed before release, not before now
+
+**What is happening.** `PRIVACY.md` exists in the repository and is accurate. Template A6 requires the app's About screen to link a single canonical hosted version, so that no second copy can drift out of sync with it.
+
+**What the owner needs to do,** at release rather than now: publish the contents of `PRIVACY.md` at a stable URL under kamsiob.com, and say what that URL is. The About screen will point at it and `PRIVACY.md` will be kept identical, with the same effective date.
+
+**Impact while blocked.** None yet. There is no About screen and no release. Recorded now so it is not discovered during the release itself.

@@ -1,0 +1,43 @@
+name: Feature or change
+description: Suggest something the app should do, or do differently
+labels: ["type:feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before writing, it is worth reading the [roadmap](https://github.com/Kamsiob/health-trail/issues/21). It lists what is planned and, more usefully, what this app will deliberately never do and why. Several common requests are on the second list on purpose: cloud sync, accounts, shared editing, reminders and alerts, medical advice, and anything that interprets a measurement.
+
+        If your suggestion is on that list, it is still worth saying so. A good argument against a decision is worth reading. It just will not be treated as a missing feature.
+
+  - type: textarea
+    id: situation
+    attributes:
+      label: What situation are you in when this comes up
+      description: What you were trying to do, and what happened when you tried. Real situations are more useful than feature descriptions, because they often have a better solution than the one being asked for.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you think the app should do
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What you do instead right now
+      description: Including if the answer is that you keep it somewhere outside the app.
+
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Checks
+      options:
+        - label: I have read the deliberately not planned list on the roadmap
+          required: true
+        - label: This does not require an account, a server, or anything leaving the phone
+          required: false
+        - label: This does not ask the app to interpret, advise, or judge a measurement
+          required: false

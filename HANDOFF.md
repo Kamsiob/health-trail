@@ -2,7 +2,7 @@
 
 Rewritten to current truth on every commit. If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then read `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last updated:** 2026-07-31, first commit.
+**Last updated:** 2026-07-31, second commit, repository documentation.
 
 ---
 
@@ -10,18 +10,21 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 
 **Phase:** 0, foundation, contract, and repository.
 
-**Where exactly:** the three safety guards from `RUN-SAFETY.md` section 1 are installed and tested. Git is initialized with SSH commit signing configured. This is the first commit. Nothing else exists yet: no GitHub remote, no monorepo layout, no schema, no Android project.
+**Where exactly:** the safety guards, the repository, the tracker, and the required documentation exist. No application code exists yet: no monorepo layout beyond what was handed over, no schema, no Android project.
 
 **Just completed, and how it was verified:**
 
-- Guard 1, the destructive command hook at `.claude/hooks/block-destructive.py`, wired as a `PreToolUse` hook on the Bash tool in `.claude/settings.json`. Verified by feeding it 25 hook payloads directly: 13 destructive commands were refused with exit code 2 and a plain reason, and 12 legitimate commands including `git push origin main`, `git checkout -b`, `git restore --staged`, `git merge`, and `./gradlew clean` were allowed through. The distinction between `git restore .` and `git restore --staged`, and between `git branch -D` and `git branch -d`, is exercised by that test.
-- Guard 2, the pre-compaction state save at `.claude/hooks/precompact-save-state.sh`, wired as a `PreCompact` hook. It commits and pushes the working tree, then prints the re-orientation instructions, which survive compaction because `PreCompact` stdout is preserved. Not yet observed firing in a real compaction, since none has happened.
-- Guard 3, the retry cap at `.claude/hooks/retry-guard.py`. Verified by running four attempts against one label: attempts one through three returned exit 0 with the count remaining, and the fourth returned exit 1 with the escalation instruction naming every prior attempt.
-- Git initialized on branch `main` with SSH commit signing configured repository-locally.
+- The three safety guards. Guard 1 at `.claude/hooks/block-destructive.py`, wired as a `PreToolUse` hook on Bash. Verified by feeding it 25 hook payloads directly: 13 destructive commands refused with exit code 2 and a plain reason, 12 legitimate commands allowed through including `git push origin main`, `git checkout -b`, `git restore --staged`, `git merge`, and `./gradlew clean`. That test exercises the distinction between `git restore .` and `git restore --staged`, and between `git branch -D` and `git branch -d`. Guard 2 at `.claude/hooks/precompact-save-state.sh`, wired as a `PreCompact` hook, not yet observed firing because no compaction has happened. Guard 3 at `.claude/hooks/retry-guard.py`, verified across four attempts on one label, escalating on the fourth.
+- Repository live at https://github.com/Kamsiob/health-trail, public, 14 topics set, first commit pushed and signature verified as good.
+- Tracker: 21 issues. #1 is the Phase 0 parent with 19 children, #21 is the pinned roadmap. Every issue carries acceptance criteria in checkable terms. Milestone `v0.1.0 Foundation` created and applied to all Phase 0 issues.
+- Labels: 19, being 5 `type:` labels, 10 `area:` labels, plus `release-blocking`, `blocked`, `good first issue`, and `help wanted`. GitHub's default noise labels deleted.
+- Board at https://github.com/users/Kamsiob/projects/2, 20 items, every one carrying Status, Platform, Area, Priority, and Size. Fields and their options were configured before any item was added. Description and README written.
+- Documentation: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, CHANGELOG, LICENSE, plus two issue templates, an issue template config, a pull request template, and FUNDING.yml.
+- Compliance verified by grep across the whole repository: zero em dashes, zero en dashes, zero British spellings. Three issue bodies used "colour", were corrected, and all 21 issues re-verified clean.
 
-**In progress right now:** the first commit.
+**In progress right now:** issue #2, repository documentation, which this commit completes except for the continuous integration badge.
 
-**The precise next action:** create the public GitHub repository `health-trail` under the Kamsiob account with `gh repo create`, matching the description and topic conventions of the existing Kamsiob repositories, add it as `origin`, and push `main`.
+**The precise next action:** issue #3. Write `.github/workflows/ci.yml` covering only what genuinely exists and can pass today, which is the content compliance checks in `tools/checks/`, so the badge is green and honest from the first run rather than red for reasons that are not defects. Then add the badge to the README in that same commit, and extend the workflow with the Gradle steps when the Android project lands under issue #11.
 
 ---
 
@@ -32,16 +35,16 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | # | Item | Status |
 |---|---|---|
 | 0.1 | Three safety guards installed and tested | **verified** |
-| 0.2 | Git initialized, signing configured, first commit | **in progress** |
-| 0.3 | Public GitHub repository created, remote added, pushed | not started |
-| 0.4 | Monorepo layout: `/contract`, `/templates`, `/android`, `/web`, `/tools` | not started |
-| 0.5 | Repository documents: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, LICENSE, CHANGELOG | not started |
-| 0.6 | `.github`: issue templates, pull request template, FUNDING.yml | not started |
-| 0.7 | Continuous integration workflow compiling every test source set | not started |
-| 0.8 | Release workflow with artifact provenance | not started |
-| 0.9 | Labels, milestone, project board with single-select status and automation configured before population | not started |
-| 0.10 | Pinned roadmap issue including the deliberate exclusions | not started |
-| 0.11 | Branch protection on status checks, no review requirement | not started |
+| 0.2 | Git initialized, signing configured, first commit | **verified** |
+| 0.3 | Public GitHub repository created, remote added, pushed | **verified** |
+| 0.4 | Monorepo layout: `/contract`, `/templates`, `/android`, `/web`, `/tools` | partial, only `/contract` and `/templates` exist, both from the handover. Issue #4 |
+| 0.5 | Repository documents: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, LICENSE, CHANGELOG | **verified.** Issue #2. ARCHITECTURE marks each subsystem pending rather than describing it as built |
+| 0.6 | `.github`: issue templates, pull request template, FUNDING.yml | **verified.** Issue #2 |
+| 0.7 | Continuous integration workflow compiling every test source set | not started, issue #3. First cut covers compliance checks only, since no Android project exists to compile |
+| 0.8 | Release workflow with artifact provenance | not started, deferred to Phase 8 where there is an artifact to attest |
+| 0.9 | Labels, milestone, project board with single-select status and automation configured before population | **partial.** Labels, milestone, board, fields, and all 20 items done. The two built-in board automations are BLOCKED B2, owner action, one minute |
+| 0.10 | Pinned roadmap issue including the deliberate exclusions | **verified.** Issue #21, pinned |
+| 0.11 | Branch protection on status checks, no review requirement | not started. Needs a status check to exist first, so it follows issue #3 |
 | 0.12 | `contract/schema.sql`: every column from data contract section 3 on every user data table, plus `change_log` and `conflict_log` | not started |
 | 0.13 | `contract/export-format.md` | not started |
 | 0.14 | `contract/i18n/` four locale catalogs, ICU MessageFormat | not started |
@@ -99,9 +102,11 @@ Full reasoning is in `DECISIONS.md`. The short list of things not to undo:
 
 ## 5. Blocked
 
-One item. Full detail in `DECISIONS.md` under BLOCKED.
+Three items, none of which stops any work. Full detail in `DECISIONS.md` under BLOCKED, each with the exact steps the owner needs.
 
-- **B1.** Commits show as unverified on GitHub until the owner registers the SSH signing key. Cosmetic, nothing depends on it, and it retroactively fixes the whole history once done.
+- **B1.** Commits show as unverified on GitHub until the owner registers the SSH signing key. Cosmetic. Nothing depends on it, and registering the key later verifies the whole existing history at once.
+- **B2.** The board's two built-in automations need one visit to the project settings, about a minute. Until then the board is maintained by hand, which works but is the exact thing that goes stale during a long run.
+- **B3.** A hosted privacy policy URL is needed at release, not now. Recorded early so it is not discovered during the release.
 
 ---
 
