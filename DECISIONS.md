@@ -234,6 +234,18 @@ The cost is real and accepted: hand written mappers, no compile time query check
 
 **Revisit if.** A future AGP makes the `anydpi` folder work without the qualifier, in which case `ObsoleteSdkInt` should be re-enabled and the folder renamed.
 
+### D18. Android 17 platforms carry minor API levels, and the package id is android-37.0
+
+**What was found.** `compileSdk = 37` resolves to the SDK package `platforms;android-37.0`, not `platforms;android-37`. From Android 16 onward the platforms carry minor API levels, so the public repository publishes `android-36`, `android-36.1`, `android-37.0`, and `android-37.1`, with no plain `android-37` at all.
+
+**Why it is worth recording.** Asking `sdkmanager` for `platforms;android-37` fails with `Failed to find package`, which reads exactly like the platform being unreleased or the tooling being out of date. Two continuous integration runs were spent on that reading: first updating the command line tools, then switching to `android-actions/setup-android` to update them properly. Neither was the problem. The package id was.
+
+Confirmed by reading `repository2-3.xml` from the Google SDK repository directly, and by the local SDK, where `platforms/android-37.0/source.properties` reports `AndroidVersion.ApiLevel=37.0` and `Pkg.Desc=Android SDK Platform 17`.
+
+**What this means going forward.** Any workflow, script, or document naming an SDK platform package for API 37 or later uses the minor form. The device the app is verified on runs Android 17.
+
+**Revisit if.** Nothing. This is a fact about the platform, recorded so the next session does not spend the same two runs on it.
+
 ---
 
 ## BLOCKED

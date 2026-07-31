@@ -114,14 +114,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Install the compile platform
-        # compileSdk is 37, and the runner image does not carry it. Installing it
-        # by hand with the preinstalled sdkmanager fails with "Failed to find
-        # package", because that sdkmanager is older than the platform. This
-        # action updates the command line tools first, which is the part that
-        # was missing.
+        # The package id is android-37.0, not android-37. From Android 16 the
+        # platforms carry minor API levels, so the repository publishes
+        # android-36, android-36.1, android-37.0, and android-37.1, and there is
+        # no plain "android-37" to install. Asking for it fails with "Failed to
+        # find package", which reads like the platform is unreleased and is not.
+        # compileSdk = 37 resolves to android-37.0.
         uses: android-actions/setup-android@v4
         with:
-          packages: "platforms;android-37 build-tools;37.0.0"
+          packages: "platforms;android-37.0 build-tools;37.0.0"
 
       - name: The build fails loudly when the shared contract is missing
         # The data contract says the build must fail rather than fall back to a
