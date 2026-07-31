@@ -2,7 +2,7 @@
 
 Rewritten to current truth on every commit. If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then read `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last updated:** 2026-07-31, after merging #24. Seven of nineteen Phase 0 issues done.
+**Last updated:** 2026-07-31, branch `feat/14-encrypted-database` in progress.
 
 ---
 
@@ -30,7 +30,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** issue #14. Create a branch, add SQLCipher with a key generated in and held by the Android Keystore, and open the database by executing the schema from the copied asset. There must be no Kotlin schema definition, which is why there is no Room here, see DECISIONS.md D16. Two things to get right the first time: a test asserting the file on disk is not readable as plain SQLite, and a migration test proving an upgrade preserves every row, because uninstalling to work around a migration is never allowed on this project.
+**The precise next action:** finish `feat/14-encrypted-database`. The Kotlin is written and compiles, 11 unit tests pass, and the instrumented suite compiles. What remains is running `DatabaseTest` on an emulator. The AVD is **`kamai-mig`**, not `android-36`, which is a system image directory rather than an AVD and cost one wasted start. Command: `./gradlew connectedDebugAndroidTest` once `adb devices` shows an `emulator-` serial.
 
 **One thing to know before writing that code.** Android's `execSQL` refuses any statement that returns rows, and `PRAGMA journal_mode` returns one. `ContractAssets.splitStatements` already handles the statement splitting including trigger bodies, and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
