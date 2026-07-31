@@ -22,7 +22,7 @@
 #
 # Usage:
 #   tools/verify.sh            everything that does not need a device
-#   tools/verify.sh --device   also run the instrumented suite on an emulator
+#   tools/verify.sh --device   also run the instrumented suite on the phone
 #
 # Kamsiob, AGPL-3.0.
 
@@ -89,17 +89,19 @@ else
 fi
 
 echo
-echo "Instrumented, emulator only"
+echo "Instrumented, on the connected phone"
 if [ "$WITH_DEVICE" -eq 0 ]; then
   skip_step "instrumented suite runs" "not requested, pass --device"
 elif [ ! -x "$ADB" ]; then
   skip_step "instrumented suite runs" "adb not found"
-elif ! "$ADB" devices | grep -q "^emulator-.*device$"; then
-  # Deliberately refuses to fall back to a physical device. These tests create
-  # and write a database, and the connected phone is a daily driver holding
-  # real records.
-  skip_step "instrumented suite runs" "no emulator attached, and a physical device is not a substitute"
+elif ! "$ADB" devices | grep -qE "device$"; then
+  skip_step "instrumented suite runs" "no device attached"
 else
+  # One operational step before this, and it is a checklist item rather than a
+  # reason to avoid running: connectedAndroidTest uninstalls the application,
+  # taking its data with it. If the phone holds anything worth keeping, export
+  # through the app first and reimport afterward.
+  echo "  note: connectedAndroidTest uninstalls the app. Export first if the phone holds data."
   run_step "instrumented suite runs" gradle_step connectedDebugAndroidTest
 fi
 

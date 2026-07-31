@@ -91,7 +91,7 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | Build tools present | 36.0.0, 37.0.0 |
 | adb | `~/Android/Sdk/platform-tools/adb`, **not on PATH** |
 | Connected device | Pixel 10 Pro XL, serial `57241FDCQ0000H`, authorized |
-| Emulator AVD | **`health-trail-api36`**, created for this project. Never reuse an AVD belonging to anything else. System images under `~/Android/Sdk/system-images` |
+| Test device | The connected phone, over ADB. **There is no emulator in this project.** Unit tests need none, instrumented tests run on the phone, builds install to the phone |
 | Node and npm | **Absent.** Affects how the `/web` scaffold gets built. See item 0.26 |
 | Python | 3.14.6, on PATH as `python3` |
 | Signing key | ed25519, no passphrase, already in `~/.ssh/allowed_signers`, and registered with GitHub. The path is in this repository's git config under `user.signingkey` |
@@ -112,11 +112,14 @@ Full reasoning is in `DECISIONS.md`. The short list of things not to undo:
 
 ## 5. Blocked
 
-**One item is blocked and it no longer stops work: the emulator will not start in this environment.** Full detail in `DECISIONS.md` B4, including all five attempts, the precise symptom, and what would unblock it. Everything that does not need an emulator passes. The three original blockers are resolved. Kept here with outcomes, because a blocked list that only grows teaches a reader that nothing here gets fixed.
+**Nothing is blocked.** All four items are resolved. Kept with outcomes, because a list that only grows teaches a reader that nothing here gets fixed.
 
-- **B1, commit signing. Done.** The owner registered the key. Verified: the account lists one signing key and `main` reports `verified=true, reason=valid`. It applied to the whole existing history at once. This is the first Kamsiob repository with signed commits.
-- **B2, board automations.** Deliberately not switched on, and not a blocker. `tools/board.py sync` keeps the board current at every increment, and auto-add being off was verified empirically rather than assumed. The board is public.
-- **B3, hosted privacy policy. Done, after a correction worth reading.** Canonical for this app is `https://kamsiob.com/health-trail.html#privacy`. **Not** `privacy.html#health-trail`, which is a longer all-products page the canonical one links to as "the full policy". That link is not a signal that the longer page governs. I got this wrong once by following the link instead of the instruction. `PRIVACY.md` now carries a warning at the top so nobody switches it back.
+- **B1, commit signing. Done.** The owner registered the key. `main` reports `verified=true`.
+- **B2, board automations.** Deliberately off. `tools/board.py sync` keeps the board current at every increment.
+- **B3, hosted privacy policy. Done.** Canonical for this app is `https://kamsiob.com/health-trail.html#privacy`. **Not** the longer all-products page it links to.
+- **B4, the emulator. Resolved by dropping it.** There is no emulator in this project. The phone is the only test device. Data survival is proven by the export and import round trip against golden vectors in continuous integration, not by a long lived installation.
+
+**The one operational rule about the phone:** `connectedAndroidTest` uninstalls the application and takes its data with it. Before running it, if the phone holds anything worth keeping, export through the app first and reimport after. A checklist step, not a reason to avoid it.
 
 ## 6. Device state
 

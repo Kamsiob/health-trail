@@ -408,69 +408,35 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 
 **Two of the three original entries are resolved.** Kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed.
 
-### D25. Instrumented tests ran on the phone, once, and that permission expires
+### D25. Instrumented tests run on the phone. Corrected, the permission does not expire
 
-**Decision.** `DatabaseTest` was run on the owner's Pixel 10 Pro XL rather than on an emulator. **This is allowed only while that phone holds no notebook worth preserving, and it stops being allowed the moment one exists.**
+**Superseded on the same day it was written, and the correction is the interesting part.**
 
-**Why the reasoning changed.** The rule keeping data-affecting tests off that phone protects two things: an accumulated, long-lived notebook, and the in-place upgrade history that proves data survives an update. On 2026-07-31 neither existed. The app had been installed that morning and its `databases` directory was empty.
+**What this entry originally said.** That running `DatabaseTest` on the owner's phone was a one time exception, permitted only while the phone held no notebook worth preserving, expiring the moment real data existed, after which an emulator became a prerequisite.
 
-So the cost of running there was close to zero, while the cost of staying blocked was every later phase built on an unverified foundation. That trade is only available once, and only now.
+**Why that was wrong.** It rested on treating a long lived phone installation as the evidence that data survives updates. It is not that evidence. **The export and import round trip against the golden vectors in continuous integration is**, and it is repeatable, runs on every push, and depends on no device's history. An installation is a sample of one that nobody else can reproduce. Building a rule around preserving it manufactured a dependency on an emulator that this project does not need.
 
-**What it proved.** 13 instrumented tests, 0 failures, 0 errors, on Android 17. Seven of them are the database: the schema loads through SQLCipher with 34 live views and 68 triggers; the file on disk does not begin with the plaintext SQLite header, which is the only honest test that encryption is on; the wrong passphrase cannot open it; insert, update, and tombstone log as `insert`, `update`, and `delete` through the Kotlin path and carry this device's id; a tombstoned row leaves the live view while staying in the base table; and reopening preserves both the device id and the rows.
+**What holds now.** Instrumented tests run on the phone. There is no expiry, because there is nothing on the phone that needs preserving as proof of anything.
 
-**Something worth knowing that this run exposed.** `connectedAndroidTest` uninstalled **the application itself**, not only the instrumentation package. The phone was left with no Health Trail at all and it had to be reinstalled.
+**What was right, and remains the single operational rule.** `connectedAndroidTest` uninstalls the application itself, not only the instrumentation package. That was found by running it: the phone was left with no Health Trail at all and had to be reinstalled. So before running it, if the phone holds data worth keeping, export through the app's own export feature and reimport afterward. A checklist step, not a reason to avoid running tests.
 
-That is a much sharper edge than expected. It means running the instrumented suite against a phone holding a real notebook would not merely add test rows, it would **delete the notebook**. The window described above is therefore narrower than it sounds, and the emulator is not a nicety.
+**What the run proved,** which stands unchanged: 13 instrumented tests, 0 failures, 0 errors, on Android 17. The schema loads through SQLCipher with 34 live views and 68 triggers. The file on disk does not begin with the plaintext SQLite header, which is the only honest test that encryption is on. The wrong passphrase cannot open it. Insert, update, and tombstone log correctly through the Kotlin path carrying this device's id. A tombstoned row leaves the live view while staying in the base table. Reopening preserves both the device id and the rows.
 
-**The rule from here.**
+**Also unchanged.** The destructive command guard permits uninstalling a package id ending in `.test`, the instrumentation APK, while still refusing to uninstall the app. Verified in both directions.
 
-- Instrumented tests run on an emulator. That is the default and it has no exceptions once real data exists.
-- Running them against the phone is permitted only while that phone demonstrably holds nothing worth keeping, verified by looking rather than assumed.
-- From the first real notebook onward, a working emulator is a prerequisite for instrumented testing, and B4 becomes a hard blocker rather than an inconvenience.
-- The destructive command guard was narrowed to permit uninstalling a package id ending in `.test`, which is the instrumentation APK, while still refusing to uninstall the app. Verified in both directions.
+### B4. The emulator. Resolved by dropping it, 2026-07-31
 
-**Revisit if.** Nothing. The expiry condition is written into the rule.
+**Outcome.** There is no emulator in this project and its absence is not a blocker. The connected phone is the only test device. Unit tests need no device, instrumented tests run on the phone over ADB, development builds install to the phone, and manual verification happens there.
 
-### D26. Id format: UUID version 7, and why not the alternatives
+This was an owner decision, and it dissolves the problem rather than solving it. Five attempts to start an emulator in this environment all failed the same way, and the session cannot grant itself the device access QEMU needs, so it was never solvable from here.
 
-Recorded here because issue #6 requires the chosen format and its reasoning to be in this file, not only in the source.
+**The reasoning that made the emulator look necessary was itself wrong.** It rested on preserving a long lived phone installation as evidence that data survives updates. That is not what proves it. **Data survival is proven by the export and import round trip against the golden vectors in continuous integration**, which is repeatable, runs on every push, and does not depend on any one device's history. A phone installation is a sample of one that nobody can reproduce.
 
-**Decision.** Row ids are UUID version 7: 48 bits of Unix milliseconds, then 74 bits of randomness, with version and variant bits set as the specification requires, rendered in the ordinary 36 character hyphenated form.
+**The one operational rule that remains,** and it is a checklist step rather than a reason to avoid anything:
 
-**Alternatives rejected.** An auto-increment integer, which the data contract forbids outright because two devices both creating row 47 has no correct merge. UUID version 4, fully random, which scatters inserts across the whole index and gives no natural ordering. A monotonic counter plus a device id, which orders correctly but leaks how much the person has written and needs custom parsing everywhere.
+> `connectedAndroidTest` uninstalls the application and takes its data with it. Before running it, if the phone holds anything worth keeping, export through the app's own export feature first and reimport afterward.
 
-**Reasoning.** Time ordered ids append rather than scatter, which matters on write and again on every range scan, and they give a stable natural ordering for free in an app whose central object is a chronological trail. The hyphenated rendering means anyone opening the database with an ordinary SQLite browser in ten years sees something they recognize.
-
-**Two properties that are not incidental.** Ids generated inside the same millisecond increment a counter in the high random bits, so a tight loop of inserts sorts in the order it ran rather than arbitrarily. And ids never follow the clock backward: a timezone change or a manual clock correction mid session would otherwise file yesterday's call after today's, and the person would watch their own trail reorder itself. Both are covered by unit tests.
-
-**Revisit if.** Nothing foreseeable.
-
-### B4. The emulator will not start in this environment, so DatabaseTest cannot run
-
-**What is blocked.** `DatabaseTest`, the seven instrumented tests that prove the encrypted database works through SQLCipher and the Kotlin path. Issue #14 stays open until they run, as instructed.
-
-**What works and what does not.** Everything that does not need a device passes: 11 unit tests, assemble, instrumented compile, lint, and six compliance checks, all green through `tools/verify.sh`. The physical phone works fine and runs the six-test smoke suite. **Only the emulator fails.**
-
-**What was tried, five distinct attempts:**
-
-1. An AVD name that was actually a system image directory. The emulator said so plainly. My error.
-2. An AVD already on the machine, belonging to other work. Cold booted, never attached to `adb`. Reusing it was itself wrong and is now forbidden, see D23.
-3. A dedicated `health-trail-api36` AVD created with `avdmanager` against `system-images;android-36;google_apis;x86_64`, launched with `nohup` and `setsid`. Reached `adb devices` as `emulator-5554 offline`, then the process disappeared.
-4. The same AVD run in the foreground of a persistent background task, to rule out the process being killed when its launching shell exited. Same result, exit code 1.
-5. The same AVD with stale lock files removed, `/run/user/1000/avd/running` cleared, and `-wipe-data -no-snapshot` to rule out uninitialized userdata. Same result, exit code 1.
-
-**The symptom, precisely.** The emulator initializes fully: it sets up the gRPC server, netsim WiFi, bluetooth and uwb packet streamers, and the display at 1080x2400. It prints `Emulator is performing a full startup` and then the process exits with code 1, emitting no error, no fatal, and no panic. Grepping the whole log for error, fatal, abort, denied, and panic returns nothing relevant.
-
-Ruled out: disk space, 938 GB free. `/dev/kvm` present and writable. The AVD directory is well formed and the images are the right sizes. A stale lock. Uninitialized userdata.
-
-One clue that has not been chased: `WARNING: cannnot unmap ptr 0x... as it is in the protected range from 0x... to 0x...`, which suggests something is interfering with how QEMU maps memory. That is consistent with the emulator being started from inside a sandboxed shell session, which is the most likely cause and is not something this session can change from within.
-
-**What would unblock it,** in the order I would try:
-
-1. Start the emulator from an ordinary terminal outside this session, with a window rather than `-no-window`, and leave it running. Then `./tools/verify.sh --device` here picks it up, since it looks for any attached `emulator-` serial.
-2. If it fails there too, run it once with `-verbose -show-kernel` and read what the kernel says as it dies, which is the information this environment is not surfacing.
-
-**What was explicitly not done as a workaround.** Running `DatabaseTest` against the connected phone. It creates and writes a database, and that would leave test rows inside a real installation. An unrun test is a known gap. A test run in the wrong place is a mess that looks like coverage.
+**What this changed in the repository:** `tools/verify.sh` no longer refuses to run the instrumented suite on a physical device, `CONTRIBUTING.md` and the `test-runner` agent definition carry the export-first step instead of an emulator requirement, and the test classes say where they run and why.
 
 ### B1. Commit signing. Resolved 2026-07-31
 

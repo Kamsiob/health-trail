@@ -56,9 +56,11 @@ The build reads `contract/schema.sql` and `templates/data/*.json` and copies the
 
 - `./gradlew test` for the unit suite.
 - `./gradlew assembleAndroidTest` compiles the instrumented suite. Continuous integration runs this on every push, because an instrumented suite that nobody builds rots silently and a suite that does not compile is worse than no suite.
-- `./gradlew connectedAndroidTest` runs it, on an emulator.
+- `./gradlew connectedAndroidTest` runs it on a connected device.
 
-**Anything that touches data runs on an emulator, never on a real phone with real records.** That includes migration tests, corrupt import files, storage exhaustion, and the full wipe.
+**`connectedAndroidTest` uninstalls the application and takes its data with it.** If the device holds anything worth keeping, export through the app first and reimport afterward. That is a checklist step, not a reason to avoid running the tests.
+
+Data survival across updates is proven by the export and import round trip against the golden vectors in continuous integration, not by a long lived installation.
 
 Every bug fixed gets a regression test, so it cannot come back.
 

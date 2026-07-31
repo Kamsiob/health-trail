@@ -17,8 +17,8 @@ import org.junit.runner.RunWith
 /**
  * The Phase 0 smoke test.
  *
- * It proves three things on real hardware or a real emulator, none of which the
- * unit suite can prove:
+ * It proves three things on real hardware, none of which the unit suite can
+ * prove:
  *
  * The app launches and renders its first screen.
  *

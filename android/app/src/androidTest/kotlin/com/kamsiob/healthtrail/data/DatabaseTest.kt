@@ -14,14 +14,16 @@ import org.junit.runner.RunWith
 /**
  * The database, exercised on a real device rather than reasoned about.
  *
- * **Where these are allowed to run, and why that is conditional.** They create
- * and write a database, and running `connectedAndroidTest` uninstalls the
- * application afterward, taking its data with it. The standing rule is that
- * they belong on an emulator.
+ * **These run on the connected phone.** There is no emulator in this project.
  *
- * They were run once on the owner's phone, deliberately, at a point when it
- * held no notebook worth preserving. That window has a hard edge: the moment a
- * real notebook exists on that phone, running these there destroys it. See
+ * One operational step comes before running them, and it is a checklist item
+ * rather than a reason to avoid running: `connectedAndroidTest` uninstalls the
+ * application, taking its data with it. If the phone holds anything worth
+ * keeping, export through the app first and reimport afterward.
+ *
+ * Data survival across updates is proven by the export and import round trip
+ * against golden vectors in continuous integration, not by a long lived
+ * installation, so nothing on the phone needs preserving as evidence. See
  * `DECISIONS.md` D25.
  */
 @RunWith(AndroidJUnit4::class)
