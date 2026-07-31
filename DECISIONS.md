@@ -294,6 +294,8 @@ So the discipline is kept in full and the ceremony is dropped, and the board REA
 
 ### D21. The emulator did not come up, so DatabaseTest is written and unrun
 
+> **Superseded. Do not act on this entry.** The emulator was dropped from this project entirely on 2026-07-31, on the owner's instruction. The phone is the only test device. `DatabaseTest` and every other instrumented test now run on the connected Pixel, which is what D25 settles. Kept because the reasoning below is still the record of how the project got there. See B4.
+
 **Situation.** `DatabaseTest` creates and writes a database, so it belongs on an emulator rather than the owner's phone. Two starts were attempted. The first named a system image directory rather than an AVD, and the emulator said so plainly. The second reused an AVD that already existed on the machine, which began a cold boot and had not attached to `adb` within several minutes. `/dev/kvm` is present and readable and the log shows no fatal error, so this looks like slowness rather than breakage.
 
 **Decision.** Stop, record, and move on rather than keep retrying. The tests are committed, they compile, and both the commit message and `HANDOFF.md` say plainly that they have not run. Nothing claims otherwise.
@@ -324,6 +326,8 @@ So the discipline is kept in full and the ceremony is dropped, and the board REA
 **Revisit if.** Never, without the owner. These are his design authority, delegated with conditions attached.
 
 ### D23. A dedicated emulator, and nothing from any other project
+
+> **Half superseded, and the half that stands is the important one.** The dedicated AVD is gone: the emulator was dropped from this project entirely on 2026-07-31, so do not create one and do not treat its absence as a problem. See B4. **The self containment rule below is not superseded and is enforced on every push** by `tools/checks/check_self_contained.py`. No other project is named anywhere in this repository, in any file, commit message, issue, or comment.
 
 **Decision.** This project has its own AVD, `health-trail-api36`, created with `avdmanager` against `system-images;android-36;google_apis;x86_64`. Nothing belonging to any other work is reused: no emulator, no device profile, no keystore, no build artifact.
 
@@ -400,6 +404,29 @@ That screen has no mockup, so it is built under the `DESIGN.md` section 10 proto
 
 **Revisit if.** Android ever offers a durable way to recover a Keystore key across a reset, which would change the recovery story rather than this reasoning.
 
+### D25. Instrumented tests run on the phone. Corrected, the permission does not expire
+
+**Superseded on the same day it was written, and the correction is the interesting part.**
+
+**What this entry originally said.** That running `DatabaseTest` on the owner's phone was a one time exception, permitted only while the phone held no notebook worth preserving, expiring the moment real data existed, after which an emulator became a prerequisite.
+
+**Why that was wrong.** It rested on treating a long lived phone installation as the evidence that data survives updates. It is not that evidence. **The export and import round trip against the golden vectors in continuous integration is**, and it is repeatable, runs on every push, and depends on no device's history. An installation is a sample of one that nobody else can reproduce. Building a rule around preserving it manufactured a dependency on an emulator that this project does not need.
+
+**What holds now.** Instrumented tests run on the phone. There is no expiry, because there is nothing on the phone that needs preserving as proof of anything.
+
+**What was right, and remains the single operational rule.** `connectedAndroidTest` uninstalls the application itself, not only the instrumentation package. That was found by running it: the phone was left with no Health Trail at all and had to be reinstalled. So before running it, if the phone holds data worth keeping, export through the app's own export feature and reimport afterward. A checklist step, not a reason to avoid running tests.
+
+**What the run proved,** which stands unchanged: 13 instrumented tests, 0 failures, 0 errors, on Android 17. The schema loads through SQLCipher with 34 live views and 68 triggers. The file on disk does not begin with the plaintext SQLite header, which is the only honest test that encryption is on. The wrong passphrase cannot open it. Insert, update, and tombstone log correctly through the Kotlin path carrying this device's id. A tombstoned row leaves the live view while staying in the base table. Reopening preserves both the device id and the rows.
+
+**Also unchanged.** The destructive command guard permits uninstalling a package id ending in `.test`, the instrumentation APK, while still refusing to uninstall the app. Verified in both directions.
+
+### D26. Does not exist
+
+There is no D26. The numbering jumped when D27 was written during a session
+where the decisions were being appended out of order. Recorded rather than
+renumbered, because renumbering would break every reference already written in
+commit messages, issues, and `HANDOFF.md`.
+
 ### D27. User facing text is loaded from the contract at runtime, not compiled into resources
 
 **Decision.** The app reads `contract/i18n/*.json` from assets at runtime and formats with `android.icu.text.MessageFormat`. `res/values/strings.xml` is reduced to `app_name` and the three translated resource files are deleted.
@@ -449,43 +476,50 @@ Worth noting this would have reached a person. The full data wipe closes the dat
 
 **Revisit if.** Nothing. This is a fact about the run, recorded so the next session does not inherit a false belief about when protection started.
 
+### D30. Functionally correct is not done
+
+**Date:** 2026-07-31. **Decided by:** the owner, and it applies from here on rather than to a cleanup pass.
+
+Four screens were built, verified on the device, and shipped: the disclaimer gate, the setup screen, the notebook table of contents, and the capture form. Each one worked. Each one was visually thin. The owner named them as one symptom rather than four defects, which is the correct reading: they were built to be functionally correct and left there, and every screen after them would have inherited the same bar.
+
+**The standard, which is now in `DESIGN.md` section 10.5 and checked by the list in 10.6.** A screen is not done when it works. It is done when it looks and reads like the rest of the app, has been looked at on the device, and nothing on it stands in for a design decision that was never made.
+
+**What the failure actually was, stated plainly so it is not repeated.** Not a shortage of taste and not a missing mockup. Every piece needed already existed: cards, section headers, list rows with subtitle and chevron, eyebrow labels, pills, chips, empty states, the spacing scale, the type scale, the motion vocabulary. The capture screen in particular had a mockup, screen 26 of the reference file, showing rough date chips, thread chips, an open note area, and a save action that accepts whatever is there. What shipped was two single line text fields. The specification was not read closely enough before building, and the result passed its tests.
+
+**The lesson is narrow and worth stating in its narrowest form.** Passing tests measures whether a screen does what it was built to do. It says nothing about whether it should have been built that way. A screen that works but looks unfinished is unfinished, and the tests will not tell you.
+
+**One thing this does not license.** The fix for a thin screen is the components that already exist, not new ones. Composing badly and not composing look the same from a distance, and the temptation after a note like this one is to invent something to prove effort. Section 10.2 still holds.
+
+### D31. The screenshot theme label is read from the device
+
+**Date:** 2026-07-31.
+
+`tools/screenshot.sh` took the theme as an optional argument defaulting to `light` and never asked the device. Two captures in one session were written as `-light` while the phone was in dark mode.
+
+The theme is now read from `cmd uimode night` and an argument that disagrees with the device is refused rather than honored. A mislabeled screenshot in a public repository is the kind of error nobody catches, because the label is believed and the image is only glanced at, and these images are the evidence attached to design review issues.
+
+### D32. The disclaimer does not tell the person they are responsible
+
+**Date:** 2026-07-31. **Decided by:** the owner, on reading the rebuilt screen.
+
+The disclaimer's third block ended with "and you are responsible for what you write down". The owner's words: there is no reason to be so rude and aggressive, and there are nice ways to say things that are more friendly.
+
+**Cut, and not to be restored.** The line was the software bracing against the person on the first screen they will ever see. It also added nothing the screen does not already say: the block still says the app never decides what any of it means, which is the honest and useful half. What was left was a warning that the person, not the app, owns the consequences, delivered to someone who is about to start writing down a family member's care in the worst month of their life.
+
+The block now says the record is theirs and that they choose what goes in it. Same fact, without the flinch.
+
+**Why this is worth a decision entry rather than a quiet edit.** `DESIGN.md` section 7 states that nothing may be cut from the disclaimer on the grounds of warmth, which is the right rule and is why the safety substance survived the rewrite intact. A future session reading that rule in good faith would restore this line. Section 7 now carries the exception with its reason, and this entry is the record of who decided it.
+
+**The general shape, since it will recur.** A disclaimer has two jobs: say truthfully what the app is not, and protect the person from relying on it as something it is not. Neither of those requires assigning blame in advance.
+
 ---
 
 ## BLOCKED
-
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
-**Two of the three original entries are resolved.** Kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed.
+**Nothing is blocked as of 2026-07-31.** All four entries that ever appeared here are resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. A fresh session reading this needs nothing from the owner in order to continue.
 
-### D25. Instrumented tests run on the phone. Corrected, the permission does not expire
 
-**Superseded on the same day it was written, and the correction is the interesting part.**
-
-**What this entry originally said.** That running `DatabaseTest` on the owner's phone was a one time exception, permitted only while the phone held no notebook worth preserving, expiring the moment real data existed, after which an emulator became a prerequisite.
-
-**Why that was wrong.** It rested on treating a long lived phone installation as the evidence that data survives updates. It is not that evidence. **The export and import round trip against the golden vectors in continuous integration is**, and it is repeatable, runs on every push, and depends on no device's history. An installation is a sample of one that nobody else can reproduce. Building a rule around preserving it manufactured a dependency on an emulator that this project does not need.
-
-**What holds now.** Instrumented tests run on the phone. There is no expiry, because there is nothing on the phone that needs preserving as proof of anything.
-
-**What was right, and remains the single operational rule.** `connectedAndroidTest` uninstalls the application itself, not only the instrumentation package. That was found by running it: the phone was left with no Health Trail at all and had to be reinstalled. So before running it, if the phone holds data worth keeping, export through the app's own export feature and reimport afterward. A checklist step, not a reason to avoid running tests.
-
-**What the run proved,** which stands unchanged: 13 instrumented tests, 0 failures, 0 errors, on Android 17. The schema loads through SQLCipher with 34 live views and 68 triggers. The file on disk does not begin with the plaintext SQLite header, which is the only honest test that encryption is on. The wrong passphrase cannot open it. Insert, update, and tombstone log correctly through the Kotlin path carrying this device's id. A tombstoned row leaves the live view while staying in the base table. Reopening preserves both the device id and the rows.
-
-**Also unchanged.** The destructive command guard permits uninstalling a package id ending in `.test`, the instrumentation APK, while still refusing to uninstall the app. Verified in both directions.
-
-### B4. The emulator. Resolved by dropping it, 2026-07-31
-
-**Outcome.** There is no emulator in this project and its absence is not a blocker. The connected phone is the only test device. Unit tests need no device, instrumented tests run on the phone over ADB, development builds install to the phone, and manual verification happens there.
-
-This was an owner decision, and it dissolves the problem rather than solving it. Five attempts to start an emulator in this environment all failed the same way, and the session cannot grant itself the device access QEMU needs, so it was never solvable from here.
-
-**The reasoning that made the emulator look necessary was itself wrong.** It rested on preserving a long lived phone installation as evidence that data survives updates. That is not what proves it. **Data survival is proven by the export and import round trip against the golden vectors in continuous integration**, which is repeatable, runs on every push, and does not depend on any one device's history. A phone installation is a sample of one that nobody can reproduce.
-
-**The one operational rule that remains,** and it is a checklist step rather than a reason to avoid anything:
-
-> `connectedAndroidTest` uninstalls the application and takes its data with it. Before running it, if the phone holds anything worth keeping, export through the app's own export feature first and reimport afterward.
-
-**What this changed in the repository:** `tools/verify.sh` no longer refuses to run the instrumented suite on a physical device, `CONTRIBUTING.md` and the `test-runner` agent definition carry the export-first step instead of an emulator requirement, and the test classes say where they run and why.
 
 ### B1. Commit signing. Resolved 2026-07-31
 
@@ -520,3 +554,17 @@ The lesson is narrow and worth stating plainly. An instruction naming a specific
 `PRIVACY.md` mirrors the canonical wording. Issue #25 carries the remaining work.
 
 **One thing that is not blocking.** The canonical page carries no effective date, while promising that any change is posted there with a new date. Template section A6 asks the repository copy to match including its date. There is no date to match, so `PRIVACY.md` carries none rather than inventing one that would guarantee the two disagree. If a date appears, copy it across.
+
+### B4. The emulator. Resolved by dropping it, 2026-07-31
+
+**Outcome.** There is no emulator in this project and its absence is not a blocker. The connected phone is the only test device. Unit tests need no device, instrumented tests run on the phone over ADB, development builds install to the phone, and manual verification happens there.
+
+This was an owner decision, and it dissolves the problem rather than solving it. Five attempts to start an emulator in this environment all failed the same way, and the session cannot grant itself the device access QEMU needs, so it was never solvable from here.
+
+**The reasoning that made the emulator look necessary was itself wrong.** It rested on preserving a long lived phone installation as evidence that data survives updates. That is not what proves it. **Data survival is proven by the export and import round trip against the golden vectors in continuous integration**, which is repeatable, runs on every push, and does not depend on any one device's history. A phone installation is a sample of one that nobody can reproduce.
+
+**The one operational rule that remains,** and it is a checklist step rather than a reason to avoid anything:
+
+> `connectedAndroidTest` uninstalls the application and takes its data with it. Before running it, if the phone holds anything worth keeping, export through the app's own export feature first and reimport afterward.
+
+**What this changed in the repository:** `tools/verify.sh` no longer refuses to run the instrumented suite on a physical device, `CONTRIBUTING.md` and the `test-runner` agent definition carry the export-first step instead of an emulator requirement, and the test classes say where they run and why.

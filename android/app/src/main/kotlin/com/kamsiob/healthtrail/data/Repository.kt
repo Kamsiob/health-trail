@@ -245,6 +245,118 @@ class Repository private constructor(
         }
     }
 
+    /**
+     * How precisely a person knew when something happened.
+     *
+     * Rough dates are a functional requirement rather than a convenience. A
+     * person writing at 11pm about a call three days ago genuinely does not know
+     * the time, and an app that demands one either gets a guess recorded as fact
+     * or gets nothing recorded at all. `UNKNOWN` is a real answer and the trail
+     * renders it as one.
+     */
+    enum class WhenKnown(internal val stored: String) {
+        EXACT("exact"), DAY("day"), WEEK("week"), MONTH("month"), UNKNOWN("unknown")
+    }
+
+    /**
+     * Writes one entry to the trail.
+     *
+     * **Every argument except the kind is optional.** A half remembered note is
+     * a valid note. Nothing here validates, nothing rejects, and nothing is
+     * required, because the alternative is a person in a corridor losing what
+     * they were trying to write down.
+     *
+     * `isUnfiled` marks an entry the person could not place. It sits in the
+     * Unfiled tray until they confirm a home. The app suggests by plain word
+     * matching and never files anything on its own.
+     */
+    suspend fun createEntry(
+        subjectId: String,
+        kind: String,
+        title: String? = null,
+        body: String? = null,
+        occurredAt: Long? = System.currentTimeMillis(),
+        whenKnown: WhenKnown = WhenKnown.DAY,
+        chapterId: String? = null,
+        isUnfiled: Boolean = false,
+    ): String = insert(
+        "entry",
+        mapOf(
+            "subject_id" to subjectId,
+            "kind" to kind,
+            "title" to title?.ifBlank { null },
+            "body" to body?.ifBlank { null },
+            "occurred_at" to occurredAt,
+            "occurred_precision" to whenKnown.stored,
+            "chapter_id" to chapterId,
+            "is_unfiled" to if (isUnfiled) 1 else 0,
+        ),
+    )
+
+    /**
+     * A care thread, which is one parallel stream of care running through the
+     * whole notebook.
+     *
+     * `colorIndex` is an index into the theme's route colors rather than a
+     * stored color, so the dark theme substitution happens in the theme and a
+     * stored color can never fail contrast.
+     */
+    data class CareThread(val id: String, val label: String, val colorIndex: Int)
+
+    /**
+     * The threads this notebook carries, in the order the person sees them.
+     *
+     * Returns an empty list for a notebook with no situation template applied,
+     * which is a real state rather than an error: "Not sure yet" is a valid
+     * answer to the situation picker and it produces a working notebook.
+     */
+    suspend fun threads(subjectId: String): List<CareThread> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, label, color_index FROM live_care_thread " +
+                "WHERE subject_id = ? ORDER BY sort_index, created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        CareThread(
+                            id = cursor.getString(0),
+                            label = cursor.getString(1),
+                            colorIndex = cursor.getInt(2),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Files an entry under a thread.
+     *
+     * A join row rather than a column on the entry, because an entry can belong
+     * to several: a call about a wound during a physical therapy week belongs to
+     * both. The schema says so and this follows it.
+     */
+    suspend fun linkEntryToThread(entryId: String, threadId: String) {
+        insert("entry_thread", mapOf("entry_id" to entryId, "thread_id" to threadId))
+    }
+
+    /** The extra fields a call carries, written alongside its entry. */
+    suspend fun addCallDetail(
+        entryId: String,
+        reached: Boolean? = null,
+        outcome: String? = null,
+    ) {
+        insert(
+            "call_detail",
+            mapOf(
+                "entry_id" to entryId,
+                "reached" to reached?.let { if (it) 1 else 0 },
+                "outcome" to outcome?.ifBlank { null },
+            ),
+        )
+    }
+
     // -- counting, for the table of contents ------------------------------
 
     /**

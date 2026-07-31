@@ -22,6 +22,14 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.screens.CaptureDraft
+import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
+import com.kamsiob.healthtrail.ui.screens.CaptureKind
+import com.kamsiob.healthtrail.ui.screens.CaptureSheet
+import com.kamsiob.healthtrail.ui.screens.entryKind
+import com.kamsiob.healthtrail.ui.screens.occurredAt
+import com.kamsiob.healthtrail.ui.screens.precision
+import com.kamsiob.healthtrail.ui.screens.usesTheSharedForm
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -49,11 +57,22 @@ fun NotebookShell(repository: Repository) {
     val strings = LocalStrings.current
     var destination by remember { mutableStateOf(Destination.NOTEBOOK) }
     var counts by remember { mutableStateOf<List<SectionCount>?>(null) }
+    var sheetOpen by remember { mutableStateOf(false) }
+    var capturing by remember { mutableStateOf<CaptureKind?>(null) }
+    // Bumped after every write, which is what makes the counts refresh without
+    // the screen having to know what changed.
+    var revision by remember { mutableStateOf(0) }
+    var saving by remember { mutableStateOf<CaptureDraft?>(null) }
+    // The threads this notebook carries, which the capture form offers as chips.
+    // Empty is a real state: a notebook with no situation template has none, and
+    // the form drops that question rather than showing an answerless one.
+    var threads by remember { mutableStateOf<List<Repository.CareThread>>(emptyList()) }
 
     // Recounted whenever the tab changes, so returning to the notebook after
     // writing something shows the new number rather than a stale one.
-    LaunchedEffect(destination) {
+    LaunchedEffect(destination, revision) {
         counts = SECTION_ORDER.map { SectionCount(it, repository.count(it)) }
+        threads = repository.activeSubject()?.let { repository.threads(it.id) }.orEmpty()
     }
 
     Surface(
@@ -85,7 +104,7 @@ fun NotebookShell(repository: Repository) {
             BottomNav(
                 current = destination,
                 onSelect = { destination = it },
-                onCapture = { },
+                onCapture = { sheetOpen = true },
                 labels = {
                     when (it) {
                         Destination.TODAY -> strings["nav.today"]
@@ -96,6 +115,67 @@ fun NotebookShell(repository: Repository) {
                 },
                 captureDescription = strings["capture.button.description"],
             )
+        }
+
+        if (sheetOpen) {
+            CaptureSheet(
+                onChoose = { kind ->
+                    sheetOpen = false
+                    capturing = kind
+                },
+                onDismiss = { sheetOpen = false },
+            )
+        }
+
+        // Four kinds, one form. They differ in wording rather than in shape, so
+        // they share a screen rather than appearing as four near copies. Which
+        // four is declared once, next to the form, rather than repeated here.
+        //
+        // Measurement and document arrive in their own increments. Until then
+        // choosing one closes the sheet and does nothing rather than opening an
+        // empty screen, which is the lesser of two bad interim states.
+        val kind = capturing
+        if (kind != null && kind.usesTheSharedForm) {
+            CaptureFormScreen(
+                kind = kind,
+                threads = threads,
+                onSave = { draft ->
+                    capturing = null
+                    saving = draft
+                },
+                onCancel = { capturing = null },
+            )
+        }
+
+        val draft = saving
+        if (draft != null) {
+            LaunchedEffect(draft) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    val entryId = repository.createEntry(
+                        subjectId = subject.id,
+                        kind = draft.kind.entryKind(),
+                        title = draft.who,
+                        body = draft.note,
+                        occurredAt = draft.rough.occurredAt(System.currentTimeMillis()),
+                        whenKnown = draft.rough.precision(),
+                        // An entry nobody could place goes to the Unfiled tray
+                        // rather than being filed by the app. Only marked when
+                        // there were threads to choose from: with none offered,
+                        // not choosing one is not the person declining to say.
+                        isUnfiled = threads.isNotEmpty() && draft.threadId == null,
+                    )
+                    draft.threadId?.let { repository.linkEntryToThread(entryId, it) }
+                    // A call carries an extra row for whether anyone picked up.
+                    // The other three are fully described by the entry itself.
+                    if (draft.kind == CaptureKind.CALL) {
+                        repository.addCallDetail(entryId = entryId)
+                    }
+                }
+                saving = null
+                revision += 1
+                destination = Destination.NOTEBOOK
+            }
         }
     }
 }
