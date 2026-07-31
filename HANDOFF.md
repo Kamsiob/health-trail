@@ -112,7 +112,7 @@ Full reasoning is in `DECISIONS.md`. The short list of things not to undo:
 
 Three items, none of which stops any work. Full detail in `DECISIONS.md` under BLOCKED, each with the exact steps the owner needs.
 
-- **B1.** Commits show as unverified on GitHub until the owner registers the SSH signing key. Cosmetic. Nothing depends on it, and registering the key later verifies the whole existing history at once.
+- **B1.** Commits show as unverified on GitHub until the owner registers the SSH signing key. Cosmetic. Confirmed rather than predicted: GitHub reports `verified=false, reason=unknown_key` for commits made here, while the squash merges GitHub performed itself show `verified=true` because it signs those with its own key. So the history currently shows a mix. Registering the key resolves all of them at once, including the ones already pushed. Do not turn signing off to make the mix go away.
 - **B2.** The board's two built-in automations need one visit to the project settings, about a minute. Until then the board is maintained by hand, which works but is the exact thing that goes stale during a long run.
 - **B3.** A hosted privacy policy URL is needed at release, not now. Recorded early so it is not discovered during the release.
 

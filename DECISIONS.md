@@ -300,6 +300,13 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 
 **Impact while blocked.** Cosmetic only. The commits are genuinely signed and the history is sound. Nothing about the build depends on this.
 
+**Confirmed on 2026-07-31,** so this is a real effect rather than a prediction. Asking GitHub about two commits:
+
+- `ed52cab`, a squash merge GitHub itself performed: `verified=true`, `reason=valid`. GitHub signs its own merge commits with its own key, so those already show a green Verified badge.
+- `2d7506a`, a commit made here: `verified=false`, `reason=unknown_key`. That is precisely this blocker. The signature is present and correct, and GitHub simply does not know the key belongs to the account.
+
+So the history currently shows a mix: merges verified, direct commits not. Registering the key resolves every one of them at once, including the ones already pushed.
+
 ### B2. Two board automations need one visit to the project settings
 
 **What is happening.** The project board at https://github.com/users/Kamsiob/projects/2 is fully configured and populated, but its two built-in automations are off. That means a new issue does not appear on the board by itself, and closing an issue does not move its card to Done. Both are being done by hand in the meantime, which works but will go stale during a long run, which is exactly what the automation exists to prevent.
