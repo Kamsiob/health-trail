@@ -80,5 +80,11 @@
   "setup.phone.number.label": "Phone number",
   "situation.title": "Where are things right now",
   "situation.subtitle": "This sets up the notebook for the kind of care they are getting. You can change any of it later.",
-  "situation.skip": "Not sure yet"
+  "situation.skip": "Not sure yet",
+  "notebook.section.projects": "Projects",
+  "nav.today": "Today",
+  "nav.notebook": "Notebook",
+  "nav.projects": "Projects",
+  "nav.more": "More",
+  "shell.not_built": "This part is not built yet. It is coming, and nothing you write down now will be lost when it arrives."
 }

@@ -80,5 +80,11 @@
   "setup.phone.number.label": "رقم الهاتف",
   "situation.title": "ما الوضع الآن",
   "situation.subtitle": "هذا يهيئ الدفتر لنوع الرعاية التي يتلقاها. يمكنك تغيير أي شيء لاحقًا.",
-  "situation.skip": "لست متأكدًا بعد"
+  "situation.skip": "لست متأكدًا بعد",
+  "notebook.section.projects": "المعاملات",
+  "nav.today": "اليوم",
+  "nav.notebook": "الدفتر",
+  "nav.projects": "المعاملات",
+  "nav.more": "المزيد",
+  "shell.not_built": "هذا الجزء لم يُبنَ بعد. سيأتي، ولن يضيع شيء تدوّنه الآن عندما يصل."
 }

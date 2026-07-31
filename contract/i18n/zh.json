@@ -80,5 +80,11 @@
   "setup.phone.number.label": "电话号码",
   "situation.title": "目前是什么情况",
   "situation.subtitle": "这会按照他正在接受的照护方式来准备笔记本。之后都可以更改。",
-  "situation.skip": "还不确定"
+  "situation.skip": "还不确定",
+  "notebook.section.projects": "事项",
+  "nav.today": "今天",
+  "nav.notebook": "笔记本",
+  "nav.projects": "事项",
+  "nav.more": "更多",
+  "shell.not_built": "这部分还没做好。它会有的，现在记下的任何内容都不会因此丢失。"
 }
