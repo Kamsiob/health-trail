@@ -68,3 +68,7 @@ Thumbs.db
 # Scratch
 /scratch/
 /tmp/
+
+# A copy of the public website page. It carries site navigation naming other
+# products, and a stale copy of a live page drifts from it besides.
+health-trail.html

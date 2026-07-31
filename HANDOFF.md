@@ -2,7 +2,7 @@
 
 Rewritten to current truth on every commit. If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then read `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last updated:** 2026-07-31, after merging #24. Seven of nineteen Phase 0 issues done.
+**Last updated:** 2026-07-31, branch `feat/14-encrypted-database` in progress.
 
 ---
 
@@ -30,7 +30,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** issue #14. Create a branch, add SQLCipher with a key generated in and held by the Android Keystore, and open the database by executing the schema from the copied asset. There must be no Kotlin schema definition, which is why there is no Room here, see DECISIONS.md D16. Two things to get right the first time: a test asserting the file on disk is not readable as plain SQLite, and a migration test proving an upgrade preserves every row, because uninstalling to work around a migration is never allowed on this project.
+**The precise next action:** open the pull request for `feat/14-encrypted-database` and merge it, then start issue #13, the four locale catalogs, or #16, the web scaffold, neither of which needs a device. **Note on merges:** squash is now the only permitted method and the squash message comes from the pull request body, not from branch commits, so the pull request body is what lands on `main` and is written accordingly.
 
 **One thing to know before writing that code.** Android's `execSQL` refuses any statement that returns rows, and `PRAGMA journal_mode` returns one. `ContractAssets.splitStatements` already handles the statement splitting including trigger bodies, and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
@@ -61,9 +61,9 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.17 | Design tokens for both themes, contrast measured and ratios recorded in DECISIONS.md | **verified.** 80 pairs measured across both themes by `tools/checks/check_contrast.py`, which runs on every push. Five tokens corrected, and the capture button glyph is no longer white. Ratios in DECISIONS.md D19 and DESIGN.md section 2.3. Issue #11 |
 | 0.18 | Fonts: display and body faces confirmed by current name and license, Noto fallback chain for four scripts | not started |
 | 0.19 | Four-locale i18n scaffold with RTL working | not started |
-| 0.20 | Database layer: SQLCipher, key in Keystore, schema applied from the copied `schema.sql` asset, no second copy in Kotlin | not started |
+| 0.20 | Database layer: SQLCipher, key in Keystore, schema applied from the copied `schema.sql` asset, no second copy in Kotlin | **verified on device.** 13 instrumented tests, 0 failures, on the Pixel 10 Pro XL. Encryption at rest proven by reading the file header, not by asserting a passphrase was passed. Issue #14 |
 | 0.21 | Repository layer making it structurally difficult to query without filtering tombstones | **partial.** The `live_*` views exist and are asserted to filter. The Kotlin repository layer and the static check that forbids raw table access are still to do. Issue #8 |
-| 0.22 | Locally generated collision-safe ids, no auto-increment on any user data table | not started |
+| 0.22 | Locally generated collision-safe ids, no auto-increment on any user data table | **verified by test.** UUID version 7, ordered within a millisecond and safe against a backward clock. 7 unit tests including 200,000 ids for uniqueness and 50,000 for ordering. Issue #6 |
 | 0.23 | Every write appends to `change_log` in the same transaction, proven by a test | **partial.** Enforced by triggers in the schema and proven by `check_schema.py`, including that a failing log write rolls the data write back. Still needs the same proof through the Kotlin layer. Issue #7 |
 | 0.24 | `SyncTransport` interface with the file implementation behind it, reconciliation ignorant of transport | not started |
 | 0.25 | Export container: manifest, version check, encryption, round trip equality test passing on an emulator | not started |
@@ -89,10 +89,10 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | Build tools present | 36.0.0, 37.0.0 |
 | adb | `~/Android/Sdk/platform-tools/adb`, **not on PATH** |
 | Connected device | Pixel 10 Pro XL, serial `57241FDCQ0000H`, authorized |
-| Emulator AVDs | `android-36`, `kamai-mig`. System images present under `~/Android/Sdk/system-images` |
+| Emulator AVD | **`health-trail-api36`**, created for this project. Never reuse an AVD belonging to anything else. System images under `~/Android/Sdk/system-images` |
 | Node and npm | **Absent.** Affects how the `/web` scaffold gets built. See item 0.26 |
 | Python | 3.14.6, on PATH as `python3` |
-| Signing key | `~/.ssh/kamai_signing`, ed25519, no passphrase, already in `~/.ssh/allowed_signers` |
+| Signing key | ed25519, no passphrase, already in `~/.ssh/allowed_signers`, and registered with GitHub. The path is in this repository's git config under `user.signingkey` |
 
 ---
 
@@ -110,7 +110,7 @@ Full reasoning is in `DECISIONS.md`. The short list of things not to undo:
 
 ## 5. Blocked
 
-**Nothing is blocked.** All three original items are resolved. Kept here with outcomes, because a blocked list that only grows teaches a reader that nothing here gets fixed.
+**One item is blocked and it no longer stops work: the emulator will not start in this environment.** Full detail in `DECISIONS.md` B4, including all five attempts, the precise symptom, and what would unblock it. Everything that does not need an emulator passes. The three original blockers are resolved. Kept here with outcomes, because a blocked list that only grows teaches a reader that nothing here gets fixed.
 
 - **B1, commit signing. Done.** The owner registered the key. Verified: the account lists one signing key and `main` reports `verified=true, reason=valid`. It applied to the whole existing history at once. This is the first Kamsiob repository with signed commits.
 - **B2, board automations.** Deliberately not switched on, and not a blocker. `tools/board.py sync` keeps the board current at every increment, and auto-add being off was verified empirically rather than assumed. The board is public.
@@ -144,6 +144,18 @@ The six in `MASTER_SPEC.md` section 10 are still open and are mine to decide and
 Additionally, one contradiction inside `DESIGN.md` needs deciding at item 0.17: section 3 item 4 sets a 13sp minimum text size, and section 4.3 defines the Mono style at 11sp while explicitly exempting only the nav label. Both cannot be true.
 
 ---
+
+## 9. Screens built without a mockup
+
+`reference/screen-grid.html` covers 27 screens and the app needs more than that. Every screen built without one is composed from existing components under `DESIGN.md` section 10, ships complete with every state, and is logged in three places at the moment it is built: a `needs-design-review` issue with a device screenshot, an entry in `DESIGN.md` section 8, and a line here.
+
+This list exists so the owner can review them all in one sitting instead of archaeologically. **Never save these up for a phase gate.**
+
+| Screen | Built | Issue | Composed from | Reviewed |
+|---|---|---|---|---|
+| *none yet* | | | | |
+
+**Known ahead:** the template library, the four template pickers, the template detail view, and the template editor. All of them land in Phase 1 or Phase 4 and none is drawn. `MASTER_SPEC.md` section 4.10 carries their requirements in detail, including that all four template kinds share one presentation and that browsing, previewing, and applying must be visually distinct.
 
 ## 9. Persona runs
 

@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+# Run every verification this project has, and be honest about the result.
+#
+# This exists because an ad hoc command printed "all pass" while the build had
+# actually failed. The message was written unconditionally after a grep, so it
+# printed whatever happened. The exit code was never checked, and a summary was
+# reported instead of the tool output.
+#
+# So the rules this script is built to obey:
+#
+#   Every step's exit code is captured and checked. Nothing is inferred from
+#   whether some text appeared in the output.
+#
+#   A failing step never stops the run. Everything runs, so one failure does not
+#   hide the state of everything after it.
+#
+#   The summary names every step and its real result, and the script exits
+#   nonzero when any step failed, naming which.
+#
+#   Steps that could not run are reported as SKIPPED, never as passed. A step
+#   that did not run is not a step that succeeded.
+#
+# Usage:
+#   tools/verify.sh            everything that does not need a device
+#   tools/verify.sh --device   also run the instrumented suite on an emulator
+#
+# Kamsiob, AGPL-3.0.
+
+set -uo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+export JAVA_HOME="${JAVA_HOME:-/home/linuxbrew/.linuxbrew/opt/openjdk@21}"
+export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
+ADB="$ANDROID_HOME/platform-tools/adb"
+
+WITH_DEVICE=0
+[ "${1:-}" = "--device" ] && WITH_DEVICE=1
+
+LOG_DIR="$(mktemp -d)"
+declare -a NAMES RESULTS LOGS
+
+run_step() {
+  local name="$1"; shift
+  local log="$LOG_DIR/$(echo "$name" | tr ' /' '__').log"
+  printf '  %-42s ' "$name"
+  if "$@" > "$log" 2>&1; then
+    printf 'PASS\n'
+    NAMES+=("$name"); RESULTS+=("PASS"); LOGS+=("$log")
+  else
+    local code=$?
+    printf 'FAIL (exit %d)\n' "$code"
+    NAMES+=("$name"); RESULTS+=("FAIL"); LOGS+=("$log")
+  fi
+}
+
+skip_step() {
+  local name="$1" reason="$2"
+  printf '  %-42s SKIPPED: %s\n' "$name" "$reason"
+  NAMES+=("$name"); RESULTS+=("SKIPPED"); LOGS+=("")
+}
+
+gradle_step() {
+  ( cd "$ROOT/android" && ./gradlew "$@" )
+}
+
+echo "Health Trail verification"
+echo "========================="
+echo
+
+echo "Content and contract checks"
+run_step "compliance checks" python3 tools/checks/run_all.py
+run_step "generated catalog matches its data" bash -c '
+  python3 templates/build-catalog.py > /dev/null && git diff --quiet -- templates/CATALOG.md'
+
+echo
+echo "Android"
+if [ ! -x "$ROOT/android/gradlew" ]; then
+  skip_step "assemble debug" "no gradle wrapper"
+  skip_step "unit tests" "no gradle wrapper"
+  skip_step "instrumented suite compiles" "no gradle wrapper"
+  skip_step "lint" "no gradle wrapper"
+else
+  run_step "assemble debug" gradle_step assembleDebug
+  run_step "unit tests" gradle_step testDebugUnitTest
+  run_step "instrumented suite compiles" gradle_step assembleDebugAndroidTest
+  run_step "lint" gradle_step lintDebug
+fi
+
+echo
+echo "Instrumented, emulator only"
+if [ "$WITH_DEVICE" -eq 0 ]; then
+  skip_step "instrumented suite runs" "not requested, pass --device"
+elif [ ! -x "$ADB" ]; then
+  skip_step "instrumented suite runs" "adb not found"
+elif ! "$ADB" devices | grep -q "^emulator-.*device$"; then
+  # Deliberately refuses to fall back to a physical device. These tests create
+  # and write a database, and the connected phone is a daily driver holding
+  # real records.
+  skip_step "instrumented suite runs" "no emulator attached, and a physical device is not a substitute"
+else
+  run_step "instrumented suite runs" gradle_step connectedDebugAndroidTest
+fi
+
+echo
+echo "Test counts, read from the reports rather than from the log"
+python3 - <<'COUNTS'
+import glob, re
+total = failed = 0
+found = False
+for path in sorted(glob.glob("android/app/build/test-results/**/*.xml", recursive=True)):
+    text = open(path, encoding="utf-8", errors="replace").read()
+    match = re.search(r'tests="(\d+)".*?failures="(\d+)".*?errors="(\d+)"', text)
+    if not match:
+        continue
+    found = True
+    name = re.search(r'name="([^"]+)"', text)
+    label = name.group(1).split(".")[-1] if name else path
+    bad = int(match.group(2)) + int(match.group(3))
+    total += int(match.group(1))
+    failed += bad
+    print(f"  {label:34} {match.group(1):>4} run, {bad} failed")
+if not found:
+    print("  no test reports found, which means no suite ran")
+else:
+    print(f"  {'total':34} {total:>4} run, {failed} failed")
+COUNTS
+
+echo
+echo "========================="
+exit_code=0
+failed_names=()
+skipped_names=()
+for index in "${!NAMES[@]}"; do
+  case "${RESULTS[$index]}" in
+    FAIL) failed_names+=("${NAMES[$index]}"); exit_code=1 ;;
+    SKIPPED) skipped_names+=("${NAMES[$index]}") ;;
+  esac
+done
+
+if [ ${#failed_names[@]} -gt 0 ]; then
+  echo "FAILED: ${#failed_names[@]} step(s)"
+  for index in "${!NAMES[@]}"; do
+    if [ "${RESULTS[$index]}" = "FAIL" ]; then
+      echo
+      echo "--- ${NAMES[$index]} ---"
+      grep -E "^e: |error:|Error:|FAILED|What went wrong" -A3 "${LOGS[$index]}" | head -25 \
+        || tail -20 "${LOGS[$index]}"
+    fi
+  done
+else
+  echo "All executed steps passed."
+fi
+
+if [ ${#skipped_names[@]} -gt 0 ]; then
+  echo
+  echo "Skipped, which is not the same as passed:"
+  printf '  %s\n' "${skipped_names[@]}"
+fi
+
+echo
+echo "Full logs: $LOG_DIR"
+exit "$exit_code"

@@ -16,6 +16,9 @@ This file is deliberately short. It is loaded automatically every session and it
 8. **Subagents never write anything.** They read, run, check, and report. You act on their reports. See AGENTS.md.
 9. **Three attempts, then move on.** If the same thing fails three times, stop, write what you tried and what happened to the BLOCKED section of DECISIONS.md, and start the next item. Never loop.
 10. **Never stop to ask a question.** Decide, log the decision in DECISIONS.md, and continue. Only a genuine blocker that only the owner can resolve goes to BLOCKED.
+11. **Nothing unfinished reaches the person.** No blank area, no placeholder string, no stub, no debug label, no truncation, no layout that only holds together with tidy sample data. A screen ships with its empty, one-item, many-item, partially-filled, long-text, longest-language, loading, and error states, and right to left, or it is not built. This holds whether or not the screen was ever mocked up.
+12. **Undesigned screens are composed, never invented, and always logged.** The 27 screens in `reference/screen-grid.html` do not cover everything. When you reach one that is not drawn: build it from the existing components, then immediately open a `needs-design-review` issue with a real device screenshot, add it to `DESIGN.md` section 8, and list it in `HANDOFF.md`. All three, at the moment you build it, never saved up for a phase gate. Full protocol in `DESIGN.md` section 10.
+13. **Partial is a finished state.** Never require completion to apply or to save, never block on a missing field, and never frame unfinished work as a deficiency. No progress meters on the person's own diligence, no completion percentages, no prompts to finish setting up. An unfilled slot reads as "not yet," never as an error.
 
 ## Where everything is
 

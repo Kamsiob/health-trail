@@ -26,6 +26,7 @@ CHECKS = [
     ("check_contract_isolation.py", "/contract stays platform neutral, no second schema"),
     ("check_schema.py", "schema.sql against the data contract, shape and behavior"),
     ("check_contrast.py", "every color pair in both themes against the WCAG AA floors"),
+    ("check_self_contained.py", "nothing outside this project is named in the repository"),
 ]
 
 # TESTING-PERSONAS.md section 5 checks that are not implemented yet, each named
