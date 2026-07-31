@@ -24,6 +24,7 @@ CHECKS = [
     ("check_copy.py", "House style: no em dashes, American English"),
     ("check_templates.py", "The 57 templates against their schema and content rules"),
     ("check_contract_isolation.py", "/contract stays platform neutral, no second schema"),
+    ("check_schema.py", "schema.sql against the data contract, shape and behavior"),
 ]
 
 # TESTING-PERSONAS.md section 5 checks that are not implemented yet, each named

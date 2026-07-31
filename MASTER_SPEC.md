@@ -251,9 +251,14 @@ Phase 0 is deliberately larger than usual. Every item in it is something that ca
 
 Marked open rather than left implicit. Decide during the build, log the decision in `DECISIONS.md`, and correct this section.
 
-1. **Attachment size and count limits.** A five-year notebook with photographs of every bill could grow large. Decide a per-attachment cap and a plain-language warning, and state the limit before the person meets it rather than after.
-2. **Whether the change log is exported.** The round trip needs the data; a peer sync needs the log. Decide whether the log travels in the container or is rebuilt on import, and record which.
-3. **Tombstone retention window.** The contract requires the window to be written into the schema comments now. Choose the number.
-4. **PDF pagination for very large exports.** A five-year full-notebook export needs a sane structure with a table of contents rather than a hundred unbroken pages.
-5. **Whether the web scaffold uses the same UI toolkit** or a deliberately minimal one, given it only needs to prove the contract in Phase 0.
-6. **Native-speaker translation review** has not happened. Decide how the app describes its own translation status honestly until it does.
+**Decided:**
+
+1. **Attachment size and count limits.** Decided in `DECISIONS.md` D13. 25 MB per attachment. No hard total cap, with the running total shown and mentioned plainly once it passes 4 GB. Automatic downscaling of photographs was rejected, because a photographed bill is often evidence in a dispute and silently reducing its resolution could destroy exactly the small print that mattered.
+2. **Whether the change log is exported.** Decided in `DECISIONS.md` D12. It travels in the container, and the importer renumbers `seq` locally while preserving everything else, because `seq` is meaningful only on the device that wrote it.
+3. **Tombstone retention window.** Decided in `DECISIONS.md` D11. 730 days, written into the header comment of `contract/schema.sql`. Chosen generously because the cost of the window being too long is a few bytes and the cost of it being too short is permanently resurrecting records the person deleted.
+
+**Still open:**
+
+4. **PDF pagination for very large exports.** A five-year full-notebook export needs a sane structure with a table of contents rather than a hundred unbroken pages. Not forced until Phase 5.
+5. **Whether the web scaffold uses the same UI toolkit** or a deliberately minimal one, given it only needs to prove the contract in Phase 0. Forced by issue #16. Note that `npm` is absent from the build environment, which bears on the answer.
+6. **Native-speaker translation review** has not happened. Decide how the app describes its own translation status honestly until it does. Forced by issue #13, and it affects the store listing and the README as well as the app.

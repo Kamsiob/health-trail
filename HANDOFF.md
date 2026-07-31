@@ -2,7 +2,7 @@
 
 Rewritten to current truth on every commit. If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then read `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last updated:** 2026-07-31, second commit, repository documentation.
+**Last updated:** 2026-07-31, branch `feat/4-5-monorepo-and-schema`, the schema.
 
 ---
 
@@ -10,7 +10,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 
 **Phase:** 0, foundation, contract, and repository.
 
-**Where exactly:** the safety guards, the repository, the tracker, and the required documentation exist. No application code exists yet: no monorepo layout beyond what was handed over, no schema, no Android project.
+**Where exactly:** the safety guards, the repository, the tracker, the required documentation, the monorepo layout, and the canonical schema exist. No application code exists yet: no Android project, no web scaffold, no Kotlin at all.
 
 **Just completed, and how it was verified:**
 
@@ -22,9 +22,11 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 - Documentation: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, CHANGELOG, LICENSE, plus two issue templates, an issue template config, a pull request template, and FUNDING.yml.
 - Compliance verified by grep across the whole repository: zero em dashes, zero en dashes, zero British spellings. Three issue bodies used the British spelling of color, were corrected, and all 21 issues re-verified clean.
 
-**In progress right now:** issue #2, repository documentation, which this commit completes except for the continuous integration badge.
+**In progress right now:** issues #4 and #5 on branch `feat/4-5-monorepo-and-schema`. The monorepo layout and `contract/schema.sql`.
 
-**The precise next action:** issue #3. Write `.github/workflows/ci.yml` covering only what genuinely exists and can pass today, which is the content compliance checks in `tools/checks/`, so the badge is green and honest from the first run rather than red for reasons that are not defects. Then add the badge to the README in that same commit, and extend the workflow with the Gradle steps when the Android project lands under issue #11.
+**What that branch contains so far:** `contract/schema.sql`, 1,669 lines, 34 user data tables each carrying the six required columns, 34 `live_*` views that filter tombstones, 68 change log triggers, 47 indexes, plus `app_meta`, `device`, `change_log`, `conflict_log`, and `schema_migration`. `contract/export-format.md`. `tools/checks/check_schema.py`, which loads the schema into a real database and asserts both its shape and its behavior, and which was negative tested against six deliberately broken schemas and caught all six.
+
+**The precise next action:** open the pull request for `feat/4-5-monorepo-and-schema`, confirm continuous integration passes on it, merge it, then start issue #11, the Android Gradle project. Note that the Android job has to be added to `.github/workflows/ci.yml` as part of #11, which is what unblocks #3.
 
 ---
 
@@ -37,7 +39,7 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.1 | Three safety guards installed and tested | **verified** |
 | 0.2 | Git initialized, signing configured, first commit | **verified** |
 | 0.3 | Public GitHub repository created, remote added, pushed | **verified** |
-| 0.4 | Monorepo layout: `/contract`, `/templates`, `/android`, `/web`, `/tools` | partial, only `/contract` and `/templates` exist, both from the handover. Issue #4 |
+| 0.4 | Monorepo layout: `/contract`, `/templates`, `/android`, `/web`, `/tools` | **partial.** All five directories exist. `/contract` holds the schema and the export format. `/android` and `/web` are empty until #11 and #16. Issue #4 |
 | 0.5 | Repository documents: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, LICENSE, CHANGELOG | **verified.** Issue #2. ARCHITECTURE marks each subsystem pending rather than describing it as built |
 | 0.6 | `.github`: issue templates, pull request template, FUNDING.yml | **verified.** Issue #2 |
 | 0.7 | Continuous integration workflow compiling every test source set | not started, issue #3. First cut covers compliance checks only, since no Android project exists to compile |
@@ -45,8 +47,8 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.9 | Labels, milestone, project board with single-select status and automation configured before population | **partial.** Labels, milestone, board, fields, and all 20 items done. The two built-in board automations are BLOCKED B2, owner action, one minute |
 | 0.10 | Pinned roadmap issue including the deliberate exclusions | **verified.** Issue #21, pinned |
 | 0.11 | Branch protection on status checks, no review requirement | not started. Needs a status check to exist first, so it follows issue #3 |
-| 0.12 | `contract/schema.sql`: every column from data contract section 3 on every user data table, plus `change_log` and `conflict_log` | not started |
-| 0.13 | `contract/export-format.md` | not started |
+| 0.12 | `contract/schema.sql`: every column from data contract section 3 on every user data table, plus `change_log` and `conflict_log` | **verified by test.** 34 user data tables, all six columns each, no AUTOINCREMENT, 34 live views, 68 triggers. `tools/checks/check_schema.py` asserts it and was negative tested. Issue #5 |
+| 0.13 | `contract/export-format.md` | **verified.** Written. The container, the manifest, encryption as separate from at-rest encryption, atomic and honest import, and the eight hostile files that must fail cleanly |
 | 0.14 | `contract/i18n/` four locale catalogs, ICU MessageFormat | not started |
 | 0.15 | `contract/test-vectors/` covering empty, one entry, two entries, gap, plural boundaries | not started |
 | 0.16 | Android Gradle project, single activity, Compose, minimum and target SDK verified against current Play requirement | not started |
@@ -54,9 +56,9 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.18 | Fonts: display and body faces confirmed by current name and license, Noto fallback chain for four scripts | not started |
 | 0.19 | Four-locale i18n scaffold with RTL working | not started |
 | 0.20 | Database layer: SQLCipher, key in Keystore, schema applied from the copied `schema.sql` asset, no second copy in Kotlin | not started |
-| 0.21 | Repository layer making it structurally difficult to query without filtering tombstones | not started |
+| 0.21 | Repository layer making it structurally difficult to query without filtering tombstones | **partial.** The `live_*` views exist and are asserted to filter. The Kotlin repository layer and the static check that forbids raw table access are still to do. Issue #8 |
 | 0.22 | Locally generated collision-safe ids, no auto-increment on any user data table | not started |
-| 0.23 | Every write appends to `change_log` in the same transaction, proven by a test | not started |
+| 0.23 | Every write appends to `change_log` in the same transaction, proven by a test | **partial.** Enforced by triggers in the schema and proven by `check_schema.py`, including that a failing log write rolls the data write back. Still needs the same proof through the Kotlin layer. Issue #7 |
 | 0.24 | `SyncTransport` interface with the file implementation behind it, reconciliation ignorant of transport | not started |
 | 0.25 | Export container: manifest, version check, encryption, round trip equality test passing on an emulator | not started |
 | 0.26 | `/web` scaffold opening the same schema through SQLite in WebAssembly and reading the same template JSON | not started |
