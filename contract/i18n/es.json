@@ -111,6 +111,18 @@
   "disclaimer.block.1.body": "No da consejo médico y no es un dispositivo médico. Nada de lo que hay aquí sustituye a un médico, a una enfermera, a los servicios de emergencia ni al consejo de un abogado. Si algo es urgente, llame a los servicios de emergencia.",
   "disclaimer.block.2.title": "Lo que escriba se queda en este teléfono",
   "disclaimer.block.2.body": "No hay cuenta ni nube. Sus notas viven en este dispositivo y no van a ningún otro sitio a menos que usted las envíe.",
-  "disclaimer.block.3.title": "Usted es quien lleva el registro",
-  "disclaimer.block.3.body": "La aplicación anota lo que usted le dice y lo mantiene organizado. Nunca decide lo que significa. Lo que registre aquí es suyo, y también lo es la responsabilidad de lo que escriba."
+  "disclaimer.block.3.title": "El registro es suyo",
+  "disclaimer.block.3.body": "La aplicación anota lo que usted le dice y lo mantiene organizado. Nunca decide lo que significa. Usted elige lo que entra, y sigue siendo suyo.",
+  "capture.sub": "Conteste lo que pueda. Sáltese el resto. Media nota vale más que ninguna.",
+  "capture.when": "¿Cuándo fue esto?",
+  "capture.when.hint": "Con aproximar basta",
+  "capture.when.today": "Hoy",
+  "capture.when.yesterday": "Ayer",
+  "capture.when.this_week": "Esta semana",
+  "capture.when.not_sure": "No estoy seguro",
+  "capture.thread": "¿De qué forma parte?",
+  "capture.thread.hint": "Sáltelo si no lo sabe",
+  "capture.thread.not_sure": "Todavía no lo sé",
+  "capture.save": "Guardar lo que tiene",
+  "capture.unfiled.note": "Todavía no lo sé va a la bandeja Sin archivar. La aplicación sugiere un sitio comparando palabras y usted lo confirma con un toque. Nunca archiva nada sin usted."
 }

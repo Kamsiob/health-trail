@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.ui
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -15,7 +16,10 @@ import com.kamsiob.healthtrail.ui.screens.CaptureDraft
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureFormTags
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
+import com.kamsiob.healthtrail.ui.screens.RoughWhen
 import com.kamsiob.healthtrail.ui.screens.entryKind
+import com.kamsiob.healthtrail.ui.screens.occurredAt
+import com.kamsiob.healthtrail.ui.screens.precision
 import com.kamsiob.healthtrail.ui.screens.usesTheSharedForm
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import kotlinx.coroutines.runBlocking
@@ -50,8 +54,14 @@ class CaptureTest {
         Repository.closeForTest()
     }
 
+    private val threads = listOf(
+        Repository.CareThread(id = "t-nursing", label = "Nursing", colorIndex = 0),
+        Repository.CareThread(id = "t-discharge", label = "Discharge planning", colorIndex = 1),
+    )
+
     private fun showForm(
         kind: CaptureKind = CaptureKind.CALL,
+        threads: List<Repository.CareThread> = this.threads,
         onSave: (CaptureDraft) -> Unit,
         onCancel: () -> Unit = {},
     ) {
@@ -59,7 +69,12 @@ class CaptureTest {
         compose.setContent {
             HealthTrailTheme {
                 CompositionLocalProvider(LocalStrings provides strings) {
-                    CaptureFormScreen(kind = kind, onSave = onSave, onCancel = onCancel)
+                    CaptureFormScreen(
+                        kind = kind,
+                        threads = threads,
+                        onSave = onSave,
+                        onCancel = onCancel,
+                    )
                 }
             }
         }
@@ -75,6 +90,109 @@ class CaptureTest {
         assertNotNull("saving a blank call did nothing", draft)
         assertEquals("", draft!!.who)
         assertEquals("", draft.note)
+    }
+
+    @Test
+    fun theRoughDateIsAskedWithChipsAndOneOfThemIsNotKnowing() {
+        // Screen 26. A date picker here gets either a guess recorded as fact or
+        // nothing recorded at all, so the answers are rough and one of them is
+        // not knowing.
+        var draft: CaptureDraft? = null
+        showForm(onSave = { draft = it })
+
+        compose.onNodeWithTag(CaptureFormTags.whenChip(RoughWhen.NOT_SURE)).performClick()
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
+
+        assertEquals(RoughWhen.NOT_SURE, draft!!.rough)
+    }
+
+    @Test
+    fun notSureStoresNoTimeRatherThanTodayWithAShrug() {
+        // The property that matters more than which chip was tapped. An entry
+        // whose time is unknown must not carry a real looking timestamp, or
+        // every screen downstream renders a precision the person never had.
+        val now = 1_700_000_000_000L
+        assertNull("not sure invented a timestamp", RoughWhen.NOT_SURE.occurredAt(now))
+        assertEquals(Repository.WhenKnown.UNKNOWN, RoughWhen.NOT_SURE.precision())
+
+        assertEquals(now, RoughWhen.TODAY.occurredAt(now))
+        assertEquals(Repository.WhenKnown.DAY, RoughWhen.TODAY.precision())
+        assertEquals(Repository.WhenKnown.WEEK, RoughWhen.THIS_WEEK.precision())
+        assertTrue(
+            "yesterday is not before today",
+            RoughWhen.YESTERDAY.occurredAt(now)!! < RoughWhen.TODAY.occurredAt(now)!!,
+        )
+    }
+
+    @Test
+    fun theThreadDefaultsToNotKnowingAndSaysWhereThatGoes() {
+        // Not knowing is the honest default for someone who just tapped save,
+        // and the screen has to say where the entry is going while they can
+        // still change it. The app never files anything on its own.
+        var draft: CaptureDraft? = null
+        showForm(onSave = { draft = it })
+
+        compose.onNodeWithTag(CaptureFormTags.UNFILED_NOTE).assertIsDisplayed()
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
+
+        assertNull("a thread was chosen for the person", draft!!.threadId)
+    }
+
+    @Test
+    fun choosingAThreadFilesItAndTakesTheUnfiledNoteAway() {
+        var draft: CaptureDraft? = null
+        showForm(onSave = { draft = it })
+
+        compose.onNodeWithTag(CaptureFormTags.threadChip("t-discharge")).performClick()
+        assertTrue(
+            "the unfiled note stayed after a thread was chosen",
+            compose.onAllNodesWithTag(CaptureFormTags.UNFILED_NOTE)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
+        assertEquals("t-discharge", draft!!.threadId)
+    }
+
+    @Test
+    fun aNotebookWithNoThreadsIsNotAskedAQuestionItCannotAnswer() {
+        // The empty state of the thread question. A notebook where the person
+        // answered "not sure yet" to the situation picker has no threads, and a
+        // question whose only answer is "not sure yet" is not a question.
+        var draft: CaptureDraft? = null
+        showForm(threads = emptyList(), onSave = { draft = it })
+
+        assertTrue(
+            "the thread question was asked with nothing to answer it",
+            compose.onAllNodesWithTag(CaptureFormTags.THREAD_UNSURE)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+        assertTrue(
+            "the unfiled note showed on a notebook with no threads",
+            compose.onAllNodesWithTag(CaptureFormTags.UNFILED_NOTE)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
+        assertNotNull("saving without threads did nothing", draft)
+    }
+
+    @Test
+    fun anEntryFiledUnderAThreadIsReadableAsSuch() = runBlocking {
+        val repository = Repository.open(context)
+        val subjectId = repository.createSubject(displayName = "Thread subject")
+        repository.applySituation(
+            subjectId = subjectId,
+            templateId = "hospital_stay",
+            threads = listOf("nursing" to "Nursing"),
+        )
+
+        val thread = repository.threads(subjectId).single()
+        val entryId = repository.createEntry(subjectId = subjectId, kind = "visit")
+        repository.linkEntryToThread(entryId, thread.id)
+
+        assertTrue("the thread was not created", thread.label == "Nursing")
+        assertTrue("the entry was not written", entryId.isNotBlank())
     }
 
     @Test

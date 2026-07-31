@@ -338,7 +338,11 @@ Shown on first launch, before any part of the app is usable, with an explicit ac
 
 **Rewritten on 2026-07-31, and the reason is worth keeping.** The first wording was a correct disclaimer and a bad first screen. It opened with what the app is not, stacked four denials in a row, and read as though it were protecting the software from the person rather than being straight with someone about to trust it with something that matters. It disclosed everything it needed to and made a person in a hallway feel handled.
 
-**The substance did not change and may not.** Everything the old wording covered is still covered: that this is a record keeping app, that it is not a medical app, that it gives no medical advice, that nothing here replaces a doctor, a nurse, emergency services, or a lawyer, that urgent situations mean calling emergency services, that what is written stays on the phone, and that the person is responsible for what they write down. Only the voice and the pacing changed. **Nothing may be cut from this on the grounds of warmth.**
+**The safety substance did not change and may not.** Everything the old wording covered about what this app is and is not is still covered: that this is a record keeping app, that it is not a medical app, that it gives no medical advice, that nothing here replaces a doctor, a nurse, emergency services, or a lawyer, that urgent situations mean calling emergency services, and that what is written stays on the phone. **None of that may be cut on the grounds of warmth.**
+
+**One line was cut, on the owner's decision, and it is not to be restored.** The old third paragraph ended "and you are responsible for what you write down". The owner read the rebuilt screen and said plainly that there is no reason to be that aggressive, and that there are friendlier ways to say things. He is right, and the line was doing nothing the rest of the screen does not already do: the app already says it never decides what anything means, which is the honest part. The rest was the software bracing against the person on the first screen they ever see. The third block now says that the record is theirs and that they choose what goes in it.
+
+This is a decision rather than a drift, so it is recorded as D32 and stated here, because the paragraph above says nothing may be cut and a future session acting on that in good faith would put it back.
 
 The wording, carried verbatim rather than paraphrased:
 
@@ -354,9 +358,9 @@ The wording, carried verbatim rather than paraphrased:
 >
 > There is no account and no cloud. Your notes live on this device and go nowhere else unless you send them somewhere yourself.
 >
-> **You are the one keeping the record**
+> **The record is yours**
 >
-> The app writes down what you tell it and keeps it organized. It never decides what any of it means. What you record here is yours, and so is the responsibility for what you write down.
+> The app writes down what you tell it and keeps it organized. It never decides what any of it means. You choose what goes in, and it stays yours.
 >
 > [I understand]
 
@@ -426,7 +430,17 @@ No chevron on the rows. A chevron implies going somewhere to look at something, 
 
 Composed from Display L, Body M, Body S, the card from section 5.3, and one text action. Tracked on issue #32.
 
-**Log a call.** The most common thing this app is used for, and the first of the six capture inputs. Both fields are optional and saving a blank call is allowed, because a person who hangs up and taps the gold button has already done the useful thing, which is recording that a call happened and when. The note grows with what is typed rather than sitting at a fixed height, since a fixed height silently teaches people to write less. Composed from Display L, the text field from section 5.9, one filled button, and one text action. Tracked on issue #34.
+**The capture form.** One form for four of the six capture inputs: a call, a visit, an incident, and a question. They record the same four things and differ only in wording, so the shape is defined once and the words come from the catalog per kind. Which four is declared in one place, exhaustively, so a seventh capture kind cannot be added without deciding whether it belongs here. Measurement and document are genuinely different shapes and get their own screens.
+
+**This is screen 26 of the reference file rather than an undrawn screen,** which is why it is listed here as a correction. It was built first as two single line text fields, which worked and was not what was designed. Rebuilt on 2026-07-31 to the mockup: rough date chips with "Not sure" among them, care thread chips with "Not sure yet" among them, an open note area, and a save action reading "Save what you have".
+
+Everything is optional and saving with nothing touched is allowed, because a person who hangs up and taps the gold button has already done the useful thing, which is recording that something happened and roughly when. The note grows with what is typed, since a fixed height silently teaches people to write less.
+
+**"Not sure" stores no time at all,** with a precision of unknown, rather than today's date with a shrug attached. Every screen downstream then renders it as not known, which is the truth.
+
+**The thread question defaults to not knowing,** which sends the entry to the Unfiled tray, and the screen says so underneath while the person can still change it. The thread question is not asked at all on a notebook that has no threads, because a question whose only answer is "not sure yet" is not a question.
+
+Composed from Display L, Body M, Body S, the text field from section 5.9, the choice chip from section 5.11, one filled button, and one text action. Tracked on issue #34.
 
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 

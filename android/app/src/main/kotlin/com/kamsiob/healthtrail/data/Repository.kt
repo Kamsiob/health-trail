@@ -293,6 +293,54 @@ class Repository private constructor(
         ),
     )
 
+    /**
+     * A care thread, which is one parallel stream of care running through the
+     * whole notebook.
+     *
+     * `colorIndex` is an index into the theme's route colors rather than a
+     * stored color, so the dark theme substitution happens in the theme and a
+     * stored color can never fail contrast.
+     */
+    data class CareThread(val id: String, val label: String, val colorIndex: Int)
+
+    /**
+     * The threads this notebook carries, in the order the person sees them.
+     *
+     * Returns an empty list for a notebook with no situation template applied,
+     * which is a real state rather than an error: "Not sure yet" is a valid
+     * answer to the situation picker and it produces a working notebook.
+     */
+    suspend fun threads(subjectId: String): List<CareThread> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, label, color_index FROM live_care_thread " +
+                "WHERE subject_id = ? ORDER BY sort_index, created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        CareThread(
+                            id = cursor.getString(0),
+                            label = cursor.getString(1),
+                            colorIndex = cursor.getInt(2),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Files an entry under a thread.
+     *
+     * A join row rather than a column on the entry, because an entry can belong
+     * to several: a call about a wound during a physical therapy week belongs to
+     * both. The schema says so and this follows it.
+     */
+    suspend fun linkEntryToThread(entryId: String, threadId: String) {
+        insert("entry_thread", mapOf("entry_id" to entryId, "thread_id" to threadId))
+    }
+
     /** The extra fields a call carries, written alongside its entry. */
     suspend fun addCallDetail(
         entryId: String,

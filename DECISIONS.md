@@ -542,3 +542,17 @@ Four screens were built, verified on the device, and shipped: the disclaimer gat
 `tools/screenshot.sh` took the theme as an optional argument defaulting to `light` and never asked the device. Two captures in one session were written as `-light` while the phone was in dark mode.
 
 The theme is now read from `cmd uimode night` and an argument that disagrees with the device is refused rather than honored. A mislabeled screenshot in a public repository is the kind of error nobody catches, because the label is believed and the image is only glanced at, and these images are the evidence attached to design review issues.
+
+### D32. The disclaimer does not tell the person they are responsible
+
+**Date:** 2026-07-31. **Decided by:** the owner, on reading the rebuilt screen.
+
+The disclaimer's third block ended with "and you are responsible for what you write down". The owner's words: there is no reason to be so rude and aggressive, and there are nice ways to say things that are more friendly.
+
+**Cut, and not to be restored.** The line was the software bracing against the person on the first screen they will ever see. It also added nothing the screen does not already say: the block still says the app never decides what any of it means, which is the honest and useful half. What was left was a warning that the person, not the app, owns the consequences, delivered to someone who is about to start writing down a family member's care in the worst month of their life.
+
+The block now says the record is theirs and that they choose what goes in it. Same fact, without the flinch.
+
+**Why this is worth a decision entry rather than a quiet edit.** `DESIGN.md` section 7 states that nothing may be cut from the disclaimer on the grounds of warmth, which is the right rule and is why the safety substance survived the rewrite intact. A future session reading that rule in good faith would restore this line. Section 7 now carries the exception with its reason, and this entry is the record of who decided it.
+
+**The general shape, since it will recur.** A disclaimer has two jobs: say truthfully what the app is not, and protect the person from relying on it as something it is not. Neither of those requires assigning blame in advance.

@@ -111,6 +111,18 @@
   "disclaimer.block.1.body": "它不提供医疗建议，也不是医疗器械。这里的任何内容都不能代替医生、护士、急救服务或律师的意见。如果情况紧急，请拨打急救电话。",
   "disclaimer.block.2.title": "您写下的内容留在这部手机上",
   "disclaimer.block.2.body": "没有账户，也没有云端。您的记录存在这部设备里，除非您自己发送出去，否则不会去到别处。",
-  "disclaimer.block.3.title": "记录由您来保管",
-  "disclaimer.block.3.body": "这个应用记下您告诉它的内容，并把它整理好。它从不判断这些内容意味着什么。您在这里记录的属于您，相应的责任也属于您。"
+  "disclaimer.block.3.title": "这份记录属于您",
+  "disclaimer.block.3.body": "这个应用记下您告诉它的内容，并把它整理好。它从不判断这些内容意味着什么。写什么由您决定，写下的一直属于您。",
+  "capture.sub": "能答的就答，其余的跳过。记一半也比不记强。",
+  "capture.when": "这是什么时候的事？",
+  "capture.when.hint": "大概就行",
+  "capture.when.today": "今天",
+  "capture.when.yesterday": "昨天",
+  "capture.when.this_week": "本周",
+  "capture.when.not_sure": "不确定",
+  "capture.thread": "这属于哪一条线？",
+  "capture.thread.hint": "不知道就跳过",
+  "capture.thread.not_sure": "还不确定",
+  "capture.save": "保存已有的内容",
+  "capture.unfiled.note": "选“还不确定”会放进未归档托盘。应用会按词语相近给出建议，由您一键确认。它绝不会替您归档。"
 }

@@ -111,6 +111,18 @@
   "disclaimer.block.1.body": "It gives no medical advice, and it is not a medical device. Nothing here replaces a doctor, a nurse, emergency services, or advice from a lawyer. If something is urgent, call emergency services.",
   "disclaimer.block.2.title": "What you write stays on this phone",
   "disclaimer.block.2.body": "There is no account and no cloud. Your notes live on this device and go nowhere else unless you send them somewhere yourself.",
-  "disclaimer.block.3.title": "You are the one keeping the record",
-  "disclaimer.block.3.body": "The app writes down what you tell it and keeps it organized. It never decides what any of it means. What you record here is yours, and so is the responsibility for what you write down."
+  "disclaimer.block.3.title": "The record is yours",
+  "disclaimer.block.3.body": "The app writes down what you tell it and keeps it organized. It never decides what any of it means. You choose what goes in, and it stays yours.",
+  "capture.sub": "Answer what you can. Skip the rest. A half note beats no note.",
+  "capture.when": "When was this?",
+  "capture.when.hint": "Roughly is fine",
+  "capture.when.today": "Today",
+  "capture.when.yesterday": "Yesterday",
+  "capture.when.this_week": "This week",
+  "capture.when.not_sure": "Not sure",
+  "capture.thread": "What is it part of?",
+  "capture.thread.hint": "Skip if you don't know",
+  "capture.thread.not_sure": "Not sure yet",
+  "capture.save": "Save what you have",
+  "capture.unfiled.note": "Not sure yet goes to the Unfiled tray. The app suggests a home by matching words, and you confirm with one tap. It never files anything without you."
 }

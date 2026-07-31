@@ -181,8 +181,7 @@ This list exists so the owner can review them all in one sitting instead of arch
 | Disclaimer gate | 2026-07-31, rebuilt same day | #28 | Mark, Display L, Body L, card 5.3, Display S, Body M, filled button | not yet |
 | Essentials first setup | 2026-07-31 | #30 | Display L, Display S, Body M, text field 5.9, filled button, text action | not yet |
 | Situation picker | 2026-07-31 | #32 | Display L, Body M, Body S, card 5.3, text action | not yet |
-| Log a call | 2026-07-31 | #34 | Display L, text field 5.9, filled button, text action | not yet |
-| Capture form, four kinds | 2026-07-31 | #34 | Display L, text field 5.9, filled button, text action | not yet |
+| Capture form, four kinds | 2026-07-31, rebuilt to screen 26 same day | #34 | Display L, Body M, Body S, text field 5.9, choice chip 5.11, filled button, text action | not yet |
 
 **Known ahead:** the template library, the four template pickers, the template detail view, and the template editor. All of them land in Phase 1 or Phase 4 and none is drawn. `MASTER_SPEC.md` section 4.10 carries their requirements in detail, including that all four template kinds share one presentation and that browsing, previewing, and applying must be visually distinct.
 
