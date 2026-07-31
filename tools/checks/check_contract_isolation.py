@@ -68,6 +68,13 @@ SCHEMA_ALLOWED = {
 # not from a test source set.
 TEST_PATH_MARKERS = ("/src/test/", "/src/androidtest/", "/tests/", "/test/")
 
+# Agent definitions and hooks are instructions, not source. The sweeper's
+# definition necessarily quotes the rule it sweeps for, which is the same
+# situation as the checks quoting the pattern they look for. Nothing under
+# .claude is compiled, packaged, or read by the app, so a schema could not
+# reach a device from here even if someone put one in.
+INSTRUCTION_PATH_MARKERS = ("/.claude/",)
+
 TEXT_SUFFIXES = {".md", ".sql", ".json", ".yml", ".yaml", ".kt", ".kts", ".py",
                  ".js", ".ts", ".html", ".xml", ".sh"}
 
@@ -122,6 +129,8 @@ def main():
             continue
         lowered = f"/{relative.lower()}"
         if any(marker in lowered for marker in TEST_PATH_MARKERS):
+            continue
+        if any(marker in lowered for marker in INSTRUCTION_PATH_MARKERS):
             continue
         try:
             text = path.read_text(encoding="utf-8")

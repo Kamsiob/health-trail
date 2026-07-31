@@ -73,7 +73,7 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.25 | Export container: manifest, version check, encryption, round trip equality test passing on an emulator | not started |
 | 0.26 | `/web` scaffold opening the same schema through SQLite in WebAssembly and reading the same template JSON | not started |
 | 0.27 | Fixture generator in `/tools` per `TESTING-PERSONAS.md` section 1 | not started |
-| 0.28 | Four subagent definitions in `.claude/agents/`, tools explicitly scoped | not started |
+| 0.28 | Four subagent definitions in `.claude/agents/`, tools explicitly scoped | **verified.** reviewer (Read, Grep, Glob, opus), test-runner (Bash, Read, Grep, sonnet, emulator only), sweeper (Read, Grep, Glob, sonnet), researcher (Read, Grep, Glob, WebFetch, WebSearch, sonnet). Every one names its tools and carries a `maxTurns` limit. Issue #19 |
 | 0.29 | Smoke test proving the app launches | **verified on device.** Six instrumented tests pass on the Pixel 10 Pro XL, covering launch, the contract reaching the device, the schema executing there, and the template count. Issue #20 |
 | 0.30 | Phase 0 gate: content compliance checks in continuous integration, living documents current, board status update | not started |
 
@@ -159,4 +159,17 @@ None yet. `TESTING-PERSONAS.md` requires each run to be recorded here with its f
 
 ## 10. Subagents
 
-The four definitions from `AGENTS.md` section 5 are not written yet, item 0.28. Definitions load at session start, so ones written during this session will not be usable until the next session begins. That is expected and is not a blocker. This session does all of its own work without delegating.
+**All four definitions are written and committed, and none of them has been used.** Definitions load at session start, so ones written during a session are not usable until the next session begins. That is expected, documented in `AGENTS.md` section 7 and `RUN-SAFETY.md` section 6, and is not a blocker. This session did all of its own work without delegating, which is what those documents say to do.
+
+**From the next session onward, delegation works.** The four, with what each is for:
+
+| Agent | Tools | Model | Use it for |
+|---|---|---|---|
+| `reviewer` | Read, Grep, Glob | opus | Every phase gate. The cold read test and the content compliance audit. The highest value of the four, because it is the only second reading of work the owner cannot review himself |
+| `test-runner` | Bash, Read, Grep | sonnet | Suites and persona scripts, **emulator only**, never the connected phone. Returns failures and nothing else |
+| `sweeper` | Read, Grep, Glob | sonnet | Mechanical checks with a right answer: locale key gaps, manifest permissions, banned patterns, raw table access |
+| `researcher` | Read, Grep, Glob, WebFetch, WebSearch | sonnet | Version, license, and policy verification before integrating anything. The only one with network access |
+
+**The rule that does not bend:** none of them can write, and that is structural rather than stylistic. A subagent cannot stop and ask for permission, so one running in the background silently denies anything that would have prompted and then reports success for a change that never reached disk. No write tool means nothing to deny. When any of them reports that something changed, verify against the working tree before believing it.
+
+**Record their runs here,** at every phase gate: which ran, on what, and what they found. That record is how a later session knows the reviewer genuinely read phase four rather than inheriting an assumption that somebody did.
