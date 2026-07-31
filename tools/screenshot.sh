@@ -8,6 +8,12 @@
 # this application is genuinely the focused window, and it checks immediately
 # before the capture rather than at the start.
 #
+# The theme in the filename is read from the device rather than taken on trust.
+# A capture labeled light that is actually dark is a lie in a public repository,
+# and it is the kind of lie nobody catches, because the label is believed and
+# the image is only glanced at. So the label is derived, and an argument that
+# disagrees with the device is refused rather than honored.
+#
 # Usage:
 #   tools/screenshot.sh <name> [light|dark]
 #
@@ -22,7 +28,7 @@ ADB="${ADB:-$HOME/Android/Sdk/platform-tools/adb}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 name="${1:-}"
-theme="${2:-light}"
+expected="${2:-}"
 
 if [ -z "$name" ]; then
   echo "Usage: tools/screenshot.sh <name> [light|dark]" >&2
@@ -55,6 +61,25 @@ if ! echo "$focused" | grep -q "$PACKAGE"; then
   echo "This device is the owner's daily driver. A capture taken while" >&2
   echo "something else is in front would put his personal content into a" >&2
   echo "public repository." >&2
+  exit 1
+fi
+
+# What the device is actually showing. The label comes from here, never from
+# the argument, so the filename cannot disagree with the image.
+night="$("$ADB" shell cmd uimode night 2>/dev/null | tr -d '\r')"
+case "$night" in
+  *yes*) theme="dark" ;;
+  *no*)  theme="light" ;;
+  *)
+    echo "Cannot tell what theme the device is in: $night" >&2
+    echo "Set it explicitly on the device, then capture again." >&2
+    exit 1
+    ;;
+esac
+
+if [ -n "$expected" ] && [ "$expected" != "$theme" ]; then
+  echo "Refusing to capture: asked for $expected, device is in $theme." >&2
+  echo "Change the device theme rather than the filename." >&2
   exit 1
 fi
 

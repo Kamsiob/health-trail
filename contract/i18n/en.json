@@ -92,5 +92,20 @@
   "capture.call.who.hint": "A name, a role, or just the ward",
   "capture.call.note": "What was said",
   "capture.call.note.hint": "As much or as little as you want",
-  "capture.saved": "Saved"
+  "capture.saved": "Saved",
+  "capture.visit.title": "Log a visit",
+  "capture.visit.who": "Who you saw",
+  "capture.visit.who.hint": "A name, a role, or just the ward",
+  "capture.visit.note": "How it went",
+  "capture.visit.note.hint": "As much or as little as you want",
+  "capture.incident.title": "Report an incident",
+  "capture.incident.who": "Who you told",
+  "capture.incident.who.hint": "A name, a role, or just the ward",
+  "capture.incident.note": "What happened",
+  "capture.incident.note.hint": "In your own words. You can add to it later",
+  "capture.question.title": "Ask next time",
+  "capture.question.who": "Who it is for",
+  "capture.question.who.hint": "A name or a role",
+  "capture.question.note": "What you want to ask",
+  "capture.question.note.hint": "It will be waiting on their next appointment"
 }

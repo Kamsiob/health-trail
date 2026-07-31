@@ -11,9 +11,12 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
-import com.kamsiob.healthtrail.ui.screens.CallDraft
-import com.kamsiob.healthtrail.ui.screens.LogCallScreen
-import com.kamsiob.healthtrail.ui.screens.LogCallTags
+import com.kamsiob.healthtrail.ui.screens.CaptureDraft
+import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
+import com.kamsiob.healthtrail.ui.screens.CaptureFormTags
+import com.kamsiob.healthtrail.ui.screens.CaptureKind
+import com.kamsiob.healthtrail.ui.screens.entryKind
+import com.kamsiob.healthtrail.ui.screens.usesTheSharedForm
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -47,12 +50,16 @@ class CaptureTest {
         Repository.closeForTest()
     }
 
-    private fun showCallForm(onSave: (CallDraft) -> Unit, onCancel: () -> Unit = {}) {
+    private fun showForm(
+        kind: CaptureKind = CaptureKind.CALL,
+        onSave: (CaptureDraft) -> Unit,
+        onCancel: () -> Unit = {},
+    ) {
         val strings = Strings.load(context)
         compose.setContent {
             HealthTrailTheme {
                 CompositionLocalProvider(LocalStrings provides strings) {
-                    LogCallScreen(onSave = onSave, onCancel = onCancel)
+                    CaptureFormScreen(kind = kind, onSave = onSave, onCancel = onCancel)
                 }
             }
         }
@@ -60,10 +67,10 @@ class CaptureTest {
 
     @Test
     fun aBlankCallStillSaves() {
-        var draft: CallDraft? = null
-        showCallForm(onSave = { draft = it })
+        var draft: CaptureDraft? = null
+        showForm(onSave = { draft = it })
 
-        compose.onNodeWithTag(LogCallTags.SAVE).performClick()
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 
         assertNotNull("saving a blank call did nothing", draft)
         assertEquals("", draft!!.who)
@@ -72,12 +79,12 @@ class CaptureTest {
 
     @Test
     fun whatIsTypedIsWhatIsSaved() {
-        var draft: CallDraft? = null
-        showCallForm(onSave = { draft = it })
+        var draft: CaptureDraft? = null
+        showForm(onSave = { draft = it })
 
-        compose.onNodeWithTag(LogCallTags.WHO).performTextInput("Ward desk")
-        compose.onNodeWithTag(LogCallTags.NOTE).performTextInput("Said they would call back")
-        compose.onNodeWithTag(LogCallTags.SAVE).performClick()
+        compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput("Ward desk")
+        compose.onNodeWithTag(CaptureFormTags.NOTE).performTextInput("Said they would call back")
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 
         assertEquals("Ward desk", draft!!.who)
         assertEquals("Said they would call back", draft.note)
@@ -85,12 +92,12 @@ class CaptureTest {
 
     @Test
     fun cancelingSavesNothing() {
-        var draft: CallDraft? = null
+        var draft: CaptureDraft? = null
         var canceled = false
-        showCallForm(onSave = { draft = it }, onCancel = { canceled = true })
+        showForm(onSave = { draft = it }, onCancel = { canceled = true })
 
-        compose.onNodeWithTag(LogCallTags.WHO).performTextInput("Typed then abandoned")
-        compose.onNodeWithTag(LogCallTags.CANCEL).performClick()
+        compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput("Typed then abandoned")
+        compose.onNodeWithTag(CaptureFormTags.CANCEL).performClick()
 
         assertTrue(canceled)
         assertNull("canceling still saved something", draft)
@@ -127,6 +134,55 @@ class CaptureTest {
         val after = repository.count(Repository.Section.TRAIL)
 
         assertEquals("a blank call was silently dropped", before + 1, after)
+    }
+
+    @Test
+    fun everyFormKindSavesUnderItsOwnWords() {
+        // One form serves four kinds, so the thing that can silently break is
+        // the kind traveling with the draft. A visit filed as a call is a
+        // wrong record rather than a missing one, which is worse.
+        val kind = CaptureKind.VISIT
+        var draft: CaptureDraft? = null
+        showForm(kind = kind, onSave = { draft = it })
+
+        compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput("Dr Aurelio")
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
+
+        assertEquals(kind, draft!!.kind)
+        assertEquals("Dr Aurelio", draft.who)
+    }
+
+    @Test
+    fun everyKindTheFormServesNamesItselfInTheCatalog() {
+        // The form builds its catalog keys from the enum rather than reading
+        // them from a table, so a kind added to the form without its words
+        // would render a raw key on screen. This is the check that makes
+        // building keys safe, and it reads the served set from the same
+        // declaration the shell does rather than repeating the list.
+        val strings = Strings.load(context)
+        val served = CaptureKind.entries.filter { it.usesTheSharedForm }
+        assertTrue("no kind uses the shared form", served.isNotEmpty())
+
+        served.forEach { kind ->
+            val slug = kind.name.lowercase()
+            listOf("title", "who", "who.hint", "note", "note.hint").forEach { slot ->
+                // Strings throws on a key no catalog defines, so a missing one
+                // fails here by name rather than reaching a person as a key on
+                // screen.
+                val value = strings["capture.$slug.$slot"]
+                assertTrue("capture.$slug.$slot resolved to nothing", value.isNotBlank())
+            }
+        }
+    }
+
+    @Test
+    fun everyKindHasARowKind() {
+        // The schema column, not the label. Every kind must name what it is
+        // stored as, and no two may collide, or the trail cannot tell them
+        // apart after the fact.
+        val kinds = CaptureKind.entries.map { it.entryKind() }
+        assertEquals("two capture kinds store as the same row kind", kinds.size, kinds.toSet().size)
+        assertTrue("a capture kind stores as a blank", kinds.none { it.isBlank() })
     }
 
     @Test

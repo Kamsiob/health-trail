@@ -92,5 +92,20 @@
   "capture.call.who.hint": "Un nombre, un cargo o simplemente la planta",
   "capture.call.note": "Qué se dijo",
   "capture.call.note.hint": "Todo lo que quiera, o casi nada",
-  "capture.saved": "Guardado"
+  "capture.saved": "Guardado",
+  "capture.visit.title": "Anotar una visita",
+  "capture.visit.who": "A quién vio",
+  "capture.visit.who.hint": "Un nombre, un cargo o simplemente la planta",
+  "capture.visit.note": "Cómo fue",
+  "capture.visit.note.hint": "Todo lo que quiera, o casi nada",
+  "capture.incident.title": "Informar de un incidente",
+  "capture.incident.who": "A quién se lo dijo",
+  "capture.incident.who.hint": "Un nombre, un cargo o simplemente la planta",
+  "capture.incident.note": "Qué pasó",
+  "capture.incident.note.hint": "Con sus palabras. Puede añadir más después",
+  "capture.question.title": "Preguntar la próxima vez",
+  "capture.question.who": "Para quién es",
+  "capture.question.who.hint": "Un nombre o un cargo",
+  "capture.question.note": "Qué quiere preguntar",
+  "capture.question.note.hint": "Estará esperando en su próxima cita"
 }

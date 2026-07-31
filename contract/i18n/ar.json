@@ -92,5 +92,20 @@
   "capture.call.who.hint": "اسم أو صفة أو حتى اسم القسم فقط",
   "capture.call.note": "ما الذي قيل",
   "capture.call.note.hint": "اكتب بقدر ما تشاء، أو القليل",
-  "capture.saved": "تم الحفظ"
+  "capture.saved": "تم الحفظ",
+  "capture.visit.title": "تدوين زيارة",
+  "capture.visit.who": "من قابلت",
+  "capture.visit.who.hint": "اسم أو صفة أو حتى اسم القسم فقط",
+  "capture.visit.note": "كيف سارت",
+  "capture.visit.note.hint": "اكتب بقدر ما تشاء، أو القليل",
+  "capture.incident.title": "الإبلاغ عن حادثة",
+  "capture.incident.who": "من أبلغت",
+  "capture.incident.who.hint": "اسم أو صفة أو حتى اسم القسم فقط",
+  "capture.incident.note": "ماذا حدث",
+  "capture.incident.note.hint": "بكلماتك. يمكنك الإضافة لاحقًا",
+  "capture.question.title": "اسأل في المرة القادمة",
+  "capture.question.who": "لمن هذا السؤال",
+  "capture.question.who.hint": "اسم أو صفة",
+  "capture.question.note": "ما الذي تريد سؤاله",
+  "capture.question.note.hint": "سينتظر حتى موعده القادم"
 }

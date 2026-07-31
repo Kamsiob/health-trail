@@ -92,5 +92,20 @@
   "capture.call.who.hint": "名字、职务，或者只写病区",
   "capture.call.note": "说了什么",
   "capture.call.note.hint": "想写多少就写多少",
-  "capture.saved": "已保存"
+  "capture.saved": "已保存",
+  "capture.visit.title": "记一次探望",
+  "capture.visit.who": "您见了谁",
+  "capture.visit.who.hint": "名字、职务，或者只写病区",
+  "capture.visit.note": "情况如何",
+  "capture.visit.note.hint": "想写多少就写多少",
+  "capture.incident.title": "报告一件事故",
+  "capture.incident.who": "您告诉了谁",
+  "capture.incident.who.hint": "名字、职务，或者只写病区",
+  "capture.incident.note": "发生了什么",
+  "capture.incident.note.hint": "用您自己的话写。之后还可以补充",
+  "capture.question.title": "下次要问",
+  "capture.question.who": "要问谁",
+  "capture.question.who.hint": "名字或职务",
+  "capture.question.note": "您想问什么",
+  "capture.question.note.hint": "它会等到下次预约时出现"
 }

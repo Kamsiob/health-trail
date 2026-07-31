@@ -32,7 +32,9 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** the remaining five capture inputs, which currently close the sheet and do nothing. Visit and incident are closest to the call form and reuse it almost entirely. Then Today with the digest engine, which reads the change log for what changed since the person was last here, and which is the first thing that needs `contract/test-vectors`.
+**The precise next action:** the quality bar, which the owner raised while this increment was building and which stops feature work until four screens are brought up to it. See section 11.
+
+Four of the six capture kinds now share one form. Call, visit, incident, and question differ in wording rather than in shape, so `CaptureFormScreen` holds the shape and the catalog holds the words. Which four is declared once, in `CaptureKind.usesTheSharedForm`, and adding a seventh kind will not compile until it answers that question. Measurement and document are genuinely different shapes and arrive on their own.
 
 **The core loop works end to end as of this commit:** gold button, sheet, form, save, entry written, change log trigger fired, count refreshed through the live view. Verified on the device, not inferred.
 
@@ -180,6 +182,7 @@ This list exists so the owner can review them all in one sitting instead of arch
 | Essentials first setup | 2026-07-31 | #30 | Display L, Display S, Body M, text field 5.9, filled button, text action | not yet |
 | Situation picker | 2026-07-31 | #32 | Display L, Body M, Body S, card 5.3, text action | not yet |
 | Log a call | 2026-07-31 | #34 | Display L, text field 5.9, filled button, text action | not yet |
+| Capture form, four kinds | 2026-07-31 | #34 | Display L, text field 5.9, filled button, text action | not yet |
 
 **Known ahead:** the template library, the four template pickers, the template detail view, and the template editor. All of them land in Phase 1 or Phase 4 and none is drawn. `MASTER_SPEC.md` section 4.10 carries their requirements in detail, including that all four template kinds share one presentation and that browsing, previewing, and applying must be visually distinct.
 

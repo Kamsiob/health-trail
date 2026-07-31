@@ -22,10 +22,12 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
-import com.kamsiob.healthtrail.ui.screens.CallDraft
+import com.kamsiob.healthtrail.ui.screens.CaptureDraft
+import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.screens.CaptureSheet
-import com.kamsiob.healthtrail.ui.screens.LogCallScreen
+import com.kamsiob.healthtrail.ui.screens.entryKind
+import com.kamsiob.healthtrail.ui.screens.usesTheSharedForm
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -58,7 +60,7 @@ fun NotebookShell(repository: Repository) {
     // Bumped after every write, which is what makes the counts refresh without
     // the screen having to know what changed.
     var revision by remember { mutableStateOf(0) }
-    var saving by remember { mutableStateOf<CallDraft?>(null) }
+    var saving by remember { mutableStateOf<CaptureDraft?>(null) }
 
     // Recounted whenever the tab changes, so returning to the notebook after
     // writing something shows the new number rather than a stale one.
@@ -118,19 +120,23 @@ fun NotebookShell(repository: Repository) {
             )
         }
 
-        when (capturing) {
-            CaptureKind.CALL -> LogCallScreen(
+        // Four kinds, one form. They differ in wording rather than in shape, so
+        // they share a screen rather than appearing as four near copies. Which
+        // four is declared once, next to the form, rather than repeated here.
+        //
+        // Measurement and document arrive in their own increments. Until then
+        // choosing one closes the sheet and does nothing rather than opening an
+        // empty screen, which is the lesser of two bad interim states.
+        val kind = capturing
+        if (kind != null && kind.usesTheSharedForm) {
+            CaptureFormScreen(
+                kind = kind,
                 onSave = { draft ->
                     capturing = null
                     saving = draft
                 },
                 onCancel = { capturing = null },
             )
-            // The other five arrive in their own increments. Choosing one closes
-            // the sheet and does nothing rather than opening an empty screen,
-            // which is the lesser of two bad interim states and disappears as
-            // each lands.
-            else -> Unit
         }
 
         val draft = saving
@@ -140,11 +146,15 @@ fun NotebookShell(repository: Repository) {
                 if (subject != null) {
                     val entryId = repository.createEntry(
                         subjectId = subject.id,
-                        kind = "call",
+                        kind = draft.kind.entryKind(),
                         title = draft.who,
                         body = draft.note,
                     )
-                    repository.addCallDetail(entryId = entryId)
+                    // A call carries an extra row for whether anyone picked up.
+                    // The other three are fully described by the entry itself.
+                    if (draft.kind == CaptureKind.CALL) {
+                        repository.addCallDetail(entryId = entryId)
+                    }
                 }
                 saving = null
                 revision += 1
