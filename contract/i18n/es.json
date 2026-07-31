@@ -80,5 +80,11 @@
   "setup.phone.number.label": "Número de teléfono",
   "situation.title": "¿Cómo están las cosas ahora?",
   "situation.subtitle": "Esto prepara el cuaderno para el tipo de cuidado que recibe. Puede cambiar cualquier cosa más adelante.",
-  "situation.skip": "Todavía no lo sé"
+  "situation.skip": "Todavía no lo sé",
+  "notebook.section.projects": "Trámites",
+  "nav.today": "Hoy",
+  "nav.notebook": "Cuaderno",
+  "nav.projects": "Trámites",
+  "nav.more": "Más",
+  "shell.not_built": "Esta parte todavía no está hecha. Llegará, y nada de lo que anote ahora se perderá cuando llegue."
 }

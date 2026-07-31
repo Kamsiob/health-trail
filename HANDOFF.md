@@ -32,7 +32,9 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** open and merge the pull request for `feat/phase1-setup`, then build the **situation template picker**, which is what setup should lead to. It applies a template's sections, roles, threads, first days checklist, and document slots, all editable and deletable afterward, per `MASTER_SPEC.md` section 4.1 and 4.10. That screen has no mockup either.
+**The precise next action:** the capture sheet, which is the six inputs behind the gold button and the only way data enters the app. `MASTER_SPEC.md` section 4.2. It is the last piece before Today has anything to summarize. Then Today with the digest engine, reading from the change log.
+
+**One thing that must not survive to release.** The Today, Projects, and More destinations render an honest interim screen saying that part is not built yet. That is deliberate rather than a stub left lying around: `DESIGN.md` section 5.5 fixes the four destinations and their order, so hiding them would break the rule that a person finds things where they last were. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
 
 **Device state when this was written:** the app is installed, exactly one package, launching, and the phone is safe to disconnect. Nothing is mid operation. Instrumented tests need it reconnected; unit tests, lint, and the compliance checks do not.
 

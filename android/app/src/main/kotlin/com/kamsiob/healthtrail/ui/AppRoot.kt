@@ -168,7 +168,7 @@ fun AppRoot() {
                 }
             }
 
-            is RootState.Ready -> NotebookPlaceholder(current.repository)
+            is RootState.Ready -> NotebookShell(current.repository)
         }
     }
 }
@@ -249,68 +249,6 @@ private fun UnrecoverableScreen() {
                 text = strings["common.error.generic"],
                 style = HealthTrail.type.bodyL,
                 color = HealthTrail.colors.ink,
-            )
-        }
-    }
-}
-
-/**
- * Stands in for the Today screen until it exists, which is the next increment.
- *
- * It is not a stub in the sense rule 11 forbids: it renders real counts read
- * from the database through the repository, and it says plainly that the
- * notebook itself is not built yet rather than showing an empty frame.
- */
-@Composable
-private fun NotebookPlaceholder(repository: Repository) {
-    val strings = LocalStrings.current
-    var entries by remember { mutableStateOf<Int?>(null) }
-
-    LaunchedEffect(repository) {
-        entries = repository.count(Repository.Section.TRAIL)
-    }
-
-    Surface(modifier = Modifier.fillMaxSize(), color = HealthTrail.colors.paper) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .padding(horizontal = Space.screenHorizontal, vertical = Space.l),
-        ) {
-            Text(
-                text = strings["today.title"],
-                style = HealthTrail.type.displayL,
-                color = HealthTrail.colors.ink,
-            )
-            Spacer(Modifier.height(Space.s))
-            Text(
-                text = strings["today.empty.title"],
-                style = HealthTrail.type.bodyM,
-                color = HealthTrail.colors.ink2,
-            )
-            Spacer(Modifier.height(Space.l))
-            Text(
-                text = strings["today.empty.step.1"],
-                style = HealthTrail.type.bodyL,
-                color = HealthTrail.colors.ink,
-            )
-            Spacer(Modifier.height(Space.sm))
-            Text(
-                text = strings["today.empty.step.2"],
-                style = HealthTrail.type.bodyL,
-                color = HealthTrail.colors.ink,
-            )
-            Spacer(Modifier.height(Space.sm))
-            Text(
-                text = strings["today.empty.step.3"],
-                style = HealthTrail.type.bodyL,
-                color = HealthTrail.colors.ink,
-            )
-            Spacer(Modifier.height(Space.l))
-            Text(
-                text = strings("today.open.incidents", "count" to (entries ?: 0)),
-                style = HealthTrail.type.mono,
-                color = HealthTrail.colors.ink3Text,
             )
         }
     }
