@@ -82,11 +82,19 @@ RULES = [
         "lost commits.",
     ),
     (
-        r"\badb\s+uninstall\b|\bpm\s+uninstall\b",
+        # Narrowed to spare the instrumentation package, which is not the app.
+        # A package id ending in .test is the androidTest APK that Gradle
+        # installs to run instrumented tests. Removing it is cleanup and is
+        # required, so that exactly one real package remains on the device.
+        # Uninstalling anything else still destroys the data the in-place
+        # upgrade path exists to protect.
+        r"\b(?:adb\s+(?:-s\s+\S+\s+)?uninstall|pm\s+uninstall)\b"
+        r"(?!(?:\s+-\S+)*\s+\S*\.test\b)",
         "Uninstalling destroys the app data that the in-place upgrade path "
         "exists to protect. Every install after the first is an upgrade. "
         "If a migration appears to need a clean install, that is a migration "
-        "bug and the migration gets fixed.",
+        "bug and the migration gets fixed. Only a package id ending in .test, "
+        "which is the instrumentation APK rather than the app, may be removed.",
     ),
     (
         r"\badb\s+shell\s+pm\s+clear\b",

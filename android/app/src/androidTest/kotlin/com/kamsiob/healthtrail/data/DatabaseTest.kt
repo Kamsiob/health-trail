@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.data
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.runBlocking
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -13,9 +14,15 @@ import org.junit.runner.RunWith
 /**
  * The database, exercised on a real device rather than reasoned about.
  *
- * These run on an emulator, never on the owner's phone, because they create and
- * write a database. That rule is in the kickoff and in `CONTRIBUTING.md`, and it
- * exists because that phone is a daily driver holding real records.
+ * **Where these are allowed to run, and why that is conditional.** They create
+ * and write a database, and running `connectedAndroidTest` uninstalls the
+ * application afterward, taking its data with it. The standing rule is that
+ * they belong on an emulator.
+ *
+ * They were run once on the owner's phone, deliberately, at a point when it
+ * held no notebook worth preserving. That window has a hard edge: the moment a
+ * real notebook exists on that phone, running these there destroys it. See
+ * `DECISIONS.md` D25.
  */
 @RunWith(AndroidJUnit4::class)
 class DatabaseTest {
@@ -29,7 +36,7 @@ class DatabaseTest {
 
     @Test
     fun theDatabaseOpensAndCarriesTheContractSchema() {
-        val db = HealthTrailDatabase.open(context)
+        val db = runBlocking { HealthTrailDatabase.open(context) }
 
         assertEquals("schema version was not recorded", 1, db.schemaVersion())
 
@@ -54,7 +61,7 @@ class DatabaseTest {
 
     @Test
     fun theFileOnDiskIsNotReadableAsPlainSqlite() {
-        val db = HealthTrailDatabase.open(context)
+        val db = runBlocking { HealthTrailDatabase.open(context) }
         assertTrue(
             "the database file begins with the plaintext SQLite header, so it " +
                 "is not encrypted at rest",
@@ -64,7 +71,7 @@ class DatabaseTest {
 
     @Test
     fun theDeviceIdExistsAndIsWhatTheTriggersWillRead() {
-        val db = HealthTrailDatabase.open(context)
+        val db = runBlocking { HealthTrailDatabase.open(context) }
         assertNotNull(db.deviceId)
         assertTrue(db.deviceId.isNotBlank())
 
@@ -81,7 +88,7 @@ class DatabaseTest {
 
     @Test
     fun everyWriteAppendsToTheChangeLogInTheSameTransaction() {
-        val db = HealthTrailDatabase.open(context)
+        val db = runBlocking { HealthTrailDatabase.open(context) }
         val id = Ids.new()
         val now = System.currentTimeMillis()
 
@@ -122,7 +129,7 @@ class DatabaseTest {
 
     @Test
     fun aTombstonedRowLeavesTheLiveViewButStaysInTheTable() {
-        val db = HealthTrailDatabase.open(context)
+        val db = runBlocking { HealthTrailDatabase.open(context) }
         val id = Ids.new()
         val now = System.currentTimeMillis()
 
@@ -161,7 +168,7 @@ class DatabaseTest {
     fun reopeningKeepsTheSameDeviceIdAndTheSameData() {
         // This is the upgrade path in miniature. Uninstalling to work around a
         // migration is never allowed here, so reopening must be lossless.
-        val first = HealthTrailDatabase.open(context)
+        val first = runBlocking { HealthTrailDatabase.open(context) }
         val deviceId = first.deviceId
         val id = Ids.new()
         val now = System.currentTimeMillis()
@@ -172,7 +179,7 @@ class DatabaseTest {
         )
 
         HealthTrailDatabase.closeForTest()
-        val second = HealthTrailDatabase.open(context)
+        val second = runBlocking { HealthTrailDatabase.open(context) }
 
         assertEquals("the device id changed across a reopen", deviceId, second.deviceId)
         assertEquals("the schema was reapplied on reopen", 1, second.schemaVersion())
@@ -185,7 +192,7 @@ class DatabaseTest {
 
     @Test
     fun theWrongPassphraseCannotOpenTheFile() {
-        HealthTrailDatabase.open(context)
+        runBlocking { HealthTrailDatabase.open(context) }
         HealthTrailDatabase.closeForTest()
 
         val file = context.getDatabasePath(HealthTrailDatabase.FILE_NAME)

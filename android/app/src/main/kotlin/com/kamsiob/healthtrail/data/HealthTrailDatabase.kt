@@ -2,6 +2,8 @@ package com.kamsiob.healthtrail.data
 
 import android.content.Context
 import com.kamsiob.healthtrail.contract.ContractAssets
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.zetetic.database.sqlcipher.SQLiteDatabase
 import java.io.File
 
@@ -45,29 +47,33 @@ class HealthTrailDatabase private constructor(
         /**
          * Opens the database, creating it on first call.
          *
-         * **Never call this on the main thread, and it refuses if you do.**
-         * Opening does real blocking work: Keystore operations that touch
-         * secure hardware, a synchronous preference write, and on first run the
-         * execution of the whole schema. Android's lint would have flagged the
-         * synchronous write, and moving to the KTX editor stopped it asking
-         * without answering the question, so the answer is here instead: this
-         * runs on a background thread, and that is enforced rather than
-         * documented and hoped for.
+         * **This is a suspend function that does its work on [Dispatchers.IO],
+         * and that is the whole point.** Opening does real blocking work:
+         * Keystore operations that touch secure hardware, a synchronous
+         * preference write, and on first run the execution of the entire
+         * schema.
          *
-         * The refusal is deliberate and hard. A main thread call that merely
-         * felt slow in testing would ship, and the person it would fail for is
-         * the one on the oldest phone.
+         * An earlier version enforced the thread with a runtime `check` that
+         * threw. That was the wrong instrument. It is correct in debug and
+         * dangerous in release, because the failure it produces is a crash, and
+         * the path it fires on is by definition one the tests did not reach.
+         * The person it would crash is a caregiver in a hallway.
+         *
+         * Being a suspend function that switches dispatcher itself removes the
+         * question rather than answering it. There is no way to call this and
+         * end up doing blocking work on the main thread, whatever the caller
+         * does, so no check is needed and none is present. Calling it from the
+         * wrong place is now a compile error rather than a runtime one.
+         *
+         * Throws [DatabaseKeyLost] when the wrapping key is gone. See
+         * `DECISIONS.md` D24 for what the app does about that.
          */
-        fun open(context: Context): HealthTrailDatabase {
-            check(android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
-                "HealthTrailDatabase.open() was called on the main thread. It does " +
-                    "Keystore work, a synchronous preference write, and on first run " +
-                    "executes the entire schema. Call it from a background thread."
+        suspend fun open(context: Context): HealthTrailDatabase =
+            withContext(Dispatchers.IO) {
+                instance ?: synchronized(this@Companion) {
+                    instance ?: create(context.applicationContext).also { instance = it }
+                }
             }
-            return instance ?: synchronized(this) {
-                instance ?: create(context.applicationContext).also { instance = it }
-            }
-        }
 
         /** Closes and forgets the open database. For tests and the full wipe. */
         fun closeForTest() = synchronized(this) {

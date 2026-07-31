@@ -72,11 +72,12 @@ class DatabaseKey(private val context: Context) {
      * happened to move it. Callers should zero the array once SQLCipher has
      * taken it.
      *
-     * **This does blocking work and must not run on the main thread.** Keystore
-     * operations touch secure hardware and the preference write is synchronous
-     * by design. [HealthTrailDatabase.open] enforces the thread, so this is
-     * reached only from a background thread. Throws [DatabaseKeyLost] when the
-     * wrapping key is gone.
+     * **This does blocking work.** Keystore operations touch secure hardware
+     * and the preference write is synchronous by design. It is reached only
+     * through [HealthTrailDatabase.open], which is a suspend function running
+     * on `Dispatchers.IO`, so the dispatcher is guaranteed by construction
+     * rather than by a check that could fire on a caregiver's phone. Throws
+     * [DatabaseKeyLost] when the wrapping key is gone.
      */
     fun passphrase(): ByteArray {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

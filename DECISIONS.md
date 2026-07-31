@@ -337,7 +337,19 @@ That check stores its watched words as SHA-256 hashes rather than as a list, bec
 
 **One file was removed rather than edited.** A copy of the public website page sat at the repository root. It carried site navigation naming other products, and a stale copy of a live page drifts from it besides, which is the same argument already applied to the privacy policy. It is gitignored now. Nothing about the build depended on it, and the design reference is `reference/screen-grid.html`.
 
-**One reference stays where it is.** A commit message on `feat/14-encrypted-database` names the borrowed AVD. History is not rewritten here, so it stays, and this entry is the correction. The branch is squash merged, and a squash merge writes a fresh message, so it will not reach the default branch.
+**One reference stays where it is, and the claim I first made about it was wrong.** A commit message on `feat/14-encrypted-database` names the borrowed AVD. History is not rewritten here, so it stays on that branch, and this entry is the correction.
+
+I originally recorded that it would not reach the default branch because a squash merge writes a fresh message. **That was false, and checking rather than asserting is what caught it.** The repository was configured with `squash_merge_commit_message = COMMIT_MESSAGES`, which concatenates every branch commit message into the squash commit body. The reference would have landed on `main` verbatim.
+
+Corrected by configuring the repository so that the only available merge method is squash, and so that the squash commit takes its title and body from the pull request rather than from the branch commits:
+
+- `allow_squash_merge: true`, `allow_merge_commit: false`, `allow_rebase_merge: false`
+- `squash_merge_commit_title: PR_TITLE`, `squash_merge_commit_message: PR_BODY`
+- `delete_branch_on_merge: true`
+
+The pull request body is written here and is checked, so what reaches `main` is controlled rather than inherited. Disabling merge commits and rebase merges matters for the same reason: either would have carried the individual commit messages through.
+
+**The general lesson, worth more than the specific fix.** I asserted a property of the tooling instead of reading it. The assertion was plausible, wrong, and would have quietly defeated the thing it was cited to guarantee.
 
 **Revisit if.** Nothing. From here, no other project is named anywhere in this repository, in any file, commit message, issue, or comment.
 
@@ -349,9 +361,13 @@ Two follow-ups on the key storage in D14 and the lint exchange that preceded it.
 
 Lint raised `ApplySharedPref`, asking for `apply()` instead of `commit()`. Moving to `prefs.edit(commit = true)` satisfied the rule while keeping the blocking write. That silenced the question without answering it, and the question was real: **lint was asking about blocking work on the main thread.**
 
-**The answer, decided rather than assumed.** `HealthTrailDatabase.open()` now refuses to run on the main thread and says why. It does Keystore operations that touch secure hardware, a synchronous preference write, and on first run executes the entire schema. All of it belongs on a background thread.
+**The answer, decided rather than assumed.** `HealthTrailDatabase.open()` is a **suspend function whose body runs on `Dispatchers.IO`**. It does Keystore operations that touch secure hardware, a synchronous preference write, and on first run executes the entire schema. All of it belongs off the main thread.
 
-The refusal is a hard `check` rather than a warning, because a main thread call that merely felt slow on a fast phone during testing would ship, and the person it would fail for is the one on the oldest device. There was no caller yet, which is exactly when this is cheap to fix.
+**A runtime check was the first answer and it was the wrong instrument.** The original version enforced the thread with a `check` that threw. That is correct in debug and dangerous in release, because the failure it produces is a crash, and the path it fires on is by definition one the tests did not reach. The person it would crash is a caregiver in a hallway.
+
+Making the function suspend and switch dispatcher itself removes the question instead of answering it. There is no longer a way to call it and end up doing blocking work on the main thread, whatever the caller does, so no check is needed and none is present. Calling it from the wrong place is now a compile error rather than a runtime one, which is where this class of mistake belongs.
+
+The general form of the lesson: when a constraint can be made structural, a runtime assertion is not a cheaper version of it, it is a worse one that fails in front of the user.
 
 The write itself stays synchronous. `apply()` writes in the background, so a process death in the following milliseconds would lose the wrapped passphrase while the database file it unlocks already exists, which is unrecoverable in the worst way: the notebook still on disk and nothing able to open it. It costs microseconds and happens once per install.
 
@@ -391,6 +407,29 @@ That screen has no mockup, so it is built under the `DESIGN.md` section 10 proto
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
 **Two of the three original entries are resolved.** Kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed.
+
+### D25. Instrumented tests ran on the phone, once, and that permission expires
+
+**Decision.** `DatabaseTest` was run on the owner's Pixel 10 Pro XL rather than on an emulator. **This is allowed only while that phone holds no notebook worth preserving, and it stops being allowed the moment one exists.**
+
+**Why the reasoning changed.** The rule keeping data-affecting tests off that phone protects two things: an accumulated, long-lived notebook, and the in-place upgrade history that proves data survives an update. On 2026-07-31 neither existed. The app had been installed that morning and its `databases` directory was empty.
+
+So the cost of running there was close to zero, while the cost of staying blocked was every later phase built on an unverified foundation. That trade is only available once, and only now.
+
+**What it proved.** 13 instrumented tests, 0 failures, 0 errors, on Android 17. Seven of them are the database: the schema loads through SQLCipher with 34 live views and 68 triggers; the file on disk does not begin with the plaintext SQLite header, which is the only honest test that encryption is on; the wrong passphrase cannot open it; insert, update, and tombstone log as `insert`, `update`, and `delete` through the Kotlin path and carry this device's id; a tombstoned row leaves the live view while staying in the base table; and reopening preserves both the device id and the rows.
+
+**Something worth knowing that this run exposed.** `connectedAndroidTest` uninstalled **the application itself**, not only the instrumentation package. The phone was left with no Health Trail at all and it had to be reinstalled.
+
+That is a much sharper edge than expected. It means running the instrumented suite against a phone holding a real notebook would not merely add test rows, it would **delete the notebook**. The window described above is therefore narrower than it sounds, and the emulator is not a nicety.
+
+**The rule from here.**
+
+- Instrumented tests run on an emulator. That is the default and it has no exceptions once real data exists.
+- Running them against the phone is permitted only while that phone demonstrably holds nothing worth keeping, verified by looking rather than assumed.
+- From the first real notebook onward, a working emulator is a prerequisite for instrumented testing, and B4 becomes a hard blocker rather than an inconvenience.
+- The destructive command guard was narrowed to permit uninstalling a package id ending in `.test`, which is the instrumentation APK, while still refusing to uninstall the app. Verified in both directions.
+
+**Revisit if.** Nothing. The expiry condition is written into the rule.
 
 ### B4. The emulator will not start in this environment, so DatabaseTest cannot run
 

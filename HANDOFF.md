@@ -30,7 +30,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** get an emulator running, which is blocked, see `DECISIONS.md` B4. The AVD for this project is **`health-trail-api36`** and it is correctly created; the emulator process exits with code 1 and no error the moment full startup begins, from every launch strategy tried. The most likely cause is that it is being started from inside a sandboxed shell session. Start it from an ordinary terminal outside this session, then run `./tools/verify.sh --device` here, which picks up any attached `emulator-` serial. **Never run the instrumented suite against the phone:** it creates and writes a database.
+**The precise next action:** open the pull request for `feat/14-encrypted-database` and merge it, then start issue #13, the four locale catalogs, or #16, the web scaffold, neither of which needs a device. **Note on merges:** squash is now the only permitted method and the squash message comes from the pull request body, not from branch commits, so the pull request body is what lands on `main` and is written accordingly.
 
 **One thing to know before writing that code.** Android's `execSQL` refuses any statement that returns rows, and `PRAGMA journal_mode` returns one. `ContractAssets.splitStatements` already handles the statement splitting including trigger bodies, and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
@@ -61,7 +61,7 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.17 | Design tokens for both themes, contrast measured and ratios recorded in DECISIONS.md | **verified.** 80 pairs measured across both themes by `tools/checks/check_contrast.py`, which runs on every push. Five tokens corrected, and the capture button glyph is no longer white. Ratios in DECISIONS.md D19 and DESIGN.md section 2.3. Issue #11 |
 | 0.18 | Fonts: display and body faces confirmed by current name and license, Noto fallback chain for four scripts | not started |
 | 0.19 | Four-locale i18n scaffold with RTL working | not started |
-| 0.20 | Database layer: SQLCipher, key in Keystore, schema applied from the copied `schema.sql` asset, no second copy in Kotlin | **written, compiles, not device verified.** SQLCipher opens with a Keystore-wrapped 32 byte passphrase, schema executed from the asset, no Kotlin schema definition. `DatabaseTest` is written and unrun, see DECISIONS.md D21. Issue #14 |
+| 0.20 | Database layer: SQLCipher, key in Keystore, schema applied from the copied `schema.sql` asset, no second copy in Kotlin | **verified on device.** 13 instrumented tests, 0 failures, on the Pixel 10 Pro XL. Encryption at rest proven by reading the file header, not by asserting a passphrase was passed. Issue #14 |
 | 0.21 | Repository layer making it structurally difficult to query without filtering tombstones | **partial.** The `live_*` views exist and are asserted to filter. The Kotlin repository layer and the static check that forbids raw table access are still to do. Issue #8 |
 | 0.22 | Locally generated collision-safe ids, no auto-increment on any user data table | **verified by test.** UUID version 7, ordered within a millisecond and safe against a backward clock. 7 unit tests including 200,000 ids for uniqueness and 50,000 for ordering. Issue #6 |
 | 0.23 | Every write appends to `change_log` in the same transaction, proven by a test | **partial.** Enforced by triggers in the schema and proven by `check_schema.py`, including that a failing log write rolls the data write back. Still needs the same proof through the Kotlin layer. Issue #7 |
@@ -110,7 +110,7 @@ Full reasoning is in `DECISIONS.md`. The short list of things not to undo:
 
 ## 5. Blocked
 
-**One item is blocked: the emulator will not start here, so `DatabaseTest` cannot run and #14 cannot close.** Full detail in `DECISIONS.md` B4, including all five attempts, the precise symptom, and what would unblock it. Everything that does not need an emulator passes. The three original blockers are resolved. Kept here with outcomes, because a blocked list that only grows teaches a reader that nothing here gets fixed.
+**One item is blocked and it no longer stops work: the emulator will not start in this environment.** Full detail in `DECISIONS.md` B4, including all five attempts, the precise symptom, and what would unblock it. Everything that does not need an emulator passes. The three original blockers are resolved. Kept here with outcomes, because a blocked list that only grows teaches a reader that nothing here gets fixed.
 
 - **B1, commit signing. Done.** The owner registered the key. Verified: the account lists one signing key and `main` reports `verified=true, reason=valid`. It applied to the whole existing history at once. This is the first Kamsiob repository with signed commits.
 - **B2, board automations.** Deliberately not switched on, and not a blocker. `tools/board.py sync` keeps the board current at every increment, and auto-add being off was verified empirically rather than assumed. The board is public.
