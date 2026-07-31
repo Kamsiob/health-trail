@@ -368,6 +368,18 @@ One screen rather than a three step wizard. A wizard means three taps before any
 
 Composed from Display L, Display S, Body M, the text field from section 5.9, one filled button, and one text action. Tracked on issue #30.
 
+**The situation picker.** Choosing the care setting, which is what configures the notebook: which sections sit expanded, which care threads are offered, the first days checklist, and the document slots. All of it editable and deletable afterward, so it is a starting point rather than a commitment.
+
+Each setting is a card carrying its name, the subtitle that tells two similar settings apart, and its burden line, the one sentence naming what is hard about that setting. The burden is there so the person feels understood rather than processed, which is what `templates/SCHEMA.md` says it is for.
+
+**The posture strings are shown verbatim** at the top, straight from the catalog. Paraphrasing them in the interface is forbidden, because they are the sentences that keep this content reading as structure rather than as advice.
+
+No chevron on the rows. A chevron implies going somewhere to look at something, and tapping here chooses. Nothing is applied by looking at it, which is the same rule the template library will follow.
+
+"Not sure yet" is a real answer rather than a postponement: a notebook with no situation template still works, every section exists, and nothing is missing.
+
+Composed from Display L, Body M, Body S, the card from section 5.3, and one text action. Tracked on issue #32.
+
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 
 ---
