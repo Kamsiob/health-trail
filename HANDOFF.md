@@ -12,7 +12,9 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 
 **Where exactly:** the foundation is built and running on real hardware. Seven of the nineteen Phase 0 issues are closed and device verified. There is no notebook to write in yet, which is Phase 1.
 
-**Done and verified:** #2 documentation, #3 continuous integration, #4 monorepo layout, #5 the schema, #11 the Android project and design tokens, #19 the subagent definitions, #20 the smoke test. Plus #22, a content bug found by the template validator.
+**Done and verified:** #2 documentation, #3 continuous integration, #4 monorepo layout, #5 the schema, #6 ids, #11 the Android project and design tokens, #19 the subagent definitions, #20 the smoke test. Plus #22, a content bug found by the template validator.
+
+**Reopened after being closed prematurely, and this is worth reading before trusting any closed issue here.** Putting `Closes #7`, `#8` and `#14` in the body of pull request #26 auto closed all three. Their substance was built and device verified, but each had criteria genuinely unmet, and closing on the strength of code being written is the exact failure this project's standards name. Each carries a comment saying what is done and what is not. The lesson: `Closes` keywords in a pull request body close issues by title, not by their acceptance criteria, so criteria get checked by hand first and only then does the keyword go in.
 
 **Still open in Phase 0, in the order I would take them:**
 
@@ -30,7 +32,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** open the pull request for `feat/14-encrypted-database` and merge it, then start issue #13, the four locale catalogs, or #16, the web scaffold, neither of which needs a device. **Note on merges:** squash is now the only permitted method and the squash message comes from the pull request body, not from branch commits, so the pull request body is what lands on `main` and is written accordingly.
+**The precise next action:** the Kotlin repository layer, issue #8, which is the largest genuine gap. The `live_*` views exist and are asserted to filter, but no Kotlin layer sits on top of them, so the instrumented tests currently query `db.database` directly, which is the exact access pattern #8 exists to make hard. It needs the layer plus a static check that fails the build on a raw table query outside it. After that, #14's migration mechanism, then #13 locale catalogs or #16 the web scaffold, neither of which needs a device.
 
 **One thing to know before writing that code.** Android's `execSQL` refuses any statement that returns rows, and `PRAGMA journal_mode` returns one. `ContractAssets.splitStatements` already handles the statement splitting including trigger bodies, and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 

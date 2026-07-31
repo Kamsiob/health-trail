@@ -431,6 +431,20 @@ That is a much sharper edge than expected. It means running the instrumented sui
 
 **Revisit if.** Nothing. The expiry condition is written into the rule.
 
+### D26. Id format: UUID version 7, and why not the alternatives
+
+Recorded here because issue #6 requires the chosen format and its reasoning to be in this file, not only in the source.
+
+**Decision.** Row ids are UUID version 7: 48 bits of Unix milliseconds, then 74 bits of randomness, with version and variant bits set as the specification requires, rendered in the ordinary 36 character hyphenated form.
+
+**Alternatives rejected.** An auto-increment integer, which the data contract forbids outright because two devices both creating row 47 has no correct merge. UUID version 4, fully random, which scatters inserts across the whole index and gives no natural ordering. A monotonic counter plus a device id, which orders correctly but leaks how much the person has written and needs custom parsing everywhere.
+
+**Reasoning.** Time ordered ids append rather than scatter, which matters on write and again on every range scan, and they give a stable natural ordering for free in an app whose central object is a chronological trail. The hyphenated rendering means anyone opening the database with an ordinary SQLite browser in ten years sees something they recognize.
+
+**Two properties that are not incidental.** Ids generated inside the same millisecond increment a counter in the high random bits, so a tight loop of inserts sorts in the order it ran rather than arbitrarily. And ids never follow the clock backward: a timezone change or a manual clock correction mid session would otherwise file yesterday's call after today's, and the person would watch their own trail reorder itself. Both are covered by unit tests.
+
+**Revisit if.** Nothing foreseeable.
+
 ### B4. The emulator will not start in this environment, so DatabaseTest cannot run
 
 **What is blocked.** `DatabaseTest`, the seven instrumented tests that prove the encrypted database works through SQLCipher and the Kotlin path. Issue #14 stays open until they run, as instructed.
