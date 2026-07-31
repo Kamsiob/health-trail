@@ -4,7 +4,7 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-07-31, at the end of the session that raised the quality bar. Branch `feat/phase1-setup`, merged to `main` through pull request #35.
+**Last rewritten:** 2026-07-31, at the end of the session that raised the quality bar. Everything it describes is merged to `main` through pull request #35. There is no work sitting on a branch.
 
 If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
 
@@ -123,7 +123,7 @@ The one thing that is waiting rather than blocked: **the light theme and Arabic 
 - Device: Pixel 10 Pro XL, serial `57241FDCQ0000H`, connected over USB.
 - `com.kamsiob.healthtrail` packages installed: **exactly 1**.
 - `com.kamsiob.healthtrail.test` packages installed: **0**.
-- Version installed: `0.1.0`, last updated 2026-07-31 16:30, built from commit `f3f0261`, which is the tip of `feat/phase1-setup`. **The installed build matches the current code.**
+- Version installed: `0.1.0`, last updated 2026-07-31 16:30, built from commit `f3f0261`. **The installed build matches the current code.** `main` has since moved to the squash merge of pull request #35, and `git diff f3f0261 main -- android contract templates` is empty: everything after it was documentation and the merge itself. The app on the phone is the app in the repository.
 - It launches. `topResumedActivity` was `com.kamsiob.healthtrail/.MainActivity`.
 - The notebook on the phone holds throwaway data written while walking the capture flow: a subject named Mom, a hospital stay template, four care threads, and one visit entry. Nothing on it is worth preserving.
 - The phone is in **dark** system theme, which is why every committed screenshot is `-dark`.
@@ -147,7 +147,9 @@ The one thing that is waiting rather than blocked: **the light theme and Arabic 
 
 **Driving the app by hand over adb.** `adb shell uiautomator dump /sdcard/w.xml`, then tap the center of a node's bounds. Matching on visible text is the simplest selector and it works.
 
-**Continuous integration has a problem worth knowing about.** The workflow triggers on `push` to main and on `pull_request`. **Pull request events stopped firing after pull request #35 was opened at 20:01 UTC.** Four commits pushed to `feat/phase1-setup` after that produced no CI run, and the pull request shows no checks at all. The workaround that works is `gh workflow run ci.yml --ref feat/phase1-setup`. **Do not read an absence of checks on pull request #35 as a passing build.** Trigger it manually and look at the result.
+**Continuous integration has a problem worth knowing about.** The workflow triggers on `push` to main and on `pull_request`. **Pull request events stopped firing part way through 2026-07-31.** Six commits pushed to `feat/phase1-setup` after pull request #35 was opened produced no CI run at all, and the pull request showed no checks. Pushes to `main` still trigger, and so does `workflow_dispatch`.
+
+The workaround, which was used before merging and which worked: `gh workflow run ci.yml --ref <branch>`, then poll `gh run list --branch <branch>` until the head sha matches what you pushed. **Do not read an absence of checks on a pull request as a passing build.** Trigger it and look. If this recurs, it is worth a few minutes on whether the repository has hit an Actions limit.
 
 **Gradle is fast and it looks broken.** An incremental Kotlin recompile of several changed files finishes in about a second and prints `BUILD SUCCESSFUL in 1s`. That is real. Confirm with `find app/build -name '<YourNewClass>*.class'` if it matters.
 
