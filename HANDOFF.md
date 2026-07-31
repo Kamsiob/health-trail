@@ -30,7 +30,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** finish `feat/14-encrypted-database`. The Kotlin is written and compiles, 11 unit tests pass, and the instrumented suite compiles. What remains is running `DatabaseTest` on an emulator. The AVD is **`kamai-mig`**, not `android-36`, which is a system image directory rather than an AVD and cost one wasted start. Command: `./gradlew connectedDebugAndroidTest` once `adb devices` shows an `emulator-` serial.
+**The precise next action:** run `DatabaseTest` on an emulator, which is the only thing standing between `feat/14-encrypted-database` and a pull request. The AVD is **`kamai-mig`**; `android-36` is a system image directory, not an AVD, and trying it wastes a start. It cold booted for several minutes without attaching to `adb`, with `/dev/kvm` present and no fatal error in the log, so give it longer, try it with a window, and let it save a snapshot so the next boot is cheaper. Then `./gradlew connectedDebugAndroidTest` from `android/`. **Do not run it against the phone:** it creates and writes a database, and that would leave test rows inside the owner's real installation.
 
 **One thing to know before writing that code.** Android's `execSQL` refuses any statement that returns rows, and `PRAGMA journal_mode` returns one. `ContractAssets.splitStatements` already handles the statement splitting including trigger bodies, and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
@@ -61,9 +61,9 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.17 | Design tokens for both themes, contrast measured and ratios recorded in DECISIONS.md | **verified.** 80 pairs measured across both themes by `tools/checks/check_contrast.py`, which runs on every push. Five tokens corrected, and the capture button glyph is no longer white. Ratios in DECISIONS.md D19 and DESIGN.md section 2.3. Issue #11 |
 | 0.18 | Fonts: display and body faces confirmed by current name and license, Noto fallback chain for four scripts | not started |
 | 0.19 | Four-locale i18n scaffold with RTL working | not started |
-| 0.20 | Database layer: SQLCipher, key in Keystore, schema applied from the copied `schema.sql` asset, no second copy in Kotlin | not started |
+| 0.20 | Database layer: SQLCipher, key in Keystore, schema applied from the copied `schema.sql` asset, no second copy in Kotlin | **written, compiles, not device verified.** SQLCipher opens with a Keystore-wrapped 32 byte passphrase, schema executed from the asset, no Kotlin schema definition. `DatabaseTest` is written and unrun, see DECISIONS.md D21. Issue #14 |
 | 0.21 | Repository layer making it structurally difficult to query without filtering tombstones | **partial.** The `live_*` views exist and are asserted to filter. The Kotlin repository layer and the static check that forbids raw table access are still to do. Issue #8 |
-| 0.22 | Locally generated collision-safe ids, no auto-increment on any user data table | not started |
+| 0.22 | Locally generated collision-safe ids, no auto-increment on any user data table | **verified by test.** UUID version 7, ordered within a millisecond and safe against a backward clock. 7 unit tests including 200,000 ids for uniqueness and 50,000 for ordering. Issue #6 |
 | 0.23 | Every write appends to `change_log` in the same transaction, proven by a test | **partial.** Enforced by triggers in the schema and proven by `check_schema.py`, including that a failing log write rolls the data write back. Still needs the same proof through the Kotlin layer. Issue #7 |
 | 0.24 | `SyncTransport` interface with the file implementation behind it, reconciliation ignorant of transport | not started |
 | 0.25 | Export container: manifest, version check, encryption, round trip equality test passing on an emulator | not started |

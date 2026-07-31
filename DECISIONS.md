@@ -292,6 +292,18 @@ So the discipline is kept in full and the ceremony is dropped, and the board REA
 
 **Revisit if.** More than one person ever works on this. Then the cadence would be real and the fields would carry information.
 
+### D21. The emulator did not come up, so DatabaseTest is written and unrun
+
+**Situation.** `DatabaseTest` creates and writes a database, so it belongs on an emulator rather than the owner's phone. Two starts were attempted. The first used `android-36`, which turned out to be a system image directory rather than an AVD, and the emulator said so plainly. The second used `kamai-mig`, the only real AVD, which began a cold boot and had not attached to `adb` within several minutes. `/dev/kvm` is present and readable and the log shows no fatal error, so this looks like slowness rather than breakage.
+
+**Decision.** Stop, record, and move on rather than keep retrying. The tests are committed, they compile, and both the commit message and `HANDOFF.md` say plainly that they have not run. Nothing claims otherwise.
+
+**What was explicitly not done.** Running them against the connected Pixel. That would create a real database inside the owner's installation, and the rule that data-affecting tests stay on an emulator exists precisely so a convenient shortcut does not put test rows in a real notebook. An unrun test is a known gap. A test run in the wrong place is a quiet mess.
+
+**How to finish it.** Start `kamai-mig` and give it time, then `./gradlew connectedDebugAndroidTest` from `android/`. Worth trying with a window rather than `-no-window`, and worth allowing a snapshot save so the next cold boot is not paid for again.
+
+**What is already proven without it.** The same schema, the same triggers, and the same tombstone behavior are asserted by `tools/checks/check_schema.py` against a real SQLite database on every push, including that a failing change log write rolls the data write back. What `DatabaseTest` adds is that this holds through SQLCipher and through the Kotlin path, which is a real gap and is why the issue stays open.
+
 ---
 
 ## BLOCKED
