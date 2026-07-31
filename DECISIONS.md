@@ -392,6 +392,33 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 
 **Two of the three original entries are resolved.** Kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed.
 
+### B4. The emulator will not start in this environment, so DatabaseTest cannot run
+
+**What is blocked.** `DatabaseTest`, the seven instrumented tests that prove the encrypted database works through SQLCipher and the Kotlin path. Issue #14 stays open until they run, as instructed.
+
+**What works and what does not.** Everything that does not need a device passes: 11 unit tests, assemble, instrumented compile, lint, and six compliance checks, all green through `tools/verify.sh`. The physical phone works fine and runs the six-test smoke suite. **Only the emulator fails.**
+
+**What was tried, five distinct attempts:**
+
+1. An AVD name that was actually a system image directory. The emulator said so plainly. My error.
+2. An AVD already on the machine, belonging to other work. Cold booted, never attached to `adb`. Reusing it was itself wrong and is now forbidden, see D23.
+3. A dedicated `health-trail-api36` AVD created with `avdmanager` against `system-images;android-36;google_apis;x86_64`, launched with `nohup` and `setsid`. Reached `adb devices` as `emulator-5554 offline`, then the process disappeared.
+4. The same AVD run in the foreground of a persistent background task, to rule out the process being killed when its launching shell exited. Same result, exit code 1.
+5. The same AVD with stale lock files removed, `/run/user/1000/avd/running` cleared, and `-wipe-data -no-snapshot` to rule out uninitialized userdata. Same result, exit code 1.
+
+**The symptom, precisely.** The emulator initializes fully: it sets up the gRPC server, netsim WiFi, bluetooth and uwb packet streamers, and the display at 1080x2400. It prints `Emulator is performing a full startup` and then the process exits with code 1, emitting no error, no fatal, and no panic. Grepping the whole log for error, fatal, abort, denied, and panic returns nothing relevant.
+
+Ruled out: disk space, 938 GB free. `/dev/kvm` present and writable. The AVD directory is well formed and the images are the right sizes. A stale lock. Uninitialized userdata.
+
+One clue that has not been chased: `WARNING: cannnot unmap ptr 0x... as it is in the protected range from 0x... to 0x...`, which suggests something is interfering with how QEMU maps memory. That is consistent with the emulator being started from inside a sandboxed shell session, which is the most likely cause and is not something this session can change from within.
+
+**What would unblock it,** in the order I would try:
+
+1. Start the emulator from an ordinary terminal outside this session, with a window rather than `-no-window`, and leave it running. Then `./tools/verify.sh --device` here picks it up, since it looks for any attached `emulator-` serial.
+2. If it fails there too, run it once with `-verbose -show-kernel` and read what the kernel says as it dies, which is the information this environment is not surfacing.
+
+**What was explicitly not done as a workaround.** Running `DatabaseTest` against the connected phone. It creates and writes a database, and that would leave test rows inside a real installation. An unrun test is a known gap. A test run in the wrong place is a mess that looks like coverage.
+
 ### B1. Commit signing. Resolved 2026-07-31
 
 **Outcome.** The owner registered the SSH signing key. Verified rather than assumed: the account now lists one signing key titled "kamsiob commit signing", and `repos/Kamsiob/health-trail/commits/main` reports `verified=true, reason=valid`.

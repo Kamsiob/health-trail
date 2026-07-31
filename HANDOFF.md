@@ -30,7 +30,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** run `DatabaseTest` on the emulator. The AVD for this project is **`health-trail-api36`**, created with `avdmanager` against `system-images;android-36;google_apis;x86_64`. Start it, wait for `adb devices` to show an `emulator-` serial, then `./tools/verify.sh --device`. **Never reuse an emulator, device profile, keystore, or build artifact belonging to anything else,** and never run this suite against the phone: it creates and writes a database.
+**The precise next action:** get an emulator running, which is blocked, see `DECISIONS.md` B4. The AVD for this project is **`health-trail-api36`** and it is correctly created; the emulator process exits with code 1 and no error the moment full startup begins, from every launch strategy tried. The most likely cause is that it is being started from inside a sandboxed shell session. Start it from an ordinary terminal outside this session, then run `./tools/verify.sh --device` here, which picks up any attached `emulator-` serial. **Never run the instrumented suite against the phone:** it creates and writes a database.
 
 **One thing to know before writing that code.** Android's `execSQL` refuses any statement that returns rows, and `PRAGMA journal_mode` returns one. `ContractAssets.splitStatements` already handles the statement splitting including trigger bodies, and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
@@ -110,7 +110,7 @@ Full reasoning is in `DECISIONS.md`. The short list of things not to undo:
 
 ## 5. Blocked
 
-**Nothing is blocked.** All three original items are resolved. Kept here with outcomes, because a blocked list that only grows teaches a reader that nothing here gets fixed.
+**One item is blocked: the emulator will not start here, so `DatabaseTest` cannot run and #14 cannot close.** Full detail in `DECISIONS.md` B4, including all five attempts, the precise symptom, and what would unblock it. Everything that does not need an emulator passes. The three original blockers are resolved. Kept here with outcomes, because a blocked list that only grows teaches a reader that nothing here gets fixed.
 
 - **B1, commit signing. Done.** The owner registered the key. Verified: the account lists one signing key and `main` reports `verified=true, reason=valid`. It applied to the whole existing history at once. This is the first Kamsiob repository with signed commits.
 - **B2, board automations.** Deliberately not switched on, and not a blocker. `tools/board.py sync` keeps the board current at every increment, and auto-add being off was verified empirically rather than assumed. The board is public.
