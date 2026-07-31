@@ -110,14 +110,11 @@ Full reasoning is in `DECISIONS.md`. The short list of things not to undo:
 
 ## 5. Blocked
 
-**One item, cosmetic, and it stops nothing.** Full detail in `DECISIONS.md` under BLOCKED.
+**Nothing is blocked.** All three original items are resolved. Kept here with outcomes, because a blocked list that only grows teaches a reader that nothing here gets fixed.
 
-- **B1.** Commits show as Unverified on GitHub until the signing key is registered, which needs a browser sign-in only the owner can do. Checked rather than assumed: the account has zero signing keys and zero GPG keys, and all four other Kamsiob repositories have zero verified commits, so this was never set up anywhere and nothing is regressing. Two ways out, both fine: he pastes the key at https://github.com/settings/ssh/new as a Signing Key, or he says the word and signing is turned off. Do not turn it off unilaterally.
-
-**Resolved, kept for the record:**
-
-- **B2, board automations.** Not switched on, and no longer a blocker. The board is maintained by `tools/board.py sync`, run at every increment. Verified empirically that auto-add is off: issue #25 did not appear on its own. The board is now public, which it needed to be since the README and the roadmap both link to it.
-- **B3, hosted privacy policy.** Canonical at https://kamsiob.com/privacy.html#health-trail. `PRIVACY.md` mirrors it and says the hosted page governs. Issue #25 carries the About screen link.
+- **B1, commit signing. Done.** The owner registered the key. Verified: the account lists one signing key and `main` reports `verified=true, reason=valid`. It applied to the whole existing history at once. This is the first Kamsiob repository with signed commits.
+- **B2, board automations.** Deliberately not switched on, and not a blocker. `tools/board.py sync` keeps the board current at every increment, and auto-add being off was verified empirically rather than assumed. The board is public.
+- **B3, hosted privacy policy. Done, after a correction worth reading.** Canonical for this app is `https://kamsiob.com/health-trail.html#privacy`. **Not** `privacy.html#health-trail`, which is a longer all-products page the canonical one links to as "the full policy". That link is not a signal that the longer page governs. I got this wrong once by following the link instead of the instruction. `PRIVACY.md` now carries a warning at the top so nobody switches it back.
 
 ## 6. Device state
 

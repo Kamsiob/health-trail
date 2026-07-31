@@ -300,30 +300,13 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 
 **Two of the three original entries are resolved.** Kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed.
 
-### B1. Commit signing, still open, and genuinely small
+### B1. Commit signing. Resolved 2026-07-31
 
-**What is happening.** Every commit here is signed with the SSH key already on this machine. GitHub does not know that key belongs to the account, so it labels those commits Unverified rather than Verified.
+**Outcome.** The owner registered the SSH signing key. Verified rather than assumed: the account now lists one signing key titled "kamsiob commit signing", and `repos/Kamsiob/health-trail/commits/main` reports `verified=true, reason=valid`.
 
-**Checked on 2026-07-31, rather than assumed:**
+As expected, this applied to the whole existing history at once rather than only to new commits, because GitHub checks signatures against currently registered keys when it displays them.
 
-- The account currently has **zero** SSH signing keys and **zero** GPG keys.
-- `kam-ai`, `dig`, `logbook`, and `bearings` each have **zero of five** recent commits verified.
-
-So this was never set up on any Kamsiob project. Nothing is regressing here, and the owner is right that he has not had to do this before. Health Trail is the first repository that signs at all.
-
-**Why I cannot do it myself.** Adding a signing key needs the `admin:ssh_signing_key` permission, which the logged-in CLI does not hold. Granting it means signing in through a browser as the account owner. That is the one category of thing an agent genuinely cannot do on someone's behalf, and it should stay that way.
-
-**The 20 second version.** Open https://github.com/settings/ssh/new, set **Key type** to **Signing Key**, put anything in the title, and paste this line:
-
-```
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJDjMJuCwQhz7/FCxEPPdCYepd5hH6Bv01uitNbrdv2 kamsiob commit signing
-```
-
-Every commit already pushed turns Verified at once, not just future ones.
-
-**The alternative, which costs nothing.** Say the word and I will turn commit signing off. The history then matches the other four repositories, no Unverified labels appear anywhere, and nothing about the app changes. Signing is worth having, but it is not worth a chore he did not ask for.
-
-**Impact while open.** Cosmetic only. The commits are genuinely signed and the history is sound. Note that the squash merges GitHub performs itself already show Verified, because GitHub signs those with its own key, so the history currently shows a mix. That mix is expected and is not a sign the signing setup is broken. Do not turn signing off to make it go away without asking.
+**Worth keeping in mind.** This is the first Kamsiob repository with signed commits. The other four projects still show zero verified commits, since the key is registered now but their history was written unsigned. Nothing needs doing about that, and nothing should be: history is never rewritten here.
 
 ### B2. Board automations. Resolved by doing it a different way
 
@@ -339,10 +322,14 @@ The template's concern is that hand-maintained status goes stale during a long r
 
 **Also done:** the board is public, which it needed to be, since the README and the pinned roadmap both link to it and those links were reaching a private page for everyone except the owner.
 
-### B3. Hosted privacy policy. Resolved
+### B3. Hosted privacy policy. Resolved, then corrected
 
-**Outcome.** The canonical policy is at **https://kamsiob.com/privacy.html#health-trail**, with a summary at https://kamsiob.com/health-trail.html#privacy.
+**Outcome.** The canonical policy for this app is **https://kamsiob.com/health-trail.html#privacy**. That is what the About screen links, what the Play Console listing uses, and what governs.
 
-`PRIVACY.md` now mirrors the canonical wording rather than competing with it, and states plainly that the hosted page governs and that any disagreement between the two is a bug in the file. Issue #25 carries the remaining work: the About screen links exactly that URL when the About screen exists.
+**The correction, recorded because the mistake is an easy one to repeat.** The owner gave that URL. Following it, the page ends with a link reading "The full policy, same plain words" pointing at `privacy.html#health-trail`, a longer all-products policy. I inferred from that link that the longer page was canonical and wrote `PRIVACY.md` to mirror it. That was wrong, and the owner corrected it: the link between the two is not a signal that the longer page governs.
 
-**One small thing worth knowing, not blocking.** The hosted policy carries no effective date, while the page promises that any change lands there "with a new date". Template section A6 asks for the repository copy to match the hosted version including its date. There is no date to match, so `PRIVACY.md` carries none either rather than inventing one, which would guarantee the two disagree. If a date is ever added to the site, it gets copied across.
+The lesson is narrow and worth stating plainly. An instruction naming a specific URL is not an invitation to go looking for a more authoritative one. `PRIVACY.md` now carries a warning at the top naming this trap, so the next reader does not helpfully switch it back.
+
+`PRIVACY.md` mirrors the canonical wording. Issue #25 carries the remaining work.
+
+**One thing that is not blocking.** The canonical page carries no effective date, while promising that any change is posted there with a new date. Template section A6 asks the repository copy to match including its date. There is no date to match, so `PRIVACY.md` carries none rather than inventing one that would guarantee the two disagree. If a date appears, copy it across.
