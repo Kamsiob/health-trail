@@ -27,6 +27,7 @@ CHECKS = [
     ("check_schema.py", "schema.sql against the data contract, shape and behavior"),
     ("check_contrast.py", "every color pair in both themes against the WCAG AA floors"),
     ("check_self_contained.py", "nothing outside this project is named in the repository"),
+    ("check_i18n.py", "the four locale catalogs against each other and their rules"),
 ]
 
 # TESTING-PERSONAS.md section 5 checks that are not implemented yet, each named
