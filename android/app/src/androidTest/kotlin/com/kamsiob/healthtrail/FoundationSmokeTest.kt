@@ -2,11 +2,13 @@ package com.kamsiob.healthtrail
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import com.kamsiob.healthtrail.ui.screens.DisclaimerTags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.contract.ContractAssets
-import com.kamsiob.healthtrail.ui.FoundationTags
+import com.kamsiob.healthtrail.ui.AppRootTags
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -40,8 +42,14 @@ class FoundationSmokeTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     @Test
-    fun theAppLaunchesAndShowsItsFirstScreen() {
-        compose.onNodeWithTag(FoundationTags.ROOT).assertIsDisplayed()
+    fun theAppLaunchesAndReachesAFirstScreen() {
+        // Either the gate or the notebook, depending on whether the disclaimer
+        // has been accepted on this install. What matters here is that it gets
+        // past opening rather than sitting on the loading state.
+        compose.waitUntil(timeoutMillis = 10_000) {
+            compose.onAllNodesWithTag(DisclaimerTags.ROOT).fetchSemanticsNodes().isNotEmpty() ||
+                compose.onAllNodesWithTag(AppRootTags.LOADING).fetchSemanticsNodes().isEmpty()
+        }
     }
 
     @Test
@@ -99,9 +107,5 @@ class FoundationSmokeTest {
         )
     }
 
-    @Test
-    fun theCountsAreShownOnScreen() {
-        compose.onNodeWithTag(FoundationTags.SCHEMA_TABLES).assertIsDisplayed()
-        compose.onNodeWithTag(FoundationTags.TEMPLATE_COUNT).assertIsDisplayed()
-    }
+
 }

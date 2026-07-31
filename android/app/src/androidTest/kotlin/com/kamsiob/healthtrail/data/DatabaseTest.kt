@@ -33,7 +33,10 @@ class DatabaseTest {
 
     @Before
     fun setUp() {
-        HealthTrailDatabase.closeForTest()
+        // Through the repository, so both caches clear together. Closing the
+        // database alone used to leave the repository holding a closed handle,
+        // which surfaced as a failure in a later test class rather than here.
+        Repository.closeForTest()
     }
 
     @Test

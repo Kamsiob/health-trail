@@ -400,6 +400,34 @@ That screen has no mockup, so it is built under the `DESIGN.md` section 10 proto
 
 **Revisit if.** Android ever offers a durable way to recover a Keystore key across a reset, which would change the recovery story rather than this reasoning.
 
+### D27. User facing text is loaded from the contract at runtime, not compiled into resources
+
+**Decision.** The app reads `contract/i18n/*.json` from assets at runtime and formats with `android.icu.text.MessageFormat`. `res/values/strings.xml` is reduced to `app_name` and the three translated resource files are deleted.
+
+**Alternatives considered.** Generating Android string resources from the catalogs at build time, which would have used the platform's own locale resolution and `<plurals>`.
+
+**Reasoning.** Generating resources means a second representation of every string, and the generated copy is the one that goes stale when someone edits it in the wrong place. The same argument that keeps the schema out of Kotlin applies to the copy.
+
+It also matters for correctness rather than only tidiness. The catalogs use full ICU `select` and `plural` syntax, Arabic carries six plural forms, and the deterministic engine has to produce byte identical output in Kotlin and in TypeScript against shared golden vectors. `android.icu` is the same ICU implementation the TypeScript side will use, so identical output is achievable rather than aspirational. A conversion step between the catalog and the platform format would be one more place for the two to diverge.
+
+**On falling back to English.** `MASTER_SPEC.md` section 7 forbids silently falling back rather than failing the build. The runtime does fall back, and that does not contradict it: `check_i18n.py` fails the build when the catalogs disagree on even one key, so a fallback can never mask a missing translation. It can only mask code asking for a key no catalog defines, which is a code bug. That throws in debug and falls back quietly in release, because crashing a caregiver over a missing label is worse than a visible key.
+
+**Revisit if.** Startup cost ever shows up in the cold launch budget, which is under 1.5 seconds at five year scale. Two small JSON parses is not currently near it.
+
+### D28. Two bugs found by building the screen and looking at it
+
+Recorded because both were invisible in the code and obvious on the device, which is the argument for the rule that every screen is installed and looked at before its issue closes.
+
+**The accept button sat in the upper third.** The whole disclaimer column scrolled, so with short content everything bunched at the top and the one action on the screen ended up out of easy reach. `DESIGN.md` section 9 requires primary actions in the lower half so the screen works one handed on a large phone.
+
+Fixed by scrolling the text and not the action: the text column takes the available height and the button sits below it. That also handles the case the original structure was trying to serve, since the wording can now grow to any font size or translation length without pushing the action off the bottom. Logged as item 8 in the screens list.
+
+**The repository held a closed database.** `Repository` cached the `HealthTrailDatabase` in its constructor while `HealthTrailDatabase` kept its own singleton. Closing the database, which the full data wipe does and which tests do between cases, left the repository holding a closed handle, and the next call failed with "attempt to re-open an already-closed object".
+
+It surfaced as two failures in a test class that had not touched the database, several tests after the one that closed it, which is the shape of bug that is expensive to find later. Fixed structurally rather than by patching: the repository holds no handle and resolves the database per call. Two singletons with independent lifecycles will always drift, so the fix is to have one lifecycle.
+
+Worth noting this would have reached a person. The full data wipe closes the database, and the screen shown afterward would have failed on its first read.
+
 ---
 
 ## BLOCKED
