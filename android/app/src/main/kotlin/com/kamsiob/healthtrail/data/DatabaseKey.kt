@@ -5,6 +5,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
+import java.security.GeneralSecurityException
 import java.security.KeyStore
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -38,6 +39,17 @@ import javax.crypto.spec.GCMParameterSpec
  * device either. If they did, they would be useless without the Keystore key,
  * which does not travel.
  */
+/**
+ * Thrown when the wrapping key is gone and the database can no longer be
+ * opened. See `DECISIONS.md` D24 for what the app does about it, which is a
+ * product decision rather than an implementation detail.
+ */
+class DatabaseKeyLost(cause: Throwable) : Exception(
+    "The key that unlocks this notebook is no longer on this device, so the " +
+        "database cannot be decrypted. This is not recoverable in place.",
+    cause,
+)
+
 class DatabaseKey(private val context: Context) {
 
     companion object {
@@ -59,6 +71,12 @@ class DatabaseKey(private val context: Context) {
      * cannot be wiped, and would sit in the heap until the garbage collector
      * happened to move it. Callers should zero the array once SQLCipher has
      * taken it.
+     *
+     * **This does blocking work and must not run on the main thread.** Keystore
+     * operations touch secure hardware and the preference write is synchronous
+     * by design. [HealthTrailDatabase.open] enforces the thread, so this is
+     * reached only from a background thread. Throws [DatabaseKeyLost] when the
+     * wrapping key is gone.
      */
     fun passphrase(): ByteArray {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -66,10 +84,21 @@ class DatabaseKey(private val context: Context) {
         val iv = prefs.getString(PREF_IV, null)
 
         if (wrapped != null && iv != null) {
-            return unwrap(
-                Base64.decode(wrapped, Base64.NO_WRAP),
-                Base64.decode(iv, Base64.NO_WRAP),
-            )
+            return try {
+                unwrap(
+                    Base64.decode(wrapped, Base64.NO_WRAP),
+                    Base64.decode(iv, Base64.NO_WRAP),
+                )
+            } catch (error: GeneralSecurityException) {
+                // The Keystore entry is gone, or the wrapped bytes no longer
+                // authenticate against it. Deliberately not caught and papered
+                // over by generating a fresh passphrase: that would leave the
+                // person's notebook on disk, undecryptable, while the app
+                // behaved as though they had never written anything.
+                throw DatabaseKeyLost(error)
+            } catch (error: IllegalArgumentException) {
+                throw DatabaseKeyLost(error)
+            }
         }
 
         val fresh = ByteArray(PASSPHRASE_BYTES).also { SecureRandom().nextBytes(it) }

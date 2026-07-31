@@ -30,7 +30,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** run `DatabaseTest` on an emulator, which is the only thing standing between `feat/14-encrypted-database` and a pull request. The AVD is **`kamai-mig`**; `android-36` is a system image directory, not an AVD, and trying it wastes a start. It cold booted for several minutes without attaching to `adb`, with `/dev/kvm` present and no fatal error in the log, so give it longer, try it with a window, and let it save a snapshot so the next boot is cheaper. Then `./gradlew connectedDebugAndroidTest` from `android/`. **Do not run it against the phone:** it creates and writes a database, and that would leave test rows inside the owner's real installation.
+**The precise next action:** run `DatabaseTest` on the emulator. The AVD for this project is **`health-trail-api36`**, created with `avdmanager` against `system-images;android-36;google_apis;x86_64`. Start it, wait for `adb devices` to show an `emulator-` serial, then `./tools/verify.sh --device`. **Never reuse an emulator, device profile, keystore, or build artifact belonging to anything else,** and never run this suite against the phone: it creates and writes a database.
 
 **One thing to know before writing that code.** Android's `execSQL` refuses any statement that returns rows, and `PRAGMA journal_mode` returns one. `ContractAssets.splitStatements` already handles the statement splitting including trigger bodies, and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
@@ -89,10 +89,10 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | Build tools present | 36.0.0, 37.0.0 |
 | adb | `~/Android/Sdk/platform-tools/adb`, **not on PATH** |
 | Connected device | Pixel 10 Pro XL, serial `57241FDCQ0000H`, authorized |
-| Emulator AVDs | `android-36`, `kamai-mig`. System images present under `~/Android/Sdk/system-images` |
+| Emulator AVD | **`health-trail-api36`**, created for this project. Never reuse an AVD belonging to anything else. System images under `~/Android/Sdk/system-images` |
 | Node and npm | **Absent.** Affects how the `/web` scaffold gets built. See item 0.26 |
 | Python | 3.14.6, on PATH as `python3` |
-| Signing key | `~/.ssh/kamai_signing`, ed25519, no passphrase, already in `~/.ssh/allowed_signers` |
+| Signing key | ed25519, no passphrase, already in `~/.ssh/allowed_signers`, and registered with GitHub. The path is in this repository's git config under `user.signingkey` |
 
 ---
 

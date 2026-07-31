@@ -22,7 +22,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 
 ### D2. SSH commit signing configured locally, repository scoped
 
-**Decision.** Configure `gpg.format=ssh` with the existing key at `~/.ssh/kamai_signing.pub`, `commit.gpgsign=true`, and `tag.gpgsign=true`, scoped to this repository rather than globally.
+**Decision.** Configure `gpg.format=ssh` with the existing SSH key already on the machine, whose path this repository records in its own git config under `user.signingkey`, `commit.gpgsign=true`, and `tag.gpgsign=true`, scoped to this repository rather than globally.
 
 **Alternatives considered.** Committing unsigned per the RUN-SAFETY.md section 5 fallback. Generating a new signing key for this project.
 
@@ -92,7 +92,7 @@ Generating a second key was rejected because the owner would then have two keys 
 
 **Reasoning.** `RUN-SAFETY.md` requires every blocked item to name what it is waiting on, and a board with no Blocked status cannot show that without abusing another field. Configuring fields before populating is A4b's explicit instruction and is also simply correct, because reshaping a single select's options after items reference them risks losing values.
 
-Two notes on what happened. The `gh project create` command produced project number 2, and an early command in this run listed the fields of project number 1 by mistake, which is the owner's existing Kam AI board. Nothing on project 1 was modified: the mistake surfaced as a KeyError before any mutation ran, and project 1's fields were checked afterward and are unchanged. Recorded because a later session reading the history should not have to wonder.
+One note on what happened. The `gh project create` command produced project number 2, and an early command in this run listed the fields of a different, unrelated project belonging to the owner by mistake. Nothing on that project was modified: the mistake surfaced as a KeyError before any mutation ran, and its fields were checked afterward and are unchanged. Recorded because a later session reading the history should not have to wonder.
 
 Second, `Done` on this board means verified on a device or an emulator. Code being written is not grounds for moving anything there, and the board description says so.
 
@@ -294,13 +294,13 @@ So the discipline is kept in full and the ceremony is dropped, and the board REA
 
 ### D21. The emulator did not come up, so DatabaseTest is written and unrun
 
-**Situation.** `DatabaseTest` creates and writes a database, so it belongs on an emulator rather than the owner's phone. Two starts were attempted. The first used `android-36`, which turned out to be a system image directory rather than an AVD, and the emulator said so plainly. The second used `kamai-mig`, the only real AVD, which began a cold boot and had not attached to `adb` within several minutes. `/dev/kvm` is present and readable and the log shows no fatal error, so this looks like slowness rather than breakage.
+**Situation.** `DatabaseTest` creates and writes a database, so it belongs on an emulator rather than the owner's phone. Two starts were attempted. The first named a system image directory rather than an AVD, and the emulator said so plainly. The second reused an AVD that already existed on the machine, which began a cold boot and had not attached to `adb` within several minutes. `/dev/kvm` is present and readable and the log shows no fatal error, so this looks like slowness rather than breakage.
 
 **Decision.** Stop, record, and move on rather than keep retrying. The tests are committed, they compile, and both the commit message and `HANDOFF.md` say plainly that they have not run. Nothing claims otherwise.
 
 **What was explicitly not done.** Running them against the connected Pixel. That would create a real database inside the owner's installation, and the rule that data-affecting tests stay on an emulator exists precisely so a convenient shortcut does not put test rows in a real notebook. An unrun test is a known gap. A test run in the wrong place is a quiet mess.
 
-**How to finish it.** Start `kamai-mig` and give it time, then `./gradlew connectedDebugAndroidTest` from `android/`. Worth trying with a window rather than `-no-window`, and worth allowing a snapshot save so the next cold boot is not paid for again.
+**How to finish it.** Superseded by D23: this project now has its own AVD, `health-trail-api36`, and reusing an existing one was itself the mistake.
 
 **What is already proven without it.** The same schema, the same triggers, and the same tombstone behavior are asserted by `tools/checks/check_schema.py` against a real SQLite database on every push, including that a failing change log write rolls the data write back. What `DatabaseTest` adds is that this holds through SQLCipher and through the Kotlin path, which is a real gap and is why the issue stays open.
 
@@ -322,6 +322,67 @@ So the discipline is kept in full and the ceremony is dropped, and the board REA
 **And the reason the logging is not optional.** Building is allowed to proceed without asking, which means the review happens after the fact. That only works if the record is written at the moment of the decision. A screen built on Tuesday and logged on Friday is three days of work stacked on an unreviewed choice, and the owner cannot review what he cannot find.
 
 **Revisit if.** Never, without the owner. These are his design authority, delegated with conditions attached.
+
+### D23. A dedicated emulator, and nothing from any other project
+
+**Decision.** This project has its own AVD, `health-trail-api36`, created with `avdmanager` against `system-images;android-36;google_apis;x86_64`. Nothing belonging to any other work is reused: no emulator, no device profile, no keystore, no build artifact.
+
+**What went wrong before this.** The first emulator attempt named a system image directory rather than an AVD. The second reused an AVD that already existed on the machine and belonged to something else, which then failed to boot and cost two rounds of diagnosis. Reusing it was the actual mistake; the boot failure was only how it surfaced. A dedicated AVD is also reproducible, which a borrowed one never is.
+
+A shell left waiting on that emulator was still running eighteen minutes later and was ended.
+
+**The repository is self contained, and that is now enforced.** Every reference to other work was removed from `DECISIONS.md`, `HANDOFF.md`, and the working tree, and `tools/checks/check_self_contained.py` fails the build if one returns.
+
+That check stores its watched words as SHA-256 hashes rather than as a list, because a check holding the list in plain text would itself put those names into the repository, which is the thing it exists to prevent. It scans the files git tracks rather than the working tree, since gitignored session state and build output never reach anyone. Negative tested: a watched word added to a tracked file makes it exit 1 and name the file, the line, and the word.
+
+**One file was removed rather than edited.** A copy of the public website page sat at the repository root. It carried site navigation naming other products, and a stale copy of a live page drifts from it besides, which is the same argument already applied to the privacy policy. It is gitignored now. Nothing about the build depended on it, and the design reference is `reference/screen-grid.html`.
+
+**One reference stays where it is.** A commit message on `feat/14-encrypted-database` names the borrowed AVD. History is not rewritten here, so it stays, and this entry is the correction. The branch is squash merged, and a squash merge writes a fresh message, so it will not reach the default branch.
+
+**Revisit if.** Nothing. From here, no other project is named anywhere in this repository, in any file, commit message, issue, or comment.
+
+### D24. Where the key write happens, and what happens when the key is gone
+
+Two follow-ups on the key storage in D14 and the lint exchange that preceded it.
+
+#### The synchronous write stays, and it runs off the main thread
+
+Lint raised `ApplySharedPref`, asking for `apply()` instead of `commit()`. Moving to `prefs.edit(commit = true)` satisfied the rule while keeping the blocking write. That silenced the question without answering it, and the question was real: **lint was asking about blocking work on the main thread.**
+
+**The answer, decided rather than assumed.** `HealthTrailDatabase.open()` now refuses to run on the main thread and says why. It does Keystore operations that touch secure hardware, a synchronous preference write, and on first run executes the entire schema. All of it belongs on a background thread.
+
+The refusal is a hard `check` rather than a warning, because a main thread call that merely felt slow on a fast phone during testing would ship, and the person it would fail for is the one on the oldest device. There was no caller yet, which is exactly when this is cheap to fix.
+
+The write itself stays synchronous. `apply()` writes in the background, so a process death in the following milliseconds would lose the wrapped passphrase while the database file it unlocks already exists, which is unrecoverable in the worst way: the notebook still on disk and nothing able to open it. It costs microseconds and happens once per install.
+
+#### Backup exclusion, confirmed rather than assumed
+
+Read out of the merged manifest and the rules file, not from memory:
+
+- `android:allowBackup="false"`
+- `android:fullBackupContent="false"`
+- `data_extraction_rules.xml` excludes `root`, `database`, `sharedpref`, `external`, and `file` from **both** `cloud-backup` and `device-transfer`.
+
+So the database file and the preferences holding the wrapped passphrase are both excluded from Auto Backup and from device to device transfer. They never travel together, and neither travels at all.
+
+#### What the app does when the wrapping key is gone
+
+**It cannot be recovered in place, and the app says so.**
+
+The Keystore key can disappear: a factory reset, certain device migrations, and some Keystore corruption cases all take it. The database file may still be sitting on disk, and without that key it is bytes.
+
+`DatabaseKey` now throws a typed `DatabaseKeyLost` rather than a generic failure. It deliberately does **not** catch the error and generate a fresh passphrase, which would leave the notebook on disk, undecryptable, while the app behaved as though the person had never written anything. That is the worst available outcome and it looks like the best one.
+
+The honest answer is **restore from your export**, and stating it has a consequence worth naming plainly: **backup and restore are load bearing, not optional.** They are the only recovery path this app has for its own encryption, so they are built accordingly. Concretely:
+
+- The backup offer is made once, at the moment the person has something worth losing, and a decline is honored permanently. Its copy says what it is protecting against.
+- The quiet permanent indicator of the last successful backup is not decoration. It is the person's only view of whether recovery is possible.
+- Restore is tested onto a fresh install as its primary case rather than an afterthought.
+- The screen shown when the key is gone explains what happened in plain words, does not blame the person, and offers import as the way forward. It never suggests the data is retrievable when it is not.
+
+That screen has no mockup, so it is built under the `DESIGN.md` section 10 protocol and logged like any other undesigned screen. Tracked on issue #14.
+
+**Revisit if.** Android ever offers a durable way to recover a Keystore key across a reset, which would change the recovery story rather than this reasoning.
 
 ---
 
