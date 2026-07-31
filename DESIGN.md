@@ -274,6 +274,28 @@ Line for continuous measures, plotted in `blue` at 2.5dp with a 3.5dp end point.
 
 Every list has one, written as an invitation rather than an absence. The Today screen's empty state is a coached three-step list, per the reference file, and its first item is always filling in the Emergency Card, because that is the highest value two minutes a new user can spend.
 
+### 5.11 Choice chips
+
+**A new pattern, defined here once because nothing existing could carry it.** Section 5.6 specifies pills, which report a state and are not touchable. Screen 26 of the reference file needs the opposite: a small control the person taps to choose among a few short answers, for the rough date and for the care thread. Defined per section 10, then used everywhere the pattern applies. Nothing else may be invented for choosing among a few short options.
+
+**Geometry.** Height 40dp with a 48dp touch target, horizontal padding 16dp, fully rounded, laid out in a wrapping row with 8dp between chips and 8dp between rows. Chips wrap rather than scroll horizontally, because a horizontal scroller hides options and the whole point of the set is that the person can see every answer at once.
+
+**States.**
+
+| State | Treatment |
+|---|---|
+| Unselected | `sand` surface, Body M in `ink` |
+| Selected | `blue_soft` surface, Label type at weight 700 in `blue_deep`, plus a 2dp `blue` ring |
+| Pressed | Quick 120ms, per section 6 |
+| Focused | 2dp `blue` outline offset 2dp, like every other focusable thing |
+| Disabled | `sand` at reduced opacity with `ink3` text safe. Rare, because a choice here is never wrong |
+
+**Selection is never carried by color alone.** A selected chip changes weight and gains a ring, so it is distinguishable with color vision differences and in a grayscale screenshot. This is the section 2.2 rule applied to a control rather than to a status.
+
+**A chip may carry a leading dot** in a care thread's route color, 8dp, which is how a thread identifies itself elsewhere. The dot is never the only thing distinguishing two chips, since each chip also carries the thread's name.
+
+**Every chip set includes an answer that means "I do not know".** "Not sure" for a date, "Not sure yet" for a thread. It is a real answer that saves and files, never a way of postponing the question, and it is the reason this pattern exists rather than a required picker.
+
 ---
 
 ## 6. Motion
@@ -312,13 +334,33 @@ Write like a person explaining something to a friend across a table. Plain words
 
 ### The disclaimer, final wording
 
-Shown on first launch, before any part of the app is usable, with an explicit accept:
+Shown on first launch, before any part of the app is usable, with an explicit accept.
 
-> Health Trail is a record-keeping app for family caregivers. It is not a medical app. It gives no medical advice. Nothing in it replaces a doctor, a nurse, emergency services, or legal advice from a lawyer. If someone needs urgent help, call emergency services.
+**Rewritten on 2026-07-31, and the reason is worth keeping.** The first wording was a correct disclaimer and a bad first screen. It opened with what the app is not, stacked four denials in a row, and read as though it were protecting the software from the person rather than being straight with someone about to trust it with something that matters. It disclosed everything it needed to and made a person in a hallway feel handled.
+
+**The substance did not change and may not.** Everything the old wording covered is still covered: that this is a record keeping app, that it is not a medical app, that it gives no medical advice, that nothing here replaces a doctor, a nurse, emergency services, or a lawyer, that urgent situations mean calling emergency services, that what is written stays on the phone, and that the person is responsible for what they write down. Only the voice and the pacing changed. **Nothing may be cut from this on the grounds of warmth.**
+
+The wording, carried verbatim rather than paraphrased:
+
+> **Before you start**
 >
-> What you record here is yours. It stays on this phone, and you are responsible for what you write down.
+> Health Trail is a notebook. It helps you keep track of someone's care: the calls, the visits, the questions, and the paperwork that piles up around all of it.
+>
+> **It is not a medical app**
+>
+> It gives no medical advice, and it is not a medical device. Nothing here replaces a doctor, a nurse, emergency services, or advice from a lawyer. If something is urgent, call emergency services.
+>
+> **What you write stays on this phone**
+>
+> There is no account and no cloud. Your notes live on this device and go nowhere else unless you send them somewhere yourself.
+>
+> **You are the one keeping the record**
+>
+> The app writes down what you tell it and keeps it organized. It never decides what any of it means. What you record here is yours, and so is the responsibility for what you write down.
 >
 > [I understand]
+
+**Structure is part of the wording.** The three bold lines are section headings in Display S, not emphasis inside a paragraph, and each is followed by its own short body. A person can read one block, look up at a nurse, and come back without losing their place. Built as a single wall of text it was skipped rather than read, which is a failure of the screen rather than of the reader.
 
 The same substance appears in the About screen and the store listing. It is not shown again after acceptance. No version of the app skips it.
 
@@ -350,7 +392,11 @@ Every screen here was composed from the existing components under section 10 rat
 
 **The disclaimer gate.** The first screen anyone sees, and a gate rather than a notice: nothing else is reachable until it is explicitly accepted, and the acceptance is recorded with a timestamp so it is shown exactly once per install.
 
-The wording is fixed by section 7 and carried verbatim, not paraphrased. Composed from the mark at 44dp, Display L for the heading, Body L for the two paragraphs, and one filled button. Nothing new was introduced.
+The wording is fixed by section 7 and carried verbatim, not paraphrased. Composed from the mark at 44dp, Display L for the heading, Body L for the lead, the card from section 5.3 with Display S and Body M inside it, and one filled button. Nothing new was introduced.
+
+**Rebuilt on 2026-07-31 under the standard in section 10.5.** The first version was one heading and two long paragraphs of Body L. It disclosed everything it had to and read as a wall of text, which is a screen a person scrolls past to reach the button. The three things someone actually has to take away are now three cards, each with its own heading, so the screen can be read in pieces by a person who keeps getting interrupted. Nothing was cut to get there, and section 7 states that as a constraint on any future edit.
+
+The three headings are real headings to a screen reader, not bold text, so traversal by heading works and matches the visual order.
 
 The text scrolls and the action does not. That is what keeps the accept button in the lower half where a person holding a large phone in one hand can reach it, per section 9, while letting the wording grow to any font size or translation length without pushing the action off the bottom. Building it with the whole column scrolling put the button in the upper third, which is why it is built this way.
 
@@ -406,11 +452,11 @@ Not a phase. A gate on every screen.
 
 The 27 screens in `reference/screen-grid.html` do not cover everything this app needs. The template library, the template pickers, the template editor, and a number of sub-screens have no mockup. You will reach them. The order of the rules below matters.
 
-### 11.1 Do not stop, and do not ask
+### 10.1 Do not stop, and do not ask
 
 Build the screen. Then log it. Both parts are required and neither substitutes for the other.
 
-### 11.2 Compose, do not design
+### 10.2 Compose, do not design
 
 `DESIGN.md` and the screen grid together already define a finished design language: a card, a section header, a list row with its optional subtitle and chevron, an eyebrow label, a pill, an empty state, the spacing scale, the type scale, and the motion vocabulary. An undesigned screen is **assembled from those pieces**.
 
@@ -420,7 +466,7 @@ It is not an opportunity to introduce a new component, a new layout idiom, a new
 
 **When a genuinely new pattern is unavoidable,** because nothing existing can carry the content, define it once in section 5 with its states and its rules, then use that definition everywhere the pattern applies. **A pattern that appears twice in two different forms is a defect,** and the fix is to correct the earlier one rather than leave both standing.
 
-### 11.3 Complete means complete
+### 10.3 Complete means complete
 
 Every screen ships complete whether or not it was mocked up. Complete means all of these, not most of them:
 
@@ -435,7 +481,7 @@ Every screen ships complete whether or not it was mocked up. Complete means all 
 
 **A screen without its empty state is not built.** The person must never encounter a blank area, a placeholder string, a stub, a debug label, a truncation, or a layout that only holds together because the sample data happened to be tidy.
 
-### 11.4 Log it in three places, immediately
+### 10.4 Log it in three places, immediately
 
 At the moment the screen is built, not at a phase gate. A screen built on Tuesday and logged on Friday is three days of work built on top of an unreviewed decision.
 
@@ -443,7 +489,34 @@ At the moment the screen is built, not at a phase gate. A screen built on Tuesda
 2. **An entry in section 8 of this document,** describing what the screen does and how it behaves, so this document keeps describing the app as it actually is rather than only the parts drawn in advance.
 3. **A line in the running list in `HANDOFF.md`,** so the review can be done in one sitting rather than archaeologically.
 
-### 11.5 Discoverability is part of the screen
+### 10.5 Functionally correct is not done
+
+**A screen that works but looks unfinished is unfinished.** This is the standard for every screen, drawn or undrawn, and it exists because four screens were built correct and left visually thin, and every screen after them would have inherited the same bar.
+
+Done means it looks and reads like the rest of the app, it has been looked at on the device, and nothing on it stands in for a design decision that was never made. Specifically, none of the following ship:
+
+- Bare text where the design language has a component.
+- A single line text field where the screen grid shows chips, segments, or a structured layout.
+- A flat list of everything at once where grouping, hierarchy, or progressive disclosure is called for.
+- Uniform visual weight, where a person cannot tell what matters.
+- Spacing, type scale, or grouping improvised per screen rather than taken from section 4.
+
+**The fix for a thin screen is always the components that already exist,** never a new one. This is section 10.2 again, from the other direction: composing badly looks the same as not composing.
+
+### 10.6 The checklist a screen passes before its issue closes
+
+Checked rather than remembered, in this order. A screen closes only after every line is true.
+
+1. **Built, installed to the phone over ADB, opened, and looked at on the real device.** Not a preview, not the layout inspector, the actual screen in a hand. Two real bugs in one increment were invisible in review and obvious on the device, recorded as D28.
+2. **It uses the components the design language already has,** and introduced nothing new. If something new was genuinely unavoidable, it is specified in section 5 first, with its states.
+3. **Hierarchy is visible at a glance.** A person can tell what matters without reading every word.
+4. **It holds up with real content,** not only with tidy sample data. Long names, empty sections, one item, many items, a note nobody bothered to punctuate.
+5. **It holds up in the longest language,** which is usually Spanish wrapping or a long Arabic string, and it holds up right to left.
+6. **It reads as the same app as the screen before it.** Same spacing, same type scale, same voice.
+7. **Every state in section 10.3 exists**, including the empty one.
+8. **A screenshot from the device is committed,** and the undrawn screen is logged in the three places section 10.4 names.
+
+### 10.7 Discoverability is part of the screen
 
 Every section, template, and feature must be reachable and, more importantly, **discoverable by someone who does not already know it exists**. A capability that can only be found by a person who already knew to look for it is not finished.
 

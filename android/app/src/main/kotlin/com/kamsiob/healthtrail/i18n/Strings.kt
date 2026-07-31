@@ -128,26 +128,45 @@ class Strings internal constructor(
          * A catalog for `@Preview` only, which has no `Context` to read assets
          * from. It carries the English source values for the keys previews use,
          * so a preview shows real copy rather than key names.
+         *
+         * **These values are copies and copies drift.** `StringsTest` asserts
+         * every entry here is byte identical to the English catalog, so a
+         * preview cannot quietly show wording the app no longer ships. That
+         * check is the only reason duplicating the copy is acceptable at all.
          */
-        fun preview(): Strings {
-            val entries = mapOf(
+        fun preview(): Strings =
+            Strings(PREVIEW_ENTRIES, PREVIEW_ENTRIES, Locale.ENGLISH, isRtl = false,
+                reviewedByNativeSpeaker = false)
+
+        /** Exposed so the drift check above can be an actual test. */
+        internal val previewEntries: Map<String, String> get() = PREVIEW_ENTRIES
+
+        private val PREVIEW_ENTRIES = mapOf(
                 "disclaimer.title" to "Before you start",
-                "disclaimer.body.1" to
-                    "Health Trail is a record-keeping app for family caregivers. It is not " +
-                    "a medical app. It gives no medical advice. Nothing in it replaces a " +
-                    "doctor, a nurse, emergency services, or legal advice from a lawyer. " +
-                    "If someone needs urgent help, call emergency services.",
-                "disclaimer.body.2" to
-                    "What you record here is yours. It stays on this phone, and you are " +
-                    "responsible for what you write down.",
+                "disclaimer.lead" to
+                    "Health Trail is a notebook. It helps you keep track of someone's " +
+                    "care: the calls, the visits, the questions, and the paperwork that " +
+                    "piles up around all of it.",
+                "disclaimer.block.1.title" to "It is not a medical app",
+                "disclaimer.block.1.body" to
+                    "It gives no medical advice, and it is not a medical device. " +
+                    "Nothing here replaces a doctor, a nurse, emergency services, or " +
+                    "advice from a lawyer. If something is urgent, call emergency " +
+                    "services.",
+                "disclaimer.block.2.title" to "What you write stays on this phone",
+                "disclaimer.block.2.body" to
+                    "There is no account and no cloud. Your notes live on this device " +
+                    "and go nowhere else unless you send them somewhere yourself.",
+                "disclaimer.block.3.title" to "You are the one keeping the record",
+                "disclaimer.block.3.body" to
+                    "The app writes down what you tell it and keeps it organized. It " +
+                    "never decides what any of it means. What you record here is yours, " +
+                    "and so is the responsibility for what you write down.",
                 "disclaimer.accept" to "I understand",
                 "common.loading" to "Loading",
                 "common.error.generic" to "That did not work. Nothing was changed.",
                 "common.retry" to "Try again",
-            )
-            return Strings(entries, entries, Locale.ENGLISH, isRtl = false,
-                reviewedByNativeSpeaker = false)
-        }
+        )
 
         private class Catalog(val entries: Map<String, String>, val meta: JSONObject)
 

@@ -7,8 +7,6 @@
     "note": "Usted formal en todo el texto. A las personas mayores se les trata de Señor o Señora. Sin revisión de un hablante nativo que conozca el sistema de cuidados estadounidense."
   },
   "disclaimer.title": "Antes de empezar",
-  "disclaimer.body.1": "Health Trail es una aplicación para llevar registros, pensada para familiares que cuidan a alguien. No es una aplicación médica. No da consejos médicos. Nada de lo que hay aquí sustituye a un médico, a una enfermera, a los servicios de emergencia ni al consejo legal de un abogado. Si alguien necesita ayuda urgente, llame a los servicios de emergencia.",
-  "disclaimer.body.2": "Lo que anote aquí es suyo. Se queda en este teléfono, y usted es responsable de lo que escriba.",
   "disclaimer.accept": "Entendido",
   "setup.title": "¿A quién está cuidando?",
   "setup.name.label": "Su nombre",
@@ -107,5 +105,12 @@
   "capture.question.who": "Para quién es",
   "capture.question.who.hint": "Un nombre o un cargo",
   "capture.question.note": "Qué quiere preguntar",
-  "capture.question.note.hint": "Estará esperando en su próxima cita"
+  "capture.question.note.hint": "Estará esperando en su próxima cita",
+  "disclaimer.lead": "Health Trail es un cuaderno. Le ayuda a llevar la cuenta del cuidado de alguien: las llamadas, las visitas, las preguntas y el papeleo que se acumula alrededor de todo eso.",
+  "disclaimer.block.1.title": "No es una aplicación médica",
+  "disclaimer.block.1.body": "No da consejo médico y no es un dispositivo médico. Nada de lo que hay aquí sustituye a un médico, a una enfermera, a los servicios de emergencia ni al consejo de un abogado. Si algo es urgente, llame a los servicios de emergencia.",
+  "disclaimer.block.2.title": "Lo que escriba se queda en este teléfono",
+  "disclaimer.block.2.body": "No hay cuenta ni nube. Sus notas viven en este dispositivo y no van a ningún otro sitio a menos que usted las envíe.",
+  "disclaimer.block.3.title": "Usted es quien lleva el registro",
+  "disclaimer.block.3.body": "La aplicación anota lo que usted le dice y lo mantiene organizado. Nunca decide lo que significa. Lo que registre aquí es suyo, y también lo es la responsabilidad de lo que escriba."
 }

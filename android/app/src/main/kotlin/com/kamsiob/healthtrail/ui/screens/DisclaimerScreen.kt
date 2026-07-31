@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,11 +16,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.R
@@ -28,12 +33,13 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
+import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
-import androidx.compose.runtime.CompositionLocalProvider
 
 object DisclaimerTags {
     const val ROOT = "disclaimer_root"
     const val ACCEPT = "disclaimer_accept"
+    fun block(index: Int) = "disclaimer_block_$index"
 }
 
 /**
@@ -47,12 +53,26 @@ object DisclaimerTags {
  * message catalogs. It is not paraphrased, shortened, or softened here, and the
  * same substance appears on the About screen and in the store listing.
  *
+ * **Structure is part of the wording, not decoration on top of it.** The first
+ * version of this screen was one heading and two long paragraphs, and it was
+ * skipped rather than read, which is a failure of the screen rather than of the
+ * reader. The three things a person actually has to take away now sit in three
+ * cards, each with its own heading, so someone can read one block, look up at a
+ * nurse, and come back without losing their place.
+ *
+ * Nothing was cut to get there. Everything the old wording disclosed is still
+ * disclosed, which `DESIGN.md` section 7 states as a constraint on any future
+ * edit to this copy.
+ *
+ * Composed from the mark at 44dp, Display L, Body L, the card from section 5.3,
+ * Display S, Body M, and one filled button. Nothing new was introduced.
+ *
  * **On states.** This screen has fixed content, so it has no empty or many item
  * state. What it does have to survive is the largest system font size and the
- * longest translation, which is why the whole column scrolls rather than
- * assuming it fits. The mark is decorative and is hidden from the screen reader:
- * the heading immediately below it already says where the person is, and a
- * reader announcing a logo before every title is noise.
+ * longest translation, which is why the text column scrolls rather than assuming
+ * it fits. The mark is decorative and is hidden from the screen reader: the
+ * heading immediately below it already says where the person is, and a reader
+ * announcing a logo before every title is noise.
  */
 @Composable
 fun DisclaimerScreen(onAccept: () -> Unit) {
@@ -84,39 +104,45 @@ fun DisclaimerScreen(onAccept: () -> Unit) {
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
             ) {
-            Image(
-                painter = painterResource(R.drawable.ic_mark),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colors.blaze),
-                modifier = Modifier
-                    .size(44.dp)
-                    .clearAndSetSemantics { },
-            )
+                Image(
+                    painter = painterResource(R.drawable.ic_mark),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colors.blaze),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clearAndSetSemantics { },
+                )
 
-            Spacer(Modifier.height(Space.l))
+                Spacer(Modifier.height(Space.l))
 
-            Text(
-                text = strings["disclaimer.title"],
-                style = HealthTrail.type.displayL,
-                color = colors.ink,
-            )
+                Text(
+                    text = strings["disclaimer.title"],
+                    style = HealthTrail.type.displayL,
+                    color = colors.ink,
+                    modifier = Modifier.semantics { heading() },
+                )
 
-            Spacer(Modifier.height(Space.m))
+                Spacer(Modifier.height(Space.sm))
 
-            Text(
-                text = strings["disclaimer.body.1"],
-                style = HealthTrail.type.bodyL,
-                color = colors.ink,
-            )
+                Text(
+                    text = strings["disclaimer.lead"],
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink2,
+                )
 
-            Spacer(Modifier.height(Space.m))
+                Spacer(Modifier.height(Space.l))
 
-            Text(
-                text = strings["disclaimer.body.2"],
-                style = HealthTrail.type.bodyL,
-                color = colors.ink,
-            )
-
+                // The three things a person has to take away. Cards rather than
+                // paragraphs, because a card is where this app puts a thing that
+                // stands on its own, and each of these does.
+                (1..BLOCK_COUNT).forEach { index ->
+                    DisclaimerBlock(
+                        title = strings["disclaimer.block.$index.title"],
+                        body = strings["disclaimer.block.$index.body"],
+                        modifier = Modifier.testTag(DisclaimerTags.block(index)),
+                    )
+                    if (index != BLOCK_COUNT) Spacer(Modifier.height(Space.cardGap))
+                }
             }
 
             Spacer(Modifier.height(Space.l))
@@ -129,6 +155,41 @@ fun DisclaimerScreen(onAccept: () -> Unit) {
                     .testTag(DisclaimerTags.ACCEPT),
             )
         }
+    }
+}
+
+/**
+ * How many blocks the screen carries.
+ *
+ * Held here rather than counted from the catalog, so a translation that is
+ * missing one fails loudly at that key instead of quietly rendering a shorter
+ * disclaimer than English does. A disclaimer that discloses less in one language
+ * than in another is the one failure mode this screen cannot have.
+ */
+private const val BLOCK_COUNT = 3
+
+@Composable
+private fun DisclaimerBlock(title: String, body: String, modifier: Modifier = Modifier) {
+    val colors = HealthTrail.colors
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(Radius.card)
+            .background(colors.card)
+            .padding(Space.cardPadding),
+    ) {
+        Text(
+            text = title,
+            style = HealthTrail.type.displayS,
+            color = colors.ink,
+            modifier = Modifier.semantics { heading() },
+        )
+        Spacer(Modifier.height(Space.s))
+        Text(
+            text = body,
+            style = HealthTrail.type.bodyM,
+            color = colors.ink2,
+        )
     }
 }
 

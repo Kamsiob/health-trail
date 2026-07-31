@@ -7,8 +7,6 @@
     "note": "The source locale. Every other catalog carries exactly these keys."
   },
   "disclaimer.title": "Before you start",
-  "disclaimer.body.1": "Health Trail is a record-keeping app for family caregivers. It is not a medical app. It gives no medical advice. Nothing in it replaces a doctor, a nurse, emergency services, or legal advice from a lawyer. If someone needs urgent help, call emergency services.",
-  "disclaimer.body.2": "What you record here is yours. It stays on this phone, and you are responsible for what you write down.",
   "disclaimer.accept": "I understand",
   "setup.title": "Who are you looking after",
   "setup.name.label": "Their name",
@@ -107,5 +105,12 @@
   "capture.question.who": "Who it is for",
   "capture.question.who.hint": "A name or a role",
   "capture.question.note": "What you want to ask",
-  "capture.question.note.hint": "It will be waiting on their next appointment"
+  "capture.question.note.hint": "It will be waiting on their next appointment",
+  "disclaimer.lead": "Health Trail is a notebook. It helps you keep track of someone's care: the calls, the visits, the questions, and the paperwork that piles up around all of it.",
+  "disclaimer.block.1.title": "It is not a medical app",
+  "disclaimer.block.1.body": "It gives no medical advice, and it is not a medical device. Nothing here replaces a doctor, a nurse, emergency services, or advice from a lawyer. If something is urgent, call emergency services.",
+  "disclaimer.block.2.title": "What you write stays on this phone",
+  "disclaimer.block.2.body": "There is no account and no cloud. Your notes live on this device and go nowhere else unless you send them somewhere yourself.",
+  "disclaimer.block.3.title": "You are the one keeping the record",
+  "disclaimer.block.3.body": "The app writes down what you tell it and keeps it organized. It never decides what any of it means. What you record here is yours, and so is the responsibility for what you write down."
 }

@@ -520,3 +520,25 @@ The lesson is narrow and worth stating plainly. An instruction naming a specific
 `PRIVACY.md` mirrors the canonical wording. Issue #25 carries the remaining work.
 
 **One thing that is not blocking.** The canonical page carries no effective date, while promising that any change is posted there with a new date. Template section A6 asks the repository copy to match including its date. There is no date to match, so `PRIVACY.md` carries none rather than inventing one that would guarantee the two disagree. If a date appears, copy it across.
+
+### D30. Functionally correct is not done
+
+**Date:** 2026-07-31. **Decided by:** the owner, and it applies from here on rather than to a cleanup pass.
+
+Four screens were built, verified on the device, and shipped: the disclaimer gate, the setup screen, the notebook table of contents, and the capture form. Each one worked. Each one was visually thin. The owner named them as one symptom rather than four defects, which is the correct reading: they were built to be functionally correct and left there, and every screen after them would have inherited the same bar.
+
+**The standard, which is now in `DESIGN.md` section 10.5 and checked by the list in 10.6.** A screen is not done when it works. It is done when it looks and reads like the rest of the app, has been looked at on the device, and nothing on it stands in for a design decision that was never made.
+
+**What the failure actually was, stated plainly so it is not repeated.** Not a shortage of taste and not a missing mockup. Every piece needed already existed: cards, section headers, list rows with subtitle and chevron, eyebrow labels, pills, chips, empty states, the spacing scale, the type scale, the motion vocabulary. The capture screen in particular had a mockup, screen 26 of the reference file, showing rough date chips, thread chips, an open note area, and a save action that accepts whatever is there. What shipped was two single line text fields. The specification was not read closely enough before building, and the result passed its tests.
+
+**The lesson is narrow and worth stating in its narrowest form.** Passing tests measures whether a screen does what it was built to do. It says nothing about whether it should have been built that way. A screen that works but looks unfinished is unfinished, and the tests will not tell you.
+
+**One thing this does not license.** The fix for a thin screen is the components that already exist, not new ones. Composing badly and not composing look the same from a distance, and the temptation after a note like this one is to invent something to prove effort. Section 10.2 still holds.
+
+### D31. The screenshot theme label is read from the device
+
+**Date:** 2026-07-31.
+
+`tools/screenshot.sh` took the theme as an optional argument defaulting to `light` and never asked the device. Two captures in one session were written as `-light` while the phone was in dark mode.
+
+The theme is now read from `cmd uimode night` and an argument that disagrees with the device is refused rather than honored. A mislabeled screenshot in a public repository is the kind of error nobody catches, because the label is believed and the image is only glanced at, and these images are the evidence attached to design review issues.

@@ -7,8 +7,6 @@
     "note": "临终关怀、授权委托书和社工三个词不使用直译，改用说明性表述。尚未经由熟悉美国照护体系的母语者审校。"
   },
   "disclaimer.title": "开始之前",
-  "disclaimer.body.1": "Health Trail 是给家庭照护者做记录用的应用，不是医疗应用，也不提供任何医疗建议。这里的任何内容都不能代替医生、护士、急救服务或律师的法律意见。如果有人需要紧急帮助，请拨打急救电话。",
-  "disclaimer.body.2": "您记下的内容属于您自己。它只留在这部手机上，您对自己写下的内容负责。",
   "disclaimer.accept": "我明白了",
   "setup.title": "您在照顾谁",
   "setup.name.label": "他的名字",
@@ -107,5 +105,12 @@
   "capture.question.who": "要问谁",
   "capture.question.who.hint": "名字或职务",
   "capture.question.note": "您想问什么",
-  "capture.question.note.hint": "它会等到下次预约时出现"
+  "capture.question.note.hint": "它会等到下次预约时出现",
+  "disclaimer.lead": "Health Trail 是一本笔记本。它帮您记下照顾一个人的过程：电话、探望、要问的问题，以及围绕这些堆积起来的文件。",
+  "disclaimer.block.1.title": "它不是医疗应用",
+  "disclaimer.block.1.body": "它不提供医疗建议，也不是医疗器械。这里的任何内容都不能代替医生、护士、急救服务或律师的意见。如果情况紧急，请拨打急救电话。",
+  "disclaimer.block.2.title": "您写下的内容留在这部手机上",
+  "disclaimer.block.2.body": "没有账户，也没有云端。您的记录存在这部设备里，除非您自己发送出去，否则不会去到别处。",
+  "disclaimer.block.3.title": "记录由您来保管",
+  "disclaimer.block.3.body": "这个应用记下您告诉它的内容，并把它整理好。它从不判断这些内容意味着什么。您在这里记录的属于您，相应的责任也属于您。"
 }
