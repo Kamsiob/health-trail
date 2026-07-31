@@ -58,6 +58,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The handoff check below diffs the pull request against its base, and
+          # the default shallow clone does not contain the base commit. Without
+          # this the step fails with "bad object" on every pull request, which
+          # looks like a defect in the change rather than in the workflow.
+          fetch-depth: 0
 
       - name: Every required document exists
         # Template section A1. A public repository missing these looks
