@@ -4,6 +4,7 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import androidx.core.content.edit
 import java.security.KeyStore
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -77,10 +78,16 @@ class DatabaseKey(private val context: Context) {
         }
         val sealed = cipher.doFinal(fresh)
 
-        prefs.edit()
-            .putString(PREF_WRAPPED, Base64.encodeToString(sealed, Base64.NO_WRAP))
-            .putString(PREF_IV, Base64.encodeToString(cipher.iv, Base64.NO_WRAP))
-            .commit() // commit, not apply: losing this write loses the database
+        // commit = true, not the default apply. apply() writes in the
+        // background, so a process death in the next few milliseconds would
+        // lose the wrapped passphrase while the database file it unlocks
+        // already exists. That is unrecoverable: the person's notebook would
+        // still be on disk and nothing could ever open it again. A blocking
+        // write costs microseconds and happens once in the life of the install.
+        prefs.edit(commit = true) {
+            putString(PREF_WRAPPED, Base64.encodeToString(sealed, Base64.NO_WRAP))
+            putString(PREF_IV, Base64.encodeToString(cipher.iv, Base64.NO_WRAP))
+        }
 
         return fresh
     }
