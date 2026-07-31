@@ -86,5 +86,11 @@
   "nav.notebook": "Notebook",
   "nav.projects": "Projects",
   "nav.more": "More",
-  "shell.not_built": "This part is not built yet. It is coming, and nothing you write down now will be lost when it arrives."
+  "shell.not_built": "This part is not built yet. It is coming, and nothing you write down now will be lost when it arrives.",
+  "capture.call.title": "Log a call",
+  "capture.call.who": "Who you spoke to",
+  "capture.call.who.hint": "A name, a role, or just the ward",
+  "capture.call.note": "What was said",
+  "capture.call.note.hint": "As much or as little as you want",
+  "capture.saved": "Saved"
 }

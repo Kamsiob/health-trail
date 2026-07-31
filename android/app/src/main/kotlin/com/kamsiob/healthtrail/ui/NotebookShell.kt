@@ -22,6 +22,10 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.screens.CallDraft
+import com.kamsiob.healthtrail.ui.screens.CaptureKind
+import com.kamsiob.healthtrail.ui.screens.CaptureSheet
+import com.kamsiob.healthtrail.ui.screens.LogCallScreen
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -49,10 +53,16 @@ fun NotebookShell(repository: Repository) {
     val strings = LocalStrings.current
     var destination by remember { mutableStateOf(Destination.NOTEBOOK) }
     var counts by remember { mutableStateOf<List<SectionCount>?>(null) }
+    var sheetOpen by remember { mutableStateOf(false) }
+    var capturing by remember { mutableStateOf<CaptureKind?>(null) }
+    // Bumped after every write, which is what makes the counts refresh without
+    // the screen having to know what changed.
+    var revision by remember { mutableStateOf(0) }
+    var saving by remember { mutableStateOf<CallDraft?>(null) }
 
     // Recounted whenever the tab changes, so returning to the notebook after
     // writing something shows the new number rather than a stale one.
-    LaunchedEffect(destination) {
+    LaunchedEffect(destination, revision) {
         counts = SECTION_ORDER.map { SectionCount(it, repository.count(it)) }
     }
 
@@ -85,7 +95,7 @@ fun NotebookShell(repository: Repository) {
             BottomNav(
                 current = destination,
                 onSelect = { destination = it },
-                onCapture = { },
+                onCapture = { sheetOpen = true },
                 labels = {
                     when (it) {
                         Destination.TODAY -> strings["nav.today"]
@@ -96,6 +106,50 @@ fun NotebookShell(repository: Repository) {
                 },
                 captureDescription = strings["capture.button.description"],
             )
+        }
+
+        if (sheetOpen) {
+            CaptureSheet(
+                onChoose = { kind ->
+                    sheetOpen = false
+                    capturing = kind
+                },
+                onDismiss = { sheetOpen = false },
+            )
+        }
+
+        when (capturing) {
+            CaptureKind.CALL -> LogCallScreen(
+                onSave = { draft ->
+                    capturing = null
+                    saving = draft
+                },
+                onCancel = { capturing = null },
+            )
+            // The other five arrive in their own increments. Choosing one closes
+            // the sheet and does nothing rather than opening an empty screen,
+            // which is the lesser of two bad interim states and disappears as
+            // each lands.
+            else -> Unit
+        }
+
+        val draft = saving
+        if (draft != null) {
+            LaunchedEffect(draft) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    val entryId = repository.createEntry(
+                        subjectId = subject.id,
+                        kind = "call",
+                        title = draft.who,
+                        body = draft.note,
+                    )
+                    repository.addCallDetail(entryId = entryId)
+                }
+                saving = null
+                revision += 1
+                destination = Destination.NOTEBOOK
+            }
         }
     }
 }

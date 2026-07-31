@@ -86,5 +86,11 @@
   "nav.notebook": "Cuaderno",
   "nav.projects": "Trámites",
   "nav.more": "Más",
-  "shell.not_built": "Esta parte todavía no está hecha. Llegará, y nada de lo que anote ahora se perderá cuando llegue."
+  "shell.not_built": "Esta parte todavía no está hecha. Llegará, y nada de lo que anote ahora se perderá cuando llegue.",
+  "capture.call.title": "Anotar una llamada",
+  "capture.call.who": "Con quién habló",
+  "capture.call.who.hint": "Un nombre, un cargo o simplemente la planta",
+  "capture.call.note": "Qué se dijo",
+  "capture.call.note.hint": "Todo lo que quiera, o casi nada",
+  "capture.saved": "Guardado"
 }

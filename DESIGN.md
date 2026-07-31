@@ -380,6 +380,8 @@ No chevron on the rows. A chevron implies going somewhere to look at something, 
 
 Composed from Display L, Body M, Body S, the card from section 5.3, and one text action. Tracked on issue #32.
 
+**Log a call.** The most common thing this app is used for, and the first of the six capture inputs. Both fields are optional and saving a blank call is allowed, because a person who hangs up and taps the gold button has already done the useful thing, which is recording that a call happened and when. The note grows with what is typed rather than sitting at a fixed height, since a fixed height silently teaches people to write less. Composed from Display L, the text field from section 5.9, one filled button, and one text action. Tracked on issue #34.
+
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 
 ---

@@ -86,5 +86,11 @@
   "nav.notebook": "الدفتر",
   "nav.projects": "المعاملات",
   "nav.more": "المزيد",
-  "shell.not_built": "هذا الجزء لم يُبنَ بعد. سيأتي، ولن يضيع شيء تدوّنه الآن عندما يصل."
+  "shell.not_built": "هذا الجزء لم يُبنَ بعد. سيأتي، ولن يضيع شيء تدوّنه الآن عندما يصل.",
+  "capture.call.title": "تدوين مكالمة",
+  "capture.call.who": "مع من تحدثت",
+  "capture.call.who.hint": "اسم أو صفة أو حتى اسم القسم فقط",
+  "capture.call.note": "ما الذي قيل",
+  "capture.call.note.hint": "اكتب بقدر ما تشاء، أو القليل",
+  "capture.saved": "تم الحفظ"
 }

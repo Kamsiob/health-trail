@@ -86,5 +86,11 @@
   "nav.notebook": "笔记本",
   "nav.projects": "事项",
   "nav.more": "更多",
-  "shell.not_built": "这部分还没做好。它会有的，现在记下的任何内容都不会因此丢失。"
+  "shell.not_built": "这部分还没做好。它会有的，现在记下的任何内容都不会因此丢失。",
+  "capture.call.title": "记一通电话",
+  "capture.call.who": "您和谁通话",
+  "capture.call.who.hint": "名字、职务，或者只写病区",
+  "capture.call.note": "说了什么",
+  "capture.call.note.hint": "想写多少就写多少",
+  "capture.saved": "已保存"
 }
