@@ -320,6 +320,12 @@ The same substance appears in the About screen and the store listing. It is not 
 
 **Money and the rules.** Bills carry states: needs attention, disputed, waiting on insurance, paid, with totals above. A bill links to its chapter, the call where it was disputed, and any standing instruction it broke. Standing instructions record what was asked, of whom, when, how it was acknowledged, and every documented violation. Running cost sheets serve any long expense, not only facilities.
 
+### Screens built without a mockup
+
+Every screen here was composed from the existing components under section 10 rather than designed, and each has an open `needs-design-review` issue carrying a device screenshot. This list is empty until the first one is built. `HANDOFF.md` carries the same list so a review can be done in one sitting.
+
+*None yet. Phase 1 is where the first ones appear, starting with the template library.*
+
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 
 ---
@@ -340,7 +346,56 @@ Not a phase. A gate on every screen.
 
 ---
 
-## 10. Keeping this document true
+## 10. Screens that were never drawn
+
+The 27 screens in `reference/screen-grid.html` do not cover everything this app needs. The template library, the template pickers, the template editor, and a number of sub-screens have no mockup. You will reach them. The order of the rules below matters.
+
+### 11.1 Do not stop, and do not ask
+
+Build the screen. Then log it. Both parts are required and neither substitutes for the other.
+
+### 11.2 Compose, do not design
+
+`DESIGN.md` and the screen grid together already define a finished design language: a card, a section header, a list row with its optional subtitle and chevron, an eyebrow label, a pill, an empty state, the spacing scale, the type scale, and the motion vocabulary. An undesigned screen is **assembled from those pieces**.
+
+It is not an opportunity to introduce a new component, a new layout idiom, a new interaction pattern, or a new way of presenting a kind of information the app already presents somewhere else.
+
+**The test:** if you find yourself designing, you have already gone wrong. You should be composing.
+
+**When a genuinely new pattern is unavoidable,** because nothing existing can carry the content, define it once in section 5 with its states and its rules, then use that definition everywhere the pattern applies. **A pattern that appears twice in two different forms is a defect,** and the fix is to correct the earlier one rather than leave both standing.
+
+### 11.3 Complete means complete
+
+Every screen ships complete whether or not it was mocked up. Complete means all of these, not most of them:
+
+- the empty state
+- the one-item state
+- the many-item state
+- the partially-filled state
+- the long-text state, and the longest-language state, which is usually German-length wrapping in Spanish or a long Arabic string
+- the loading state
+- the error state
+- right to left
+
+**A screen without its empty state is not built.** The person must never encounter a blank area, a placeholder string, a stub, a debug label, a truncation, or a layout that only holds together because the sample data happened to be tidy.
+
+### 11.4 Log it in three places, immediately
+
+At the moment the screen is built, not at a phase gate. A screen built on Tuesday and logged on Friday is three days of work built on top of an unreviewed decision.
+
+1. **An issue labeled `needs-design-review`.** The body says which screen, why it was needed, which existing components it was composed from, what you deliberately did not invent, what you were unsure about, and carries a real screenshot captured from the device. This is the owner's review queue, so it has to be reviewable without reading code.
+2. **An entry in section 8 of this document,** describing what the screen does and how it behaves, so this document keeps describing the app as it actually is rather than only the parts drawn in advance.
+3. **A line in the running list in `HANDOFF.md`,** so the review can be done in one sitting rather than archaeologically.
+
+### 11.5 Discoverability is part of the screen
+
+Every section, template, and feature must be reachable and, more importantly, **discoverable by someone who does not already know it exists**. A capability that can only be found by a person who already knew to look for it is not finished.
+
+Where something is genuinely hard to surface without cluttering a screen, build it, note the problem on that screen's `needs-design-review` issue, and keep going.
+
+---
+
+## 11. Keeping this document true
 
 With every commit, ask whether the change made anything here wrong, and fix it in the same commit. Specifically:
 

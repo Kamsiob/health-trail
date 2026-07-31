@@ -134,13 +134,51 @@ Everything shareable is generated locally as a PDF or text and handed to the sys
 
 Every export must be legible standalone to a reader who has never seen the app.
 
-### 4.10 Templates
+### 4.10 Templates, and the template library
 
 The catalog in `templates/` ships bundled and offline: 14 situation templates, 16 project templates, 16 progress presets, 11 standing instruction starters. `templates/SCHEMA.md` defines every field and, importantly, what must never be done with the ones flagged high risk.
 
-All templates are editable, duplicable, and deletable. The person can build one from scratch. Custom templates save alongside the built-ins.
-
 The downloadable pack mechanism, using signed hash-verified packs from GitHub releases, is not in v1. Design the loader with it in mind, because it is also the mechanism behind the future Facility Edition.
+
+**None of these screens are in `reference/screen-grid.html`.** The library, the pickers, and the editor have no mockup. They are built under the protocol in `DESIGN.md` section 10: composed from the existing components, shipped complete with every state, and logged in three places at the moment they are built.
+
+#### Where it lives, and what it has to feel like
+
+The library lives in More. **That placement is settled. Its quality is not.** It is the person's own library and it has to read as one polished, organized thing rather than a settings page with lists on it.
+
+**One presentation, four kinds.** Situations, projects, progress presets, and standing instructions use the same screen structure, the same detail layout, and the same actions in the same positions. The content differs because the content is different. The experience does not. A person who has opened one template has learned how to open all of them, and must never feel they have walked into something built by a different person on a different day.
+
+#### What every template detail view carries, in this order
+
+1. The name and subtitle.
+2. **A plain statement of what applying it will actually create or change,** stated before it is applied rather than discovered afterward.
+3. The posture strings, displayed verbatim per `templates/SCHEMA.md`. These are not paraphrased in the interface.
+4. **Provenance.** The person can always tell whether they are looking at something that shipped with the app, something they made, or a shipped one they have edited.
+5. The same set of actions, in the same positions, every time.
+
+#### Browsing, previewing, and applying are three different things
+
+They must be visually distinguishable, and **nothing is ever applied as a side effect of looking at it.**
+
+#### The library shows state, not just choices
+
+It is a record of what the person has done, not only a menu of what they could do. Which templates are in use, when they were applied, and what each one created must be visible from the library itself. **An applied template can always answer the question "what did this put in my notebook,"** with links to each thing.
+
+#### Editing a built-in creates the person's own copy
+
+Editing never mutates the shipped template. The lineage is preserved, so the original stays available and a future catalog update cannot silently overwrite the person's version.
+
+### 4.10b Two rules that hold everywhere in this app
+
+Stated here because they come up first with templates, but they are not about templates.
+
+**Nothing gets lost.** The person can never enter information and then be unable to find it. Everything a template creates is reachable **from at least two directions**: from the notebook section it belongs to, and from the library entry that created it. Anything created is written to the trail, which is what makes the trail the universal index of everything that has ever happened in this notebook. Search reaches both template-created content and the templates themselves. The no dead ends rule in section 3 applies here in full: from any item, every road out of it is available, and the person never has to remember where something was filed.
+
+**Partial is a finished state, not an incomplete one.** A template can be applied with nothing filled in, with some of it filled in, or completed months later. Never require completion to apply, never require completion to save, never block on a missing field. An unfilled slot reads as "not yet," never as an error, a warning, or a gap that needs fixing.
+
+No progress meters that frame an unfinished checklist as a deficiency. No completion percentages. No prompts to finish setting up. No badge counting what has not been done. The person is doing this in a hallway during the worst month of their life, and the app's posture toward partial work is that **partial work is normal work**.
+
+The same holds for changing things later. Anything applied can be renamed, reordered, edited, or removed at any time. Changing the situation template later, including at a change of situation, never destroys entries made under the previous one: it carries them forward and archives what belongs to the old place, per the chapter behavior in section 4.6.
 
 ### 4.11 Backup and restore
 

@@ -304,6 +304,25 @@ So the discipline is kept in full and the ceremony is dropped, and the board REA
 
 **What is already proven without it.** The same schema, the same triggers, and the same tombstone behavior are asserted by `tools/checks/check_schema.py` against a real SQLite database on every push, including that a failing change log write rolls the data write back. What `DatabaseTest` adds is that this holds through SQLCipher and through the Kotlin path, which is a real gap and is why the issue stays open.
 
+### D22. The protocol for screens that were never drawn, and the template library
+
+**Context.** The owner established, mid-run, that `reference/screen-grid.html` does not cover everything the app needs, and gave the protocol for handling it plus a detailed specification for the template library. Recorded here because these are standing rules that will outlive the conversation they were given in.
+
+**Where each part landed, deliberately spread rather than kept in one place:**
+
+- **`CLAUDE.md` rules 11, 12, and 13.** That file is loaded every session and is the last thing to survive compaction, so the three rules that must never be lost live there in one line each: nothing unfinished reaches the person, undesigned screens are composed and logged, and partial is a finished state.
+- **`DESIGN.md` section 10**, the full protocol. Compose rather than design, the eight states a screen ships with, the three places to log it, and discoverability as part of the screen rather than a consequence of layout.
+- **`DESIGN.md` section 8** gains a running list of screens built without a mockup, so the document keeps describing the app as it is.
+- **`MASTER_SPEC.md` section 4.10**, the template library requirements, and **4.10b**, the two rules that hold everywhere: nothing gets lost, and partial is a finished state.
+- **`HANDOFF.md` section 9**, the running list in review order.
+- A **`needs-design-review`** label on the tracker, in the blaze color, since it is the owner's review queue.
+
+**The judgment worth preserving,** because it is the part most likely to be eroded by a later session in a hurry. The instruction is not "design the missing screens well." It is that an undesigned screen is **assembled** from a design language that is already finished, and that finding yourself designing means you have already gone wrong. A new component is a last resort, defined once with its states, used everywhere it applies, and a pattern appearing twice in two different forms is a defect to be fixed backward rather than left standing.
+
+**And the reason the logging is not optional.** Building is allowed to proceed without asking, which means the review happens after the fact. That only works if the record is written at the moment of the decision. A screen built on Tuesday and logged on Friday is three days of work stacked on an unreviewed choice, and the owner cannot review what he cannot find.
+
+**Revisit if.** Never, without the owner. These are his design authority, delegated with conditions attached.
+
 ---
 
 ## BLOCKED

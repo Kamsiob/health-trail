@@ -145,6 +145,18 @@ Additionally, one contradiction inside `DESIGN.md` needs deciding at item 0.17: 
 
 ---
 
+## 9. Screens built without a mockup
+
+`reference/screen-grid.html` covers 27 screens and the app needs more than that. Every screen built without one is composed from existing components under `DESIGN.md` section 10, ships complete with every state, and is logged in three places at the moment it is built: a `needs-design-review` issue with a device screenshot, an entry in `DESIGN.md` section 8, and a line here.
+
+This list exists so the owner can review them all in one sitting instead of archaeologically. **Never save these up for a phase gate.**
+
+| Screen | Built | Issue | Composed from | Reviewed |
+|---|---|---|---|---|
+| *none yet* | | | | |
+
+**Known ahead:** the template library, the four template pickers, the template detail view, and the template editor. All of them land in Phase 1 or Phase 4 and none is drawn. `MASTER_SPEC.md` section 4.10 carries their requirements in detail, including that all four template kinds share one presentation and that browsing, previewing, and applying must be visually distinct.
+
 ## 9. Persona runs
 
 None yet. `TESTING-PERSONAS.md` requires each run to be recorded here with its fixture seed and date. A persona walked against a schema that has since changed has not been walked.
