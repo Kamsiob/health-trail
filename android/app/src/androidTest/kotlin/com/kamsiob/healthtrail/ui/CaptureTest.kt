@@ -84,16 +84,16 @@ class CaptureTest {
     }
 
     @Test
-    fun cancellingSavesNothing() {
+    fun cancelingSavesNothing() {
         var draft: CallDraft? = null
-        var cancelled = false
-        showCallForm(onSave = { draft = it }, onCancel = { cancelled = true })
+        var canceled = false
+        showCallForm(onSave = { draft = it }, onCancel = { canceled = true })
 
         compose.onNodeWithTag(LogCallTags.WHO).performTextInput("Typed then abandoned")
         compose.onNodeWithTag(LogCallTags.CANCEL).performClick()
 
-        assertTrue(cancelled)
-        assertNull("cancelling still saved something", draft)
+        assertTrue(canceled)
+        assertNull("canceling still saved something", draft)
     }
 
     @Test
