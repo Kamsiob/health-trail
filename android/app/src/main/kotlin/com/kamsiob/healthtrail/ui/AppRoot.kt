@@ -1,0 +1,239 @@
+package com.kamsiob.healthtrail.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import com.kamsiob.healthtrail.data.DatabaseKeyLost
+import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.ui.screens.DisclaimerScreen
+import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.Space
+
+object AppRootTags {
+    const val LOADING = "app_loading"
+    const val UNRECOVERABLE = "app_unrecoverable"
+}
+
+/**
+ * What the person sees, and in what order.
+ *
+ * Three states, and all three are real screens rather than one screen with
+ * things missing:
+ *
+ * **Opening.** The database has to be unlocked before anything can be decided,
+ * and that is Keystore work plus, on first run, executing the whole schema. It
+ * is fast, and it is not instantaneous, so it says something is happening from
+ * the moment it starts rather than showing a blank rectangle.
+ *
+ * **The gate.** Until the disclaimer is accepted, nothing else exists.
+ *
+ * **The notebook.** After acceptance.
+ *
+ * A fourth state exists that is not a screen so much as an honest dead end: if
+ * the key that unlocks the database is gone, the notebook cannot be decrypted
+ * and no amount of retrying changes that. It says so plainly rather than
+ * pretending, and it does not blame the person.
+ */
+@Composable
+fun AppRoot() {
+    val context = LocalContext.current
+    var state by remember { mutableStateOf<RootState>(RootState.Opening) }
+
+    LaunchedEffect(Unit) {
+        state = try {
+            val repository = Repository.open(context)
+            val accepted = repository.settingTimestamp(Repository.KEY_DISCLAIMER_ACCEPTED)
+            if (accepted == null) {
+                RootState.Gate(repository)
+            } else {
+                RootState.Ready(repository)
+            }
+        } catch (_: DatabaseKeyLost) {
+            RootState.Unrecoverable
+        }
+    }
+
+    val strings = remember(context) { Strings.load(context) }
+
+    CompositionLocalProvider(LocalStrings provides strings) {
+        when (val current = state) {
+            RootState.Opening -> OpeningScreen()
+
+            RootState.Unrecoverable -> UnrecoverableScreen()
+
+            is RootState.Gate -> DisclaimerScreen(
+                onAccept = {
+                    // Recorded with a timestamp so it is never shown twice.
+                    state = RootState.Accepting(current.repository)
+                },
+            )
+
+            is RootState.Accepting -> {
+                OpeningScreen()
+                LaunchedEffect(Unit) {
+                    current.repository.putSettingTimestamp(
+                        Repository.KEY_DISCLAIMER_ACCEPTED,
+                        System.currentTimeMillis(),
+                    )
+                    state = RootState.Ready(current.repository)
+                }
+            }
+
+            is RootState.Ready -> NotebookPlaceholder(current.repository)
+        }
+    }
+}
+
+private sealed interface RootState {
+    data object Opening : RootState
+    data object Unrecoverable : RootState
+    data class Gate(val repository: Repository) : RootState
+    data class Accepting(val repository: Repository) : RootState
+    data class Ready(val repository: Repository) : RootState
+}
+
+/**
+ * Shown while the database opens. Deliberately quiet: a spinner on a warm paper
+ * background, no branding moment, no progress bar pretending to know how long
+ * something takes.
+ */
+@Composable
+private fun OpeningScreen() {
+    val strings = LocalStrings.current
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(AppRootTags.LOADING),
+        color = HealthTrail.colors.paper,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .padding(Space.screenHorizontal),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = strings["common.loading"],
+                style = HealthTrail.type.bodyM,
+                color = HealthTrail.colors.ink2,
+            )
+        }
+    }
+}
+
+/**
+ * The key that unlocks the notebook is gone.
+ *
+ * This is the honest form of a bad outcome. It does not offer a retry, because
+ * retrying cannot work, and offering one would waste the person's time at the
+ * worst possible moment. It will offer import once the export container exists,
+ * which is issue #9, and that is why backup is load bearing rather than
+ * optional. See DECISIONS.md D24.
+ */
+@Composable
+private fun UnrecoverableScreen() {
+    val strings = LocalStrings.current
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(AppRootTags.UNRECOVERABLE),
+        color = HealthTrail.colors.paper,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .padding(Space.screenHorizontal),
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                text = strings["common.error.generic"],
+                style = HealthTrail.type.bodyL,
+                color = HealthTrail.colors.ink,
+            )
+        }
+    }
+}
+
+/**
+ * Stands in for the Today screen until it exists, which is the next increment.
+ *
+ * It is not a stub in the sense rule 11 forbids: it renders real counts read
+ * from the database through the repository, and it says plainly that the
+ * notebook itself is not built yet rather than showing an empty frame.
+ */
+@Composable
+private fun NotebookPlaceholder(repository: Repository) {
+    val strings = LocalStrings.current
+    var entries by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(repository) {
+        entries = repository.count(Repository.Section.TRAIL)
+    }
+
+    Surface(modifier = Modifier.fillMaxSize(), color = HealthTrail.colors.paper) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .padding(horizontal = Space.screenHorizontal, vertical = Space.l),
+        ) {
+            Text(
+                text = strings["today.title"],
+                style = HealthTrail.type.displayL,
+                color = HealthTrail.colors.ink,
+            )
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = strings["today.empty.title"],
+                style = HealthTrail.type.bodyM,
+                color = HealthTrail.colors.ink2,
+            )
+            Spacer(Modifier.height(Space.l))
+            Text(
+                text = strings["today.empty.step.1"],
+                style = HealthTrail.type.bodyL,
+                color = HealthTrail.colors.ink,
+            )
+            Spacer(Modifier.height(Space.sm))
+            Text(
+                text = strings["today.empty.step.2"],
+                style = HealthTrail.type.bodyL,
+                color = HealthTrail.colors.ink,
+            )
+            Spacer(Modifier.height(Space.sm))
+            Text(
+                text = strings["today.empty.step.3"],
+                style = HealthTrail.type.bodyL,
+                color = HealthTrail.colors.ink,
+            )
+            Spacer(Modifier.height(Space.l))
+            Text(
+                text = strings("today.open.incidents", "count" to (entries ?: 0)),
+                style = HealthTrail.type.mono,
+                color = HealthTrail.colors.ink3Text,
+            )
+        }
+    }
+}

@@ -32,7 +32,9 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** open and merge the pull request for `feat/13-locale-catalogs`, which is committed, pushed, and passing. Then finish #13 by wiring the catalogs into the Android build so screens read from `contract/i18n` rather than from `res/values`, and decide how the app states its unreviewed translation status honestly, which is `MASTER_SPEC.md` open question 6. Then #16, the web scaffold, which needs no device. Then **Phase 1**, in the order in `MASTER_SPEC.md` section 8: the disclaimer gate first, since it gates everything else, then essentials-first setup with a situation template applied, then Today with the digest, then capture with its six inputs and the Unfiled tray.
+**The precise next action:** merge `feat/phase1-disclaimer-gate`, then build **essentials-first setup**, which is what the accept button should lead to. It asks three things, per `MASTER_SPEC.md` section 4.1: who you are looking after, where they are, and one phone number you would need in an emergency. Everything else is offered and skippable. A situation template is chosen and applied. None of those screens are mocked up, so each one is composed from the existing components and logged in three places the moment it is built, per `DESIGN.md` section 10.
+
+**Build each screen, install it over ADB, open it, and look at it before closing its issue.** Two real bugs in this increment were invisible in review and obvious on the device, recorded as D28.
 
 **How to work Phase 1:** build a screen, install to the phone over ADB, open it, look at it, capture a screenshot, and only then close its issue. Exactly one package on the phone, checked with `adb shell pm list packages`, never assumed. Every screen ships with its empty and partial states. Nothing composed from outside the existing design language, and anything without a mockup gets logged in three places the moment it is built, per `DESIGN.md` section 10.
 
@@ -160,7 +162,7 @@ This list exists so the owner can review them all in one sitting instead of arch
 
 | Screen | Built | Issue | Composed from | Reviewed |
 |---|---|---|---|---|
-| *none yet* | | | | |
+| Disclaimer gate | 2026-07-31 | #28 | Mark, Display L, Body L, filled button | not yet |
 
 **Known ahead:** the template library, the four template pickers, the template detail view, and the template editor. All of them land in Phase 1 or Phase 4 and none is drawn. `MASTER_SPEC.md` section 4.10 carries their requirements in detail, including that all four template kinds share one presentation and that browsing, previewing, and applying must be visually distinct.
 

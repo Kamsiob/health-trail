@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.kamsiob.healthtrail.ui.FoundationScreen
+import com.kamsiob.healthtrail.ui.AppRoot
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 
 /**
@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             HealthTrailTheme {
-                FoundationScreen()
+                AppRoot()
             }
         }
     }

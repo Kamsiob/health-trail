@@ -22,7 +22,7 @@ import java.io.File
  * changes.
  */
 class HealthTrailDatabase private constructor(
-    val database: SQLiteDatabase,
+    internal val database: SQLiteDatabase,
     val deviceId: String,
 ) {
 

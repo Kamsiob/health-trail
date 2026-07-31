@@ -324,7 +324,15 @@ The same substance appears in the About screen and the store listing. It is not 
 
 Every screen here was composed from the existing components under section 10 rather than designed, and each has an open `needs-design-review` issue carrying a device screenshot. This list is empty until the first one is built. `HANDOFF.md` carries the same list so a review can be done in one sitting.
 
-*None yet. Phase 1 is where the first ones appear, starting with the template library.*
+**The disclaimer gate.** The first screen anyone sees, and a gate rather than a notice: nothing else is reachable until it is explicitly accepted, and the acceptance is recorded with a timestamp so it is shown exactly once per install.
+
+The wording is fixed by section 7 and carried verbatim, not paraphrased. Composed from the mark at 44dp, Display L for the heading, Body L for the two paragraphs, and one filled button. Nothing new was introduced.
+
+The text scrolls and the action does not. That is what keeps the accept button in the lower half where a person holding a large phone in one hand can reach it, per section 9, while letting the wording grow to any font size or translation length without pushing the action off the bottom. Building it with the whole column scrolling put the button in the upper third, which is why it is built this way.
+
+The mark carries no content description here. The heading immediately below it already says where the person is, and a screen reader announcing a logo before every title is noise.
+
+Tracked on issue #28.
 
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 
