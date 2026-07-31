@@ -4,7 +4,7 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-07-31, at the end of the session that raised the quality bar. Branch `feat/phase1-setup`, tip `f3f0261`.
+**Last rewritten:** 2026-07-31, at the end of the session that raised the quality bar. Branch `feat/phase1-setup`, merged to `main` through pull request #35.
 
 If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
 
@@ -49,7 +49,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 ## 3. In progress, and the precise next action
 
-**The precise next action: rebuild the notebook table of contents to the bar in `DESIGN.md` section 10.6.**
+**The precise next action: rebuild the notebook table of contents to the bar in `DESIGN.md` section 10.6. That is issue #36, and it carries the acceptance criteria.**
 
 The owner's words: extremely cluttered, twelve sections presented flat at uniform weight, so nothing has priority and it reads as a list of everything rather than a table of contents.
 
@@ -62,7 +62,7 @@ What has to be true when it is done:
 - A count of zero still reads as words rather than as a digit. `NotebookScreenTest` asserts this and it must keep passing.
 - Reading the situation template needs `TemplateCatalog.kt`, which already parses `situations.json`, and the active subject's `situation_template_id`, which `Repository.activeSubject()` already returns.
 
-**Then the setup screen, "Who you are looking after".** The owner's words: it is the first real screen after the disclaimer and it decides whether someone in a hallway keeps going. Essentials only, everything skippable, warm supporting text, generous spacing, and clear indication that nothing here is permanent. It is functionally right already; it is visually thin.
+**Then the setup screen, "Who you are looking after", which is issue #37.** The owner's words: it is the first real screen after the disclaimer and it decides whether someone in a hallway keeps going. Essentials only, everything skippable, warm supporting text, generous spacing, and clear indication that nothing here is permanent. It is functionally right already; it is visually thin.
 
 **Then sweep every screen built so far against section 10.6 and fix what falls short.** Then carry on with Phase 1 feature work from section 4.
 
@@ -89,6 +89,13 @@ Nothing is half edited. The working tree is clean and every commit is pushed.
 | #18 | Content compliance checks in CI | Seven checks exist and run. The issue stays open for the ones not implementable yet |
 | #21 | Roadmap document | Documentation only |
 | #25 | About screen links the canonical privacy policy | Needs an About screen, which does not exist |
+
+**Phase 1, the two screen rebuilds that come first.**
+
+| Issue | What |
+|---|---|
+| #36 | Rebuild the notebook table of contents. Hierarchy, grouping, and the `forward` and `folded` arrays that already exist in the data and are not read |
+| #37 | Rebuild the essentials first setup screen to the section 10.6 bar |
 
 **Phase 1, the immediate queue after the two screens in section 3.**
 
