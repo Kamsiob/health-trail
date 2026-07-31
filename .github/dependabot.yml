@@ -1,0 +1,19 @@
+# Dependency updates, acted on rather than left to accumulate.
+#
+# Only ecosystems that genuinely exist are listed. The Gradle entry arrives with
+# the Android project under issue #11, because Dependabot reports an error for a
+# directory it cannot find, and a permanently erroring configuration is the same
+# failure as a permanently red badge.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build"
+    labels:
+      - "type:task"
+      - "area:repo"
+    open-pull-requests-limit: 5
