@@ -104,6 +104,14 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 
 ---
 
+## 3b. Read this before trusting the safety guards
+
+**Guard 1, the destructive command hook, was inert for the whole of the first session.** The script works and is tested. The hook never fired, because `.claude/settings.json` loads at session start and was created during that session, the same timing rule that applies to agent definitions.
+
+It is live from the second session onward with no action needed. Guard 2, the pre compaction save, has also never fired in practice: it is written, committed, and unproven.
+
+**The lesson worth carrying:** verifying a guard means running a blocked command and being refused, not feeding payloads to the script. The Phase 0 entry claiming the guards were installed and verified was true about the artifacts and false about the protection. DECISIONS.md D29.
+
 ## 4. Decisions a future session might otherwise reverse
 
 Full reasoning is in `DECISIONS.md`. The short list of things not to undo:

@@ -27,6 +27,8 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.screens.DisclaimerScreen
 import com.kamsiob.healthtrail.ui.screens.SetupAnswers
 import com.kamsiob.healthtrail.ui.screens.SetupScreen
+import com.kamsiob.healthtrail.ui.screens.SituationPickerScreen
+import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -127,7 +129,42 @@ fun AppRoot() {
                             phone = answers.phoneNumber,
                         )
                     }
-                    state = RootState.Ready(repository)
+                    state = RootState.Situation(repository, subjectId)
+                }
+            }
+
+            is RootState.Situation -> {
+                var catalog by remember { mutableStateOf<TemplateCatalog.Situations?>(null) }
+                LaunchedEffect(Unit) { catalog = TemplateCatalog.situations(context) }
+
+                val loaded = catalog
+                if (loaded == null) {
+                    OpeningScreen()
+                } else {
+                    SituationPickerScreen(
+                        situations = loaded,
+                        onChoose = { situation ->
+                            state = RootState.ApplyingSituation(
+                                current.repository, current.subjectId, situation,
+                            )
+                        },
+                        // A notebook with no situation template still works.
+                        // Every section exists and nothing is missing, so this
+                        // is a real answer rather than a postponement.
+                        onSkip = { state = RootState.Ready(current.repository) },
+                    )
+                }
+            }
+
+            is RootState.ApplyingSituation -> {
+                OpeningScreen()
+                LaunchedEffect(Unit) {
+                    current.repository.applySituation(
+                        subjectId = current.subjectId,
+                        templateId = current.situation.id,
+                        threads = current.situation.threads.map { it.id to it.label },
+                    )
+                    state = RootState.Ready(current.repository)
                 }
             }
 
@@ -142,6 +179,12 @@ private sealed interface RootState {
     data class Gate(val repository: Repository) : RootState
     data class Setup(val repository: Repository) : RootState
     data class Saving(val repository: Repository, val answers: SetupAnswers) : RootState
+    data class Situation(val repository: Repository, val subjectId: String) : RootState
+    data class ApplyingSituation(
+        val repository: Repository,
+        val subjectId: String,
+        val situation: TemplateCatalog.Situation,
+    ) : RootState
     data class Accepting(val repository: Repository) : RootState
     data class Ready(val repository: Repository) : RootState
 }

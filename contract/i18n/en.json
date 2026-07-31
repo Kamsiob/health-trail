@@ -77,5 +77,8 @@
   "subject.unnamed": "The person you are looking after",
   "setup.where.label": "Place or facility",
   "setup.phone.person.label": "Whose number it is",
-  "setup.phone.number.label": "Phone number"
+  "setup.phone.number.label": "Phone number",
+  "situation.title": "Where are things right now",
+  "situation.subtitle": "This sets up the notebook for the kind of care they are getting. You can change any of it later.",
+  "situation.skip": "Not sure yet"
 }

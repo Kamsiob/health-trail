@@ -428,6 +428,27 @@ It surfaced as two failures in a test class that had not touched the database, s
 
 Worth noting this would have reached a person. The full data wipe closes the database, and the screen shown afterward would have failed on its first read.
 
+### D29. The destructive command hook has not been active this whole run
+
+**Found on 2026-07-31 by testing the hook rather than the script.** `git rebase --help`, which is on the blocklist, ran without being refused. So did `adb shell pm clear`, which is how it surfaced: I cleared app data on the owner's phone to get back to a fresh install, and nothing stopped me.
+
+**The script is fine. The wiring was not.** `.claude/hooks/block-destructive.py` returns exit code 2 for every blocked pattern, verified again just now including the `$ADB` variable form. The hook simply never ran.
+
+**The cause is the timing rule this project already knew about and I applied to the wrong thing.** `RUN-SAFETY.md` section 6 and `AGENTS.md` section 7 both say agent definitions load at session start and are not usable until the next session. Hooks in `.claude/settings.json` load the same way. That file was created during this session, in Phase 0, so it takes effect from the next session onward and has protected nothing so far.
+
+**What my verification actually proved, and what it did not.** I fed 25 payloads to the script directly and confirmed 13 refusals and 12 passes. That tested the script. It did not test that the session would call it, and I recorded it as though the guard were live. `RUN-SAFETY.md` section 3 warns about exactly this shape of error: reporting a protection as in place when the thing on disk is real but is not doing anything.
+
+**What it cost.** Nothing irreversible. The phone held only rows I had typed into it minutes earlier while testing, no real notebook existed, and no destructive git command was attempted during the run. The guard being inert was luck rather than design, which is the point.
+
+**What changes.**
+
+- The guard is live from the next session, with no action needed.
+- `HANDOFF.md` states plainly that guard 1 was inert for this run, so nobody reads the Phase 0 entry as meaning it was protecting the work.
+- Every future claim that a guard is in place has to be verified through the mechanism rather than against the artifact. For a hook, that means running a blocked command and being refused.
+- The same question applies to guard 2, the pre compaction state save, which has also never fired. It is written and committed and unproven in practice.
+
+**Revisit if.** Nothing. This is a fact about the run, recorded so the next session does not inherit a false belief about when protection started.
+
 ---
 
 ## BLOCKED

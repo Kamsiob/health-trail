@@ -212,6 +212,39 @@ class Repository private constructor(
         ),
     )
 
+    /**
+     * Applies a situation template to a notebook.
+     *
+     * Records which template was used and creates a care thread per thread the
+     * template offers. Everything created is ordinary editable data: the person
+     * can rename, reorder, or delete any of it, and reapplying a different
+     * template later never destroys what is already here.
+     */
+    suspend fun applySituation(
+        subjectId: String,
+        templateId: String,
+        threads: List<Pair<String, String>>,
+    ) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE subject SET situation_template_id = ?, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ?",
+            arrayOf<Any>(templateId, System.currentTimeMillis(), subjectId),
+        )
+        threads.forEachIndexed { index, (threadTemplateId, label) ->
+            insert(
+                "care_thread",
+                mapOf(
+                    "subject_id" to subjectId,
+                    "label" to label,
+                    "template_id" to threadTemplateId,
+                    "color_index" to index,
+                    "started_at" to System.currentTimeMillis(),
+                    "sort_index" to index,
+                ),
+            )
+        }
+    }
+
     // -- counting, for the table of contents ------------------------------
 
     /**

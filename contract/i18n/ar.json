@@ -77,5 +77,8 @@
   "subject.unnamed": "الشخص الذي ترعاه",
   "setup.where.label": "المكان أو المنشأة",
   "setup.phone.person.label": "لمن هذا الرقم",
-  "setup.phone.number.label": "رقم الهاتف"
+  "setup.phone.number.label": "رقم الهاتف",
+  "situation.title": "ما الوضع الآن",
+  "situation.subtitle": "هذا يهيئ الدفتر لنوع الرعاية التي يتلقاها. يمكنك تغيير أي شيء لاحقًا.",
+  "situation.skip": "لست متأكدًا بعد"
 }

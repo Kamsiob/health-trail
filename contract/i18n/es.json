@@ -77,5 +77,8 @@
   "subject.unnamed": "La persona a la que cuida",
   "setup.where.label": "Lugar o centro",
   "setup.phone.person.label": "De quién es el número",
-  "setup.phone.number.label": "Número de teléfono"
+  "setup.phone.number.label": "Número de teléfono",
+  "situation.title": "¿Cómo están las cosas ahora?",
+  "situation.subtitle": "Esto prepara el cuaderno para el tipo de cuidado que recibe. Puede cambiar cualquier cosa más adelante.",
+  "situation.skip": "Todavía no lo sé"
 }
