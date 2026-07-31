@@ -110,13 +110,14 @@ Full reasoning is in `DECISIONS.md`. The short list of things not to undo:
 
 ## 5. Blocked
 
-Three items, none of which stops any work. Full detail in `DECISIONS.md` under BLOCKED, each with the exact steps the owner needs.
+**One item, cosmetic, and it stops nothing.** Full detail in `DECISIONS.md` under BLOCKED.
 
-- **B1.** Commits show as unverified on GitHub until the owner registers the SSH signing key. Cosmetic. Confirmed rather than predicted: GitHub reports `verified=false, reason=unknown_key` for commits made here, while the squash merges GitHub performed itself show `verified=true` because it signs those with its own key. So the history currently shows a mix. Registering the key resolves all of them at once, including the ones already pushed. Do not turn signing off to make the mix go away.
-- **B2.** The board's two built-in automations need one visit to the project settings, about a minute. Until then the board is maintained by hand, which works but is the exact thing that goes stale during a long run.
-- **B3.** A hosted privacy policy URL is needed at release, not now. Recorded early so it is not discovered during the release.
+- **B1.** Commits show as Unverified on GitHub until the signing key is registered, which needs a browser sign-in only the owner can do. Checked rather than assumed: the account has zero signing keys and zero GPG keys, and all four other Kamsiob repositories have zero verified commits, so this was never set up anywhere and nothing is regressing. Two ways out, both fine: he pastes the key at https://github.com/settings/ssh/new as a Signing Key, or he says the word and signing is turned off. Do not turn it off unilaterally.
 
----
+**Resolved, kept for the record:**
+
+- **B2, board automations.** Not switched on, and no longer a blocker. The board is maintained by `tools/board.py sync`, run at every increment. Verified empirically that auto-add is off: issue #25 did not appear on its own. The board is now public, which it needed to be since the README and the roadmap both link to it.
+- **B3, hosted privacy policy.** Canonical at https://kamsiob.com/privacy.html#health-trail. `PRIVACY.md` mirrors it and says the hosted page governs. Issue #25 carries the About screen link.
 
 ## 6. Device state
 

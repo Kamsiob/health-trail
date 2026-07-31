@@ -282,51 +282,51 @@ The honest alternative was forcing the trail to stop being gold, and gold is the
 
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
-### B1. Commits will show as unverified on GitHub until the signing key is added
+**Two of the three original entries are resolved.** Kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed.
 
-**What is happening.** Every commit is being signed with the SSH key already on this machine. GitHub does not yet know that key belongs to the account, so it labels the commits unverified rather than verified.
+### B1. Commit signing, still open, and genuinely small
 
-**Why it is blocked here.** Adding a signing key needs a permission the logged-in GitHub CLI does not currently hold. Granting it opens a browser sign-in, which an unattended run cannot complete.
+**What is happening.** Every commit here is signed with the SSH key already on this machine. GitHub does not know that key belongs to the account, so it labels those commits Unverified rather than Verified.
 
-**What the owner needs to do,** either one of these, whichever is easier:
+**Checked on 2026-07-31, rather than assumed:**
 
-1. In a terminal, run `gh auth refresh -h github.com -s admin:ssh_signing_key`, complete the browser sign-in, then run:
-   `gh ssh-key add ~/.ssh/kamai_signing.pub --type signing --title "kamsiob commit signing"`
+- The account currently has **zero** SSH signing keys and **zero** GPG keys.
+- `kam-ai`, `dig`, `logbook`, and `bearings` each have **zero of five** recent commits verified.
 
-2. Or in a browser, go to https://github.com/settings/ssh/new, set the key type to **Signing Key**, give it any title, and paste in this exact line:
-   `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJDjMJuCwQhz7/FCxEPPdCYepd5hH6Bv01uitNbrdv2 kamsiob commit signing`
+So this was never set up on any Kamsiob project. Nothing is regressing here, and the owner is right that he has not had to do this before. Health Trail is the first repository that signs at all.
 
-**What happens after.** Every commit already made will show as verified, not only new ones, because GitHub checks signatures against currently registered keys when it displays them. Nothing needs redoing.
+**Why I cannot do it myself.** Adding a signing key needs the `admin:ssh_signing_key` permission, which the logged-in CLI does not hold. Granting it means signing in through a browser as the account owner. That is the one category of thing an agent genuinely cannot do on someone's behalf, and it should stay that way.
 
-**Impact while blocked.** Cosmetic only. The commits are genuinely signed and the history is sound. Nothing about the build depends on this.
+**The 20 second version.** Open https://github.com/settings/ssh/new, set **Key type** to **Signing Key**, put anything in the title, and paste this line:
 
-**Confirmed on 2026-07-31,** so this is a real effect rather than a prediction. Asking GitHub about two commits:
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJDjMJuCwQhz7/FCxEPPdCYepd5hH6Bv01uitNbrdv2 kamsiob commit signing
+```
 
-- `ed52cab`, a squash merge GitHub itself performed: `verified=true`, `reason=valid`. GitHub signs its own merge commits with its own key, so those already show a green Verified badge.
-- `2d7506a`, a commit made here: `verified=false`, `reason=unknown_key`. That is precisely this blocker. The signature is present and correct, and GitHub simply does not know the key belongs to the account.
+Every commit already pushed turns Verified at once, not just future ones.
 
-So the history currently shows a mix: merges verified, direct commits not. Registering the key resolves every one of them at once, including the ones already pushed.
+**The alternative, which costs nothing.** Say the word and I will turn commit signing off. The history then matches the other four repositories, no Unverified labels appear anywhere, and nothing about the app changes. Signing is worth having, but it is not worth a chore he did not ask for.
 
-### B2. Two board automations need one visit to the project settings
+**Impact while open.** Cosmetic only. The commits are genuinely signed and the history is sound. Note that the squash merges GitHub performs itself already show Verified, because GitHub signs those with its own key, so the history currently shows a mix. That mix is expected and is not a sign the signing setup is broken. Do not turn signing off to make it go away without asking.
 
-**What is happening.** The project board at https://github.com/users/Kamsiob/projects/2 is fully configured and populated, but its two built-in automations are off. That means a new issue does not appear on the board by itself, and closing an issue does not move its card to Done. Both are being done by hand in the meantime, which works but will go stale during a long run, which is exactly what the automation exists to prevent.
+### B2. Board automations. Resolved by doing it a different way
 
-**Why it is blocked here.** GitHub has no API and no command line support for the built-in project workflows. They can only be switched on in the web interface.
+**Original problem.** GitHub's built-in project workflows, auto-add and move to Done on close, have no API and no command line support, so an unattended run cannot switch them on.
 
-**What the owner needs to do,** once, about a minute:
+**Outcome.** Not switched on, and no longer treated as a blocker. Verified empirically on 2026-07-31: issue #25 was created and did not appear on the board by itself.
 
-1. Open https://github.com/users/Kamsiob/projects/2
-2. Click the three dots at the top right, then **Workflows**
-3. Click **Item added to project**, set the status to **Todo**, and turn it on
-4. Click **Item closed**, set the status to **Done**, and turn it on
-5. Click **Auto-add to project**, set the filter to `repo:Kamsiob/health-trail is:issue`, and turn it on
+The board is instead maintained by `tools/board.py`, which is committed, deterministic, and run at every increment. `sync` adds anything missing and moves anything whose issue is closed to Done. It deliberately never moves an open issue, because whether something is in progress is a judgment rather than something derivable from issue state.
 
-**Impact while blocked.** The board stays correct because it is being maintained by hand, but by hand is the failure mode A4b names: status maintained by hand during a long unattended run goes stale, status derived from issue state cannot.
+The template's concern is that hand-maintained status goes stale during a long run. A script run every increment is not hand-maintained in the sense that warning means. The owner said to make the board whatever works so long as it is professional, and this works.
 
-### B3. A hosted privacy policy URL is needed before release, not before now
+**If the automations are ever wanted anyway,** they are three switches at https://github.com/users/Kamsiob/projects/2 under the three dots, then Workflows: **Item added to project** set to Todo, **Item closed** set to Done, and **Auto-add to project** filtered to `repo:Kamsiob/health-trail is:issue`. Nothing depends on it.
 
-**What is happening.** `PRIVACY.md` exists in the repository and is accurate. Template A6 requires the app's About screen to link a single canonical hosted version, so that no second copy can drift out of sync with it.
+**Also done:** the board is public, which it needed to be, since the README and the pinned roadmap both link to it and those links were reaching a private page for everyone except the owner.
 
-**What the owner needs to do,** at release rather than now: publish the contents of `PRIVACY.md` at a stable URL under kamsiob.com, and say what that URL is. The About screen will point at it and `PRIVACY.md` will be kept identical, with the same effective date.
+### B3. Hosted privacy policy. Resolved
 
-**Impact while blocked.** None yet. There is no About screen and no release. Recorded now so it is not discovered during the release itself.
+**Outcome.** The canonical policy is at **https://kamsiob.com/privacy.html#health-trail**, with a summary at https://kamsiob.com/health-trail.html#privacy.
+
+`PRIVACY.md` now mirrors the canonical wording rather than competing with it, and states plainly that the hosted page governs and that any disagreement between the two is a bug in the file. Issue #25 carries the remaining work: the About screen links exactly that URL when the About screen exists.
+
+**One small thing worth knowing, not blocking.** The hosted policy carries no effective date, while the page promises that any change lands there "with a new date". Template section A6 asks for the repository copy to match the hosted version including its date. There is no date to match, so `PRIVACY.md` carries none either rather than inventing one, which would guarantee the two disagree. If a date is ever added to the site, it gets copied across.

@@ -137,6 +137,7 @@ Every difference, with its reason. Nothing else differs.
 5. **Touch targets are 48dp minimum** regardless of the visual size of the thing being tapped. Several mockup rows are visually shorter than that and get invisible padding to reach it.
 6. **Care thread accent bars are removed**, replaced by dashed route lines. Already corrected in the reference file; stated here so it is never reintroduced.
 7. **The capture overlay is a real bottom sheet**, not the dimmed-background composite shown in two mockup screens. The mockups show it that way only because a static image cannot show a transition.
+8. **The mark's bars are thinner than the reference draws them.** The reference sets each bar at 22 by 9 with a 3 gap. Built at icon scale that weight reads as a hamburger menu control rather than as a painted blaze, which was confirmed by looking at it on a device. The bars are 22 by 6 with a 5 gap and capsule ends. Equal widths are unchanged and are not negotiable, see 5.1.
 
 ---
 
@@ -193,7 +194,15 @@ Arabic ships in v1, so every screen is built direction-aware from the first scre
 
 ### 5.1 The mark
 
-Two stacked rounded bars in `blaze`, the upper slightly narrower than the lower, which is a painted trail blaze. Used at 22dp in the app bar, 44dp on the launch and About screens, and as the app icon on a `paper` field. Never enclosed in a circle, never given a gradient, never animated except the launch fade.
+Two stacked rounded bars in `blaze`, **both the same width**, which is a painted trail blaze. Used at 22dp in the app bar, 44dp on the launch and About screens, and as the app icon on a `paper` field. Never enclosed in a circle, never given a gradient, never animated except the launch fade.
+
+**Proportions:** each bar is 22 wide by 6 tall with capsule ends, and the gap between them is 5. Scale those proportions rather than choosing new values.
+
+**Two corrections on 2026-07-31, both from looking at the built icon rather than at the specification.**
+
+First, this section previously said the upper bar was slightly narrower than the lower. That contradicted `reference/screen-grid.html`, which draws both at `width:22px`, and the difference was not listed in section 3, where every deliberate override of the mockups is required to appear. It was an error in this document rather than an intended override, and it had already been built the wrong way once. **Equal widths, and that is not negotiable.**
+
+Second, the reference draws the bars at 22 by 9 with a 3 gap, and built at icon scale that weight reads as a hamburger menu control. Thinned to 22 by 6 with a 5 gap and capsule rather than cut ends, which reads as brushed on rather than drawn. Listed in section 3 as item 8, because it is a genuine departure from the reference rather than a correction to it.
 
 ### 5.2 The trail
 

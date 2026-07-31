@@ -1,65 +1,57 @@
 # Privacy policy for Health Trail
 
-**Effective date:** 31 July 2026
+**The canonical version of this policy is hosted at [kamsiob.com/privacy.html#health-trail](https://kamsiob.com/privacy.html#health-trail).** That page is the one the app links to and the one that governs. This file mirrors it so the repository is not missing a policy, and it is kept identical whenever the hosted version changes.
 
-## The short version
+If this file and the hosted page ever disagree, the hosted page is correct and this file is a bug.
 
-Health Trail collects nothing. It sends nothing. It has no account, no server, and no analytics. Everything you write stays on your phone until you deliberately export it and send it somewhere yourself.
+---
 
-## What is collected
+## The policy, as published
 
-Nothing.
+> Everything you record stays on your phone. Full stop.
+>
+> No account, no cloud, no sync to anyone's server, ever. I never see a byte of what you record, and neither does anyone else.
+>
+> Sharing happens only as a PDF you generate and send through your own share sheet.
+>
+> App store install counts come from the store's own systems; nothing is reported from inside the app.
+>
+> Not directed at children under 13; no data is knowingly collected from anyone.
+>
+> Deleting the app deletes everything. Export a backup first if you want one.
 
-There is no account to create, no email address to give, no sign-in, and no profile. The app never asks who you are.
+The summary on the Health Trail page says the same thing in fewer words:
 
-## What leaves your device
+> **Collected:** Nothing. Not anonymized, not aggregated. Not collected.
+>
+> **Shared:** With no one. No account, no cloud, no sync to anyone's server. Ever.
+>
+> **Your records live:** On your phone. Every entry, document, and chart stays on the device.
+>
+> **Ads and trackers:** Zero. No ad code, no tracking code, no third-party eyes.
+>
+> **Sharing:** Your call, as PDF. You generate it and send it through your own share sheet.
+>
+> **Delete it all:** Uninstall. Done. Everything goes with the app. Export a backup first if you want one.
 
-Nothing, unless you send it.
+Questions go to hello@kamsiob.com. If the policy ever changes, the change lands on the hosted page first, in the same plain words, with a new date.
 
-The app makes no network requests. There is no cloud storage, no sync service, no backup service, no crash reporting service, no analytics, and no advertising. There is no code in the app that talks to a server, because there is no server.
+---
 
-Two things move data, and both need you to act:
+## How the software actually delivers that
 
-1. **Export.** You create a file containing your notebook and choose where it goes. It is encrypted with a passphrase you choose by default. What happens to that file afterward is up to you. If you put it in a folder that something else on your phone syncs to a cloud service, that service now has it, and that is between you and them.
-2. **Sharing a document.** When you share a summary, an incident, or an update, the app generates the document on your phone and hands it to Android's own share sheet. You pick where it goes. Nothing passes through any service belonging to this app.
+This section is not part of the policy. It is here because this is a public repository and someone reading the code deserves to know how the promises above are kept, and where to look to check. Nothing here adds to or narrows the policy.
 
-## Where your data lives
+**There is no network code.** The app declares no `INTERNET` permission, has no HTTP client, no socket, and no analytics or crash reporting library. The manifest is audited after every dependency addition, because libraries add permissions silently. You can verify this by reading `android/app/src/main/AndroidManifest.xml`.
 
-In one database file inside the app's private storage on your phone, encrypted at rest with a key held in the Android Keystore. Other apps cannot read it. Photographs and documents you attach are stored the same way.
+**The database is encrypted at rest** with a key generated in and held by the Android Keystore, which never leaves the device and is never written to preferences, a file, or a log.
 
-If you set up automatic local backup, the app also writes export files to a folder you chose. That folder is yours, and you can see and delete those files yourself.
+**Platform backup is switched off deliberately.** `allowBackup` is false and `data_extraction_rules.xml` excludes every domain from both cloud backup and device transfer. Android's own backup would have copied a notebook containing another person's health information into a Google account, which would break the policy above without anyone being asked. Moving to a new phone uses the app's own export instead, which you create deliberately, write to a folder you chose, and encrypt with a passphrase you set.
 
-## What health information means here
+**Export encryption is separate from the at-rest encryption,** and defaults on. A portable file cannot depend on one device's keystore, so it uses a passphrase you choose. If that passphrase is lost the file cannot be recovered: there is no server, no recovery code, and no backdoor, and the app says exactly that before you commit to it. An unencrypted export is available for inspecting your own data, with a plain warning rather than a scolding.
 
-You may record medications, incidents, measurements, and notes about another person's care. That is health information about a real person, usually someone who has not chosen to use this app themselves.
+**Deleted means deleted.** The app keeps a marker rather than a hole when you delete something, so that a future device-to-device transfer cannot resurrect it. That marker is internal. Anything you delete appears in no search, no digest, no chart, no count, and no export, and this is enforced by the shape of the code rather than by remembering. The full data wipe removes everything including those markers.
 
-The app treats it accordingly: it never transmits it, never analyzes it, never shows it to anyone, and never uses it for anything other than showing it back to you. It also never interprets it. The app records, organizes, and counts. It does not judge, advise, or conclude.
+**Permissions,** each requested only at the moment it is needed: the camera, when you photograph a document, and write access to a folder you pick, only if you turn on local backup.
 
-You are responsible for what you write down and for who you share exports with.
-
-## Permissions
-
-The app asks for the minimum it needs, at the moment it needs it, and explains why:
-
-- **Camera,** only when you photograph a document or a bill. Photographs are stored on the device.
-- **A folder you choose,** only if you turn on automatic local backup, so it can write backup files there.
-
-There is no internet permission requirement for any feature, because no feature uses the network.
-
-## Children
-
-The app is not directed at children and collects nothing from anyone, including children.
-
-## Deleting your data
-
-Uninstalling the app removes the database and everything in it. There is nothing held anywhere else, so there is nothing to request the deletion of and nobody to ask.
-
-Inside the app there is also a full data wipe, which asks twice, states plainly that it cannot be undone, and genuinely removes everything including deleted items. There is no soft delete hiding behind it and no copy kept.
-
-## Changes to this policy
-
-If this ever changes, the effective date above changes with it and the change is described in the release notes. A version of this policy that says less than the current app does is a bug, and it is treated as one.
-
-## Contact
-
-hello@kamsiob.com
+**Health Trail is a record-keeping app, not a medical app.** It gives no medical or legal advice, and it never interprets what you record. You are responsible for what you write down and for who you share exports with.
