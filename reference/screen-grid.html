@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Trail by Kamsiob, round three: how it fits together</title>
+<!-- Round three: the information architecture pass. Same visual direction.
+     What the review found missing: Appointments and Documents had no home, and there was no
+     single way IN for data. Fixes: a four-tab structure with a Notebook table of contents,
+     one gold capture button that files everything itself, and cross-linked detail pages.
+     No em dash appears anywhere in user-facing copy. -->
+<style>
+:root{
+  --paper:#FAF6EE; --card:#FFFFFF; --sand:#F1EBDC;
+  --ink:#22384A; --ink2:#5C6F7E; --ink3:#96A4AE;
+  --blue:#2F6F8F; --blue-deep:#245A75; --on-blue:#F3FAFD; --blue-soft:#E3EEF3;
+  --blaze:#D99D2B; --blaze-soft:#F7ECD1;
+  --leaf:#4E8A5C; --leaf-soft:#E4EFE5;
+  --alert:#B84A2E; --alert-soft:#F8E4DB;
+  --shadow:0 8px 24px rgba(50,62,42,.09), 0 2px 5px rgba(50,62,42,.05);
+  --disp:'Bricolage Grotesque','Avenir Next',ui-sans-serif,system-ui,sans-serif;
+  --body:'Atkinson Hyperlegible','Segoe UI',ui-sans-serif,system-ui,sans-serif;
+  --mono:ui-monospace,'Cascadia Mono',Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;padding:40px 20px 70px}
+.wrap{max-width:1180px;margin:0 auto}
+header{margin-bottom:26px}
+.blaze{display:inline-flex;flex-direction:column;gap:3px;vertical-align:middle;margin-right:12px}
+.blaze i{display:block;width:22px;height:9px;border-radius:3px;background:var(--blaze)}
+header h1{display:inline-block;font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.02em;vertical-align:middle}
+header .sub{margin-top:8px;color:var(--ink2);font-size:14.5px;max-width:700px;line-height:1.55}
+
+/* ============ the map ============ */
+.map{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:26px 26px 22px;margin-bottom:44px}
+.map h2{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:-.01em;margin-bottom:4px}
+.map .mp{font-size:13px;color:var(--ink2);margin-bottom:20px;max-width:720px;line-height:1.5}
+.cols{display:grid;grid-template-columns:1fr 1.35fr auto 1fr 1fr;gap:14px;align-items:start}
+@media(max-width:900px){.cols{grid-template-columns:1fr 1fr;gap:16px}.capcol{grid-column:1/-1;order:-1}}
+.col .ch{font-family:var(--disp);font-weight:700;font-size:13px;padding:8px 12px;border-radius:11px;background:var(--blue-soft);color:var(--blue-deep);margin-bottom:9px;text-align:center}
+.col ul{list-style:none}
+.col li{font-size:11.5px;color:var(--ink);font-weight:600;padding:5px 4px 5px 12px;position:relative;line-height:1.35}
+.col li:before{content:"";position:absolute;left:0;top:11px;width:5px;height:5px;border-radius:50%;background:var(--ink3)}
+.col li small{display:block;font-weight:400;color:var(--ink2);font-size:10px}
+.col li.new:before{background:var(--blaze)}
+.col li.new:after{content:"NEW";font-family:var(--mono);font-size:7px;letter-spacing:.1em;color:#9A6E14;background:var(--blaze-soft);border-radius:100px;padding:2px 6px;margin-left:6px;vertical-align:1px}
+.capcol{text-align:center}
+.capbtn{width:54px;height:54px;border-radius:50%;background:var(--blaze);color:#fff;font-size:28px;font-weight:400;display:flex;align-items:center;justify-content:center;margin:0 auto 9px;box-shadow:0 8px 20px rgba(217,157,43,.4)}
+.capcol .cl{font-family:var(--disp);font-weight:700;font-size:12.5px;margin-bottom:7px}
+.capcol .ct{font-size:10.5px;color:var(--ink2);line-height:1.5;max-width:150px;margin:0 auto}
+.mapfoot{margin-top:18px;padding-top:16px;border-top:1px solid rgba(34,56,74,.08);font-size:12px;color:var(--ink2);line-height:1.55}
+.mapfoot b{color:var(--ink)}
+
+/* ============ grid ============ */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:34px 26px;justify-items:center}
+@media(max-width:960px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.rowlbl{grid-column:1/-1;justify-self:stretch;display:flex;align-items:center;gap:14px;margin-top:8px}
+.rowlbl b{font-family:var(--disp);font-weight:700;font-size:16px;white-space:nowrap}
+.rowlbl span{font-size:12.5px;color:var(--ink2);white-space:nowrap}
+.rowlbl:after{content:"";flex:1;height:1px;background:rgba(34,56,74,.12)}
+.cell{display:flex;flex-direction:column;align-items:center;gap:11px}
+.lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.lbl b{color:var(--ink2)}
+
+.phone{width:268px;background:#131519;border-radius:38px;padding:8px;box-shadow:0 22px 50px rgba(28,36,30,.28), inset 0 0 0 1px #33383E}
+.scr{border-radius:31px;height:556px;overflow:hidden;background:var(--paper);display:flex;flex-direction:column;position:relative;font-size:10px}
+.scr:before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#131519;z-index:6}
+.pad{padding:30px 15px 12px;display:flex;flex-direction:column;flex:1;min-height:0}
+
+.top{display:flex;align-items:center;gap:7px;margin-bottom:12px}
+.top .bz{display:flex;flex-direction:column;gap:2px}
+.top .bz i{display:block;width:13px;height:5px;border-radius:2px;background:var(--blaze)}
+.top .aname{font-family:var(--disp);font-weight:700;font-size:11px}
+.top .who{margin-left:auto;background:var(--sand);border-radius:100px;padding:4px 9px;font-weight:700;font-size:8.5px;color:var(--ink2)}
+.h1m{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:-.01em;line-height:1.15;margin-bottom:3px}
+.sub-m{font-size:9px;color:var(--ink2);line-height:1.5;margin-bottom:11px}
+.card-m{background:var(--card);border-radius:15px;box-shadow:var(--shadow);padding:11px 12px;margin-bottom:9px}
+.eyeb{font-family:var(--mono);font-size:7px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.btn-m{background:var(--blue);color:var(--on-blue);font-weight:800;font-size:9.5px;text-align:center;border-radius:100px;padding:9px 12px}
+.btn-m.ghost{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.row2{display:flex;gap:7px}
+.row2 .btn-m{flex:1}
+.pill{display:inline-block;font-size:7.5px;font-weight:800;border-radius:100px;padding:3px 8px;letter-spacing:.04em}
+.pill.open{background:var(--alert-soft);color:var(--alert)}
+.pill.res{background:var(--leaf-soft);color:var(--leaf)}
+.pill.act{background:var(--blue-soft);color:var(--blue-deep)}
+.pill.gold{background:var(--blaze-soft);color:#9A6E14}
+
+/* nav with capture button */
+.nav-m{margin-top:auto;display:flex;align-items:flex-end;background:var(--card);border-radius:17px;box-shadow:var(--shadow);padding:7px 5px 6px;position:relative}
+.nv{flex:1;text-align:center;color:var(--ink3);font-size:7.5px;font-weight:700}
+.nv svg{width:14px;height:14px;display:block;margin:0 auto 2px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nv.on{color:var(--blue-deep)}
+.fab{flex:0 0 44px;display:flex;justify-content:center}
+.fab i{width:36px;height:36px;border-radius:50%;background:var(--blaze);color:#fff;font-size:19px;display:flex;align-items:center;justify-content:center;margin-top:-16px;box-shadow:0 6px 14px rgba(217,157,43,.45);font-style:normal}
+
+/* digest bits */
+.dg{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:8.8px;line-height:1.45}
+.dg em{font-style:normal;color:var(--ink2)}
+.dot{width:7px;height:7px;border-radius:50%;flex:none;margin-top:3px}
+.dot.a{background:var(--alert)}.dot.g{background:var(--blaze)}.dot.b{background:var(--blue)}
+.emg{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:100px;box-shadow:var(--shadow);padding:7px 12px;margin-bottom:9px}
+.emg .cross{width:15px;height:15px;border-radius:6px;background:var(--alert);color:#fff;font-weight:900;font-size:9px;display:flex;align-items:center;justify-content:center}
+.emg b{font-size:8.5px}
+.counts{display:flex;gap:6px;margin-bottom:9px}
+.cnt{flex:1;background:var(--card);border-radius:13px;box-shadow:var(--shadow);padding:8px 6px;text-align:center}
+.cnt b{font-family:var(--disp);font-size:13px;display:block}
+.cnt span{font-family:var(--mono);font-size:6.2px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.cnt.warm b{color:var(--alert)}
+
+/* capture overlay */
+.dim{position:absolute;inset:0;background:rgba(34,56,74,.32);z-index:2}
+.capmenu{position:absolute;left:14px;right:14px;bottom:14px;z-index:3}
+.cap{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:10px 13px;margin-bottom:7px}
+.cap .ci{width:26px;height:26px;border-radius:9px;background:var(--sand);display:flex;align-items:center;justify-content:center;flex:none}
+.cap .ci svg{width:13px;height:13px;stroke:var(--ink2);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cap b{font-size:10px;display:block}
+.cap span{font-size:7.6px;color:var(--ink2)}
+.capx{width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:17px;display:flex;align-items:center;justify-content:center;margin:4px auto 0}
+
+/* notebook toc */
+.toc{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:10px 12px;margin-bottom:7px}
+.toc .ti{width:26px;height:26px;border-radius:9px;background:var(--sand);display:flex;align-items:center;justify-content:center;flex:none}
+.toc .ti svg{width:13px;height:13px;stroke:var(--ink2);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.toc b{font-size:9.8px;display:block}
+.toc span{font-size:7.6px;color:var(--ink2)}
+.toc .go{margin-left:auto;color:var(--ink3);font-weight:800;font-size:11px}
+.toc.em .ti{background:var(--alert-soft)}
+.toc.em .ti svg{stroke:var(--alert)}
+
+/* appointments */
+.appt{padding:9px 0;border-bottom:1px solid rgba(34,56,74,.06)}
+.appt:last-child{border-bottom:0}
+.appt .aw{font-family:var(--mono);font-size:6.8px;letter-spacing:.08em;color:var(--ink3);margin-bottom:2px}
+.appt b{font-size:9.5px;display:block}
+.appt span{font-size:8px;color:var(--ink2)}
+.appt .st{margin-top:4px}
+
+/* documents */
+.doc{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(34,56,74,.06)}
+.doc:last-child{border-bottom:0}
+.thumb{width:26px;height:32px;border-radius:6px;background:var(--sand);flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:6px;font-weight:700;color:var(--ink2)}
+.doc b{font-size:9px;display:block}
+.doc span{font-size:7.6px;color:var(--ink2);line-height:1.4;display:block}
+.doc .loc{color:#9A6E14;font-weight:700}
+
+/* detail pages */
+.dhead{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--sand);color:var(--ink2);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex:none}
+.dhead b{font-family:var(--disp);font-size:13px;display:block}
+.dhead span{font-size:8px;color:var(--ink2)}
+.call{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;flex:none}
+.call svg{width:12px;height:12px;stroke:var(--blue-deep);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tlmini{position:relative;padding-left:16px}
+.tlmini:before{content:"";position:absolute;left:4px;top:6px;bottom:6px;width:0;border-left:2px dashed rgba(217,157,43,.55)}
+.tle{position:relative;padding:5px 0}
+.tle:before{content:"";position:absolute;left:-16px;top:9px;width:8px;height:8px;border-radius:50%;background:var(--blaze);box-shadow:0 0 0 2.5px var(--paper)}
+.tle .tw{font-family:var(--mono);font-size:6.4px;color:var(--ink3);letter-spacing:.06em}
+.tle b{font-size:8.8px;display:block;line-height:1.35}
+.tle span{font-size:7.8px;color:var(--ink2)}
+
+/* more tab */
+.mrow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid rgba(34,56,74,.06);font-size:9.5px;font-weight:700}
+.mrow:last-child{border-bottom:0}
+.mrow span{margin-left:auto;color:var(--ink3);font-weight:800}
+.mrow small{font-weight:400;color:var(--ink2);font-size:7.8px;display:block}
+
+/* time navigation */
+.scrub{position:absolute;right:5px;top:70px;bottom:70px;width:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:4}
+.scrub span{font-family:var(--mono);font-size:6.4px;color:var(--ink3);writing-mode:vertical-rl;letter-spacing:.12em}
+.scrub span.on{color:#9A6E14;font-weight:700}
+.scrub i{width:3px;height:26px;border-radius:100px;background:rgba(150,164,174,.35)}
+.scrub i.on{background:var(--blaze)}
+.mhead{display:flex;align-items:center;gap:8px;margin:4px 0 7px}
+.mhead b{font-family:var(--disp);font-size:10.5px}
+.mhead span{font-family:var(--mono);font-size:6.6px;letter-spacing:.08em;color:var(--ink3);text-transform:uppercase}
+.mhead:after{content:"";flex:1;height:1px;background:rgba(34,56,74,.09)}
+.mfold{display:flex;align-items:center;gap:9px;background:var(--card);border-radius:13px;box-shadow:var(--shadow);padding:9px 12px;margin-bottom:7px}
+.mfold b{font-size:9.2px;display:block}
+.mfold span{font-size:7.4px;color:var(--ink2)}
+.mfold .go{margin-left:auto;color:var(--ink3);font-weight:800}
+.mfold .mdot{width:7px;height:7px;border-radius:50%;background:var(--alert);flex:none}
+.mini{display:flex;gap:8px;align-items:flex-start;padding:4px 0}
+.mini .nd{width:8px;height:8px;border-radius:50%;flex:none;margin-top:3px;background:var(--blaze)}
+.mini .nd.v{background:var(--blue)}
+.mini b{font-size:8.6px;display:block;line-height:1.35}
+.mini span{font-family:var(--mono);font-size:6.2px;color:var(--ink3);letter-spacing:.05em}
+
+/* month review */
+.marrow{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.marrow .ar{width:24px;height:24px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ink2);font-size:11px}
+.marrow b{font-family:var(--disp);font-size:14px;flex:1;text-align:center}
+
+/* milestone arc */
+.arc{position:relative;padding-left:20px;flex:1;min-height:0}
+.arc:before{content:"";position:absolute;left:5px;top:8px;bottom:8px;border-left:2px dashed rgba(217,157,43,.55)}
+.ms{position:relative;padding:6px 0}
+.ms:before{content:"";position:absolute;left:-20px;top:11px;width:10px;height:10px;border-radius:50%;background:var(--blaze);box-shadow:0 0 0 3px var(--paper)}
+.ms.low:before{background:var(--ink3)}
+.ms .mw{font-family:var(--mono);font-size:6.4px;color:var(--ink3);letter-spacing:.08em}
+.ms b{font-size:9.4px;display:block;line-height:1.35}
+.ms span{font-size:7.8px;color:var(--ink2);line-height:1.4}
+
+/* incident thread */
+.thr{position:relative;padding-left:17px}
+.thr:before{content:"";position:absolute;left:4px;top:7px;bottom:7px;border-left:2px solid rgba(184,74,46,.22)}
+.te{position:relative;padding:5px 0}
+.te:before{content:"";position:absolute;left:-16.5px;top:9px;width:8px;height:8px;border-radius:50%;background:var(--alert);box-shadow:0 0 0 2.5px var(--paper)}
+.te.mid:before{background:var(--ink3)}
+.te.end:before{background:var(--leaf)}
+.te .tw{font-family:var(--mono);font-size:6.4px;color:var(--ink3);letter-spacing:.06em}
+.te b{font-size:8.8px;display:block;line-height:1.35}
+.te span{font-size:7.8px;color:var(--ink2);line-height:1.4}
+
+/* pattern note */
+.pattern{background:var(--blaze-soft);border-radius:13px;padding:10px 12px;margin-bottom:9px}
+.pattern .eyeb{color:#9A6E14}
+.pattern b{font-size:9px;line-height:1.45;display:block}
+.pattern span{font-size:7.4px;color:#9A6E14;display:block;margin-top:3px}
+
+/* search additions */
+.srch{display:flex;align-items:center;gap:7px;background:var(--card);border-radius:100px;box-shadow:var(--shadow);padding:8px 12px;margin-bottom:10px}
+.srch svg{width:11px;height:11px;flex:none;stroke:var(--ink3);fill:none;stroke-width:2;stroke-linecap:round}
+.srch b{font-size:10px}
+.srch i{width:1.5px;height:11px;background:var(--blue);display:inline-block}
+.sgrp{font-family:var(--mono);font-size:6.8px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);margin:8px 0 5px}
+.scope{display:flex;gap:6px;align-items:center;margin-bottom:9px}
+.scope .sc{font-size:7.6px;font-weight:800;border-radius:100px;padding:4px 10px;background:var(--ink);color:var(--paper)}
+.scope a{font-size:7.6px;font-weight:700;color:var(--blue-deep)}
+.hitrow{display:flex;gap:8px;align-items:flex-start;padding:5px 0}
+.hitrow .nd{width:8px;height:8px;border-radius:50%;flex:none;margin-top:3px;background:var(--blue)}
+.hitrow b{font-size:8.8px;display:block;line-height:1.35}
+.hitrow b mark{background:var(--blaze-soft);color:#9A6E14;padding:0 2px;border-radius:3px}
+.hitrow span{font-family:var(--mono);font-size:6.2px;color:var(--ink3);letter-spacing:.05em}
+
+/* chapters / journey */
+.jour{position:relative;padding-left:22px;flex:1;min-height:0}
+.jour:before{content:"";position:absolute;left:6px;top:8px;bottom:8px;border-left:2px dashed rgba(217,157,43,.55)}
+.jstop{position:relative;padding:6px 0 7px}
+.jstop:before{content:"";position:absolute;left:-21px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--card);border:3px solid var(--blaze)}
+.jstop.now:before{background:var(--blaze)}
+.jstop.h:before{border-color:var(--ink3)}
+.jstop .jw{font-family:var(--mono);font-size:6.4px;color:var(--ink3);letter-spacing:.08em}
+.jstop b{font-size:9.6px;display:block;line-height:1.3}
+.jstop span{font-size:7.8px;color:var(--ink2);line-height:1.4;display:block}
+.jstop .jt{margin-top:3px}
+
+/* concern + gap */
+.concern{background:var(--alert-soft);border-radius:11px;padding:8px 10px;margin:6px 0}
+.concern b{font-size:8.6px;color:var(--alert);display:block;line-height:1.4}
+.concern span{font-size:7.4px;color:var(--ink2)}
+.gapnote{background:var(--sand);border-radius:11px;padding:8px 10px;font-size:8px;color:var(--ink2);line-height:1.5}
+
+/* money + directives */
+.bill{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(34,56,74,.06)}
+.bill:last-child{border-bottom:0}
+.bill .amt{font-family:var(--disp);font-weight:700;font-size:10.5px;margin-left:auto;text-align:right;flex:none}
+.bill .amt small{display:block;font-family:var(--mono);font-size:6px;font-weight:400;color:var(--ink3);letter-spacing:.06em}
+.bill b{font-size:9px;display:block;line-height:1.35}
+.bill span{font-size:7.6px;color:var(--ink2);display:block}
+.bill .bs{margin-top:3px}
+.mtot{display:flex;gap:6px;margin-bottom:9px}
+.mtot .cnt b{font-size:12px}
+.dir{padding:8px 0;border-bottom:1px solid rgba(34,56,74,.06)}
+.dir:last-child{border-bottom:0}
+.dir b{font-size:9.2px;display:block;line-height:1.4}
+.dir span{font-size:7.6px;color:var(--ink2);display:block;margin-top:1px}
+.dir .ds{margin-top:4px;display:flex;gap:5px}
+
+/* care threads: identity carried by a colored dashed route line, the way trail maps mark routes */
+:root{--th-pt:#2F6F8F;--th-ot:#4E8A5C;--th-sp:#B36A3C;--th-nu:#6E7F5A}
+.thread{background:var(--card);border-radius:15px;box-shadow:var(--shadow);padding:11px 12px;margin-bottom:8px}
+.thread .trow{display:flex;align-items:flex-start;gap:8px}
+.thread b{font-size:9.6px}
+.thread .tsub{font-size:7.8px;color:var(--ink2);margin-top:2px;line-height:1.4}
+.thread .tnext{margin-left:auto;text-align:right;font-family:var(--mono);font-size:6.4px;color:var(--ink3);letter-spacing:.05em;line-height:1.5;flex:none}
+.route{height:2px;margin-top:8px;background-image:linear-gradient(90deg,currentColor 0 6px,transparent 6px 12px);background-size:12px 2px;background-repeat:repeat-x;opacity:.65;border-radius:2px}
+.ribbon{display:flex;align-items:center;gap:7px;border-radius:100px;padding:5px 11px;margin-bottom:9px;color:#fff;font-weight:800;font-size:8.5px;width:fit-content}
+.skipnote{font-size:7.8px;color:var(--ink3);text-align:center;margin-top:6px;line-height:1.5}
+.ended{background:var(--sand);border-radius:11px;padding:8px 10px;font-size:8px;color:var(--ink2);line-height:1.5;margin-bottom:8px}
+.ended b{color:var(--ink);font-size:8.4px}
+/* capture form */
+.fstep{background:var(--card);border-radius:15px;box-shadow:var(--shadow);padding:11px 12px;margin-bottom:8px}
+.fstep .fq{font-family:var(--disp);font-weight:700;font-size:10px;margin-bottom:6px}
+.fstep .fq small{font-family:var(--body);font-weight:400;color:var(--ink3);font-size:7.4px;margin-left:5px}
+.opt2{display:flex;gap:5px;flex-wrap:wrap}
+.opt2 .chp{font-size:8px;display:inline-flex;align-items:center;gap:5px}
+.cdot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.notefield{font-size:8.6px;color:var(--ink2);line-height:1.55;min-height:52px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="blaze"><i></i><i></i></span><h1>Health Trail, round three: how it fits together</h1>
+  <p class="sub">The review compared the app against how caregivers actually organize the paper version. The classic care binder has five tabs: medications, appointments, providers, insurance, and documents. Two of those had no home in our first two rounds. This round fixes the structure: four tabs, one capture button, and every screen reachable in at most two taps.</p>
+</header>
+
+<!-- ================= THE MAP ================= -->
+<div class="map">
+  <h2>The whole app on one card</h2>
+  <p class="mp">Four tabs along the bottom, one gold button in the middle. The button is the only way you ever need to put something in. The tabs are where everything lives once it is in.</p>
+  <div class="cols">
+    <div class="col">
+      <div class="ch">Today</div>
+      <ul>
+        <li class="new">Search everything<small>one bar, the whole trail, all sections</small></li>
+        <li>Since you were last here<small>the digest, built from real entries</small></li>
+        <li>Next up<small>the nearest appointment, with prep status</small></li>
+        <li>Open items<small>incidents, questions, waiting-ons</small></li>
+        <li>Emergency card<small>one tap, always visible</small></li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="ch">Notebook</div>
+      <ul>
+        <li>Care team<small>doctors, nurses, facility</small></li>
+        <li>Medications<small>the record, with start dates</small></li>
+        <li class="new">Appointments<small>upcoming with prep, past with notes</small></li>
+        <li class="new">Chapters<small>the journey, place by place: home, hospital, rehab, facility</small></li>
+        <li>The trail<small>every call, visit, and incident in order</small></li>
+        <li>Progress<small>charts, milestones, med markers</small></li>
+        <li class="new">Documents<small>insurance, legal, medical records</small></li>
+        <li class="new">Care threads<small>PT, OT, speech, wound care: parallel streams, one trail</small></li>
+        <li class="new">Money<small>bills, disputes, and running costs</small></li>
+        <li class="new">Standing instructions<small>the rules you gave them, and when they were ignored</small></li>
+        <li>Ask next time<small>the question inbox</small></li>
+        <li>Emergency card</li>
+      </ul>
+    </div>
+    <div class="col capcol">
+      <div class="capbtn">+</div>
+      <div class="cl">Capture</div>
+      <p class="ct">Call, visit, incident, measurement, question, or document. Six things, one button, and each files itself into the right section.</p>
+    </div>
+    <div class="col">
+      <div class="ch">Projects</div>
+      <ul>
+        <li>The long fights<small>waiver applications, appeals, discharge planning</small></li>
+        <li>Own contacts and timeline</li>
+        <li>Checklist and waiting-on</li>
+        <li>Files and photos</li>
+        <li>PDF export per project</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="ch">More</div>
+      <ul>
+        <li>People<small>switch between trails</small></li>
+        <li>Family update<small>weekly summary to share</small></li>
+        <li>Search the whole trail</li>
+        <li>Templates</li>
+        <li>Export everything</li>
+        <li>Change of situation</li>
+        <li>Archived trails</li>
+      </ul>
+    </div>
+  </div>
+  <div class="mapfoot"><b>The rule that holds it together:</b> everything is connected to everything it touches. A medication links to its chart, its incidents, and the emergency card. A doctor links to every call and visit involving them, plus the questions waiting for them. You never hunt for where something was filed, because every road leads to it.</div>
+</div>
+
+<div class="grid">
+
+<div class="rowlbl"><b>One way in</b><span>the dashboard and the capture button</span></div>
+
+<!-- ============ 1. DASHBOARD ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Tuesday, Jul 26</div>
+  <p class="sub-m" style="margin-bottom:8px">Since you were last here on Saturday:</p>
+  <div class="emg"><span class="cross">+</span><b>Emergency card</b></div>
+  <div class="counts">
+    <div class="cnt warm"><b>1</b><span>Open incident</span></div>
+    <div class="cnt"><b>3</b><span>To ask</span></div>
+    <div class="cnt"><b>1</b><span>Waiting on</span></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">On the trail</div>
+    <div class="dg"><span class="dot a"></span><div><b>Med incident still open.</b> <em>Callback due by 3 pm today.</em></div></div>
+    <div class="dg"><span class="dot g"></span><div><b>Weight logged Sunday:</b> <em>158.2, down 1.4 in two weeks.</em></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Next up</div>
+    <div class="dg"><span class="dot b"></span><div><b>Thursday 10:00, Dr. Prasad.</b> <em>Prep is ready: 2 questions and a change summary.</em></div></div>
+  </div>
+  <div class="nav-m">
+    <div class="nv on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>01</b> · today, the dashboard</div>
+</div>
+
+<!-- ============ 2. CAPTURE ============ -->
+<div class="cell">
+<div class="phone"><div class="scr">
+  <div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Add to the trail</div>
+  <p class="sub-m">The gold button opens this from any screen. Six things go in, and each files itself where it belongs.</p>
+  <div class="cap"><span class="ci"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2A19.8 19.8 0 012 5.2 2 2 0 014 3h3a2 2 0 012 1.7c.1 1 .4 2 .7 2.9a2 2 0 01-.5 2.1L8 11a16 16 0 006 6l1.3-1.2a2 2 0 012.1-.5c.9.3 1.9.6 2.9.7a2 2 0 011.7 2z"/></svg></span><div><b>Log a call</b><span>goes to the trail</span></div></div>
+  <div class="cap"><span class="ci"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span><div><b>Log a visit</b><span>goes to the trail</span></div></div>
+  <div class="cap"><span class="ci"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></span><div><b>Report an incident</b><span>stays on Today until resolved</span></div></div>
+  <div class="cap"><span class="ci"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 3 5-6"/></svg></span><div><b>Add a measurement</b><span>goes to progress charts</span></div></div>
+  <div class="cap"><span class="ci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .3c0 1.7-2.5 2.2-2.5 3.7M12 17h.01"/></svg></span><div><b>Ask next time</b><span>goes to the question inbox</span></div></div>
+  <div class="cap"><span class="ci"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg></span><div><b>Save a document</b><span>photo or file, goes to documents</span></div></div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>02</b> · the capture button, open</div>
+</div>
+
+<!-- ============ 3. APPOINTMENTS ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Appointments</div>
+  <p class="sub-m">Each one carries its own prep and its own notes afterward.</p>
+  <div class="card-m">
+    <div class="eyeb">Upcoming</div>
+    <div class="appt"><div class="aw">THU JUL 28 · 10:00 AM</div><b>Dr. Anita Prasad</b><span>Primary care, at Maplewood</span><div class="st"><span class="pill gold">PREP READY · 2 QUESTIONS</span></div></div>
+    <div class="appt"><div class="aw">MON AUG 1 · 2:30 PM</div><b>PT evaluation, Marisol Reyes</b><span>Second weekly session decision</span><div class="st"><span class="pill act">1 QUESTION WAITING</span></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Past</div>
+    <div class="appt"><div class="aw">APR 3</div><b>Dr. Prasad, quarterly review</b><span>Notes logged to the trail. 2 questions answered.</span><div class="st"><span class="pill res">LOGGED</span></div></div>
+  </div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>03</b> · appointments, now a real section</div>
+</div>
+
+<div class="rowlbl"><b>Where everything lives</b><span>the notebook is the binder, with a table of contents</span></div>
+
+<!-- ============ 4. NOTEBOOK TOC ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Notebook</div>
+  <p class="sub-m">Everything about her care, in eight places that never move.</p>
+  <div class="toc"><span class="ti"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 00-3-3.9"/></svg></span><div><b>Care team</b><span>12 people</span></div><span class="go">›</span></div>
+  <div class="toc"><span class="ti"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M5 10h14"/></svg></span><div><b>Medications</b><span>4 current</span></div><span class="go">›</span></div>
+  <div class="toc"><span class="ti"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><div><b>Appointments</b><span>2 upcoming</span></div><span class="go">›</span></div>
+  <div class="toc"><span class="ti"><svg viewBox="0 0 24 24"><path d="M4 19c4-1 5-4 5-7 0-3 1-6 5-7M9 12h10"/><circle cx="19" cy="5" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="19" cy="19" r="1.6"/></svg></span><div><b>The trail</b><span>214 entries · 1 open incident</span></div><span class="go">›</span></div>
+  <div class="toc"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 3 5-6"/></svg></span><div><b>Progress</b><span>3 charts, 6 milestones</span></div><span class="go">›</span></div>
+  <div class="toc"><span class="ti"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span><div><b>Documents</b><span>9 filed</span></div><span class="go">›</span></div>
+  <div class="toc"><span class="ti"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .3c0 1.7-2.5 2.2-2.5 3.7M12 17h.01"/></svg></span><div><b>Ask next time</b><span>3 waiting</span></div><span class="go">›</span></div>
+  <div class="toc em"><span class="ti"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M12 8v4M12 15h.01"/></svg></span><div><b>Emergency card</b><span>updated Jul 2</span></div><span class="go">›</span></div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>04</b> · the table of contents</div>
+</div>
+
+<!-- ============ 5. DOCUMENTS ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Documents</div>
+  <p class="sub-m">A photo of each one, and a note on where the original lives.</p>
+  <div class="card-m">
+    <div class="eyeb">Insurance and identity</div>
+    <div class="doc"><span class="thumb">IMG</span><div><b>Medicare card, front and back</b><span>Member ID ends 4471</span></div></div>
+    <div class="doc"><span class="thumb">IMG</span><div><b>Supplemental plan card</b><span>Group ends 2209</span></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Legal</div>
+    <div class="doc"><span class="thumb">PDF</span><div><b>Power of attorney, signed</b><span class="loc">Original: fireproof box, home office closet</span></div></div>
+    <div class="doc"><span class="thumb">IMG</span><div><b>DNR order</b><span class="loc">Original: blue folder, top drawer, Room 214</span></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Medical records</div>
+    <div class="doc"><span class="thumb">PDF</span><div><b>Discharge summary, Riverside</b><span>Mar 2, after the fall</span></div></div>
+    <div class="doc"><span class="thumb">PDF</span><div><b>Lab results</b><span>Jun 12, quarterly panel</span></div></div>
+  </div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>05</b> · documents, the missing binder tab</div>
+</div>
+
+<!-- ============ 6. MORE ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span></div>
+  <div class="h1m">More</div>
+  <p class="sub-m">The person, the tools, and the exits.</p>
+  <div class="card-m">
+    <div class="eyeb">People</div>
+    <div class="mrow">Mom, Eleanor Vance<small>Maplewood · 214 entries</small><span class="pill act">ACTIVE</span></div>
+    <div class="mrow" style="color:var(--ink2)">Start a trail for someone else<span>›</span></div>
+  </div>
+  <div class="card-m">
+    <div class="mrow">Family update<small>draft this week's summary to share</small><span>›</span></div>
+    <div class="mrow">Search the whole trail<span>›</span></div>
+    <div class="mrow">Templates<small>notebooks, projects, progress presets</small><span>›</span></div>
+  </div>
+  <div class="card-m">
+    <div class="mrow">Export everything<small>one file, yours to keep anywhere</small><span>›</span></div>
+    <div class="mrow">Change of situation<small>moving home, new facility</small><span>›</span></div>
+    <div class="mrow">Archived trails<span>›</span></div>
+  </div>
+  <div class="card-m">
+    <div class="mrow">Support this work<span>›</span></div>
+    <div class="mrow">About and privacy<small>everything stays on this phone</small><span>›</span></div>
+  </div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>06</b> · more, tools and exits</div>
+</div>
+
+<div class="rowlbl"><b>Everything connects</b><span>no dead ends: each thing links to everything it touches</span></div>
+
+<!-- ============ 7. PERSON DETAIL ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="dhead"><span class="avatar">AP</span><div><b>Dr. Anita Prasad</b><span>Primary care · Maplewood visits monthly</span></div><span class="call"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2A19.8 19.8 0 012 5.2 2 2 0 014 3h3a2 2 0 012 1.7c.1 1 .4 2 .7 2.9a2 2 0 01-.5 2.1L8 11a16 16 0 006 6l1.3-1.2a2 2 0 012.1-.5c.9.3 1.9.6 2.9.7a2 2 0 011.7 2z"/></svg></span></div>
+  <div class="card-m"><div class="eyeb">Next</div><div class="dg"><span class="dot b"></span><div><b>Thursday 10:00.</b> <em>2 questions waiting for her in the prep sheet.</em></div></div></div>
+  <div class="card-m">
+    <div class="eyeb">Her part of the trail</div>
+    <div class="tlmini">
+      <div class="tle"><div class="tw">JUL 22 · CALL</div><b>Office call about the statin timing</b><span>Will review at Thursday's visit</span></div>
+      <div class="tle"><div class="tw">MAR 12</div><b>Prescribed Ozempic 0.5 mg</b><span>Marked on the weight chart</span></div>
+      <div class="tle"><div class="tw">APR 3 · VISIT</div><b>Quarterly review</b><span>BP stable, bloodwork ordered</span></div>
+    </div>
+  </div>
+  <div class="btn-m ghost" style="margin-top:auto">See all 11 entries with her</div>
+  <div class="nav-m" style="margin-top:10px">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>07</b> · a person page pulls its whole story</div>
+</div>
+
+<!-- ============ 8. MEDICATION DETAIL ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="dhead"><span class="avatar" style="border-radius:12px">Rx</span><div><b>Atorvastatin 20 mg</b><span>Daily, evening · started 2021 · Dr. Prasad</span></div></div>
+  <div class="card-m">
+    <div class="eyeb">Everywhere it appears</div>
+    <div class="tlmini">
+      <div class="tle"><div class="tw">ASK NEXT TIME</div><b>Can it move to mornings?</b><span>Waiting for Thursday's visit</span></div>
+      <div class="tle"><div class="tw">MAR 18 · INCIDENT · RESOLVED</div><b>Missed on the evening round</b><span>Facility retrained the shift</span></div>
+      <div class="tle"><div class="tw">EMERGENCY CARD</div><b>Listed under current medications</b><span>Updates there automatically</span></div>
+    </div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">History</div>
+    <div class="dg"><span class="dot g"></span><div><b>2021:</b> <em>started at 10 mg</em></div></div>
+    <div class="dg"><span class="dot g"></span><div><b>Nov 2024:</b> <em>raised to 20 mg after bloodwork</em></div></div>
+  </div>
+  <div class="row2" style="margin-top:auto"><div class="btn-m ghost">Edit</div><div class="btn-m">Log a change</div></div>
+  <div class="nav-m" style="margin-top:10px">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>08</b> · a medication knows its own story</div>
+</div>
+
+<!-- ============ 9. TRAIL W/ JUMP ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">The trail</div>
+  <p class="sub-m">One entry, every road out of it. Tap anything underlined to jump.</p>
+  <div class="card-m">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span class="pill gold">CALL · JUL 22</span></div>
+    <b style="font-size:10px;display:block;margin-bottom:4px">Dr. Prasad's office, statin timing</b>
+    <p style="font-size:8.6px;color:var(--ink2);line-height:1.55">Asked whether the <u style="color:var(--blue-deep);font-weight:700">Atorvastatin</u> could move to mornings. <u style="color:var(--blue-deep);font-weight:700">Dr. Prasad</u> will review at <u style="color:var(--blue-deep);font-weight:700">Thursday's visit</u>. Added the question to <u style="color:var(--blue-deep);font-weight:700">Ask next time</u>.</p>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">This entry connects to</div>
+    <div class="dg"><span class="dot b"></span><div><b>Medication:</b> <em>Atorvastatin 20 mg</em></div></div>
+    <div class="dg"><span class="dot b"></span><div><b>Person:</b> <em>Dr. Anita Prasad</em></div></div>
+    <div class="dg"><span class="dot b"></span><div><b>Appointment:</b> <em>Thursday 10:00 prep sheet</em></div></div>
+    <div class="dg"><span class="dot g"></span><div><b>Question:</b> <em>waiting in Ask next time</em></div></div>
+  </div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>09</b> · one entry, every road out</div>
+</div>
+
+<div class="rowlbl"><b>Zooming out</b><span>five years of trail, and it still has to feel light</span></div>
+
+<!-- ============ 10. THE LONG TRAIL ============ -->
+<div class="cell">
+<div class="phone"><div class="scr">
+  <div class="scrub"><span>2026</span><i class="on"></i><span class="on">2025</span><i></i><span>2024</span><i></i></div>
+  <div class="pad" style="padding-right:26px">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">The trail</div>
+  <p class="sub-m">Slide the edge to jump years. Months fold closed as they age, and open with a tap.</p>
+  <div class="mhead"><b>July 2026</b><span>9 entries</span></div>
+  <div class="mini"><span class="nd v"></span><div><b>Sunday visit, walked the east hallway</b><span>JUL 24 · VISIT</span></div></div>
+  <div class="mini"><span class="nd"></span><div><b>Dr. Prasad's office, statin timing</b><span>JUL 22 · CALL</span></div></div>
+  <div class="mini"><span class="nd"></span><div><b>Nurse Tunde, weekly check-in</b><span>JUL 22 · CALL</span></div></div>
+  <div class="mhead" style="margin-top:8px"><b>June 2026</b><span>folded</span></div>
+  <div class="mfold"><div><b>12 entries</b><span>4 calls · 3 visits · 1 milestone · no incidents</span></div><span class="go">›</span></div>
+  <div class="mhead"><b>March 2026</b><span>folded</span></div>
+  <div class="mfold"><span class="mdot"></span><div><b>14 entries</b><span>The fall recovery month · 1 incident, resolved</span></div><span class="go">›</span></div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>10</b> · years of trail, still light</div>
+</div>
+
+<!-- ============ 11. LOOKING BACK ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="marrow"><span class="ar">‹</span><b>June 2026</b><span class="ar">›</span></div>
+  <div class="card-m">
+    <div class="eyeb">The month, from your entries</div>
+    <div class="dg"><span class="dot b"></span><div><b>12 entries:</b> <em>4 calls, 3 visits, 4 measurements, 1 milestone</em></div></div>
+    <div class="dg"><span class="dot g"></span><div><b>Weight:</b> <em>161.0 to 159.4, steady all month</em></div></div>
+    <div class="dg"><span class="dot g"></span><div><b>Milestone:</b> <em>walked 50 ft unassisted on June 3</em></div></div>
+    <div class="dg"><span class="dot b"></span><div><b>No incidents.</b> <em>First clean month since the fall.</em></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Worth remembering</div>
+    <p style="font-size:8.6px;color:var(--ink2);line-height:1.55">From your June 12 visit note: "She waved me off when I reached for her arm at the hallway door. Wanted to do it herself."</p>
+  </div>
+  <p class="sub-m">Every line above comes from an entry you wrote. Tap any line to jump to it.</p>
+  <div class="btn-m ghost" style="margin-top:auto">Share this month as an update</div>
+  <div class="nav-m" style="margin-top:10px">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>11</b> · looking back, month by month</div>
+</div>
+
+<!-- ============ 12. MILESTONE ARC ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Milestones</div>
+  <p class="sub-m">The whole recovery, one trail. This is the screen you show her.</p>
+  <div class="arc">
+    <div class="ms low"><div class="mw">NOV 2024</div><b>The fall, hip surgery at Riverside</b><span>Where this trail began</span></div>
+    <div class="ms low"><div class="mw">DEC 2024</div><b>Moved to Maplewood for rehab</b></div>
+    <div class="ms"><div class="mw">FEB 2025</div><b>First steps with the walker</b><span>Eight of them, with Marisol</span></div>
+    <div class="ms"><div class="mw">AUG 2025</div><b>Full hallway with the walker</b><span>No rest stop</span></div>
+    <div class="ms"><div class="mw">JUN 3, 2026</div><b>Walked 50 ft unassisted</b><span>First time since the fall</span></div>
+    <div class="ms"><div class="mw">JUL 15, 2026</div><b>Stairs with the rail, 4 steps</b><span>Marisol supervising</span></div>
+  </div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>12</b> · the arc, worth showing her</div>
+</div>
+
+<div class="rowlbl"><b>Zooming in</b><span>one incident, one day, followed all the way through</span></div>
+
+<!-- ============ 13. INCIDENT THREAD ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Missed evening meds</div>
+  <div style="margin-bottom:9px"><span class="pill res">RESOLVED IN 9 DAYS</span></div>
+  <div class="card-m">
+    <div class="eyeb">The thread, start to finish</div>
+    <div class="thr">
+      <div class="te"><div class="tw">MAR 18</div><b>Reported</b><span>Lisinopril and Atorvastatin missed on the evening round. Spotted on the chart during a visit.</span></div>
+      <div class="te mid"><div class="tw">MAR 19</div><b>Called the front desk</b><span>Promised a callback from the Director of Nursing</span></div>
+      <div class="te mid"><div class="tw">MAR 21</div><b>No callback. Called again</b><span>Spoke to T. Okonkwo directly, review promised</span></div>
+      <div class="te mid"><div class="tw">MAR 24</div><b>Escalated to the administrator</b><span>Meeting set for the 26th</span></div>
+      <div class="te mid"><div class="tw">MAR 26</div><b>Facility response</b><span>Evening shift retrained, double-check added to the round</span></div>
+      <div class="te end"><div class="tw">MAR 27</div><b>Marked resolved</b><span>No repeat since</span></div>
+    </div>
+  </div>
+  <p class="sub-m" style="margin-top:auto">If it ever happens again, this thread is the record you bring to the meeting.</p>
+  <div class="btn-m ghost">Export this thread as PDF</div>
+</div></div></div>
+<div class="lbl"><b>13</b> · one incident, followed through</div>
+</div>
+
+<!-- ============ 14. INCIDENTS OVER TIME ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Incidents</div>
+  <p class="sub-m">The full history, and what it adds up to.</p>
+  <div class="pattern">
+    <div class="eyeb">Counted from your entries</div>
+    <b>3 of the 5 resolved incidents involved the evening shift.</b>
+    <span>A count, nothing more. What it means is yours to judge, and worth raising.</span>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Open · 1</div>
+    <div class="mini"><span class="nd" style="background:var(--alert)"></span><div><b>Late med round, second time this month</b><span>JUL 18 · CALLBACK DUE TODAY</span></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Resolved · 2026</div>
+    <div class="mini"><span class="nd" style="background:var(--leaf)"></span><div><b>Missed evening meds</b><span>MAR 18 · RESOLVED IN 9 DAYS</span></div></div>
+    <div class="mini"><span class="nd" style="background:var(--leaf)"></span><div><b>Walker left out of reach overnight</b><span>JAN 9 · RESOLVED IN 2 DAYS</span></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Resolved · 2025</div>
+    <div class="mini"><span class="nd" style="background:var(--leaf)"></span><div><b>Billing error, double-charged month</b><span>OCT 2 · RESOLVED IN 21 DAYS</span></div></div>
+    <div class="mini"><span class="nd" style="background:var(--leaf)"></span><div><b>PT session skipped without notice</b><span>MAY 14 · RESOLVED IN 4 DAYS</span></div></div>
+  </div>
+  <div class="btn-m ghost" style="margin-top:auto">Export incident history</div>
+</div></div></div>
+<div class="lbl"><b>14</b> · the history, and the count</div>
+</div>
+
+<!-- ============ 15. ONE DAY ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Wednesday, March 18</div>
+  <p class="sub-m">Landed here from search. The whole day, reconstructed.</p>
+  <div class="card-m">
+    <div class="eyeb">That day on the trail</div>
+    <div class="tlmini">
+      <div class="tle"><div class="tw">2:10 PM · VISIT</div><b>Midweek visit</b><span>Quiet day, tired after PT. Checked the chart before leaving.</span></div>
+      <div class="tle"><div class="tw">2:40 PM · INCIDENT OPENED</div><b>Missed evening meds, reported</b><span>The thread that took 9 days</span></div>
+      <div class="tle"><div class="tw">6:15 PM · CALL</div><b>Called Dana to fill her in</b><span>Agreed to split visit days that week</span></div>
+    </div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Context that day</div>
+    <div class="dg"><span class="dot b"></span><div><b>Medications then:</b> <em>4, before the Ozempic change</em></div></div>
+    <div class="dg"><span class="dot g"></span><div><b>Weight that week:</b> <em>164.3</em></div></div>
+    <div class="dg"><span class="dot b"></span><div><b>16 days after</b> <em>the Riverside discharge</em></div></div>
+  </div>
+  <div class="row2" style="margin-top:auto"><div class="btn-m ghost">Back to results</div><div class="btn-m">Open in the trail</div></div>
+</div></div></div>
+<div class="lbl"><b>15</b> · any day, reconstructed</div>
+</div>
+
+<div class="rowlbl"><b>Search, everywhere</b><span>one bar on Today, a scoped bar in every section, and results that assemble</span></div>
+
+<!-- ============ 16. UNIVERSAL SEARCH ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg><b>community waiver</b><i></i></div>
+  <div class="sgrp">Project · 1</div>
+  <div class="card-m" style="padding:9px 11px"><div class="hitrow"><span class="nd" style="background:var(--blaze)"></span><div><b>Community <mark>waiver</mark> application</b><span>ACTIVE · MONTH 14 · WAITING ON CASEWORKER</span></div></div></div>
+  <div class="sgrp">Documents · 3</div>
+  <div class="card-m" style="padding:9px 11px">
+    <div class="hitrow"><span class="nd"></span><div><b>Denial letter, first application</b><span>PDF · NOV 2025</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>Income verification packet</b><span>PDF · JAN 2026</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>Level of care assessment copy</b><span>IMG · MAY 2026</span></div></div>
+  </div>
+  <div class="sgrp">Calls and people · 3</div>
+  <div class="card-m" style="padding:9px 11px">
+    <div class="hitrow"><span class="nd" style="background:var(--blaze)"></span><div><b>Caseworker call, reassessment promised</b><span>CALL · JUL 12</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>R. Delgado, county benefits office</b><span>PROJECT CONTACT</span></div></div>
+  </div>
+  <div class="btn-m" style="margin-top:auto">Open everything connected</div>
+</div></div></div>
+<div class="lbl"><b>16</b> · universal search, from today</div>
+</div>
+
+<!-- ============ 17. SCOPED SEARCH ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg><b>fall</b><i></i></div>
+  <div class="scope"><span class="sc">Searching the trail only</span><a>Search everywhere instead</a></div>
+  <div class="card-m" style="padding:9px 11px">
+    <div class="hitrow"><span class="nd" style="background:var(--alert)"></span><div><b>The second <mark>fall</mark>, at home in the kitchen</b><span>NOV 2024 · AT HOME · LED TO RIVERSIDE</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>PT note: <mark>fall</mark> risk lowered to moderate</b><span>AUG 2025 · AT MAPLEWOOD</span></div></div>
+    <div class="hitrow"><span class="nd" style="background:var(--alert)"></span><div><b>The first <mark>fall</mark>, ankle fracture</b><span>SEP 2023 · AT HOME · LED TO RIVERSIDE</span></div></div>
+    <div class="hitrow"><span class="nd v" style="background:var(--blue)"></span><div><b>Visit note: practicing <mark>fall</mark> recovery with Marisol</b><span>FEB 2025 · AT MAPLEWOOD</span></div></div>
+  </div>
+  <p class="sub-m">Every result carries its chapter, so you always know where in the journey it happened.</p>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>17</b> · scoped search, inside a section</div>
+</div>
+
+<!-- ============ 18. ASSEMBLED ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Everything connected to:<br>the pressure sore</div>
+  <p class="sub-m">One tap from any search result. The app pulls the whole story together.</p>
+  <div class="card-m" style="padding:9px 11px">
+    <div class="hitrow"><span class="nd" style="background:var(--alert)"></span><div><b>Incident: pressure sore, disclosed in passing</b><span>MAR 2024 · RIVERSIDE CHAPTER</span></div></div>
+    <div class="hitrow"><span class="nd" style="background:var(--blaze)"></span><div><b>Project: records request, with the legal aid clinic</b><span>CLOSED · WON · 4 MONTHS</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>4 documents</b><span>REQUEST LETTERS · WOUND CARE NOTES · RELEASE</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>11 trail entries</b><span>EVERY CALL, WITH NAMES AND DATES</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>2 people</b><span>PATIENT ADVOCATE · WOUND CARE NURSE</span></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Why this exists</div>
+    <p style="font-size:8.4px;color:var(--ink2);line-height:1.55">When something goes wrong, the record is scattered across calls, papers, and memory. This screen is the un-scattering. Export it as one PDF and hand it to a lawyer, an advocate, or a new doctor.</p>
+  </div>
+  <div class="btn-m" style="margin-top:auto">Export as one PDF</div>
+</div></div></div>
+<div class="lbl"><b>18</b> · associated information, assembled</div>
+</div>
+
+<div class="rowlbl"><b>The journey</b><span>one person, many places: the structure the story actually has</span></div>
+
+<!-- ============ 19. CHAPTERS ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Chapters</div>
+  <p class="sub-m">Every place she's been, and everything that happened there.</p>
+  <div class="jour">
+    <div class="jstop h"><div class="jw">UNTIL SEP 2023</div><b>Home</b><span>The first fall, ankle fracture</span></div>
+    <div class="jstop h"><div class="jw">SEP – OCT 2023 · 3 WEEKS</div><b>Riverside Medical</b><span>Surgery delayed by a hematoma</span></div>
+    <div class="jstop h"><div class="jw">OCT 2023 – FEB 2024</div><b>Brookdale Rehab</b><span>Staff conflict, transfer requested</span></div>
+    <div class="jstop h"><div class="jw">FEB – MAR 2024 · 6 WEEKS</div><b>Riverside Medical, again</b><span>Pneumonia, then the pressure sore</span></div>
+    <div class="jstop h"><div class="jw">MAR – JUN 2024</div><b>Cedar Point Rehab</b><span>Steady recovery</span></div>
+    <div class="jstop h"><div class="jw">JUN – NOV 2024</div><b>Home</b><span>Until the second fall</span></div>
+    <div class="jstop now"><div class="jw">DEC 2024 – NOW</div><b>Maplewood Care Center</b><span>Stable, Room 214</span><div class="jt"><span class="pill act">CURRENT CHAPTER</span></div></div>
+  </div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>19</b> · chapters, the missing spine</div>
+</div>
+
+<!-- ============ 20. INSIDE A CHAPTER ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom</span></div>
+  <div class="h1m">Riverside Medical, again</div>
+  <p class="sub-m" style="margin-bottom:8px">Feb to Mar 2024, 6 weeks. Admitted from Brookdale with pneumonia.</p>
+  <div class="card-m" style="padding:9px 11px">
+    <div class="hitrow"><span class="nd" style="background:var(--alert)"></span><div><b>2 incidents</b><span>PRESSURE SORE · VISITOR RESTRICTIONS</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>23 trail entries</b><span>MOSTLY CALLS · VISITS WERE RESTRICTED</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>7 documents from this stay</b><span>ADMISSION · WOUND NOTES · DISCHARGE</span></div></div>
+    <div class="hitrow"><span class="nd"></span><div><b>Care team then: 6 people</b><span>ARCHIVED WITH THIS CHAPTER, STILL SEARCHABLE</span></div></div>
+    <div class="hitrow"><span class="nd" style="background:var(--blaze)"></span><div><b>1 project started here</b><span>RECORDS REQUEST · CLOSED, WON</span></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">Medication changes this chapter</div>
+    <div class="dg"><span class="dot g"></span><div><b>Oxycodone continued</b> <em>from Brookdale, concern noted</em></div></div>
+    <div class="dg"><span class="dot g"></span><div><b>Antibiotic course</b> <em>for the pneumonia, 10 days</em></div></div>
+  </div>
+  <div class="btn-m ghost" style="margin-top:auto">Export this chapter as PDF</div>
+</div></div></div>
+<div class="lbl"><b>20</b> · inside a chapter</div>
+</div>
+
+<!-- ============ 21. MEDICATION JOURNEY ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Oxycodone</div>
+  <p class="sub-m">The whole life of one medication, across every chapter.</p>
+  <div class="card-m" style="padding:10px 12px">
+    <div class="tlmini">
+      <div class="tle"><div class="tw">SEP 2023 · RIVERSIDE</div><b>Started after the fracture</b><span>5 mg as needed</span></div>
+      <div class="tle"><div class="tw">DEC 2023 · BROOKDALE</div><b>Dose increased</b><span>You logged: no one told us first</span></div>
+      <div class="tle"><div class="tw">JAN 2024 · BROOKDALE</div><b>Concern raised</b><span>Asked about use frequency and tapering</span></div>
+      <div class="tle"><div class="tw">APR 2024 · CEDAR POINT</div><b>Taper started</b><span>Agreed plan, 8 weeks</span></div>
+      <div class="tle"><div class="tw">JUN 2024 · HOME</div><b>Stopped</b><span>Off entirely before she came home</span></div>
+    </div>
+  </div>
+  <div class="concern"><b>Concern was flagged for 3 months before the taper.</b><span>Flags stay attached to the medication forever, with every related call.</span></div>
+  <div class="gapnote">Weight wasn't tracked during the hospital chapters. The chart shows that stretch as a gap, because a gap is the honest answer.</div>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>21</b> · one medication, every chapter</div>
+</div>
+
+<div class="rowlbl"><b>Money and the rules</b><span>surprise bills, running costs, and the instructions they were given</span></div>
+
+<!-- ============ 22. BILLS ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Bills</div>
+  <p class="sub-m">Every bill gets a state. Nothing gets lost in a drawer again.</p>
+  <div class="mtot">
+    <div class="cnt warm"><b>2</b><span>Need attention</span></div>
+    <div class="cnt"><b>$1,410</b><span>Disputed</span></div>
+    <div class="cnt"><b>$3,275</b><span>Paid this year</span></div>
+  </div>
+  <div class="card-m">
+    <div class="bill"><div><b>Lakeview Dental, full exam</b><span>Sent out by the facility. Not in the Medicaid network.</span><div class="bs"><span class="pill open">DISPUTED</span> <span class="pill gold">BREAKS A STANDING INSTRUCTION</span></div></div><div class="amt">$1,180<small>DUE AUG 15</small></div></div>
+    <div class="bill"><div><b>Ambulance, Riverside transfer</b><span>Waiting on the supplemental plan</span><div class="bs"><span class="pill act">WAITING ON INSURANCE</span></div></div><div class="amt">$230<small>MAR 2024</small></div></div>
+    <div class="bill"><div><b>Podiatry, quarterly</b><span>Photo of the bill attached</span><div class="bs"><span class="pill res">PAID</span></div></div><div class="amt">$85<small>JUN 3</small></div></div>
+  </div>
+  <p class="sub-m" style="margin-top:auto">A bill can link to the chapter it came from, the call where you disputed it, and the instruction it broke.</p>
+  <div class="btn-m ghost">Add a bill, or photograph one</div>
+</div></div></div>
+<div class="lbl"><b>22</b> · bills, with states</div>
+</div>
+
+<!-- ============ 23. STANDING INSTRUCTIONS ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Standing instructions</div>
+  <p class="sub-m">What you told them, who acknowledged it, and every time it was ignored.</p>
+  <div class="card-m">
+    <div class="dir">
+      <b>Contact me before any outside service that can generate a bill</b>
+      <span>Given Jan 2025 to D. Whitfield, case manager. Confirmed in writing Feb 3.</span>
+      <div class="ds"><span class="pill open">IGNORED 3 TIMES</span></div>
+    </div>
+    <div class="dir">
+      <b>Call me before any medication change</b>
+      <span>Given Dec 2024, front desk and nursing director. Verbal only.</span>
+      <div class="ds"><span class="pill res">HELD SO FAR</span></div>
+    </div>
+    <div class="dir">
+      <b>No decisions on therapy frequency without a family call</b>
+      <span>Given Mar 2025 to Marisol, PT. Confirmed by email.</span>
+      <div class="ds"><span class="pill res">HELD SO FAR</span></div>
+    </div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">The 3 times, on the record</div>
+    <div class="mini"><span class="nd" style="background:var(--alert)"></span><div><b>Lakeview Dental sent without a call</b><span>JUL 2026 · LINKED TO THE $1,180 BILL</span></div></div>
+    <div class="mini"><span class="nd" style="background:var(--alert)"></span><div><b>Eye exam, no notice</b><span>FEB 2026 · $95, PAID UNDER PROTEST</span></div></div>
+    <div class="mini"><span class="nd" style="background:var(--alert)"></span><div><b>Transport fee added</b><span>OCT 2025 · REVERSED AFTER YOUR CALL</span></div></div>
+  </div>
+  <div class="btn-m" style="margin-top:auto">Export the record</div>
+</div></div></div>
+<div class="lbl"><b>23</b> · the rules, and the receipts</div>
+</div>
+
+<!-- ============ 24. RUNNING COSTS ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Dad · At home</span></div>
+  <div class="h1m">Making the house ready</div>
+  <p class="sub-m">A different trail, a different life: a father moving in with his son. Costs live inside the project.</p>
+  <div class="mtot">
+    <div class="cnt"><b>$8,940</b><span>Spent so far</span></div>
+    <div class="cnt"><b>$2,100</b><span>Planned</span></div>
+    <div class="cnt"><b>14</b><span>Receipts filed</span></div>
+  </div>
+  <div class="card-m">
+    <div class="bill"><div><b>Bathroom grab bars and bench</b><span>Receipt photographed</span></div><div class="amt">$640<small>APR</small></div></div>
+    <div class="bill"><div><b>Front entry ramp</b><span>Contractor invoice attached</span></div><div class="amt">$3,800<small>MAY</small></div></div>
+    <div class="bill"><div><b>Stair lift, planned</b><span>Two quotes saved to documents</span></div><div class="amt">$2,100<small>QUOTED</small></div></div>
+  </div>
+  <p class="sub-m" style="margin-top:auto">The same sheet works for a spouse's treatment, a child's ongoing care, or any long stretch where the money is part of the story.</p>
+  <div class="btn-m ghost">Export costs for taxes or benefits</div>
+</div></div></div>
+<div class="lbl"><b>24</b> · running costs, any life</div>
+</div>
+
+<div class="rowlbl"><b>Many things at once</b><span>PT, OT, speech, nursing: parallel threads, one trail, and capture that forgives</span></div>
+
+<!-- ============ 25. THREADS OVERVIEW ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">Care threads</div>
+  <p class="sub-m">Everything running at the same time. Each thread is a route on the map, drawn in its own color.</p>
+  <div class="thread"><div class="trow"><div><b>Physical therapy</b><div class="tsub">Marisol · twice weekly · 34 sessions</div></div><div class="tnext">NEXT<br>MON 2:30</div></div><div class="route" style="color:var(--th-pt)"></div></div>
+  <div class="thread"><div class="trow"><div><b>Occupational therapy</b><div class="tsub">Weekly · working on kitchen tasks</div></div><div class="tnext">NEXT<br>WED 11:00</div></div><div class="route" style="color:var(--th-ot)"></div></div>
+  <div class="thread"><div class="trow"><div><b>Speech therapy</b><div class="tsub">After the stroke · ended Mar 2026, goals met</div></div><div class="tnext" style="color:var(--leaf)">ENDED</div></div><div class="route" style="color:var(--th-sp);opacity:.35"></div></div>
+  <div class="thread"><div class="trow"><div><b>Nursing and medical</b><div class="tsub">The baseline thread · weekly check-ins</div></div><div class="tnext">LAST<br>FRI</div></div><div class="route" style="color:var(--th-nu)"></div></div>
+  <p class="sub-m" style="margin-top:auto">On the trail, each entry's node takes its route's color. One tap shows only the speech story, start to finish.</p>
+  <div class="nav-m">
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Today</div>
+    <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 4v16"/></svg>Notebook</div>
+    <div class="fab"><i>+</i></div>
+    <div class="nv"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>Projects</div>
+    <div class="nv"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More</div>
+  </div>
+</div></div></div>
+<div class="lbl"><b>25</b> · parallel threads, one trail</div>
+</div>
+
+<!-- ============ 26. FORGIVING CAPTURE ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="h1m">New entry</div>
+  <p class="sub-m">Answer what you can. Skip the rest. A half note beats no note.</p>
+  <div class="fstep">
+    <div class="fq">When was this?<small>roughly is fine</small></div>
+    <div class="opt2"><span class="chp on">Today</span><span class="chp">Yesterday</span><span class="chp">This week</span><span class="chp">Not sure</span></div>
+  </div>
+  <div class="fstep">
+    <div class="fq">What is it part of?<small>skip if you don't know</small></div>
+    <div class="opt2">
+      <span class="chp"><span class="cdot" style="background:var(--th-pt)"></span>PT</span>
+      <span class="chp"><span class="cdot" style="background:var(--th-ot)"></span>OT</span>
+      <span class="chp on"><span class="cdot" style="background:var(--th-sp)"></span>Speech</span>
+      <span class="chp">Not sure yet</span>
+    </div>
+  </div>
+  <div class="fstep">
+    <div class="fq">What happened?</div>
+    <p class="notefield">Therapist mentioned swallowing exercises twice a day, and a follow up in two weeks. I think with the same person.</p>
+  </div>
+  <div class="btn-m">Save what you have</div>
+  <p class="skipnote">"Not sure yet" goes to the Unfiled tray. The app suggests a home by matching words, and you confirm with one tap. It never files anything without you.</p>
+</div></div></div>
+<div class="lbl"><b>26</b> · capture that forgives</div>
+</div>
+
+<!-- ============ 27. ONE THREAD ============ -->
+<div class="cell">
+<div class="phone"><div class="scr"><div class="pad">
+  <div class="top"><span class="bz"><i></i><i></i></span><span class="aname">Health Trail</span><span class="who">Mom · Maplewood</span></div>
+  <div class="ribbon" style="background:var(--th-sp)">Speech therapy</div>
+  <div class="ended"><b>This thread ended in March 2026, goals met.</b> Everything below stays searchable and exportable forever.</div>
+  <div class="card-m" style="padding:9px 11px">
+    <div class="hitrow"><span class="nd" style="background:var(--th-sp)"></span><div><b>41 sessions across 14 months</b><span>STARTED AFTER THE STROKE · JAN 2025</span></div></div>
+    <div class="hitrow"><span class="nd" style="background:var(--th-sp)"></span><div><b>2 therapists</b><span>K. LIN, THEN R. ABARA FROM AUG 2025</span></div></div>
+    <div class="hitrow"><span class="nd" style="background:var(--blaze)"></span><div><b>3 milestones on the arc</b><span>SHOWN ON THE MILESTONES SCREEN TOO</span></div></div>
+  </div>
+  <div class="card-m">
+    <div class="eyeb">The story, in your own notes</div>
+    <div class="tlmini">
+      <div class="tle"><div class="tw">JAN 2025</div><b>First session</b><span>Hard day. She refused the second half.</span></div>
+      <div class="tle"><div class="tw">JUN 2025</div><b>Full sentences again</b><span>She ordered her own coffee at the visit.</span></div>
+      <div class="tle"><div class="tw">MAR 2026</div><b>Discharged from speech</b><span>R. Abara: nothing left to teach her.</span></div>
+    </div>
+  </div>
+  <div class="row2" style="margin-top:auto"><div class="btn-m ghost">Filter the trail to this</div><div class="btn-m">Export this thread</div></div>
+</div></div></div>
+<div class="lbl"><b>27</b> · one thread, whole story</div>
+</div>
+
+</div>
+</div>
+</body>
+</html>

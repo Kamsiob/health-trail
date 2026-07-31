@@ -1,0 +1,618 @@
+{
+  "schema_version": 1,
+  "type": "situation_templates",
+  "content_license": "CC BY-SA 4.0",
+  "posture": {
+    "general_guide": "Everything here is a general guide and a starting point. Edit anything, delete anything, add your own.",
+    "record_only": "These templates set up structure. They never give medical or legal advice."
+  },
+  "templates": [
+    {
+      "id": "nursing_home",
+      "name": "Nursing home",
+      "subtitle": "Long term stay in a skilled nursing facility",
+      "phase": 1,
+      "forward": ["standing_instructions", "trail", "threads", "money"],
+      "folded": ["appointments", "progress"],
+      "roles": [
+        { "id": "don", "label": "Director of nursing" },
+        { "id": "charge_nurse", "label": "Charge nurse on the unit" },
+        { "id": "social_worker", "label": "Social worker or family liaison" },
+        { "id": "assessment_coord", "label": "Assessment coordinator" },
+        { "id": "administrator", "label": "Administrator" },
+        { "id": "billing", "label": "Business office or billing" }
+      ],
+      "threads": [
+        { "id": "nursing", "label": "Nursing" },
+        { "id": "personal_care", "label": "Daily personal care" },
+        { "id": "activities", "label": "Activities" },
+        { "id": "dietary", "label": "Meals and dietary" },
+        { "id": "social_services", "label": "Social services" }
+      ],
+      "checklist": [
+        "Write down the direct phone number for the unit, not just the main line",
+        "Ask for the current medication list and keep a copy",
+        "Ask who calls you when something changes, and how they reach you at night",
+        "Write down the room number, floor, and wing",
+        "Meet the assigned social worker and save the direct number",
+        "Ask for the written grievance procedure",
+        "Save the long term care ombudsman contact for your area",
+        "Ask when care plan meetings happen and ask to be included",
+        "Ask the business office what is covered and what is billed separately",
+        "Ask what the facility does with personal laundry and labeled belongings"
+      ],
+      "documents": [
+        "Admission agreement",
+        "Resident rights notice",
+        "Current medication list",
+        "Care plan summary",
+        "Insurance and coverage cards",
+        "Advance directive or medical orders"
+      ],
+      "burden": "The long haul. Care plan meetings, grievances, billing surprises, and watching for any talk of discharge."
+    },
+    {
+      "id": "short_term_rehab",
+      "name": "Short term rehab",
+      "subtitle": "A rehab stay after a hospital admission",
+      "phase": 2,
+      "forward": ["progress", "appointments", "trail", "projects"],
+      "folded": ["money", "standing_instructions"],
+      "roles": [
+        { "id": "case_manager", "label": "Case manager or discharge planner" },
+        { "id": "charge_nurse", "label": "Charge nurse on the unit" },
+        { "id": "pt_lead", "label": "Physical therapy lead" },
+        { "id": "ot_lead", "label": "Occupational therapy lead" },
+        { "id": "social_worker", "label": "Social worker" },
+        { "id": "billing", "label": "Business office or billing" }
+      ],
+      "threads": [
+        { "id": "pt", "label": "Physical therapy" },
+        { "id": "ot", "label": "Occupational therapy" },
+        { "id": "speech", "label": "Speech therapy" },
+        { "id": "nursing", "label": "Nursing" },
+        { "id": "discharge_planning", "label": "Discharge planning" }
+      ],
+      "checklist": [
+        "Ask how long the stay is expected to last and write down the answer",
+        "Get the therapy schedule and write it down",
+        "Ask who to call for an update on progress, and when they are available",
+        "Ask what the plan is for going home, and where",
+        "Save the case manager's direct number",
+        "Ask how covered days are counted and where you can see the count",
+        "Ask what written notice you get if coverage is ending",
+        "Ask what equipment will be needed at home and who arranges it",
+        "Ask what follow up appointments will be needed",
+        "Write down who to call if you disagree with the discharge date"
+      ],
+      "documents": [
+        "Hospital discharge summary",
+        "Therapy schedule",
+        "Any written coverage notices",
+        "Current medication list",
+        "Insurance and coverage cards"
+      ],
+      "burden": "A clock is running. Coverage days, a moving discharge date, and getting the house ready before they arrive."
+    },
+    {
+      "id": "inpatient_rehab",
+      "name": "Inpatient rehab hospital",
+      "subtitle": "An intensive rehab program in a hospital setting",
+      "phase": 3,
+      "forward": ["progress", "appointments", "projects", "trail"],
+      "folded": ["money"],
+      "roles": [
+        { "id": "case_manager", "label": "Case manager" },
+        { "id": "rehab_doctor", "label": "Rehab doctor" },
+        { "id": "charge_nurse", "label": "Charge nurse on the unit" },
+        { "id": "therapy_leads", "label": "Therapy leads" },
+        { "id": "social_worker", "label": "Social worker" },
+        { "id": "insurance_contact", "label": "Insurance or authorization contact" }
+      ],
+      "threads": [
+        { "id": "pt", "label": "Physical therapy" },
+        { "id": "ot", "label": "Occupational therapy" },
+        { "id": "speech", "label": "Speech therapy" },
+        { "id": "rehab_nursing", "label": "Rehab nursing" },
+        { "id": "discharge_planning", "label": "Discharge planning" }
+      ],
+      "checklist": [
+        "Ask how many hours of therapy happen each day",
+        "Ask when the team meets about the case and whether family can attend",
+        "Save the case manager's direct number",
+        "Write down the direct phone number for the unit",
+        "Ask who updates the family and how often",
+        "Ask for the expected discharge date and destination",
+        "Ask what equipment or home changes will be needed",
+        "Ask whether the insurance authorization has an end date",
+        "Ask what happens if more time is needed",
+        "Write down the follow up appointments already scheduled"
+      ],
+      "documents": [
+        "Transfer records from the hospital",
+        "Rehab plan",
+        "Therapy schedule",
+        "Insurance authorization letters",
+        "Current medication list"
+      ],
+      "burden": "Team conferences and authorization end dates. A lot happens fast and the family is often the only one tracking all of it."
+    },
+    {
+      "id": "hospital_stay",
+      "name": "Hospital stay",
+      "subtitle": "A planned admission or an emergency one",
+      "phase": 1,
+      "forward": ["trail", "appointments", "documents", "standing_instructions"],
+      "folded": ["money", "progress"],
+      "roles": [
+        { "id": "attending", "label": "Doctor in charge on the floor" },
+        { "id": "charge_nurse", "label": "Charge nurse on the unit" },
+        { "id": "case_manager", "label": "Case manager or discharge planner" },
+        { "id": "social_worker", "label": "Social worker" },
+        { "id": "patient_advocate", "label": "Patient advocate or patient relations" },
+        { "id": "specialist", "label": "Specialist consulting on the case" }
+      ],
+      "threads": [
+        { "id": "nursing", "label": "Nursing" },
+        { "id": "doctors", "label": "Doctors on the case" },
+        { "id": "specialists", "label": "Specialists consulting" },
+        { "id": "discharge_planning", "label": "Discharge planning" }
+      ],
+      "checklist": [
+        "Write down the names of the doctor and nurse on each shift",
+        "Write down the direct phone number for the unit",
+        "Ask what the plan is for today, every day",
+        "Ask whether this is a full admission or observation, and write down the answer",
+        "Save the case manager's name and number",
+        "Keep any written notice about coverage or appeal rights",
+        "Check the medication list against what you know",
+        "Ask what to expect at discharge and how much notice you will get",
+        "Find out who the patient advocate is",
+        "Ask how to get copies of test results and records"
+      ],
+      "documents": [
+        "Any written notices given at admission",
+        "Discharge summary",
+        "Current medication list",
+        "Copies of test results",
+        "Insurance and coverage cards"
+      ],
+      "burden": "Staff change every shift and nobody repeats what the last person said. Discharge can be announced with almost no warning."
+    },
+    {
+      "id": "home_family",
+      "name": "At home, cared for by family",
+      "subtitle": "No agency involved, the family is the care team",
+      "phase": 1,
+      "forward": ["emergency_card", "trail", "appointments", "medications"],
+      "folded": ["projects", "money"],
+      "roles": [
+        { "id": "primary_doctor", "label": "Primary doctor" },
+        { "id": "specialist", "label": "Specialist" },
+        { "id": "pharmacy", "label": "Pharmacy" },
+        { "id": "preferred_hospital", "label": "Preferred hospital or urgent care" },
+        { "id": "backup_family", "label": "Backup family contact" },
+        { "id": "equipment_supplier", "label": "Equipment supplier" }
+      ],
+      "threads": [
+        { "id": "personal_care", "label": "Daily personal care" },
+        { "id": "medications", "label": "Medications" },
+        { "id": "appointments", "label": "Appointments and rides" },
+        { "id": "household", "label": "Household and errands" },
+        { "id": "safety", "label": "Safety at home" }
+      ],
+      "checklist": [
+        "Write down every doctor and the pharmacy in one place",
+        "Write down which hospital to go to and why",
+        "Build the medication list, including anything over the counter",
+        "Fill in the emergency card, including allergies and blood type",
+        "Note where the advance directive and other originals are kept",
+        "Photograph the insurance and identification cards",
+        "List the equipment at home and who to call when something breaks",
+        "Write down who to call for what, so someone else could take over",
+        "Start a cost sheet for anything you are paying out of pocket",
+        "Tell one other person where all of this lives"
+      ],
+      "documents": [
+        "Medication list",
+        "Insurance and identification cards",
+        "Advance directive or medical orders",
+        "Equipment receipts and warranties"
+      ],
+      "burden": "There is no staff. The family is the whole system, so the emergency card and a handoff someone else could follow matter most here."
+    },
+    {
+      "id": "home_health",
+      "name": "Home health agency",
+      "subtitle": "Nurses, aides, or therapists visiting the home",
+      "phase": 2,
+      "forward": ["appointments", "threads", "trail", "standing_instructions"],
+      "folded": ["money"],
+      "roles": [
+        { "id": "scheduler", "label": "Agency scheduler" },
+        { "id": "visiting_nurse", "label": "Visiting nurse" },
+        { "id": "aide", "label": "Home health aide" },
+        { "id": "therapist", "label": "Therapist" },
+        { "id": "agency_office", "label": "Agency office or billing" },
+        { "id": "ordering_doctor", "label": "Doctor who ordered the visits" }
+      ],
+      "threads": [
+        { "id": "nurse_visits", "label": "Nurse visits" },
+        { "id": "therapy", "label": "Therapy visits" },
+        { "id": "aide_visits", "label": "Aide visits" },
+        { "id": "wound_care", "label": "Wound care" },
+        { "id": "doctor_coordination", "label": "Coordination with the doctor" }
+      ],
+      "checklist": [
+        "Write down the agency main number and the after hours number",
+        "Write down the assigned nurse's name and usual days",
+        "Ask how many visits per week are approved and for how long",
+        "Ask what each type of visit includes",
+        "Ask who to call when a visit is missed or late",
+        "Save the ordering doctor's number",
+        "Ask how supplies arrive and who to call when they run out",
+        "Ask what written notice you get if visits are ending",
+        "Ask when the plan gets reviewed and whether family can be there",
+        "Save the billing contact"
+      ],
+      "documents": [
+        "Plan of care or doctor's orders",
+        "Visit schedule",
+        "Any written coverage notices",
+        "Medication list",
+        "Insurance and coverage cards"
+      ],
+      "burden": "Different people come on different days and visits get missed. Tracking who actually showed up is the whole job."
+    },
+    {
+      "id": "assisted_living",
+      "name": "Assisted living",
+      "subtitle": "An apartment with help, not a nursing home",
+      "phase": 2,
+      "forward": ["money", "trail", "standing_instructions", "appointments"],
+      "folded": ["progress"],
+      "roles": [
+        { "id": "director", "label": "Executive director" },
+        { "id": "wellness_director", "label": "Wellness or health services director" },
+        { "id": "care_aide", "label": "Care aide or med aide" },
+        { "id": "front_desk", "label": "Front desk" },
+        { "id": "billing", "label": "Business office or billing" },
+        { "id": "activities", "label": "Activities director" }
+      ],
+      "threads": [
+        { "id": "personal_care", "label": "Help with daily care" },
+        { "id": "medications", "label": "Medication help" },
+        { "id": "dining", "label": "Dining" },
+        { "id": "activities", "label": "Activities" },
+        { "id": "housekeeping", "label": "Housekeeping and laundry" }
+      ],
+      "checklist": [
+        "Write down the main number and the after hours number",
+        "Find out who the wellness director is and save the number",
+        "Get the service plan and read what the monthly fee includes",
+        "Ask what costs extra and how those charges appear",
+        "Ask who calls the family and when",
+        "Ask what triggers a reassessment that raises the fee",
+        "Ask how dietary needs are handled",
+        "Ask what happens if care needs grow beyond what they can provide",
+        "Save the billing contact",
+        "Ask for the written complaint process"
+      ],
+      "documents": [
+        "Residency agreement",
+        "Service or care plan",
+        "Fee schedule",
+        "Medication list",
+        "Insurance and identification cards",
+        "Advance directive or medical orders"
+      ],
+      "burden": "The fee changes when the assessed level of care changes. Watching add on charges and reassessments is where families get blindsided.",
+      "state_variance": true
+    },
+    {
+      "id": "memory_care",
+      "name": "Memory care",
+      "subtitle": "A secured unit for dementia care",
+      "phase": 2,
+      "forward": ["standing_instructions", "trail", "progress", "emergency_card"],
+      "folded": ["money"],
+      "roles": [
+        { "id": "memory_care_director", "label": "Memory care director" },
+        { "id": "wellness_director", "label": "Wellness or health services director" },
+        { "id": "care_aide", "label": "Care aide" },
+        { "id": "family_liaison", "label": "Social worker or family liaison" },
+        { "id": "billing", "label": "Business office or billing" },
+        { "id": "engagement", "label": "Activities or engagement lead" }
+      ],
+      "threads": [
+        { "id": "personal_care", "label": "Daily personal care" },
+        { "id": "medications", "label": "Medication help" },
+        { "id": "observations", "label": "Behavior and mood observations" },
+        { "id": "dining", "label": "Meals and eating support" },
+        { "id": "safety", "label": "Safety and wandering" }
+      ],
+      "checklist": [
+        "Write down the unit direct number and the after hours number",
+        "Find out who the memory care director and family liaison are",
+        "Get the care plan and ask when it gets reviewed",
+        "Ask who calls the family and when",
+        "Ask how access to the secured unit works for visitors",
+        "Put food preferences and dislikes on file, not just restrictions",
+        "Ask what happens and who calls if a resident leaves the unit",
+        "Ask how belongings and clothing are labeled",
+        "Write down a short page about who they are, what calms them, what upsets them",
+        "Save the ombudsman contact for your area"
+      ],
+      "documents": [
+        "Care plan",
+        "Admission or residency agreement",
+        "Medication list",
+        "Advance directive or medical orders",
+        "A personal history and preferences page"
+      ],
+      "burden": "You become the memory. Tracking what you observed over months is often the only continuous record anyone has."
+    },
+    {
+      "id": "hospice",
+      "name": "Comfort focused care at the end of life",
+      "subtitle": "Hospice care, at home or in a facility",
+      "phase": 3,
+      "forward": ["emergency_card", "standing_instructions", "trail", "threads"],
+      "folded": ["money", "projects"],
+      "roles": [
+        { "id": "hospice_nurse", "label": "Assigned nurse" },
+        { "id": "on_call", "label": "After hours nurse line" },
+        { "id": "aide", "label": "Aide" },
+        { "id": "social_worker", "label": "Social worker" },
+        { "id": "chaplain", "label": "Chaplain or spiritual support" },
+        { "id": "medical_director", "label": "Doctor overseeing care" }
+      ],
+      "threads": [
+        { "id": "nursing", "label": "Nurse visits" },
+        { "id": "personal_care", "label": "Personal care and aide visits" },
+        { "id": "emotional_support", "label": "Emotional and family support" },
+        { "id": "spiritual", "label": "Spiritual support" },
+        { "id": "bereavement", "label": "Bereavement support" }
+      ],
+      "checklist": [
+        "Write down the number that is answered day and night",
+        "Write down the assigned nurse's name and visit days",
+        "Ask exactly who to call after hours and what happens next",
+        "Ask how often the aide and chaplain come",
+        "Ask what supplies and equipment are provided",
+        "Ask how medications are delivered and refilled",
+        "Ask who to call at the time of death, and write it down now",
+        "Note where the signed medical orders are kept, so they can be found fast",
+        "Ask when the plan of care gets reviewed",
+        "Save the bereavement support contact"
+      ],
+      "documents": [
+        "Enrollment and consent papers",
+        "Plan of care",
+        "Signed medical orders about resuscitation",
+        "Medication list",
+        "Equipment list",
+        "One page of important phone numbers"
+      ],
+      "burden": "Everything happens by phone at unpredictable hours. Having the right number and the signed orders findable in seconds is the whole point.",
+      "sensitive": true,
+      "localization_note": "Do not translate this label with a direct cognate for hospice. Use descriptive comfort care wording plus a plain explanation in each language."
+    },
+    {
+      "id": "dialysis",
+      "name": "Dialysis",
+      "subtitle": "Ongoing treatment at an outpatient clinic",
+      "phase": 3,
+      "forward": ["appointments", "progress", "trail", "threads"],
+      "folded": ["projects"],
+      "roles": [
+        { "id": "nurse_manager", "label": "Nurse manager at the clinic" },
+        { "id": "charge_tech", "label": "Charge technician" },
+        { "id": "social_worker", "label": "Clinic social worker" },
+        { "id": "dietitian", "label": "Clinic dietitian" },
+        { "id": "kidney_doctor", "label": "Kidney doctor" },
+        { "id": "transport", "label": "Transportation contact" }
+      ],
+      "threads": [
+        { "id": "sessions", "label": "Treatment sessions" },
+        { "id": "access_care", "label": "Access site care" },
+        { "id": "nutrition", "label": "Nutrition visits" },
+        { "id": "transport", "label": "Transportation" },
+        { "id": "doctor_visits", "label": "Kidney doctor visits" }
+      ],
+      "checklist": [
+        "Write down the clinic number and the scheduling number",
+        "Write down the treatment days and the shift time",
+        "Save the nurse manager and social worker names",
+        "Write down the transportation arrangement and the backup plan",
+        "Ask who to call when a session is going to be missed",
+        "Save the kidney doctor's number",
+        "Ask how lab results are shared with the family",
+        "Ask about the holiday and closure schedule",
+        "Save the billing and insurance contact",
+        "Ask for the written complaint process"
+      ],
+      "documents": [
+        "Treatment schedule",
+        "Transportation plan",
+        "Medication list",
+        "Insurance and coverage cards",
+        "Advance directive or medical orders"
+      ],
+      "burden": "Three times a week, every week, plus rides. The logistics never stop and a missed session matters."
+    },
+    {
+      "id": "cancer_treatment",
+      "name": "Cancer treatment",
+      "subtitle": "Ongoing treatment and infusion visits",
+      "phase": 3,
+      "forward": ["appointments", "progress", "trail", "money"],
+      "folded": ["standing_instructions"],
+      "roles": [
+        { "id": "navigator", "label": "Nurse navigator" },
+        { "id": "infusion_nurse", "label": "Infusion nurse" },
+        { "id": "oncologist", "label": "Oncologist" },
+        { "id": "scheduler", "label": "Scheduler" },
+        { "id": "financial_counselor", "label": "Financial counselor" },
+        { "id": "pharmacy", "label": "Specialty pharmacy" }
+      ],
+      "threads": [
+        { "id": "treatment_cycles", "label": "Treatment cycles" },
+        { "id": "side_effects", "label": "Side effect observations" },
+        { "id": "scans_labs", "label": "Scans and labs" },
+        { "id": "support_services", "label": "Support services" },
+        { "id": "financial", "label": "Financial and insurance" }
+      ],
+      "checklist": [
+        "Save the navigator's number and the clinic number",
+        "Get the treatment calendar and write down the cycle dates",
+        "Ask exactly who to call after hours and when to call",
+        "Write down the scan and lab schedule",
+        "Ask which medications need insurance approval and check the status",
+        "Save the specialty pharmacy contact",
+        "Ask to speak with the financial counselor before the first bill",
+        "Write down the transportation plan for treatment days",
+        "Ask how results are shared and how fast",
+        "Save the insurance contact and the authorization reference numbers"
+      ],
+      "documents": [
+        "Treatment plan and cycle calendar",
+        "Consent forms",
+        "Medication list",
+        "Insurance approval letters",
+        "Insurance and coverage cards"
+      ],
+      "burden": "Cycles, scans, and approvals all run on separate clocks. Insurance approvals expire and nobody warns you."
+    },
+    {
+      "id": "pediatric",
+      "name": "A child in ongoing treatment",
+      "subtitle": "Serious illness in a child, across hospital and clinic",
+      "phase": 3,
+      "forward": ["appointments", "threads", "progress", "trail"],
+      "folded": ["money"],
+      "roles": [
+        { "id": "care_coordinator", "label": "Care coordinator or nurse navigator" },
+        { "id": "specialist", "label": "Specialist in charge" },
+        { "id": "child_life", "label": "Child life specialist" },
+        { "id": "social_worker", "label": "Social worker" },
+        { "id": "school_contact", "label": "School contact" },
+        { "id": "scheduler", "label": "Scheduler" }
+      ],
+      "threads": [
+        { "id": "treatment", "label": "Treatment" },
+        { "id": "therapies", "label": "Therapies" },
+        { "id": "school", "label": "School and learning" },
+        { "id": "family_support", "label": "Family support" },
+        { "id": "procedures", "label": "Procedures and appointments" }
+      ],
+      "checklist": [
+        "Save the care coordinator's number first",
+        "Write down every specialist and what each one handles",
+        "Find out who the child life specialist is",
+        "Get the appointment and treatment calendar",
+        "Ask exactly who to call after hours",
+        "Write down the school contact and any learning plan in place",
+        "Check which treatments need insurance approval",
+        "Save the pharmacy contact",
+        "Ask what preparation is needed before procedures",
+        "Ask to speak with the financial counselor early"
+      ],
+      "documents": [
+        "Treatment plan",
+        "Appointment calendar",
+        "School or learning plan",
+        "Consent forms",
+        "Medication list",
+        "Insurance approval letters"
+      ],
+      "burden": "Treatment and childhood at the same time. School, development, and normal life have to keep going alongside the medical calendar."
+    },
+    {
+      "id": "post_stroke",
+      "name": "Stroke recovery",
+      "subtitle": "Recovery that moves across hospital, rehab, and home",
+      "phase": 2,
+      "forward": ["progress", "threads", "appointments", "projects"],
+      "folded": ["money"],
+      "roles": [
+        { "id": "case_manager", "label": "Case manager" },
+        { "id": "neurologist", "label": "Neurologist or rehab doctor" },
+        { "id": "therapy_leads", "label": "Therapy leads" },
+        { "id": "charge_nurse", "label": "Charge nurse on the unit" },
+        { "id": "social_worker", "label": "Social worker" },
+        { "id": "primary_doctor", "label": "Primary doctor" }
+      ],
+      "threads": [
+        { "id": "pt", "label": "Physical therapy" },
+        { "id": "ot", "label": "Occupational therapy" },
+        { "id": "speech", "label": "Speech therapy" },
+        { "id": "nursing", "label": "Nursing and medications" },
+        { "id": "transitions", "label": "Moving between places" }
+      ],
+      "checklist": [
+        "Save the case manager's number",
+        "Write down each therapy lead and their days",
+        "Get the therapy schedule",
+        "Ask who updates the family and how often",
+        "Ask what the expected path is: which place comes next",
+        "Ask what equipment and home changes will be needed",
+        "Write down the follow up appointments",
+        "Ask whether insurance approval has an end date",
+        "Save the primary doctor's number for after the transition",
+        "Ask what to do if progress stalls and coverage is questioned"
+      ],
+      "documents": [
+        "Discharge and transfer summaries",
+        "Therapy schedules",
+        "Equipment list",
+        "Medication list",
+        "Insurance authorization letters"
+      ],
+      "burden": "Recovery crosses several places over months. Three therapies run at once and each move restarts the introductions."
+    },
+    {
+      "id": "home_dementia",
+      "name": "Dementia care at home",
+      "subtitle": "Caring for someone with dementia in the family home",
+      "phase": 1,
+      "forward": ["emergency_card", "standing_instructions", "progress", "trail"],
+      "folded": ["money"],
+      "roles": [
+        { "id": "primary_doctor", "label": "Primary doctor" },
+        { "id": "memory_specialist", "label": "Neurologist or memory specialist" },
+        { "id": "pharmacy", "label": "Pharmacy" },
+        { "id": "preferred_hospital", "label": "Preferred hospital or urgent care" },
+        { "id": "backup_family", "label": "Backup family contact" },
+        { "id": "respite", "label": "Adult day program or respite contact" }
+      ],
+      "threads": [
+        { "id": "personal_care", "label": "Daily personal care" },
+        { "id": "medications", "label": "Medications" },
+        { "id": "observations", "label": "Behavior and mood observations" },
+        { "id": "safety", "label": "Safety and wandering" },
+        { "id": "respite", "label": "Respite and support" }
+      ],
+      "checklist": [
+        "Write down every doctor and the pharmacy in one place",
+        "Write down which hospital to go to",
+        "Build the medication list, including anything over the counter",
+        "Fill in the emergency card, including a note that they have dementia",
+        "Note where the advance directive and legal papers are kept",
+        "Write down the safety setup at home: locks, alarms, hidden keys",
+        "Save respite and adult day program contacts before you need them",
+        "Write down who the backup decision maker is",
+        "Write a short page about what calms them and what upsets them",
+        "Tell one other person where all of this lives"
+      ],
+      "documents": [
+        "Medication list",
+        "Advance directive and legal papers",
+        "Insurance and identification cards",
+        "A safety and preferences page",
+        "Respite program information"
+      ],
+      "burden": "Around the clock supervision with no staff and no shift change. Safety, legal decision making, and your own exhaustion all land on one person."
+    }
+  ]
+}

@@ -1,0 +1,760 @@
+{
+  "schema_version": 1,
+  "type": "project_templates",
+  "content_license": "CC BY-SA 4.0",
+  "posture": {
+    "general_guide": "Every project here is a general guide and a starting point. Steps get skipped, reordered, and rewritten in real life. Edit freely.",
+    "record_only": "These templates organize paperwork and phone calls. They are not legal, financial, or medical advice.",
+    "state_variance": "Details vary by state. Treat this as the general shape, not the rule where you live."
+  },
+  "templates": [
+    {
+      "id": "medicaid_ltc",
+      "name": "Medicaid application for long term care",
+      "subtitle": "Applying for coverage of nursing home or facility care",
+      "phase": 2,
+      "state_variance": true,
+      "roles": [
+        { "id": "caseworker", "label": "Assigned caseworker" },
+        { "id": "medicaid_office", "label": "Local Medicaid office" },
+        { "id": "facility_billing", "label": "Facility business office" },
+        { "id": "elder_law", "label": "Elder law attorney, if you use one" },
+        { "id": "bank", "label": "Bank contact for statements" }
+      ],
+      "steps": [
+        "Find out which program you are applying to and get the right form",
+        "Write down the local office address, phone, and hours",
+        "Gather identification and proof of where they live",
+        "Gather proof of all income",
+        "Gather bank statements going back as far as the state asks",
+        "Gather property, insurance, and burial arrangement papers",
+        "Write down anything that was sold, given away, or transferred, and when",
+        "Submit the application and note the date you submitted it",
+        "Get a case number and write it down",
+        "Get the assigned caseworker's name and direct number",
+        "Answer every request for more documents and log the date you sent each one",
+        "Ask what the decision deadline is and write it down",
+        "If it is denied, write down the appeal deadline immediately",
+        "Keep a copy of everything you send and everything you receive"
+      ],
+      "documents": [
+        "Application form",
+        "Identification and proof of residence",
+        "Income statements",
+        "Bank statements",
+        "Property and insurance papers",
+        "Receipts for anything spent down",
+        "Denial or approval letter"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on a caseworker to be assigned",
+        "Waiting on a document request to be satisfied",
+        "Waiting on a decision",
+        "Waiting on a bank for older statements"
+      ],
+      "failure_points": [
+        "One missing bank statement stalls everything",
+        "Transfers nobody remembers making",
+        "A document request that arrives while you are away"
+      ],
+      "timeline_shape": "Often a few months. Longer whenever a document is missing."
+    },
+    {
+      "id": "medicaid_waiver",
+      "name": "Medicaid waiver for care at home",
+      "subtitle": "Applying for services that let someone stay out of a facility",
+      "phase": 2,
+      "state_variance": true,
+      "roles": [
+        { "id": "caseworker", "label": "Waiver caseworker" },
+        { "id": "aging_agency", "label": "Area agency on aging" },
+        { "id": "assessor", "label": "Person who does the needs assessment" },
+        { "id": "managed_care", "label": "Managed care contact, if there is one" },
+        { "id": "elder_law", "label": "Elder law attorney, if you use one" }
+      ],
+      "steps": [
+        "Find out which waiver programs exist where you live",
+        "Ask which one fits the situation and write down the name",
+        "Ask what the needs assessment involves and who does it",
+        "Ask what the financial requirements are",
+        "Gather the documents they ask for",
+        "Find the local contact and write down the phone and address",
+        "Submit the application and note the date",
+        "Ask directly whether there is a waiting list",
+        "If there is a list, get your placement date in writing and ask about priority categories",
+        "Get a case number and the caseworker's direct number",
+        "Ask how you will be notified when a spot opens",
+        "Answer every document request and log the date",
+        "Ask how often you need to confirm you are still waiting",
+        "Note the reassessment schedule once services start"
+      ],
+      "documents": [
+        "Application form",
+        "Needs assessment results",
+        "Income and asset documents",
+        "Waiting list placement letter",
+        "Notice that a spot is available",
+        "Service plan once approved"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on the needs assessment to be scheduled",
+        "Waiting on a waiting list placement letter",
+        "Waiting on a spot to open",
+        "Waiting on a caseworker to return a call"
+      ],
+      "failure_points": [
+        "Sitting on a waiting list with no updates for months",
+        "Not knowing whether you are still on the list",
+        "Missing the notice when a spot finally opens"
+      ],
+      "timeline_shape": "The application takes weeks to months. The waiting list can take much longer, sometimes years in some states."
+    },
+    {
+      "id": "medicare_appeal",
+      "name": "Appeal when Medicare coverage is ending",
+      "subtitle": "Challenging a discharge or the end of covered services",
+      "phase": 1,
+      "roles": [
+        { "id": "review_org", "label": "Your regional Medicare quality review organization" },
+        { "id": "case_manager", "label": "Case manager at the hospital or facility" },
+        { "id": "doctor", "label": "Treating doctor" },
+        { "id": "insurance_counselor", "label": "Free state insurance counseling program" }
+      ],
+      "steps": [
+        "Find the written notice and read it all the way through",
+        "Write down which notice it is and the date you received it",
+        "Write down the deadline on the notice, exactly as it appears",
+        "Call the review organization listed on the notice before the deadline",
+        "Ask for the detailed notice that explains the reason",
+        "Ask the treating doctor whether they will support continued care in writing",
+        "Gather any records that show what care is still needed",
+        "Write down that coverage does not require improvement, only a need for skilled care",
+        "Note the date and time of every call and who you spoke with",
+        "Write down the reference number for the appeal",
+        "Ask when a decision will come and how it will arrive",
+        "If it is denied, ask what the next level of appeal is and the deadline",
+        "Keep copies of every notice and every submission"
+      ],
+      "documents": [
+        "The notice you received",
+        "The detailed notice explaining the reason",
+        "Supporting records",
+        "A letter from the doctor if you got one",
+        "Appeal confirmation and reference number",
+        "Decision letter"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on the detailed notice",
+        "Waiting on a letter from the doctor",
+        "Waiting on the review decision"
+      ],
+      "failure_points": [
+        "The deadline is often within a day, so a weekend can cost the appeal",
+        "Being told coverage ends because there is no improvement, which is not the standard",
+        "Not asking for the detailed notice"
+      ],
+      "timeline_shape": "Very fast. Deadlines are often measured in hours, and decisions come within a day or two."
+    },
+    {
+      "id": "prior_auth_appeal",
+      "name": "Appeal an insurance denial",
+      "subtitle": "When insurance refuses to approve or pay for something",
+      "phase": 3,
+      "state_variance": true,
+      "roles": [
+        { "id": "member_services", "label": "Insurance member services" },
+        { "id": "appeals_dept", "label": "Insurance appeals department" },
+        { "id": "provider_office", "label": "Office of the doctor who ordered it" },
+        { "id": "employer_benefits", "label": "Employer benefits contact, if it is a work plan" },
+        { "id": "state_regulator", "label": "State insurance department" }
+      ],
+      "steps": [
+        "Get the denial letter and find the stated reason",
+        "Write down the appeal deadline",
+        "Call member services and ask them to explain the process step by step",
+        "Ask for the written criteria they used to decide",
+        "Ask the ordering doctor's office to write a letter explaining why it is needed",
+        "Gather supporting records",
+        "Submit the appeal in writing and keep proof of sending",
+        "Get a reference number",
+        "Log every call with the date, time, and name",
+        "Ask when the decision is due",
+        "If it is denied again, ask about an outside review and the deadline",
+        "Keep copies of everything"
+      ],
+      "documents": [
+        "Denial letter",
+        "The plan's written criteria",
+        "Letter from the doctor",
+        "Supporting records",
+        "Appeal submission and reference number",
+        "Decision letter"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on the doctor's letter",
+        "Waiting on the plan's criteria",
+        "Waiting on the appeal decision"
+      ],
+      "failure_points": [
+        "Missing the appeal window",
+        "Never getting the letter from the doctor",
+        "Stopping after the first denial instead of asking for outside review"
+      ],
+      "timeline_shape": "Usually weeks. Faster if the situation is urgent and you say so."
+    },
+    {
+      "id": "discharge_planning",
+      "name": "Planning a discharge home",
+      "subtitle": "Getting ready before someone leaves the hospital or facility",
+      "phase": 1,
+      "roles": [
+        { "id": "discharge_planner", "label": "Discharge planner or case manager" },
+        { "id": "social_worker", "label": "Social worker" },
+        { "id": "doctor", "label": "Doctor in charge" },
+        { "id": "home_health", "label": "Home health or equipment coordinator" },
+        { "id": "review_org", "label": "Your regional Medicare quality review organization" }
+      ],
+      "steps": [
+        "Write down who to call with questions after discharge",
+        "Ask where care happens next and what the options are",
+        "Ask what equipment is needed and who orders and delivers it",
+        "Ask what help will be needed with daily activities, and be honest about what you can do",
+        "Ask for a demonstration of anything you will have to do yourself",
+        "Ask the social worker about cost and coverage questions",
+        "Ask for the written discharge instructions before you leave",
+        "Ask for a written summary of the current condition and medications",
+        "Check the medication list against what they were taking before",
+        "Write down every follow up appointment and who makes them",
+        "Ask what problems to watch for and exactly who to call about each",
+        "Write down who to contact if the discharge feels too soon"
+      ],
+      "documents": [
+        "Written discharge instructions",
+        "Summary of condition and medications",
+        "Updated medication list",
+        "Equipment orders",
+        "Follow up appointment list"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on equipment delivery",
+        "Waiting on home health to be arranged",
+        "Waiting on the written instructions",
+        "Waiting on a follow up appointment to be scheduled"
+      ],
+      "failure_points": [
+        "Discharge happens before the equipment arrives",
+        "Nobody says who makes the follow up appointments",
+        "The medication list changed and nobody explained why"
+      ],
+      "timeline_shape": "Compressed. You often get a day or two of notice."
+    },
+    {
+      "id": "records_request",
+      "name": "Requesting medical records",
+      "subtitle": "Getting copies of records you have a right to see",
+      "phase": 1,
+      "roles": [
+        { "id": "records_dept", "label": "Medical records department" },
+        { "id": "facility_admin", "label": "Facility administrator, if you get stuck" },
+        { "id": "federal_privacy_office", "label": "Federal health privacy office, for complaints" }
+      ],
+      "steps": [
+        "Figure out exactly who holds the records you want",
+        "Ask for their records request form and their process",
+        "Confirm what proof they need that you are authorized to request",
+        "Write the request down, naming the dates and the records you want",
+        "Say what format you want, paper or electronic",
+        "Submit it and write down the date you submitted",
+        "Ask what the deadline is for them to respond",
+        "Ask what the fee is and ask for it in writing",
+        "Follow up in writing if the deadline passes",
+        "Note you do not have to explain why you want them",
+        "If they will not respond, write down the complaint option and the date you filed",
+        "Keep a copy of the request, the responses, and everything you receive"
+      ],
+      "documents": [
+        "Your written request",
+        "Proof you are authorized",
+        "Fee statement",
+        "The records you receive",
+        "Any denial letter",
+        "Complaint confirmation"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on the response deadline",
+        "Waiting on a fee estimate",
+        "Waiting on records after paying",
+        "Waiting on a complaint response"
+      ],
+      "failure_points": [
+        "Being told a patient portal is the only option",
+        "Being charged more than copying actually costs",
+        "The deadline passing with no answer and no follow up in writing"
+      ],
+      "timeline_shape": "Federal rules give them about a month, with one extension allowed if they tell you in writing.",
+      "rights_note": "Getting a copy of medical records is a federal right under health privacy law, and fees are limited to the cost of copying."
+    },
+    {
+      "id": "ombudsman_complaint",
+      "name": "Filing a complaint about a facility",
+      "subtitle": "Going to the ombudsman or the state agency",
+      "phase": 2,
+      "roles": [
+        { "id": "ombudsman", "label": "Long term care ombudsman" },
+        { "id": "state_agency", "label": "State agency that inspects facilities" },
+        { "id": "adult_protective", "label": "Adult protective services, for suspected abuse" },
+        { "id": "administrator", "label": "Facility administrator" }
+      ],
+      "steps": [
+        "Write down what happened with dates, times, and the names of everyone involved",
+        "Decide which route you want: the ombudsman helps resolve, the state agency inspects and enforces",
+        "Find the ombudsman contact for your area",
+        "Find the state agency contact",
+        "Gather your notes, photos, and any records you already have",
+        "Ask whether you can file without your name being shared",
+        "File the complaint and write down the date",
+        "Get a reference number",
+        "Ask what priority it was given and what that means for timing",
+        "Ask when to expect contact and from whom",
+        "Follow up on the date they gave you",
+        "Write down the outcome and anything the facility was told to fix"
+      ],
+      "documents": [
+        "Your written account of what happened",
+        "Photos, if any",
+        "Related records",
+        "Complaint confirmation and reference number",
+        "Any written outcome"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on a return call from the ombudsman",
+        "Waiting on an investigation to be scheduled",
+        "Waiting on findings",
+        "Waiting on the facility's correction plan"
+      ],
+      "failure_points": [
+        "Losing the reference number",
+        "A lower priority complaint sitting until the next scheduled inspection",
+        "Not writing down names on the day it happened"
+      ],
+      "timeline_shape": "Urgent complaints move in days. Others can wait weeks or until the next inspection."
+    },
+    {
+      "id": "disability_benefits",
+      "name": "Applying for disability benefits",
+      "subtitle": "A long application with a lot of medical history",
+      "phase": 3,
+      "roles": [
+        { "id": "benefits_office", "label": "Local Social Security office" },
+        { "id": "advocate", "label": "Disability advocate or attorney, if you use one" },
+        { "id": "doctors", "label": "Doctors who will provide records" },
+        { "id": "personal_contacts", "label": "Two people who know the situation well" }
+      ],
+      "steps": [
+        "Find out which program applies and get the starter materials",
+        "Gather identification and the social security number",
+        "List every doctor, clinic, and hospital with dates of treatment",
+        "List work history going back as far as they ask",
+        "Build the current medication list",
+        "Write down two people who can describe the daily situation",
+        "Complete the application, online or in person",
+        "Submit and write down the date and the claim number",
+        "Answer every request for more information and log the dates",
+        "Ask when a decision is expected",
+        "If it is denied, write down the appeal deadline the same day",
+        "Keep copies of everything, including the denial"
+      ],
+      "documents": [
+        "Identification and social security number",
+        "List of doctors and treatment dates",
+        "Work history",
+        "Medication list",
+        "Application confirmation",
+        "Decision or denial letter"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on medical records to be sent",
+        "Waiting on a decision",
+        "Waiting on an appeal hearing date"
+      ],
+      "failure_points": [
+        "Gaps in the medical history",
+        "Missing an appeal deadline after a denial",
+        "Incomplete work history"
+      ],
+      "timeline_shape": "Months for a first decision. Appeals add more months."
+    },
+    {
+      "id": "veteran_benefits",
+      "name": "Veteran and caregiver benefits",
+      "subtitle": "Applying for benefits available to veterans and their caregivers",
+      "phase": 3,
+      "roles": [
+        { "id": "caregiver_support", "label": "Veterans caregiver support team" },
+        { "id": "support_line", "label": "Caregiver support phone line" },
+        { "id": "service_officer", "label": "Veterans service officer" },
+        { "id": "va_doctor", "label": "The veteran's doctor" }
+      ],
+      "steps": [
+        "Find out which programs the situation might qualify for",
+        "Write down the difference between the ones you are applying to",
+        "Confirm what service and disability documentation is needed",
+        "Get the right application form for each program",
+        "Complete any parts that need both the veteran and the caregiver",
+        "Gather service records and disability documentation",
+        "Gather medical evidence about the care that is needed",
+        "Submit the application and write down the date",
+        "Call the support line and confirm it was received",
+        "Ask what the review steps are and how long each takes",
+        "Complete any in home assessment that is scheduled",
+        "Get the decision in writing",
+        "If it is denied, ask what review options exist and the deadline"
+      ],
+      "documents": [
+        "Application forms",
+        "Service records",
+        "Disability documentation",
+        "Medical evidence about care needs",
+        "Decision letter"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on records to arrive",
+        "Waiting on an assessment to be scheduled",
+        "Waiting on a decision",
+        "Waiting on a review after a denial"
+      ],
+      "failure_points": [
+        "Documenting the caregiving arrangement incorrectly",
+        "Submitting only one half of a joint application",
+        "Missing the disability rating documentation"
+      ],
+      "timeline_shape": "Several months, with multiple review stages."
+    },
+    {
+      "id": "guardianship",
+      "name": "Guardianship or conservatorship",
+      "subtitle": "A court process for decision making when someone cannot decide",
+      "phase": 3,
+      "state_variance": true,
+      "roles": [
+        { "id": "court_clerk", "label": "Probate or family court clerk" },
+        { "id": "attorney", "label": "Attorney" },
+        { "id": "evaluator", "label": "Court appointed evaluator or examining doctor" },
+        { "id": "court_investigator", "label": "Court investigator" }
+      ],
+      "steps": [
+        "Understand that this is a court process and it works differently in every state",
+        "Ask whether a less restrictive option would work instead, like a power of attorney",
+        "Find the court's self help resource or information line",
+        "Find out which forms are required and where to file",
+        "Find out whether an attorney is required where you live",
+        "Gather the medical documentation the court requires",
+        "Find out who has to be notified and how",
+        "File the petition and write down the case number",
+        "Write down the hearing date and what to bring",
+        "Attend the hearing",
+        "Get a copy of the court order",
+        "Write down what reports you must file afterward and when they are due"
+      ],
+      "documents": [
+        "Petition and court forms",
+        "Medical documentation",
+        "Notices sent to family",
+        "Court order",
+        "Ongoing reports you have to file"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on an attorney consultation",
+        "Waiting on medical documentation",
+        "Waiting on a hearing date",
+        "Waiting on the signed order"
+      ],
+      "failure_points": [
+        "Starting a court case when a simpler document would have worked",
+        "Missing the reports that are due after appointment",
+        "Not knowing who must be notified"
+      ],
+      "timeline_shape": "Weeks to months. Much longer if anyone contests it.",
+      "advice_note": "This is not legal advice. Guardianship law is different in every state and a lawyer is usually involved."
+    },
+    {
+      "id": "legal_documents",
+      "name": "Setting up legal and medical decision papers",
+      "subtitle": "Power of attorney, health care decision maker, and written wishes",
+      "phase": 1,
+      "state_variance": true,
+      "roles": [
+        { "id": "attorney", "label": "Attorney, if you use one" },
+        { "id": "notary", "label": "Notary" },
+        { "id": "primary_doctor", "label": "Primary doctor, for medical orders" },
+        { "id": "named_agent", "label": "The person being named to decide" }
+      ],
+      "steps": [
+        "Learn which documents exist and what each one does",
+        "Note that money decisions and medical decisions are usually separate documents",
+        "Note that written wishes are planning, while signed medical orders are followed by responders",
+        "Decide who will be named, and name a backup",
+        "Get the forms that are valid in your state",
+        "Complete them while the person can still make their own decisions",
+        "Sign with whatever witnesses or notary your state requires",
+        "Give copies to the named person, the doctors, and the facility",
+        "Write down where every original is kept, specifically",
+        "Ask the doctor about signed medical orders if the situation is serious",
+        "Put all of it on the emergency card",
+        "Review after any major change in health"
+      ],
+      "documents": [
+        "Money decision document",
+        "Health care decision document",
+        "Written wishes",
+        "Signed medical orders, if applicable",
+        "A note of where each original is kept"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on an attorney appointment",
+        "Waiting on a notary",
+        "Waiting on the doctor to sign medical orders",
+        "Waiting on copies to reach the facility"
+      ],
+      "failure_points": [
+        "Signed incorrectly for your state and not valid",
+        "Nobody has a copy when it is needed",
+        "Confusing written wishes with orders that responders can follow"
+      ],
+      "timeline_shape": "Can be done in a week. Signed medical orders need a doctor.",
+      "advice_note": "This is not legal advice. What these documents are called and how they must be signed varies by state.",
+      "localization_note": "Do not translate these document names with direct cognates. Use descriptive wording plus a plain explanation in each language."
+    },
+    {
+      "id": "family_leave",
+      "name": "Taking leave from work to provide care",
+      "subtitle": "Requesting protected time off for yourself",
+      "phase": 2,
+      "roles": [
+        { "id": "hr", "label": "Human resources at your employer" },
+        { "id": "provider", "label": "The doctor who will complete the form" },
+        { "id": "labor_dept", "label": "Federal labor department, if there is a problem" }
+      ],
+      "steps": [
+        "Check whether your employer and your own work history qualify",
+        "Tell your employer you need time off to care for a family member",
+        "Give as much notice as you can, in writing",
+        "Ask human resources for the paperwork",
+        "Get the medical certification form to the doctor's office quickly",
+        "Note the deadline for returning the certification",
+        "Keep the notices your employer gives you",
+        "Ask whether the leave is paid, unpaid, or can be combined with paid time",
+        "Ask how the leave gets tracked if you take it a few hours at a time",
+        "Keep your own log of every hour used",
+        "Confirm in writing what was approved and for how long",
+        "Ask what happens when the leave runs out"
+      ],
+      "documents": [
+        "Your written request",
+        "Medical certification form",
+        "Employer notices",
+        "Your own hours log",
+        "Written approval"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on the paperwork from human resources",
+        "Waiting on the doctor to complete the form",
+        "Waiting on written approval"
+      ],
+      "failure_points": [
+        "The certification arrives late and the leave is denied",
+        "Nobody tracks the hours taken a little at a time",
+        "Assuming it is paid when it is not"
+      ],
+      "timeline_shape": "Days to a few weeks, mostly waiting on forms."
+    },
+    {
+      "id": "facility_transfer",
+      "name": "Moving to a different facility",
+      "subtitle": "Arranging a transfer from one place to another",
+      "phase": 3,
+      "state_variance": true,
+      "roles": [
+        { "id": "current_case_manager", "label": "Case manager where they are now" },
+        { "id": "receiving_admissions", "label": "Admissions at the new place" },
+        { "id": "insurance", "label": "Insurance or coverage contact" },
+        { "id": "transport", "label": "Transport service" }
+      ],
+      "steps": [
+        "Write down the reason for the move and what you want instead",
+        "Confirm the new place has a bed and accepts the coverage",
+        "Ask the current case manager to start the transfer",
+        "Confirm who sends the records and the medication list",
+        "Confirm the medication list actually arrives, do not assume",
+        "Arrange transport and confirm the time",
+        "Ask whether the current bed is held and for how long",
+        "Confirm coverage or authorization for the new place",
+        "Get the transfer date in writing",
+        "Write down the new room number, floor, and direct phone",
+        "Rebuild the contact list for the new place",
+        "Keep copies of the transfer paperwork"
+      ],
+      "documents": [
+        "Transfer summary",
+        "Medication list",
+        "Coverage authorization",
+        "Any bed hold notice",
+        "New contact list"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on a bed to open",
+        "Waiting on coverage authorization",
+        "Waiting on records to transfer",
+        "Waiting on a transport time"
+      ],
+      "failure_points": [
+        "Records and medication lists that never arrive",
+        "Losing the old bed before the new one is confirmed",
+        "A coverage gap between the two places"
+      ],
+      "timeline_shape": "Days to weeks, depending on beds and approvals."
+    },
+    {
+      "id": "discharge_appeal",
+      "name": "Fighting a facility discharge",
+      "subtitle": "When a facility says someone has to leave",
+      "phase": 2,
+      "state_variance": true,
+      "roles": [
+        { "id": "ombudsman", "label": "Long term care ombudsman" },
+        { "id": "state_hearings", "label": "State office that handles these appeals" },
+        { "id": "administrator", "label": "Facility administrator" },
+        { "id": "legal_aid", "label": "Legal aid or attorney" }
+      ],
+      "steps": [
+        "Get the notice in writing and read it carefully",
+        "Check that it states a reason, where they are supposed to go, and how to appeal",
+        "Write down the date on the notice and the date you received it",
+        "Note that federal rules allow facility initiated discharge only for a short list of reasons",
+        "Note that a notice of only a day or two is almost never proper",
+        "Call the ombudsman the same day",
+        "File the appeal by the deadline on the notice",
+        "Ask whether they can stay while the appeal is decided",
+        "Gather payment records and care records",
+        "Write down every conversation with the facility, with names and times",
+        "Prepare for the hearing and ask the ombudsman what to expect",
+        "If they are in the hospital, ask about the right to come back to their bed",
+        "Keep copies of everything"
+      ],
+      "documents": [
+        "The discharge notice",
+        "Your appeal request",
+        "Payment records",
+        "Care records",
+        "Hearing materials",
+        "Any bed hold notice"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on a call back from the ombudsman",
+        "Waiting on a hearing date",
+        "Waiting on written confirmation they can stay",
+        "Waiting on the decision"
+      ],
+      "failure_points": [
+        "Very short notice that nobody challenges",
+        "Confusing coverage ending with being evicted, they are different things",
+        "Being refused readmission after a hospital stay"
+      ],
+      "timeline_shape": "Fast. The appeal usually has to be filed before the discharge date on the notice.",
+      "rights_note": "Federal rules for nursing homes limit why a facility can discharge someone, generally require advance written notice, and give a right to appeal.",
+      "advice_note": "This is not legal advice. Call the ombudsman early, they do this for free."
+    },
+    {
+      "id": "asset_documentation",
+      "name": "Documenting money for a Medicaid application",
+      "subtitle": "Organizing years of financial records",
+      "phase": 2,
+      "state_variance": true,
+      "roles": [
+        { "id": "caseworker", "label": "Medicaid caseworker" },
+        { "id": "elder_law", "label": "Elder law attorney or Medicaid planner" },
+        { "id": "bank", "label": "Bank" },
+        { "id": "facility_billing", "label": "Facility business office" }
+      ],
+      "steps": [
+        "Ask exactly how many years of records the state wants",
+        "Request statements from every bank and account for that whole period",
+        "List every account, property, policy, and vehicle",
+        "Write down anything that was sold, gifted, or moved, with dates",
+        "Keep receipts for medical bills that were paid",
+        "Keep receipts for home changes and repairs",
+        "Keep any prepaid funeral or burial paperwork",
+        "Organize everything by year and by account",
+        "Ask the caseworker what counts and what does not where you live",
+        "Consider a consultation with someone who does this professionally",
+        "Submit the documentation together, not piece by piece",
+        "Keep a copy of everything you handed over"
+      ],
+      "documents": [
+        "Bank statements for the full lookback period",
+        "Property and vehicle records",
+        "Insurance policies",
+        "Documentation of transfers or gifts",
+        "Medical bill receipts",
+        "Home repair receipts",
+        "Burial or funeral arrangements"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on older bank statements",
+        "Waiting on a professional consultation",
+        "Waiting on the caseworker to confirm what is missing"
+      ],
+      "failure_points": [
+        "A transfer nobody can explain, which can cause a penalty period",
+        "Statements the bank charges for or takes weeks to produce",
+        "Assuming something is exempt when it is not"
+      ],
+      "timeline_shape": "Runs alongside the application. Gathering old statements is usually the slow part.",
+      "advice_note": "This is not legal or financial advice. Rules vary by state and mistakes here have real consequences."
+    },
+    {
+      "id": "bill_reconciliation",
+      "name": "Sorting out bills and insurance statements",
+      "subtitle": "Matching what was billed against what was covered",
+      "phase": 3,
+      "roles": [
+        { "id": "provider_billing", "label": "Billing office where the care happened" },
+        { "id": "insurance", "label": "Insurance member services" },
+        { "id": "insurance_counselor", "label": "Free state insurance counseling program" },
+        { "id": "state_regulator", "label": "State insurance department" }
+      ],
+      "steps": [
+        "Collect every bill and every insurance statement in one place",
+        "Match each bill to the statement that covers the same visit",
+        "Write down what insurance paid and what is actually owed",
+        "Flag anything where the two do not match",
+        "Do not pay a bill before the insurance statement arrives",
+        "Call the billing office about anything unclear and log the call",
+        "Call insurance if the statement looks wrong",
+        "Ask for a corrected statement or bill in writing",
+        "Open a dispute if it is not resolved and get a reference number",
+        "Write down the payment deadline so a dispute does not become a late payment",
+        "Ask whether a payment plan is available if the balance is real",
+        "Keep copies of everything"
+      ],
+      "documents": [
+        "Bills",
+        "Insurance statements",
+        "Corrected statements",
+        "Dispute correspondence and reference numbers",
+        "Payment records"
+      ],
+      "waiting_on_prompts": [
+        "Waiting on an insurance statement",
+        "Waiting on a corrected bill",
+        "Waiting on a dispute decision"
+      ],
+      "failure_points": [
+        "Paying before the statement arrives",
+        "A disputed bill going to collections while you wait",
+        "Bills from providers you never chose"
+      ],
+      "timeline_shape": "Ongoing. Individual disputes take weeks."
+    }
+  ]
+}

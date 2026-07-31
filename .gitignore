@@ -1,0 +1,70 @@
+# Health Trail by Kamsiob
+# Written in the first commit, before anything sensitive can exist.
+
+# Credentials, keys, and signing material. Never in this repository.
+*.jks
+*.keystore
+*.p12
+*.pem
+*.der
+keystore.properties
+signing.properties
+google-play-service-account*.json
+play-service-account*.json
+*service-account*.json
+secrets.properties
+local.properties
+.env
+.env.*
+
+# Android and Gradle build output. Nothing built is ever committed.
+build/
+.gradle/
+captures/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+output.json
+release/
+lint-results*.xml
+
+# Local exports and backups. These are user data, by definition.
+*.htx
+exports/
+backups/
+fixtures-out/
+
+# Web scaffold
+/web/node_modules/
+/web/dist/
+/web/.parcel-cache/
+
+# Python tooling
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Run state that belongs to a session rather than to the project
+.claude/retry-state.json
+.claude/settings.local.json
+
+# Editor and operating system junk
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.directory
+
+# Scratch
+/scratch/
+/tmp/

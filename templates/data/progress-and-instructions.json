@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "type": "progress_presets_and_standing_instructions",
+  "content_license": "CC BY-SA 4.0",
+  "posture": {
+    "general_guide": "These are starting points. Rename anything, change the units, delete what you do not need.",
+    "record_only": "Health Trail records what you write down and what clinicians tell you. It does not interpret values, flag anything as normal or abnormal, or advise.",
+    "no_ranges": "Never display target ranges, normal ranges, color coded values, or warnings on any measurement."
+  },
+  "progress_presets": [
+    {
+      "id": "weight",
+      "name": "Weight",
+      "unit_options": ["lb", "kg"],
+      "cadence": "Weekly, or whenever a clinician asks",
+      "medication_markers": true,
+      "style": "continuous",
+      "gap_tolerance": "high",
+      "fields": ["value", "date", "note"],
+      "notes": "Medication start markers are useful here, for example when a new medication is started and the family wants the timing visible on the chart.",
+      "advice_risk": "low"
+    },
+    {
+      "id": "blood_pressure",
+      "name": "Blood pressure",
+      "unit_options": ["mmHg"],
+      "cadence": "As a clinician asks",
+      "medication_markers": true,
+      "style": "continuous",
+      "gap_tolerance": "moderate",
+      "fields": ["top_number", "bottom_number", "date", "who_took_it", "note"],
+      "notes": "Record who took the reading, since readings taken at home and at a clinic often differ.",
+      "advice_risk": "medium"
+    },
+    {
+      "id": "blood_glucose",
+      "name": "Blood sugar",
+      "unit_options": ["mg/dL", "mmol/L"],
+      "cadence": "As a clinician asks",
+      "medication_markers": true,
+      "style": "continuous",
+      "gap_tolerance": "low",
+      "fields": ["value", "date", "time", "before_or_after_eating", "note"],
+      "advice_risk": "high"
+    },
+    {
+      "id": "mobility",
+      "name": "Moving around",
+      "unit_options": ["feet", "meters", "steps", "minutes"],
+      "cadence": "Per session, or weekly",
+      "medication_markers": false,
+      "style": "milestone_heavy",
+      "gap_tolerance": "high",
+      "fields": ["distance_or_time", "help_needed", "date", "note"],
+      "help_needed_options": ["No help", "A little help", "A lot of help", "Could not today"],
+      "notes": "Plain language on purpose. Record what the therapist said, not your own rating.",
+      "advice_risk": "low"
+    },
+    {
+      "id": "wound",
+      "name": "Wound or pressure sore",
+      "unit_options": [],
+      "cadence": "Per dressing change or clinician visit",
+      "medication_markers": false,
+      "style": "photo_log",
+      "gap_tolerance": "low",
+      "fields": ["photo", "date", "location_on_body", "what_the_clinician_said", "note"],
+      "notes": "Photographs and dates only. The stage field records what a clinician told you, and the label must say so.",
+      "advice_risk": "high"
+    },
+    {
+      "id": "pain",
+      "name": "Pain",
+      "unit_options": ["0 to 10"],
+      "cadence": "As needed",
+      "medication_markers": true,
+      "style": "continuous",
+      "gap_tolerance": "high",
+      "fields": ["level", "date", "where", "note"],
+      "notes": "This is their own report of their pain, not your assessment of it.",
+      "advice_risk": "medium"
+    },
+    {
+      "id": "sleep",
+      "name": "Sleep",
+      "unit_options": ["hours"],
+      "cadence": "Daily",
+      "medication_markers": true,
+      "style": "continuous",
+      "gap_tolerance": "high",
+      "fields": ["hours", "date", "times_woke_up", "note"],
+      "advice_risk": "low"
+    },
+    {
+      "id": "appetite",
+      "name": "Eating",
+      "unit_options": [],
+      "cadence": "Per meal or daily",
+      "medication_markers": true,
+      "style": "categorical",
+      "gap_tolerance": "high",
+      "fields": ["how_much", "date", "meal", "note"],
+      "how_much_options": ["Ate most of it", "Ate about half", "Ate a little", "Did not eat"],
+      "advice_risk": "low"
+    },
+    {
+      "id": "mood_behavior",
+      "name": "Mood and behavior",
+      "unit_options": [],
+      "cadence": "Daily or when something happens",
+      "medication_markers": true,
+      "style": "observational",
+      "gap_tolerance": "high",
+      "fields": ["what_you_saw", "date", "time_of_day", "who_reported_it", "note"],
+      "notes": "Observation only. The field is what you saw or what staff told you, never a conclusion about why.",
+      "advice_risk": "high"
+    },
+    {
+      "id": "fluids",
+      "name": "Fluids",
+      "unit_options": ["mL", "oz", "cups"],
+      "cadence": "Only when a clinician asks the family to track it",
+      "medication_markers": false,
+      "style": "continuous",
+      "gap_tolerance": "low",
+      "fields": ["amount", "date", "in_or_out", "note"],
+      "advice_risk": "high"
+    },
+    {
+      "id": "dialysis_log",
+      "name": "Dialysis sessions",
+      "unit_options": ["hours", "minutes"],
+      "cadence": "Every session",
+      "medication_markers": false,
+      "style": "event_log",
+      "gap_tolerance": "low",
+      "fields": ["date", "attended_or_missed", "length", "how_they_felt_after", "note"],
+      "notes": "Attendance and their own report of how they felt. Nothing clinical.",
+      "advice_risk": "low"
+    },
+    {
+      "id": "treatment_cycles",
+      "name": "Treatment cycles",
+      "unit_options": [],
+      "cadence": "Per cycle",
+      "medication_markers": true,
+      "style": "event_log",
+      "gap_tolerance": "cycle_based",
+      "fields": ["cycle_number", "date", "what_you_noticed_after", "note"],
+      "notes": "Side effects are recorded as observations of what happened, not as something to act on.",
+      "advice_risk": "medium"
+    },
+    {
+      "id": "fall_log",
+      "name": "Falls",
+      "unit_options": [],
+      "cadence": "Every time it happens",
+      "medication_markers": false,
+      "style": "event_log",
+      "gap_tolerance": "not_applicable",
+      "fields": ["date", "time", "where_it_happened", "what_happened", "what_was_done", "who_told_you", "who_you_notified", "note"],
+      "notes": "This connects to standing instructions about being notified after a fall. Record who told you and when.",
+      "advice_risk": "low"
+    },
+    {
+      "id": "pediatric_growth",
+      "name": "Growth",
+      "unit_options": ["in", "cm", "lb", "kg"],
+      "cadence": "At each visit",
+      "medication_markers": false,
+      "style": "continuous",
+      "gap_tolerance": "high",
+      "fields": ["height", "weight", "head_measurement", "date", "note"],
+      "notes": "Record the numbers the clinic measured. Never show percentiles or comparisons.",
+      "advice_risk": "high"
+    },
+    {
+      "id": "temperature",
+      "name": "Temperature",
+      "unit_options": ["F", "C"],
+      "cadence": "As needed",
+      "medication_markers": false,
+      "style": "continuous",
+      "gap_tolerance": "high",
+      "fields": ["value", "date", "time", "note"],
+      "advice_risk": "medium"
+    },
+    {
+      "id": "bathroom",
+      "name": "Bathroom",
+      "unit_options": [],
+      "cadence": "Daily, if it matters right now",
+      "medication_markers": false,
+      "style": "observational",
+      "gap_tolerance": "high",
+      "fields": ["date", "note"],
+      "notes": "Kept deliberately plain and private. Some families track this during a specific problem and then stop.",
+      "advice_risk": "medium"
+    }
+  ],
+  "standing_instruction_tags": {
+    "federal": {
+      "label": "Backed by federal rules for nursing homes",
+      "explainer": "Federal rules for nursing homes that take Medicare or Medicaid require this. Other kinds of places, like assisted living and home care agencies, are not covered by those same rules."
+    },
+    "request": {
+      "label": "Your request",
+      "explainer": "This is a reasonable thing to ask for, but no rule requires them to agree. Ask for it in writing anyway."
+    }
+  },
+  "standing_instructions": [
+    {
+      "id": "falls_injuries",
+      "name": "Call me about any fall or injury",
+      "wording": "Please call me right away if there is a fall or any injury, and tell me what happened and what was done.",
+      "tag": "federal",
+      "basis": "Federal nursing home rules require the facility to notify the resident's representative about an accident with an injury that may need a doctor's attention, and about significant changes in condition.",
+      "ask_for": "Ask for it to be written into the care plan, and ask who makes the call at night."
+    },
+    {
+      "id": "medication_changes",
+      "name": "Tell me about medication changes",
+      "wording": "Please tell me when any medication is started, stopped, or changed.",
+      "tag": "federal",
+      "basis": "Federal nursing home rules require notice when there is a need to change treatment significantly. Small routine changes may not be covered, so ask for those too.",
+      "ask_for": "Ask for it in the care plan, and ask who will call."
+    },
+    {
+      "id": "treatment_changes",
+      "name": "Tell me before treatment changes",
+      "wording": "Please tell me before starting or stopping any treatment or therapy.",
+      "tag": "federal",
+      "basis": "Federal nursing home rules require notice of a significant change in treatment.",
+      "ask_for": "Ask for it in the care plan."
+    },
+    {
+      "id": "care_plan_meetings",
+      "name": "Include me in care plan meetings",
+      "wording": "Please include me in every care plan meeting and tell me the schedule ahead of time.",
+      "tag": "federal",
+      "basis": "Federal nursing home rules give residents and their representatives the right to take part in care planning.",
+      "ask_for": "Ask for the meeting schedule in writing and ask to be added to the notification list."
+    },
+    {
+      "id": "hospital_transfer",
+      "name": "Call me immediately about any hospital transfer",
+      "wording": "If they are sent to the hospital, please call me right away and tell me where and why.",
+      "tag": "federal",
+      "basis": "Federal nursing home rules require notice of a decision to transfer or discharge.",
+      "ask_for": "Ask what the after hours call process is, and get the name of who makes that call."
+    },
+    {
+      "id": "end_of_life",
+      "name": "Follow the signed orders and call me first",
+      "wording": "Our wishes are in the signed orders dated [date], kept at [location]. Please follow them and call me before anything changes.",
+      "tag": "federal",
+      "basis": "Federal rules require facilities to honor advance directives and to tell you their policies about them.",
+      "ask_for": "Confirm the signed orders are in the chart and flagged where staff will see them fast."
+    },
+    {
+      "id": "information_sharing",
+      "name": "Who you can share information with",
+      "wording": "Please share information with these people: [list]. Please follow these visitor preferences: [list].",
+      "tag": "federal",
+      "basis": "Federal nursing home rules protect visitation and give control over who receives information. Specific preferences beyond that are requests.",
+      "ask_for": "Confirm the authorized contact list is on file and ask to see it."
+    },
+    {
+      "id": "room_changes",
+      "name": "Tell me before a room or roommate change",
+      "wording": "Please tell me before any room change or roommate change.",
+      "tag": "request",
+      "basis": "There are notice rules around moves within a facility, but being told in advance about a roommate change is mostly something you have to ask for.",
+      "ask_for": "Ask for it to be added to the care plan so it survives staff turnover."
+    },
+    {
+      "id": "outside_services",
+      "name": "Get my okay before outside services that cost money",
+      "wording": "Please get my okay before sending them to any outside dentist, podiatrist, lab, or other service that may be billed to us.",
+      "tag": "request",
+      "basis": "No rule requires a facility to get your approval first, though there are separate rules about cost estimates and out of network notices in some situations.",
+      "ask_for": "Ask for it in writing in the file, and ask for a cost estimate before anything is scheduled."
+    },
+    {
+      "id": "discharge_discussions",
+      "name": "Do not discuss discharge without me",
+      "wording": "Please do not discuss discharge or moving without me present or informed first.",
+      "tag": "request",
+      "basis": "You do have a right to be notified of a decision to transfer or discharge, and a right to appeal it. Being present for every conversation is something you have to ask for.",
+      "ask_for": "Ask for the notice process in writing, and ask who is responsible for calling you."
+    },
+    {
+      "id": "dietary",
+      "name": "Keep these food restrictions on file",
+      "wording": "Please keep these food restrictions and preferences on file: [list]. Tell me if they cannot be followed.",
+      "tag": "request",
+      "basis": "Care plans are supposed to reflect needs and preferences, so this is well supported, but the specific list is something you provide and confirm.",
+      "ask_for": "Confirm it is in both the care plan and the kitchen's system, and check back after a month."
+    }
+  ]
+}

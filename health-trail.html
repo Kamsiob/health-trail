@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Trail, a private care notebook for family caregivers | Kamsiob</title>
+<meta name="description" content="Health Trail is a free, open source care notebook for the family member who becomes the point person for someone else's care. Every call, visit, incident, and dollar, kept on your phone and nowhere else. No account, no cloud, no data collection.">
+<link rel="canonical" href="https://kamsiob.com/health-trail.html">
+<meta property="og:title" content="Health Trail, a private care notebook for family caregivers">
+<meta property="og:description" content="Free and open source. Everything stays on your phone: no account, no cloud, no data collection. Built for the son, daughter, or spouse who becomes the point person for someone else's care.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kamsiob.com/health-trail.html">
+<meta property="og:image" content="https://kamsiob.com/assets/banner.png">
+<meta name="twitter:card" content="summary_large_image">
+<!--
+  NOTE FOR SITE BUILD:
+  - This page makes zero third-party requests, same as the rest of kamsiob.com. Font stacks prefer
+    Sora / Manrope / JetBrains Mono if self-hosted on the site; graceful system fallbacks otherwise.
+    (Health Trail's own in-app faces are Bricolage Grotesque and Atkinson Hyperlegible, per DESIGN.md.
+    The site page intentionally uses the sitewide stack instead, to match kamsiob.com, not the app.)
+  - Not yet linked from projects.html or the main nav. Link it once there is something real to show.
+  - SCREENSHOT SLOT: swap the four CSS phone mockups below for real screenshots once the app exists.
+    Search "SCREENSHOT SLOT".
+  - WIRE-ME: two placeholders need a real destination once they exist: the Google Play listing (search
+    "WIRE-ME: Play"), and the GitHub repository once Phase 0 has run (search "WIRE-ME: GitHub").
+  - A dedicated og:image (assets/banner-health-trail.png) would read better than the generic site banner
+    once real screenshots exist. Using the generic one for now.
+
+  NOTE FOR PLAY CONSOLE SUBMISSION, when that day comes (see PROJECT-DELTAS.md section 3):
+  - Category: Productivity or Lifestyle. Never Medical.
+  - Data Safety form: no data collected, no data shared, no data sold. State it plainly.
+  - Ads: none. In-app purchases: none. Account required: no.
+  - Content rating: no user-generated content shared with others, no social features, nothing
+    directed at children specifically, though nothing here excludes a younger user either.
+  - Privacy policy URL for the listing: https://kamsiob.com/health-trail.html#privacy
+-->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Health Trail",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "Android",
+  "description": "A free, open source, local-first care notebook for the family member who becomes the point person for someone else's care. Records calls, visits, incidents, medications, documents, and bills entirely on the device, with no account and no cloud.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Kamsiob"
+  },
+  "url": "https://kamsiob.com/health-trail.html",
+  "license": "https://www.gnu.org/licenses/agpl-3.0.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Health Trail free?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Yes, completely. No subscription, no ads, no in-app purchases, and no feature held back behind a payment. Support is an optional donation, never a requirement."}
+    },
+    {
+      "@type": "Question",
+      "name": "Does Health Trail collect my data?",
+      "acceptedAnswer": {"@type": "Answer", "text": "No. Health Trail does not collect, transmit, or sell any data. Everything you record stays on your phone. There is no account, no server, and no analytics of any kind."}
+    },
+    {
+      "@type": "Question",
+      "name": "Is Health Trail a medical app?",
+      "acceptedAnswer": {"@type": "Answer", "text": "No. It is a record-keeping app for family caregivers. It gives no medical or legal advice, and it never interprets a measurement, a count, or a symptom."}
+    },
+    {
+      "@type": "Question",
+      "name": "Can more than one family member use it at the same time?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Health Trail is built around a single point person rather than shared live editing. Anything in the notebook can be exported as a PDF or text and shared with other family members through whatever app they already use."}
+    },
+    {
+      "@type": "Question",
+      "name": "Does it remind me to give medications?",
+      "acceptedAnswer": {"@type": "Answer", "text": "No, and this is deliberate. Health Trail keeps a record of medications and dose history. It never reminds, alerts, or sets an alarm for a dose."}
+    },
+    {
+      "@type": "Question",
+      "name": "What platforms will Health Trail run on?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Android first, built in Kotlin. A web version that keeps all data in the browser on the person's own device is planned to follow."}
+    },
+    {
+      "@type": "Question",
+      "name": "Is Health Trail available yet?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Not yet. It is fully designed and specified and is moving into development. This page exists ahead of release, the same honest way the rest of the app is built."}
+    },
+    {
+      "@type": "Question",
+      "name": "Is Health Trail open source?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Yes. The app will be licensed AGPLv3 once released. Its free 57-template starter catalog is separately licensed CC BY-SA 4.0 and usable with or without the app."}
+    },
+    {
+      "@type": "Question",
+      "name": "What languages will it support?",
+      "acceptedAnswer": {"@type": "Answer", "text": "English, Spanish, Chinese, and Arabic, all from the first release, including full right-to-left layout for Arabic."}
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#FAF6EE; --sf:#FFFFFF; --sf2:#F1EBDC;
+  --tonal:#E3EEF3; --tonal-tx:#245A75;
+  --tx:#22384A; --tx2:#5C6F7E; --tx3:#5E6E79;
+  --ac:#2F6F8F; --ac-deep:#245A75; --on-ac:#F3FAFD;
+  --flag:#D99D2B; --flag-soft:#F7ECD1; --flag-tx:#8A5E10;
+  --leaf:#4E8A5C; --leaf-soft:#E4EFE5; --leaf-tx:#3D7049;
+  --alert:#B84A2E; --alert-soft:#F8E4DB;
+  --brd:rgba(34,56,74,.10);
+  --shadow:0 8px 24px rgba(50,62,42,.09),0 2px 5px rgba(50,62,42,.05);
+  --disp:'Sora',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --spx:cubic-bezier(.34,1.45,.5,1); --sps:cubic-bezier(.25,.9,.3,1);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121A20; --sf:#1A242B; --sf2:#223038;
+    --tonal:#1E323D; --tonal-tx:#9BCBE4;
+    --tx:#E9EEF1; --tx2:#A6B4BD; --tx3:#7F9099;
+    --ac:#7FB6D4; --ac-deep:#9BCBE4; --on-ac:#0B171E;
+    --flag:#E3B155; --flag-soft:#33290F; --flag-tx:#E9BE6E;
+    --leaf:#74B383; --leaf-soft:#16291C; --leaf-tx:#8CC79A;
+    --alert:#E58163; --alert-soft:#3B1E14;
+    --brd:rgba(233,238,241,.09);
+    --shadow:0 4px 14px rgba(0,0,0,.25);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--ac);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+
+/* nav, matching kamsiob.com structure */
+nav{padding:22px 0;display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+nav .home{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;font-size:17px;color:var(--tx);margin-right:auto}
+nav .home:hover{text-decoration:none}
+nav a.nl{font-size:14px;font-weight:600;color:var(--tx2)}
+nav a.nl:hover{color:var(--tx);text-decoration:none}
+
+/* the mark, a trail blaze: two stacked bars */
+.mark{display:inline-block;color:var(--flag);vertical-align:middle}
+
+/* hero */
+.hero{padding:56px 0 36px;text-align:center;position:relative}
+.trailwrap{display:flex;justify-content:center;align-items:center;margin-bottom:14px}
+.trailsvg{width:220px;height:44px;overflow:visible}
+.trailpath{fill:none;stroke:var(--flag);stroke-width:2;stroke-dasharray:6 6;stroke-dashoffset:420;opacity:.75;animation:draw 1.3s var(--sps) forwards}
+.tnode{fill:var(--bg);stroke:var(--flag);stroke-width:2.2;opacity:0;animation:nodein .35s ease forwards}
+.tnode.n1{animation-delay:.15s}.tnode.n2{animation-delay:.6s}.tnode.n3{animation-delay:1.05s}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes nodein{to{opacity:1}}
+.hero h1{font-family:var(--disp);font-weight:700;font-size:clamp(38px,6vw,58px);letter-spacing:-.03em;line-height:1.05}
+.hero .tag{font-size:clamp(17px,2.3vw,20px);color:var(--tx2);max-width:640px;margin:16px auto 0;font-weight:500}
+.badges{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.badge{font-size:12.5px;font-weight:800;background:var(--tonal);color:var(--tonal-tx);border-radius:100px;padding:8px 15px}
+.ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.btn{display:inline-block;font-weight:800;font-size:15px;border-radius:100px;padding:15px 28px;transition:transform 180ms var(--sps);border:none;cursor:default}
+.btn:hover{text-decoration:none;transform:translateY(-2px)}
+.btn.primary{background:var(--ac);color:var(--on-ac)}
+.btn.ghost{background:var(--sf);color:var(--tx);border:1px solid var(--brd);box-shadow:var(--shadow);cursor:pointer}
+.hero .fine{font-family:var(--mono);font-size:11px;color:var(--tx3);margin-top:18px}
+
+/* sections */
+.sec{padding:52px 0}
+.sec.tight{padding:36px 0}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);margin-bottom:12px}
+h2{font-family:var(--disp);font-weight:700;font-size:clamp(26px,3.6vw,36px);letter-spacing:-.025em;line-height:1.15;margin-bottom:14px}
+.lead{font-size:16.5px;color:var(--tx2);max-width:660px;font-weight:500}
+.center{text-align:center}
+.center .lead{margin:0 auto}
+.divider{text-align:center;color:var(--flag);font-size:18px;padding:6px 0}
+
+/* reveal on scroll */
+.rv{opacity:0;transform:translateY(20px);transition:opacity 600ms var(--sps),transform 600ms var(--spx)}
+.rv.in{opacity:1;transform:none}
+
+/* screenshot preview toggle, scoped to the phone contents only, not the page */
+.theme-toggle{display:flex;justify-content:center;gap:8px;margin:6px 0 26px}
+.ttbtn{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--sf);color:var(--tx2);border:1px solid var(--brd);box-shadow:var(--shadow);border-radius:100px;padding:9px 18px;cursor:pointer;transition:transform 180ms var(--sps),background 180ms var(--sps),color 180ms var(--sps)}
+.ttbtn:hover{color:var(--tx);transform:translateY(-1px)}
+.ttbtn.active{background:var(--ac);color:var(--on-ac);border-color:transparent}
+.ttbtn.active:hover{color:var(--on-ac)}
+
+/* the two variable sets below are scoped to .scr only, so toggling them previews the
+   screenshots in light or dark without changing the rest of this page */
+.phones[data-theme="dark"] .scr{
+  --bg:#121A20; --sf:#1A242B; --sf2:#223038;
+  --tonal:#1E323D; --tonal-tx:#9BCBE4;
+  --tx:#E9EEF1; --tx2:#A6B4BD; --tx3:#7F9099;
+  --ac:#7FB6D4; --ac-deep:#9BCBE4; --on-ac:#0B171E;
+  --flag:#E3B155; --flag-soft:#33290F; --flag-tx:#E9BE6E;
+  --leaf:#74B383; --leaf-soft:#16291C; --leaf-tx:#8CC79A;
+  --alert:#E58163; --alert-soft:#3B1E14;
+  --brd:rgba(233,238,241,.09);
+  --shadow:0 4px 14px rgba(0,0,0,.25);
+}
+.phones[data-theme="light"] .scr{
+  --bg:#FAF6EE; --sf:#FFFFFF; --sf2:#F1EBDC;
+  --tonal:#E3EEF3; --tonal-tx:#245A75;
+  --tx:#22384A; --tx2:#5C6F7E; --tx3:#5E6E79;
+  --ac:#2F6F8F; --ac-deep:#245A75; --on-ac:#F3FAFD;
+  --flag:#D99D2B; --flag-soft:#F7ECD1; --flag-tx:#8A5E10;
+  --leaf:#4E8A5C; --leaf-soft:#E4EFE5; --leaf-tx:#3D7049;
+  --alert:#B84A2E; --alert-soft:#F8E4DB;
+  --brd:rgba(34,56,74,.10);
+  --shadow:0 8px 24px rgba(50,62,42,.09),0 2px 5px rgba(50,62,42,.05);
+}
+
+/* phone mockups (SCREENSHOT SLOT: replace .phone blocks with real screenshots once the app exists) */
+.phones{display:flex;gap:30px;justify-content:center;flex-wrap:wrap;padding:22px 0 6px}
+.phcol{display:flex;flex-direction:column;align-items:center;gap:12px}
+.phlabel{font-family:var(--mono);font-size:11px;color:var(--tx3);letter-spacing:.08em;text-transform:uppercase;text-align:center;max-width:230px}
+.phone{width:236px;background:#0B0E10;border-radius:38px;padding:8px;box-shadow:0 22px 50px rgba(20,20,15,.30),inset 0 0 0 1px #262A26}
+.scr{border-radius:31px;height:490px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;padding:24px 14px 12px;position:relative}
+.scr:before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:#0B0E10}
+.mbrand{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:9.5px;color:var(--tx2);margin-bottom:9px}
+.mbrand .mark{width:9px;height:9px}
+.mh1{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--tx);margin-bottom:2px}
+.mlead{font-size:8.8px;color:var(--tx2);margin-bottom:9px;font-weight:600}
+.mcard{background:var(--sf);border:1px solid var(--brd);border-radius:15px;box-shadow:var(--shadow);padding:11px 12px;margin-bottom:7px}
+.mep{font-family:var(--mono);font-size:7px;color:var(--ac);letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px}
+.mtt{font-family:var(--disp);font-weight:700;font-size:11.5px;color:var(--tx);line-height:1.25;margin-bottom:4px}
+.mtx{font-size:9px;color:var(--tx2);line-height:1.5;font-weight:500}
+.mcounts{display:flex;gap:6px;margin-bottom:9px}
+.mcount{flex:1;background:var(--sf);border:1px solid var(--brd);border-radius:12px;padding:8px 4px;text-align:center}
+.mcount b{display:block;font-family:var(--disp);font-size:15px;color:var(--tx)}
+.mcount span{font-size:6.3px;color:var(--tx3);letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+.mpill{display:inline-block;font-size:7px;font-weight:800;border-radius:100px;padding:2.5px 8px;letter-spacing:.03em}
+.mpill.open{background:var(--alert-soft);color:var(--alert)}
+.mpill.resolved{background:var(--leaf-soft);color:var(--leaf-tx)}
+.mpill.gold{background:var(--flag-soft);color:var(--flag-tx)}
+.mcap{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.mcaprow{display:flex;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--brd);border-radius:12px;padding:8px 10px}
+.mcapdot{width:16px;height:16px;border-radius:50%;background:var(--tonal);flex:none}
+.mcaprow span{font-size:9px;font-weight:700;color:var(--tx)}
+.mnav{margin-top:auto;display:flex;justify-content:space-around;align-items:center;background:var(--sf);border:1px solid var(--brd);border-radius:22px;padding:9px 6px;position:relative;box-shadow:var(--shadow)}
+.mnavitem{font-size:6.5px;color:var(--tx3);font-weight:700;text-align:center}
+.mfab{position:absolute;top:-13px;left:50%;transform:translateX(-50%);width:30px;height:30px;border-radius:50%;background:var(--flag);display:flex;align-items:center;justify-content:center;color:#2B1D06;font-weight:900;font-size:15px;box-shadow:0 4px 10px rgba(217,157,43,.4)}
+.mthread{display:flex;flex-direction:column;gap:10px}
+.mtrow{position:relative;padding-left:2px}
+.mtline{border:none;border-top:2px dashed var(--thread,var(--ac));opacity:.7;margin:3px 0 0}
+.mtname{font-family:var(--disp);font-weight:700;font-size:10.5px;color:var(--tx)}
+.mtnext{font-size:7.3px;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;float:right}
+.mtdetail{font-size:8.3px;color:var(--tx2);font-weight:500;margin-top:1px}
+.mstep{display:flex;gap:8px;padding:6px 0}
+.mstepdate{font-family:var(--mono);font-size:6.6px;color:var(--tx3);width:36px;flex:none;padding-top:1px}
+.mstepbody b{display:block;font-size:8.7px;color:var(--tx);font-weight:700;line-height:1.3}
+.mstepbody span{font-size:8px;color:var(--tx2);font-weight:500}
+
+/* good/not grid */
+.gn{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:26px}
+.gncard{border-radius:22px;padding:24px 26px}
+.gncard.good{background:var(--tonal)}
+.gncard.not{background:var(--sf);border:1px solid var(--brd);box-shadow:var(--shadow)}
+.gnt{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.gncard.good .gnt{color:var(--tonal-tx)}
+.gncard.not .gnt{color:var(--tx3)}
+.gnrow{display:flex;gap:11px;padding:6px 0;font-size:15px;font-weight:600;color:var(--tx);line-height:1.5;align-items:flex-start}
+.mk{width:20px;height:20px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-top:3px}
+.mk.y{background:var(--ac);color:var(--on-ac)}
+.mk.n{background:var(--sf2);color:var(--tx3);border:1px solid var(--brd)}
+.gnfoot{font-size:13.5px;color:var(--tx2);margin-top:22px;max-width:600px}
+
+/* axes grid */
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:26px}
+.mode{background:var(--sf);border:1px solid var(--brd);border-radius:20px;box-shadow:var(--shadow);padding:22px;transition:transform 220ms var(--spx)}
+.mode:hover{transform:translateY(-4px)}
+.mode h3{font-family:var(--disp);font-weight:700;font-size:17px;margin-bottom:7px}
+.mode p{font-size:13.5px;color:var(--tx2);font-weight:500}
+
+/* feature split */
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:44px;align-items:center;margin-top:16px}
+.split .txt h2{margin-bottom:12px}
+.split .txt p{font-size:15.5px;color:var(--tx2);font-weight:500;margin-bottom:12px}
+.split .txt .small{font-size:13px;color:var(--tx3)}
+
+/* honesty band */
+.band{background:var(--sf);border:1px solid var(--brd);border-radius:26px;box-shadow:var(--shadow);padding:44px 40px;text-align:center}
+.band h2{margin-bottom:12px}
+.band p{max-width:640px;margin:0 auto;color:var(--tx2);font-size:15.5px;font-weight:500}
+.band .chips{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.qchip{font-size:12px;font-weight:800;background:var(--sf2);color:var(--tx2);border-radius:100px;padding:7px 14px}
+
+/* support */
+.support{text-align:center}
+.support p{max-width:540px;margin:14px auto 22px;color:var(--tx2);font-size:15px;font-weight:500}
+.btn.gold{background:var(--flag);color:#2B1D06;cursor:pointer}
+
+/* faq */
+.faq{max-width:720px;margin:26px auto 0}
+.faqitem{border-bottom:1px solid var(--brd);padding:18px 0}
+.faqitem:first-child{border-top:1px solid var(--brd)}
+.faqq{font-family:var(--disp);font-weight:700;font-size:16.5px;color:var(--tx);margin-bottom:6px}
+.faqa{font-size:14.5px;color:var(--tx2);font-weight:500;max-width:640px}
+
+/* data safety table */
+.safety{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px}
+.safety th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);font-weight:700;padding:8px 12px;border-bottom:1px solid var(--brd)}
+.safety td{padding:10px 12px;border-bottom:1px solid var(--brd);color:var(--tx2);font-weight:500}
+.safety td:first-child{color:var(--tx);font-weight:700}
+.safety td.yes{color:var(--leaf-tx);font-weight:800}
+
+/* privacy section */
+.privacy{background:var(--sf);border:1px solid var(--brd);border-radius:26px;box-shadow:var(--shadow);padding:44px 40px}
+.privacy h2{margin-bottom:4px}
+.privacy .eff{font-family:var(--mono);font-size:11.5px;color:var(--tx3);margin-bottom:22px}
+.privacy h3{font-family:var(--disp);font-weight:700;font-size:18px;margin:26px 0 10px}
+.privacy p, .privacy li{font-size:14.5px;color:var(--tx2);font-weight:500;margin-bottom:10px;max-width:680px}
+.privacy ul{padding-left:20px;margin-bottom:10px}
+.privacy strong{color:var(--tx)}
+.backtop{display:inline-block;margin-top:20px;font-family:var(--mono);font-size:11.5px;color:var(--ac);font-weight:700}
+
+/* footer, matching site conventions */
+footer{border-top:1px solid var(--brd);margin-top:36px;padding:34px 0 46px;text-align:center}
+footer .links{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;font-size:14px;font-weight:600}
+footer .fine{font-family:var(--mono);font-size:11px;color:var(--tx3);margin-top:18px;line-height:1.8}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}.trailpath,.tnode{opacity:.75}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="htmark" viewBox="0 0 48 48">
+  <rect x="13" y="12" width="22" height="8" rx="4" fill="currentColor"/>
+  <rect x="8" y="26" width="32" height="8" rx="4" fill="currentColor"/>
+</symbol></defs></svg>
+
+<div class="wrap">
+<nav>
+  <a class="home" href="index.html"><img src="assets/logo.png" alt="Kamsiob" width="22" height="22" style="vertical-align:middle">Kamsiob</a>
+  <a class="nl" href="index.html">home</a>
+  <a class="nl" href="about.html">about</a>
+  <a class="nl" href="projects.html">my apps</a>
+  <a class="nl" href="kam-ai.html">kam ai</a>
+  <a class="nl" href="freestuff.html">free stuff</a>
+  <a class="nl" href="community.html">say hi</a>
+</nav>
+</div>
+
+<header class="hero wrap">
+  <div class="trailwrap">
+    <svg class="trailsvg" viewBox="0 0 220 44" aria-hidden="true">
+      <path class="trailpath" d="M12 32 Q 60 8, 110 22 T 208 12"/>
+      <circle class="tnode n1" cx="12" cy="32" r="5"/>
+      <circle class="tnode n2" cx="110" cy="22" r="5"/>
+      <circle class="tnode n3" cx="208" cy="12" r="5"/>
+    </svg>
+  </div>
+  <h1>Health Trail</h1>
+  <p class="tag">A private notebook for the family member who becomes the point person for someone else's care. Every call, visit, incident, and dollar, kept in one place that never leaves your phone.</p>
+  <div class="badges">
+    <span class="badge">Free</span>
+    <span class="badge">Open source</span>
+    <span class="badge">Zero data collection</span>
+    <span class="badge">No account</span>
+    <span class="badge">Works offline</span>
+  </div>
+  <div class="ctas">
+    <!-- WIRE-ME: Play. Replace with the real Play Store listing link once submitted. -->
+    <span class="btn primary" aria-disabled="true">Coming to Google Play</span>
+    <a class="btn ghost" href="https://t.me/+g5LKm9rUnNcxMjk5">Follow progress in the Lab</a>
+  </div>
+  <div class="fine">Android, in development · AGPLv3 once released · by one person, in the open</div>
+</header>
+
+<section class="sec wrap center rv">
+  <div class="eyebrow">The idea</div>
+  <h2>One trail, everything on it.</h2>
+  <p class="lead">Providers rarely talk to each other, so in practice the family caregiver becomes the information hub. Health Trail gives that job some structure: one record of every call, visit, incident, medication change, document, and dollar, kept for years and searchable in seconds. It records, organizes, and counts. It never diagnoses, never reminds, and never tells you what a number means.</p>
+</section>
+
+<!-- SCREENSHOT SLOT: swap these four CSS mockups for real screenshots once the app is built -->
+<section class="sec tight wrap rv">
+  <div class="theme-toggle" role="group" aria-label="Preview screenshots in light or dark mode">
+    <button type="button" class="ttbtn active" data-set-theme="light" aria-pressed="true">Light</button>
+    <button type="button" class="ttbtn" data-set-theme="dark" aria-pressed="false">Dark</button>
+  </div>
+  <div class="phones" data-theme="light">
+
+    <div class="phcol">
+      <div class="phone"><div class="scr">
+        <div class="mbrand"><svg class="mark" style="width:9px;height:9px"><use href="#htmark"/></svg>Health Trail</div>
+        <div class="mh1">Today</div>
+        <div class="mlead">Since you were last here on Saturday</div>
+        <div class="mcounts">
+          <div class="mcount"><b>1</b><span>Open incident</span></div>
+          <div class="mcount"><b>3</b><span>To ask</span></div>
+          <div class="mcount"><b>1</b><span>Waiting on</span></div>
+        </div>
+        <div class="mcard">
+          <div class="mep">On the trail</div>
+          <div class="mtx">Med incident still open. Callback due by 3pm today.</div>
+        </div>
+        <div class="mcard">
+          <div class="mep">Next up</div>
+          <div class="mtt">Thu 10:00, Dr. Prasad</div>
+          <div class="mtx">Prep ready. 2 questions and a change summary.</div>
+        </div>
+        <div class="mnav"><div class="mfab">+</div>
+          <div class="mnavitem">Today</div><div class="mnavitem">Notebook</div><div class="mnavitem">Projects</div><div class="mnavitem">More</div>
+        </div>
+      </div></div>
+      <div class="phlabel">Today, the dashboard</div>
+    </div>
+
+    <div class="phcol">
+      <div class="phone"><div class="scr">
+        <div class="mbrand"><svg class="mark" style="width:9px;height:9px"><use href="#htmark"/></svg>Health Trail</div>
+        <div class="mh1">Add to the trail</div>
+        <div class="mlead">One button. Six things go in, each files itself.</div>
+        <div class="mcap">
+          <div class="mcaprow"><div class="mcapdot"></div><span>Log a call</span></div>
+          <div class="mcaprow"><div class="mcapdot"></div><span>Log a visit</span></div>
+          <div class="mcaprow"><div class="mcapdot"></div><span>Report an incident</span></div>
+          <div class="mcaprow"><div class="mcapdot"></div><span>Add a measurement</span></div>
+          <div class="mcaprow"><div class="mcapdot"></div><span>Ask next time</span></div>
+          <div class="mcaprow"><div class="mcapdot"></div><span>Save a document</span></div>
+        </div>
+        <div class="mnav"><div class="mfab">+</div>
+          <div class="mnavitem">Today</div><div class="mnavitem">Notebook</div><div class="mnavitem">Projects</div><div class="mnavitem">More</div>
+        </div>
+      </div></div>
+      <div class="phlabel">Capture, the only way in</div>
+    </div>
+
+    <div class="phcol">
+      <div class="phone"><div class="scr">
+        <div class="mbrand"><svg class="mark" style="width:9px;height:9px"><use href="#htmark"/></svg>Health Trail</div>
+        <div class="mh1">Care threads</div>
+        <div class="mlead">Everything running at once, each its own route.</div>
+        <div class="mthread">
+          <div class="mtrow"><span class="mtname">Physical therapy</span><span class="mtnext">Mon 2:30</span><hr class="mtline" style="--thread:var(--ac)"><div class="mtdetail">Marisol, twice weekly, 34 sessions</div></div>
+          <div class="mtrow"><span class="mtname">Occupational therapy</span><span class="mtnext">Wed 11:00</span><hr class="mtline" style="--thread:var(--leaf)"><div class="mtdetail">Weekly, working on kitchen tasks</div></div>
+          <div class="mtrow"><span class="mtname">Speech therapy</span><span class="mpill resolved" style="float:right">Ended</span><hr class="mtline" style="--thread:var(--flag);opacity:.35"><div class="mtdetail">Goals met, March 2026</div></div>
+          <div class="mtrow"><span class="mtname">Nursing and medical</span><span class="mtnext">Last Fri</span><hr class="mtline" style="--thread:var(--tx3)"><div class="mtdetail">The baseline thread, weekly check-ins</div></div>
+        </div>
+        <div class="mnav"><div class="mfab">+</div>
+          <div class="mnavitem">Today</div><div class="mnavitem">Notebook</div><div class="mnavitem">Projects</div><div class="mnavitem">More</div>
+        </div>
+      </div></div>
+      <div class="phlabel">Care threads, drawn as routes on the map</div>
+    </div>
+
+    <div class="phcol">
+      <div class="phone"><div class="scr">
+        <div class="mbrand"><svg class="mark" style="width:9px;height:9px"><use href="#htmark"/></svg>Health Trail</div>
+        <div class="mh1">Missed evening meds</div>
+        <div class="mpill resolved" style="margin-bottom:9px">Resolved in 9 days</div>
+        <div class="mstep"><div class="mstepdate">MAR 18</div><div class="mstepbody"><b>Reported</b><span>Spotted on the chart during a visit</span></div></div>
+        <div class="mstep"><div class="mstepdate">MAR 19</div><div class="mstepbody"><b>Called the front desk</b><span>Callback promised, none came</span></div></div>
+        <div class="mstep"><div class="mstepdate">MAR 24</div><div class="mstepbody"><b>Escalated</b><span>Meeting set with the administrator</span></div></div>
+        <div class="mstep"><div class="mstepdate">MAR 27</div><div class="mstepbody"><b>Marked resolved</b><span>Evening shift retrained, no repeat</span></div></div>
+        <div class="mnav"><div class="mfab">+</div>
+          <div class="mnavitem">Today</div><div class="mnavitem">Notebook</div><div class="mnavitem">Projects</div><div class="mnavitem">More</div>
+        </div>
+      </div></div>
+      <div class="phlabel">One incident, followed through, exportable on its own</div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider">✳</div>
+
+<section class="sec wrap rv">
+  <div class="center">
+    <div class="eyebrow">What it's for</div>
+    <h2>What you'd actually use it for.</h2>
+  </div>
+  <div class="gn">
+    <div class="gncard good">
+      <div class="gnt">Good for</div>
+      <div class="gnrow"><span class="mk y">✓</span>Logging a call in under fifteen seconds, from a hallway or a waiting room</div>
+      <div class="gnrow"><span class="mk y">✓</span>Following one incident from the first report to the resolution, with names and dates</div>
+      <div class="gnrow"><span class="mk y">✓</span>Handing an administrator, a lawyer, or a new doctor a record that actually holds together</div>
+      <div class="gnrow"><span class="mk y">✓</span>Keeping track of bills, standing instructions, and the money that never quite lines up</div>
+    </div>
+    <div class="gncard not">
+      <div class="gnt">Not for</div>
+      <div class="gnrow"><span class="mk n">✕</span>Medication reminders or dosage alerts. It keeps the record, never the alarm.</div>
+      <div class="gnrow"><span class="mk n">✕</span>Medical or legal advice of any kind</div>
+      <div class="gnrow"><span class="mk n">✕</span>A shared live view for several people at once. One notebook, one point person.</div>
+      <div class="gnrow"><span class="mk n">✕</span>Anything leaving your phone unless you choose to send it</div>
+    </div>
+  </div>
+  <p class="gnfoot">Health Trail is built around one honest limit: it counts what happened and stops there. What a number means is always yours to judge.</p>
+</section>
+
+<section class="sec wrap rv">
+  <div class="center">
+    <div class="eyebrow">How it's structured</div>
+    <h2>One notebook, four ways to look at it.</h2>
+  </div>
+  <div class="modes">
+    <div class="mode"><h3>Chapters</h3><p>Every place: home, a hospital stay, a rehab facility, a nursing home. Each chapter keeps its own dates, incidents, documents, and care team, archived but never lost.</p></div>
+    <div class="mode"><h3>Care threads</h3><p>Physical therapy, occupational therapy, speech, nursing, whatever is running in parallel. Each gets its own color and keeps its whole story even after it ends.</p></div>
+    <div class="mode"><h3>The trail</h3><p>Every call, visit, and change, in order. Recent months stay open, older ones fold closed, and a year scrubber jumps you anywhere in between.</p></div>
+    <div class="mode"><h3>Everything connects</h3><p>A medication knows its own incidents. A person knows every call involving them. Tap anything underlined and it takes you there. No dead ends.</p></div>
+  </div>
+</section>
+
+<div class="divider">✳</div>
+
+<section class="sec wrap rv">
+  <div class="split">
+    <div class="txt">
+      <div class="eyebrow">The engine</div>
+      <h2>It counts. It never judges.</h2>
+      <p>Every digest, month review, and pattern comes from a small deterministic engine, not a model. It queries your real entries, does the arithmetic in code, and writes the sentence from a template. "Three of the five resolved incidents involved the evening shift" is something it can say. What that means is always left to you.</p>
+      <p class="small">No ranges, no normal values, no color-coded numbers, anywhere in the app.</p>
+    </div>
+    <div class="txt">
+      <div class="eyebrow">Capture</div>
+      <h2>It forgives a bad memory.</h2>
+      <p>Every field is optional. A rough date like "sometime this week" is a valid answer. Anything you can't categorize goes into an Unfiled tray, where the app guesses a home and you confirm it with one tap. It never files anything on its own.</p>
+      <p class="small">Stopping for months and coming back is normal. There is no streak to break and no catch-up screen waiting for you.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec wrap rv">
+  <div class="band">
+    <div class="eyebrow">The receipts</div>
+    <h2>Nothing here has to be taken on your word.</h2>
+    <p>Once it's built, the whole app will be open source under AGPLv3, so none of this has to be taken on faith. The privacy policy below is short because there will be nothing to disclose: no analytics, no tracking, no account, no cloud. Its 57-template starter catalog, care settings, long processes, progress trackers, and standing instructions, will also be published on its own under CC BY-SA 4.0, usable with or without the app.</p>
+    <div class="chips">
+      <span class="qchip">Single-file export &amp; import</span>
+      <span class="qchip">Full data wipe, no friction</span>
+      <span class="qchip">57 free care templates</span>
+      <span class="qchip">English, Spanish, Chinese &amp; Arabic</span>
+      <span class="qchip">Works fully offline</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec wrap support rv">
+  <div class="eyebrow">What it will cost</div>
+  <h2>Nothing. No catch, not later either.</h2>
+  <p>No subscription, no ads, no account, and no feature locked behind a payment. Health Trail is built and carried by one person. If software made this way matters to you, there's a place to stand behind it. Either way, it's yours.</p>
+  <a class="btn gold" href="https://buymeacoffee.com/kamsiob">Support this work</a>
+</section>
+
+<section id="faq" class="sec wrap rv">
+  <div class="center">
+    <div class="eyebrow">Questions</div>
+    <h2>Common questions.</h2>
+  </div>
+  <div class="faq">
+    <div class="faqitem">
+      <div class="faqq">Is Health Trail free?</div>
+      <div class="faqa">Yes, completely. No subscription, no ads, no in-app purchases, and no feature held back behind a payment. Support is an optional donation, never a requirement.</div>
+    </div>
+    <div class="faqitem">
+      <div class="faqq">Does Health Trail collect my data?</div>
+      <div class="faqa">No. It does not collect, transmit, or sell any data. Everything you record stays on your phone. There is no account, no server, and no analytics of any kind.</div>
+    </div>
+    <div class="faqitem">
+      <div class="faqq">Is Health Trail a medical app?</div>
+      <div class="faqa">No. It is a record-keeping app for family caregivers. It gives no medical or legal advice, and it never interprets a measurement, a count, or a symptom.</div>
+    </div>
+    <div class="faqitem">
+      <div class="faqq">Can more than one family member use it at the same time?</div>
+      <div class="faqa">Health Trail is built around a single point person rather than shared live editing. Anything in the notebook can be exported as a PDF or text and shared with other family members through whatever app they already use.</div>
+    </div>
+    <div class="faqitem">
+      <div class="faqq">Does it remind me to give medications?</div>
+      <div class="faqa">No, and this is deliberate. Health Trail keeps a record of medications and dose history. It never reminds, alerts, or sets an alarm for a dose.</div>
+    </div>
+    <div class="faqitem">
+      <div class="faqq">What platforms will Health Trail run on?</div>
+      <div class="faqa">Android first, built in Kotlin. A web version that keeps all data in the browser on your own device is planned to follow.</div>
+    </div>
+    <div class="faqitem">
+      <div class="faqq">Is Health Trail available yet?</div>
+      <div class="faqa">Not yet. It is fully designed and specified and is moving into development. This page exists ahead of release, the same honest way the rest of the app is built.</div>
+    </div>
+    <div class="faqitem">
+      <div class="faqq">Is Health Trail open source?</div>
+      <div class="faqa">Yes. The app will be licensed AGPLv3 once released. Its free 57-template starter catalog is separately licensed CC BY-SA 4.0 and usable with or without the app.</div>
+    </div>
+    <div class="faqitem">
+      <div class="faqq">What languages will it support?</div>
+      <div class="faqa">English, Spanish, Chinese, and Arabic, all from the first release, including full right-to-left layout for Arabic.</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec wrap rv">
+  <div class="privacy" id="privacy">
+    <div class="eyebrow">Legal</div>
+    <h2>Privacy Policy</h2>
+    <div class="eff">This is the policy that will govern Health Trail once it ships. Published ahead of release so it's here before anyone needs it, and it will carry an effective date the day the app first goes live.</div>
+
+    <p>Health Trail is built so this policy can be short.</p>
+    <p>The short version: Health Trail does not collect your data. Not "collects but anonymizes," not "collects but doesn't sell." It does not collect it. Everything you write, every photo you take, and every document you save stays on your phone.</p>
+
+    <h3>What happens on your device</h3>
+    <p>Care team, medications, appointments, chapters, care threads, the trail, progress measurements, documents and their attachments, money, standing instructions, and settings are all processed and stored locally on your phone, in a database encrypted at rest. None of it is transmitted to us or to anyone else. There are no servers, no accounts, and no analytics, so there is nowhere for your data to go even if we wanted it to.</p>
+
+    <h3>When the app touches the internet</h3>
+    <p>In the first release, Health Trail makes no network requests at all. It works fully offline, including in airplane mode, because there is nothing else for it to do.</p>
+    <p>If a future version adds an optional way to download additional templates or a facility pack, that will only happen when you choose to download one, over an ordinary request to GitHub, and this policy will be updated first to describe it plainly.</p>
+
+    <h3>What Google sees</h3>
+    <p>If you install Health Trail from Google Play, Google provides aggregate statistics like install counts, as it does for every app. That comes from Google's own systems, not from anything inside Health Trail, and is governed by Google's privacy policy.</p>
+
+    <h3>Backups</h3>
+    <p>The backup file you export contains your whole notebook. It is created on your device and saved wherever you choose. It is encrypted by default with a passphrase you set. If that passphrase is lost, the file cannot be recovered. There is no backdoor and no way for us to help, because we never have a copy.</p>
+
+    <h3>Children</h3>
+    <p>Health Trail is not directed at children, and because it collects nothing, there is nothing to collect from anyone, regardless of age.</p>
+
+    <h3>Changes</h3>
+    <p>If this policy ever changes, the updated version will be posted at this same address with a new effective date, and the change will be noted in the app's release notes. Given how the app is built, meaningful changes are unlikely.</p>
+
+    <h3>Data safety, at a glance</h3>
+    <table class="safety">
+      <tr><th>Question</th><th>Answer</th></tr>
+      <tr><td>Data collected</td><td class="yes">None</td></tr>
+      <tr><td>Data shared with third parties</td><td class="yes">None</td></tr>
+      <tr><td>Data sold</td><td class="yes">None</td></tr>
+      <tr><td>Account required</td><td class="yes">No</td></tr>
+      <tr><td>Ads</td><td class="yes">None</td></tr>
+      <tr><td>Data encrypted in transit</td><td>Not applicable, nothing is transmitted</td></tr>
+      <tr><td>Data encrypted at rest on device</td><td class="yes">Yes</td></tr>
+      <tr><td>You can request data deletion</td><td class="yes">Delete the app. There is no server copy to remove.</td></tr>
+    </table>
+
+    <h3>Contact</h3>
+    <p>Questions about this policy: <a href="mailto:hello@kamsiob.com">hello@kamsiob.com</a></p>
+    <!-- WIRE-ME: GitHub. Link once the repository exists, per README-START-HERE.md. -->
+    <p>Health Trail is developed by Kamsiob. Once built, the app will be open source under AGPLv3 at github.com/kamsiob/health-trail, so everything this policy claims can be verified by reading the code.</p>
+
+    <a class="backtop" href="#">↑ back to top</a>
+  </div>
+</section>
+
+<div class="wrap">
+<footer>
+  <div class="links">
+    <a href="https://t.me/+g5LKm9rUnNcxMjk5">telegram</a>
+    <a href="https://buymeacoffee.com/kamsiob">buy me a coffee</a>
+    <a href="mailto:hello@kamsiob.com">hello@kamsiob.com</a>
+    <a href="#faq">faq</a>
+    <a href="#privacy">privacy policy</a>
+  </div>
+  <div class="fine">this page has no analytics and makes zero third-party requests. it wouldn't be very me otherwise.<br>Template content, once published, will be CC BY-SA 4.0. Health Trail is AGPLv3, by Kamsiob.</div>
+</footer>
+</div>
+
+<script>
+// reveal on scroll, no libraries, no requests
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.12});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+// screenshot preview toggle, scoped to the phone mockups only, no libraries, no requests
+(function(){
+  const phones=document.querySelector('.phones');
+  const btns=document.querySelectorAll('.ttbtn');
+  function setTheme(theme){
+    phones.setAttribute('data-theme',theme);
+    btns.forEach(b=>{
+      const on=b.getAttribute('data-set-theme')===theme;
+      b.classList.toggle('active',on);
+      b.setAttribute('aria-pressed',on?'true':'false');
+    });
+  }
+  btns.forEach(b=>b.addEventListener('click',()=>setTheme(b.getAttribute('data-set-theme'))));
+  if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    setTheme('dark');
+  }
+})();
+</script>
+</body>
+</html>
