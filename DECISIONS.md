@@ -68,7 +68,7 @@ Generating a second key was rejected because the owner would then have two keys 
 
 **Decision.** Part B of `kamsiob-project-template.md`, the Linux desktop build prompt, is out of scope for this project and nothing desktop-shaped is built. The `/web` scaffold required by `contract/DATA-CONTRACT.md` section 6 is still built.
 
-**Alternatives considered.** Reading the owner's instruction as also cancelling the `/web` scaffold.
+**Alternatives considered.** Reading the owner's instruction as also canceling the `/web` scaffold.
 
 **Reasoning.** The owner stated during the run that this is an Android build only unless he says otherwise, and that desktop and Linux specific sections should be ignored. Part B is exactly that and is now out of scope. The `/web` scaffold is a different thing: it is not a desktop application and it is not a second app being built. It is a Phase 0 acceptance criterion in the data contract, which sits above the template in precedence, and its stated job is to prove the schema contract is real by opening the same schema, which is what stops the two platforms drifting. It has no features and gains none. The data contract also mentions a possible future Linux desktop version, and that is not being designed for, anticipated, or scaffolded in any way.
 

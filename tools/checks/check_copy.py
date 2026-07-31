@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+"""House style checks on everything a person reads.
+
+Two rules from CLAUDE.md, enforced here rather than by remembering:
+
+  4. No em dashes in anything a user or reader sees. App copy, documentation,
+     README, commit messages, store text. Source code is exempt where a
+     character is functionally required.
+  5. American English everywhere.
+
+Exit 0 when clean, 1 with a list of offenses otherwise.
+
+Kamsiob, AGPL-3.0.
+"""
+
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+
+# Third party texts reproduced verbatim. Rewriting a standard license or code of
+# conduct to match house style would defeat the point of using a standard text.
+#
+# The concept and reference files are the handover artifacts that fixed the
+# visual design. They are historical records and are not edited. They do contain
+# en dashes inside date ranges, and the app must not reproduce those: app copy
+# writes a range as "September to October 2023" or formats it per locale. That
+# is enforced on the app's own sources, which are not exempt.
+#
+# This checker is exempt from itself, since it necessarily contains every
+# character and every spelling it looks for.
+EXEMPT_FILES = {
+    "LICENSE",
+    "CODE_OF_CONDUCT.md",
+    "templates/LICENSE-CONTENT.md",
+    "kamsiob-project-template.md",
+    "reference/screen-grid.html",
+    "health-trail-concept-review.html",
+    "health-trail.html",
+    "tools/checks/check_copy.py",
+}
+
+EXEMPT_DIRS = {
+    ".git", "build", ".gradle", "node_modules", "__pycache__", ".venv",
+}
+
+TEXT_SUFFIXES = {
+    ".md", ".txt", ".json", ".yml", ".yaml", ".xml", ".kt", ".kts", ".java",
+    ".py", ".sh", ".sql", ".html", ".css", ".js", ".ts", ".pro",
+}
+
+# Source files where the character may be functionally required. Checked with a
+# narrower rule: the character is allowed, but not inside a user facing string.
+SOURCE_SUFFIXES = {".kt", ".kts", ".java", ".py", ".sh", ".js", ".ts", ".css"}
+
+EM_DASH = "—"
+EN_DASH = "–"
+
+# British spellings and their American forms. Word boundary anchored on the left
+# so "colour" matches inside "colours" and "coloured" without matching "color".
+BRITISH = {
+    r"colou r?".replace(" ", ""): "color",
+    r"honou r?".replace(" ", ""): "honor",
+    r"behaviou r?".replace(" ", ""): "behavior",
+    r"favou r?".replace(" ", ""): "favor",
+    r"organis": "organiz",
+    r"recognis": "recogniz",
+    r"initialis": "initializ",
+    r"normalis": "normaliz",
+    r"serialis": "serializ",
+    r"analys(?:e|ing)": "analyz",
+    r"artefact": "artifact",
+    r"licence": "license",
+    r"defence": "defense",
+    r"offence": "offense",
+    r"catalogue": "catalog",
+    r"dialogue box": "dialog box",
+    r"\bgrey\b": "gray",
+    r"cancelled": "canceled",
+    r"cancelling": "canceling",
+    r"labelled": "labeled",
+    r"travelled": "traveled",
+    r"\btowards\b": "toward",
+    r"\bamongst\b": "among",
+    r"\bwhilst\b": "while",
+    r"judgement": "judgment",
+    r"acknowledgement": "acknowledgment",
+    r"\bcentre\b": "center",
+    r"\bmetre\b": "meter",
+    r"\bfibre\b": "fiber",
+    r"enrolment": "enrollment",
+    r"fulfilment": "fulfillment",
+    r"instalment": "installment",
+    r"practise": "practice",
+    r"programme": "program",
+    r"\bstorey\b": "story",
+    r"sceptic": "skeptic",
+    r"\bmoustache\b": "mustache",
+    r"\bplough\b": "plow",
+    r"\bdraught\b": "draft",
+    r"\bkerb\b": "curb",
+    r"\btyre\b": "tire",
+    r"\bpyjama": "pajama",
+    r"\baluminium\b": "aluminum",
+    r"speciality": "specialty",
+}
+
+BRITISH_RE = [(re.compile(pattern, re.IGNORECASE), american)
+              for pattern, american in BRITISH.items()]
+
+# A quoted string in a source file. Rough but adequate: we only need to know
+# whether a dash sits inside quotes, not to parse the language.
+QUOTED = re.compile(r'"[^"\n]*"' + r"|'[^'\n]*'")
+
+
+def iter_files():
+    for path in sorted(ROOT.rglob("*")):
+        if not path.is_file():
+            continue
+        if any(part in EXEMPT_DIRS for part in path.parts):
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        if relative in EXEMPT_FILES:
+            continue
+        if path.suffix.lower() not in TEXT_SUFFIXES:
+            continue
+        yield path, relative
+
+
+def check_dashes(path, relative, problems):
+    is_source = path.suffix.lower() in SOURCE_SUFFIXES
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except UnicodeDecodeError:
+        return
+    for number, line in enumerate(lines, start=1):
+        for char, name in ((EM_DASH, "em dash"), (EN_DASH, "en dash")):
+            if char not in line:
+                continue
+            if is_source:
+                # In source, only flag it when it sits inside a string literal,
+                # which is where a reader would eventually see it.
+                inside = any(char in match.group(0) for match in QUOTED.finditer(line))
+                if not inside:
+                    continue
+            problems.append(
+                f"{relative}:{number}: {name} in text a person reads\n"
+                f"    {line.strip()[:120]}"
+            )
+
+
+def check_spelling(path, relative, problems):
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except UnicodeDecodeError:
+        return
+    for number, line in enumerate(lines, start=1):
+        # URLs and file paths legitimately carry any spelling.
+        stripped = re.sub(r"https?://\S+", "", line)
+        for pattern, american in BRITISH_RE:
+            match = pattern.search(stripped)
+            if match:
+                problems.append(
+                    f"{relative}:{number}: British spelling "
+                    f"{match.group(0)!r}, use {american!r}\n"
+                    f"    {line.strip()[:120]}"
+                )
+
+
+def main():
+    problems = []
+    count = 0
+    for path, relative in iter_files():
+        count += 1
+        check_dashes(path, relative, problems)
+        check_spelling(path, relative, problems)
+
+    if problems:
+        print(f"Copy check failed. {len(problems)} problems across {count} files.\n")
+        for problem in problems:
+            print(f"  {problem}")
+        print(
+            "\nCLAUDE.md rules 4 and 5. No em dashes in anything a person reads, "
+            "and American English everywhere. Use commas, periods, and colons."
+        )
+        return 1
+
+    print(f"Copy check passed. {count} files, no em dashes, American English.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

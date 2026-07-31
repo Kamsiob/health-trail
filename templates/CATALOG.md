@@ -1779,7 +1779,7 @@ Federal nursing home rules require notice of a decision to transfer or discharge
 
 **Backed by federal rules for nursing homes**
 
-Federal rules require facilities to honor advance directives and to tell you their policies about them.
+Federal nursing home rules require the facility to honor advance directives and to tell you its policies about them.
 
 **What to ask for.** Confirm the signed orders are in the chart and flagged where staff will see them fast.
 

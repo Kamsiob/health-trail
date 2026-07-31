@@ -1,5 +1,6 @@
 # Health Trail by Kamsiob
 
+[![CI](https://github.com/Kamsiob/health-trail/actions/workflows/ci.yml/badge.svg)](https://github.com/Kamsiob/health-trail/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-2F6F8F)](LICENSE)
 [![Content license](https://img.shields.io/badge/templates-CC%20BY--SA%204.0-4E8A5C)](templates/LICENSE-CONTENT.md)
 [![Status](https://img.shields.io/badge/status-in%20development%2C%20not%20yet%20installable-D99D2B)](https://github.com/Kamsiob/health-trail/issues/1)

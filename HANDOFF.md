@@ -20,7 +20,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 - Labels: 19, being 5 `type:` labels, 10 `area:` labels, plus `release-blocking`, `blocked`, `good first issue`, and `help wanted`. GitHub's default noise labels deleted.
 - Board at https://github.com/users/Kamsiob/projects/2, 20 items, every one carrying Status, Platform, Area, Priority, and Size. Fields and their options were configured before any item was added. Description and README written.
 - Documentation: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, CHANGELOG, LICENSE, plus two issue templates, an issue template config, a pull request template, and FUNDING.yml.
-- Compliance verified by grep across the whole repository: zero em dashes, zero en dashes, zero British spellings. Three issue bodies used "colour", were corrected, and all 21 issues re-verified clean.
+- Compliance verified by grep across the whole repository: zero em dashes, zero en dashes, zero British spellings. Three issue bodies used the British spelling of color, were corrected, and all 21 issues re-verified clean.
 
 **In progress right now:** issue #2, repository documentation, which this commit completes except for the continuous integration badge.
 

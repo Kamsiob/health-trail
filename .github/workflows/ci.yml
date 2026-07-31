@@ -1,0 +1,96 @@
+name: CI
+
+# Runs on every push and every pull request. Two reasons this is worth having
+# beyond the obvious: compiling every test source set is what enforces the rule
+# that suites must actually compile, since an instrumented suite nobody builds
+# rots silently and looks like coverage while providing none. And the content
+# compliance checks are the app's own promises about medical advice,
+# interpretation, and what leaves the device, written as tests rather than
+# upheld by intention.
+#
+# This workflow covers what genuinely exists. The Android job appears when the
+# Android project does, under issue #11, rather than sitting here failing for
+# reasons that are not defects. A badge showing a state the build cannot reach
+# is worse than no badge.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compliance:
+    name: Content compliance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Run the compliance checks
+        run: python3 tools/checks/run_all.py
+
+      - name: The generated catalog matches the template data
+        # CATALOG.md is generated from data/*.json and must never be hand
+        # edited. If regenerating it produces a diff, someone edited the
+        # generated file, and the two have already disagreed.
+        run: |
+          python3 templates/build-catalog.py
+          if ! git diff --quiet -- templates/CATALOG.md; then
+            echo "::error file=templates/CATALOG.md::CATALOG.md does not match templates/data. It is generated, not written. Edit the JSON and run python3 templates/build-catalog.py"
+            git diff -- templates/CATALOG.md
+            exit 1
+          fi
+          echo "CATALOG.md matches the template data."
+
+  documentation:
+    name: Documentation is honest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Every required document exists
+        # Template section A1. A public repository missing these looks
+        # unfinished regardless of the code inside.
+        run: |
+          missing=0
+          for f in README.md ARCHITECTURE.md CONTRIBUTING.md SECURITY.md \
+                   CODE_OF_CONDUCT.md PRIVACY.md CHANGELOG.md LICENSE \
+                   MASTER_SPEC.md DESIGN.md HANDOFF.md DECISIONS.md \
+                   contract/DATA-CONTRACT.md .github/FUNDING.yml \
+                   .github/PULL_REQUEST_TEMPLATE.md; do
+            if [ ! -f "$f" ]; then
+              echo "::error::Required document missing: $f"
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: HANDOFF.md is current to within one increment
+        # RUN-SAFETY.md section 7. A commit that changes code and leaves the
+        # handoff stale is an incomplete commit, because the handoff is what a
+        # session with no memory inherits.
+        if: github.event_name == 'pull_request'
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          changed=$(git diff --name-only "$base" "$head")
+          code_changed=$(echo "$changed" | grep -E '^(android|web|tools|contract)/' || true)
+          handoff_changed=$(echo "$changed" | grep -x 'HANDOFF.md' || true)
+          if [ -n "$code_changed" ] && [ -z "$handoff_changed" ]; then
+            echo "::error file=HANDOFF.md::This pull request changes code but does not update HANDOFF.md. The same commit that changes the code changes the handoff."
+            echo "Changed:"
+            echo "$code_changed"
+            exit 1
+          fi
+          echo "HANDOFF.md discipline satisfied."

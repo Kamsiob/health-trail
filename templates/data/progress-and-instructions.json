@@ -254,7 +254,7 @@
       "name": "Follow the signed orders and call me first",
       "wording": "Our wishes are in the signed orders dated [date], kept at [location]. Please follow them and call me before anything changes.",
       "tag": "federal",
-      "basis": "Federal rules require facilities to honor advance directives and to tell you their policies about them.",
+      "basis": "Federal nursing home rules require the facility to honor advance directives and to tell you its policies about them.",
       "ask_for": "Confirm the signed orders are in the chart and flagged where staff will see them fast."
     },
     {
