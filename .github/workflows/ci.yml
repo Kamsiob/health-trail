@@ -8,10 +8,9 @@ name: CI
 # interpretation, and what leaves the device, written as tests rather than
 # upheld by intention.
 #
-# This workflow covers what genuinely exists. The Android job appears when the
-# Android project does, under issue #11, rather than sitting here failing for
-# reasons that are not defects. A badge showing a state the build cannot reach
-# is worse than no badge.
+# This workflow covers what genuinely exists. It grows as the app does, rather
+# than carrying steps that fail for reasons that are not defects: a badge
+# showing a state the build cannot reach is worse than no badge.
 
 on:
   push:
@@ -100,3 +99,85 @@ jobs:
             exit 1
           fi
           echo "HANDOFF.md discipline satisfied."
+
+  android:
+    name: Android build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Install the compile platform
+        # compileSdk is 37 and the runner image does not necessarily carry it.
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37" > /dev/null
+
+      - name: The build fails loudly when the shared contract is missing
+        # The data contract says the build must fail rather than fall back to a
+        # stale internal copy. That behavior is itself a requirement, so it is
+        # tested rather than trusted: the schema is moved aside, the build is
+        # expected to fail, and it is put back.
+        working-directory: android
+        run: |
+          mv ../contract/schema.sql ../contract/schema.sql.hidden
+          if ./gradlew --quiet help > /tmp/contract-check.log 2>&1; then
+            mv ../contract/schema.sql.hidden ../contract/schema.sql
+            echo "::error::The build succeeded with contract/schema.sql missing. It must fail instead, or the app can silently run against nothing."
+            exit 1
+          fi
+          mv ../contract/schema.sql.hidden ../contract/schema.sql
+          if ! grep -q "cannot read the shared contract" /tmp/contract-check.log; then
+            echo "::error::The build failed without the message that explains why. The failure has to name the missing file and say there is nothing to fall back to."
+            cat /tmp/contract-check.log
+            exit 1
+          fi
+          echo "The build refuses to run without the contract, and says why."
+
+      - name: Assemble
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Unit tests
+        working-directory: android
+        run: ./gradlew testDebugUnitTest
+
+      - name: Compile the instrumented suite
+        # Compiled but not run here. Running it needs an emulator, which is a
+        # separate job. Compiling it is what stops it rotting: an instrumented
+        # suite nobody builds looks like coverage while providing none.
+        working-directory: android
+        run: ./gradlew assembleDebugAndroidTest
+
+      - name: Lint
+        working-directory: android
+        run: ./gradlew lintDebug
+
+      - name: The schema in the built app matches the contract file
+        # A byte comparison, because the copy step is exactly the kind of wiring
+        # that breaks quietly.
+        run: |
+          python3 - <<'CHECK'
+          import hashlib, sys, zipfile
+          apk = "android/app/build/outputs/apk/debug/app-debug.apk"
+          inside = hashlib.sha256(zipfile.ZipFile(apk).read("assets/contract/schema.sql")).hexdigest()
+          on_disk = hashlib.sha256(open("contract/schema.sql", "rb").read()).hexdigest()
+          if inside != on_disk:
+              print(f"::error::The schema inside the app differs from contract/schema.sql")
+              sys.exit(1)
+          print("The schema in the app is the contract file, unchanged.")
+          CHECK
+
+      - name: Upload lint and test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-reports
+          path: |
+            android/app/build/reports/

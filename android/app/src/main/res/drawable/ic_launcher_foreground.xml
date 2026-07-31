@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The mark: two stacked rounded bars in blaze, the upper slightly narrower than
+  the lower. It is a painted trail blaze, the kind that marks a route through
+  woodland, and it is the only place the trail metaphor appears in the icon.
+
+  DESIGN.md section 5.1: never enclosed in a circle, never given a gradient,
+  never animated except the launch fade.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#D99D2B"
+        android:pathData="M43.5,37 H64.5 A5.5,5.5 0 0 1 70,42.5 V42.5 A5.5,5.5 0 0 1 64.5,48 H43.5 A5.5,5.5 0 0 1 38,42.5 V42.5 A5.5,5.5 0 0 1 43.5,37 Z" />
+    <path
+        android:fillColor="#D99D2B"
+        android:pathData="M36.5,55 H71.5 A5.5,5.5 0 0 1 77,60.5 V60.5 A5.5,5.5 0 0 1 71.5,66 H36.5 A5.5,5.5 0 0 1 31,60.5 V60.5 A5.5,5.5 0 0 1 36.5,55 Z" />
+</vector>

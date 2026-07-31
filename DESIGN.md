@@ -123,7 +123,7 @@ Every difference, with its reason. Nothing else differs.
 1. **Text contrast**, section 2.3. The mockups were drawn at a reduced scale where the light grays read acceptably. At real text sizes they fail AA.
 2. **Dark theme**, section 2.4. Does not exist in the mockups.
 3. **Real dp and sp values**, section 4. The mockups are drawn inside a 252px-wide phone frame representing roughly 393dp, so every pixel value in the HTML is about 0.64 of its real value. Do not multiply blindly; use the token scale in section 4, which was derived from the mockups and then rounded onto the 4dp grid.
-4. **Minimum text size is 13sp.** Several mockup labels scale to 11sp or less. Those move up to 13sp, and the layout absorbs it. Nothing in this app is too dense to read.
+4. **Minimum text size is 13sp,** with exactly two exemptions, listed in section 4.3 and nowhere else. Several mockup labels scale to 11sp or less. Those move up to 13sp, and the layout absorbs it. Nothing in this app is too dense to read.
 5. **Touch targets are 48dp minimum** regardless of the visual size of the thing being tapped. Several mockup rows are visually shorter than that and get invisible padding to reach it.
 6. **Care thread accent bars are removed**, replaced by dashed route lines. Already corrected in the reference file; stated here so it is never reintroduced.
 7. **The capture overlay is a real bottom sheet**, not the dimmed-background composite shown in two mockup screens. The mockups show it that way only because a static image cannot show a transition.
@@ -151,8 +151,16 @@ Card 20dp. Inset tile, icon tile, chip container 12dp. Thumbnail 8dp. Bottom she
 | Body M | Atkinson Hyperlegible | 14sp / 21 | 400 | Subtitles, supporting text, list rows |
 | Body S | Atkinson Hyperlegible | 13sp / 19 | 400 | Tertiary detail. The floor. |
 | Label | Atkinson Hyperlegible | 14sp / 18 | 700 | Buttons, chips, emphasis inside body text |
-| Nav label | Atkinson Hyperlegible | 11sp / 14 | 700 | Bottom navigation only, which is exempt from the 13sp floor because it is paired with an icon and a content description |
-| Mono | JetBrains Mono | 11sp / 16 | 400, tracking 0.12em, uppercase | Eyebrow labels, timestamps, counts, metadata |
+| Nav label | Atkinson Hyperlegible | 11sp / 14 | 700 | Bottom navigation only. Exempt from the 13sp floor, see below |
+| Mono | JetBrains Mono | 11sp / 16 | 400, tracking 0.12em, uppercase | Eyebrow labels, timestamps, counts, metadata. Exempt from the 13sp floor, see below |
+
+**The two exemptions from the 13sp floor, and why they are the only two.** Section 3 item 4 sets a 13sp minimum. The nav label and the Mono metadata style sit below it, and both are deliberate.
+
+Neither ever carries information on its own. A nav label is always paired with an icon and a content description. A Mono eyebrow, timestamp, or count is always directly above or beside the content it labels, and it labels rather than states: removing it would cost context, not meaning. Both are short, and Mono is uppercase and tracked, which raises its cap height and letter distinction well above what 11sp lowercase body text would give.
+
+Both scale with dynamic type like everything else, so a person who has raised their system font size gets them larger, which is the case the floor exists to protect.
+
+Nothing else may be added to this list. If a third candidate appears, that is a sign the layout is too dense, and the layout gets fixed rather than the floor lowered.
 
 **Atkinson Hyperlegible is a deliberate choice, not an aesthetic one.** It was designed by the Braille Institute for maximum character distinction for low-vision readers. The audience for this app is stressed, frequently older, and often reading in bad light. Verify the current release name and license at build time and bundle it.
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nothing leaves the device through cloud backup or device transfer.
+
+  This is not caution for its own sake. The notebook holds health information
+  about someone who did not choose to use this app, and the app's single promise
+  is that it stays on the phone. A platform backup path that quietly copies it to
+  a Google account would break that promise without the person ever being asked.
+
+  Moving to a new phone is done through the app's own export, which the person
+  creates deliberately, writes to a folder they picked, and encrypts with a
+  passphrase they chose.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+        <exclude domain="file" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+        <exclude domain="file" />
+    </device-transfer>
+</data-extraction-rules>

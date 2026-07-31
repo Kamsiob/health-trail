@@ -186,6 +186,54 @@ The cost is that the log row is written even when the application would rather i
 
 **Revisit if.** A trigger is measured to be a real cost in a bulk operation, in which case the fix is to batch inside one transaction, not to move the guarantee into application code.
 
+### D15. SDK levels: compile against 37, target 36, minimum 26
+
+**Decision.** `compileSdk = 37`, `targetSdk = 36`, `minSdk = 26`. Gradle 9.6.1, Android Gradle Plugin 9.3.1, Kotlin 2.4.10, Compose BOM 2026.06.01, JDK 21.
+
+**How the numbers were arrived at,** rather than assumed:
+
+**targetSdk 36.** Google Play requires new apps and updates to target Android 16, API 36, or higher from 31 August 2026, which is one month from now. Verified against the Play Console help and the Android developer documentation on 2026-07-31 rather than taken from any document in this folder.
+
+Targeting 37 was considered and rejected for now. `targetSdk` opts the app into a platform version's runtime behavior changes, so raising it is a decision that should follow testing on a device, not one that follows an SDK release. It moves to 37 deliberately, after the behavior changes have been walked through. Android lint disagrees and raises `OldTargetApi`, which is disabled with that reasoning written at the point where it is disabled.
+
+**compileSdk 37,** which is a separate concern: it decides which APIs the code may call. It is 37 because `androidx.core:core:1.19.0` and `androidx.lifecycle:lifecycle-runtime-compose:2.11.0` both refuse to be consumed by a project compiling against less. That was discovered by the build failing, not predicted.
+
+**minSdk 26,** Android 8.0. Chosen for the audience rather than for convenience. These are frequently older, cheaper, hand-me-down phones. 26 also means `java.time` is available without desugaring, which removes a class of date handling bugs from an app whose entire subject is dates.
+
+**Versions.** Every one was read from its actual Maven metadata on 2026-07-31. Gradle is 9.6.1, the current release. AGP 9.3.1 is the newest stable; 9.4.0-alpha07 exists and was not used.
+
+**One thing that surprised the build.** AGP 9 carries its own Kotlin support and refuses the `org.jetbrains.kotlin.android` plugin outright, with an error saying so. The Kotlin version in the catalog is now only for the Compose compiler plugin, and the catalog says so where the version is declared.
+
+**Revisit if.** Play raises the requirement again, which it does annually, or a dependency forces `compileSdk` higher.
+
+### D16. No Room, and no ORM. Raw SQLite behind androidx.sqlite
+
+**Decision.** The database layer is `androidx.sqlite` plus SQLCipher for the encrypted implementation, with hand written mappers. There is no Room, no SQLDelight, and no other library that generates or declares a schema.
+
+**Alternatives considered.** Room, which is the default choice for an Android app this size and would save real work. SQLDelight, which generates Kotlin from `.sq` files.
+
+**Reasoning.** Both of them require the schema to be declared a second time in the platform's own language: Room as annotated entity classes, SQLDelight as `.sq` files. `PROJECT-DELTAS.md` section 2 says plainly that the schema is not defined in Kotlin, and the data contract explains why: a schema that exists only as platform code makes the web version a reimplementation rather than a second reader, and the two drift apart within weeks.
+
+Room's compile time verification would also fight the arrangement rather than help it. Room validates the database against its own generated schema and treats anything else as corruption, so a database created by executing `contract/schema.sql` would either be rejected or require the entity definitions to be kept manually identical to the SQL, which is precisely the second copy the contract forbids, with the added problem that it would look verified.
+
+The cost is real and accepted: hand written mappers, no compile time query checking, and more test surface. That cost is paid once. Schema drift between two platforms is paid forever.
+
+**Revisit if.** Never, without an owner decision, since it follows directly from the data contract.
+
+### D17. Two lint checks disabled, each with its reason at the point of disabling
+
+**Decision.** `warningsAsErrors = true`, `abortOnError = true`, no lint baseline, and exactly two checks disabled.
+
+**Why no baseline.** A baseline file is how a project accumulates warnings nobody ever looks at again. Every lint finding is either fixed or disabled deliberately with a reason.
+
+**`OldTargetApi`,** disabled for the reasoning in D15.
+
+**`ObsoleteSdkInt`,** disabled because it is right in principle and wrong in practice here. It argues that the `v26` qualifier on `res/mipmap-anydpi-v26` is redundant now that `minSdk` is 26. Removing the qualifier was tried, and AAPT2 then skips the folder entirely: the launcher icon does not link and the build fails with `resource mipmap/ic_launcher not found`. Verified by doing it and reading the merged resource output, not by reasoning about it.
+
+**The other three findings were fixed rather than disabled:** Robolectric moved to 4.16.1, and two genuinely unused resources were deleted rather than suppressed. They come back when something uses them.
+
+**Revisit if.** A future AGP makes the `anydpi` folder work without the qualifier, in which case `ObsoleteSdkInt` should be re-enabled and the folder renamed.
+
 ---
 
 ## BLOCKED

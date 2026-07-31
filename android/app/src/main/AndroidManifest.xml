@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  There is deliberately no INTERNET permission, and there never will be. The app
+  makes no network calls at all. Every permission added here must be justifiable
+  to a user in one sentence, and that justification belongs in DECISIONS.md.
+
+  The merged manifest is audited after every dependency addition, because
+  libraries commonly introduce permissions silently.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:name=".HealthTrailApp"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.HealthTrail"
+        tools:targetApi="36">
+
+        <!--
+          allowBackup is off on purpose. Android's own cloud backup would copy a
+          notebook containing another person's health information to a Google
+          account, which contradicts the one promise this app makes. Backup here
+          is a local export the person creates deliberately, to a folder they
+          chose, encrypted with a passphrase they set.
+        -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode|layoutDirection|locale"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.HealthTrail">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

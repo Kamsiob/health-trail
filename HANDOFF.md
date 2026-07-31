@@ -2,7 +2,7 @@
 
 Rewritten to current truth on every commit. If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then read `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last updated:** 2026-07-31, branch `feat/4-5-monorepo-and-schema`, the schema.
+**Last updated:** 2026-07-31, branch `feat/11-android-scaffold`, the Android project.
 
 ---
 
@@ -10,7 +10,7 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 
 **Phase:** 0, foundation, contract, and repository.
 
-**Where exactly:** the safety guards, the repository, the tracker, the required documentation, the monorepo layout, and the canonical schema exist. No application code exists yet: no Android project, no web scaffold, no Kotlin at all.
+**Where exactly:** there is a working Android application. It builds, installs on the connected Pixel, launches, and executes the shared schema on the device. Six instrumented tests pass on real hardware. The web scaffold does not exist yet.
 
 **Just completed, and how it was verified:**
 
@@ -22,11 +22,21 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 - Documentation: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, CHANGELOG, LICENSE, plus two issue templates, an issue template config, a pull request template, and FUNDING.yml.
 - Compliance verified by grep across the whole repository: zero em dashes, zero en dashes, zero British spellings. Three issue bodies used the British spelling of color, were corrected, and all 21 issues re-verified clean.
 
-**In progress right now:** issues #4 and #5 on branch `feat/4-5-monorepo-and-schema`. The monorepo layout and `contract/schema.sql`.
+**In progress right now:** issue #11 on branch `feat/11-android-scaffold`.
 
-**What that branch contains so far:** `contract/schema.sql`, 1,669 lines, 34 user data tables each carrying the six required columns, 34 `live_*` views that filter tombstones, 68 change log triggers, 47 indexes, plus `app_meta`, `device`, `change_log`, `conflict_log`, and `schema_migration`. `contract/export-format.md`. `tools/checks/check_schema.py`, which loads the schema into a real database and asserts both its shape and its behavior, and which was negative tested against six deliberately broken schemas and caught all six.
+**What that branch contains, and how each part was verified:**
 
-**The precise next action:** open the pull request for `feat/4-5-monorepo-and-schema`, confirm continuous integration passes on it, merge it, then start issue #11, the Android Gradle project. Note that the Android job has to be added to `.github/workflows/ci.yml` as part of #11, which is what unblocks #3.
+- The Gradle project. Gradle 9.6.1, AGP 9.3.1, Kotlin 2.4.10, Compose BOM 2026.06.01, JDK 21, compileSdk 37, targetSdk 36, minSdk 26. Every version read from its actual Maven metadata rather than assumed. See DECISIONS.md D15.
+- Every design token from `DESIGN.md` sections 2.1, 2.3, 2.4, 4.1, 4.2, 4.3, and 6, as Kotlin tokens rather than literals. Contrast ratios are **not** measured yet, which is the remaining criterion on #11.
+- The build copies `contract/schema.sql`, `contract/export-format.md`, and the template JSON into assets. **Verified two ways:** the schema inside the built APK is byte identical to `contract/schema.sql`, and moving the schema aside makes the build fail with a message naming the missing file and saying there is nothing to fall back to. That failure is now asserted in continuous integration rather than trusted.
+- The app installs and launches on the Pixel 10 Pro XL running Android 17. On device it reports 40 tables, 34 tombstone filtering views, and 57 templates. 40 rather than 39 because Android adds `android_metadata` to every database it creates.
+- Six instrumented tests pass on that device. Four unit tests pass. Lint passes with `warningsAsErrors`.
+- `tools/screenshot.sh` refuses to capture unless this app is the focused window, checked immediately before and again immediately after, discarding the image if the foreground changed. **The refusal path was tested,** not just the success path.
+- The Android job is added to continuous integration, which is what unblocks #3.
+
+**The precise next action:** open the pull request for `feat/11-android-scaffold`, confirm the new Android job passes on the runner, and merge. The runner has to install `platforms;android-37`, which is the most likely thing to fail there and has not been exercised yet.
+
+Then the remaining #11 criterion: measure every color pair with a contrast checker at real sp sizes and record the ratios in DECISIONS.md. After that, #12 fonts, then #14 the encrypted database.
 
 ---
 
@@ -42,7 +52,7 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.4 | Monorepo layout: `/contract`, `/templates`, `/android`, `/web`, `/tools` | **partial.** All five directories exist. `/contract` holds the schema and the export format. `/android` and `/web` are empty until #11 and #16. Issue #4 |
 | 0.5 | Repository documents: README, ARCHITECTURE, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, PRIVACY, LICENSE, CHANGELOG | **verified.** Issue #2. ARCHITECTURE marks each subsystem pending rather than describing it as built |
 | 0.6 | `.github`: issue templates, pull request template, FUNDING.yml | **verified.** Issue #2 |
-| 0.7 | Continuous integration workflow compiling every test source set | not started, issue #3. First cut covers compliance checks only, since no Android project exists to compile |
+| 0.7 | Continuous integration workflow compiling every test source set | **partial.** Compliance, documentation, and Android jobs written. The Android job compiles the instrumented suite and asserts the build fails without the contract. Not yet observed passing on the runner. Issue #3 |
 | 0.8 | Release workflow with artifact provenance | not started, deferred to Phase 8 where there is an artifact to attest |
 | 0.9 | Labels, milestone, project board with single-select status and automation configured before population | **partial.** Labels, milestone, board, fields, and all 20 items done. The two built-in board automations are BLOCKED B2, owner action, one minute |
 | 0.10 | Pinned roadmap issue including the deliberate exclusions | **verified.** Issue #21, pinned |
@@ -51,8 +61,8 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.13 | `contract/export-format.md` | **verified.** Written. The container, the manifest, encryption as separate from at-rest encryption, atomic and honest import, and the eight hostile files that must fail cleanly |
 | 0.14 | `contract/i18n/` four locale catalogs, ICU MessageFormat | not started |
 | 0.15 | `contract/test-vectors/` covering empty, one entry, two entries, gap, plural boundaries | not started |
-| 0.16 | Android Gradle project, single activity, Compose, minimum and target SDK verified against current Play requirement | not started |
-| 0.17 | Design tokens for both themes, contrast measured and ratios recorded in DECISIONS.md | not started |
+| 0.16 | Android Gradle project, single activity, Compose, minimum and target SDK verified against current Play requirement | **verified on device.** Builds, installs, launches on the Pixel 10 Pro XL. Issue #11 |
+| 0.17 | Design tokens for both themes, contrast measured and ratios recorded in DECISIONS.md | **partial.** Every token implemented at its exact value in both themes. Ratios not measured yet, which is the open criterion on #11 |
 | 0.18 | Fonts: display and body faces confirmed by current name and license, Noto fallback chain for four scripts | not started |
 | 0.19 | Four-locale i18n scaffold with RTL working | not started |
 | 0.20 | Database layer: SQLCipher, key in Keystore, schema applied from the copied `schema.sql` asset, no second copy in Kotlin | not started |
@@ -64,7 +74,7 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 | 0.26 | `/web` scaffold opening the same schema through SQLite in WebAssembly and reading the same template JSON | not started |
 | 0.27 | Fixture generator in `/tools` per `TESTING-PERSONAS.md` section 1 | not started |
 | 0.28 | Four subagent definitions in `.claude/agents/`, tools explicitly scoped | not started |
-| 0.29 | Smoke test proving the app launches | not started |
+| 0.29 | Smoke test proving the app launches | **verified on device.** Six instrumented tests pass on the Pixel 10 Pro XL, covering launch, the contract reaching the device, the schema executing there, and the template count. Issue #20 |
 | 0.30 | Phase 0 gate: content compliance checks in continuous integration, living documents current, board status update | not started |
 
 ---

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Español. Usted formal en todo el texto. -->
+<resources>
+    <string name="foundation_title">Base</string>
+    <string name="foundation_subtitle">Fase 0. Las partes que deben estar bien antes de construir cualquier cosa sobre ellas.</string>
+    <string name="foundation_contract_heading">El contrato compartido</string>
+    <string name="foundation_schema_tables">Tablas en el esquema: %1$d</string>
+    <string name="foundation_schema_views">Vistas que filtran las filas eliminadas: %1$d</string>
+    <string name="foundation_templates">Plantillas leídas del catálogo: %1$d</string>
+    <string name="foundation_contract_missing">El contrato compartido no llegó al dispositivo. Es un problema de compilación, no algo que usted haya hecho.</string>
+    <string name="foundation_note">Todavía nada de esto es la aplicación. No hay cuaderno donde escribir hasta la próxima fase.</string>
+</resources>
