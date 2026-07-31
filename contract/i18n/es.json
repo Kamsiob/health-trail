@@ -73,5 +73,12 @@
   "common.close": "Cerrar",
   "common.retry": "Intentarlo de nuevo",
   "common.loading": "Cargando",
-  "common.error.generic": "Eso no ha funcionado. No se ha cambiado nada."
+  "common.error.generic": "Eso no ha funcionado. No se ha cambiado nada.",
+  "subject.unnamed": "La persona a la que cuida",
+  "setup.where.label": "Lugar o centro",
+  "setup.phone.person.label": "De quién es el número",
+  "setup.phone.number.label": "Número de teléfono",
+  "situation.title": "¿Cómo están las cosas ahora?",
+  "situation.subtitle": "Esto prepara el cuaderno para el tipo de cuidado que recibe. Puede cambiar cualquier cosa más adelante.",
+  "situation.skip": "Todavía no lo sé"
 }

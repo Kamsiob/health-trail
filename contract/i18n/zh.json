@@ -73,5 +73,12 @@
   "common.close": "关闭",
   "common.retry": "再试一次",
   "common.loading": "载入中",
-  "common.error.generic": "这次没有成功，没有改动任何内容。"
+  "common.error.generic": "这次没有成功，没有改动任何内容。",
+  "subject.unnamed": "您照顾的人",
+  "setup.where.label": "地点或机构",
+  "setup.phone.person.label": "这是谁的号码",
+  "setup.phone.number.label": "电话号码",
+  "situation.title": "目前是什么情况",
+  "situation.subtitle": "这会按照他正在接受的照护方式来准备笔记本。之后都可以更改。",
+  "situation.skip": "还不确定"
 }

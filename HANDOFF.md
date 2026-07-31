@@ -32,7 +32,9 @@ Rewritten to current truth on every commit. If you are a session with no memory,
 | #12 | Fonts for four scripts, verified on a device | Independent, but pointless before there are screens to look at |
 | #17 | Deterministic fixture generator | Needs the schema and the repository layer to write through |
 
-**The precise next action:** merge `feat/phase1-disclaimer-gate`, then build **essentials-first setup**, which is what the accept button should lead to. It asks three things, per `MASTER_SPEC.md` section 4.1: who you are looking after, where they are, and one phone number you would need in an emergency. Everything else is offered and skippable. A situation template is chosen and applied. None of those screens are mocked up, so each one is composed from the existing components and logged in three places the moment it is built, per `DESIGN.md` section 10.
+**The precise next action:** open and merge the pull request for `feat/phase1-setup`, then build the **situation template picker**, which is what setup should lead to. It applies a template's sections, roles, threads, first days checklist, and document slots, all editable and deletable afterward, per `MASTER_SPEC.md` section 4.1 and 4.10. That screen has no mockup either.
+
+**Device state when this was written:** the app is installed, exactly one package, launching, and the phone is safe to disconnect. Nothing is mid operation. Instrumented tests need it reconnected; unit tests, lint, and the compliance checks do not.
 
 **Build each screen, install it over ADB, open it, and look at it before closing its issue.** Two real bugs in this increment were invisible in review and obvious on the device, recorded as D28.
 
@@ -102,6 +104,14 @@ Phase 0 only. Later phases are in `MASTER_SPEC.md` section 8 and are not restate
 
 ---
 
+## 3b. Read this before trusting the safety guards
+
+**Guard 1, the destructive command hook, was inert for the whole of the first session.** The script works and is tested. The hook never fired, because `.claude/settings.json` loads at session start and was created during that session, the same timing rule that applies to agent definitions.
+
+It is live from the second session onward with no action needed. Guard 2, the pre compaction save, has also never fired in practice: it is written, committed, and unproven.
+
+**The lesson worth carrying:** verifying a guard means running a blocked command and being refused, not feeding payloads to the script. The Phase 0 entry claiming the guards were installed and verified was true about the artifacts and false about the protection. DECISIONS.md D29.
+
 ## 4. Decisions a future session might otherwise reverse
 
 Full reasoning is in `DECISIONS.md`. The short list of things not to undo:
@@ -163,6 +173,8 @@ This list exists so the owner can review them all in one sitting instead of arch
 | Screen | Built | Issue | Composed from | Reviewed |
 |---|---|---|---|---|
 | Disclaimer gate | 2026-07-31 | #28 | Mark, Display L, Body L, filled button | not yet |
+| Essentials first setup | 2026-07-31 | #30 | Display L, Display S, Body M, text field 5.9, filled button, text action | not yet |
+| Situation picker | 2026-07-31 | #32 | Display L, Body M, Body S, card 5.3, text action | not yet |
 
 **Known ahead:** the template library, the four template pickers, the template detail view, and the template editor. All of them land in Phase 1 or Phase 4 and none is drawn. `MASTER_SPEC.md` section 4.10 carries their requirements in detail, including that all four template kinds share one presentation and that browsing, previewing, and applying must be visually distinct.
 

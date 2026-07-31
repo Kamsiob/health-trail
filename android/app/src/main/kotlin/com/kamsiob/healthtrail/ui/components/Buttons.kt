@@ -81,3 +81,48 @@ fun FilledButton(
         )
     }
 }
+
+/**
+ * A text action, per DESIGN.md section 5.4: no container, `blue` label, and
+ * still 48dp of touch area regardless of how small the words are.
+ *
+ * Used where an action is genuinely secondary but must not feel discouraged.
+ * Skipping setup is the clearest case: it is a real path, not a failure, so it
+ * gets full reach and legible weight rather than being tucked away small.
+ */
+@Composable
+fun TextAction(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
+
+    Box(
+        modifier = modifier
+            .sizeIn(minHeight = Space.touchTarget)
+            .clip(Radius.pill)
+            .then(
+                if (focused) Modifier.border(2.dp, colors.blue, Radius.pill) else Modifier
+            )
+            .clickable(
+                enabled = enabled,
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .padding(horizontal = Space.m, vertical = Space.sm),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = HealthTrail.type.label,
+            color = if (enabled) colors.blue else colors.ink3Text,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
