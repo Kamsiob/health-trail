@@ -42,10 +42,16 @@ SCHEMA_DECLARATION = re.compile(
     r"\bCREATE\s+(?:TABLE|VIEW|TRIGGER|INDEX)\b", re.IGNORECASE
 )
 
-# Where a schema declaration is legitimate outside /contract.
+# Where a schema declaration is legitimate outside /contract. Kept deliberately
+# short. Every entry is a file that talks about the schema rather than defining
+# one, and adding to this list should feel like a decision.
 SCHEMA_ALLOWED = {
     # The checks themselves name the pattern they look for.
     "tools/checks/check_contract_isolation.py",
+    # Creates a throwaway trigger in an in-memory database to prove that a
+    # failing change log write rolls the data write back with it. It declares
+    # no table and no column.
+    "tools/checks/check_schema.py",
 }
 
 TEXT_SUFFIXES = {".md", ".sql", ".json", ".yml", ".yaml", ".kt", ".kts", ".py",

@@ -116,6 +116,76 @@ Second, `Done` on this board means verified on a device or an emulator. Code bei
 
 **Revisit if.** Nothing.
 
+### D11. Tombstone retention window: 730 days
+
+Answers open question 3 in `MASTER_SPEC.md` section 10. The data contract requires the number written into the schema comments now so a future implementation does not have to guess.
+
+**Decision.** 730 days, two years. Written into the header comment of `contract/schema.sql`.
+
+**Alternatives considered.** 90 days, which is the common default in systems that sync frequently. 365 days. No window at all, meaning tombstones are never purged.
+
+**Reasoning.** The cost of the window being too long is a handful of bytes per deleted row. The cost of it being too short is that a peer which was dormant longer than the window resurrects records the person deleted, permanently and silently, which is the exact failure the tombstone mechanism exists to prevent.
+
+Those costs are not remotely symmetrical, so the window should be generous. Two years is chosen against this app's actual usage rather than against a general default: lapse tolerance is a stated value, persona P6 is someone returning after a four month gap, persona P7 is a five year notebook, and a second device could easily sit in a drawer for a year. A 90 day window would be actively dangerous here.
+
+Note that until direct sync exists there are no peers to acknowledge anything, so nothing is ever purged and the purge path is dead code. The number matters for when that changes.
+
+**Revisit if.** Real devices are seen carrying enough tombstones to matter, which would require a notebook with an extraordinary amount of deletion. Even then, lengthening is safe and shortening is not.
+
+### D12. The change log travels in the export, and the importer renumbers it
+
+Answers open question 2 in `MASTER_SPEC.md` section 10.
+
+**Decision.** `change_log` is included in `data.sqlite` inside the export container. On import, the rows are appended to the importing device's log with fresh local `seq` values, preserving `table_name`, `row_id`, `op`, `rev`, `changed_at`, and `device_id`.
+
+**Alternatives considered.** Omitting the log and rebuilding it on import from the row timestamps.
+
+**Reasoning.** Three things point the same way.
+
+The export file is not only a backup. The data contract makes it the v1 implementation of the `SyncTransport` interface, which means it is the manual version of sync, and a peer needs the log. Rebuilding a log from row timestamps cannot distinguish an edit from a delete then recreate, which is precisely the distinction the log exists to carry.
+
+The Today digest reads the change log to answer what changed since the person was last here. Restoring onto a fresh device without the log would produce either an empty first digest or a fabricated one, and fabricating is worse.
+
+The cost is small. The log is narrow, and it compresses well inside a zip.
+
+`seq` is renumbered rather than trusted because it is explicitly local only and meaningful solely on the device that wrote it. Two devices will both have a sequence 1 and they are not the same event.
+
+**Revisit if.** A five year log turns out to dominate export size. Measure it against a year 5 fixture before changing anything.
+
+### D13. Attachment limits: 25 MB each, a warning at 4 GB total, and no hard ceiling
+
+Answers open question 1 in `MASTER_SPEC.md` section 10.
+
+**Decision.** A single attachment may be up to 25 MB. Total attachment storage is not capped, but the app states the running total and mentions it plainly once the total passes 4 GB. Both numbers are stated before the person meets them rather than after.
+
+**Alternatives considered.** No per-attachment limit. A hard total cap. A much smaller per-attachment limit with automatic downscaling of photographs.
+
+**Reasoning.** 25 MB comfortably holds a photographed bill, a multi page scanned document, and a phone camera photograph at full resolution, while being small enough that a single attachment cannot make an export unusable on its own.
+
+There is deliberately no hard total cap. It is their data, on their phone, and a record-keeping app that refuses to record something because of an arbitrary ceiling has failed. The interaction law that applies is "no invisible walls": state the limit before it is met and give a path forward at the moment it is met, rather than a dead end.
+
+Automatic downscaling was rejected outright. A photograph of a bill is often evidence in a dispute, and silently reducing its resolution could destroy the readability of exactly the small print that mattered. If storage becomes a genuine problem the app shows what is using it and lets the person choose.
+
+**Revisit if.** Real usage shows a common document type exceeding 25 MB, or the year 5 performance work finds attachment count rather than size to be the binding constraint.
+
+### D14. The change log is enforced by database triggers rather than by the repository layer
+
+**Decision.** Two triggers per user data table, written into `contract/schema.sql`, append the `change_log` row on insert and on update, deriving `delete` from `deleted_at` moving from null to set.
+
+**Alternatives considered.** Appending the log row in the repository layer alongside each write, inside an explicit transaction.
+
+**Reasoning.** The contract's requirement is that every write appends to the log *in the same transaction as the write*. A repository layer can satisfy that, right up until someone adds a write path that forgets, which happens once, silently, and produces a hole nothing can detect afterward. A trigger cannot be forgotten and it cannot run in a different transaction than the statement that fired it, because SQLite runs it inside that statement.
+
+It also means the guarantee holds for the web platform without reimplementing it, which is the whole point of the schema being the contract.
+
+The cost is that the log row is written even when the application would rather it were not, for example during an import. That is handled by the importer suppressing and then rewriting the log deliberately, which is explicit rather than accidental.
+
+`device_id` is read from `app_meta` inside the trigger, falling back to `unknown-device` if it is missing, because losing the person's entry is worse than losing the provenance of it.
+
+**Verified.** `tools/checks/check_schema.py` loads the schema into a real database and asserts the behavior: insert logs `insert`, update logs `update`, setting `deleted_at` logs `delete`, undeleting logs `update`, the live view hides a tombstone while the base table keeps it, and forcing the log write to fail rolls the data write back with it. It was then negative tested against six deliberately broken schemas and caught all six.
+
+**Revisit if.** A trigger is measured to be a real cost in a bulk operation, in which case the fix is to batch inside one transaction, not to move the guarantee into application code.
+
 ---
 
 ## BLOCKED
