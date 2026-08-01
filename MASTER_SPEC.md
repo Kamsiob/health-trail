@@ -248,6 +248,47 @@ Consequences that must be handled from Phase 0 rather than retrofitted:
 
 Translations should be reviewed by a native speaker who has dealt with the American care system. Where that review has not happened, say so in `DECISIONS.md` and in the store listing rather than implying a reviewed translation.
 
+### 7.1 This is language access in the United States, not international expansion
+
+**The distinction is not pedantic and it decides what is correct.** This app is about Medicare, Medicaid, federal nursing home regulation, state ombudsman programs, and American billing. That content is specific to one country.
+
+**Translating it for a Spanish speaker in Texas is exactly right.** They are navigating the American care system, in the United States, and the only barrier is the language it is written in. **Presenting the same app to someone in Spain would be wrong**, because every substantive thing it says about rights, coverage, and who to escalate to would be false there.
+
+So the languages are chosen by **limited English proficiency population within the United States**, not by global speaker counts, not by app store market size, and not by which translations are cheapest to obtain. A language earns its place here because caregivers in this country speak it and are underserved reading English.
+
+**What follows from that:**
+
+- **No locale variants for other countries.** `es` rather than `es-MX` and `es-ES`, because the audience is Spanish speakers in the United States and splitting them serves nobody.
+- **Nothing in the interface implies the app works elsewhere.** No country picker, no currency selection, no claim of international support.
+- **The care system vocabulary stays American** even in translation. A Spanish rendering of "skilled nursing facility" describes the American thing, not the nearest equivalent in another country's system.
+- **Ranking is by need, not by ease.** Vietnamese, Chinese, and Korean have the highest share of speakers with limited English proficiency, around 57, 52, and 51 percent, which matters more than raw population when deciding who is actually shut out.
+
+### 7.2 The ten, and why
+
+By limited English proficiency population in the United States. Approximate, and the ordering rather than the exact figures is what matters.
+
+| Language | LEP speakers | Status |
+|---|---|---|
+| Spanish | ~16M | Ships |
+| Chinese, Mandarin and Cantonese | ~1.8M | Ships, as Simplified |
+| Vietnamese | ~960k | Planned |
+| Korean | ~530k | Planned |
+| Tagalog | ~530k | Planned |
+| Russian | ~430k | Planned |
+| Arabic | ~410k | Ships |
+| Haitian Creole | ~280k | Planned |
+| Portuguese | ~277k | Planned |
+| French, including Cajun | ~252k | Planned |
+
+**Haitian Creole is a distinct language and not a French dialect.** It has its own grammar and its own orthography, and a Haitian Creole speaker is not served by French. **Never treat either as a fallback for the other.** Getting this wrong would fail the people it most claims to serve, and it is an easy mistake for a system that groups by language family.
+
+**Chinese ships as Simplified.** Traditional is a separate question, not an alias, and no build should silently serve one for the other.
+
+**Cost, so the scale is not a surprise.** Roughly 1500 strings per language across the interface catalog and the 57 templates, plus plural rules, date and number formatting, and device verification. **Seven new languages is on the order of ten thousand strings**, each of which is care instructions, money, or somebody's rights.
+
+**None of it starts until everything ahead of it is done**, and it is not shippable without native speaker review. See section 7 above.
+
+
 ---
 
 ## 8. Phase plan
