@@ -554,6 +554,24 @@ Composed from Display L, Body M, Body S, the text field from section 5.9, the ch
 
 Composed from Display L, Body M, Display S, Label, the Mono count style, cards from 5.3, the icon tile from 5.12, the group header from 5.13, and the press state from 5.14. Four of the twelve icons had no drawing anywhere in the reference and were composed on the same 24 unit grid at the same weight, listed in the source. Tracked on issue #36.
 
+**Adding a measurement.** The fifth of the six capture inputs, and the one with the sharpest content rule attached to it.
+
+**It does not fit the shared form, which is why it has its own screen.** The other four record that something happened and what was said. This one records a value, and a value needs to know what is being measured before anything else on the screen means anything.
+
+**Two steps, and the first one is a real question.** Choosing what you are tracking is not a wizard step in front of the real form, it is the first thing anyone recording a measurement has already decided. Things the notebook already tracks come first as chips, so after the first week the answer costs one tap. The sixteen presets sit below under their own heading as short rows, and a preset already being tracked is not offered twice.
+
+**A measure is created the first time someone records one, never at setup.** A notebook that arrives with sixteen empty charts is a list of things somebody has not done, which is the scorecard this app does not keep.
+
+**A number and words are different things.** Weight is a number. "Ate about half her lunch" is not, and forcing it into one would either lose it or invent a figure nobody gave. The preset's own style says which, and the field and the keyboard follow.
+
+**Nothing is judged.** No range, no normal value, no threshold, no color by value, no arrow, no comparison to last time, per rule 2 and section 5.8. The screen says plainly that the app writes the number down and does not tell anyone what it means, which is the honest limit stated where the person is rather than buried in a settings page. `MeasurementTest` asserts that no judgment word appears in any of this screen's copy.
+
+**The preset's `advice_risk` never reaches the person.** It exists so the rendering layer can be careful about how it displays a value, and it must never become a caution, because a caution is the app judging.
+
+The cadence line under each preset says how often families typically record it. **It is guidance about the shape of the thing, never a schedule anyone is held to**, and nothing here ever reminds or alerts.
+
+Composed from Display L, Body M, Body S, the group header 5.13, the text field 5.9, choice chips 5.11, the pinned action footer 5.15, one filled button, and one text action. Tracked on issue #42.
+
 **The Unfiled tray.** Everything the person saved without saying where it belonged.
 
 **Built because the capture form already promised it.** The form tells the person their entry is going to the Unfiled tray, and until 2026-08-01 there was nowhere to see it. A promise the app makes and does not keep costs more than a feature it never mentioned, which is why this outranked the rest of the queue.

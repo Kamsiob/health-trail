@@ -113,6 +113,52 @@ object TemplateCatalog {
      */
     private const val LAST_PHASE = Int.MAX_VALUE
 
+    /**
+     * One thing a family can choose to track over time.
+     *
+     * **`adviceRisk` is carried rather than acted on here.** It is what the
+     * rendering layer reads to keep the content rules, and it never becomes a
+     * warning to the person: this app records a value and stops, so a preset
+     * marked high risk is one the app must be more careful about how it
+     * *displays*, never one it cautions anyone about.
+     */
+    data class Preset(
+        val id: String,
+        val name: String,
+        /** Empty where the thing being tracked is not a number. */
+        val unitOptions: List<String>,
+        /** How often a family typically records it. Shown as plain guidance, never as a schedule. */
+        val cadence: String,
+        val style: String,
+        val gapTolerance: String,
+        val adviceRisk: String,
+        val medicationMarkers: Boolean,
+    ) {
+        /** True where the value is words rather than a number, per the preset's own style. */
+        val isText: Boolean get() = unitOptions.isEmpty()
+    }
+
+    suspend fun presets(context: Context): List<Preset> = withContext(Dispatchers.IO) {
+        val root = JSONObject(
+            context.assets.open("templates/progress-and-instructions.json")
+                .bufferedReader().use { it.readText() }
+        )
+        val array = root.getJSONArray("progress_presets")
+        (0 until array.length()).map { index ->
+            val item = array.getJSONObject(index)
+            Preset(
+                id = item.getString("id"),
+                name = item.getString("name"),
+                unitOptions = item.optJSONArray("unit_options").toStrings(),
+                cadence = item.optString("cadence"),
+                style = item.optString("style", "continuous"),
+                gapTolerance = item.optString("gap_tolerance", "moderate"),
+                adviceRisk = item.optString("advice_risk", "low"),
+                medicationMarkers = item.optBoolean("medication_markers", false),
+            )
+        }
+    }
+
     private fun org.json.JSONArray?.toThreads(): List<Thread> {
         if (this == null) return emptyList()
         return (0 until length()).map {

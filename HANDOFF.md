@@ -46,7 +46,7 @@ The parts that change how you work, compressed:
 2. **Editing a date from the entry itself, forever, with the same control.** Nothing can edit a date yet, because nothing shows a single entry yet.
 3. `EventDateText` is proven by the vectors and is called from exactly one screen, the Unfiled tray. **Every screen that shows a date from here on calls it rather than formatting one itself.**
 
-**Then #42**, the measurement and document capture inputs, which are the last two of the six. Choosing either from the sheet currently closes it and does nothing.
+**Then #57**, the document capture input, which is the last of the six. It is blocked on content addressed attachment storage, the same machinery #9 needs, so build that first.
 
 **Then #43**, the retroactive audit, and the rest of #44, which is the screen reader half.
 
@@ -74,7 +74,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 76 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
+**The whole instrumented suite: 82 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
 
 ---
 
@@ -88,7 +88,9 @@ Verified means checked through the mechanism, not inferred from the code being w
 | #39 | The date interface, which hides all of the model. Depends on #38 |
 | ~~#40~~ | **Done.** Every tappable surface in the app uses the one treatment in 5.14 |
 | ~~#41~~ | **Done.** Grouped by where the care is happening, ordered by how common, and visibly skippable |
-| #42 | The remaining two capture inputs, measurement and document |
+| ~~#42~~ | **Measurement done.** Document split to #57, because it needs attachment storage that does not exist |
+| #57 | The document capture input, once attachments exist. Shares machinery with #9 |
+| #58 | Notebook section counts are not scoped to the subject. Invisible with one notebook, silently wrong with two |
 | ~~#53~~ | **Done.** The Unfiled tray, which the capture form had been promising |
 | #43 | Retroactive: audit every screen already built against the bar. Opens further issues rather than fixing everything itself |
 | #44 | Accessibility gate, verified with the reader on, the font at maximum, and reduced motion enabled |
@@ -187,6 +189,7 @@ Every screen built without one is composed from existing components under `DESIG
 | Capture form, four kinds | 2026-07-31, rebuilt same day to screen 26 | #34 | not yet |
 | Notebook table of contents | 2026-08-01, rebuilt to the 10.6 bar | #36, review on #50 | not yet |
 | Unfiled tray | 2026-08-01 | #53, review on #55 | not yet |
+| Adding a measurement | 2026-08-01 | #42 | not yet |
 
 The notebook is drawn in the reference file, so it is listed here as a correction rather than as an undrawn screen. `DESIGN.md` section 3 item 8 records the four ways the built screen departs from the mockup, with reasons.
 

@@ -270,7 +270,14 @@ fun CaptureFormScreen(
 }
 
 /** The catalog key for a rough date answer. */
-private val RoughWhen.labelKey: String
+/**
+ * The catalog key for a rough date chip.
+ *
+ * Public because the measurement screen asks the same question with the same
+ * chips, and two screens mapping the same enum to two sets of words would be
+ * the defect `DESIGN.md` section 10.2 names.
+ */
+val RoughWhen.labelKey: String
     get() = when (this) {
         RoughWhen.TODAY -> "capture.when.today"
         RoughWhen.YESTERDAY -> "capture.when.yesterday"
