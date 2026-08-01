@@ -25,7 +25,9 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
+import androidx.compose.foundation.background
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.screens.CaptureDraft
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
@@ -215,6 +217,21 @@ fun NotebookShell(repository: Repository) {
             )
         }
 
+        // **Document says so rather than doing nothing.** The sheet offers six
+        // ways in and this one is not built, so choosing it used to close the
+        // sheet and silently do nothing, which is the app appearing to lose
+        // what someone tried to save. It now says plainly that it is not built
+        // and why, which is the same honesty the not-yet-built destinations
+        // carry, and it is greppable through ShellTags.NOT_BUILT so it cannot
+        // survive to release. Issue #57.
+        if (kind == CaptureKind.DOCUMENT) {
+            NotBuiltYet(
+                name = strings["capture.document"],
+                detail = strings["capture.not_built"],
+                onClose = { capturing = null },
+            )
+        }
+
         // Measurement has its own screen because it does not fit the shared
         // form: a value needs to know what is being measured before anything
         // else on the screen means anything.
@@ -391,20 +408,30 @@ private fun CouldNotRead(onRetry: () -> Unit) {
  * here at release, that is a bug.
  */
 @Composable
-private fun NotBuiltYet(name: String) {
+private fun NotBuiltYet(
+    name: String,
+    detail: String? = null,
+    onClose: (() -> Unit)? = null,
+) {
     val strings = LocalStrings.current
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(HealthTrail.colors.paper)
+            .systemBarsPadding()
             .padding(horizontal = Space.screenHorizontal, vertical = Space.l)
             .testTag(ShellTags.NOT_BUILT),
     ) {
         Text(text = name, style = HealthTrail.type.displayL, color = HealthTrail.colors.ink)
         Spacer(Modifier.height(Space.s))
         Text(
-            text = strings["shell.not_built"],
+            text = detail ?: strings["shell.not_built"],
             style = HealthTrail.type.bodyM,
             color = HealthTrail.colors.ink2,
         )
+        if (onClose != null) {
+            Spacer(Modifier.height(Space.l))
+            TextAction(label = strings["common.close"], onClick = onClose)
+        }
     }
 }

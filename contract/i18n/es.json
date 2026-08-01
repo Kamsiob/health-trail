@@ -176,5 +176,6 @@
   "measurement.unit": "Unidades",
   "measurement.note": "Algo que valga la pena recordar",
   "measurement.note.hint": "Quién lo tomó, cómo la vio, lo que sea",
-  "measurement.record_only": "La aplicación lo anota y lo guarda. No le dice lo que significa."
+  "measurement.record_only": "La aplicación lo anota y lo guarda. No le dice lo que significa.",
+  "capture.not_built": "Guardar un documento todavía no está hecho. Necesita un lugar donde conservar la fotografía, y eso se está construyendo primero para que nada de lo que guarde se pierda."
 }

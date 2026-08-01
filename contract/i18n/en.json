@@ -176,5 +176,6 @@
   "measurement.unit": "Units",
   "measurement.note": "Anything worth remembering",
   "measurement.note.hint": "Who took it, how she seemed, anything at all",
-  "measurement.record_only": "The app writes this down and keeps it. It does not tell you what it means."
+  "measurement.record_only": "The app writes this down and keeps it. It does not tell you what it means.",
+  "capture.not_built": "Saving a document is not built yet. It needs somewhere to keep the photograph, and that is being built first so nothing you save can go missing."
 }

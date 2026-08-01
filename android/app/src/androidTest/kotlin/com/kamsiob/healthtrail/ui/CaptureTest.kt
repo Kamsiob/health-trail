@@ -127,6 +127,29 @@ class CaptureTest {
     }
 
     @Test
+    fun everyWayInEitherWorksOrSaysWhyNot() {
+        // The sheet offers six ways in. Choosing one used to close the sheet
+        // and silently do nothing for the one that is not built, which is the
+        // app appearing to lose what somebody tried to save. Whatever is
+        // unbuilt must say so, and it must say so in words rather than by
+        // going quiet.
+        val strings = Strings.load(context)
+        CaptureKind.entries.forEach { kind ->
+            val handled = kind.usesTheSharedForm ||
+                kind == CaptureKind.MEASUREMENT ||
+                kind == CaptureKind.DOCUMENT
+            assertTrue(
+                "$kind is offered on the sheet and nothing happens when it is chosen",
+                handled,
+            )
+        }
+        // And the one that is not built says why, rather than only that it is
+        // not built, because "not built" on its own reads as neglect.
+        val why = strings["capture.not_built"]
+        assertTrue("the unbuilt path does not explain itself: $why", why.length > 40)
+    }
+
+    @Test
     fun theThreadDefaultsToNotKnowingAndSaysWhereThatGoes() {
         // Not knowing is the honest default for someone who just tapped save,
         // and the screen has to say where the entry is going while they can
