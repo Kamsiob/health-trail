@@ -148,6 +148,14 @@ The one thing still waiting rather than blocked: **the light theme screenshots**
 
 ## 7. The phone
 
+**Before anything else, prove the guard, because nothing below is protected without it.** Run `git reset --hard HEAD` on a clean tree and `adb shell pm clear com.kamsiob.healthtrail`. Both must be refused with "Blocked by the Health Trail destructive command guard". **If either runs, stop and fix the wiring before any other work.** Full procedure and what to check first in `RUN-SAFETY.md` section 1.1. Record the result in D49 whichever way it goes.
+
+**Guard 1 was inert from the day it was written until 2026-08-01**, and looked installed the whole time. Its hook command was unquoted and this project's path contains spaces, so the shell split it, the executable was never found, and the hook exited 127 instead of 2. Nothing blocked. D29 blamed session start timing, which was wrong; D49 has the real cause and the fix. **The fix is committed but was not live in the session that made it**, because configuration is read at session start, so that session ran to its end on rule 6 alone.
+
+**Guard 2, the pre compaction state save, has never fired and remains unproven.** Same unquoted path defect, now fixed, but it cannot be triggered deliberately: compaction happens when it happens. The evidence will be a commit in `git log` at a compaction boundary that no session remembers making. **Until such a commit exists, treat it as absent and keep this file current by hand.** Do not record it as working on the strength of the fix looking right, which is exactly the mistake D29 made.
+
+**Guard 3, the retry cap, is a command line tool nothing calls.** `.claude/hooks/retry-guard.py attempt <label> "<what>"` before a second try at the same thing. No session has ever run it. Not miswired, just unused, which reaches the same place.
+
 - Device: Pixel 10 Pro XL, serial `57241FDCQ0000H`, connected over USB. **The only test device.**
 - **No emulator.** Dropped from this project. Do not attempt to launch one, do not create an AVD, and do not treat its absence as a blocker. See D21, D23, and B4 in `DECISIONS.md`.
 - The phone is in **dark** system theme, which is why every committed screenshot is `-dark`.
