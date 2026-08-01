@@ -189,6 +189,12 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 **Create the branch as the first action of an increment, before a single file is touched.** Not at the point of committing, and not by checking afterward. This went wrong twice in one run, the second time after the rule had already been written down, which is why the fix is mechanical rather than a reminder: a branch made before the work cannot be forgotten after it. One commit reached `main` directly because the branch was assumed from a `checkout` several steps and one merge earlier. Every way of undoing it is a command rule 6 forbids, so it stayed. D48.
 
+**`CLAUDE.md` in a session's context is the copy from session start, and edits to it during the session do not reach that copy.** Found on 2026-08-01 by reading the file from disk: it carries 21 rules, and the copy loaded into the running session carried 13. Rules 14 through 21, the standing quality bar, were added mid-run and are binding, on disk, and invisible to the context that is supposed to enforce them.
+
+**This matters because `CLAUDE.md` says of itself that it is "the last thing to survive context compaction."** That is true of the copy loaded at session start. It is not true of anything added afterward, which survives only as ordinary conversation and is exactly what compaction discards. **After editing `CLAUDE.md`, read the rules back from disk rather than trusting the copy in context**, and treat a rule added this session as one a compaction can lose.
+
+The same shape as the hook defect in D49: configuration read once at startup, edited later, and believed to be live.
+
 **The shell does not carry state between tool calls.** Every command starts fresh.
 
 - **`ANDROID_HOME` is not set.** The SDK is at `/home/Kamsiob/Android/Sdk`. Gradle finds it through `android/local.properties`, which is gitignored and **does not exist in a fresh clone**. Recreate it: `sdk.dir=/home/Kamsiob/Android/Sdk`.
