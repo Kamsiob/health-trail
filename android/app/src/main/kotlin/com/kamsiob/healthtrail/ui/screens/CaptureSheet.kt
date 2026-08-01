@@ -78,6 +78,20 @@ fun CaptureSheet(
         sheetState = sheetState,
         containerColor = colors.card,
         shape = Radius.bottomSheet,
+        // **No drag handle**, and it is removed rather than labeled.
+        //
+        // `ScreenReaderTest` found it carrying a click action and announcing
+        // nothing, so a reader user met an unlabeled button on the one screen
+        // every piece of data enters through. With `skipPartiallyExpanded` the
+        // handle has no state to toggle, so it was a control that did nothing
+        // and said nothing.
+        //
+        // Labeling it was tried twice, wrapping it and passing the modifier
+        // down, and Material applies its own semantics outside both. Removing
+        // it costs nothing the reference asked for: section 3 item 7 records
+        // that the mockups draw this as a dimmed composite with no handle. The
+        // sheet still dismisses by tapping outside and by the back gesture.
+        dragHandle = null,
         modifier = Modifier.testTag(CaptureTags.SHEET),
     ) {
         Column(
