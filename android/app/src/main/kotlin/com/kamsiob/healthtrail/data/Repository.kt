@@ -533,6 +533,11 @@ class Repository private constructor(
             }
         }
 
+    /** The schema version this database is at, for the migration test. */
+    suspend fun schemaVersionForTest(): Int = withContext(Dispatchers.IO) {
+        Migrations.versionOf(db().database)
+    }
+
     /** The revision of one row, for tests that assert a write did or did not happen. */
     suspend fun revisionForTest(table: String, rowId: String): Int =
         withContext(Dispatchers.IO) {

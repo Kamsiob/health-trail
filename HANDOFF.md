@@ -72,6 +72,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | Four locale catalogs, ICU MessageFormat | `check_i18n.py` on every push. `CopyIntegrityTest` on the phone proves no locale silently falls back to English for the disclaimer |
 | Contrast in both themes | `check_contrast.py` measures 80 pairs against the actual token values on every push |
 | Content compliance | `check_copy.py`, `check_templates.py`, `check_contract_isolation.py`, `check_self_contained.py` |
+| Schema migrations | `MigrationTest` on the phone. An upgrade keeps every row, a failed step changes nothing and does not move the version, a database from the future is refused, and steps apply in order and only once. Proven with a synthetic step rather than a fake shipped migration |
 | The change log, through Kotlin | `ChangeLogTransactionTest` on the phone, through SQLCipher rather than plain SQLite. Insert, update, and tombstone each append exactly one entry, the entry names the table, the row, and the operation, and a write inside an abandoned outer transaction leaves no orphan |
 | The fixture generator | `check_fixtures.py` generates twice and compares bytes, checks a different seed differs, checks all six points grow, checks year five hits its stated scale, and checks the shapes a random generator can miss by chance: every bill state, every project state, both instruction tags, an incident that never resolves, and an attachment exactly at the size limit. Proven to catch drift and two of those gaps by breaking them on purpose |
 | The export container | `ExportContainerTest` on the phone. What goes in comes out byte for byte, the manifest survives to the millisecond including tables with zero rows, the manifest is the first entry, and six of the eight files that must fail cleanly each name what was wrong |
@@ -91,7 +92,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 126 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All nine implemented compliance checks pass.
+**The whole instrumented suite: 134 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All nine implemented compliance checks pass.
 
 **A pattern worth carrying forward.** Almost every defect this run found came from putting the built thing in a hand and changing one condition: the font at maximum, the keyboard up, the language set to Arabic, or simply looking at a screen that had already passed its tests. None of them were visible in the code, and several had passed a review. The tests are what keep them fixed; they are not what found them.
 
@@ -99,7 +100,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 ## 5. Remaining work inventory, in order
 
-**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #36 the notebook, #37 setup, #38 the date model, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray, #58 the subject scoped counts, and #8 in part. #12 is closed for Latin and Arabic and open only for Chinese.
+**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #36 the notebook, #37 setup, #38 the date model, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray, #58 the subject scoped counts, #14 the migration mechanism, and #7, #8, #17, #21 in whole or in part. #12 is closed for Latin and Arabic and open only for Chinese.
 
 **In order. The first three are the ones to take.**
 
@@ -108,12 +109,13 @@ Verified means checked through the mechanism, not inferred from the code being w
 | #39 | The date interface | The model is built and the half the owner asked for is not. Needs a date picker specified in `DESIGN.md` section 5 first, because nothing existing can carry it |
 | #62 | The template catalog is English only | Release blocking, and the app currently shows an Arabic interface wrapped around English content |
 | #57 | The document capture input | The last of the six ways in. Blocked on attachment storage, which #9 also needs, so build that first |
-| #9 | The change log, through Kotlin | `ChangeLogTransactionTest` on the phone, through SQLCipher rather than plain SQLite. Insert, update, and tombstone each append exactly one entry, the entry names the table, the row, and the operation, and a write inside an abandoned outer transaction leaves no orphan |
+| #9 | Schema migrations | `MigrationTest` on the phone. An upgrade keeps every row, a failed step changes nothing and does not move the version, a database from the future is refused, and steps apply in order and only once. Proven with a synthetic step rather than a fake shipped migration |
+| The change log, through Kotlin | `ChangeLogTransactionTest` on the phone, through SQLCipher rather than plain SQLite. Insert, update, and tombstone each append exactly one entry, the entry names the table, the row, and the operation, and a write inside an abandoned outer transaction leaves no orphan |
 | The fixture generator | `check_fixtures.py` generates twice and compares bytes, checks a different seed differs, checks all six points grow, checks year five hits its stated scale, and checks the shapes a random generator can miss by chance: every bill state, every project state, both instruction tags, an incident that never resolves, and an attachment exactly at the size limit. Proven to catch drift and two of those gaps by breaking them on purpose |
 | The export container | Attachment storage, the round trip, and the only proof data survives an update. Now also has to round trip the EDTF column byte for byte |
 | #17 | Fixture generator, the last criterion | Everything but the four language variants, which wait on #62 |
 | #7 | The change log, remaining criterion | Proven through Kotlin now. Open only for "the digest reads from the change log", which needs the digest engine |
-| #14 | Encrypted database, remaining criteria | The migration mechanism and the key loss screen |
+| ~~#14~~ | **Done.** The migration mechanism exists and is proven. The key loss screen is not a criterion on it |
 | #15 | Golden vectors | `dates.json` exists and runs. The engine vectors need the engine |
 | #46 | No dead ends, links both ways | Needs screens that can link to each other, so it follows the trail |
 | #47 | Search | Needs Today, which needs the digest engine |
