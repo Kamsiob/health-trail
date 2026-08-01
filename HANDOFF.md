@@ -171,8 +171,23 @@ Verified means checked through the mechanism, not inferred from the code being w
 - **No emulator.** Dropped from this project. Do not attempt to launch one, do not create an AVD, and do not treat its absence as a blocker. See D21, D23, and B4 in `DECISIONS.md`.
 - **The phone's theme is not fixed and must be read, never assumed.** It was dark through 2026-07-31 and is **light** as of 2026-08-01. `tools/screenshot.sh` reads it from the device and names the file accordingly, per D31, so do not pass a theme argument and do not assume the suffix. Check with `adb shell cmd uimode night`.
 - **To run the app in one language without touching the phone's own settings**, which matters because this is the owner's daily driver: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --locales ar`, and `--locales ""` to clear it. Doing this found #62 within a minute, and later found that Chinese did not work at all. **Use `zh-Hans` for Chinese, never a bare `zh`**: a bare tag has no script, and getting it wrong yields English rather than an error. D52.
-- **Accessibility settings used during this run were restored to exactly what the phone had before.** `font_scale` back to 1.0 and `animator_duration_scale` deleted rather than set to 1.0, because it was unset to begin with. Check both if a run ends unexpectedly: `adb shell settings get system font_scale` and `adb shell settings get global animator_duration_scale`.
-- **TalkBack was deliberately never enabled.** D43: it changes touch behavior, and a failure part way through an unattended run would leave the daily driver hard to use with nobody there.
+- **Accessibility settings used during this run were restored to exactly what the phone had before.** `font_scale` back to 1.0 and `animator_duration_scale` deleted rather than set to 1.0, because it was unset to begin with. Check all of these if a run ends unexpectedly:
+
+      adb shell settings get system font_scale                    # expect 1.0
+      adb shell settings get global animator_duration_scale       # expect null
+      adb shell settings get global heads_up_notifications_enabled # expect 1
+      adb shell settings get secure enabled_accessibility_services # expect the KDE Connect string, not TalkBack
+      adb shell cmd locale get-app-locales com.kamsiob.healthtrail # expect []
+- **TalkBack may now be enabled, and the owner granted that explicitly on 2026-08-01.** It supersedes D43's blanket avoidance. The condition is the same one that governs font scale and animation duration: **record the prior value, restore it exactly.**
+
+  Before: `adb shell settings get secure enabled_accessibility_services` and `adb shell settings get secure accessibility_enabled`. On this phone the prior value is `org.kde.kdeconnect_tp/org.kde.kdeconnect.plugins.mousereceiver.MouseReceiverService`, which is KDE Connect and **not** TalkBack, so restoring means putting that exact string back rather than clearing the setting.
+
+  **If a run ends with TalkBack still on**, which is the risk D43 was right about, turn it off with:
+
+      adb shell settings put secure enabled_accessibility_services org.kde.kdeconnect_tp/org.kde.kdeconnect.plugins.mousereceiver.MouseReceiverService
+      adb shell settings put secure accessibility_enabled 0
+
+  On the phone itself it is Settings, Accessibility, TalkBack, or holding both volume keys for three seconds if that shortcut is on.
 - **The app on the phone is the app in the repository.** Installed from the head of `main` and launched. Version 0.1.0. All four destinations walked: Today coaches, the notebook lists its twelve sections, and Projects and More say honestly that they are not built.
 - **It is a fresh install sitting at the disclaimer gate.** The last `connectedAndroidTest` run uninstalled it and took its data, which is normal and is why the gate is showing. Nothing on it is worth preserving. **This is also the sanctioned way back to first-run state**: run the instrumented suite rather than reaching for `adb uninstall`, which is on the blocklist. D50.
 
