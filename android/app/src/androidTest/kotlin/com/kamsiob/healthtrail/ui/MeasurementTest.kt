@@ -55,11 +55,10 @@ class MeasurementTest {
         assertEquals("Weight", measures.first().name)
         assertEquals("lb", measures.first().unit)
 
-        // Deliberately asserted through `measures(subjectId)` rather than
-        // through `count(Section.PROGRESS)`. The section counts are not scoped
-        // to a subject, which this test found by counting two after creating
-        // one. That is a real defect for a notebook with more than one person
-        // in it and it is issue #58, not something to paper over here.
+        // Counted through the section too, now that counts take a subject.
+        // This assertion is what failed when they did not, returning two after
+        // one measure was created, which is how #58 was found.
+        assertEquals(1, repository.count(Repository.Section.PROGRESS, subjectId))
     }
 
     @Test
@@ -126,6 +125,26 @@ class MeasurementTest {
             "the record only line does not say the app will not interpret: $line",
             "does not tell you what it means" in line,
         )
+    }
+
+    @Test
+    fun oneNotebookNeverCountsAnother() = runBlocking {
+        // The defect #58 was, asserted directly. Two subjects, one measure
+        // each, and neither may see the other's. Invisible with one notebook
+        // and silently wrong with two, which is the worse kind of wrong in a
+        // care record because nobody thinks to check it.
+        val repository = Repository.open(context)
+        val mine = repository.createSubject(displayName = "Mine")
+        val theirs = repository.createSubject(displayName = "Theirs")
+
+        repository.createMeasure(mine, preset("weight"), unit = "lb")
+
+        assertEquals(1, repository.count(Repository.Section.PROGRESS, mine))
+        assertEquals(0, repository.count(Repository.Section.PROGRESS, theirs))
+
+        repository.createMeasure(theirs, preset("sleep"), unit = "hours")
+        assertEquals(1, repository.count(Repository.Section.PROGRESS, mine))
+        assertEquals(1, repository.count(Repository.Section.PROGRESS, theirs))
     }
 
     @Test

@@ -171,13 +171,13 @@ class SituationPickerTest {
         val situation = catalog.all.first { it.threads.isNotEmpty() }
         val subjectId = repository.createSubject(displayName = "Template subject")
 
-        val threadsBefore = repository.count(Repository.Section.THREADS)
+        val threadsBefore = repository.count(Repository.Section.THREADS, subjectId)
         repository.applySituation(
             subjectId = subjectId,
             templateId = situation.id,
             threads = situation.threads.map { it.id to it.label },
         )
-        val threadsAfter = repository.count(Repository.Section.THREADS)
+        val threadsAfter = repository.count(Repository.Section.THREADS, subjectId)
 
         assertEquals(
             "applying did not create one care thread per offered thread",

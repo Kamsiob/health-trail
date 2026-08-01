@@ -178,9 +178,9 @@ class SetupFlowTest {
 
         // Blank fields write nothing rather than writing an empty row, which
         // would put a nameless person on the care team.
-        val peopleBefore = repository.count(Repository.Section.CARE_TEAM)
+        val peopleBefore = repository.count(Repository.Section.CARE_TEAM, subjectId)
         repository.createPerson(subjectId = subjectId, displayName = "Ward desk", phone = "5551234567")
-        val peopleAfter = repository.count(Repository.Section.CARE_TEAM)
+        val peopleAfter = repository.count(Repository.Section.CARE_TEAM, subjectId)
         assertEquals("the phone number did not become a care team entry", peopleBefore + 1, peopleAfter)
     }
 
