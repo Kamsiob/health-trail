@@ -362,6 +362,16 @@ The trail draw is the one ambient flourish: on first entry to a timeline the das
 
 **Reduced motion**, when the system setting is on: every spring becomes an instant state change, the trail draw becomes an immediate render, and the only remaining transition is a 100ms opacity fade. Verify this by actually enabling the setting, not by reading the code.
 
+**Motion carries meaning here or it does not ship.** Identical fade-ins applied to everything read as generated and are on the ban list in section 1. Every spec comes from the tokens above through `LocalMotion`, never built inline, because a spec built inline is one the reduced motion setting cannot reach.
+
+**Everything the person touches responds**, including on screens already built. Section 5.14 defines the press state once for the whole app. Specifically:
+
+- Every button, row, chip, and tappable card has a visible press state.
+- Selection is immediate and obvious.
+- Expanding a folded section animates rather than snapping.
+- Saving an entry animates it into place, so the person sees where it went.
+- Sheets rise. They do not appear.
+
 ---
 
 ## 7. Voice
@@ -524,6 +534,15 @@ Not a phase. A gate on every screen.
 - No information carried by color alone, anywhere.
 - Screen reader traversal order matches visual order on every screen, verified with the reader on.
 
+**Two additions that follow from this audience, added 2026-07-31 with D34.**
+
+- **Anything gesture-only also has a visible, non-gesture path.** A swipe action nobody discovers is a feature nobody has, and this audience is not exploring the interface for pleasure.
+- **Nothing important sits where a one-handed thumb cannot reach it on a large phone.** That is the actual holding position this app is used in, so it is a layout constraint rather than a nicety.
+
+**Date controls specifically** must be fully operable by screen reader and at maximum font size, and a screen reader must read an imprecise date as the person expressed it rather than as a resolved timestamp. See 10.9.
+
+**Verified means with the setting on.** The reader running, the font at its maximum, reduced motion actually enabled, on the phone. Reading the code proves nothing here, and every one of these has a way of passing in the editor and failing in a hand.
+
 ---
 
 ## 10. Screens that were never drawn
@@ -599,6 +618,58 @@ Checked rather than remembered, in this order. A screen closes only after every 
 Every section, template, and feature must be reachable and, more importantly, **discoverable by someone who does not already know it exists**. A capability that can only be found by a person who already knew to look for it is not finished.
 
 Where something is genuinely hard to surface without cluttering a screen, build it, note the problem on that screen's `needs-design-review` issue, and keep going.
+
+### 10.8 The hierarchy sequence, applied to every screen in this order
+
+Three screens were cluttered at once and they shared one cause: everything presented at the same visual weight, so the person had to read all of it to find any of it. **Uniform weight is not neutral.** It pushes the entire job of sorting onto someone already exhausted.
+
+The fix is the same sequence every time, and the order matters.
+
+1. **Decide what matters most on this screen.** One thing, named out loud, before any layout happens.
+2. **Give that one thing the most weight**, through size, position, and the space around it. **Not through color**, which section 2.2 has already spent on actions, the trail, and the Emergency Card.
+3. **Group what belongs together** and put a quiet mono eyebrow on each group, per 5.13.
+4. **Let the rest recede** to secondary type rather than deleting it.
+5. **Then give it room.** Whitespace is what makes a dense screen readable, and it is the first thing sacrificed when a screen is built to be merely correct.
+
+**Grouping adds structure around an existing order rather than rearranging it**, wherever the order is something the person has learned. The notebook is the worked example: twelve sections got four headers and not one of them moved.
+
+**Progressive disclosure is part of hierarchy, not a separate feature.** Everything visible at once is the most common structural tell on the ban list, and it is what made the notebook cluttered.
+
+**Polish applied to a cluttered screen is still a cluttered screen.** Structure first: clear hierarchy, sensible grouping, an obvious next action, and a person who can always find what they entered.
+
+**You have real latitude inside the vocabulary.** Spacing, grouping, emphasis, how a list is organized, how an empty state is worded, where a link belongs. Use the range the design language gives rather than reaching for the plainest arrangement that satisfies the spec. **Consistency is the constraint, not sameness:** screens differ because their content differs, and they should never feel like they came from different people.
+
+### 10.9 Dates, which the person never has to understand
+
+The storage model is `contract/DATA-CONTRACT.md`. This is what reaches the screen, and the whole point is that none of the model does.
+
+**The person never sees EDTF, never sees a precision selector, and never chooses a storage format.** They see chips for the common cases, an exact date and time always available without leaving the flow, and natural expression where it is genuinely easier.
+
+**The exact date and time is a peer of the chips, not something behind them.** Someone logging an event from three months ago, or who knows the exact minute, is a normal case rather than an edge one.
+
+**Whatever the person expresses is recorded at exactly that precision and no finer.** A month stays a month.
+
+**Display never invents precision.** "Sometime in November 2024" is honest. "November 1, 2024" for that same input is a fabrication. This holds in the trail, month reviews, exports, PDFs, and the engine's composed sentences, and composed sentences handle imprecise dates through the message template system in all four locales rather than by concatenating a formatted date into a sentence.
+
+**Unknown is a first-class value.** An entry with an unknown date saves, is valid, and appears in the trail. It is never blocked, never hidden, and never quietly filled in with today.
+
+**Every date is editable forever, from the entry itself, with the same control.** Editing a date never creates a new entry and never loses the entry's links.
+
+**Imprecise entries never disappear.** They sort sensibly among precise ones and appear in a date-range search whenever their range overlaps the query. Filtering by a month returns everything that could have happened in that month, and the app never quietly excludes an entry because it was unsure.
+
+**Charts keep 5.8 exactly.** An imprecise measurement date is plotted honestly or shown as a gap, never interpolated, and never presented as more certain than it is.
+
+### 10.10 Taps are the currency
+
+Someone doing this in a hallway will abandon a flow that takes four taps when it should take two. Reducing them is a design requirement, not an optimization.
+
+**No dead ends.** Every item links to everything it touches, and the person never has to remember where something was filed. **If A shows B, then B shows A.** Build both directions at the time, every time. A one-way link is a dead end wearing a disguise.
+
+**Carry context forward instead of asking again.** Capture opened from a person's page already knows the person. Capture opened inside a chapter already knows the chapter. A question created during an appointment is already attached to it. **Every prefill is a default the person can change, never a decision made for them.**
+
+**Offer what is likely before what is complete.** Recently used and currently relevant entities come before a full alphabetical list.
+
+**Ask the question on every screen as you build it:** what does the person most likely want to do next from here, and is it reachable in one tap. What that turns up becomes its own issue with acceptance criteria, opened then rather than remembered.
 
 ---
 
