@@ -481,6 +481,58 @@ class Repository private constructor(
             ).use { it.moveToFirst() && it.getInt(0) == 1 }
         }
 
+    /**
+     * How many entries the change log holds.
+     *
+     * For tests. The app never counts the log: what it will read is "everything
+     * after sequence N", which is a different question and the only one a
+     * digest or a peer ever asks.
+     */
+    suspend fun changeLogSizeForTest(): Int = withContext(Dispatchers.IO) {
+        db().database.rawQuery("SELECT COUNT(*) FROM change_log", null)
+            .use { if (it.moveToFirst()) it.getInt(0) else 0 }
+    }
+
+    /** The most recent change log entry, for tests that assert what was recorded. */
+    suspend fun latestChangeForTest(): Map<String, String>? = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT table_name, row_id, op, device_id FROM change_log ORDER BY seq DESC LIMIT 1",
+            null,
+        ).use { cursor ->
+            if (!cursor.moveToFirst()) return@use null
+            mapOf(
+                "table_name" to cursor.getString(0),
+                "row_id" to cursor.getString(1),
+                "op" to cursor.getString(2),
+                "device_id" to cursor.getString(3),
+            )
+        }
+    }
+
+    /**
+     * Runs a write inside a transaction that is then abandoned.
+     *
+     * **For one test, and it is the test the schema check cannot do.** A
+     * repository write nested inside a caller's transaction has to take its
+     * change log entry with it when that transaction rolls back, or the log
+     * records an event with no row behind it and a peer is handed a change
+     * that never happened.
+     *
+     * Deliberately never marks the transaction successful.
+     */
+    suspend fun <T> inAbandonedTransactionForTest(block: suspend Repository.() -> T): T =
+        withContext(Dispatchers.IO) {
+            val database = db().database
+            database.beginTransaction()
+            try {
+                block()
+            } finally {
+                // No setTransactionSuccessful, so ending it rolls everything
+                // back, the data write and its log entry together.
+                database.endTransaction()
+            }
+        }
+
     /** The revision of one row, for tests that assert a write did or did not happen. */
     suspend fun revisionForTest(table: String, rowId: String): Int =
         withContext(Dispatchers.IO) {
