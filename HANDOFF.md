@@ -150,7 +150,8 @@ The one thing still waiting rather than blocked: **the light theme screenshots**
 - **To run the app in one language without touching the phone's own settings**, which matters because this is the owner's daily driver: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --locales ar`, and `--locales ""` to clear it. Doing this found #62 within a minute.
 - **Accessibility settings used during this run were restored to exactly what the phone had before.** `font_scale` back to 1.0 and `animator_duration_scale` deleted rather than set to 1.0, because it was unset to begin with. Check both if a run ends unexpectedly: `adb shell settings get system font_scale` and `adb shell settings get global animator_duration_scale`.
 - **TalkBack was deliberately never enabled.** D43: it changes touch behavior, and a failure part way through an unattended run would leave the daily driver hard to use with nobody there.
-- **The notebook currently holds throwaway data**: a subject named Mom on a hospital stay template with four care threads. The last `connectedAndroidTest` run wiped it after the screenshots were taken, so what is on the phone right now is a fresh install sitting at the disclaimer gate. Nothing on it is worth preserving.
+- **The app on the phone is the app in the repository.** Installed from commit `35f5861`, which is `main`, and launched. Version 0.1.0.
+- **It is a fresh install sitting at the disclaimer gate.** The last `connectedAndroidTest` run uninstalled it and took its data, which is normal and is why the gate is showing. Nothing on it is worth preserving.
 
 **The one operational rule about the phone.** `connectedAndroidTest` uninstalls the application and takes its data with it. Before running it, if the phone holds anything worth keeping, export through the app's own export feature first and reimport after.
 
