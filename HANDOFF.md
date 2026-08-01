@@ -92,7 +92,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 134 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All nine implemented compliance checks pass.
+**The whole instrumented suite: 140 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All nine implemented compliance checks pass.
 
 **A pattern worth carrying forward.** Almost every defect this run found came from putting the built thing in a hand and changing one condition: the font at maximum, the keyboard up, the language set to Arabic, or simply looking at a screen that had already passed its tests. None of them were visible in the code, and several had passed a review. The tests are what keep them fixed; they are not what found them.
 
@@ -134,7 +134,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 **Phase 1 feature work still ahead, none of it yet an issue:** Today with the digest engine, the trail itself, care team, medications, the emergency card, projects, and More.
 
-**Something that must not survive to release.** The Today, Projects, and More destinations render an honest interim screen, and so does the document capture input. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, and section D44 says an interface may offer something it has not built but may not go quiet when someone takes it up. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
+**Something that must not survive to release.** The Projects and More destinations render an honest interim screen, Today says plainly that its digest is still being built,, and so does the document capture input. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, and section D44 says an interface may offer something it has not built but may not go quiet when someone takes it up. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
 
 ## 6. Blocked
 
@@ -207,6 +207,7 @@ Every screen built without one is composed from existing components under `DESIG
 | Unfiled tray | 2026-08-01 | #53, review on #55 | not yet |
 | Adding a measurement | 2026-08-01 | #42 | not yet |
 | The date picker | 2026-08-01 | #39, review on #68 | not yet |
+| Today, the empty state | 2026-08-01 | #78 | not yet |
 
 The notebook is drawn in the reference file, so it is listed here as a correction rather than as an undrawn screen. `DESIGN.md` section 3 item 8 records the four ways the built screen departs from the mockup, with reasons.
 
@@ -224,7 +225,7 @@ The notebook is drawn in the reference file, so it is listed here as a correctio
 |---|---|
 | The disclaimer appears and requires explicit acceptance | Yes. Nothing else is reachable until it is accepted |
 | Setup asks for three things and lets everything else wait | Yes. Every field skippable, and skipping produces a working notebook |
-| The empty Today coaches rather than sitting blank, first suggestion the Emergency Card | **No.** Today is the not-built screen. Issue #78 |
+| The empty Today coaches rather than sitting blank, first suggestion the Emergency Card | **Now yes.** It failed on the walk, which is how issue #78 came to exist, and it was built the same day |
 | A first call can be logged in under thirty seconds from cold launch | **Six taps and no typing**, skipping everything optional: accept, skip setup, "Not sure yet", the capture button, "Log a call", save. Comfortably inside thirty seconds for anyone |
 | Nothing asks for an account, an email, or a permission not needed yet | Yes. Nothing anywhere |
 
