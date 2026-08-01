@@ -106,22 +106,44 @@ if [ -n "$intruders" ]; then
   exit 1
 fi
 
-# What the device is actually showing. The label comes from here, never from
-# the argument, so the filename cannot disagree with the image.
+# What the app is actually showing. The label is derived, never taken from the
+# argument, so the filename cannot disagree with the image. D31.
+#
+# **The device theme is no longer the answer on its own.** Since the in-app
+# Appearance setting landed, the app can be dark on a light phone and the
+# reverse, so reading `cmd uimode night` alone would mislabel every capture
+# where the two disagree. The app's own stored choice is asked first and the
+# device is consulted only when that choice is to follow it.
+#
+# Read through `run-as`, which works because this is a debuggable build. A
+# release build has no such setting to read and no screenshots to take.
+choice="$("$ADB" shell run-as "$PACKAGE" cat shared_prefs/health-trail-appearance.xml 2>/dev/null \
+  | grep -o 'name="theme_choice">[A-Z_]*' | sed 's/.*>//' || true)"
+
 night="$("$ADB" shell cmd uimode night 2>/dev/null | tr -d '\r')"
-case "$night" in
-  *yes*) theme="dark" ;;
-  *no*)  theme="light" ;;
+
+case "$choice" in
+  DARK)  theme="dark" ;;
+  LIGHT) theme="light" ;;
+  # FOLLOW_SYSTEM, or no preference written yet, which is the same thing.
   *)
-    echo "Cannot tell what theme the device is in: $night" >&2
-    echo "Set it explicitly on the device, then capture again." >&2
-    exit 1
+    case "$night" in
+      *yes*) theme="dark" ;;
+      *no*)  theme="light" ;;
+      *)
+        echo "Cannot tell what theme the app is in." >&2
+        echo "App choice: ${choice:-<unset, following the phone>}" >&2
+        echo "Device night mode: $night" >&2
+        exit 1
+        ;;
+    esac
     ;;
 esac
 
 if [ -n "$expected" ] && [ "$expected" != "$theme" ]; then
-  echo "Refusing to capture: asked for $expected, device is in $theme." >&2
-  echo "Change the device theme rather than the filename." >&2
+  echo "Refusing to capture: asked for $expected, the app is in $theme." >&2
+  echo "Change the theme in the app under More, Appearance, rather than the" >&2
+  echo "filename. The label is derived from what is on screen." >&2
   exit 1
 fi
 

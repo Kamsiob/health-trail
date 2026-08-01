@@ -139,7 +139,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 **Phase 1 feature work still ahead:** Today with the digest engine, the trail itself, care team, medications, the emergency card, projects, and More.
 
-**An in-app theme setting**, system, light, or dark, belongs in More and is a real feature rather than a testing convenience. It also happens to remove a standing dependency: capturing both themes currently means changing the system theme on somebody's daily driver, which is not a session's to do unattended. With the setting, both sets are captured from inside the app and the phone is never touched.
+~~**An in-app theme setting.**~~ **Built, #88.** Follow the phone, light, or dark, in More. It applies immediately and persists, and it removed the standing dependency it was partly built to remove: **both theme sets are now captured from inside the app and the phone's own theme is never touched.** `tools/screenshot.sh` reads the app's stored choice first and falls back to the device only when the choice is to follow it, which corrects D31's assumption that the device is the answer.
 
 **Language access comes after all of the above**, and it is a body of work rather than a task: ten languages chosen by United States limited English proficiency population, roughly 1500 strings each. **It is language access for caregivers in the United States, not international expansion.** The federal, Medicare, and Medicaid content is specific to this country, so translating for a Spanish speaker in Texas is right and presenting the same app to someone in Spain would be wrong. `MASTER_SPEC.md` carries the distinction and the issues carry the detail. **Do not begin it until everything ahead of it is done.**
 
@@ -153,7 +153,9 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 **Arabic is no longer waiting.** The fonts landed on 2026-08-01 and Arabic renders correctly on the device, so the Arabic screenshots on the design review issues can be captured whenever someone works through them.
 
-**The light theme screenshots are no longer waiting.** The phone was found in light theme on 2026-08-01, so the full set of 28 was captured then. **The dark set is now the one that is short**, and it is deliberately not being solved by flipping the owner's daily driver: the in-app theme setting in section 5 removes the dependency entirely, and the dark captures happen through it.
+**The light theme screenshots are no longer waiting.** The phone was found in light theme on 2026-08-01, so the full set of 28 was captured then. **Both sets now exist**, 30 light and 20 dark, captured through the in-app theme setting without touching the phone.
+
+**The gap in the dark set is the first-run screens**, the disclaimer, setup, the situation picker, and the notebook straight after setup. Those are reachable only on a fresh install, and a fresh install has no stored theme choice, so it comes up following the phone, which is light. Getting them in dark means choosing dark and then getting back to first run, which wipes the choice. **Not worth solving with an uninstall**, which is blocklisted anyway, per D50. They exist in light and that is enough until either the phone is in dark or a debug-only "start over" action exists.
 
 ---
 
@@ -248,6 +250,7 @@ Every screen built without one is composed from existing components under `DESIG
 | Adding a measurement | 2026-08-01 | #42 | not yet |
 | The date picker | 2026-08-01 | #39, review on #68 | not yet |
 | Today, the empty state | 2026-08-01 | #78 | not yet |
+| Appearance, and More around it | 2026-08-01 | #88, review on #89 | not yet |
 
 The notebook is drawn in the reference file, so it is listed here as a correction rather than as an undrawn screen. `DESIGN.md` section 3 item 8 records the four ways the built screen departs from the mockup, with reasons.
 

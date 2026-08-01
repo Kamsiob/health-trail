@@ -24,6 +24,7 @@ import com.kamsiob.healthtrail.data.DatabaseKeyLost
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 import com.kamsiob.healthtrail.ui.screens.DisclaimerScreen
 import com.kamsiob.healthtrail.ui.screens.SetupAnswers
 import com.kamsiob.healthtrail.ui.screens.SetupScreen
@@ -58,7 +59,10 @@ object AppRootTags {
  * pretending, and it does not blame the person.
  */
 @Composable
-fun AppRoot() {
+fun AppRoot(
+    themeChoice: ThemeChoice = ThemeChoice.DEFAULT,
+    onThemeChoice: (ThemeChoice) -> Unit = {},
+) {
     val context = LocalContext.current
     var state by remember { mutableStateOf<RootState>(RootState.Opening) }
 
@@ -168,7 +172,11 @@ fun AppRoot() {
                 }
             }
 
-            is RootState.Ready -> NotebookShell(current.repository)
+            is RootState.Ready -> NotebookShell(
+                repository = current.repository,
+                themeChoice = themeChoice,
+                onThemeChoice = onThemeChoice,
+            )
         }
     }
 }
