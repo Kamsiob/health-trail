@@ -145,6 +145,12 @@ The one thing still waiting rather than blocked: **the light theme screenshots**
 
 ## 8. This environment, so a fresh session does not rediscover it
 
+**Two mistakes this run made, both worth not repeating.**
+
+**An edit that replaces text must assert it matched.** Nine decision entries, D39 through D47, were written and none reached `DECISIONS.md`: the anchor they all targeted had been consumed by an earlier edit, so every one of them matched nothing and reported success. They were restored from the commit messages that quoted them, which is the only reason the content survived. A silent no-op is worse than an error, because the work continues on top of a record that is not there.
+
+**Check `git branch --show-current` before committing, not after pushing.** One commit reached `main` directly because the branch was assumed from a `checkout` several steps and one merge earlier. Every way of undoing it is a command rule 6 forbids, so it stayed. D48.
+
 **The shell does not carry state between tool calls.** Every command starts fresh.
 
 - **`ANDROID_HOME` is not set.** The SDK is at `/home/Kamsiob/Android/Sdk`. Gradle finds it through `android/local.properties`, which is gitignored and **does not exist in a fresh clone**. Recreate it: `sdk.dir=/home/Kamsiob/Android/Sdk`.

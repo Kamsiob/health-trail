@@ -591,6 +591,130 @@ The resting screenshot of the setup screen looked correct. With the keyboard ope
 Neither was visible in the layout at rest, in a screenshot, or in the code. Both were obvious within a second of opening the keyboard on the phone.
 
 **Recorded as a checklist item rather than as a bug:** a screen with any text field is looked at with the keyboard up before its issue closes. That is the state the person actually spends their time in, and it is not the state anything else in this project tests. It joins section 10.6 line 1, which already said the real device and now says which states on it.
+
+### D39. The pinned action footer, found three times before it was named
+
+**Date:** 2026-08-01. **Decided by:** the session, working issues #37 and #44.
+
+Four screens have the same shape: content that scrolls, actions that do not. Three of the four were missing the same detail, a gap between the two regions, and each was found separately as if it were its own bug.
+
+**It is one missing rule, not three bugs.** Named as `DESIGN.md` section 5.15: the actions never scroll, there is always at least 16dp between the scrolling area and the first action, and the secondary action sits below the primary at equal reach.
+
+**All three were invisible at the default font size on a tall screen.** One appeared with the keyboard up, two at font scale 2.0. Content clipped at a scroll edge is correct and is not this defect: a list has to end somewhere. The defect is the absence of separation, which turns a clean clip into what reads as an action sitting on top of the content.
+
+**The lesson worth keeping is about counting.** The first two were fixed as one-line patches on their own screens. Only when the third appeared did it become obvious the fix belonged in the design language. A defect found twice is a defect. A defect found three times is a missing specification.
+
+### D40. The Unfiled tray is a card that appears, not a section that waits
+
+**Date:** 2026-08-01. **Decided by:** the session, building issue #53.
+
+The tray needed a home. The notebook is twelve fixed sections and none of them is this. Today is not built. A thirteenth section would break the rule that the sections never move and never change.
+
+**Decided: a card at the top of the notebook, present only when something is waiting.** The tray is a thing waiting for the person rather than a place they filed something, so it behaves like a notification and not like a section.
+
+**Its absence when empty is the point rather than a compromise.** Most notebooks will have an empty tray most of the time, and a permanent row leading to an empty room is a worse screen than no row. Discoverability, section 10.7, is satisfied because it appears exactly when there is something to discover.
+
+The tray screen still carries a full empty state, which the person reaches by filing the last item. That is not a contradiction: the card is about whether there is a reason to go, and the empty state is what you see when you get there and finish.
+
+### D41. The suggestion is allowed to find nothing, and a test made it worse first
+
+**Date:** 2026-08-01. **Decided by:** the session, building issue #53.
+
+`MASTER_SPEC.md` requires the app to suggest a home by plain word matching. Built with a three character minimum, "Meals and dietary" matched the sentence "I rang and asked", because "and" is a word by any measure and carries nothing.
+
+**Raised to four characters, which does the work a stop word list would** without a list that has to be written per locale and would silently be wrong in the locales nobody checked. Nearly every connective in English is three characters or fewer.
+
+**A known limitation, stated rather than hidden:** Chinese does not separate words with spaces, so the matcher finds almost nothing there. That is acceptable **only because a suggestion is never required**. The person sees the same chips either way and is one tap from the right answer, so the failure mode is no help rather than wrong help. If suggestions ever become load bearing, this stops being acceptable.
+
+**Ties produce nothing.** Two equally good guesses mean the app does not know, and picking whichever sorted first would be the app deciding. That is the line `MASTER_SPEC.md` draws and it is worth holding at the cost of suggesting less.
+
+### D42. A control that does nothing is removed, not labeled
+
+**Date:** 2026-08-01. **Decided by:** the session, working issue #44.
+
+`ScreenReaderTest`, written to automate the half of the accessibility gate that can be automated, failed on its first run against the capture sheet: Material's bottom sheet drag handle carries a click action and announces nothing. **An unlabeled button, on the one screen every piece of data enters through.**
+
+**Labeling it was the obvious fix and it was wrong twice over.** Practically, Material applies its own semantics outside anything the caller can reach, which two attempts confirmed. Substantively, `skipPartiallyExpanded` leaves the handle no state to toggle, so a label would have announced a control that does nothing a reader user can use. That is worse than an honest absence: it costs them a stop on a tour of a screen they are navigating one node at a time.
+
+**Removed.** It costs nothing the reference asked for, since section 3 item 7 already records that the mockups draw this sheet with no handle, and the sheet still dismisses by tapping outside and by the back gesture.
+
+**The general rule, since it will recur with platform components:** when a borrowed control has no meaning in the app's own flow, take it out rather than dressing it. Every node a reader stops on should be worth the stop.
+
+### D43. The reader check is a test, not a pass
+
+**Date:** 2026-08-01. **Decided by:** the session, working issue #44.
+
+TalkBack was not enabled on the phone during this run, and that was deliberate rather than an omission: it is the owner's daily driver, the session is unattended, and TalkBack changes touch behavior, so a failure part way through would leave the device hard to use with nobody there to fix it.
+
+**What was built instead is stronger than one manual pass anyway.** `ScreenReaderTest` asserts on every screen, on every build, forever, that no touchable node is unlabeled. A single hand check would have found the drag handle once and never guarded against the next one.
+
+**What it does not cover, and what still needs ears:** traversal order matching visual order, and whether the labels actually sound like sentences. Those stay open on #44 and want a supervised moment on the device.
+
+### D44. An unbuilt path says why, in words, rather than going quiet
+
+**Date:** 2026-08-01. **Decided by:** the session, working issue #43.
+
+Looking at the capture sheet on the phone with fresh eyes turned up something no test would have caught: **"Save a document" closed the sheet and did nothing.** To the person that is indistinguishable from the app losing what they tried to save, on the one screen every piece of data enters through.
+
+**It now says plainly that it is not built and why**: it needs somewhere to keep the photograph, and that is being built first so nothing they save can go missing. The reason matters. "Not built yet" on its own reads as neglect, and this audience has enough of that from every other institution in their week.
+
+It carries `ShellTags.NOT_BUILT`, so it is greppable and cannot survive to release, which is the same treatment `DESIGN.md` section 5.5 already gives the unbuilt destinations.
+
+**The general rule:** an interface may offer something it has not built, and it may not go quiet when someone takes it up.
+
+### D45. The scrim has to actually dim
+
+**Date:** 2026-08-01. **Decided by:** the session, working issue #43.
+
+Material's default sheet scrim is a light veil. Against this app's dark surfaces the notebook behind the capture sheet stayed almost as bright as the sheet and went on competing for the eye, so it read as two screens at once rather than a sheet over a screen.
+
+**Set to black at 62%**, judged on the device in dark theme, which is the harder of the two: on warm paper a lighter scrim would do, and one value that works in both is worth more than two that each work in one. Measured, the notebook behind goes from (18,26,32) to (10,14,16) while staying legible enough that the person keeps their place.
+
+**Worth recording because it is a default nobody chose.** Everything else on that screen was specified and this was inherited, which is exactly the kind of thing that survives a design review by not being noticed.
+
+### D46. The typefaces were never bundled, and every review screenshot was in the wrong face
+
+**Date:** 2026-08-01. **Decided by:** the session, working issue #12.
+
+`Type.kt` used `FontFamily.Default` for display and body. **Every screenshot the owner has reviewed was rendered in the system face**, not in Bricolage Grotesque and Atkinson Hyperlegible.
+
+The scale was right, so this was easy to miss: sizes, weights, line heights, and tracking were all correct and only the face was wrong. The file even said so in a comment. It still meant four design reviews were conducted against typography the app does not use.
+
+**Atkinson Hyperlegible is not an aesthetic choice**, which is what makes this more than cosmetic. `DESIGN.md` section 4.3 picks it because the Braille Institute designed it for character distinction for low vision readers, and this audience is stressed, frequently older, and reading in bad light. Shipping the system face was quietly dropping an accessibility decision.
+
+**Bundled rather than requested at runtime.** This app works offline, and a typeface that needs the network is a typeface that is sometimes absent.
+
+**Every license was verified against `google/fonts` METADATA.pb rather than assumed**, all four SIL OFL 1.1. Section 4.3 asked for exactly that and it would have been easy to skip.
+
+**Simplified Chinese is deliberately not bundled**, and that is a size decision rather than an oversight: Noto Sans SC is around ten megabytes per weight against 680 kilobytes for all six faces here together. Chinese falls back to the system face and the issue says so plainly rather than implying the coverage is complete.
+
+### D47. Arabic on the device found what no check could
+
+**Date:** 2026-08-01. **Decided by:** the session, working issue #12.
+
+With the fonts in, the app ran in Arabic on the phone for the first time, through a per-app locale rather than a system setting, because the phone is the owner's daily driver.
+
+**Two things only that could have found.** The layout mirrors correctly and Arabic renders in real Noto glyphs, which is the result the issue wanted. And **the template catalog is entirely English**, so the interface is Arabic and every situation name, subtitle, and burden line inside it is not. `check_i18n.py` passes, because it checks `contract/i18n`, and the template catalog is a separate 1500 string body of user facing text that nothing checks. Recorded as #62.
+
+The bidi symptom is worth keeping in mind for any mixed content: an English sentence inside an Arabic paragraph puts its final period on the visual left, which reads as broken. It goes away when the content is translated.
+
+### D48. Nine decisions were lost to an edit that silently did nothing
+
+**Date:** 2026-08-01. **Decided by:** the session.
+
+D39 through D47 were written across the run and none of them reached this file. Each edit anchored on the text `---` followed by the BLOCKED heading. The D38 edit consumed that anchor without restoring it, so **every later edit matched nothing and reported success**, and the loss was found only when a tenth entry failed the same way and the file was read.
+
+They are restored above from the commit messages and pull request bodies that quoted them, which is the only reason the content survived at all.
+
+**Two things worth carrying:**
+
+**An edit that replaces text must assert it matched.** A silent no-op is worse than an error, because the work continues on top of a record that is not there. Every commit and pull request in this run cites decision numbers, and for most of the run those numbers pointed at nothing.
+
+**A commit also reached `main` directly**, because the branch was assumed from a `checkout` several steps earlier rather than checked. Every way of undoing that is a command rule 6 forbids: `git reset --hard`, `git checkout .`, branch deletion. Rule 6 says to stop and write it down rather than reach for one, so the commit stayed, verified by continuous integration on push to `main`, with the branch pointer `feat/8-live-view-check` left at it. **Check `git branch --show-current` before committing, not after pushing.**
+
+---
+
+## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
 **Nothing is blocked as of 2026-07-31.** All four entries that ever appeared here are resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. A fresh session reading this needs nothing from the owner in order to continue.
