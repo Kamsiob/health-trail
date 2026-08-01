@@ -42,6 +42,8 @@ object Backup {
         context: Context,
         target: File,
         exportedAt: Long,
+        /** Null writes an unencrypted file. Cleared by the writer either way. */
+        passphrase: CharArray? = null,
     ): ExportContainer.Manifest = withContext(Dispatchers.IO) {
         val database = HealthTrailDatabase.open(context)
         val file = context.getDatabasePath(HealthTrailDatabase.FILE_NAME)
@@ -67,6 +69,7 @@ object Backup {
                     subjectCount = countOf(database.database, "subject"),
                     exportedAt = exportedAt,
                 ),
+                passphrase = passphrase,
             )
         } finally {
             staged.delete()
