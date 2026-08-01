@@ -157,7 +157,14 @@ fun NotebookShell(repository: Repository) {
                     // persona P1. What is not built is the digest, and the
                     // screen says so itself rather than standing in for it.
                     Destination.TODAY -> TodayScreen(
-                        isEmpty = (counts?.sumOf { it.count } ?: 0) == 0,
+                        // The coaching stays until the emergency card exists,
+                        // because that is what it is coaching toward. Tying it
+                        // to "has anything been written" hid it the moment
+                        // somebody logged their first call.
+                        showCoaching = counts
+                            ?.firstOrNull { it.section == Repository.Section.EMERGENCY_CARD }
+                            ?.count == 0,
+                        hasAnything = (counts?.sumOf { it.count } ?: 0) > 0,
                     )
                     Destination.PROJECTS -> NotBuiltYet(strings["nav.projects"])
                     Destination.MORE -> NotBuiltYet(strings["nav.more"])

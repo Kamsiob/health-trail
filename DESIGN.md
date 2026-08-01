@@ -601,6 +601,8 @@ Composed from Display L, Body M, Display S, Label, the Mono count style, cards f
 
 **The numbering is allowed here**, and section 1 bans numbered markers only where the content is not genuinely a sequence. Filling in the emergency card first is the entire point of the list.
 
+**The coaching stays until the emergency card exists, not until something is written.** Tying it to whether anything had been written took the most useful two minutes in the app off the screen the moment somebody logged their first call, which is the opposite of the intended reward. Both the digest note and the coaching appear together when both apply, and the coached list changes its heading from "Nothing written down yet" to "Worth doing next", because a heading that contradicts the screen under it reads as a bug.
+
 **A notebook with something in it says the digest is still being built, and says nothing is waiting on it.** The second half matters more: a person reading that a summary is coming needs to know in the same breath that their records are kept regardless, or the sentence reads as a reason to stop writing things down. That branch carries `ShellTags.NOT_BUILT` so it cannot survive to release.
 
 `TodayScreenTest` asserts the empty state never scolds and never keeps score, which is rule 13 checked rather than remembered.
