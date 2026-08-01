@@ -336,11 +336,19 @@ The rule is decorative in the sense 2.3 defines: remove it and nothing becomes u
 
 **One press treatment for everything the person can touch.** A control that does nothing when pressed reads as broken, and this app is used by someone in a hallway who cannot tell a slow app from a dead one.
 
-**The surface steps one place along the paper to card to sand ladder**, 55% of the way toward `sand`, over the quick 120ms of section 6. One rule covers both themes because the ladder runs in both.
+**The resting surface moves 8% of the way toward `ink`**, over the quick 120ms of section 6.
+
+That is one rule for both themes and every surface, and it works because `ink` is dark on light paper and light on dark paper. A white card darkens, a dark card lightens, the blue filled button deepens toward `blue_deep`, the gold capture button warms, and a control with no container picks up a faint tint. **No table of exceptions**, which matters more than the exact number: a rule with exceptions is one the next component gets wrong.
+
+An earlier version stepped toward `sand`. It was wrong on anything that was not already a card: on the blue button it pulled the surface toward a warm neutral, which is a different color rather than a pressed one.
+
+Measured on the device in dark theme: a card row goes from (26,36,43) to (43,50,56), the filled button from (127,182,212) to (136,186,214), the capture button from (227,177,85) to (228,182,100).
 
 **Never a bounce and never a scale.** A bounce on every press is banned in section 1, and a scale animation on a card the size of a notebook row reads as a toy.
 
-**Never a ripple on top of it.** The surface is the answer to the touch, and a ripple would be a second, louder answer to the same one.
+**Never a ripple on top of it.** The surface is the answer to the touch, and a ripple would be a second, louder answer to the same one. Every control passes `indication = null` and supplies its own `interactionSource`.
+
+**The capture button answers a finger like everything else.** Section 5.5 says it never changes color, and that is about its resting state: it is gold on every screen, always. A press is not a change of color, it is the control saying it heard you, and the one thing data enters through must say that most of all.
 
 **Reduced motion reaches it.** With animations off the step becomes a 100ms fade rather than nothing, so the acknowledgment survives even when the movement does not.
 

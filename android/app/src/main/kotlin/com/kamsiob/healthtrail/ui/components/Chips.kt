@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,8 +67,9 @@ fun ChoiceChip(
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
+    val interaction = remember { MutableInteractionSource() }
 
-    val surface = when {
+    val resting = when {
         !enabled -> colors.sand.copy(alpha = 0.5f)
         selected -> colors.blueSoft
         else -> colors.sand
@@ -76,18 +80,28 @@ fun ChoiceChip(
         else -> colors.ink
     }
 
+    val surface by pressedSurface(interaction, resting)
+    val ring by focusRingAlpha(interaction)
+    // A selected chip always carries its ring and a focused one gains it, so
+    // focusing a chip that is already selected changes nothing rather than
+    // flickering. The ring is one treatment doing two jobs, which is why it is
+    // the same 2dp of `blue` in both cases.
+    val ringAlpha = maxOf(if (selected) 1f else 0f, ring)
+
     Row(
         modifier = modifier
             .minimumInteractiveComponentSize()
             .defaultMinSize(minHeight = ChipHeight)
             .clip(Radius.pill)
             .background(surface)
-            .then(
-                if (selected) Modifier.border(2.dp, colors.blue, Radius.pill) else Modifier
-            )
+            .border(2.dp, colors.blue.copy(alpha = ringAlpha), Radius.pill)
             .selectable(
                 selected = selected,
                 enabled = enabled,
+                interactionSource = interaction,
+                // The chip's own surface is the press feedback, per 5.14. A
+                // ripple on top would be a second, louder answer to one touch.
+                indication = null,
                 role = Role.RadioButton,
                 onClick = onClick,
             )

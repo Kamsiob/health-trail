@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -102,13 +104,26 @@ fun BottomNav(
         }
 
         // Overlaps the container's top edge by 16dp, per section 5.5.
+        //
+        // It answers a finger like everything else. Section 5.5 says it never
+        // changes color, which is about its resting state: it is always gold,
+        // on every screen. A press is not a change of color, it is the control
+        // saying it heard you, and the one thing data enters through must say
+        // that most of all.
+        val captureInteraction = remember { MutableInteractionSource() }
+        val captureSurface by pressedSurface(captureInteraction, colors.blaze)
         Box(
             modifier = Modifier
                 .offset(y = (-16).dp)
                 .size(56.dp)
                 .clip(CircleShape)
-                .background(colors.blaze)
-                .clickable(role = Role.Button, onClick = onCapture)
+                .background(captureSurface)
+                .clickable(
+                    interactionSource = captureInteraction,
+                    indication = null,
+                    role = Role.Button,
+                    onClick = onCapture,
+                )
                 .semantics { contentDescription = captureDescription }
                 .testTag(NavTags.CAPTURE),
             contentAlignment = Alignment.Center,
@@ -140,10 +155,14 @@ private fun NavTab(
 ) {
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, Color.Transparent)
+    val ring by focusRingAlpha(interaction)
     Column(
         modifier = modifier
             .sizeIn(minWidth = Space.touchTarget, minHeight = Space.touchTarget)
             .clip(Radius.tile)
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
             .clickable(
                 interactionSource = interaction,
                 indication = null,

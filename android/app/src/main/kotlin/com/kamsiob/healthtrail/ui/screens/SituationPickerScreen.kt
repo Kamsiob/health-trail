@@ -1,7 +1,9 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,13 +17,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.TextAction
+import com.kamsiob.healthtrail.ui.components.focusRingAlpha
+import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -145,14 +152,24 @@ private fun SituationRow(
     onClick: () -> Unit,
 ) {
     val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.card)
+    val ring by focusRingAlpha(interaction)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.card)
-            .background(colors.card)
-            .clickable(role = Role.Button, onClick = onClick)
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .clickable(
+                interactionSource = interaction,
+                // The row's own surface is the press feedback, per 5.14.
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            )
             .testTag(SituationPickerTags.row(situation.id))
             .padding(Space.cardPadding),
     ) {

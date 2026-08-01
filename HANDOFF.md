@@ -46,8 +46,6 @@ The parts that change how you work, compressed:
 2. **Editing a date from the entry itself, forever, with the same control.** Nothing can edit a date yet, because nothing shows an entry yet.
 3. **Rendering.** `EventDateText` exists and is proven by the vectors. Nothing calls it yet, because the trail is not built. **The first screen that shows a date must call it rather than formatting one itself.**
 
-**Then #40**, the press state sweep, which is small and mechanical: `DESIGN.md` 5.14 and `ui/components/Press.kt` exist and only the notebook rows use them. `FilledButton` passes `indication = null` and has no press state at all.
-
 **Then #41**, the situation picker rebuild, which is the last of the three screens the owner named as cluttered.
 
 ## 4. What is done, and how each piece was verified
@@ -68,7 +66,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | Content compliance | `check_copy.py`, `check_templates.py`, `check_contract_isolation.py`, `check_self_contained.py` |
 | Every screen built so far | Instrumented, plus built, installed, opened, and looked at on the Pixel |
 | The notebook's fold behavior | Walked on the Pixel with a hospital stay template: appointments, the trail, documents, and standing instructions forward, money and progress collapsed, which is exactly what that template names |
-| The press state | Measured on the device. A row steps from (26,36,43) resting to (30,43,50) under a finger |
+| The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
 **The whole instrumented suite: 63 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
 
@@ -82,7 +80,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 |---|---|
 | ~~#38~~ | **Done.** The contract, the schema, the repository, the renderer, and the vectors |
 | #39 | The date interface, which hides all of the model. Depends on #38 |
-| #40 | Retroactive: a visible press state on every tappable thing already built. Small, mechanical |
+| ~~#40~~ | **Done.** Every tappable surface in the app uses the one treatment in 5.14 |
 | #41 | Rebuild the situation picker. Fourteen options flat is a wall |
 | #42 | The remaining two capture inputs, measurement and document |
 | #43 | Retroactive: audit every screen already built against the bar. Opens further issues rather than fixing everything itself |
