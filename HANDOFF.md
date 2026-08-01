@@ -4,9 +4,30 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-08-01, in the session that proved the destructive command guard had never been wired and rebuilt this file's section 5 from the tracker.
+**Last rewritten:** 2026-08-01, at the end of the session that found all three run safety guards were decorative, rebuilt section 5 from the tracker, and closed the export round trip and its encryption.
+
+**The repository is current and nothing is in flight.** No uncommitted work, no open pull requests, every branch merged, the board synced. A session starting cold needs this file, `CLAUDE.md`, and the tracker, and nothing else.
 
 If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
+
+---
+
+## 0. Read this before you trust anything about safety
+
+**All three run safety guards were decorative until 2026-08-01, and the repository said otherwise for a week.** D29, D49, D50, D53.
+
+The destructive command hook interpolated a path, this project's path contains spaces, the shell split it, the executable was never found, and the hook exited 127. **A blocking hook has to exit 2**, so 127 read as "nothing to say" and every destructive command ran. The pre-compaction save had the identical defect. The retry cap turned out not to be a hook at all but a tool nothing ever called.
+
+None of that produced a single line of output, which is the whole problem: **a guard that does not fire looks exactly like a guard with nothing to do.**
+
+**The quoting is fixed and a check in continuous integration now fails on it.** What is not proven is that the hook fires in your session, because a fix made mid session does not take effect in that session. **Prove it first, before anything else:**
+
+    git reset --hard HEAD          # on a clean tree
+    adb shell pm clear com.kamsiob.healthtrail
+
+Both must be refused with "Blocked by the Health Trail destructive command guard". **If either runs, fixing that comes before any other work.** `RUN-SAFETY.md` section 1.1 has the full procedure. **Record the result in D49 either way, including a pass**, because that entry is the only place the outcome of this test is written down.
+
+Guard 2 has still never fired and cannot be triggered on demand. Treat it as absent and keep this file current by hand.
 
 ---
 
@@ -40,7 +61,16 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
-**Export encryption**, which is what remains of #9 after the round trip. Section 5 agrees; if the two ever disagree again, section 5 is rebuilt from the tracker and this one follows it.
+**The last two failure cases on #9**, and then #9 closes. Section 5 agrees; if the two ever disagree again, section 5 is rebuilt from the tracker and this one follows it.
+
+**Six of the eight failure cases in `contract/export-format.md` section 7 are covered.** The two that are not:
+
+- a database with an unknown table or column
+- an attachment referenced by the database but absent from the archive
+
+Both need a deliberately malformed fixture rather than new production code, which is why they are a small piece of work rather than the reason #9 is still open.
+
+**Then #62**, the template catalog being English only, which is release blocking.
 
 **The round trip test is built and passing**, 9 tests, unencrypted. D55. The argument B4 rested on is no longer resting on something unbuilt: a notebook demonstrably survives an export and a restore, column by column, tombstones included, with the EDTF string byte identical and the derived ranges recomputed rather than trusted.
 
