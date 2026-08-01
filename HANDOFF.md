@@ -216,7 +216,28 @@ The notebook is drawn in the reference file, so it is listed here as a correctio
 
 ## 10. Persona runs
 
-None yet. `TESTING-PERSONAS.md` requires each run to be recorded here with its fixture seed and date. A persona walked against a schema that has since changed has not been walked, and the deterministic fixture generator that would make a run meaningful is issue #17. **The schema is about to change again for #38**, so a run before that lands would be wasted.
+### P1, day one in a hallway. Walked 2026-08-01 on the Pixel, fixture: fresh install, no seed
+
+**Four of the five things P1 says must be true are true. One is not.**
+
+| Must be true | Result |
+|---|---|
+| The disclaimer appears and requires explicit acceptance | Yes. Nothing else is reachable until it is accepted |
+| Setup asks for three things and lets everything else wait | Yes. Every field skippable, and skipping produces a working notebook |
+| The empty Today coaches rather than sitting blank, first suggestion the Emergency Card | **No.** Today is the not-built screen. Issue #78 |
+| A first call can be logged in under thirty seconds from cold launch | **Six taps and no typing**, skipping everything optional: accept, skip setup, "Not sure yet", the capture button, "Log a call", save. Comfortably inside thirty seconds for anyone |
+| Nothing asks for an account, an email, or a permission not needed yet | Yes. Nothing anywhere |
+
+**What P1 says to watch for, and what was seen:**
+
+- *Onboarding that cannot be completed one-handed.* Every primary action is in the lower half. The capture button is centered above the navigation bar.
+- *A keyboard covering the field being typed into.* Fixed this run, D38. It was real on setup and is not any more.
+- *A required field that should be optional.* None. The whole path can be walked without typing a character.
+- *A screen that assumes the person already knows the facility's name.* Setup's "Where are they right now" hints "The ward, the building, or just the town", and it is skippable.
+
+**Worth recording beyond the checklist:** answering "Not sure yet" to the situation picker produces a notebook with no care threads, and the capture form then drops the thread question entirely rather than showing a question whose only answer is "not sure". The entry is not marked unfiled, because with nothing offered, not choosing is not the person declining to say. That behaved correctly without being specifically tested for.
+
+**Not walked yet:** P2 through P13. P10 through P12 need #62, since the template catalog is English only and a language persona against English content tests nothing.
 
 ---
 
