@@ -480,11 +480,23 @@ Tracked on issue #28.
 
 Every field is optional, including the name, and continuing with all of them blank is a real path that produces a working notebook. There is no required field marker, no validation, no error state, and no progress indicator, because a progress indicator on setup frames an unfinished form as a deficiency.
 
-One screen rather than a three step wizard. A wizard means three taps before anything is written down and hides how little is being asked. One short scrolling screen shows the whole ask at once, which is what makes it possible to see that it is nearly nothing. The word Optional appears once at the top rather than beside each field.
+One screen rather than a three step wizard. A wizard means three taps before anything is written down and hides how little is being asked. One short scrolling screen shows the whole ask at once, which is what makes it possible to see that it is nearly nothing.
 
-**Section headings and field labels are never the same words.** Built with them shared, the screen showed "Where are they right now" twice in a row, once as a heading and once as the label beneath it. It read as a bug and a screen reader announced it twice.
+**Rebuilt on 2026-08-01 under the standard in section 10.5.** The first version was five labeled boxes in a row, four of them empty and unhinted, under a mono "Optional". It worked and it read as paperwork, on the screen that decides whether someone in a hallway keeps going.
 
-Composed from Display L, Display S, Body M, the text field from section 5.9, one filled button, and one text action. Tracked on issue #30.
+**The reassurance is one warm sentence, once.** "Answer what you can and leave the rest. None of it is required, and you can change any of it later." It replaced the word Optional, which is accurate and is the vocabulary of a form being administered, and it carries the second half a label could not: that nothing here is permanent.
+
+**Three groups, headed with the group header from 5.13**, the same one the notebook and the situation picker use, so a person arriving from the disclaimer meets one app rather than three. Who, where, in a hurry.
+
+**Every field carries a hint that is genuine guidance**, per 5.9, never a repeat of the label. "Mom, Dad, my aunt, whatever fits" is a hint. "Who they are to you" is a label. That single change did more for how this screen feels than the grouping did.
+
+**Group headings and field labels are never the same words.** Built with them shared, the screen showed the same sentence twice in a row and a screen reader announced it twice. `SetupFlowTest` asserts it now, because the next person editing the copy will not know.
+
+**The questions scroll and the actions do not**, which keeps Continue in the lower half where a thumb reaches it, per section 9, whatever the font size or translation length does to the questions above. There is a real gap between the last question and the button: with the keyboard up the scrolling area shrinks until the field at its edge sits against the button, and on the phone that read as an overlap rather than as content scrolling behind. Invisible in a resting screenshot and obvious in a hand.
+
+Skipping sits below Continue at equal reach with no styling that makes it feel like giving up.
+
+Composed from Display L, Body M, the group header from 5.13, the text field from 5.9, the press state from 5.14, one filled button, and one text action. Tracked on issues #30 and #37.
 
 **The situation picker.** Fourteen care settings, grouped by where the care is happening, each carrying its name and the subtitle that tells two similar settings apart.
 
@@ -619,6 +631,8 @@ Done means it looks and reads like the rest of the app, it has been looked at on
 Checked rather than remembered, in this order. A screen closes only after every line is true.
 
 1. **Built, installed to the phone over ADB, opened, and looked at on the real device.** Not a preview, not the layout inspector, the actual screen in a hand. Two real bugs in one increment were invisible in review and obvious on the device, recorded as D28.
+
+   **With the keyboard up, on any screen carrying a text field.** That is the state the person actually spends their time in, and nothing else in this project tests it. Two more defects were found that way and only that way, recorded as D38: an action button sitting on top of the last field, and the field sliced through the middle of its box at the scroll boundary. Both looked correct at rest.
 2. **It uses the components the design language already has,** and introduced nothing new. If something new was genuinely unavoidable, it is specified in section 5 first, with its states.
 3. **Hierarchy is visible at a glance.** A person can tell what matters without reading every word.
 4. **It holds up with real content,** not only with tidy sample data. Long names, empty sections, one item, many items, a note nobody bothered to punctuate.

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -33,6 +34,7 @@ object SetupTags {
     const val NAME = "setup_name"
     const val WHERE = "setup_where"
     const val PHONE = "setup_phone"
+    const val REASSURE = "setup_reassure"
     const val CONTINUE = "setup_continue"
     const val SKIP = "setup_skip"
 }
@@ -65,10 +67,22 @@ data class SetupAnswers(
  * One short scrolling screen shows the whole ask at once, which is what makes it
  * possible to see that it is nearly nothing.
  *
- * **The word Optional appears once,** at the top, rather than beside each field.
- * Repeating it on every field turns a reassurance into noise.
+ * **The reassurance is one warm sentence at the top**, rather than the word
+ * Optional beside each field. Repeating it on every field turns a reassurance
+ * into noise, and the word on its own was the vocabulary of a form being
+ * administered. The sentence also carries the other half a label could not:
+ * that nothing here is permanent.
  *
- * **Section headings and field labels are never the same words.** Built with
+ * **The three things are grouped and headed.** Five labeled boxes in a row read
+ * as a form. Three short groups read as three questions, which is what this
+ * actually is, and it is the same group header the notebook and the situation
+ * picker use, so a person arriving from the disclaimer meets one app.
+ *
+ * **Every field carries a hint that is genuine guidance**, per section 5.9, not
+ * a repeat of its label. Four of the five were bare gray boxes, which is the
+ * thing that made the screen feel like paperwork more than anything else on it.
+ *
+ * **Group headings and field labels are never the same words.** Built with
  * them shared, the screen showed "Where are they right now" twice in a row, once
  * as a heading and once as the label beneath it. It read as a bug, and a screen
  * reader announced it twice. Found by looking at the built screen on a device.
@@ -103,6 +117,10 @@ fun SetupScreen(
                 .imePadding()
                 .padding(horizontal = Space.screenHorizontal, vertical = Space.l),
         ) {
+            // The questions scroll and the actions do not, which is what keeps
+            // Continue in the lower half where a thumb reaches it on a large
+            // phone, per section 9, whatever the font size or translation
+            // length does to the questions above it.
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -116,13 +134,25 @@ fun SetupScreen(
 
                 Spacer(Modifier.height(Space.s))
 
+                // **The reassurance, in words, once.** This replaced a mono
+                // "Optional" that sat directly under the title. The word is
+                // accurate and it is the vocabulary of a form being
+                // administered, which is the last thing this screen should be
+                // in front of someone in a corridor. It also does the second
+                // job the old label could not: saying plainly that nothing here
+                // is permanent.
                 Text(
-                    text = strings["entry.optional"],
-                    style = HealthTrail.type.mono,
-                    color = colors.ink3Text,
+                    text = strings["setup.reassure"],
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                    modifier = Modifier.testTag(SetupTags.REASSURE),
                 )
 
                 Spacer(Modifier.height(Space.l))
+
+                GroupHeader("setup.group.who")
+
+                Spacer(Modifier.height(Space.headerGap))
 
                 HealthTrailTextField(
                     label = strings["setup.name.label"],
@@ -136,22 +166,20 @@ fun SetupScreen(
 
                 HealthTrailTextField(
                     label = strings["setup.relationship.label"],
+                    hint = strings["setup.relationship.hint"],
                     value = relationship,
                     onValueChange = { relationship = it },
                 )
 
                 Spacer(Modifier.height(Space.sectionGap))
 
-                Text(
-                    text = strings["setup.where.title"],
-                    style = HealthTrail.type.displayS,
-                    color = colors.ink,
-                )
+                GroupHeader("setup.group.where")
 
-                Spacer(Modifier.height(Space.sm))
+                Spacer(Modifier.height(Space.headerGap))
 
                 HealthTrailTextField(
                     label = strings["setup.where.label"],
+                    hint = strings["setup.where.hint"],
                     value = where,
                     onValueChange = { where = it },
                     fieldTestTag = SetupTags.WHERE,
@@ -159,24 +187,13 @@ fun SetupScreen(
 
                 Spacer(Modifier.height(Space.sectionGap))
 
-                Text(
-                    text = strings["setup.phone.title"],
-                    style = HealthTrail.type.displayS,
-                    color = colors.ink,
-                )
+                GroupHeader("setup.group.reach")
 
-                Spacer(Modifier.height(Space.s))
-
-                Text(
-                    text = strings["setup.phone.hint"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
-                )
-
-                Spacer(Modifier.height(Space.sm))
+                Spacer(Modifier.height(Space.headerGap))
 
                 HealthTrailTextField(
                     label = strings["setup.phone.person.label"],
+                    hint = strings["setup.phone.person.hint"],
                     value = phoneName,
                     onValueChange = { phoneName = it },
                 )
@@ -185,6 +202,7 @@ fun SetupScreen(
 
                 HealthTrailTextField(
                     label = strings["setup.phone.number.label"],
+                    hint = strings["setup.phone.number.hint"],
                     value = phoneNumber,
                     onValueChange = { phoneNumber = it },
                     keyboardType = KeyboardType.Phone,
@@ -194,6 +212,14 @@ fun SetupScreen(
 
                 Spacer(Modifier.height(Space.l))
             }
+
+            // **A real gap between the last question and the action.** With
+            // the keyboard up the scrolling area shrinks until the field at its
+            // edge sits directly against the button, and on the phone that read
+            // as the button overlapping the field rather than as content
+            // scrolling behind it. Invisible in the resting screenshot and
+            // obvious in a hand, which is why section 10.6 line 1 exists.
+            Spacer(Modifier.height(Space.m))
 
             FilledButton(
                 label = strings["setup.continue"],
