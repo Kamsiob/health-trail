@@ -615,6 +615,12 @@ Not a phase. A gate on every screen.
 
 **Date controls specifically** must be fully operable by screen reader and at maximum font size, and a screen reader must read an imprecise date as the person expressed it rather than as a resolved timestamp. See 10.9.
 
+**Every touchable node says what it is, and the build checks it.** `ScreenReaderTest` walks every screen's semantics tree, in every window including a sheet's own, and fails on any node carrying a click that has neither text nor a content description. It found one on the first run: the capture sheet's drag handle, an unlabeled button on the screen every piece of data enters through.
+
+That half is automated. **It does not replace running the reader by hand**, because traversal order and how a label actually sounds still need ears.
+
+**A control that does nothing is removed, not labeled.** The drag handle had no state to toggle, so naming it would have put a control in a reader user's path that does nothing they can use, which is worse than an honest absence.
+
 **Verified means with the setting on.** The reader running, the font at its maximum, reduced motion actually enabled, on the phone. Reading the code proves nothing here, and every one of these has a way of passing in the editor and failing in a hand.
 
 ---
