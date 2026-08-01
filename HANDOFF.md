@@ -4,7 +4,7 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-08-01, at the end of the long unattended run, in the session where the owner sent the standing quality bar.
+**Last rewritten:** 2026-08-01, in the session that proved the destructive command guard had never been wired and rebuilt this file's section 5 from the tracker.
 
 If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
 
@@ -30,31 +30,40 @@ The parts that change how you work, compressed:
 
 ## 2. Where the work is, exactly
 
-**Phase 0** is substantially built and not closed. Thirteen of its issues remain open, listed in section 5.
+**Phase 0** is substantially built and not closed. Eleven of its issues remain open: #1 the parent, #7, #8, #9, #10, #12, #13, #15, #16, #17, and #18. All are in section 5 with what each is actually waiting on.
 
 **Phase 1** is where the work is. The core loop runs end to end on real hardware: the gold capture button opens the sheet, the sheet opens a form, the form saves, the entry is written, the change log trigger fires in the same transaction, and the notebook's count refreshes through the live view.
 
-**The notebook table of contents is rebuilt** and is the current pull request, **#49**, which closes **#36**. It was the last of the four screens the owner named as visually thin.
+**All four screens the owner named as visually thin have been rebuilt** and their issues are closed: the disclaimer gate, setup, the situation picker, and the capture form, plus the notebook table of contents last, #36 through pull request #49. Nothing is in flight.
 
 ---
 
 ## 3. The precise next action
 
-**Issue #9, the export container.** It is release blocking, it is the only proof that data survives an update, and #10 is waiting behind it. #57, the document capture input, is no longer blocked: the attachment storage it needed landed with the export's first piece, so it can be built whenever somebody wants the sixth way in.
+**The round trip test, and it comes before every other feature.** It is the first thing in section 5 and the two sections agree; if they ever disagree again, section 5 is rebuilt from the tracker and section 3 follows it.
 
-`contract/export-format.md` specifies it and is current, including the line added this run about event dates travelling as their EDTF string and the derived range being recomputed on import rather than trusted.
+**Why it is first rather than merely next.** B4 dropped the emulator from this project, and the reasoning that made that safe was explicit: data survival is not proven by a long lived phone installation, it is proven by the export and import round trip against the golden vectors in continuous integration. **That test does not exist.** So the argument that retired the emulator currently rests on something unbuilt, and every claim about data surviving an update is unproven. Build it unencrypted if that is what it takes to have it running today.
 
-What it needs, in order:
+Then the rest of **#9**, in order:
 
 1. ~~Content addressed attachment storage.~~ **Done.** `Attachments`, with the row side already in the schema.
 2. ~~The container.~~ **Done, unencrypted.** `ExportContainer` writes and reads it, and six of the eight section 7 failure cases are covered.
-3. **Encryption**, per `contract/export-format.md` section 4. **This needs a dependency decision first:** the format names Argon2id and AES-256-GCM, and neither Argon2 nor a bundled implementation is in the platform or in SQLCipher. Either add a library, or take the change to the owner. Do not quietly substitute PBKDF2, which is what is easy and is a weaker claim than the format makes.
-4. **The round trip test**, field by field, which must assert the EDTF column survives byte for byte and that the derived range is recomputed rather than read.
-5. **Tombstones travel**, and a test says so. That is the last unmet criterion on #8.
+3. **The round trip test**, field by field, asserting the EDTF column survives byte for byte and that the derived range is recomputed on import rather than trusted.
+4. **Encryption**, per `contract/export-format.md` section 4. **The dependency question is answered:** the owner decided on 2026-08-01 to keep the format exactly as written, take AES-256-GCM from the platform JCE, and add **Bouncy Castle** `Argon2BytesGenerator` for Argon2id, which is pure Java and needs no NDK. **Do not substitute PBKDF2.** Per D24 the export file is the only recovery path from key loss, which makes it the most security sensitive artifact in the project. Record the Argon2id parameters in the export manifest so older files stay readable and the cost can be raised later. Start from the OWASP baseline and tune only if it measures unusably slow on the phone.
+5. **The last two failure cases** of the eight in section 7.
+6. **Tombstones travel**, and a test says so. That is the last unmet criterion on #8.
+
+`contract/export-format.md` specifies all of it and is current, including the line added this run about event dates travelling as their EDTF string and the derived range being recomputed on import rather than trusted.
 
 **Then #62**, the template catalog being English only, which is release blocking and which the app currently shows plainly to any Arabic reader.
 
-**Then a persona run.** `TESTING-PERSONAS.md` has thirteen and none has been walked. The fixture generator now produces a five year notebook at any of six points, deterministically, so a run finally means something. Section 10 of this file is where each one gets recorded, with its seed and date.
+**Then #43 and #44 worked alongside new screens** rather than saved for a phase gate.
+
+**Then the rest of Phase 1:** Today with the digest engine, the trail, care team, medications, the emergency card, projects, and More.
+
+**Language access is last**, after everything above. Section 5 says why.
+
+**Persona runs happen as their supporting screens land**, not in a block at the end. `TESTING-PERSONAS.md` has thirteen and one has been walked. Section 10 records each with its seed and date.
 
 ## 4. What is done, and how each piece was verified
 
@@ -100,41 +109,44 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 ## 5. Remaining work inventory, in order
 
-**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #36 the notebook, #37 setup, #38 the date model, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray, #58 the subject scoped counts, #14 the migration mechanism, and #7, #8, #17, #21 in whole or in part. #12 is closed for Latin and Arabic and open only for Chinese.
+**Rebuilt from the tracker on 2026-08-01.** The previous version of this section had four rows spliced in from section 4's verification table, which put `MigrationTest` text under issue #9 and left three rows with no issue number at all. It also listed #39 as unbuilt while sections 4 and 9 recorded it as built and walked. It was patched too many times and is now derived from `gh issue list` rather than edited in place. **If this section and section 3 ever disagree, rebuild this one from the tracker and make section 3 follow it.**
 
-**In order. The first three are the ones to take.**
+**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #14 the migration mechanism, #22 the end of life instruction tag, #36 the notebook, #37 setup, #38 the date model, **#39 the date interface**, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray, #58 the subject scoped counts, and #78 the empty Today. #21, the roadmap, is also closed.
 
-| Issue | What | Why here |
+**In order. The first is the one to take.**
+
+| Issue | What | Why here, and what it is actually waiting on |
 |---|---|---|
-| #39 | The date interface | The model is built and the half the owner asked for is not. Needs a date picker specified in `DESIGN.md` section 5 first, because nothing existing can carry it |
-| #62 | The template catalog is English only | Release blocking, and the app currently shows an Arabic interface wrapped around English content |
-| #57 | The document capture input | The last of the six ways in. Blocked on attachment storage, which #9 also needs, so build that first |
-| #9 | Schema migrations | `MigrationTest` on the phone. An upgrade keeps every row, a failed step changes nothing and does not move the version, a database from the future is refused, and steps apply in order and only once. Proven with a synthetic step rather than a fake shipped migration |
-| The change log, through Kotlin | `ChangeLogTransactionTest` on the phone, through SQLCipher rather than plain SQLite. Insert, update, and tombstone each append exactly one entry, the entry names the table, the row, and the operation, and a write inside an abandoned outer transaction leaves no orphan |
-| The fixture generator | `check_fixtures.py` generates twice and compares bytes, checks a different seed differs, checks all six points grow, checks year five hits its stated scale, and checks the shapes a random generator can miss by chance: every bill state, every project state, both instruction tags, an incident that never resolves, and an attachment exactly at the size limit. Proven to catch drift and two of those gaps by breaking them on purpose |
-| The export container | Attachment storage, the round trip, and the only proof data survives an update. Now also has to round trip the EDTF column byte for byte |
-| #17 | Fixture generator, the last criterion | Everything but the four language variants, which wait on #62 |
-| #7 | The change log, remaining criterion | Proven through Kotlin now. Open only for "the digest reads from the change log", which needs the digest engine |
-| ~~#14~~ | **Done.** The migration mechanism exists and is proven. The key loss screen is not a criterion on it |
-| #15 | Golden vectors | `dates.json` exists and runs. The engine vectors need the engine |
+| **#9** | **The export container, round trip first** | **First among all feature work.** B4 retired the emulator on the grounds that data survival is proven by the export and import round trip against the golden vectors in continuous integration. That test does not exist, so the claim is unproven. Build it unencrypted if necessary, then encryption with Bouncy Castle Argon2id per section 3, then the last two of the eight failure cases |
+| #62 | The template catalog is English only | Release blocking. The app currently shows an Arabic interface wrapped around English content, which any Arabic reader sees immediately. Found by running the device in Arabic, not by any check |
+| #43, #44 | The retroactive audit, and the accessibility gate | **Worked alongside new screens, never saved for a phase gate.** Both partly done with findings on the issues. #44's remaining criterion is now reachable: the owner granted permission to enable TalkBack, provided the prior state is recorded and restored exactly |
+| #57 | The document capture input | The last of the six ways in. **No longer blocked**: the attachment storage it needed landed with the export's first piece |
+| #8 | The repository layer | One unmet criterion: tombstones travel through the export, and a test says so. Falls out of #9 |
+| #7 | The change log | Proven through Kotlin. Open only for "the digest reads from the change log", which needs the digest engine |
+| #17 | The fixture generator | Everything but the four language variants, which wait on #62 |
+| #15 | Golden vectors | `dates.json` exists and runs on the phone in all four locales. The engine vectors need the engine |
+| #10 | `SyncTransport` | Needs the export container, so it follows #9 |
 | #46 | No dead ends, links both ways | Needs screens that can link to each other, so it follows the trail |
 | #47 | Search | Needs Today, which needs the digest engine |
-| #45 | Capture from outside the app | Independent. Widget, quick settings tile, share sheet target |
-| #10 | `SyncTransport` | Needs the export container |
-| #16 | The web scaffold | `npm` is absent on this machine |
-| #12 | Simplified Chinese fonts | A size decision for the owner. Ten megabytes per weight |
-| #13 | The locale scaffold | Largely met. Arabic is verified on the device now. What remains overlaps #62 |
-| #18 | Content checks in CI | Seven run. Open for the ones not implementable yet |
-| #21 | Roadmap | Documentation only |
-| #25 | About screen | Needs an About screen, which does not exist |
-| #43, #44 | The audit and the accessibility gate | Both partly done with findings recorded on the issues. What remains needs a supervised device |
+| #45 | Capture from outside the app | Independent of everything above. Widget, quick settings tile, share sheet target |
+| #16 | The web scaffold | `npm` is absent on this machine. Nothing else blocks it |
+| #12 | Fonts, the Chinese question | **Decided by the owner on 2026-08-01: do not bundle a CJK face.** Android ships Noto Sans CJK and renders it well. Use the system face, and **never subset**, because a record keeping app cannot risk a missing glyph in a person's or a facility's name. Closes once verified on the device through a per-app locale, including the mono eyebrow style |
+| #13 | The four locale scaffold | Largely met. Arabic is verified on the device. What remains overlaps #62 |
+| #18 | Content checks in continuous integration | Ten run. Open for the ones not implementable yet, each named in `run_all.py` with what it waits on |
+| #25 | The About screen links the privacy policy | Needs an About screen, which does not exist |
 | #1 | Phase 0 parent | Closes when its children do |
 
-**In the review queue, waiting on the owner rather than on work:** #28 the disclaimer gate, #30 setup, #32 the situation picker, #34 the capture sheet and form, #50 the notebook, #55 the Unfiled tray. **Arabic screenshots are no longer blocked** for any of them.
+**In the review queue, waiting on the owner rather than on work.** Eight, and the list had fallen two behind: #28 the disclaimer gate, #30 setup, #32 the situation picker, #34 the capture sheet and form, #50 the notebook, #55 the Unfiled tray, **#68 the date picker**, and **#81 Today's empty state**. **Arabic screenshots are no longer blocked** for any of them.
 
-**Phase 1 feature work still ahead, none of it yet an issue:** Today with the digest engine, the trail itself, care team, medications, the emergency card, projects, and More.
+**Phase 1 feature work still ahead:** Today with the digest engine, the trail itself, care team, medications, the emergency card, projects, and More.
 
-**Something that must not survive to release.** The Projects and More destinations render an honest interim screen, Today says plainly that its digest is still being built,, and so does the document capture input. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, and section D44 says an interface may offer something it has not built but may not go quiet when someone takes it up. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
+**An in-app theme setting**, system, light, or dark, belongs in More and is a real feature rather than a testing convenience. It also happens to remove a standing dependency: capturing both themes currently means changing the system theme on somebody's daily driver, which is not a session's to do unattended. With the setting, both sets are captured from inside the app and the phone is never touched.
+
+**Language access comes after all of the above**, and it is a body of work rather than a task: ten languages chosen by United States limited English proficiency population, roughly 1500 strings each. **It is language access for caregivers in the United States, not international expansion.** The federal, Medicare, and Medicaid content is specific to this country, so translating for a Spanish speaker in Texas is right and presenting the same app to someone in Spain would be wrong. `MASTER_SPEC.md` carries the distinction and the issues carry the detail. **Do not begin it until everything ahead of it is done.**
+
+**Something that must not survive to release.** The Projects and More destinations render an honest interim screen, Today says plainly that its digest is still being built, and so does the document capture input. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, and D44 says an interface may offer something it has not built but may not go quiet when someone takes it up. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
+
+---
 
 ## 6. Blocked
 
@@ -142,7 +154,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 **Arabic is no longer waiting.** The fonts landed on 2026-08-01 and Arabic renders correctly on the device, so the Arabic screenshots on the design review issues can be captured whenever someone works through them.
 
-The one thing still waiting rather than blocked: **the light theme screenshots**. The phone is in dark and it is the owner's daily driver, so flipping the system theme is not the session's to do unattended. It wants a supervised moment or a second device.
+**The light theme screenshots are no longer waiting.** The phone was found in light theme on 2026-08-01, so the full set of 28 was captured then. **The dark set is now the one that is short**, and it is deliberately not being solved by flipping the owner's daily driver: the in-app theme setting in section 5 removes the dependency entirely, and the dark captures happen through it.
 
 ---
 
@@ -158,7 +170,7 @@ The one thing still waiting rather than blocked: **the light theme screenshots**
 
 - Device: Pixel 10 Pro XL, serial `57241FDCQ0000H`, connected over USB. **The only test device.**
 - **No emulator.** Dropped from this project. Do not attempt to launch one, do not create an AVD, and do not treat its absence as a blocker. See D21, D23, and B4 in `DECISIONS.md`.
-- The phone is in **dark** system theme, which is why every committed screenshot is `-dark`.
+- **The phone's theme is not fixed and must be read, never assumed.** It was dark through 2026-07-31 and is **light** as of 2026-08-01. `tools/screenshot.sh` reads it from the device and names the file accordingly, per D31, so do not pass a theme argument and do not assume the suffix. Check with `adb shell cmd uimode night`.
 - **To run the app in one language without touching the phone's own settings**, which matters because this is the owner's daily driver: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --locales ar`, and `--locales ""` to clear it. Doing this found #62 within a minute.
 - **Accessibility settings used during this run were restored to exactly what the phone had before.** `font_scale` back to 1.0 and `animator_duration_scale` deleted rather than set to 1.0, because it was unset to begin with. Check both if a run ends unexpectedly: `adb shell settings get system font_scale` and `adb shell settings get global animator_duration_scale`.
 - **TalkBack was deliberately never enabled.** D43: it changes touch behavior, and a failure part way through an unattended run would leave the daily driver hard to use with nobody there.
@@ -191,7 +203,7 @@ The one thing still waiting rather than blocked: **the light theme screenshots**
 
 **Continuous integration.** The workflow triggers on `push` to main, on `pull_request`, and on `workflow_dispatch`. Pull request events stopped firing part way through 2026-07-31 and **are firing again as of 2026-08-01**. If they stop again: `gh workflow run ci.yml --ref <branch>`, then poll `gh run list --branch <branch>`. **Do not read an absence of checks on a pull request as a passing build.**
 
-**One CI step catches a real habit.** "HANDOFF.md is current to within one increment" fails any pull request that changes `android`, `web`, `tools`, or `contract` without touching this file. It caught pull request #49. Rewrite this file in the same commit as the work, not afterward.
+**Three CI steps catch real habits.** "HANDOFF.md is current to within one increment" fails any pull request that changes `android`, `web`, `tools`, or `contract` without touching this file. It caught pull request #49. "README.md describes the screens that exist" fails any pull request that adds or removes a file under `ui/screens/` without touching `README.md`, which exists because the front page claimed the app had one screen for a week after it had nine. "Every screenshot the README points at exists" catches a rename. Rewrite the documents in the same commit as the work, not afterward.
 
 **Gradle is fast and it looks broken.** An incremental Kotlin recompile of several changed files finishes in about a second. That is real.
 
@@ -271,4 +283,4 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 
 ## 13. Uncommitted work
 
-**None.** Everything described here is committed on `feat/38-edtf-dates`.
+**None.** Everything described here is committed and merged on `main`. Verified with `git status --porcelain` returning nothing and `git branch --show-current` reading `main`, rather than assumed from the last branch this file happened to mention.
