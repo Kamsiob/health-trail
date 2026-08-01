@@ -35,12 +35,16 @@ class TodayScreenTest {
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    private fun show(isEmpty: Boolean, locale: Locale = Locale.ENGLISH) {
+    private fun show(
+        showCoaching: Boolean = true,
+        hasAnything: Boolean = false,
+        locale: Locale = Locale.ENGLISH,
+    ) {
         val strings = Strings.load(context, locale)
         compose.setContent {
             HealthTrailTheme {
                 CompositionLocalProvider(LocalStrings provides strings) {
-                    TodayScreen(isEmpty = isEmpty)
+                    TodayScreen(showCoaching = showCoaching, hasAnything = hasAnything)
                 }
             }
         }
@@ -48,7 +52,7 @@ class TodayScreenTest {
 
     @Test
     fun anEmptyNotebookIsCoachedRatherThanBlank() {
-        show(isEmpty = true)
+        show()
         compose.onNodeWithTag(TodayTags.EMPTY).assertIsDisplayed()
         compose.onNodeWithTag(TodayTags.step(1)).assertIsDisplayed()
         compose.onNodeWithTag(TodayTags.step(2)).assertIsDisplayed()
@@ -61,7 +65,7 @@ class TodayScreenTest {
         // minutes a new person can spend, and it is the one thing in this app
         // that is useful to somebody else in a hurry.
         val strings = Strings.load(context)
-        show(isEmpty = true)
+        show()
         compose.onNodeWithText(strings["today.empty.step.1"]).assertIsDisplayed()
         assertTrue(
             "step one is not about the emergency card: ${strings["today.empty.step.1"]}",
@@ -96,9 +100,23 @@ class TodayScreenTest {
     fun aNotebookWithSomethingInItSaysTheDigestIsNotBuilt() {
         // D44: an interface may offer something it has not built, and it may
         // not go quiet about it. Faking a digest would be worse than either.
-        show(isEmpty = false)
+        show(showCoaching = false, hasAnything = true)
         compose.onNodeWithTag(TodayTags.INTERIM).assertIsDisplayed()
         compose.onNodeWithTag(TodayTags.EMPTY).assertIsNotDisplayed()
+    }
+
+    @Test
+    fun theCoachingSurvivesTheFirstCall() {
+        // The defect this replaced: tying the coaching to "has anything been
+        // written" took the emergency card suggestion off the screen the
+        // moment somebody logged their first call, before they had done it.
+        // The most useful two minutes in the app disappeared for writing
+        // something down, which is the opposite of the intended reward.
+        show(showCoaching = true, hasAnything = true)
+
+        compose.onNodeWithTag(TodayTags.INTERIM).assertIsDisplayed()
+        compose.onNodeWithTag(TodayTags.EMPTY).assertIsDisplayed()
+        compose.onNodeWithTag(TodayTags.step(1)).assertIsDisplayed()
     }
 
     @Test
@@ -114,7 +132,7 @@ class TodayScreenTest {
 
     @Test
     fun itHoldsUpInTheLongestLanguage() {
-        show(isEmpty = true, locale = Locale("es"))
+        show(locale = Locale("es"))
         compose.onNodeWithTag(TodayTags.EMPTY).assertIsDisplayed()
         compose.onNodeWithTag(TodayTags.step(3)).assertIsDisplayed()
     }

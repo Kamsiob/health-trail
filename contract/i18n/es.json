@@ -194,5 +194,6 @@
   "date.pick.year.up": "Año siguiente",
   "date.pick.today": "Hoy",
   "capture.when.exact": "Elegir una fecha",
-  "today.digest.not_built": "El resumen de lo que ha cambiado desde su última visita todavía se está construyendo. Mientras tanto se guarda todo lo que usted anota, y nada de ello depende de esto."
+  "today.digest.not_built": "El resumen de lo que ha cambiado desde su última visita todavía se está construyendo. Mientras tanto se guarda todo lo que usted anota, y nada de ello depende de esto.",
+  "today.coach.heading": "Vale la pena hacer esto"
 }

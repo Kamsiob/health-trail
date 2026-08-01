@@ -67,8 +67,17 @@ object TodayTags {
  */
 @Composable
 fun TodayScreen(
-    /** True when the notebook has nothing in it yet, which is P1's case. */
-    isEmpty: Boolean,
+    /**
+     * Whether the coached start still applies.
+     *
+     * **Not "is the notebook empty".** It was, and that was wrong: logging one
+     * call made the emergency card suggestion disappear before the person had
+     * done it. The coaching is about what has been set up, not about whether
+     * anything has been written, so it stays until the emergency card exists.
+     */
+    showCoaching: Boolean,
+    /** Whether there is anything at all yet, which decides if a digest is owed. */
+    hasAnything: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
@@ -92,10 +101,17 @@ fun TodayScreen(
             )
             Spacer(Modifier.height(Space.l))
 
-            if (isEmpty) {
-                CoachedStart()
-            } else {
+            // **Both, when both apply.** Somebody who has logged a call and
+            // still has no emergency card needs the digest note and the
+            // coaching, and showing one instead of the other took the most
+            // useful two minutes in the app off the screen the moment they
+            // wrote anything down.
+            if (hasAnything) {
                 InterimDigest()
+                if (showCoaching) Spacer(Modifier.height(Space.sectionGap))
+            }
+            if (showCoaching) {
+                CoachedStart(nothingWrittenYet = !hasAnything)
             }
 
             // Clearance for the capture button, which overlaps the navigation
@@ -114,13 +130,20 @@ fun TodayScreen(
  * one thing in this app that is useful to somebody else in a hurry.
  */
 @Composable
-private fun CoachedStart() {
+private fun CoachedStart(nothingWrittenYet: Boolean) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
     Column(modifier = Modifier.fillMaxWidth().testTag(TodayTags.EMPTY)) {
         Text(
-            text = strings["today.empty.title"],
+            // "Nothing written down yet" stops being true the moment something
+            // is, and a heading that contradicts the screen under it reads as
+            // a bug. The list is the same list either way: what changes is
+            // whether it is describing an empty notebook or suggesting a next
+            // step in one that has started.
+            text = strings[
+                if (nothingWrittenYet) "today.empty.title" else "today.coach.heading"
+            ],
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
