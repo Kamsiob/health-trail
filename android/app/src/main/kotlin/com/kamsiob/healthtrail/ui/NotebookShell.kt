@@ -275,7 +275,7 @@ fun NotebookShell(repository: Repository) {
                         number = measurement.number,
                         text = measurement.text,
                         unit = measurement.unit,
-                        occurred = measurement.rough.edtf(LocalDate.now()),
+                        occurred = measurement.occurred,
                         note = measurement.note,
                     )
                 }
@@ -295,7 +295,7 @@ fun NotebookShell(repository: Repository) {
                         kind = draft.kind.entryKind(),
                         title = draft.who,
                         body = draft.note,
-                        occurred = draft.rough.edtf(LocalDate.now()),
+                        occurred = draft.occurred,
                         // An entry nobody could place goes to the Unfiled tray
                         // rather than being filed by the app. Only marked when
                         // there were threads to choose from: with none offered,

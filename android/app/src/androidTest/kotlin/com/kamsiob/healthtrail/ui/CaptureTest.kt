@@ -11,6 +11,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.ui.components.DatePickerTags
 import java.time.LocalDate
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
@@ -95,16 +96,72 @@ class CaptureTest {
 
     @Test
     fun theRoughDateIsAskedWithChipsAndOneOfThemIsNotKnowing() {
-        // Screen 26. A date picker here gets either a guess recorded as fact or
-        // nothing recorded at all, so the answers are rough and one of them is
-        // not knowing.
+        // Screen 26. The chips answer in one tap and one of them is not
+        // knowing, so nobody is made to name a day they do not have.
         var draft: CaptureDraft? = null
         showForm(onSave = { draft = it })
 
         compose.onNodeWithTag(CaptureFormTags.whenChip(RoughWhen.NOT_SURE)).performClick()
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 
-        assertEquals(RoughWhen.NOT_SURE, draft!!.rough)
+        assertEquals(Edtf.Precision.UNKNOWN, draft!!.occurred.precision)
+    }
+
+    @Test
+    fun anExactDateIsAPeerOfTheChipsRatherThanBehindThem() {
+        // Section 10.9. Someone logging a call from three months ago, or who
+        // knows the minute, is a normal case rather than an edge one, and
+        // making them exhaust the chips first would say otherwise.
+        showForm(onSave = {})
+        compose.onNodeWithTag(CaptureFormTags.EXACT).assertIsDisplayed()
+    }
+
+    @Test
+    fun pickingADayReplacesTheChipAnswerRatherThanJoiningIt() {
+        var draft: CaptureDraft? = null
+        showForm(onSave = { draft = it })
+
+        compose.onNodeWithTag(CaptureFormTags.EXACT).performClick()
+        compose.onNodeWithTag(DatePickerTags.day(14)).performClick()
+        compose.onNodeWithTag(DatePickerTags.CONFIRM).performClick()
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
+
+        // A day, not a moment: the time is a second act and was not taken.
+        assertEquals(Edtf.Precision.DAY, draft!!.occurred.precision)
+        assertEquals(14, java.time.LocalDate.parse(draft!!.occurred.canonical).dayOfMonth)
+    }
+
+    @Test
+    fun theWholeMonthIsAnAnswerInItsOwnRight() {
+        // The coarse answer must not feel like the failure case. For a record
+        // written from memory it is usually the true one.
+        var draft: CaptureDraft? = null
+        showForm(onSave = { draft = it })
+        val month = java.time.YearMonth.now()
+
+        compose.onNodeWithTag(CaptureFormTags.EXACT).performClick()
+        compose.onNodeWithTag(DatePickerTags.month(month.monthValue)).performClick()
+        compose.onNodeWithTag(DatePickerTags.CONFIRM).performClick()
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
+
+        assertEquals(Edtf.Precision.MONTH, draft!!.occurred.precision)
+        assertEquals("%04d-%02d".format(month.year, month.monthValue), draft!!.occurred.canonical)
+    }
+
+    @Test
+    fun theCalendarNeverPreselectsToday() {
+        // A picker that preselects today turns every mistap into a claim, in a
+        // record somebody may rely on years later. Confirming without touching
+        // anything answers "not sure" rather than "today".
+        var draft: CaptureDraft? = null
+        showForm(onSave = { draft = it })
+
+        compose.onNodeWithTag(CaptureFormTags.whenChip(RoughWhen.NOT_SURE)).performClick()
+        compose.onNodeWithTag(CaptureFormTags.EXACT).performClick()
+        compose.onNodeWithTag(DatePickerTags.CONFIRM).performClick()
+        compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
+
+        assertEquals(Edtf.Precision.UNKNOWN, draft!!.occurred.precision)
     }
 
     @Test

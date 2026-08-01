@@ -32,9 +32,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
+import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.time.EventDateText
+import java.time.LocalDate
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -65,7 +69,7 @@ data class MeasurementDraft(
     val unit: String?,
     val number: Double?,
     val text: String,
-    val rough: RoughWhen,
+    val occurred: Edtf.Date,
     val note: String,
 )
 
@@ -126,7 +130,7 @@ fun MeasurementScreen(
                 else -> preset!!.unitOptions
             },
             isText = measure?.isText ?: preset!!.isText,
-            onSave = { unit, number, text, rough, note ->
+            onSave = { unit, number, text, occurred, note ->
                 onSave(
                     MeasurementDraft(
                         measureId = measure?.id,
@@ -134,7 +138,7 @@ fun MeasurementScreen(
                         unit = unit,
                         number = number,
                         text = text,
-                        rough = rough,
+                        occurred = occurred,
                         note = note,
                     )
                 )
@@ -287,7 +291,7 @@ private fun RecordValue(
     name: String,
     units: List<String>,
     isText: Boolean,
-    onSave: (unit: String?, number: Double?, text: String, rough: RoughWhen, note: String) -> Unit,
+    onSave: (unit: String?, number: Double?, text: String, occurred: Edtf.Date, note: String) -> Unit,
     onCancel: () -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -295,7 +299,9 @@ private fun RecordValue(
 
     var raw by remember { mutableStateOf("") }
     var unit by remember { mutableStateOf(units.firstOrNull()) }
-    var rough by remember { mutableStateOf(RoughWhen.TODAY) }
+    var rough by remember { mutableStateOf<RoughWhen?>(RoughWhen.TODAY) }
+    var picked by remember { mutableStateOf<Edtf.Date?>(null) }
+    var pickerOpen by remember { mutableStateOf(false) }
     var note by remember { mutableStateOf("") }
 
     Surface(modifier = Modifier.fillMaxSize(), color = colors.paper) {
@@ -360,10 +366,29 @@ private fun RecordValue(
                     RoughWhen.entries.forEach { option ->
                         ChoiceChip(
                             label = strings[option.labelKey],
-                            selected = rough == option,
-                            onClick = { rough = option },
+                            selected = picked == null && rough == option,
+                            onClick = { rough = option; picked = null },
                         )
                     }
+                    // The same peer the capture form offers, in the same words
+                    // and the same place. A reading remembered from last month
+                    // is as normal here as a call was there, and two screens
+                    // asking the same question two ways is the defect section
+                    // 10.2 names.
+                    ChoiceChip(
+                        label = strings["capture.when.exact"],
+                        selected = picked != null,
+                        onClick = { pickerOpen = true },
+                    )
+                }
+
+                picked?.let { chosen ->
+                    Spacer(Modifier.height(Space.s))
+                    Text(
+                        text = EventDateText.render(strings, chosen),
+                        style = HealthTrail.type.bodyS,
+                        color = colors.ink2,
+                    )
                 }
 
                 Spacer(Modifier.height(Space.sectionGap))
@@ -400,7 +425,7 @@ private fun RecordValue(
                         unit,
                         if (isText) null else raw.trim().replace(',', '.').toDoubleOrNull(),
                         if (isText) raw.trim() else "",
-                        rough,
+                        picked ?: rough?.edtf(LocalDate.now()) ?: Edtf.unknown(),
                         note.trim(),
                     )
                 },
@@ -422,5 +447,22 @@ private fun RecordValue(
 
             Spacer(Modifier.height(Space.l))
         }
+    }
+
+    if (pickerOpen) {
+        DatePickerSheet(
+            initial = picked ?: rough?.edtf(LocalDate.now()),
+            onPick = { chosen ->
+                pickerOpen = false
+                if (chosen.precision == Edtf.Precision.UNKNOWN) {
+                    picked = null
+                    rough = RoughWhen.NOT_SURE
+                } else {
+                    picked = chosen
+                    rough = null
+                }
+            },
+            onDismiss = { pickerOpen = false },
+        )
     }
 }

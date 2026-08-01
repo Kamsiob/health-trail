@@ -366,6 +366,45 @@ Measured on the device in dark theme: a card row goes from (26,36,43) to (43,50,
 
 **Content clipped at the scroll edge is correct and is not this defect.** A list has to end somewhere. The defect is specifically the absence of separation between the two regions.
 
+### 5.16 The date picker
+
+**A new pattern, defined here once because nothing existing could carry it.** Chips answer "roughly when" in one tap and cannot answer "the fourteenth, at about two". Section 10.9 requires an exact date and time to be a peer of the chips rather than something behind them, and it requires a person to be able to say a month or a year without doing arithmetic. No combination of chips, fields, and cards does that.
+
+**It is one sheet with three levels of precision, not three controls.** A day, a month, or a year, each optional, each mapping to exactly one EDTF form. The person picks how much they know and the app records that and no more. Putting them in one place is what makes "I only know the month" as easy as "I know the day", which is the whole point: the coarse answer must not feel like the failure case.
+
+**Geometry.** A bottom sheet, 28dp top corners per 4.2, opened with the standard spring rather than the expressive one, since choosing a date is not one of the three moments 5.5 reserves overshoot for.
+
+**The three levels, in this order:**
+
+| Level | Control | Records |
+|---|---|---|
+| A day | A month grid, seven columns, one cell per day | `2024-11-18` |
+| A time, optional, only once a day is chosen | An hour and minute row | `2024-11-18T14:40` |
+| A month | Twelve chips, plus the year stepper | `2024-11` |
+| A year | The year stepper alone | `2024` |
+
+**Day cells** are 40dp circles inside a 48dp touch target, per section 3 item 5. Unselected is bare, selected is `blue_soft` with a 2dp `blue` ring and the label at weight 700, which is the choice chip treatment from 5.11 in a round shape rather than a second selection language. Today carries a small `ink3` dot beneath it and is never preselected.
+
+**A day outside the current month is not shown**, rather than shown grayed. A grayed cell that cannot be tapped is a control that does nothing, which D42 removed elsewhere for the same reason.
+
+**Nothing is preselected and the sheet opens on whatever the entry already says.** Opening it on an entry dated "sometime in November" opens November with no day chosen, so confirming without touching anything changes nothing. **A picker that preselects today turns every mistap into a claim.**
+
+**The time is optional and separate.** A day with no time is a day, and adding a time is a second act. This is the one place the model's precision is visible as a choice, and it is visible as "do you know the time" rather than as a precision selector.
+
+**States.**
+
+| State | Treatment |
+|---|---|
+| Nothing chosen | No cell selected, the confirm action still available, and it answers "not sure" |
+| A day chosen | That cell selected, the time row appears |
+| A month chosen | The month chip selected, the day grid dimmed to show it is no longer the answer |
+| A year chosen | The year alone, both the month chips and the grid unselected |
+| Editing an existing date | Opens on that date at that precision, nothing else changed |
+
+**Every level has a way back to less precision**, because a person who taps a day and then realizes they are not sure must be able to say so without leaving and starting again.
+
+**It never shows EDTF, a precision name, or a format.** Section 10.9. What it shows is a calendar, twelve month names, and a year.
+
 ---
 
 ## 6. Motion
@@ -571,6 +610,20 @@ Composed from Display L, Body M, Display S, Label, the Mono count style, cards f
 The cadence line under each preset says how often families typically record it. **It is guidance about the shape of the thing, never a schedule anyone is held to**, and nothing here ever reminds or alerts.
 
 Composed from Display L, Body M, Body S, the group header 5.13, the text field 5.9, choice chips 5.11, the pinned action footer 5.15, one filled button, and one text action. Tracked on issue #42.
+
+**The date picker.** One sheet with three levels of precision, opened from a chip that sits among the rough date chips rather than behind them.
+
+**Built because section 10.9 requires an exact date and time to be a peer of the chips.** Someone logging a call from three months ago, or who knows the minute, is a normal case rather than an edge one, and making them exhaust the chips first would say otherwise.
+
+**It is one control, not three.** A day, a month, or a year, each optional. Putting them in one place is what makes "I only know the month" as easy as "I know the day", which matters because for a record written from memory the coarse answer is usually the true one. The whole month sits as a chip under the grid, in words, so choosing it is choosing rather than giving up.
+
+**Nothing is preselected, and it opens on whatever the entry already says.** Confirming without touching anything changes nothing. A picker that preselects today turns every mistap into a claim, in a record somebody may rely on years later. Today carries a dot so a person can orient, and never a selection.
+
+**The time is a second act.** It appears only once a day is chosen, and it reads as "do you know the time" rather than as a precision selector. A day with no time is a day.
+
+**What was chosen is read back in words underneath the chips**, through the same renderer every other date goes through, so the person sees the claim they are about to make rather than a control state.
+
+Specified in full at 5.16. Tracked on issue #39.
 
 **The Unfiled tray.** Everything the person saved without saying where it belonged.
 

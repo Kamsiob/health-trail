@@ -177,5 +177,21 @@
   "measurement.note": "أي شيء يستحق التذكر",
   "measurement.note.hint": "من أخذ القياس، كيف بدت، أي شيء",
   "measurement.record_only": "التطبيق يدوّن هذا ويحفظه. وهو لا يخبرك بما يعنيه.",
-  "capture.not_built": "حفظ المستندات غير جاهز بعد. يحتاج إلى مكان يحفظ فيه الصورة، ويجري بناء ذلك أولًا حتى لا يضيع أي شيء تحفظه."
+  "capture.not_built": "حفظ المستندات غير جاهز بعد. يحتاج إلى مكان يحفظ فيه الصورة، ويجري بناء ذلك أولًا حتى لا يضيع أي شيء تحفظه.",
+  "date.pick.title": "متى حدث هذا؟",
+  "date.pick.lead": "بقدر ما تعرف، ولا أكثر. الشهر وحده إجابة كافية.",
+  "date.pick.day": "يوم",
+  "date.pick.month": "شهر",
+  "date.pick.year": "سنة",
+  "date.pick.time": "هل تعرف الوقت؟",
+  "date.pick.time.add": "أضف وقتًا",
+  "date.pick.time.clear": "بدون وقت",
+  "date.pick.confirm": "استخدم هذا",
+  "date.pick.clear": "لست متأكدًا",
+  "date.pick.previous": "الشهر السابق",
+  "date.pick.next": "الشهر التالي",
+  "date.pick.year.down": "السنة السابقة",
+  "date.pick.year.up": "السنة التالية",
+  "date.pick.today": "اليوم",
+  "capture.when.exact": "اختر تاريخًا"
 }
