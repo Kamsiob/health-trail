@@ -710,7 +710,11 @@ They are restored above from the commit messages and pull request bodies that qu
 
 **An edit that replaces text must assert it matched.** A silent no-op is worse than an error, because the work continues on top of a record that is not there. Every commit and pull request in this run cites decision numbers, and for most of the run those numbers pointed at nothing.
 
-**A commit also reached `main` directly**, because the branch was assumed from a `checkout` several steps earlier rather than checked. Every way of undoing that is a command rule 6 forbids: `git reset --hard`, `git checkout .`, branch deletion. Rule 6 says to stop and write it down rather than reach for one, so the commit stayed, verified by continuous integration on push to `main`, with the branch pointer `feat/8-live-view-check` left at it. **Check `git branch --show-current` before committing, not after pushing.**
+**A commit also reached `main` directly**, because the branch was assumed from a `checkout` several steps earlier rather than checked.
+
+**It then happened a second time, after this entry was written.** The export container was built and committed on `main` for exactly the same reason: a merge, a `git checkout main`, a `git pull`, and then an increment begun without branching. Writing the rule down did not prevent the rule being broken, which is worth more as evidence than the rule was.
+
+**The mechanical fix, which is the only kind that works here:** create the branch as the first action of an increment, before a single file is touched, rather than at the point of committing. A branch made before the work cannot be forgotten after it. Both commits were verified by continuous integration on push to `main` and both have branch pointers left at them, `feat/8-live-view-check` and `feat/9-export-container`. Every way of undoing that is a command rule 6 forbids: `git reset --hard`, `git checkout .`, branch deletion. Rule 6 says to stop and write it down rather than reach for one, so the commit stayed, verified by continuous integration on push to `main`, with the branch pointer `feat/8-live-view-check` left at it. **Check `git branch --show-current` before committing, not after pushing.**
 
 ---
 
