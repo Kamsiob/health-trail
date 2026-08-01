@@ -185,7 +185,8 @@ Every screen built without one is composed from existing components under `DESIG
 | Essentials first setup | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #30 | not yet |
 | Situation picker | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #32 | not yet |
 | Capture form, four kinds | 2026-07-31, rebuilt same day to screen 26 | #34 | not yet |
-| Notebook table of contents | 2026-08-01, rebuilt to the 10.6 bar | #36 | not yet |
+| Notebook table of contents | 2026-08-01, rebuilt to the 10.6 bar | #36, review on #50 | not yet |
+| Unfiled tray | 2026-08-01 | #53, review on #55 | not yet |
 
 The notebook is drawn in the reference file, so it is listed here as a correction rather than as an undrawn screen. `DESIGN.md` section 3 item 8 records the four ways the built screen departs from the mockup, with reasons.
 
