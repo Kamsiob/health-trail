@@ -137,13 +137,30 @@ class RoundTripTest {
         }
     }
 
-    private suspend fun roundTrip() {
-        Backup.export(context, archive, exportedAt = 1_754_000_000_000L)
+    /**
+     * Export and restore, optionally through encryption.
+     *
+     * **Every assertion in this class runs both ways.** Encryption that
+     * preserves the bytes is the only kind worth having, and a suite that only
+     * exercised the unencrypted path would prove the round trip for a file
+     * nobody ships.
+     */
+    private suspend fun roundTrip(passphrase: String? = null) {
+        Backup.export(
+            context,
+            archive,
+            exportedAt = 1_754_000_000_000L,
+            passphrase = passphrase?.toCharArray(),
+        )
         val staging = File(context.cacheDir, "restore-${System.nanoTime()}")
-        val opened = ExportContainer.open(archive, staging).getOrThrow()
+        val opened = ExportContainer
+            .open(archive, staging, passphrase?.toCharArray())
+            .getOrThrow()
         Backup.restore(context, opened).getOrThrow()
         staging.deleteRecursively()
     }
+
+    private val secret = "correct horse battery staple"
 
     @Test
     fun everyRowAndEveryColumnComesBackIdentical() = runBlocking {
@@ -297,6 +314,144 @@ class RoundTripTest {
         assertTrue(
             "entry.occurred is not among the groups found",
             groups.any { it.first == "entry" && it.second == "occurred" },
+        )
+    }
+
+    // -- the same notebook, through encryption ----------------------------
+
+    @Test
+    fun everyRowComesBackIdenticalThroughAnEncryptedFile() = runBlocking {
+        // The assertion that matters once encryption exists. Encryption that
+        // preserves the bytes is the only kind worth having.
+        seed()
+        val before = snapshot()
+        roundTrip(passphrase = secret)
+        val after = snapshot()
+
+        assertEquals(before.keys, after.keys)
+        for (table in before.keys) {
+            assertEquals(
+                "$table differs across the encrypted round trip",
+                before.getValue(table),
+                after.getValue(table),
+            )
+        }
+    }
+
+    @Test
+    fun theEdtfColumnSurvivesEncryptionByteForByte() = runBlocking {
+        val seeded = seed()
+        val expected = seeded.entries.associateWith { entryEdtf(it) }
+        roundTrip(passphrase = secret)
+        expected.forEach { (id, edtf) ->
+            assertEquals("the EDTF string changed through encryption", edtf, entryEdtf(id))
+        }
+    }
+
+    @Test
+    fun anEncryptedFileSaysSoAndRecordsHowItWasMade() = runBlocking {
+        seed()
+        val manifest = Backup.export(
+            context, archive, exportedAt = 1_754_000_000_000L, passphrase = secret.toCharArray(),
+        )
+
+        assertTrue("the manifest does not say it is encrypted", manifest.encrypted)
+        val parameters = manifest.encryption!!
+        assertEquals("AES-256-GCM", parameters.algorithm)
+        assertEquals("Argon2id", parameters.kdf)
+        // Recorded so a file written today opens years from now against
+        // whatever the shipped cost has become by then.
+        assertEquals(ExportCrypto.ITERATIONS, parameters.iterations)
+        assertEquals(ExportCrypto.MEMORY_KIB, parameters.memoryKib)
+        assertTrue("no salt recorded", parameters.salt.isNotEmpty())
+        assertTrue("no nonce recorded", parameters.nonce.isNotEmpty())
+    }
+
+    @Test
+    fun theManifestStaysReadableWithoutThePassphrase() = runBlocking<Unit> {
+        // The format's rule: a reader has to be able to say what a file is
+        // before it can ask for a passphrase.
+        seed()
+        Backup.export(
+            context, archive, exportedAt = 1_754_000_000_000L, passphrase = secret.toCharArray(),
+        )
+        val staging = File(context.cacheDir, "peek-${System.nanoTime()}")
+
+        val problem = ExportContainer.open(archive, staging).exceptionOrNull()
+        val reason = (problem as ExportContainer.ExportProblem).problem
+
+        assertTrue(
+            "an encrypted file with no passphrase should ask rather than fail: $reason",
+            reason is ExportContainer.Problem.PassphraseNeeded,
+        )
+        assertTrue("it does not say it is encrypted", "encrypted" in reason.message)
+        staging.deleteRecursively()
+    }
+
+    @Test
+    fun aWrongPassphraseIsRefusedWithoutClaimingToKnowWhy() = runBlocking<Unit> {
+        // GCM cannot distinguish a wrong passphrase from a tampered file, so
+        // the message must say both and claim neither.
+        seed()
+        Backup.export(
+            context, archive, exportedAt = 1_754_000_000_000L, passphrase = secret.toCharArray(),
+        )
+        val staging = File(context.cacheDir, "wrong-${System.nanoTime()}")
+
+        val problem = ExportContainer
+            .open(archive, staging, "not the passphrase".toCharArray())
+            .exceptionOrNull()
+        val reason = (problem as ExportContainer.ExportProblem).problem
+
+        assertTrue(reason is ExportContainer.Problem.CouldNotDecrypt)
+        assertTrue("it does not say nothing changed", "Nothing was changed" in reason.message)
+        assertTrue(
+            "it claims to know which of the two went wrong",
+            "no way to tell which" in reason.message,
+        )
+        staging.deleteRecursively()
+    }
+
+    @Test
+    fun anEncryptedPayloadIsNotReadableAsPlainText() = runBlocking {
+        // The whole point. If the notebook's words are findable in the bytes
+        // of the file, nothing above matters.
+        val repository = Repository.open(context)
+        val subject = repository.createSubject(displayName = "Margaret")
+        repository.createEntry(
+            subjectId = subject,
+            kind = "call",
+            occurred = Edtf.parse("2026-08-01")!!,
+            body = "the wound dressing was changed late again",
+        )
+        Backup.export(
+            context, archive, exportedAt = 1_754_000_000_000L, passphrase = secret.toCharArray(),
+        )
+
+        val raw = archive.readBytes().toString(Charsets.ISO_8859_1)
+        assertTrue(
+            "the notebook's content is readable in the encrypted file",
+            "wound dressing was changed late" !in raw,
+        )
+        // The manifest is deliberately readable without the passphrase, which
+        // is how a reader tells what the file is before asking for anything.
+        //
+        // Read through the zip rather than searched for in the raw bytes: the
+        // entry is deflated, so its text is not literally present, and an
+        // earlier version of this assertion failed for that reason and looked
+        // like the manifest had been encrypted along with the payload.
+        val manifestText = java.util.zip.ZipInputStream(archive.inputStream()).use { zip ->
+            generateSequence { zip.nextEntry }
+                .firstOrNull { it.name == ExportContainer.MANIFEST }
+                ?.let { zip.readBytes().decodeToString() }
+        }
+        assertTrue(
+            "the manifest is not readable without the passphrase",
+            manifestText != null && "format_version" in manifestText,
+        )
+        assertTrue(
+            "the manifest does not declare the file encrypted",
+            "\"encrypted\": true" in manifestText!!,
         )
     }
 

@@ -51,6 +51,17 @@ object ExportContainer {
         val exportedAt: Long,
         val originDevice: String,
         val encrypted: Boolean,
+        /**
+         * How the key was derived, present only when [encrypted].
+         *
+         * **Read from the file on import, never assumed from this build's
+         * constants.** That is what lets the cost rise as hardware improves
+         * without stranding a file written years earlier. An importer using
+         * today's values against an older file fails to derive the key from a
+         * correct passphrase and reports a wrong passphrase, which tells
+         * somebody their memory is wrong when their file is fine.
+         */
+        val encryption: Encryption? = null,
         val databaseSha256: String,
         val databaseBytes: Long,
         val rowCounts: Map<String, Int>,
@@ -60,6 +71,24 @@ object ExportContainer {
     ) {
         companion object
     }
+
+    /**
+     * The key derivation parameters, recorded so an older file still opens.
+     *
+     * The salt and nonce are per file. Reusing a nonce under one key is the
+     * mistake that breaks GCM outright rather than merely weakening it, so they
+     * are generated fresh for every export and carried here rather than
+     * derived from anything.
+     */
+    data class Encryption(
+        val algorithm: String,
+        val kdf: String,
+        val iterations: Int,
+        val memoryKib: Int,
+        val parallelism: Int,
+        val salt: String,
+        val nonce: String,
+    )
 
     /** Everything the writer needs, gathered by the caller so this stays pure plumbing. */
     data class Source(
@@ -85,15 +114,55 @@ object ExportContainer {
      * photographs, and deflating a JPEG costs time to make it very slightly
      * larger.
      */
-    suspend fun write(target: File, source: Source): Manifest = withContext(Dispatchers.IO) {
-        val databaseBytes = source.database.readBytes()
+    suspend fun write(
+        target: File,
+        source: Source,
+        /**
+         * Cleared by this function before it returns, on every path.
+         *
+         * **A `CharArray` rather than a `String` because a String cannot be
+         * wiped.** A passphrase that sits in the heap until garbage collection
+         * is a passphrase in a heap dump, and this one opens the only copy of
+         * somebody's records.
+         */
+        passphrase: CharArray? = null,
+    ): Manifest = withContext(Dispatchers.IO) {
+        val plainDatabase = source.database.readBytes()
+
+        // Fresh per file. Reusing a nonce under one key is the mistake that
+        // breaks GCM outright rather than merely weakening it.
+        val salt = passphrase?.let { ExportCrypto.randomSalt() }
+        val nonce = passphrase?.let { ExportCrypto.randomNonce() }
+        val key = passphrase?.let { ExportCrypto.derive(it, salt!!) }
+        passphrase?.fill('\u0000')
+
+        val databaseBytes = if (key != null) {
+            ExportCrypto.encrypt(key, nonce!!, plainDatabase)
+        } else {
+            plainDatabase
+        }
         val manifest = Manifest(
             formatVersion = FORMAT_VERSION,
             appVersion = source.appVersion,
             platform = "android",
             exportedAt = source.exportedAt,
             originDevice = source.originDevice,
-            encrypted = false,
+            encrypted = key != null,
+            encryption = key?.let {
+                Encryption(
+                    algorithm = "AES-256-GCM",
+                    kdf = "Argon2id",
+                    iterations = ExportCrypto.ITERATIONS,
+                    memoryKib = ExportCrypto.MEMORY_KIB,
+                    parallelism = ExportCrypto.PARALLELISM,
+                    salt = base64(salt!!),
+                    nonce = base64(nonce!!),
+                )
+            },
+            // **Hashed as stored**, meaning the ciphertext when encrypted. The
+            // hash exists so a reader can tell a truncated file from a whole
+            // one before asking for a passphrase, which it could not do if the
+            // hash described bytes it cannot yet see.
             databaseSha256 = Attachments.sha256(databaseBytes),
             databaseBytes = databaseBytes.size.toLong(),
             rowCounts = source.rowCounts,
@@ -114,12 +183,41 @@ object ExportContainer {
 
             source.attachments.forEach { file ->
                 zip.putNextEntry(ZipEntry(ATTACHMENTS + file.name))
-                file.inputStream().buffered().use { it.copyTo(zip) }
+                if (key != null) {
+                    // The same key, a nonce derived per attachment from the
+                    // file's own name, which is its content hash and therefore
+                    // unique within the archive. Deriving rather than storing
+                    // keeps the manifest a fixed size regardless of how many
+                    // attachments there are.
+                    zip.write(ExportCrypto.encrypt(key, nonceFor(file.name), file.readBytes()))
+                } else {
+                    file.inputStream().buffered().use { it.copyTo(zip) }
+                }
                 zip.closeEntry()
             }
         }
+        key?.let { ExportCrypto.wipe(it) }
         manifest
     }
+
+    /**
+     * A nonce for one attachment, from its content hash.
+     *
+     * The file's name **is** its SHA-256, so it is unique within the archive by
+     * construction, which is exactly the property a nonce needs. Taking the
+     * first twelve bytes of it gives a distinct nonce per attachment without
+     * storing one per file in the manifest.
+     */
+    private fun nonceFor(name: String): ByteArray =
+        java.security.MessageDigest.getInstance("SHA-256")
+            .digest(name.toByteArray())
+            .copyOf(ExportCrypto.NONCE_BYTES)
+
+    private fun base64(bytes: ByteArray): String =
+        android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+
+    private fun unbase64(text: String): ByteArray =
+        android.util.Base64.decode(text, android.util.Base64.NO_WRAP)
 
     /** Why a container could not be read, in terms a person could be told. */
     sealed interface Problem {
@@ -132,6 +230,19 @@ object ExportContainer {
         data class DatabaseCorrupt(override val message: String) : Problem
         data class AttachmentCorrupt(val hash: String, override val message: String) : Problem
         data class RowCountsDisagree(override val message: String) : Problem
+
+        /** Encrypted, and no passphrase was offered. Not a failure, a question. */
+        data class PassphraseNeeded(override val message: String) : Problem
+
+        /**
+         * The payload did not authenticate.
+         *
+         * **This cannot distinguish a wrong passphrase from a tampered file**,
+         * because GCM cannot: both mean the tag did not verify. The message
+         * therefore says both and claims neither. Telling somebody their file
+         * is corrupt when they mistyped is as bad as the reverse.
+         */
+        data class CouldNotDecrypt(override val message: String) : Problem
     }
 
     data class Opened(
@@ -152,7 +263,12 @@ object ExportContainer {
      * row is touched, and each one names what was wrong rather than reporting a
      * generic failure.
      */
-    suspend fun open(file: File, staging: File): Result<Opened> = withContext(Dispatchers.IO) {
+    suspend fun open(
+        file: File,
+        staging: File,
+        /** Cleared before this function returns, on every path. */
+        passphrase: CharArray? = null,
+    ): Result<Opened> = withContext(Dispatchers.IO) {
         staging.mkdirs()
 
         var manifestJson: JSONObject? = null
@@ -225,6 +341,55 @@ object ExportContainer {
             )
         }
 
+        // Decrypted after the hash check and before the attachment checks,
+        // because the hash describes the bytes as stored and the attachment
+        // hashes describe them as written. Doing it in the other order would
+        // fail every attachment on a perfectly good encrypted file.
+        if (manifest.encrypted) {
+            val parameters = manifest.encryption ?: return@withContext failure(
+                Problem.CouldNotDecrypt(
+                    "This export says it is encrypted but does not record how, so there " +
+                        "is no way to open it. Nothing was changed."
+                )
+            )
+            val offered = passphrase ?: return@withContext failure(
+                Problem.PassphraseNeeded(
+                    "This export is encrypted. It needs the passphrase that was chosen " +
+                        "when it was made. There is no way to recover it if it is lost."
+                )
+            )
+
+            val key = ExportCrypto.derive(
+                passphrase = offered,
+                salt = unbase64(parameters.salt),
+                iterations = parameters.iterations,
+                memoryKib = parameters.memoryKib,
+                parallelism = parameters.parallelism,
+            )
+            offered.fill('\u0000')
+
+            try {
+                val nonce = unbase64(parameters.nonce)
+                database.writeBytes(ExportCrypto.decrypt(key, nonce, database.readBytes()))
+                attachments.forEach {
+                    it.writeBytes(ExportCrypto.decrypt(key, nonceFor(it.name), it.readBytes()))
+                }
+            } catch (_: Throwable) {
+                return@withContext failure(
+                    Problem.CouldNotDecrypt(
+                        "This export could not be opened with that passphrase. Either the " +
+                            "passphrase is wrong or the file has been altered since it was " +
+                            "made, and there is no way to tell which from here. Nothing " +
+                            "was changed."
+                    )
+                )
+            } finally {
+                ExportCrypto.wipe(key)
+            }
+        } else {
+            passphrase?.fill('\u0000')
+        }
+
         // An attachment is named by its content hash, so a name that does not
         // match its bytes is corruption by definition. Checked here rather than
         // at use, because finding it later means finding it after the import
@@ -256,6 +421,20 @@ object ExportContainer {
         put("exported_at", exportedAt)
         put("origin_device", originDevice)
         put("encrypted", encrypted)
+        encryption?.let {
+            put(
+                "encryption",
+                JSONObject().apply {
+                    put("algorithm", it.algorithm)
+                    put("kdf", it.kdf)
+                    put("kdf_iterations", it.iterations)
+                    put("kdf_memory_kib", it.memoryKib)
+                    put("kdf_parallelism", it.parallelism)
+                    put("salt", it.salt)
+                    put("nonce", it.nonce)
+                },
+            )
+        }
         put(
             "database",
             JSONObject().apply {
@@ -299,6 +478,17 @@ internal fun ExportContainer.Manifest.Companion.from(json: JSONObject): ExportCo
         exportedAt = json.optLong("exported_at"),
         originDevice = json.optString("origin_device"),
         encrypted = json.optBoolean("encrypted", false),
+        encryption = json.optJSONObject("encryption")?.let {
+            ExportContainer.Encryption(
+                algorithm = it.optString("algorithm"),
+                kdf = it.optString("kdf"),
+                iterations = it.optInt("kdf_iterations"),
+                memoryKib = it.optInt("kdf_memory_kib"),
+                parallelism = it.optInt("kdf_parallelism"),
+                salt = it.optString("salt"),
+                nonce = it.optString("nonce"),
+            )
+        },
         databaseSha256 = database.optString("sha256"),
         databaseBytes = database.optLong("byte_size"),
         rowCounts = counts.keys().asSequence().associateWith { counts.optInt(it) },
