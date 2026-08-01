@@ -28,11 +28,16 @@ import generate as fixtures  # noqa: E402
 # What year five has to look like, from issue #17. Checked as a floor and a
 # ceiling, because a generator that quietly produces a tenth of the data still
 # passes every test that only asks whether it ran.
+BILL_STATES = {"needs_attention", "disputed", "waiting_on_insurance", "paid", "closed"}
+PROJECT_STATES = {"active", "waiting", "stalled", "done", "abandoned"}
+
 YEAR_FIVE = {
     "entry": (1200, 2000),
     "chapter": (8, 10),
     "care_thread": (5, 7),
     "milestone": (12, 18),
+    "document": (35, 45),
+    "attachment": (35, 45),
 }
 
 
@@ -41,7 +46,11 @@ def counts(path):
     try:
         return {
             table: db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-            for table in ("entry", "chapter", "care_thread", "milestone", "measurement")
+            for table in (
+                "entry", "chapter", "care_thread", "milestone", "measurement",
+                "incident", "bill", "standing_instruction", "project", "document",
+                "attachment",
+            )
         }
     finally:
         db.close()
@@ -93,6 +102,54 @@ def main():
                 failures.append(
                     f"{later} has fewer entries than {earlier}, so history is not growing."
                 )
+
+        # The shapes the personas need, each of which a random generator can
+        # miss by chance and which the issue names explicitly.
+        db = sqlite3.connect(first)
+        try:
+            def distinct(table, column):
+                return {row[0] for row in db.execute(f"SELECT DISTINCT {column} FROM {table}")}
+
+            missing_bills = BILL_STATES - distinct("bill", "state")
+            if missing_bills:
+                failures.append(
+                    f"no bill in state {sorted(missing_bills)}. A screen that has never "
+                    f"rendered a disputed bill is a screen nobody has tested."
+                )
+            missing_projects = PROJECT_STATES - distinct("project", "status")
+            if missing_projects:
+                failures.append(f"no project in state {sorted(missing_projects)}.")
+            if distinct("standing_instruction", "tag") != {"federal", "request"}:
+                failures.append(
+                    "the fixture does not carry both standing instruction tags, so the "
+                    "rule in DESIGN.md 5.7 about the federal tag cannot be exercised."
+                )
+
+            open_incidents = db.execute(
+                "SELECT COUNT(*) FROM incident WHERE resolved_at IS NULL"
+            ).fetchone()[0]
+            if open_incidents < 1:
+                failures.append(
+                    "every incident resolves. An app that only ever holds closed "
+                    "incidents never shows what an open one looks like sitting there "
+                    "for months, which is the state a family actually lives with."
+                )
+
+            at_limit = db.execute(
+                "SELECT COUNT(*) FROM attachment WHERE byte_size = ?",
+                (25 * 1024 * 1024,),
+            ).fetchone()[0]
+            if at_limit < 1:
+                failures.append(
+                    "no attachment sits exactly at the 25 MB limit from D13, so no "
+                    "screen renders the boundary case."
+                )
+
+            violations = db.execute("SELECT COUNT(*) FROM instruction_violation").fetchone()[0]
+            if violations < 1:
+                failures.append("no standing instruction has a recorded violation.")
+        finally:
+            db.close()
 
         # Year five hits the scale the issue states.
         actual = counts(first)

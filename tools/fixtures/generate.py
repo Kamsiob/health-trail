@@ -126,6 +126,11 @@ class Generator:
         self.entries(db, subject_id, chapters, threads)
         self.measures(db, subject_id)
         self.milestones(db, subject_id)
+        self.incidents(db, subject_id, chapters)
+        self.bills(db, subject_id, chapters)
+        self.instructions(db, subject_id, chapters)
+        self.projects(db, subject_id)
+        self.documents(db, subject_id, chapters)
         self.awkward(db, subject_id, chapters, threads)
         db.commit()
 
@@ -314,6 +319,169 @@ class Generator:
                 day=day,
             )
 
+    def incidents(self, db, subject_id, chapters):
+        """Incidents that resolve, and one that never does.
+
+        The one that never resolves is the point. An app that only ever holds
+        closed incidents never shows what an open one looks like sitting there
+        for months, which is the state a family actually lives with.
+        """
+        wanted = max(2, self.scaled(FULL["chapters"]))
+        for index in range(wanted):
+            day = self.rng.randrange(0, max(1, self.days))
+            values = {
+                "subject_id": subject_id,
+                "title": self.rng.choice(INCIDENTS),
+                "description": "Reported to the charge nurse. Asked for it in writing.",
+                "chapter_id": chapters[min(len(chapters) - 1, day // max(1, self.days // len(chapters)))],
+                "reported_edtf": (self.start + timedelta(days=day)).isoformat(),
+                "reported_start": self.ms(day, 0, 0),
+                "reported_end": self.ms(day, 23, 59),
+            }
+            # The last one stays open, always, whatever the seed.
+            if index < wanted - 1:
+                closed = min(self.days - 1, day + self.rng.randrange(2, 60))
+                values["resolved_at"] = self.ms(closed)
+                values["resolution_note"] = "They changed the schedule. It held for a while."
+            self.row(db, "incident", values, day=day)
+
+    def bills(self, db, subject_id, chapters):
+        """One bill in every state the schema allows.
+
+        Written as a loop over the states rather than random ones, so a state
+        can never be missing because a seed happened not to pick it. A screen
+        that has never rendered a disputed bill is a screen nobody has tested.
+        """
+        for index, state in enumerate(BILL_STATES):
+            day = self.rng.randrange(0, max(1, self.days))
+            self.row(
+                db,
+                "bill",
+                {
+                    "subject_id": subject_id,
+                    "description": BILL_TEXT[index % len(BILL_TEXT)],
+                    "amount_minor": self.rng.randrange(1200, 940_000),
+                    "currency": "USD",
+                    "state": state,
+                    "chapter_id": chapters[min(len(chapters) - 1, index)],
+                    "received_edtf": (self.start + timedelta(days=day)).isoformat(),
+                    "received_start": self.ms(day, 0, 0),
+                    "received_end": self.ms(day, 23, 59),
+                },
+                day=day,
+            )
+
+    def instructions(self, db, subject_id, chapters):
+        """Standing instructions with both tags, and violations recorded against them.
+
+        Both tags on purpose. DESIGN.md section 5.7 says the federal tag must
+        never appear on a notebook whose chapter is not a nursing home without
+        the explanation visible, and that rule cannot be exercised by a fixture
+        that only ever carries requests.
+        """
+        for index, (name, wording, tag) in enumerate(INSTRUCTIONS):
+            day = self.rng.randrange(0, max(1, self.days // 2))
+            instruction_id = self.row(
+                db,
+                "standing_instruction",
+                {
+                    "subject_id": subject_id,
+                    "name": name,
+                    "wording": wording,
+                    "tag": tag,
+                    "chapter_id": chapters[min(len(chapters) - 1, index)],
+                    "given_edtf": (self.start + timedelta(days=day)).isoformat(),
+                    "given_start": self.ms(day, 0, 0),
+                    "given_end": self.ms(day, 23, 59),
+                },
+                day=day,
+            )
+            for _ in range(self.rng.randrange(0, 4)):
+                broke = min(self.days - 1, day + self.rng.randrange(1, 200))
+                self.row(
+                    db,
+                    "instruction_violation",
+                    {
+                        "instruction_id": instruction_id,
+                        "note": "Happened again. Nobody had been told.",
+                        **self.edtf_day(broke),
+                    },
+                    day=broke,
+                )
+
+    def projects(self, db, subject_id):
+        """Projects at various stages, including the ones nobody finished."""
+        for index in range(max(len(PROJECT_STATES), self.scaled(FULL["projects"]))):
+            state = PROJECT_STATES[index % len(PROJECT_STATES)]
+            day = self.rng.randrange(0, max(1, self.days))
+            project_id = self.row(
+                db,
+                "project",
+                {
+                    "subject_id": subject_id,
+                    "name": PROJECTS[index % len(PROJECTS)],
+                    "status": state,
+                    "started_edtf": (self.start + timedelta(days=day)).isoformat(),
+                    "started_start": self.ms(day, 0, 0),
+                    "started_end": self.ms(day, 23, 59),
+                },
+                day=day,
+            )
+            for step in range(self.rng.randrange(2, 7)):
+                self.row(
+                    db,
+                    "project_step",
+                    {
+                        "project_id": project_id,
+                        "text": PROJECT_STEPS[step % len(PROJECT_STEPS)],
+                        "sort_index": step,
+                    },
+                    day=day,
+                )
+
+    def documents(self, db, subject_id, chapters):
+        """Documents, each with an attachment and a note on where the paper is.
+
+        The attachment rows carry real sha256 values over generated bytes, so a
+        round trip that verifies hashes has something true to verify. One is
+        deliberately at the 25 MB size limit from D13, recorded by size rather
+        than by generating 25 MB into a fixture nobody wants to move around.
+        """
+        wanted = self.scaled(FULL["documents"])
+        for index in range(wanted):
+            day = self.rng.randrange(0, max(1, self.days))
+            document_id = self.row(
+                db,
+                "document",
+                {
+                    "subject_id": subject_id,
+                    "title": DOCUMENTS[index % len(DOCUMENTS)],
+                    "category": self.rng.choice(["medical", "legal", "financial", "facility"]),
+                    "chapter_id": chapters[min(len(chapters) - 1, index % len(chapters))],
+                    "original_location": self.rng.choice(ORIGINALS),
+                    "received_edtf": (self.start + timedelta(days=day)).isoformat(),
+                    "received_start": self.ms(day, 0, 0),
+                    "received_end": self.ms(day, 23, 59),
+                },
+                day=day,
+            )
+            body = f"page bytes for document {index}".encode()
+            at_limit = index == 0
+            self.row(
+                db,
+                "attachment",
+                {
+                    "sha256": hashlib.sha256(body).hexdigest(),
+                    "original_filename": f"scan-{index:03d}.jpg",
+                    "mime_type": "image/jpeg",
+                    # Exactly the ceiling D13 set, so a screen that formats or
+                    # warns on size has the boundary case to render.
+                    "byte_size": 25 * 1024 * 1024 if at_limit else len(body),
+                    "document_id": document_id,
+                },
+                day=day,
+            )
+
     def awkward(self, db, subject_id, chapters, threads):
         """The cases that break things, put in on purpose.
 
@@ -398,6 +566,39 @@ class Generator:
             },
             day=brief,
         )
+        # A care thread with a single session and nothing else, which is what
+        # a discipline that assessed once and discharged looks like.
+        single = max(0, self.days - 4)
+        lonely = self.row(
+            db,
+            "care_thread",
+            {
+                "subject_id": subject_id,
+                "label": "Speech therapy",
+                "color_index": 7,
+                "sort_index": 90,
+                "started_edtf": (self.start + timedelta(days=single)).isoformat(),
+                "started_start": self.ms(single, 0, 0),
+                "started_end": self.ms(single, 23, 59),
+                "ended_edtf": (self.start + timedelta(days=single)).isoformat(),
+                "ended_start": self.ms(single, 0, 0),
+                "ended_end": self.ms(single, 23, 59),
+            },
+            day=single,
+        )
+        only = self.row(
+            db,
+            "entry",
+            {
+                "subject_id": subject_id,
+                "kind": "visit",
+                "title": "Speech assessed her once and discharged her",
+                **self.edtf_day(single),
+            },
+            day=single,
+        )
+        self.row(db, "entry_thread", {"entry_id": only, "thread_id": lonely}, day=single)
+
         # A bill for zero dollars, which is a real thing a facility sends and
         # which a naive "amount is truthy" check drops.
         self.row(
@@ -455,6 +656,79 @@ MEASURES = [
     {"id": "weight", "name": "Weight", "unit": "lb", "range": (128, 141), "risk": "low"},
     {"id": "sleep", "name": "Sleep", "unit": "hours", "range": (3, 9), "risk": "low"},
     {"id": "pain", "name": "Pain", "unit": "0 to 10", "range": (0, 8), "risk": "medium"},
+]
+
+INCIDENTS = [
+    "Found on the floor beside the bed",
+    "Call light not answered for forty minutes",
+    "Wrong medication brought to the room",
+    "Nobody told us she had been moved",
+    "Bruise on her arm nobody could explain",
+]
+
+BILL_STATES = ["needs_attention", "disputed", "waiting_on_insurance", "paid", "closed"]
+
+BILL_TEXT = [
+    "Monthly room and board",
+    "Level of care reassessment",
+    "Ambulance transfer",
+    "Physical therapy, out of network",
+    "Pharmacy charges",
+]
+
+INSTRUCTIONS = [
+    (
+        "Call me before any medication change",
+        "Please call me before any change to her medications, including a dose change.",
+        "request",
+    ),
+    (
+        "Notify me of any fall",
+        "Federal rules for nursing homes require the facility to notify the "
+        "representative of an accident or injury.",
+        "federal",
+    ),
+    (
+        "She showers in the morning",
+        "She has always showered in the morning and gets upset in the evening.",
+        "request",
+    ),
+]
+
+PROJECT_STATES = ["active", "waiting", "stalled", "done", "abandoned"]
+
+PROJECTS = [
+    "Medicaid application",
+    "Get the power of attorney recognized",
+    "Appeal the level of care assessment",
+    "Move her belongings out of the old room",
+    "Find a dentist who will come to the facility",
+]
+
+PROJECT_STEPS = [
+    "Call and ask what form it is",
+    "Get the form",
+    "Find the last three bank statements",
+    "Send it certified",
+    "Follow up after two weeks",
+    "Ask for it in writing",
+]
+
+DOCUMENTS = [
+    "Discharge summary",
+    "Care plan, signed",
+    "Power of attorney",
+    "Insurance card, both sides",
+    "Level of care assessment",
+    "Grievance, filed",
+]
+
+ORIGINALS = [
+    "In the blue folder at home",
+    "The facility has the original",
+    "Filed with the county",
+    "In the glove box",
+    "I do not know where the original is",
 ]
 
 MILESTONES = [
