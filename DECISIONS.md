@@ -841,6 +841,32 @@ The mechanism was written against the shade being pulled down and against anothe
 
 **The general shape, which is the third instance this week.** A guard that checks the thing it was written to check, while the actual risk arrives through a door nobody thought about. The focus check was not wrong. It was answering a narrower question than the one it appeared to answer.
 
+### D54. TalkBack ran, and the thing it was going to find had already been fixed by a test
+
+**Date:** 2026-08-01. **Done under:** the owner's permission of the same day, with the phone restored exactly.
+
+D43 left two questions the automated `ScreenReaderTest` cannot answer: **does traversal order match visual order**, and **do the labels read as sentences rather than fragments**. TalkBack was enabled on the Pixel and three screens were walked: the notebook, Appearance, and the capture form.
+
+**Both questions came back clean, and that is a finding rather than a formality.**
+
+**Traversal order matches visual order** on all three. Title, then subtitle, then the waiting card, then each group heading followed by its own rows, then the bottom navigation, then the capture button last. Nothing jumps.
+
+**Labels read as phrases, not fragments.** This was the one most likely to fail. Each list row is a single focusable node with its texts as children, so a row is **one stop** reading "Care team, nothing yet" rather than two stops reading "Care team" and then, separately, "Nothing yet". Text fields carry their label through an associated child, so the field announces "Who you spoke to, edit box" rather than as an unlabeled box.
+
+**Selection is exposed as state everywhere it exists.** The date chips, the thread chips, and the three Appearance options all report `checked` on the chosen one and not on the others. A reader user is told which is selected rather than left to infer it from a visual mark they cannot see.
+
+**No unlabeled focusable control was found** on any of the three.
+
+**Why this was already true.** `ScreenReaderTest` has asserted since it was written that no touchable node lacks both text and a content description, on every screen, on every build. The manual pass confirmed the automated one rather than correcting it. **That is the outcome D43 predicted:** a single hand check finds a thing once, and the test keeps finding it forever. Worth recording precisely because a clean result is the easiest kind to skip writing down, and then nobody knows whether it was ever run.
+
+**What the pass genuinely added** is the traversal and phrasing evidence, which no check covers and which would have been guesswork otherwise.
+
+**The device was restored exactly**, verified rather than assumed. `enabled_accessibility_services` went back to the KDE Connect string it held before rather than being cleared, which matters: clearing it would have quietly removed something the owner uses. `touch_exploration_enabled` back to 0, `accessibility_enabled` back to 1, and TalkBack confirmed unbound by reading the bound service list, which lists KDE Connect alone.
+
+A restore script was written **before** the first change rather than after, so recovery never depended on the session remembering what it had done. That is the pattern to reuse.
+
+**Revisit if.** New screens land. #44 still wants the remaining screens walked, and the pass is now cheap and proven safe to run.
+
 ---
 
 ## BLOCKED
