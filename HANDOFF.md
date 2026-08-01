@@ -40,14 +40,21 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
-**Issue #39, the date interface.** The model is built, proven by golden vectors, and used by exactly one screen. The half that the owner's directive actually asked for is not built.
+**Issue #9, the export container.** It is release blocking, it is the only proof that data survives an update, and two other things are waiting behind it: #57, the document capture input, needs the content addressed attachment storage the export defines, and #10 needs the container itself.
 
-1. **The capture form's date control.** It offers four chips: today, yesterday, this week, not sure. The bar requires **an exact date and time always available as a peer of the chips, not behind them**, and natural expression for a month or a season. `DESIGN.md` section 10.9.
-2. **This needs a date picker, which is a genuinely new component.** Nothing in the design language can carry it, so per section 10.2 it gets specified in section 5 first, with its states, before it is built. Material's own picker will not look like this app. That decision has not been made and is the first thing to settle.
-3. **Editing a date from the entry itself, forever, with the same control.** Nothing can edit a date yet because nothing shows a single entry yet, so this may follow the trail rather than lead it.
-4. `EventDateText` is proven and called from one screen. **Every screen that shows a date from here on calls it rather than formatting one itself.**
+`contract/export-format.md` specifies it and is current, including the line added this run about event dates travelling as their EDTF string and the derived range being recomputed on import rather than trusted.
 
-**Then #62**, the template catalog being English only, which is release blocking and was found by running the app in Arabic on the phone.
+What it needs, in order:
+
+1. **Content addressed attachment storage.** A file named by the hash of its bytes, plus a row holding the hash, the original filename, the mime type, and the size. Data contract section 3.
+2. **The container**: a manifest with the format version, the SQLite payload, and the attachments.
+3. **Encryption**, per `contract/export-format.md` section 4.
+4. **The round trip test**, field by field, which must assert the EDTF column survives byte for byte and that the derived range is recomputed rather than read.
+5. **Tombstones travel**, and a test says so. That is the last unmet criterion on #8.
+
+**Then #62**, the template catalog being English only, which is release blocking and which the app currently shows plainly to any Arabic reader.
+
+**Then #17**, the fixture generator, which nothing else makes a persona run mean anything without, and which is now unblocked because the schema has settled.
 
 ## 4. What is done, and how each piece was verified
 
@@ -190,6 +197,7 @@ Every screen built without one is composed from existing components under `DESIG
 | Notebook table of contents | 2026-08-01, rebuilt to the 10.6 bar | #36, review on #50 | not yet |
 | Unfiled tray | 2026-08-01 | #53, review on #55 | not yet |
 | Adding a measurement | 2026-08-01 | #42 | not yet |
+| The date picker | 2026-08-01 | #39, review on #68 | not yet |
 
 The notebook is drawn in the reference file, so it is listed here as a correction rather than as an undrawn screen. `DESIGN.md` section 3 item 8 records the four ways the built screen departs from the mockup, with reasons.
 
