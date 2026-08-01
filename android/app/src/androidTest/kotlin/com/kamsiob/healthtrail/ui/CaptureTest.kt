@@ -251,7 +251,7 @@ class CaptureTest {
         val repository = Repository.open(context)
         val subjectId = repository.createSubject(displayName = "Capture subject")
 
-        val before = repository.count(Repository.Section.TRAIL)
+        val before = repository.count(Repository.Section.TRAIL, subjectId)
         val entryId = repository.createEntry(
             subjectId = subjectId,
             kind = "call",
@@ -259,7 +259,7 @@ class CaptureTest {
             body = "Said they would call back",
         )
         repository.addCallDetail(entryId = entryId, reached = true)
-        val after = repository.count(Repository.Section.TRAIL)
+        val after = repository.count(Repository.Section.TRAIL, subjectId)
 
         assertEquals("the call did not reach the trail", before + 1, after)
     }
@@ -272,9 +272,9 @@ class CaptureTest {
         val repository = Repository.open(context)
         val subjectId = repository.createSubject(displayName = "Blank capture subject")
 
-        val before = repository.count(Repository.Section.TRAIL)
+        val before = repository.count(Repository.Section.TRAIL, subjectId)
         repository.createEntry(subjectId = subjectId, kind = "call", title = "", body = "")
-        val after = repository.count(Repository.Section.TRAIL)
+        val after = repository.count(Repository.Section.TRAIL, subjectId)
 
         assertEquals("a blank call was silently dropped", before + 1, after)
     }

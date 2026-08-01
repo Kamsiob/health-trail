@@ -49,8 +49,6 @@ The parts that change how you work, compressed:
 
 **Then #62**, the template catalog being English only, which is release blocking and was found by running the app in Arabic on the phone.
 
-**Then #58**, the section counts not being scoped to the subject. Small, and silently wrong the moment a second notebook exists.
-
 ## 4. What is done, and how each piece was verified
 
 Verified means checked through the mechanism, not inferred from the code being written.
@@ -79,7 +77,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 92 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All seven implemented compliance checks pass.
+**The whole instrumented suite: 93 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All seven implemented compliance checks pass.
 
 **A pattern worth carrying forward.** Almost every defect this run found came from putting the built thing in a hand and changing one condition: the font at maximum, the keyboard up, the language set to Arabic, or simply looking at a screen that had already passed its tests. None of them were visible in the code, and several had passed a review. The tests are what keep them fixed; they are not what found them.
 
@@ -87,7 +85,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 ## 5. Remaining work inventory, in order
 
-**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #36 the notebook, #37 setup, #38 the date model, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray. #12 is closed for Latin and Arabic and open only for Chinese.
+**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #36 the notebook, #37 setup, #38 the date model, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray, #58 the subject scoped counts. #12 is closed for Latin and Arabic and open only for Chinese.
 
 **In order. The first three are the ones to take.**
 
@@ -95,7 +93,6 @@ Verified means checked through the mechanism, not inferred from the code being w
 |---|---|---|
 | #39 | The date interface | The model is built and the half the owner asked for is not. Needs a date picker specified in `DESIGN.md` section 5 first, because nothing existing can carry it |
 | #62 | The template catalog is English only | Release blocking, and the app currently shows an Arabic interface wrapped around English content |
-| #58 | Section counts are not scoped to the subject | Small. Silently wrong the moment a second notebook exists |
 | #57 | The document capture input | The last of the six ways in. Blocked on attachment storage, which #9 also needs, so build that first |
 | #9 | The export container | Attachment storage, the round trip, and the only proof data survives an update. Now also has to round trip the EDTF column byte for byte |
 | #17 | Deterministic fixture generator | Nothing else makes a persona run mean anything, and the schema has settled |

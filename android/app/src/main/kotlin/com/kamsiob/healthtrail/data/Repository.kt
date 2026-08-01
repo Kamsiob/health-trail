@@ -608,14 +608,24 @@ class Repository private constructor(
     // -- counting, for the table of contents ------------------------------
 
     /**
-     * How many live rows a section holds.
+     * How many live rows a section holds, for one subject.
      *
      * Takes a [Section] rather than a table name, so a caller cannot reach a
      * base table by passing a string. That is the difference between a
      * repository that filters tombstones and one that merely offers to.
+     *
+     * **The subject is required, and that is the whole point of this signature.**
+     * It counted across every subject until a test caught it returning two
+     * after one measure was created. With one notebook that is invisible. With
+     * two it makes every number on the table of contents quietly wrong, and
+     * quietly wrong counts in a care record are worse than missing ones,
+     * because nobody thinks to check them. Issue #58.
      */
-    suspend fun count(section: Section): Int = withContext(Dispatchers.IO) {
-        db().database.rawQuery("SELECT COUNT(*) FROM ${section.view}", null).use {
+    suspend fun count(section: Section, subjectId: String): Int = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT COUNT(*) FROM ${section.view} WHERE subject_id = ?",
+            arrayOf(subjectId),
+        ).use {
             if (it.moveToFirst()) it.getInt(0) else 0
         }
     }

@@ -106,9 +106,18 @@ fun NotebookShell(repository: Repository) {
         try {
             val subject = repository.activeSubject()
             val emphasis = emphasisFor(context, subject?.situationTemplateId)
-            counts = SECTION_ORDER.map {
-                SectionCount(it, repository.count(it), emphasis[it] ?: Emphasis.STANDING)
-            }
+            // Counts belong to a subject. With no subject there is no notebook
+            // to count, and showing zeros would be inventing a notebook that
+            // does not exist yet.
+            counts = subject?.let { active ->
+                SECTION_ORDER.map {
+                    SectionCount(
+                        it,
+                        repository.count(it, active.id),
+                        emphasis[it] ?: Emphasis.STANDING,
+                    )
+                }
+            } ?: SECTION_ORDER.map { SectionCount(it, 0, Emphasis.STANDING) }
             threads = subject?.let { repository.threads(it.id) }.orEmpty()
             unfiled = subject?.let { repository.unfiled(it.id) }.orEmpty()
             measures = subject?.let { repository.measures(it.id) }.orEmpty()
