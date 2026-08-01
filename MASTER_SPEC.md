@@ -85,7 +85,15 @@ Disclaimer gate, explicit accept, wording fixed in `DESIGN.md` section 7. Then e
 
 One gold button, present on every screen in all four tabs, opening a sheet with six choices: log a call, log a visit, report an incident, add a measurement, ask next time, save a document. Each files itself into the right section. The person decides what happened, never where it goes.
 
-**Capture forgives, and this is a functional requirement rather than a nicety.** Every field is optional. Dates can be rough, including "sometime this week" and "not sure." A half-remembered note is a valid note. Anything the person cannot categorize goes to an Unfiled tray, where the app suggests a home by plain word matching and the person confirms with one tap. The app never files anything on its own.
+**Capture forgives, and this is a functional requirement rather than a nicety.** Every field is optional. A half-remembered note is a valid note. Anything the person cannot categorize goes to an Unfiled tray, where the app suggests a home by plain word matching and the person confirms with one tap. The app never files anything on its own.
+
+**Dates are a real capability, not a rough option.** An earlier version of this section described them in one sentence and understated what is required. A care record spans years and is written from memory: "the fall was sometime in November 2024," "she was moved in the fall," "I called them, I think it was a Tuesday." A schema that stores only a precise timestamp turns every one of those into a claim the person never made.
+
+Dates are stored as EDTF, the Extended Date/Time Format standardized as ISO 8601-2:2019, where precision is expressed by truncation and uncertainty is a separate axis from precision. **Unknown is a first-class value**, and an entry with an unknown date saves, is valid, and appears in the trail. **Whatever the person expresses is recorded at exactly that precision and no finer, and displayed at exactly that precision everywhere**, including the trail, month reviews, exports, PDFs, and the engine's composed sentences. Every date is editable forever from the entry itself, and editing one never creates a new entry and never loses its links. Imprecise entries sort among precise ones and appear in any date-range search their range overlaps.
+
+The interface hides all of it: chips for the common cases, an exact date and time always available as a peer of the chips rather than behind them, and natural expression where it is easier. The person never sees EDTF and never chooses a precision.
+
+The full model, its columns, and its round-trip requirement are in `contract/DATA-CONTRACT.md`. The display rules are `DESIGN.md` section 10.9. The owner approved this on 2026-07-31 and it is made before real data exists, because retrofitting it later means discarding records. D34.
 
 Capture is additionally exposed as a home screen widget, a quick settings tile, and a share sheet target, so a photographed bill or an emailed PDF lands directly in capture.
 

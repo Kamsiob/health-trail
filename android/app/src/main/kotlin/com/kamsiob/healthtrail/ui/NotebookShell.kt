@@ -17,11 +17,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.screens.CaptureDraft
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
@@ -30,6 +33,8 @@ import com.kamsiob.healthtrail.ui.screens.entryKind
 import com.kamsiob.healthtrail.ui.screens.occurredAt
 import com.kamsiob.healthtrail.ui.screens.precision
 import com.kamsiob.healthtrail.ui.screens.usesTheSharedForm
+import com.kamsiob.healthtrail.ui.screens.Emphasis
+import com.kamsiob.healthtrail.ui.screens.emphasisFrom
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -38,6 +43,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object ShellTags {
     const val ROOT = "shell_root"
     const val NOT_BUILT = "shell_not_built"
+    const val ERROR = "shell_error"
 }
 
 /**
@@ -67,12 +73,30 @@ fun NotebookShell(repository: Repository) {
     // Empty is a real state: a notebook with no situation template has none, and
     // the form drops that question rather than showing an answerless one.
     var threads by remember { mutableStateOf<List<Repository.CareThread>>(emptyList()) }
+    // The counts could not be read. Distinct from not having read them yet,
+    // which is what a null `counts` means.
+    var failed by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Recounted whenever the tab changes, so returning to the notebook after
     // writing something shows the new number rather than a stale one.
+    //
+    // Wrapped, because a read can fail and a table of contents that throws
+    // takes the whole app down. The screen says so and offers the read again,
+    // per DESIGN.md section 10.3, which requires an error state on every screen
+    // rather than only on the ones where a failure was imagined.
     LaunchedEffect(destination, revision) {
-        counts = SECTION_ORDER.map { SectionCount(it, repository.count(it)) }
-        threads = repository.activeSubject()?.let { repository.threads(it.id) }.orEmpty()
+        failed = false
+        try {
+            val subject = repository.activeSubject()
+            val emphasis = emphasisFor(context, subject?.situationTemplateId)
+            counts = SECTION_ORDER.map {
+                SectionCount(it, repository.count(it), emphasis[it] ?: Emphasis.STANDING)
+            }
+            threads = subject?.let { repository.threads(it.id) }.orEmpty()
+        } catch (t: Throwable) {
+            failed = true
+        }
     }
 
     Surface(
@@ -86,10 +110,10 @@ fun NotebookShell(repository: Repository) {
                 when (destination) {
                     Destination.NOTEBOOK -> {
                         val loaded = counts
-                        if (loaded == null) {
-                            Loading()
-                        } else {
-                            NotebookScreen(sections = loaded, onOpen = { })
+                        when {
+                            failed -> CouldNotRead(onRetry = { revision += 1 })
+                            loaded == null -> Loading()
+                            else -> NotebookScreen(sections = loaded, onOpen = { })
                         }
                     }
                     // These arrive in their own increments. Until then each
@@ -185,6 +209,30 @@ fun NotebookShell(repository: Repository) {
  * Projects sit outside the notebook and have their own destination, so they are
  * not in this list.
  */
+/**
+ * What weight each section carries, read from the active situation template.
+ *
+ * **The template decides emphasis and nothing else.** It cannot add a section,
+ * cannot remove one, and cannot move one, so this returns a weight per section
+ * and never an order. A subject with no template, which is what "Not sure yet"
+ * on the situation picker leaves behind, gets an empty map and therefore a
+ * notebook where every section stands at the same weight. That is a complete
+ * notebook, not a degraded one.
+ *
+ * A template id that is not in the catalog, which is what an export from a
+ * later version of the app would carry, falls through to the same empty map
+ * rather than failing.
+ */
+private suspend fun emphasisFor(
+    context: android.content.Context,
+    templateId: String?,
+): Map<Repository.Section, Emphasis> {
+    if (templateId == null) return emptyMap()
+    val situation = TemplateCatalog.situations(context).all.firstOrNull { it.id == templateId }
+        ?: return emptyMap()
+    return emphasisFrom(forward = situation.forward, folded = situation.folded)
+}
+
 private val SECTION_ORDER = listOf(
     Repository.Section.CARE_TEAM,
     Repository.Section.MEDICATIONS,
@@ -209,6 +257,38 @@ private fun Loading() {
             style = HealthTrail.type.bodyM,
             color = HealthTrail.colors.ink2,
         )
+    }
+}
+
+/**
+ * The counts could not be read.
+ *
+ * It says what happened, says plainly that nothing was lost, and offers the one
+ * action that might fix it. It does not apologize for the software and it does
+ * not explain the exception, because neither helps the person holding the phone.
+ */
+@Composable
+private fun CouldNotRead(onRetry: () -> Unit) {
+    val strings = LocalStrings.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = Space.screenHorizontal, vertical = Space.l)
+            .testTag(ShellTags.ERROR),
+    ) {
+        Text(
+            text = strings["notebook.title"],
+            style = HealthTrail.type.displayL,
+            color = HealthTrail.colors.ink,
+        )
+        Spacer(Modifier.height(Space.s))
+        Text(
+            text = strings["common.error.generic"],
+            style = HealthTrail.type.bodyM,
+            color = HealthTrail.colors.ink2,
+        )
+        Spacer(Modifier.height(Space.m))
+        FilledButton(label = strings["common.retry"], onClick = onRetry)
     }
 }
 

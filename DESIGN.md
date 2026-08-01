@@ -24,6 +24,10 @@ Re-research current tells before any new screen work, per the universal standard
 
 Purple or indigo anything. Gradient fills, gradient text, gradient heroes. Glassmorphism, frosted panels, backdrop blur. Colored accent bars or colored left borders on cards. Cards outlined with a 1px gray border as their only definition. Three feature cards in a row. Numbered 01 / 02 / 03 markers where the content is not genuinely a sequence. Sparkle, wand, or magic iconography. A bounce on every hover or press. Inter as a display face. Emoji used as interface iconography.
 
+**Added 2026-07-31, from the research pass behind D33.** Cards nested inside cards inside cards, because depth is not hierarchy. The same label repeated in more than one slot of a single card. A large centered icon above a heading standing in for actual content. Stat cards with small colored arrows beside numbers, banned twice over here since this app never interprets a value. Status pills scattered everywhere as a substitute for real hierarchy. Press states that do nothing, and identical fade-in timing applied to everything. 3D blobs, plastic illustrations, and stock imagery of any kind. Everything visible at once with no progressive disclosure. Edge states left as afterthoughts, since empty, error, loading, offline, and partial are where generated interfaces are most obviously generated. Placeholder error copy, because "Something went wrong, please try again" removes the human voice at the exact moment the person needs it. Generic product phrasing: streamline, empower, supercharge, seamless, world-class, effortless. The manufactured-contrast cadence, "Not a form. A conversation."
+
+**Slop is rarely ugly.** It is competent and anonymous, every screen out of one mold in a different coat of paint. Anonymous is the failure mode to watch for here, not ugliness.
+
 The accent bar one is specifically called out because it already slipped into a draft of the care threads screen and had to be removed. Thread identity is carried by a dashed route line, which is the app's own metaphor, not by a colored edge, which is everyone's default.
 
 ---
@@ -137,7 +141,8 @@ Every difference, with its reason. Nothing else differs.
 5. **Touch targets are 48dp minimum** regardless of the visual size of the thing being tapped. Several mockup rows are visually shorter than that and get invisible padding to reach it.
 6. **Care thread accent bars are removed**, replaced by dashed route lines. Already corrected in the reference file; stated here so it is never reintroduced.
 7. **The capture overlay is a real bottom sheet**, not the dimmed-background composite shown in two mockup screens. The mockups show it that way only because a static image cannot show a transition.
-8. **The mark's bars are thinner than the reference draws them.** The reference sets each bar at 22 by 9 with a 3 gap. Built at icon scale that weight reads as a hamburger menu control rather than as a painted blaze, which was confirmed by looking at it on a device. The bars are 22 by 6 with a 5 gap and capsule ends. Equal widths are unchanged and are not negotiable, see 5.1.
+8. **The table of contents carries twelve rows in four labeled groups, at three weights.** The reference draws eight rows, flat, at one weight, with a body-face descriptive subtitle under each. Four differences, each with its reason. Twelve rather than eight, because `MASTER_SPEC.md` section 4.4 fixes the twelve sections and the reference simply drew a subset. Group headers, because twelve at uniform weight reads as a list of everything rather than as a table of contents, which is the defect issue #36 exists to fix; the groups add structure around the existing order and move nothing. Three weights rather than one, because the situation templates carry `forward` and `folded` arrays that the reference predates, and D33 records how they render. One Mono count string per row rather than a descriptive subtitle, because "12 people" and "214 entries · 1 open incident" are two different treatments of the same slot and the counts have to be one treatment to be scannable; the descriptive form returns as each section's own screen lands and can say something true about itself.
+9. **The mark's bars are thinner than the reference draws them.** The reference sets each bar at 22 by 9 with a 3 gap. Built at icon scale that weight reads as a hamburger menu control rather than as a painted blaze, which was confirmed by looking at it on a device. The bars are 22 by 6 with a 5 gap and capsule ends. Equal widths are unchanged and are not negotiable, see 5.1.
 
 ---
 
@@ -202,7 +207,7 @@ Two stacked rounded bars in `blaze`, **both the same width**, which is a painted
 
 First, this section previously said the upper bar was slightly narrower than the lower. That contradicted `reference/screen-grid.html`, which draws both at `width:22px`, and the difference was not listed in section 3, where every deliberate override of the mockups is required to appear. It was an error in this document rather than an intended override, and it had already been built the wrong way once. **Equal widths, and that is not negotiable.**
 
-Second, the reference draws the bars at 22 by 9 with a 3 gap, and built at icon scale that weight reads as a hamburger menu control. Thinned to 22 by 6 with a 5 gap and capsule rather than cut ends, which reads as brushed on rather than drawn. Listed in section 3 as item 8, because it is a genuine departure from the reference rather than a correction to it.
+Second, the reference draws the bars at 22 by 9 with a 3 gap, and built at icon scale that weight reads as a hamburger menu control. Thinned to 22 by 6 with a 5 gap and capsule rather than cut ends, which reads as brushed on rather than drawn. Listed in section 3 as item 9, because it is a genuine departure from the reference rather than a correction to it.
 
 ### 5.2 The trail
 
@@ -296,6 +301,51 @@ Every list has one, written as an invitation rather than an absence. The Today s
 
 **Every chip set includes an answer that means "I do not know".** "Not sure" for a date, "Not sure yet" for a thread. It is a real answer that saves and files, never a way of postponing the question, and it is the reason this pattern exists rather than a required picker.
 
+### 5.12 The icon tile
+
+A rounded tile carrying one line drawing, which is how the reference file draws every row of the table of contents. Radius 12dp, already named in section 4.2 before anything was built against it.
+
+**Geometry.** Tile 36dp, drawing 20dp inside it, centered. The drawings are authored on a 24 unit grid with a 1.7 stroke, round caps and joins, and no fill, which is the grid and weight the reference file's own icons use. Scale the grid rather than redrawing at a new size.
+
+**The drawings are paths, never an icon font.** The same reason the chevron is a path: a font falls back to a box glyph in a language nobody tested, and this app ships in four scripts.
+
+**Fill carries weight, and it is the app's only monochrome emphasis device.**
+
+| State | Treatment |
+|---|---|
+| Emphasized | `sand` fill, drawing in `ink` |
+| Standing | no fill, drawing in `ink2` |
+| Quiet | no fill, drawing in `ink3` non-text |
+| Emergency Card | `alert_soft` fill, drawing in `alert` text-safe, at every weight, per 2.2 |
+
+**No icon here mirrors.** Section 4.4 mirrors directional icons and none of these is directional. A chevron beside the tile is the thing that flips.
+
+**An icon is never the only thing naming what it sits beside.** Every row carrying a tile also carries the name in words, so the tile is recognition rather than information, and the stroke is held to the 3:1 non-text ratio rather than a text ratio.
+
+### 5.13 The group header
+
+A mono eyebrow with a hairline running out to the end edge, which is how the reference file heads a month in the trail. Used wherever a long list needs to become a few groups.
+
+The label is Mono, uppercased against the catalog's own locale rather than the device's, in `ink3` text-safe. 12dp between the label and the rule, the rule 1dp in `ink3` non-text at 40%. 24dp above the header, 12dp between it and the first row under it, per 4.1.
+
+The label carries no layout weight and the rule carries all of it, so the label takes exactly the width it needs. A label long enough to fill the row, which is what the longest language does, wraps and the rule shrinks to nothing rather than pushing the words off the end edge.
+
+The rule is decorative in the sense 2.3 defines: remove it and nothing becomes unreadable, because the words carry the heading alone.
+
+### 5.14 The press state
+
+**One press treatment for everything the person can touch.** A control that does nothing when pressed reads as broken, and this app is used by someone in a hallway who cannot tell a slow app from a dead one.
+
+**The surface steps one place along the paper to card to sand ladder**, 55% of the way toward `sand`, over the quick 120ms of section 6. One rule covers both themes because the ladder runs in both.
+
+**Never a bounce and never a scale.** A bounce on every press is banned in section 1, and a scale animation on a card the size of a notebook row reads as a toy.
+
+**Never a ripple on top of it.** The surface is the answer to the touch, and a ripple would be a second, louder answer to the same one.
+
+**Reduced motion reaches it.** With animations off the step becomes a 100ms fade rather than nothing, so the acknowledgment survives even when the movement does not.
+
+**Focus is a peer of press, not a substitute.** 2dp `blue` at the control's own radius, faded in over the same 120ms, which is the focus treatment 5.9 and 5.11 already name. Press and focus are separate states and a control shows both.
+
 ---
 
 ## 6. Motion
@@ -311,6 +361,16 @@ Two spring personalities and three durations, per the universal standards.
 The trail draw is the one ambient flourish: on first entry to a timeline the dashed line strokes in from the top over 400ms and the nodes fade in behind it, staggered 30ms apart. It happens once per screen entry, never on scroll, and never repeats while the user is reading.
 
 **Reduced motion**, when the system setting is on: every spring becomes an instant state change, the trail draw becomes an immediate render, and the only remaining transition is a 100ms opacity fade. Verify this by actually enabling the setting, not by reading the code.
+
+**Motion carries meaning here or it does not ship.** Identical fade-ins applied to everything read as generated and are on the ban list in section 1. Every spec comes from the tokens above through `LocalMotion`, never built inline, because a spec built inline is one the reduced motion setting cannot reach.
+
+**Everything the person touches responds**, including on screens already built. Section 5.14 defines the press state once for the whole app. Specifically:
+
+- Every button, row, chip, and tappable card has a visible press state.
+- Selection is immediate and obvious.
+- Expanding a folded section animates rather than snapping.
+- Saving an entry animates it into place, so the person sees where it went.
+- Sheets rise. They do not appear.
 
 ---
 
@@ -442,6 +502,20 @@ Everything is optional and saving with nothing touched is allowed, because a per
 
 Composed from Display L, Body M, Body S, the text field from section 5.9, the choice chip from section 5.11, one filled button, and one text action. Tracked on issue #34.
 
+**The notebook table of contents.** Twelve sections in four labeled groups, each row carrying an icon tile, its name, and one live count. **Drawn in the reference as screen 04**, and listed here because the built screen departs from it in four ways, all of them recorded in section 3 item 8.
+
+**Rebuilt on 2026-07-31 under the standard in section 10.5.** The first version rendered twelve identical cards. It worked, and it read as a list of everything rather than as a table of contents, which is what the owner named.
+
+**The order never changes and nothing is ever hidden.** The groups are placed at the three points in the existing order where the subject changes, so the grouping adds structure without rearranging anything. The situation template's `forward` and `folded` arrays decide weight only, per D33: a forward section gets the fullest row, a folded one collapses to a single line in its own place, and everything else sits between them. A folded section is one tap from where it always was.
+
+**One count treatment at every weight.** Same Mono style, same `ink3` text-safe, whether the row is forward, standing, or folded. The row's emphasis says what this care setting tends to need, and it must never be mistaken for a judgment about how full the section is.
+
+**A count of zero reads as words.** "Nothing yet" invites where a column of zeros reads as a scorecard, and this app never keeps score of anyone's diligence. That makes the empty state the resting state: a new notebook is twelve rows each saying "Nothing yet", which is a complete screen rather than a blank one, and there is no separate empty layout to fall into.
+
+**A notebook with no situation template renders every section at the standing weight.** "Not sure yet" is a real answer to the situation picker and it must not cost anyone a working notebook.
+
+Composed from Display L, Body M, Display S, Label, the Mono count style, cards from 5.3, the icon tile from 5.12, the group header from 5.13, and the press state from 5.14. Four of the twelve icons had no drawing anywhere in the reference and were composed on the same 24 unit grid at the same weight, listed in the source. Tracked on issue #36.
+
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 
 ---
@@ -459,6 +533,15 @@ Not a phase. A gate on every screen.
 - Every screen operable one-handed on a large phone, with primary actions in the lower half.
 - No information carried by color alone, anywhere.
 - Screen reader traversal order matches visual order on every screen, verified with the reader on.
+
+**Two additions that follow from this audience, added 2026-07-31 with D34.**
+
+- **Anything gesture-only also has a visible, non-gesture path.** A swipe action nobody discovers is a feature nobody has, and this audience is not exploring the interface for pleasure.
+- **Nothing important sits where a one-handed thumb cannot reach it on a large phone.** That is the actual holding position this app is used in, so it is a layout constraint rather than a nicety.
+
+**Date controls specifically** must be fully operable by screen reader and at maximum font size, and a screen reader must read an imprecise date as the person expressed it rather than as a resolved timestamp. See 10.9.
+
+**Verified means with the setting on.** The reader running, the font at its maximum, reduced motion actually enabled, on the phone. Reading the code proves nothing here, and every one of these has a way of passing in the editor and failing in a hand.
 
 ---
 
@@ -535,6 +618,58 @@ Checked rather than remembered, in this order. A screen closes only after every 
 Every section, template, and feature must be reachable and, more importantly, **discoverable by someone who does not already know it exists**. A capability that can only be found by a person who already knew to look for it is not finished.
 
 Where something is genuinely hard to surface without cluttering a screen, build it, note the problem on that screen's `needs-design-review` issue, and keep going.
+
+### 10.8 The hierarchy sequence, applied to every screen in this order
+
+Three screens were cluttered at once and they shared one cause: everything presented at the same visual weight, so the person had to read all of it to find any of it. **Uniform weight is not neutral.** It pushes the entire job of sorting onto someone already exhausted.
+
+The fix is the same sequence every time, and the order matters.
+
+1. **Decide what matters most on this screen.** One thing, named out loud, before any layout happens.
+2. **Give that one thing the most weight**, through size, position, and the space around it. **Not through color**, which section 2.2 has already spent on actions, the trail, and the Emergency Card.
+3. **Group what belongs together** and put a quiet mono eyebrow on each group, per 5.13.
+4. **Let the rest recede** to secondary type rather than deleting it.
+5. **Then give it room.** Whitespace is what makes a dense screen readable, and it is the first thing sacrificed when a screen is built to be merely correct.
+
+**Grouping adds structure around an existing order rather than rearranging it**, wherever the order is something the person has learned. The notebook is the worked example: twelve sections got four headers and not one of them moved.
+
+**Progressive disclosure is part of hierarchy, not a separate feature.** Everything visible at once is the most common structural tell on the ban list, and it is what made the notebook cluttered.
+
+**Polish applied to a cluttered screen is still a cluttered screen.** Structure first: clear hierarchy, sensible grouping, an obvious next action, and a person who can always find what they entered.
+
+**You have real latitude inside the vocabulary.** Spacing, grouping, emphasis, how a list is organized, how an empty state is worded, where a link belongs. Use the range the design language gives rather than reaching for the plainest arrangement that satisfies the spec. **Consistency is the constraint, not sameness:** screens differ because their content differs, and they should never feel like they came from different people.
+
+### 10.9 Dates, which the person never has to understand
+
+The storage model is `contract/DATA-CONTRACT.md`. This is what reaches the screen, and the whole point is that none of the model does.
+
+**The person never sees EDTF, never sees a precision selector, and never chooses a storage format.** They see chips for the common cases, an exact date and time always available without leaving the flow, and natural expression where it is genuinely easier.
+
+**The exact date and time is a peer of the chips, not something behind them.** Someone logging an event from three months ago, or who knows the exact minute, is a normal case rather than an edge one.
+
+**Whatever the person expresses is recorded at exactly that precision and no finer.** A month stays a month.
+
+**Display never invents precision.** "Sometime in November 2024" is honest. "November 1, 2024" for that same input is a fabrication. This holds in the trail, month reviews, exports, PDFs, and the engine's composed sentences, and composed sentences handle imprecise dates through the message template system in all four locales rather than by concatenating a formatted date into a sentence.
+
+**Unknown is a first-class value.** An entry with an unknown date saves, is valid, and appears in the trail. It is never blocked, never hidden, and never quietly filled in with today.
+
+**Every date is editable forever, from the entry itself, with the same control.** Editing a date never creates a new entry and never loses the entry's links.
+
+**Imprecise entries never disappear.** They sort sensibly among precise ones and appear in a date-range search whenever their range overlaps the query. Filtering by a month returns everything that could have happened in that month, and the app never quietly excludes an entry because it was unsure.
+
+**Charts keep 5.8 exactly.** An imprecise measurement date is plotted honestly or shown as a gap, never interpolated, and never presented as more certain than it is.
+
+### 10.10 Taps are the currency
+
+Someone doing this in a hallway will abandon a flow that takes four taps when it should take two. Reducing them is a design requirement, not an optimization.
+
+**No dead ends.** Every item links to everything it touches, and the person never has to remember where something was filed. **If A shows B, then B shows A.** Build both directions at the time, every time. A one-way link is a dead end wearing a disguise.
+
+**Carry context forward instead of asking again.** Capture opened from a person's page already knows the person. Capture opened inside a chapter already knows the chapter. A question created during an appointment is already attached to it. **Every prefill is a default the person can change, never a decision made for them.**
+
+**Offer what is likely before what is complete.** Recently used and currently relevant entities come before a full alphabetical list.
+
+**Ask the question on every screen as you build it:** what does the person most likely want to do next from here, and is it reachable in one tap. What that turns up becomes its own issue with acceptance criteria, opened then rather than remembered.
 
 ---
 
