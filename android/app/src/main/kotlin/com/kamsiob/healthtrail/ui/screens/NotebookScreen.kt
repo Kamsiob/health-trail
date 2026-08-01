@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.Chevron
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.IconTile
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
@@ -415,48 +416,6 @@ private fun SectionRow(row: SectionCount, onClick: () -> Unit) {
 
         Spacer(Modifier.width(Space.sm))
         Chevron()
-    }
-}
-
-/**
- * The chevron, drawn with a Canvas so it needs no icon font and cannot fall
- * back to a box in any language.
- *
- * **It mirrors.** Directional icons flip in a right to left layout, per
- * DESIGN.md section 4.4, and a chevron still pointing right in Arabic is the
- * single most likely direction defect in an app like this. The layout direction
- * is read at draw time rather than assumed.
- *
- * Non-text, so it is held to the 3:1 boundary rather than a text ratio, and it
- * carries no content description because the row it sits in is already the
- * button and already says where it goes.
- */
-@Composable
-private fun Chevron() {
-    val colors = HealthTrail.colors
-    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-
-    Canvas(modifier = Modifier.size(width = 8.dp, height = 14.dp)) {
-        val strokeWidth = 2.dp.toPx()
-        val midY = size.height / 2f
-        // Points toward the end edge, whichever edge that is.
-        val tipX = if (rtl) 0f else size.width
-        val baseX = if (rtl) size.width else 0f
-
-        drawLine(
-            color = colors.ink3NonText,
-            start = Offset(baseX, 0f),
-            end = Offset(tipX, midY),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round,
-        )
-        drawLine(
-            color = colors.ink3NonText,
-            start = Offset(tipX, midY),
-            end = Offset(baseX, size.height),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round,
-        )
     }
 }
 

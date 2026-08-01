@@ -177,5 +177,21 @@
   "measurement.note": "Anything worth remembering",
   "measurement.note.hint": "Who took it, how she seemed, anything at all",
   "measurement.record_only": "The app writes this down and keeps it. It does not tell you what it means.",
-  "capture.not_built": "Saving a document is not built yet. It needs somewhere to keep the photograph, and that is being built first so nothing you save can go missing."
+  "capture.not_built": "Saving a document is not built yet. It needs somewhere to keep the photograph, and that is being built first so nothing you save can go missing.",
+  "date.pick.title": "When was this?",
+  "date.pick.lead": "As much or as little as you know. A month on its own is a real answer.",
+  "date.pick.day": "A day",
+  "date.pick.month": "A month",
+  "date.pick.year": "A year",
+  "date.pick.time": "Do you know the time?",
+  "date.pick.time.add": "Add a time",
+  "date.pick.time.clear": "No time",
+  "date.pick.confirm": "Use this",
+  "date.pick.clear": "I am not sure",
+  "date.pick.previous": "Previous month",
+  "date.pick.next": "Next month",
+  "date.pick.year.down": "Earlier year",
+  "date.pick.year.up": "Later year",
+  "date.pick.today": "Today",
+  "capture.when.exact": "Pick a date"
 }

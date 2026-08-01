@@ -177,5 +177,21 @@
   "measurement.note": "Algo que valga la pena recordar",
   "measurement.note.hint": "Quién lo tomó, cómo la vio, lo que sea",
   "measurement.record_only": "La aplicación lo anota y lo guarda. No le dice lo que significa.",
-  "capture.not_built": "Guardar un documento todavía no está hecho. Necesita un lugar donde conservar la fotografía, y eso se está construyendo primero para que nada de lo que guarde se pierda."
+  "capture.not_built": "Guardar un documento todavía no está hecho. Necesita un lugar donde conservar la fotografía, y eso se está construyendo primero para que nada de lo que guarde se pierda.",
+  "date.pick.title": "¿Cuándo fue esto?",
+  "date.pick.lead": "Todo lo que sepa, y nada más. Un mes por sí solo es una respuesta válida.",
+  "date.pick.day": "Un día",
+  "date.pick.month": "Un mes",
+  "date.pick.year": "Un año",
+  "date.pick.time": "¿Sabe la hora?",
+  "date.pick.time.add": "Añadir una hora",
+  "date.pick.time.clear": "Sin hora",
+  "date.pick.confirm": "Usar esto",
+  "date.pick.clear": "No estoy seguro",
+  "date.pick.previous": "Mes anterior",
+  "date.pick.next": "Mes siguiente",
+  "date.pick.year.down": "Año anterior",
+  "date.pick.year.up": "Año siguiente",
+  "date.pick.today": "Hoy",
+  "capture.when.exact": "Elegir una fecha"
 }

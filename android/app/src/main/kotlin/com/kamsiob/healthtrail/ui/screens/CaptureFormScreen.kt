@@ -25,6 +25,8 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
@@ -42,6 +44,8 @@ object CaptureFormTags {
     const val CANCEL = "capture_form_cancel"
     const val UNFILED_NOTE = "capture_form_unfiled_note"
     const val THREAD_UNSURE = "capture_thread_unsure"
+    const val EXACT = "capture_when_exact"
+    const val PICKED = "capture_when_picked"
     fun whenChip(rough: RoughWhen) = "capture_when_${rough.name.lowercase()}"
     fun threadChip(id: String) = "capture_thread_$id"
 }
@@ -61,7 +65,12 @@ data class CaptureDraft(
     val kind: CaptureKind,
     val who: String,
     val note: String,
-    val rough: RoughWhen,
+    /**
+     * When it happened, at exactly the precision the person gave. A chip
+     * answer and a date picked from the calendar arrive here the same way,
+     * because by this point the difference between them is not interesting.
+     */
+    val occurred: Edtf.Date,
     /** Null means the person did not say, which sends the entry to the Unfiled tray. */
     val threadId: String?,
 )
@@ -110,7 +119,11 @@ fun CaptureFormScreen(
 
     var who by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
-    var rough by remember { mutableStateOf(RoughWhen.TODAY) }
+    var rough by remember { mutableStateOf<RoughWhen?>(RoughWhen.TODAY) }
+    // A date chosen from the calendar. Set means the chips are no longer the
+    // answer, and the two can never both be the answer at once.
+    var picked by remember { mutableStateOf<Edtf.Date?>(null) }
+    var pickerOpen by remember { mutableStateOf(false) }
     // Null means "not sure yet", which is a real answer rather than a blank.
     var threadId by remember { mutableStateOf<String?>(null) }
 
@@ -166,11 +179,34 @@ fun CaptureFormScreen(
                     RoughWhen.entries.forEach { option ->
                         ChoiceChip(
                             label = strings[option.labelKey],
-                            selected = rough == option,
-                            onClick = { rough = option },
+                            selected = picked == null && rough == option,
+                            onClick = { rough = option; picked = null },
                             modifier = Modifier.testTag(CaptureFormTags.whenChip(option)),
                         )
                     }
+                    // **A peer of the chips, not something behind them.**
+                    // Section 10.9. Someone logging a call from three months
+                    // ago, or who knows the minute, is a normal case rather
+                    // than an edge one, and making them exhaust the chips
+                    // first would say otherwise.
+                    ChoiceChip(
+                        label = strings["capture.when.exact"],
+                        selected = picked != null,
+                        onClick = { pickerOpen = true },
+                        modifier = Modifier.testTag(CaptureFormTags.EXACT),
+                    )
+                }
+
+                // What was chosen, read back in words. The person sees the
+                // claim they are about to make rather than a control state.
+                picked?.let { chosen ->
+                    Spacer(Modifier.height(Space.s))
+                    Text(
+                        text = EventDateText.render(strings, chosen),
+                        style = HealthTrail.type.bodyS,
+                        color = colors.ink2,
+                        modifier = Modifier.testTag(CaptureFormTags.PICKED),
+                    )
                 }
 
                 // Only asked where there is something to answer with. A notebook
@@ -250,7 +286,12 @@ fun CaptureFormScreen(
                             kind = kind,
                             who = who.trim(),
                             note = note.trim(),
-                            rough = rough,
+                            // The calendar wins when it was used, and the chip
+                            // otherwise. Nothing chosen at all is unknown,
+                            // which is a real answer rather than a blank.
+                            occurred = picked
+                                ?: rough?.edtf(LocalDate.now())
+                                ?: Edtf.unknown(),
                             threadId = threadId,
                         ),
                     )
@@ -266,6 +307,28 @@ fun CaptureFormScreen(
                 modifier = Modifier.fillMaxWidth().testTag(CaptureFormTags.CANCEL),
             )
         }
+    }
+
+    if (pickerOpen) {
+        DatePickerSheet(
+            // Opens on whatever is already chosen, so confirming without
+            // touching anything changes nothing.
+            initial = picked ?: rough?.edtf(LocalDate.now()),
+            onPick = { chosen ->
+                pickerOpen = false
+                if (chosen.precision == Edtf.Precision.UNKNOWN) {
+                    // "I am not sure" from inside the picker is the same answer
+                    // as the chip, so it lands on the chip rather than leaving
+                    // two controls saying different things.
+                    picked = null
+                    rough = RoughWhen.NOT_SURE
+                } else {
+                    picked = chosen
+                    rough = null
+                }
+            },
+            onDismiss = { pickerOpen = false },
+        )
     }
 }
 

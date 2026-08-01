@@ -177,5 +177,21 @@
   "measurement.note": "值得记下的任何事",
   "measurement.note.hint": "谁测的、她看起来怎么样，什么都行",
   "measurement.record_only": "应用只负责记下并保存。它不会告诉您这代表什么。",
-  "capture.not_built": "保存文件的功能还没做好。它需要一个存放照片的地方，我们先把那部分做出来，这样您保存的任何东西都不会丢失。"
+  "capture.not_built": "保存文件的功能还没做好。它需要一个存放照片的地方，我们先把那部分做出来，这样您保存的任何东西都不会丢失。",
+  "date.pick.title": "这是什么时候的事？",
+  "date.pick.lead": "知道多少写多少。只写一个月份也是有效的回答。",
+  "date.pick.day": "某一天",
+  "date.pick.month": "某个月",
+  "date.pick.year": "某一年",
+  "date.pick.time": "知道具体时间吗？",
+  "date.pick.time.add": "加上时间",
+  "date.pick.time.clear": "不写时间",
+  "date.pick.confirm": "就用这个",
+  "date.pick.clear": "我不确定",
+  "date.pick.previous": "上一个月",
+  "date.pick.next": "下一个月",
+  "date.pick.year.down": "上一年",
+  "date.pick.year.up": "下一年",
+  "date.pick.today": "今天",
+  "capture.when.exact": "选择日期"
 }
