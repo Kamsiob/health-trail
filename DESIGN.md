@@ -354,6 +354,18 @@ Measured on the device in dark theme: a card row goes from (26,36,43) to (43,50,
 
 **Focus is a peer of press, not a substitute.** 2dp `blue` at the control's own radius, faded in over the same 120ms, which is the focus treatment 5.9 and 5.11 already name. Press and focus are separate states and a control shows both.
 
+### 5.15 The pinned action footer
+
+**A named layout, because it was built four times and got the same detail wrong three of them.** The disclaimer gate, essentials first setup, the situation picker, and the capture form all have the same shape: content that scrolls, and one or two actions that do not.
+
+**The actions never scroll.** That is what keeps the primary action in the lower half where a thumb reaches it on a large phone, per section 9, whatever the longest language or the largest font size does to the content above it. Putting the actions inside the scroll puts them in the upper third on a short screen and off the bottom on a long one.
+
+**There is always a gap of at least 16dp between the scrolling area and the first action.** Without it the content at the scroll edge ends flush against the action and reads as the action sitting on top of it, rather than as content scrolling behind. **This is invisible at the default font size on a tall screen and obvious at font scale 2.0 or with the keyboard up**, which is where all three instances of it were found. See D38.
+
+**The secondary action sits below the primary at equal reach**, with no styling that makes it feel like giving up. Skipping setup and answering "Not sure yet" are real paths.
+
+**Content clipped at the scroll edge is correct and is not this defect.** A list has to end somewhere. The defect is specifically the absence of separation between the two regions.
+
 ---
 
 ## 6. Motion
