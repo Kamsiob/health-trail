@@ -554,6 +554,24 @@ Composed from Display L, Body M, Body S, the text field from section 5.9, the ch
 
 Composed from Display L, Body M, Display S, Label, the Mono count style, cards from 5.3, the icon tile from 5.12, the group header from 5.13, and the press state from 5.14. Four of the twelve icons had no drawing anywhere in the reference and were composed on the same 24 unit grid at the same weight, listed in the source. Tracked on issue #36.
 
+**The Unfiled tray.** Everything the person saved without saying where it belonged.
+
+**Built because the capture form already promised it.** The form tells the person their entry is going to the Unfiled tray, and until 2026-08-01 there was nowhere to see it. A promise the app makes and does not keep costs more than a feature it never mentioned, which is why this outranked the rest of the queue.
+
+**It is not a thirteenth notebook section and never becomes one.** The twelve are fixed. This is a thing waiting for the person rather than a place they filed something, so it is reached from a card at the top of the notebook that **appears only when something is actually waiting.** When the tray is empty there is nothing to find, so there is nothing to show and no empty room to walk into. The card uses `blaze_soft`, which 2.2 allows as a gold tonal waiting-on background and which is not the accent, and it carries a word as well as a color.
+
+**The app suggests and the person confirms.** A home is suggested by plain word matching, per `MASTER_SPEC.md` section 4.2, and it arrives already selected, which is what makes confirming it one tap. Changing it is one more. **Nothing is written until the person taps the action**, and the app never files anything on its own.
+
+**The suggestion is allowed to find nothing, and often will.** An entry reached this tray because it was hard to place, and a wrong guess presented confidently is worse than an honest blank. Two equally good guesses also produce nothing, because that is what the app knowing means here.
+
+**"None of these" is a real answer**, not a way out of the question. It clears the entry without a thread, because the tray holds things nobody has looked at yet rather than things without a thread.
+
+**It asks the same question the capture form asks, in the same words and the same control.** The person is here because they did not answer it there. Asking it differently would make it a second question rather than the same one, still open.
+
+**The empty state is the common one**, since most notebooks will have an empty tray most of the time, and it reads as nothing waiting rather than as an absence.
+
+Composed from Display L, Body M, the Mono metadata style, cards 5.3, choice chips 5.11, the pinned action footer 5.15, and one text action. Tracked on issue #53.
+
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 
 ---

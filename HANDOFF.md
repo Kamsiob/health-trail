@@ -4,7 +4,7 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-08-01, on the branch `feat/37-setup-screen`, in the session where the owner sent the standing quality bar.
+**Last rewritten:** 2026-08-01, on the branch `feat/53-unfiled-tray`, in the session where the owner sent the standing quality bar.
 
 If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
 
@@ -40,11 +40,15 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
-**The date model, issue #38, is built and the schema is converted.** What remains on it is the interface, which is issue #39, and it is the precise next action:
+**Issue #39, the date interface.** The model is built and proven, and nothing on screen uses the half that matters yet.
 
-1. **The capture form's date control.** It currently offers four chips: today, yesterday, this week, not sure. The bar requires **an exact date and time always available as a peer of the chips, not behind them**, and natural expression for a month or a season. `DESIGN.md` section 10.9.
-2. **Editing a date from the entry itself, forever, with the same control.** Nothing can edit a date yet, because nothing shows an entry yet.
-3. **Rendering.** `EventDateText` exists and is proven by the vectors. Nothing calls it yet, because the trail is not built. **The first screen that shows a date must call it rather than formatting one itself.**
+1. **The capture form's date control.** It offers four chips: today, yesterday, this week, not sure. The bar requires **an exact date and time always available as a peer of the chips, not behind them**, and natural expression for a month or a season. `DESIGN.md` section 10.9.
+2. **Editing a date from the entry itself, forever, with the same control.** Nothing can edit a date yet, because nothing shows a single entry yet.
+3. `EventDateText` is proven by the vectors and is called from exactly one screen, the Unfiled tray. **Every screen that shows a date from here on calls it rather than formatting one itself.**
+
+**Then #42**, the measurement and document capture inputs, which are the last two of the six. Choosing either from the sheet currently closes it and does nothing.
+
+**Then #43**, the retroactive audit, and the rest of #44, which is the screen reader half.
 
 ## 4. What is done, and how each piece was verified
 
@@ -67,9 +71,10 @@ Verified means checked through the mechanism, not inferred from the code being w
 | Dynamic type at font scale 2.0 | Every built screen looked at on the phone with the system font at maximum. Two defects found and fixed, both invisible at 1.0. The setting was restored afterward |
 | Reduced motion | Verified with `animator_duration_scale` actually set to 0 on the phone, not by reading the code. A press still acknowledges, reaching the same target through a 100ms fade rather than a spring. The setting was restored afterward |
 | Every screen looked at with the keyboard up | Two defects found that way and nowhere else: the setup button colliding with the last field, and the field clipped mid-box at the scroll boundary |
+| The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 70 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
+**The whole instrumented suite: 76 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
 
 ---
 
@@ -84,6 +89,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | ~~#40~~ | **Done.** Every tappable surface in the app uses the one treatment in 5.14 |
 | ~~#41~~ | **Done.** Grouped by where the care is happening, ordered by how common, and visibly skippable |
 | #42 | The remaining two capture inputs, measurement and document |
+| ~~#53~~ | **Done.** The Unfiled tray, which the capture form had been promising |
 | #43 | Retroactive: audit every screen already built against the bar. Opens further issues rather than fixing everything itself |
 | #44 | Accessibility gate, verified with the reader on, the font at maximum, and reduced motion enabled |
 | #45 | Capture from outside the app: widget, quick settings tile, share sheet target |
@@ -118,7 +124,6 @@ Verified means checked through the mechanism, not inferred from the code being w
 **The immediate Phase 1 feature queue after the above.**
 
 1. **Today, with the digest engine**, reading the change log for what changed since the person was last here.
-2. **The Unfiled tray.** The capture form already writes `is_unfiled = 1` and tells the person their entry is going there. There is nowhere to see it yet. **This is a promise the app is currently making and not keeping**, so it ranks above the rest.
 3. The trail itself, projects, and More.
 
 **Something that must not survive to release.** The Today, Projects, and More destinations render an honest interim screen saying that part is not built yet. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, so hiding them would break the rule that a person finds things where they last were. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.

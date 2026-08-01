@@ -45,8 +45,8 @@
   "entry.date.week": "这一周的某个时候",
   "entry.date.month": "这个月的某个时候",
   "entry.optional": "可填可不填",
-  "unfiled.title": "待归档",
-  "unfiled.empty": "没有等待归档的内容。",
+  "unfiled.title": "待归置",
+  "unfiled.empty": "没有待处理的内容。凡是保存时没有归属的，都会出现在这里。",
   "unfiled.suggestion": "这看起来属于{section}。对吗？",
   "unfiled.confirm": "对，就归到那里",
   "unfiled.choose": "放到别处",
@@ -158,5 +158,11 @@
   "date.season.winter": "{year}年冬",
   "date.uncertain": "{date}，不确定",
   "date.approximate": "{date}，大致如此",
-  "date.both": "{date}，大致如此，且不确定"
+  "date.both": "{date}，大致如此，且不确定",
+  "unfiled.subtitle": "您保存时没有说明归属的内容。没有任何内容被替您归置。",
+  "unfiled.waiting": "{count, plural, =0 {没有待归置的内容} other {# 项待归置}}",
+  "unfiled.suggested": "建议",
+  "unfiled.none": "都不是",
+  "unfiled.file": "归置",
+  "unfiled.no_threads": "这个笔记本还没有照护脉络，因此无处归置。在此期间您可以先把它们从这里清除。"
 }

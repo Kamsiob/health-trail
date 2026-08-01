@@ -45,8 +45,8 @@
   "entry.date.week": "في وقت ما هذا الأسبوع",
   "entry.date.month": "في وقت ما هذا الشهر",
   "entry.optional": "اختياري",
-  "unfiled.title": "غير مصنّف",
-  "unfiled.empty": "لا شيء بانتظار التصنيف.",
+  "unfiled.title": "بانتظار الترتيب",
+  "unfiled.empty": "لا شيء بالانتظار. كل ما تحفظه دون مكان سيظهر هنا.",
   "unfiled.suggestion": "يبدو أن هذا يخص {section}. هل هذا صحيح؟",
   "unfiled.confirm": "نعم، صنّفه هناك",
   "unfiled.choose": "مكان آخر",
@@ -158,5 +158,11 @@
   "date.season.winter": "شتاء {year}",
   "date.uncertain": "{date}، غير مؤكد",
   "date.approximate": "{date}، تقريبًا",
-  "date.both": "{date}، تقريبًا، وغير مؤكد"
+  "date.both": "{date}، تقريبًا، وغير مؤكد",
+  "unfiled.subtitle": "أشياء حفظتها دون تحديد مكانها. لم يُرتَّب شيء نيابة عنك.",
+  "unfiled.waiting": "{count, plural, zero {لا شيء بانتظار الترتيب} one {شيء واحد بانتظار الترتيب} two {شيئان بانتظار الترتيب} few {# أشياء بانتظار الترتيب} many {# شيئًا بانتظار الترتيب} other {# شيء بانتظار الترتيب}}",
+  "unfiled.suggested": "مقترح",
+  "unfiled.none": "لا شيء من هذه",
+  "unfiled.file": "رتِّبه",
+  "unfiled.no_threads": "لا يحتوي هذا الدفتر على مسارات رعاية بعد، فلا يوجد مكان للترتيب. يمكنك إزالتها من هنا في هذه الأثناء."
 }

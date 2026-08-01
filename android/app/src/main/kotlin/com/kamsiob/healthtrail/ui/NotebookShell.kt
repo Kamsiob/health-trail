@@ -37,6 +37,7 @@ import com.kamsiob.healthtrail.ui.screens.Emphasis
 import com.kamsiob.healthtrail.ui.screens.emphasisFrom
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
+import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -69,6 +70,9 @@ fun NotebookShell(repository: Repository) {
     // the screen having to know what changed.
     var revision by remember { mutableStateOf(0) }
     var saving by remember { mutableStateOf<CaptureDraft?>(null) }
+    // The entry being filed out of the tray, and where it is going. Null means
+    // nothing is in flight.
+    var filing by remember { mutableStateOf<Pair<String, String?>?>(null) }
     // The threads this notebook carries, which the capture form offers as chips.
     // Empty is a real state: a notebook with no situation template has none, and
     // the form drops that question rather than showing an answerless one.
@@ -76,6 +80,10 @@ fun NotebookShell(repository: Repository) {
     // The counts could not be read. Distinct from not having read them yet,
     // which is what a null `counts` means.
     var failed by remember { mutableStateOf(false) }
+    // Everything the person saved without saying where it belonged. The capture
+    // form already promises them this tray exists.
+    var unfiled by remember { mutableStateOf<List<Repository.UnfiledEntry>>(emptyList()) }
+    var trayOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     // Recounted whenever the tab changes, so returning to the notebook after
@@ -94,6 +102,7 @@ fun NotebookShell(repository: Repository) {
                 SectionCount(it, repository.count(it), emphasis[it] ?: Emphasis.STANDING)
             }
             threads = subject?.let { repository.threads(it.id) }.orEmpty()
+            unfiled = subject?.let { repository.unfiled(it.id) }.orEmpty()
         } catch (t: Throwable) {
             failed = true
         }
@@ -113,7 +122,12 @@ fun NotebookShell(repository: Repository) {
                         when {
                             failed -> CouldNotRead(onRetry = { revision += 1 })
                             loaded == null -> Loading()
-                            else -> NotebookScreen(sections = loaded, onOpen = { })
+                            else -> NotebookScreen(
+                                sections = loaded,
+                                onOpen = { },
+                                waiting = unfiled.size,
+                                onOpenUnfiled = { trayOpen = true },
+                            )
                         }
                     }
                     // These arrive in their own increments. Until then each
@@ -139,6 +153,28 @@ fun NotebookShell(repository: Repository) {
                 },
                 captureDescription = strings["capture.button.description"],
             )
+        }
+
+        if (trayOpen) {
+            UnfiledTrayScreen(
+                entries = unfiled,
+                threads = threads,
+                onFile = { entryId, threadId ->
+                    filing = entryId to threadId
+                },
+                onClose = { trayOpen = false },
+            )
+        }
+
+        val toFile = filing
+        if (toFile != null) {
+            LaunchedEffect(toFile) {
+                repository.fileEntry(toFile.first, toFile.second)
+                filing = null
+                // Recount, which also refreshes the tray and closes it when the
+                // last waiting entry has been filed.
+                revision += 1
+            }
         }
 
         if (sheetOpen) {

@@ -45,8 +45,8 @@
   "entry.date.week": "En algún momento de esta semana",
   "entry.date.month": "En algún momento de este mes",
   "entry.optional": "Opcional",
-  "unfiled.title": "Sin archivar",
-  "unfiled.empty": "No hay nada esperando a archivarse.",
+  "unfiled.title": "A la espera de archivar",
+  "unfiled.empty": "Nada a la espera. Lo que guarde sin destino aparecerá aquí.",
   "unfiled.suggestion": "Esto parece que va en {section}. ¿Es así?",
   "unfiled.confirm": "Sí, archívelo ahí",
   "unfiled.choose": "En otro sitio",
@@ -158,5 +158,11 @@
   "date.season.winter": "Invierno de {year}",
   "date.uncertain": "{date}, sin seguridad",
   "date.approximate": "{date}, más o menos",
-  "date.both": "{date}, más o menos, y sin seguridad"
+  "date.both": "{date}, más o menos, y sin seguridad",
+  "unfiled.subtitle": "Cosas que guardó sin decir a dónde pertenecen. No se archivó nada por usted.",
+  "unfiled.waiting": "{count, plural, =0 {Nada a la espera de archivar} one {1 cosa a la espera de archivar} other {# cosas a la espera de archivar}}",
+  "unfiled.suggested": "Sugerido",
+  "unfiled.none": "Ninguno de estos",
+  "unfiled.file": "Archivarlo",
+  "unfiled.no_threads": "Este cuaderno todavía no tiene hilos de cuidado, así que no hay dónde archivar. Mientras tanto puede quitarlos de aquí."
 }
