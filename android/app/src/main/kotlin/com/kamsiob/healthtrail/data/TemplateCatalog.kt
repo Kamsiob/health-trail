@@ -32,6 +32,19 @@ object TemplateCatalog {
         val checklist: List<String>,
         /** Document slots, each expecting a photo and a note on where the original lives. */
         val documents: List<String>,
+        /**
+         * Notebook sections this setting puts forward, by their id in the
+         * template data. Emphasis only: the table of contents renders these
+         * fullest and does not move them.
+         */
+        val forward: List<String>,
+        /**
+         * Notebook sections this setting folds. **Folded is collapsed and one
+         * tap away, never hidden and never reordered.** A setting where money
+         * rarely comes up quiets that row rather than removing it, because the
+         * one month it does come up the person must find it where it always was.
+         */
+        val folded: List<String>,
         /** Handle copy with extra care. Currently only comfort focused care. */
         val sensitive: Boolean,
     )
@@ -69,6 +82,8 @@ object TemplateCatalog {
                         roles = item.optJSONArray("roles").toLabels(),
                         checklist = item.optJSONArray("checklist").toStrings(),
                         documents = item.optJSONArray("documents").toStrings(),
+                        forward = item.optJSONArray("forward").toStrings(),
+                        folded = item.optJSONArray("folded").toStrings(),
                         sensitive = item.optBoolean("sensitive", false),
                     )
                 )

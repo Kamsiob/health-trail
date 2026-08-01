@@ -512,6 +512,42 @@ The block now says the record is theirs and that they choose what goes in it. Sa
 
 **The general shape, since it will recur.** A disclaimer has two jobs: say truthfully what the app is not, and protect the person from relying on it as something it is not. Neither of those requires assigning blame in advance.
 
+### D33. Folded means a collapsed row, not a collapsed container
+
+**Date:** 2026-07-31. **Decided by:** the session, building issue #36.
+
+The situation templates carry `forward` and `folded` arrays and nothing read them. Wiring them up forced a question the data does not answer: what does a folded section look like, given that the section order may never change?
+
+**The two readings.** Either folded sections gather into a disclosure at the end of their group, which is what "collapsed" usually means, or each folded section collapses in place. The first moves sections, and both `DESIGN.md` section 8 and `MASTER_SPEC.md` section 4.4 say the order never varies by template. A person who learned where money was and finds it somewhere else next month has been failed by the app, and the whole value of a table of contents is that it does not do that.
+
+**Decided: the row collapses, the list does not.** A folded section keeps its exact position and its group. Its row drops from two lines to one, the count moves up beside the title, the icon tile loses its fill, and the height goes from 68dp to 52dp. It is still a full width card, still tappable, still one tap from where it always was.
+
+This also keeps "collapsed" honest as a word: the row genuinely is the expanded row folded down, rather than a container that hides things.
+
+**Three weights rather than two.** `forward` names four sections and `folded` names one or two, which leaves six or seven named by neither. Rendering those identically to the forward ones would make `forward` decorative. They sit at a middle weight: same shape as forward, tighter padding, and no fill on the tile.
+
+**The emphasis is a fill, never a hue.** Tried first as a difference in icon ink alone, which failed the moment it was on the phone: twelve rows still read as twelve identical rows, which is the exact defect the rebuild exists to fix. A filled tile against an unfilled one is visible without reading anything. It also costs the app nothing, since section 2.2 gives `blue` to actions and `blaze` to the trail and neither may highlight a row, and it survives a grayscale screenshot.
+
+**Grouping adds structure without rearranging.** The twelve sections are read in their existing order and a header is placed at each of the three points where the subject changes: people and care, the record, paperwork, keep at hand. Nothing moved to make the groups work, which was the constraint, and `NotebookScreenTest` asserts the groups cover the twelve exactly once.
+
+### D34. The standing quality bar, and that it is retroactive
+
+**Date:** 2026-07-31. **Decided by:** the owner, mid-session.
+
+The owner sent the standing quality bar for the project: what done means, the hierarchy sequence, a real date model built on EDTF, motion and press feedback everywhere, tap counts and bidirectional linking, accessibility as a gate, and an expanded ban list. **It is explicitly retroactive**, applying to every screen and document already built rather than to new work only, on the grounds that a codebase where the standard changed halfway through is a codebase with two standards.
+
+Recorded here rather than only absorbed, because the parts of it that are judgment calls are listed below and the rest is written into the documents it names.
+
+**Where it landed.** `DESIGN.md` sections 1, 5.12, 5.13, 5.14, and 10; `CLAUDE.md` as compressed rules; `contract/DATA-CONTRACT.md` for the date model; `MASTER_SPEC.md` for the date capability; `kamsiob-project-template.md` for the universal parts. An issue was opened for each distinct piece of work rather than one issue for the whole message, so none of it can be quietly dropped.
+
+**The judgment calls made while applying it, at the moment they were made:**
+
+**The press state is one component, defined once, applied everywhere in the same increment.** The alternative was to fix the notebook rows now and open an issue for the rest. Rejected: `DESIGN.md` section 10.2 says a pattern appearing twice in two different forms is a defect, and shipping a press treatment on one screen would have created exactly that. `FilledButton` was found passing `indication = null` with no press state at all, which is the "press states that do nothing" tell by name.
+
+**Press is a tonal step and not a scale.** A bounce on every press is banned in section 1. A scale animation on a card the size of a notebook row reads as a toy in an app that is deliberately unexcited about itself.
+
+**The press step is 55% of the way toward `sand` rather than all of it.** A surface that changed completely would read as selected rather than pressed. Measured on the device at (26,36,43) resting and (30,43,50) pressed in dark theme, which is visible without being a state change.
+
 ---
 
 ## BLOCKED

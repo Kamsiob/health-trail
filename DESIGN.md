@@ -24,6 +24,10 @@ Re-research current tells before any new screen work, per the universal standard
 
 Purple or indigo anything. Gradient fills, gradient text, gradient heroes. Glassmorphism, frosted panels, backdrop blur. Colored accent bars or colored left borders on cards. Cards outlined with a 1px gray border as their only definition. Three feature cards in a row. Numbered 01 / 02 / 03 markers where the content is not genuinely a sequence. Sparkle, wand, or magic iconography. A bounce on every hover or press. Inter as a display face. Emoji used as interface iconography.
 
+**Added 2026-07-31, from the research pass behind D33.** Cards nested inside cards inside cards, because depth is not hierarchy. The same label repeated in more than one slot of a single card. A large centered icon above a heading standing in for actual content. Stat cards with small colored arrows beside numbers, banned twice over here since this app never interprets a value. Status pills scattered everywhere as a substitute for real hierarchy. Press states that do nothing, and identical fade-in timing applied to everything. 3D blobs, plastic illustrations, and stock imagery of any kind. Everything visible at once with no progressive disclosure. Edge states left as afterthoughts, since empty, error, loading, offline, and partial are where generated interfaces are most obviously generated. Placeholder error copy, because "Something went wrong, please try again" removes the human voice at the exact moment the person needs it. Generic product phrasing: streamline, empower, supercharge, seamless, world-class, effortless. The manufactured-contrast cadence, "Not a form. A conversation."
+
+**Slop is rarely ugly.** It is competent and anonymous, every screen out of one mold in a different coat of paint. Anonymous is the failure mode to watch for here, not ugliness.
+
 The accent bar one is specifically called out because it already slipped into a draft of the care threads screen and had to be removed. Thread identity is carried by a dashed route line, which is the app's own metaphor, not by a colored edge, which is everyone's default.
 
 ---
@@ -137,7 +141,8 @@ Every difference, with its reason. Nothing else differs.
 5. **Touch targets are 48dp minimum** regardless of the visual size of the thing being tapped. Several mockup rows are visually shorter than that and get invisible padding to reach it.
 6. **Care thread accent bars are removed**, replaced by dashed route lines. Already corrected in the reference file; stated here so it is never reintroduced.
 7. **The capture overlay is a real bottom sheet**, not the dimmed-background composite shown in two mockup screens. The mockups show it that way only because a static image cannot show a transition.
-8. **The mark's bars are thinner than the reference draws them.** The reference sets each bar at 22 by 9 with a 3 gap. Built at icon scale that weight reads as a hamburger menu control rather than as a painted blaze, which was confirmed by looking at it on a device. The bars are 22 by 6 with a 5 gap and capsule ends. Equal widths are unchanged and are not negotiable, see 5.1.
+8. **The table of contents carries twelve rows in four labeled groups, at three weights.** The reference draws eight rows, flat, at one weight, with a body-face descriptive subtitle under each. Four differences, each with its reason. Twelve rather than eight, because `MASTER_SPEC.md` section 4.4 fixes the twelve sections and the reference simply drew a subset. Group headers, because twelve at uniform weight reads as a list of everything rather than as a table of contents, which is the defect issue #36 exists to fix; the groups add structure around the existing order and move nothing. Three weights rather than one, because the situation templates carry `forward` and `folded` arrays that the reference predates, and D33 records how they render. One Mono count string per row rather than a descriptive subtitle, because "12 people" and "214 entries · 1 open incident" are two different treatments of the same slot and the counts have to be one treatment to be scannable; the descriptive form returns as each section's own screen lands and can say something true about itself.
+9. **The mark's bars are thinner than the reference draws them.** The reference sets each bar at 22 by 9 with a 3 gap. Built at icon scale that weight reads as a hamburger menu control rather than as a painted blaze, which was confirmed by looking at it on a device. The bars are 22 by 6 with a 5 gap and capsule ends. Equal widths are unchanged and are not negotiable, see 5.1.
 
 ---
 
@@ -202,7 +207,7 @@ Two stacked rounded bars in `blaze`, **both the same width**, which is a painted
 
 First, this section previously said the upper bar was slightly narrower than the lower. That contradicted `reference/screen-grid.html`, which draws both at `width:22px`, and the difference was not listed in section 3, where every deliberate override of the mockups is required to appear. It was an error in this document rather than an intended override, and it had already been built the wrong way once. **Equal widths, and that is not negotiable.**
 
-Second, the reference draws the bars at 22 by 9 with a 3 gap, and built at icon scale that weight reads as a hamburger menu control. Thinned to 22 by 6 with a 5 gap and capsule rather than cut ends, which reads as brushed on rather than drawn. Listed in section 3 as item 8, because it is a genuine departure from the reference rather than a correction to it.
+Second, the reference draws the bars at 22 by 9 with a 3 gap, and built at icon scale that weight reads as a hamburger menu control. Thinned to 22 by 6 with a 5 gap and capsule rather than cut ends, which reads as brushed on rather than drawn. Listed in section 3 as item 9, because it is a genuine departure from the reference rather than a correction to it.
 
 ### 5.2 The trail
 
@@ -295,6 +300,51 @@ Every list has one, written as an invitation rather than an absence. The Today s
 **A chip may carry a leading dot** in a care thread's route color, 8dp, which is how a thread identifies itself elsewhere. The dot is never the only thing distinguishing two chips, since each chip also carries the thread's name.
 
 **Every chip set includes an answer that means "I do not know".** "Not sure" for a date, "Not sure yet" for a thread. It is a real answer that saves and files, never a way of postponing the question, and it is the reason this pattern exists rather than a required picker.
+
+### 5.12 The icon tile
+
+A rounded tile carrying one line drawing, which is how the reference file draws every row of the table of contents. Radius 12dp, already named in section 4.2 before anything was built against it.
+
+**Geometry.** Tile 36dp, drawing 20dp inside it, centered. The drawings are authored on a 24 unit grid with a 1.7 stroke, round caps and joins, and no fill, which is the grid and weight the reference file's own icons use. Scale the grid rather than redrawing at a new size.
+
+**The drawings are paths, never an icon font.** The same reason the chevron is a path: a font falls back to a box glyph in a language nobody tested, and this app ships in four scripts.
+
+**Fill carries weight, and it is the app's only monochrome emphasis device.**
+
+| State | Treatment |
+|---|---|
+| Emphasized | `sand` fill, drawing in `ink` |
+| Standing | no fill, drawing in `ink2` |
+| Quiet | no fill, drawing in `ink3` non-text |
+| Emergency Card | `alert_soft` fill, drawing in `alert` text-safe, at every weight, per 2.2 |
+
+**No icon here mirrors.** Section 4.4 mirrors directional icons and none of these is directional. A chevron beside the tile is the thing that flips.
+
+**An icon is never the only thing naming what it sits beside.** Every row carrying a tile also carries the name in words, so the tile is recognition rather than information, and the stroke is held to the 3:1 non-text ratio rather than a text ratio.
+
+### 5.13 The group header
+
+A mono eyebrow with a hairline running out to the end edge, which is how the reference file heads a month in the trail. Used wherever a long list needs to become a few groups.
+
+The label is Mono, uppercased against the catalog's own locale rather than the device's, in `ink3` text-safe. 12dp between the label and the rule, the rule 1dp in `ink3` non-text at 40%. 24dp above the header, 12dp between it and the first row under it, per 4.1.
+
+The label carries no layout weight and the rule carries all of it, so the label takes exactly the width it needs. A label long enough to fill the row, which is what the longest language does, wraps and the rule shrinks to nothing rather than pushing the words off the end edge.
+
+The rule is decorative in the sense 2.3 defines: remove it and nothing becomes unreadable, because the words carry the heading alone.
+
+### 5.14 The press state
+
+**One press treatment for everything the person can touch.** A control that does nothing when pressed reads as broken, and this app is used by someone in a hallway who cannot tell a slow app from a dead one.
+
+**The surface steps one place along the paper to card to sand ladder**, 55% of the way toward `sand`, over the quick 120ms of section 6. One rule covers both themes because the ladder runs in both.
+
+**Never a bounce and never a scale.** A bounce on every press is banned in section 1, and a scale animation on a card the size of a notebook row reads as a toy.
+
+**Never a ripple on top of it.** The surface is the answer to the touch, and a ripple would be a second, louder answer to the same one.
+
+**Reduced motion reaches it.** With animations off the step becomes a 100ms fade rather than nothing, so the acknowledgment survives even when the movement does not.
+
+**Focus is a peer of press, not a substitute.** 2dp `blue` at the control's own radius, faded in over the same 120ms, which is the focus treatment 5.9 and 5.11 already name. Press and focus are separate states and a control shows both.
 
 ---
 
@@ -441,6 +491,20 @@ Everything is optional and saving with nothing touched is allowed, because a per
 **The thread question defaults to not knowing,** which sends the entry to the Unfiled tray, and the screen says so underneath while the person can still change it. The thread question is not asked at all on a notebook that has no threads, because a question whose only answer is "not sure yet" is not a question.
 
 Composed from Display L, Body M, Body S, the text field from section 5.9, the choice chip from section 5.11, one filled button, and one text action. Tracked on issue #34.
+
+**The notebook table of contents.** Twelve sections in four labeled groups, each row carrying an icon tile, its name, and one live count. **Drawn in the reference as screen 04**, and listed here because the built screen departs from it in four ways, all of them recorded in section 3 item 8.
+
+**Rebuilt on 2026-07-31 under the standard in section 10.5.** The first version rendered twelve identical cards. It worked, and it read as a list of everything rather than as a table of contents, which is what the owner named.
+
+**The order never changes and nothing is ever hidden.** The groups are placed at the three points in the existing order where the subject changes, so the grouping adds structure without rearranging anything. The situation template's `forward` and `folded` arrays decide weight only, per D33: a forward section gets the fullest row, a folded one collapses to a single line in its own place, and everything else sits between them. A folded section is one tap from where it always was.
+
+**One count treatment at every weight.** Same Mono style, same `ink3` text-safe, whether the row is forward, standing, or folded. The row's emphasis says what this care setting tends to need, and it must never be mistaken for a judgment about how full the section is.
+
+**A count of zero reads as words.** "Nothing yet" invites where a column of zeros reads as a scorecard, and this app never keeps score of anyone's diligence. That makes the empty state the resting state: a new notebook is twelve rows each saying "Nothing yet", which is a complete screen rather than a blank one, and there is no separate empty layout to fall into.
+
+**A notebook with no situation template renders every section at the standing weight.** "Not sure yet" is a real answer to the situation picker and it must not cost anyone a working notebook.
+
+Composed from Display L, Body M, Display S, Label, the Mono count style, cards from 5.3, the icon tile from 5.12, the group header from 5.13, and the press state from 5.14. Four of the twelve icons had no drawing anywhere in the reference and were composed on the same 24 unit grid at the same weight, listed in the source. Tracked on issue #36.
 
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 
