@@ -70,6 +70,8 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The notebook's fold behavior | Walked on the Pixel with a hospital stay template: appointments, the trail, documents, and standing instructions forward, money and progress collapsed, which is exactly what that template names |
 | Dynamic type at font scale 2.0 | Every built screen looked at on the phone with the system font at maximum. Two defects found and fixed, both invisible at 1.0. The setting was restored afterward |
 | Reduced motion | Verified with `animator_duration_scale` actually set to 0 on the phone, not by reading the code. A press still acknowledges, reaching the same target through a 100ms fade rather than a spring. The setting was restored afterward |
+| Arabic on the device | Ran through a per-app locale rather than a system setting. Real Noto glyphs, no fallback boxes, and the whole layout mirrored. It also found that the template catalog is English only, #62, which no check covered |
+| The typefaces | Bundled and looked at. Bricolage Grotesque, Atkinson Hyperlegible, JetBrains Mono, Noto Sans Arabic. Every license verified against `google/fonts` rather than assumed |
 | The capture sheet, looked at with fresh eyes | Two defects nothing else would have found: "Save a document" closed the sheet and did nothing, and the inherited Material scrim barely dimmed the notebook behind it. D44 and D45 |
 | Screen reader labels | `ScreenReaderTest` walks every screen's semantics tree, including a sheet's own window, and fails any touchable node with no text and no content description. Nine screens. It found one on its first run and that is fixed |
 | Every screen looked at with the keyboard up | Two defects found that way and nowhere else: the setup button colliding with the last field, and the field clipped mid-box at the scroll boundary |
@@ -92,6 +94,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | ~~#41~~ | **Done.** Grouped by where the care is happening, ordered by how common, and visibly skippable |
 | ~~#42~~ | **Measurement done.** Document split to #57, because it needs attachment storage that does not exist |
 | #57 | The document capture input, once attachments exist. Shares machinery with #9 |
+| #62 | The template catalog is English only. Found by running the app in Arabic on the phone |
 | #58 | Notebook section counts are not scoped to the subject. Invisible with one notebook, silently wrong with two |
 | ~~#53~~ | **Done.** The Unfiled tray, which the capture form had been promising |
 | #43 | Retroactive: audit every screen already built against the bar. Opens further issues rather than fixing everything itself |
@@ -116,7 +119,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | #13 | Four locale catalogs with right to left verified on a screen | Arabic has not been looked at on the device, which is the unmet half |
 | #15 | Golden test vectors both platforms run against | **The first vector, `dates.json`, exists and runs.** The engine vectors do not |
 | #14 | Encrypted database, remaining criteria | The migration mechanism and the key loss screen are the unmet parts |
-| #12 | Fonts covering all four scripts | Independent. **Blocks the light theme and Arabic screenshot recaptures on every design review issue** |
+| #12 | Fonts covering all four scripts | **Latin and Arabic bundled and verified on the device.** Open only for Simplified Chinese, which is a size decision: Noto Sans SC is ten megabytes per weight |
 | #9 | Export container, manifest, encryption, round trip equality | **Now also has to round trip the EDTF column byte for byte** |
 | #10 | `SyncTransport` with the file implementation behind it | Needs the export container |
 | #17 | Deterministic fixture generator | Needed before any persona run means anything |
@@ -138,7 +141,9 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 **Nothing is blocked.** All four entries that ever appeared in the BLOCKED section of `DECISIONS.md` are resolved and kept there with their outcomes. A fresh session needs nothing from the owner in order to continue.
 
-The one thing waiting rather than blocked: **the light theme and Arabic screenshots on the design review issues** are deliberately not captured, because the bundled fonts for Arabic and Chinese have not landed. That is issue #12. Capturing Arabic before the fonts are in would put a screenshot of fallback glyphs on a review issue.
+**Arabic is no longer waiting.** The fonts landed on 2026-08-01 and Arabic renders correctly on the device, so the Arabic screenshots on the design review issues can be captured whenever someone works through them.
+
+The one thing still waiting rather than blocked: **the light theme screenshots**. The phone is in dark and it is the owner's daily driver, so flipping the system theme is not the session's to do unattended. It wants a supervised moment or a second device.
 
 ---
 

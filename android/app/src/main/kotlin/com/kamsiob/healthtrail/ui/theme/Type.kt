@@ -2,8 +2,10 @@ package com.kamsiob.healthtrail.ui.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import com.kamsiob.healthtrail.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -11,13 +13,11 @@ import androidx.compose.ui.unit.sp
 /**
  * The type scale from DESIGN.md section 4.3.
  *
- * The faces are not bundled yet. That is issue #12, which has to verify the
- * current release name and license of each one and prove a Noto fallback chain
- * covers Arabic and Chinese by rendering real strings on a device. Until then
- * these styles use the platform default family, which means the sizes, weights,
- * line heights, and tracking are already correct and only the face is pending.
- * That is deliberate: getting the scale right first means the layouts are built
- * against final measurements.
+ * **The faces are bundled**, per issue #12. Bricolage Grotesque for display,
+ * Atkinson Hyperlegible for body, JetBrains Mono for metadata, each falling
+ * through to Noto Sans Arabic for glyphs it does not have. Every license was
+ * verified against `google/fonts` rather than assumed. Simplified Chinese is
+ * still on the system face, which is a size decision recorded below.
  *
  * The 13sp floor and its two exemptions are in DESIGN.md section 4.3. The nav
  * label and the mono metadata style are the only two, both because they never
@@ -45,15 +45,54 @@ data class HealthTrailTypography(
     val mono: TextStyle,
 )
 
-// Replaced in issue #12 by Bricolage Grotesque, Atkinson Hyperlegible, and
-// JetBrains Mono, each with a bundled Noto fallback for Arabic and Simplified
-// Chinese. Atkinson Hyperlegible is a deliberate choice rather than an
-// aesthetic one: it was designed by the Braille Institute for maximum character
+// The faces, per DESIGN.md section 4.3, bundled rather than requested at
+// runtime: this app works offline and a typeface that needs the network is a
+// typeface that is sometimes absent.
+//
+// **Atkinson Hyperlegible is a deliberate choice rather than an aesthetic
+// one.** It was designed by the Braille Institute for maximum character
 // distinction for low vision readers, and the audience for this app is
-// stressed, frequently older, and often reading in bad light.
-private val DisplayFamily = FontFamily.Default
-private val BodyFamily = FontFamily.Default
-private val MonoFamily = FontFamily.Monospace
+// stressed, frequently older, and often reading in bad light. It is the reason
+// the body face is not whatever the display face is.
+//
+// **Each family lists its Arabic face after its Latin one.** Android matches a
+// glyph against the family in order and falls through to the next entry when a
+// face does not have it, so Arabic text picks up Noto without any locale check
+// in this code. That matters because a screen can hold both at once, a person's
+// name in one script inside a sentence in another, and a locale switch would
+// get that wrong in exactly the case nobody tests.
+//
+// **Licenses, verified against google/fonts METADATA.pb on 2026-08-01**, all
+// SIL Open Font License 1.1: Atkinson Hyperlegible, Copyright 2020 Braille
+// Institute of America. Bricolage Grotesque, Copyright 2022 The Bricolage
+// Grotesque Project Authors. JetBrains Mono, Copyright 2020 The JetBrains Mono
+// Project Authors. Noto Sans Arabic, Copyright 2022 The Noto Project Authors.
+//
+// **Simplified Chinese is not bundled yet**, and that is a size decision rather
+// than an oversight: Noto Sans SC is around ten megabytes per weight against
+// 680 kilobytes for everything here put together. Chinese falls back to the
+// system face until #12 settles how to carry it. The app is honest about this
+// on the issue rather than pretending the coverage is complete.
+private val DisplayFamily = FontFamily(
+    Font(R.font.bricolage_grotesque_bold, FontWeight.Bold),
+    Font(R.font.noto_sans_arabic_bold, FontWeight.Bold),
+)
+
+private val BodyFamily = FontFamily(
+    Font(R.font.atkinson_hyperlegible_regular, FontWeight.Normal),
+    Font(R.font.atkinson_hyperlegible_bold, FontWeight.Bold),
+    Font(R.font.noto_sans_arabic_regular, FontWeight.Normal),
+    Font(R.font.noto_sans_arabic_bold, FontWeight.Bold),
+)
+
+private val MonoFamily = FontFamily(
+    Font(R.font.jetbrains_mono_regular, FontWeight.Normal),
+    // Arabic has no monospace design here and does not need one: the mono style
+    // carries eyebrows, counts, and timestamps, and in Arabic those render in
+    // Noto at the same size and tracking rather than in a Latin face that has
+    // no glyphs for them.
+    Font(R.font.noto_sans_arabic_regular, FontWeight.Normal),
+)
 
 val HealthTrailType = HealthTrailTypography(
     displayL = TextStyle(
