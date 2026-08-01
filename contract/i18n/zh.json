@@ -193,5 +193,6 @@
   "date.pick.year.down": "上一年",
   "date.pick.year.up": "下一年",
   "date.pick.today": "今天",
-  "capture.when.exact": "选择日期"
+  "capture.when.exact": "选择日期",
+  "today.digest.not_built": "“上次之后有什么变化”的摘要还在做。这期间您记下的一切都会保存好，没有任何内容需要等它。"
 }

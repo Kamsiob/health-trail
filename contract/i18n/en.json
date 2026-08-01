@@ -193,5 +193,6 @@
   "date.pick.year.down": "Earlier year",
   "date.pick.year.up": "Later year",
   "date.pick.today": "Today",
-  "capture.when.exact": "Pick a date"
+  "capture.when.exact": "Pick a date",
+  "today.digest.not_built": "The summary of what changed since you were last here is still being built. Everything you write down is being kept in the meantime, and none of it is waiting on this."
 }
