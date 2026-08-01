@@ -40,7 +40,7 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
-**Issue #9, the export container.** It is release blocking, it is the only proof that data survives an update, and two other things are waiting behind it: #57, the document capture input, needs the content addressed attachment storage the export defines, and #10 needs the container itself.
+**Issue #9, the export container.** It is release blocking, it is the only proof that data survives an update, and #10 is waiting behind it. #57, the document capture input, is no longer blocked: the attachment storage it needed landed with the export's first piece, so it can be built whenever somebody wants the sixth way in.
 
 `contract/export-format.md` specifies it and is current, including the line added this run about event dates travelling as their EDTF string and the derived range being recomputed on import rather than trusted.
 
@@ -54,7 +54,7 @@ What it needs, in order:
 
 **Then #62**, the template catalog being English only, which is release blocking and which the app currently shows plainly to any Arabic reader.
 
-**Then #17**, the fixture generator, which nothing else makes a persona run mean anything without, and which is now unblocked because the schema has settled.
+**Then a persona run.** `TESTING-PERSONAS.md` has thirteen and none has been walked. The fixture generator now produces a five year notebook at any of six points, deterministically, so a run finally means something. Section 10 of this file is where each one gets recorded, with its seed and date.
 
 ## 4. What is done, and how each piece was verified
 
