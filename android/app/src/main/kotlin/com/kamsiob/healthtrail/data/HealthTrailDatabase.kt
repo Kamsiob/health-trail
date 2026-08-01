@@ -100,7 +100,21 @@ class HealthTrailDatabase private constructor(
             database.execSQL("PRAGMA foreign_keys = ON")
 
             if (fresh) {
+                // applySchema stamps the version itself, so there is nothing
+                // to migrate on a database created right now.
                 applySchema(context, database)
+            } else {
+                // **An existing database is migrated, never rebuilt.**
+                // Uninstalling to work around a migration is asking a person to
+                // delete years of their record of somebody's care, on a device
+                // that is the only place it exists. The mechanism runs on every
+                // open so a database left at an older version by any path,
+                // including an import, is brought forward rather than read
+                // through a schema that does not describe it.
+                Migrations.run(database).getOrElse { problem ->
+                    database.close()
+                    throw problem
+                }
             }
 
             val deviceId = ensureDeviceId(database)
@@ -117,8 +131,14 @@ class HealthTrailDatabase private constructor(
          *
          * Pragmas are routed away from `execSQL`, which refuses any statement
          * that returns rows, and `PRAGMA journal_mode` returns one.
+         *
+         * **Internal rather than private so the migration test can build a
+         * database the way the app does.** A test that applies the schema
+         * differently proves a schema the app never runs, and this one in
+         * particular carries the pragma routing above, which a naive copy in a
+         * test gets wrong immediately.
          */
-        private fun applySchema(context: Context, database: SQLiteDatabase) {
+        internal fun applySchema(context: Context, database: SQLiteDatabase) {
             val sql = ContractAssets.readSchema(context)
             database.beginTransaction()
             try {
