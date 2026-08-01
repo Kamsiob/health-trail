@@ -644,6 +644,8 @@ The tray screen still carries a full empty state, which the person reaches by fi
 
 ### D43. The reader check is a test, not a pass
 
+> **Superseded in part on 2026-08-01.** The owner granted permission to enable TalkBack, so the avoidance below no longer applies. The condition is to record the prior value and restore it exactly, the same as font scale and animation duration. `CLAUDE.md` rule 19 carries the amendment and `HANDOFF.md` section 7 carries the exact restore command. **Everything below about what the automated check does and does not cover still holds.**
+
 **Date:** 2026-08-01. **Decided by:** the session, working issue #44.
 
 TalkBack was not enabled on the phone during this run, and that was deliberate rather than an omission: it is the owner's daily driver, the session is unattended, and TalkBack changes touch behavior, so a failure part way through would leave the device hard to use with nobody there to fix it.
