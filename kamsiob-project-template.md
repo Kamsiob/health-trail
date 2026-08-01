@@ -290,6 +290,10 @@ Report what failed and what was corrected.
 
 **Before designing or writing anything, research current and past AI-slop tells and identifiers**, in both visual design and language, and deliberately avoid them so the output does not read as AI-generated. Do this research first, not after.
 
+**The list as of the last research pass.** Purple or indigo anything. Gradient fills, text, or heroes. Glassmorphism, frosted panels, backdrop blur. Colored accent bars or left borders on cards. Cards defined only by a 1px gray border. Three feature cards in a row. Numbered 01 / 02 / 03 markers where the content is not a sequence. Sparkle, wand, or magic iconography. A bounce on every press. Inter as a display face. Emoji as interface iconography. Cards nested inside cards inside cards, because depth is not hierarchy. The same label repeated in more than one slot of a card. A large centered icon above a heading standing in for content. Stat cards with small colored arrows beside numbers. Status pills scattered everywhere in place of real hierarchy. Press states that do nothing. Identical fade-in timing on everything. 3D blobs, plastic illustrations, stock imagery. Everything visible at once with no progressive disclosure, which is the most common structural tell. Edge states left as afterthoughts. Placeholder error copy, since "Something went wrong, please try again" strips the human voice out at the moment it is needed most. Generic product phrasing: streamline, empower, supercharge, seamless, world-class, effortless. The manufactured-contrast cadence, "Not a form. A conversation."
+
+**Slop is rarely ugly.** It is competent and anonymous, every screen out of one mold in a different coat of paint. **Anonymous is the failure mode to watch for, not ugliness.**
+
 **Never use em dashes** in any user-facing copy, documentation, README, commit message, or store text. Use commas, periods, or colons.
 
 **Copy voice.** Write like a person explaining something to a friend across a table. Plain words, short sentences, contractions welcome. No exclamation points. No hype words. No fear language. If a sentence could appear in a generic tech advertisement, rewrite it. Prefer verifiable claims over slogans. Name tradeoffs instead of hiding them. Buttons say exactly what they do, and an action keeps the same name through its whole flow. Interface labels use plain nouns.
@@ -298,7 +302,43 @@ Report what failed and what was corrected.
 
 **Color discipline.** One accent color. Reserve any secondary accent for a strictly defined set of uses and never let it appear elsewhere. Never use pure black or pure white backgrounds. Color is never the only carrier of meaning.
 
-**Accessibility floor.** Minimum touch targets, visible focus states, complete screen reader labels on every control including gesture-revealed actions, contrast meeting WCAG AA in every theme, dynamic type respected without breaking layouts, and reduced motion respected.
+**Accessibility floor.** Minimum touch targets, visible focus states, complete screen reader labels on every control including gesture-revealed actions, contrast meeting WCAG AA in every theme, dynamic type respected without breaking layouts, and reduced motion respected. **Verified with the settings actually on**, never by reading the code: the reader running, the font at its maximum, reduced motion enabled. Every one of these has a way of passing in the editor and failing in a hand.
+
+**Anything gesture-only also has a visible, non-gesture path.** A swipe action nobody discovers is a feature nobody has.
+
+### A5b. What done means
+
+**A screen is done when it works, looks like the rest of the app, moves and responds like the rest of the app, has been built and installed and actually used on a real device, and contains nothing standing in for a decision that was skipped.** Functionally correct and visually thin is not done.
+
+**The standard is retroactive.** When it rises, everything already built comes up to it rather than the standard applying only to new work. A codebase where the standard changed halfway through is a codebase with two standards. Before starting new feature work, inventory what exists against the current standard and open an issue per gap.
+
+**Hierarchy before decoration**, in this order, on every screen. Decide what matters most. Give it the most weight through size, position, and space, not color. Group what belongs together under a quiet label. Let the rest recede. Then give it room. **Uniform weight is not neutral:** it pushes the whole job of sorting onto the user. Polish applied to a cluttered screen is still a cluttered screen.
+
+**Everything the user touches responds.** One press treatment defined once and used by every button, row, chip, and tappable card. A control that does nothing on press reads as broken. Identical fade-in timing applied to everything reads as generated.
+
+**Edge states are not afterthoughts.** Empty, error, loading, offline, and partial are where generated interfaces are most obviously generated, and they are most of what a real user meets. A screen ships with all of them or it is not built.
+
+**Taps are the currency.** A flow that takes four taps when it could take two gets abandoned. Carry context forward instead of asking again, and offer what is likely before what is complete. Every prefill is a default the user can change, never a decision made for them.
+
+**Links go both ways.** If A shows B, then B shows A, built in both directions at the time. A one-way link is a dead end wearing a disguise.
+
+**The complexity lives in the code, never on the screen.** Any time the interface asks the user to understand how the app stores or organizes something, that is the code failing to absorb its own complexity.
+
+### A5c. The pause-and-look loop, which is what actually prevents thin screens
+
+No checklist does this on its own, because the real cause is not pausing. **After you build a screen, stop. Install it, open it on the device, and actually use it, not just look at a screenshot.**
+
+- Where does your eye go first, and is that the right place.
+- Where does it get stuck. What is competing for attention that should not be.
+- Could someone find the one thing they came for without reading everything else.
+- How many taps did that take, and could it be fewer.
+- Does everything you touched respond.
+- Does it hold up with real content rather than tidy sample data, at the largest system font size, with the keyboard up if it has a field, and in the longest and the right to left language.
+- Would someone who just came from the previous screen know how to read this one.
+
+**Then fix the worst thing you find, and look again.** That loop is the whole difference between output and craft.
+
+**A defect found twice is a defect. A defect found three times is a missing specification.** When the same thing goes wrong on a third screen, stop patching screens and write the rule.
 
 ### A6. The About screen, links, and licenses
 
