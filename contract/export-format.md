@@ -98,6 +98,8 @@ That is what allows the cost to be raised later without stranding anything. Hard
 
 The shipped values, 3 iterations over 64 MiB with parallelism 1, sit above the OWASP baseline rather than at it. **Tune only if it measures unusably slow on the phone**, and if it is tuned, the manifest records what was used and older files keep opening.
 
+**Measured on 2026-08-01: 1490ms on a Pixel 10 Pro XL.** That is a real number from `ExportCryptoTest` on the device rather than an estimate. It is entirely bearable for something a person does occasionally and deliberately, so **the cost stays where it is.** The test carries a ten second ceiling so a future device or a raised cost cannot quietly make exporting feel broken.
+
 
 ## 5. Import
 

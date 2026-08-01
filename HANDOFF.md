@@ -40,18 +40,18 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
-**The round trip test, and it comes before every other feature.** It is the first thing in section 5 and the two sections agree; if they ever disagree again, section 5 is rebuilt from the tracker and section 3 follows it.
+**Export encryption**, which is what remains of #9 after the round trip. Section 5 agrees; if the two ever disagree again, section 5 is rebuilt from the tracker and this one follows it.
 
-**Why it is first rather than merely next.** B4 dropped the emulator from this project, and the reasoning that made that safe was explicit: data survival is not proven by a long lived phone installation, it is proven by the export and import round trip against the golden vectors in continuous integration. **That test does not exist.** So the argument that retired the emulator currently rests on something unbuilt, and every claim about data surviving an update is unproven. Build it unencrypted if that is what it takes to have it running today.
+**The round trip test is built and passing**, 9 tests, unencrypted. D55. The argument B4 rested on is no longer resting on something unbuilt: a notebook demonstrably survives an export and a restore, column by column, tombstones included, with the EDTF string byte identical and the derived ranges recomputed rather than trusted.
 
-Then the rest of **#9**, in order:
+**#9**, where it stands:
 
 1. ~~Content addressed attachment storage.~~ **Done.** `Attachments`, with the row side already in the schema.
 2. ~~The container.~~ **Done, unencrypted.** `ExportContainer` writes and reads it, and six of the eight section 7 failure cases are covered.
-3. **The round trip test**, field by field, asserting the EDTF column survives byte for byte and that the derived range is recomputed on import rather than trusted.
-4. **Encryption**, per `contract/export-format.md` section 4. **The dependency question is answered:** the owner decided on 2026-08-01 to keep the format exactly as written, take AES-256-GCM from the platform JCE, and add **Bouncy Castle** `Argon2BytesGenerator` for Argon2id, which is pure Java and needs no NDK. **Do not substitute PBKDF2.** Per D24 the export file is the only recovery path from key loss, which makes it the most security sensitive artifact in the project. Record the Argon2id parameters in the export manifest so older files stay readable and the cost can be raised later. Start from the OWASP baseline and tune only if it measures unusably slow on the phone.
+3. ~~The round trip test.~~ **Done.** `RoundTripTest`, 9 tests on the phone, with `Backup` for the export and restore either side of it. D55.
+4. **Encryption**, per `contract/export-format.md` section 4. **The primitive is built and proven; it is not yet wired into the container.** `ExportCrypto` does Argon2id through Bouncy Castle and AES-256-GCM through the platform, with `ExportCryptoTest` proving the round trip, that a wrong passphrase and a tampered byte both fail to authenticate rather than returning rubbish, that a fresh nonce is used per file, and **that a file written at an older cost opens with the parameters recorded in it and not with today's constants.** Measured at **1490ms on the Pixel**, so the cost stays. What remains is encrypting the payload in `ExportContainer` and reading the parameters back out of the manifest on import. **The dependency question is answered:** the owner decided on 2026-08-01 to keep the format exactly as written, take AES-256-GCM from the platform JCE, and add **Bouncy Castle** `Argon2BytesGenerator` for Argon2id, which is pure Java and needs no NDK. **Do not substitute PBKDF2.** Per D24 the export file is the only recovery path from key loss, which makes it the most security sensitive artifact in the project. Record the Argon2id parameters in the export manifest so older files stay readable and the cost can be raised later. Start from the OWASP baseline and tune only if it measures unusably slow on the phone.
 5. **The last two failure cases** of the eight in section 7.
-6. **Tombstones travel**, and a test says so. That is the last unmet criterion on #8.
+6. ~~Tombstones travel, and a test says so.~~ **Done**, and it closed the last unmet criterion on #8.
 
 `contract/export-format.md` specifies all of it and is current, including the line added this run about event dates travelling as their EDTF string and the derived range being recomputed on import rather than trusted.
 
