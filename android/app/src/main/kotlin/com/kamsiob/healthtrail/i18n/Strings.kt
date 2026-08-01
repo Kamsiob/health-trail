@@ -110,8 +110,9 @@ class Strings internal constructor(
          * locale, which costs one small parse and keeps the code paths
          * identical rather than special casing the source language.
          */
-        fun load(context: Context, locale: Locale = Locale.getDefault()): Strings {
-            val code = SUPPORTED.firstOrNull { it == locale.language } ?: SOURCE_LOCALE
+        fun load(context: Context, locale: Locale? = null): Strings {
+            val code = locale?.let { chosen -> SUPPORTED.firstOrNull { it == chosen.language } }
+                ?: resolve(context)
             val requested = read(context, code)
             val english = if (code == SOURCE_LOCALE) requested else read(context, SOURCE_LOCALE)
             val meta = requested.meta
@@ -167,6 +168,66 @@ class Strings internal constructor(
                 "common.error.generic" to "That did not work. Nothing was changed.",
                 "common.retry" to "Try again",
         )
+
+        /**
+         * The shipped language the person actually asked for.
+         *
+         * **Three sources, in this order, and the order is the whole point.**
+         *
+         * 1. **The per-app language**, from `LocaleManager`. This is what the
+         *    person chose for this app specifically, in Android's own settings
+         *    or through `cmd locale set-app-locales`.
+         * 2. **The device preference list**, walked in order by `getFirstMatch`
+         *    so a person whose second language is the one this app ships still
+         *    gets it rather than English.
+         * 3. **English**, as the source language.
+         *
+         * **Why not `Locale.getDefault()`, which is what this used to do.** It
+         * returns one locale, the first entry of the configuration list, and
+         * Android does not reliably put the requested app language first there.
+         * Asking for Chinese produced a configuration of `en-US,zh-Hans`: the
+         * requested language was appended rather than promoted, because the app
+         * carries no `values-zh` resources for Android to serve, so English
+         * ranked higher for resource resolution. The default was `en-US`, the
+         * catalog loaded English, and **a person who had explicitly set this app
+         * to Chinese got English, with no error anywhere.**
+         *
+         * Spanish and Arabic landed first in their own lists and worked, which
+         * disguised a general resolution bug as a Chinese one. Arabic in
+         * particular is promoted because its direction has to be honored.
+         *
+         * Every test passed the locale explicitly, so every test proved the
+         * catalog and none proved the path a real person takes to it. It was
+         * found by setting the device to Chinese and reading the screen.
+         */
+        private fun resolve(context: Context): String {
+            requested(context)?.let { return it }
+
+            val preferences = context.resources.configuration.locales
+            val match = preferences.getFirstMatch(SUPPORTED.toTypedArray())
+            return SUPPORTED.firstOrNull { it == match?.language } ?: SOURCE_LOCALE
+        }
+
+        /**
+         * The per-app language, or null if the person has not set one.
+         *
+         * `LocaleManager` arrived in API 33 and `minSdk` is 26, so this is
+         * guarded. Below 33 there is no per-app language to read and the
+         * device preference list is the only question worth asking.
+         */
+        private fun requested(context: Context): String? {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+                return null
+            }
+            val manager = context.getSystemService(android.app.LocaleManager::class.java)
+                ?: return null
+            val chosen = manager.applicationLocales
+            for (index in 0 until chosen.size()) {
+                val language = chosen[index]?.language ?: continue
+                SUPPORTED.firstOrNull { it == language }?.let { return it }
+            }
+            return null
+        }
 
         private class Catalog(val entries: Map<String, String>, val meta: JSONObject)
 
