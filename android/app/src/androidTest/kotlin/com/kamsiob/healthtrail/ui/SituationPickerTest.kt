@@ -4,7 +4,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -99,13 +101,64 @@ class SituationPickerTest {
 
     @Test
     fun everySettingIsReachableByScrolling() {
+        // Grouping is presentation. It may never cost anyone their own
+        // situation, so every one of the fourteen is still reachable, including
+        // any the grouping did not account for.
         val catalog = show()
-        val last = catalog.all.last()
-        compose.onNodeWithTag(SituationPickerTags.LIST)
-            .performScrollToNode(
-                androidx.compose.ui.test.hasTestTag(SituationPickerTags.row(last.id))
-            )
-        compose.onNodeWithTag(SituationPickerTags.row(last.id)).assertIsDisplayed()
+        catalog.all.forEach { situation ->
+            compose.onNodeWithTag(SituationPickerTags.LIST)
+                .performScrollToKey(situation.id)
+            compose.onNodeWithTag(SituationPickerTags.row(situation.id)).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun everySettingHasAGroupThePickerKnowsAbout() {
+        // The one that catches a catalog edit adding a fifteenth setting under
+        // a heading this version has never heard of. It would still render,
+        // under no heading, which is the safe outcome rather than the intended
+        // one, so this fails loudly instead of letting it look deliberate.
+        val catalog = runBlocking { TemplateCatalog.situations(context) }
+        val known = setOf("facility", "home", "treatment", "comfort")
+        val strays = catalog.all.filter { it.group !in known }
+        assertTrue(
+            "settings with an unknown group: ${strays.map { "${it.id}=${it.group}" }}",
+            strays.isEmpty(),
+        )
+    }
+
+    @Test
+    fun everyGroupIsHeaded() {
+        show()
+        listOf("facility", "home", "treatment", "comfort").forEach { group ->
+            compose.onNodeWithTag(SituationPickerTags.LIST)
+                .performScrollToKey("group_$group")
+            compose.onNodeWithTag(SituationPickerTags.group(group)).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun everySettingShowsItsSubtitleSoTwoSimilarOnesCanBeToldApart() {
+        // A nursing home and assisted living are one word apart on this screen
+        // and are not the same thing. The subtitle exists to carry that, and a
+        // name on its own forces a guess this audience should not have to make.
+        val catalog = show()
+        catalog.all.filter { it.subtitle.isNotBlank() }.forEach { situation ->
+            compose.onNodeWithTag(SituationPickerTags.LIST)
+                .performScrollToKey(situation.id)
+            compose.onNodeWithText(situation.subtitle).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun theScreenSaysNothingHereIsPermanentWithoutScrolling() {
+        // The sentence that removes most of the pressure from this screen, and
+        // it is worth nothing if a person has to scroll fourteen options to
+        // find it. It sits above the skip action, pinned, with the list
+        // scrolling behind it.
+        show()
+        compose.onNodeWithTag(SituationPickerTags.NOT_PERMANENT).assertIsDisplayed()
+        compose.onNodeWithTag(SituationPickerTags.SKIP).assertIsDisplayed()
     }
 
     @Test

@@ -24,6 +24,17 @@ object TemplateCatalog {
         val subtitle: String,
         /** One sentence naming what is hard about this setting. */
         val burden: String,
+        /**
+         * Build priority, and also the order in the setup picker, so the
+         * settings covering the most caregivers are the first ones read.
+         */
+        val phase: Int,
+        /**
+         * Which heading this sits under in the setup picker: `facility`,
+         * `home`, `treatment`, or `comfort`. In the data rather than in one
+         * platform's code, so both group identically.
+         */
+        val group: String,
         /** Care threads to offer as toggles. The person picks which are running. */
         val threads: List<Thread>,
         /** Contact roles to offer when adding a person. Suggestions, not a fixed list. */
@@ -78,6 +89,8 @@ object TemplateCatalog {
                         name = item.getString("name"),
                         subtitle = item.optString("subtitle"),
                         burden = item.optString("burden"),
+                        phase = item.optInt("phase", LAST_PHASE),
+                        group = item.optString("group"),
                         threads = item.optJSONArray("threads").toThreads(),
                         roles = item.optJSONArray("roles").toLabels(),
                         checklist = item.optJSONArray("checklist").toStrings(),
@@ -91,6 +104,14 @@ object TemplateCatalog {
         }
         Situations(posture, all)
     }
+
+    /**
+     * A template with no phase sorts last rather than first. An unknown
+     * priority is not a high one, and a catalog edit that forgot the field
+     * must not quietly push a rare setting to the top of the first screen
+     * after the disclaimer.
+     */
+    private const val LAST_PHASE = Int.MAX_VALUE
 
     private fun org.json.JSONArray?.toThreads(): List<Thread> {
         if (this == null) return emptyList()

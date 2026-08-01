@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import java.time.LocalDate
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
@@ -29,9 +30,8 @@ import com.kamsiob.healthtrail.ui.screens.CaptureDraft
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.screens.CaptureSheet
+import com.kamsiob.healthtrail.ui.screens.edtf
 import com.kamsiob.healthtrail.ui.screens.entryKind
-import com.kamsiob.healthtrail.ui.screens.occurredAt
-import com.kamsiob.healthtrail.ui.screens.precision
 import com.kamsiob.healthtrail.ui.screens.usesTheSharedForm
 import com.kamsiob.healthtrail.ui.screens.Emphasis
 import com.kamsiob.healthtrail.ui.screens.emphasisFrom
@@ -181,8 +181,7 @@ fun NotebookShell(repository: Repository) {
                         kind = draft.kind.entryKind(),
                         title = draft.who,
                         body = draft.note,
-                        occurredAt = draft.rough.occurredAt(System.currentTimeMillis()),
-                        whenKnown = draft.rough.precision(),
+                        occurred = draft.rough.edtf(LocalDate.now()),
                         // An entry nobody could place goes to the Unfiled tray
                         // rather than being filed by the app. Only marked when
                         // there were threads to choose from: with none offered,

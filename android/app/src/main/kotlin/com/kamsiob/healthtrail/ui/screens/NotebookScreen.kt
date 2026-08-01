@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.IconTile
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -225,7 +226,10 @@ fun NotebookScreen(
 
                 item(key = "group_${group.name}") {
                     Spacer(Modifier.height(Space.sectionGap))
-                    GroupHeader(group)
+                    GroupHeader(
+                        labelKey = group.labelKey,
+                        modifier = Modifier.testTag(NotebookTags.group(group)),
+                    )
                     Spacer(Modifier.height(Space.headerGap))
                 }
 
@@ -242,53 +246,6 @@ fun NotebookScreen(
             // card. 56dp button, 16dp overhang, plus a gap so the last row is
             // readable rather than merely uncovered.
             item { Spacer(Modifier.height(Space.xxl + Space.l)) }
-        }
-    }
-}
-
-/**
- * A group header, per `DESIGN.md` section 5.13: a mono eyebrow with a hairline
- * running out to the end edge, which is how the reference file heads a month in
- * the trail.
- *
- * The hairline is decorative in the sense section 2.3 defines: remove it and
- * nothing becomes unreadable, because the words carry the heading on their own.
- * It is `ink3NonText` all the same.
- */
-@Composable
-private fun GroupHeader(group: NotebookGroup) {
-    val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag(NotebookTags.group(group)),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            // Uppercased against the catalog's own locale rather than the
-            // device's, so a Turkish phone showing the English catalog cannot
-            // turn an "i" into a dotted capital. In Arabic and Chinese this is
-            // a no-op, which is correct: neither script has case, and the
-            // eyebrow reads as an eyebrow there through its size and tracking.
-            text = strings[group.labelKey].uppercase(strings.locale),
-            style = HealthTrail.type.mono,
-            color = colors.ink3Text,
-        )
-        Spacer(Modifier.width(Space.sm))
-        // The label carries no weight and the rule carries all of it, so the
-        // label takes exactly the width it needs and the rule takes what is
-        // left. A label long enough to fill the row, which is what the longest
-        // language does, wraps inside the row and the rule shrinks to nothing
-        // rather than pushing the words off the end edge.
-        Canvas(modifier = Modifier.weight(1f).height(1.dp)) {
-            drawLine(
-                color = colors.ink3NonText.copy(alpha = 0.4f),
-                start = Offset(0f, size.height / 2f),
-                end = Offset(size.width, size.height / 2f),
-                strokeWidth = size.height,
-            )
         }
     }
 }

@@ -64,6 +64,8 @@ Read before anything else. It is never encrypted, even when the payload is, beca
 
 **The change log travels with it,** and the importer renumbers `seq` locally while preserving `table_name`, `row_id`, `op`, `rev`, `changed_at`, and `device_id`. `seq` is meaningful only on the device that wrote it, and two devices will both have a sequence 1 that are not the same event. See DECISIONS.md D12.
 
+**Event dates travel as their EDTF string and are re-derived on the other side.** The `<name>_edtf` column round-trips byte for byte and is what the round trip test asserts equality on. The `<name>_start` and `<name>_end` columns are recomputed from it on import rather than trusted from the file, which is what keeps them an index rather than a second source of truth that can arrive already disagreeing. The zone travels as written, so a date recorded in one zone still reads as the reading the person saw. Data contract section 3.1.
+
 **Attachments are named by their content hash,** with no extension and no directory nesting. The database row carries the original filename, the mime type, and the size. An attachment whose bytes do not hash to its name is corrupt and the import says so and stops.
 
 ## 4. Encryption

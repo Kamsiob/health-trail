@@ -10,6 +10,8 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.time.Edtf
+import java.time.LocalDate
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.screens.CaptureDraft
@@ -18,8 +20,7 @@ import com.kamsiob.healthtrail.ui.screens.CaptureFormTags
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.screens.RoughWhen
 import com.kamsiob.healthtrail.ui.screens.entryKind
-import com.kamsiob.healthtrail.ui.screens.occurredAt
-import com.kamsiob.healthtrail.ui.screens.precision
+import com.kamsiob.healthtrail.ui.screens.edtf
 import com.kamsiob.healthtrail.ui.screens.usesTheSharedForm
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import kotlinx.coroutines.runBlocking
@@ -107,21 +108,22 @@ class CaptureTest {
     }
 
     @Test
-    fun notSureStoresNoTimeRatherThanTodayWithAShrug() {
+    fun notSureStoresUnknownRatherThanTodayWithAShrug() {
         // The property that matters more than which chip was tapped. An entry
         // whose time is unknown must not carry a real looking timestamp, or
         // every screen downstream renders a precision the person never had.
-        val now = 1_700_000_000_000L
-        assertNull("not sure invented a timestamp", RoughWhen.NOT_SURE.occurredAt(now))
-        assertEquals(Repository.WhenKnown.UNKNOWN, RoughWhen.NOT_SURE.precision())
+        val today = LocalDate.of(2024, 11, 18)
 
-        assertEquals(now, RoughWhen.TODAY.occurredAt(now))
-        assertEquals(Repository.WhenKnown.DAY, RoughWhen.TODAY.precision())
-        assertEquals(Repository.WhenKnown.WEEK, RoughWhen.THIS_WEEK.precision())
-        assertTrue(
-            "yesterday is not before today",
-            RoughWhen.YESTERDAY.occurredAt(now)!! < RoughWhen.TODAY.occurredAt(now)!!,
-        )
+        assertEquals(Edtf.UNKNOWN, RoughWhen.NOT_SURE.edtf(today).canonical)
+        assertEquals(Edtf.Precision.UNKNOWN, RoughWhen.NOT_SURE.edtf(today).precision)
+
+        // And each of the others says exactly as much as the chip claimed. A
+        // chip reading "Today" must not store the minute the button was tapped,
+        // because nobody said the minute.
+        assertEquals("2024-11-18", RoughWhen.TODAY.edtf(today).canonical)
+        assertEquals(Edtf.Precision.DAY, RoughWhen.TODAY.edtf(today).precision)
+        assertEquals("2024-11-17", RoughWhen.YESTERDAY.edtf(today).canonical)
+        assertEquals(Edtf.Precision.WEEK, RoughWhen.THIS_WEEK.edtf(today).precision)
     }
 
     @Test
@@ -315,9 +317,14 @@ class CaptureTest {
             subjectId = subjectId,
             kind = "call",
             title = "Sometime last week",
-            occurredAt = null,
-            whenKnown = Repository.WhenKnown.UNKNOWN,
+            occurred = Edtf.unknown(),
         )
         assertTrue("an entry with no date was rejected", id.isNotBlank())
+
+        // And it comes back as unknown rather than as a date, which is the half
+        // that a nullable timestamp column could never promise.
+        val stored = repository.entryOccurred(id)
+        assertEquals(Edtf.UNKNOWN, stored?.canonical)
+        assertEquals(Edtf.Precision.UNKNOWN, stored?.precision)
     }
 }

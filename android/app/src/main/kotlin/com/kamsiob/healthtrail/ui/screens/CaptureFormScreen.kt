@@ -24,6 +24,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.time.Edtf
+import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
@@ -271,29 +273,23 @@ private val RoughWhen.labelKey: String
     }
 
 /**
- * A rough answer turned into the two columns the schema actually stores: when it
- * happened, and how precisely that is meant.
+ * A rough answer turned into the date the schema actually stores.
  *
- * **"Not sure" stores no time at all and a precision of unknown,** rather than
- * today's date with a shrug attached. The trail renders it as not known, which
- * is the truth, and no later screen can mistake it for a real timestamp.
+ * **The chip says exactly as much as the person did, and no more.** "Today" is
+ * a day, so it stores a day and not the minute they happened to tap the button.
+ * "Sometime this week" is a week, so it stores the week as the interval a week
+ * is. **"Not sure" stores unknown**, rather than today's date with a shrug
+ * attached, and every screen downstream renders it as not known because that is
+ * what it says.
+ *
+ * Contract section 3.1 and `Edtf`.
  */
-fun RoughWhen.occurredAt(now: Long): Long? = when (this) {
-    RoughWhen.TODAY -> now
-    RoughWhen.YESTERDAY -> now - ONE_DAY_MILLIS
-    RoughWhen.THIS_WEEK -> now
-    RoughWhen.NOT_SURE -> null
+fun RoughWhen.edtf(today: LocalDate): Edtf.Date = when (this) {
+    RoughWhen.TODAY -> Edtf.day(today)
+    RoughWhen.YESTERDAY -> Edtf.day(today.minusDays(1))
+    RoughWhen.THIS_WEEK -> Edtf.week(today)
+    RoughWhen.NOT_SURE -> Edtf.unknown()
 }
-
-/** How precisely [occurredAt] is meant, which is the other half of the same answer. */
-fun RoughWhen.precision(): Repository.WhenKnown = when (this) {
-    RoughWhen.TODAY -> Repository.WhenKnown.DAY
-    RoughWhen.YESTERDAY -> Repository.WhenKnown.DAY
-    RoughWhen.THIS_WEEK -> Repository.WhenKnown.WEEK
-    RoughWhen.NOT_SURE -> Repository.WhenKnown.UNKNOWN
-}
-
-private const val ONE_DAY_MILLIS = 24L * 60L * 60L * 1000L
 
 /**
  * Whether this kind is one of the four the shared form serves.

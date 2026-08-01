@@ -38,6 +38,23 @@ REQUIRED_COLUMNS = {
 # allowed.
 LOCAL_TABLES = {"app_meta", "device", "change_log", "conflict_log", "schema_migration"}
 
+# Bookkeeping about the row rather than a claim about the world. These stay UTC
+# milliseconds, per data contract section 3.
+ROW_METADATA = {"created_at", "updated_at", "deleted_at", "changed_at"}
+
+# Timestamps recording something the app did at the moment the person did it in
+# the app, which is genuinely an instant and genuinely known. Each one is here
+# on purpose, and adding to this set is the loophole in check_event_dates, so
+# every entry carries its reason.
+APP_ACTION_TIMES = {
+    "closed_at",      # subject: the person closed the notebook, in the app, now
+    "archived_at",    # organization, person: archived in the app, now
+    "pinned_at",      # entry: pinned in the app, now
+    "resolved_at",    # conflict_log: local bookkeeping, not a user record
+    "seen_at",        # conflict_log: local bookkeeping
+    "applied_at",     # schema_migration: local bookkeeping
+}
+
 CHANGE_LOG_COLUMNS = {
     "seq", "table_name", "row_id", "op", "rev", "changed_at", "device_id",
 }
@@ -177,6 +194,47 @@ class SchemaCheck:
                         f"Ids are the only thing foreign keys ever point at."
                     )
 
+    def check_event_dates(self, tables):
+        """Every event date is a full section 3.1 group, and no bare one survives.
+
+        Two failures are worth catching automatically and neither is visible by
+        reading. A group missing its range columns means the database cannot
+        sort or answer a date query, so someone will quietly add a second
+        timestamp beside it. A surviving bare `<name>_at` on a world event
+        means one date in the app can still assert a precision the person never
+        gave, which is the whole defect the model exists to remove.
+        """
+        for table in tables:
+            columns = {row[1] for row in self.db.execute(f"PRAGMA table_info({table})")}
+
+            for column in sorted(columns):
+                if not column.endswith("_edtf"):
+                    continue
+                base = column[: -len("_edtf")]
+                for part, kind in (("zone", "TEXT"), ("start", "INTEGER"), ("end", "INTEGER")):
+                    if f"{base}_{part}" not in columns:
+                        self.fail(
+                            f"{table}.{column} has no {base}_{part}. An event date is the "
+                            f"whole group in data contract section 3.1: the EDTF string, "
+                            f"the zone, and the derived range. A string on its own cannot "
+                            f"be sorted or searched, which is how a second timestamp "
+                            f"ends up beside it."
+                        )
+
+            for column in sorted(columns):
+                if column in ROW_METADATA or column in APP_ACTION_TIMES:
+                    continue
+                if not column.endswith("_at"):
+                    continue
+                self.fail(
+                    f"{table}.{column} is a bare timestamp on something that happened in "
+                    f"the world. Event dates are the group in data contract section 3.1, "
+                    f"because a single instant asserts a precision the person may never "
+                    f"have given. If this genuinely records something the app did rather "
+                    f"than something that happened, add it to APP_ACTION_TIMES with a "
+                    f"reason."
+                )
+
     def check_retention_documented(self):
         match = re.search(
             r"TOMBSTONE RETENTION WINDOW:\s*(\d+)\s*days", self.sql, re.IGNORECASE
@@ -306,6 +364,7 @@ class SchemaCheck:
         self.check_views(tables)
         self.check_triggers(tables)
         self.check_foreign_keys(tables)
+        self.check_event_dates(tables)
         self.check_local_tables()
         retention = self.check_retention_documented()
         self.check_change_log_behavior()
@@ -322,7 +381,8 @@ class SchemaCheck:
             f"Schema check passed. {len(tables)} user data tables, each with the six "
             f"required columns, a live view that filters tombstones, and both change "
             f"log triggers. No AUTOINCREMENT on any of them. Every foreign key points "
-            f"at an id. Tombstone retention window: {retention} days."
+            f"at an id. Every event date is a full EDTF group. "
+            f"Tombstone retention window: {retention} days."
         )
         print(
             "  Behavior verified: insert logs 'insert', update logs 'update', setting "

@@ -336,11 +336,19 @@ The rule is decorative in the sense 2.3 defines: remove it and nothing becomes u
 
 **One press treatment for everything the person can touch.** A control that does nothing when pressed reads as broken, and this app is used by someone in a hallway who cannot tell a slow app from a dead one.
 
-**The surface steps one place along the paper to card to sand ladder**, 55% of the way toward `sand`, over the quick 120ms of section 6. One rule covers both themes because the ladder runs in both.
+**The resting surface moves 8% of the way toward `ink`**, over the quick 120ms of section 6.
+
+That is one rule for both themes and every surface, and it works because `ink` is dark on light paper and light on dark paper. A white card darkens, a dark card lightens, the blue filled button deepens toward `blue_deep`, the gold capture button warms, and a control with no container picks up a faint tint. **No table of exceptions**, which matters more than the exact number: a rule with exceptions is one the next component gets wrong.
+
+An earlier version stepped toward `sand`. It was wrong on anything that was not already a card: on the blue button it pulled the surface toward a warm neutral, which is a different color rather than a pressed one.
+
+Measured on the device in dark theme: a card row goes from (26,36,43) to (43,50,56), the filled button from (127,182,212) to (136,186,214), the capture button from (227,177,85) to (228,182,100).
 
 **Never a bounce and never a scale.** A bounce on every press is banned in section 1, and a scale animation on a card the size of a notebook row reads as a toy.
 
-**Never a ripple on top of it.** The surface is the answer to the touch, and a ripple would be a second, louder answer to the same one.
+**Never a ripple on top of it.** The surface is the answer to the touch, and a ripple would be a second, louder answer to the same one. Every control passes `indication = null` and supplies its own `interactionSource`.
+
+**The capture button answers a finger like everything else.** Section 5.5 says it never changes color, and that is about its resting state: it is gold on every screen, always. A press is not a change of color, it is the control saying it heard you, and the one thing data enters through must say that most of all.
 
 **Reduced motion reaches it.** With animations off the step becomes a 100ms fade rather than nothing, so the acknowledgment survives even when the movement does not.
 
@@ -478,17 +486,23 @@ One screen rather than a three step wizard. A wizard means three taps before any
 
 Composed from Display L, Display S, Body M, the text field from section 5.9, one filled button, and one text action. Tracked on issue #30.
 
-**The situation picker.** Choosing the care setting, which is what configures the notebook: which sections sit expanded, which care threads are offered, the first days checklist, and the document slots. All of it editable and deletable afterward, so it is a starting point rather than a commitment.
+**The situation picker.** Fourteen care settings, grouped by where the care is happening, each carrying its name and the subtitle that tells two similar settings apart.
 
-Each setting is a card carrying its name, the subtitle that tells two similar settings apart, and its burden line, the one sentence naming what is hard about that setting. The burden is there so the person feels understood rather than processed, which is what `templates/SCHEMA.md` says it is for.
+**Rebuilt on 2026-08-01 under the standard in section 10.5.** The first version listed all fourteen flat, at one weight. It worked and it was a wall, on the first real screen after the disclaimer, in front of someone in a hallway deciding whether to keep going.
 
-**The posture strings are shown verbatim** at the top, straight from the catalog. Paraphrasing them in the interface is forbidden, because they are the sentences that keep this content reading as structure rather than as advice.
+**Grouped by where the care is happening**, which is the one thing that person already knows: in a facility, at home, ongoing treatment, comfort focused care. **The membership is in the catalog, not in the app.** `templates/data/situations.json` carries a `group` on every template, so the web version groups identically rather than reimplementing the list and drifting from it. A setting whose group this version does not recognize still renders, under no heading, because a person must never fail to find their own situation because of a data edit.
 
-No chevron on the rows. A chevron implies going somewhere to look at something, and tapping here chooses. Nothing is applied by looking at it, which is the same rule the template library will follow.
+**Ordered by how many caregivers each setting covers**, which is what the catalog's `phase` already marks. The common ones lead, inside every heading.
 
-"Not sure yet" is a real answer rather than a postponement: a notebook with no situation template still works, every section exists, and nothing is missing.
+**The subtitle is never dropped.** A nursing home and assisted living are one word apart on this screen and are not the same thing.
 
-Composed from Display L, Body M, Body S, the card from section 5.3, and one text action. Tracked on issue #32.
+**The burden line appears on the settings that lead their group, and nowhere else.** It is one sentence naming what is hard about a setting, written so the person feels understood rather than processed. Read once it does that. Read fourteen times in a row it is a wall of other people's hardship. `templates/SCHEMA.md` says to use it as supporting text where it helps, and this is that taken at its word. It also gives each group the same shape the notebook has: the likeliest option is the fullest row.
+
+**"Nothing here is permanent" is pinned above the skip action**, with the list scrolling behind it, because a sentence that removes the pressure from a screen is worth nothing if it takes fourteen options of scrolling to reach.
+
+No chevron on a row. A chevron implies going somewhere to look, and tapping here chooses.
+
+Composed from Display L, Body M, Body S, the card from section 5.3, the group header from 5.13, the press state from 5.14, and one text action. Tracked on issues #32 and #41.
 
 **The capture form.** One form for four of the six capture inputs: a call, a visit, an incident, and a question. They record the same four things and differ only in wording, so the shape is defined once and the words come from the catalog per kind. Which four is declared in one place, exhaustively, so a seventh capture kind cannot be added without deciding whether it belongs here. Measurement and document are genuinely different shapes and get their own screens.
 

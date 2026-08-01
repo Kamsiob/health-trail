@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
@@ -16,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,7 +28,12 @@ import com.kamsiob.healthtrail.ui.theme.Space
  *
  * Filled uses the single accent, a pill shape, and a 48dp minimum height. Quiet
  * is a card surface with the same geometry. Both carry a visible focus state,
- * a 2dp `blue` outline offset 2dp, per the accessibility floor in section 9.
+ * a 2dp `blue` outline, per the accessibility floor in section 9, and both
+ * carry the one press state from section 5.14.
+ *
+ * **Both of these shipped with no press state at all**, passing
+ * `indication = null` and answering only to focus. That is the "press states
+ * that do nothing" tell by name, and it is why 5.14 exists.
  *
  * An action keeps the same word through its whole flow: the button that says
  * Export produces a result that says Exported.
@@ -46,7 +51,8 @@ fun FilledButton(
 ) {
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
-    val focused by interaction.collectIsFocusedAsState()
+    val surface by pressedSurface(interaction, if (enabled) colors.blue else colors.sand)
+    val ring by focusRingAlpha(interaction)
 
     Box(
         modifier = modifier
@@ -54,14 +60,8 @@ fun FilledButton(
             // which is the floor for everything in this app.
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.pill)
-            .background(if (enabled) colors.blue else colors.sand)
-            .then(
-                if (focused) {
-                    Modifier.border(2.dp, colors.blueDeep, Radius.pill)
-                } else {
-                    Modifier
-                }
-            )
+            .background(surface)
+            .border(2.dp, colors.blueDeep.copy(alpha = ring), Radius.pill)
             .clickable(
                 enabled = enabled,
                 interactionSource = interaction,
@@ -99,15 +99,19 @@ fun TextAction(
 ) {
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
-    val focused by interaction.collectIsFocusedAsState()
+    // No container at rest, per 5.4, and a faint one under a finger. The 5.14
+    // rule gives that for free: 8% toward `ink` from transparent is a tint
+    // rather than a surface, which is exactly the right weight for an action
+    // that is secondary but must not feel discouraged.
+    val surface by pressedSurface(interaction, Color.Transparent)
+    val ring by focusRingAlpha(interaction)
 
     Box(
         modifier = modifier
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.pill)
-            .then(
-                if (focused) Modifier.border(2.dp, colors.blue, Radius.pill) else Modifier
-            )
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.pill)
             .clickable(
                 enabled = enabled,
                 interactionSource = interaction,

@@ -69,6 +69,54 @@ Two exceptions to the tombstone rule, both explicit:
 
 **Attachments are content addressed.** A photographed bill is stored as a file named by the hash of its bytes, plus a database row holding the hash, the original filename, the mime type, and the size. Consequences, all good: an attachment can never conflict because identical bytes are the same file, transferring one twice is free, and a corrupt transfer is detectable by rehashing.
 
+**Row metadata is not an event date.** The five timestamps above are UTC milliseconds and stay that way: they are bookkeeping about the row, not claims about the world. When something actually happened is a different kind of value entirely, and section 3.1 governs it.
+
+### 3.1 Event dates
+
+**The owner approved this on 2026-07-31 and it is made before real data exists**, because retrofitting it later means discarding records. D34.
+
+**The problem it solves.** A care record spans years and is written from memory. "The fall was sometime in November 2024." "She was moved to Brookdale in the fall." "I called them, I think it was a Tuesday." A schema that stores only a precise timestamp forces every one of those into a false precision, and once it has been exported and reimported there is no way left to tell a guess from a known time. The app would then assert a specific Tuesday the person never claimed, which breaks its own rule about never saying more than it knows.
+
+**The standard is EDTF**, the Extended Date/Time Format, standardized as ISO 8601-2:2019 and developed by the Library of Congress for exactly this. https://www.loc.gov/standards/datetime/edtf.html **No private format is invented here.** Two properties of it are load bearing:
+
+- **Precision is expressed by truncation.** `2024` is sometime in 2024. `2024-11` is sometime in November. `2024-11-18` is that day. `2024-11-18T14:40` is that moment. The shorter the string, the less the person claimed.
+- **Uncertainty is a separate axis from precision.** `?` marks uncertain, `~` approximate, `%` both. A person can know the month and be unsure of it, which is not the same as knowing only the year. Collapsing the two into one field throws away information the person actually gave.
+
+**The columns.** Wherever a table records when something happened, it carries this group, named for the event: `occurred`, `scheduled`, `started`, `ended`, and so on.
+
+| Column | Type | Rule |
+|---|---|---|
+| `<name>_edtf` | TEXT | **The source of truth.** A valid EDTF string carrying the local wall-clock reading, with no offset suffix. This is what round-trips through export and import unchanged. |
+| `<name>_zone` | TEXT NULL | The IANA zone the person was in when they recorded it, for example `America/New_York`. Null where the precision is coarser than a day, since a month has no clock. |
+| `<name>_start` | INTEGER NULL | **Derived.** The earliest instant the date could refer to, UTC milliseconds. |
+| `<name>_end` | INTEGER NULL | **Derived.** The latest instant it could refer to, UTC milliseconds. |
+
+**The range is an index, never the truth.** It exists so the database can sort, filter, and answer range queries efficiently. It is recomputed from the EDTF string and is never edited independently. A known moment has an identical start and end. Sometime in November 2024 spans that whole month. **If the two ever disagree, the EDTF string wins and the range is wrong.**
+
+**Local wall-clock semantics are preserved, and the EDTF string is how.** A visit logged at 2:40 pm happened at 2:40 pm where the person was, and it still reads as 2:40 pm after a timezone change or after travel, because the stored string says `T14:40` and not an instant. The zone is kept so the derived range can be computed correctly and recomputed identically later. This is deliberately different from the row metadata above, where `updated_at` and `deleted_at` correctly stay UTC milliseconds.
+
+**Every supported precision, with its canonical form.**
+
+| What the person said | Stored | Resolved range |
+|---|---|---|
+| An exact moment | `2024-11-18T14:40` | that minute, start equals end |
+| An exact day | `2024-11-18` | that day, local midnight to midnight |
+| A week | `2024-11-18/2024-11-24` | that interval. EDTF has no week token, so a week is an interval, which is what a week is |
+| A month | `2024-11` | that month |
+| A season or part of year | `2024-21` spring, `2024-22` summer, `2024-23` autumn, `2024-24` winter | that sub-year group |
+| A year | `2024` | that year |
+| A range between two points | `2024-11/2024-12` | first instant of the start to last instant of the end |
+| Genuinely unknown | `XXXX-XX-XX` | both null |
+| Any of the above, unsure | the same with `?`, `~`, or `%` | unchanged. **Uncertainty never widens the range**, because being unsure about November is still a claim about November |
+
+**Null and unknown are different things, and conflating them is the mistake this table exists to prevent.** A null `<name>_edtf` means **the event has not happened and there is no date to record**: a chapter with no end, a bill not yet paid, a question not yet asked. `XXXX-XX-XX` means **it happened and nobody knows when**. A bill that was paid at some forgotten point is not an unpaid bill, and the schema must not be able to say it is. Where an event definitionally happened, the column is `NOT NULL DEFAULT 'XXXX-XX-XX'`: an entry, a measurement, a milestone, and a violation all occurred, so the only question is how much is known about when.
+
+**Unknown is a first-class value, not a null to work around.** `XXXX-XX-XX` is EDTF's own unspecified-digits form and it means what it says: a date exists and nothing about it is known. An entry carrying it **saves, is valid, and appears in the trail**. It is never blocked, never hidden, and never quietly filled in with today. Because its range is null it cannot sort among dated entries, so it sorts by `created_at`, which is when it was written down, and it renders as not known rather than as a guess. **It never disappears from a view because its date was vague**, and a search for a month returns every entry whose range overlaps that month plus nothing that merely might.
+
+**The round trip requirement.** `<name>_edtf` survives export and import byte for byte. The derived columns are recomputed on import rather than trusted from the file, which is what makes them an index rather than a second source of truth. The field by field round trip test in section 8 covers the EDTF column directly and asserts equality on it.
+
+**Golden vectors.** `contract/test-vectors` carries a case for each row of the table above, with its EDTF string, its resolved range, and its rendered form in all four locales. Both platforms run them. **A renderer that turns `2024-11` into "November 1, 2024" fails the vector**, which is the point of having one.
+
 ---
 
 ## 4. The change log
@@ -164,6 +212,7 @@ The vectors must cover the cases that actually break:
 - Plural boundaries: one call, two calls, zero calls, in every language. This is why the engine composes from message templates with proper plural rules rather than gluing strings together, and it is why the architecture decision has to be made now rather than during translation.
 - Right to left rendering, since Arabic is a v1 language.
 - Every measurement type, including the ones flagged high risk in the template schema, verifying that no output ever contains a range, a threshold, a judgment, or a color coded value.
+- **Every date precision in section 3.1**, with its EDTF string, its resolved range, and its rendering in all four locales. A renderer that turns `2024-11` into "November 1, 2024" fails the vector, which is the point of having one. The file is `dates.json` and it is the first vector both platforms run, because every other vector's output contains a date.
 
 ---
 

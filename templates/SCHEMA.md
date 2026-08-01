@@ -26,7 +26,8 @@ One entry per care setting.
 | `id` | string | Stable key. |
 | `name` | string | Shown in the setup picker. |
 | `subtitle` | string | One line under the name, so the person can tell two similar settings apart. |
-| `phase` | 1, 2, or 3 | Build priority. Phase 1 covers the largest number of caregivers and ships first. |
+| `phase` | 1, 2, or 3 | Build priority. Phase 1 covers the largest number of caregivers and ships first. **Also the ordering in the setup picker**, so the most common settings are the first ones a person reads. |
+| `group` | `facility`, `home`, `treatment`, `comfort` | Which heading this sits under in the setup picker. Fourteen options presented flat is a wall to someone standing in a hallway, so they are grouped by where the care is happening, which is the thing the person already knows. Lives in the data rather than in one platform's code, so both group identically. |
 | `forward` | array of section ids | Notebook sections shown expanded for this setting. |
 | `folded` | array of section ids | Sections collapsed until the person opens them. Not hidden. |
 | `roles` | array of `{id, label}` | Contact role slots to offer when adding a person. Suggestions, not a fixed list. |
