@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.theme
 
 import android.content.Context
+import androidx.core.content.edit
 
 /**
  * Whether the app follows the system's light and dark setting, or overrides it.
@@ -61,7 +62,7 @@ class ThemeSetting(context: Context) {
     fun read(): ThemeChoice = ThemeChoice.of(prefs.getString(KEY, null))
 
     fun write(choice: ThemeChoice) {
-        prefs.edit().putString(KEY, choice.stored).apply()
+        prefs.edit { putString(KEY, choice.stored) }
     }
 
     private companion object {

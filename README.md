@@ -30,11 +30,13 @@ Real captures from the running app on a Pixel 10 Pro XL. **Nothing here is a moc
 | <img src="docs/screenshots/today-empty-light.png" width="230" alt="Today on a new notebook, coaching three things to do first with the emergency card first."> | <img src="docs/screenshots/notebook-toc-light.png" width="230" alt="The notebook table of contents, twelve sections grouped under People and care, The record, and Paperwork."> | <img src="docs/screenshots/capture-sheet-light.png" width="230" alt="The capture sheet listing six things to log: a call, a visit, an incident, a measurement, a question, a document."> |
 | **Today**, on a notebook with nothing in it. It coaches rather than sitting blank, and the emergency card is always the first suggestion. | **The notebook.** Twelve sections that never move, so nothing is ever somewhere new. | **Capture.** One gold button on every screen, six ways in. |
 | <img src="docs/screenshots/log-call-light.png" width="230" alt="The log a call form: who you spoke to, when, and what was said, with rough date chips and a save button reading Save what you have."> | <img src="docs/screenshots/unfiled-tray-light.png" width="230" alt="The unfiled tray showing one saved call and suggesting which care thread it belongs to."> | <img src="docs/screenshots/fonts-arabic-light.png" width="230" alt="The notebook in Arabic, fully mirrored right to left with real Arabic glyphs."> |
+| <img src="docs/screenshots/more-dark.png" width="230" alt="The Appearance setting in dark theme, offering follow the phone, light, and dark."> | <img src="docs/screenshots/fonts-chinese-light.png" width="230" alt="The notebook in Simplified Chinese, rendered in the system CJK typeface."> | <img src="docs/screenshots/notebook-toc-end-light.png" width="230" alt="The lower half of the notebook table of contents, showing paperwork sections."> |
 | **A call, logged.** Every field optional. "Roughly is fine" for the date, and the button says **Save what you have**. | **Nothing gets filed for you.** Anything saved without a home waits here, with a suggestion you confirm. | **Arabic, on the device.** Mirrored right to left, real glyphs. Right to left was built in from the first screen rather than added at the end. |
+| **Dark, on a phone set to light.** The theme is the app's own setting, not an inherited one. | **Chinese**, in the system CJK face. Nothing is bundled for it, because Android already ships a good one. | **Twelve sections that never move**, so nothing is ever somewhere new. |
 
 `reference/screen-grid.html` holds the 27 approved screens as the binding visual reference, and `DESIGN.md` holds the tokens, type scale, motion, and copy rules the built app is held to.
 
-**One honest note about these captures.** They are all in light theme because that is what the test phone is set to, and it is somebody's daily driver rather than a lab device. Dark theme is fully implemented and every color pair in both themes is measured against the WCAG AA floors by `check_contrast.py` on every push.
+Every color pair in both themes is measured against the WCAG AA floors by `check_contrast.py` on every push.
 
 ## What it can do today
 
@@ -46,6 +48,7 @@ Real captures from the running app on a Pixel 10 Pro XL. **Nothing here is a moc
 - **A notebook with twelve sections that never move**, grouped and folded to the kind of care being given. A hospital stay brings appointments and the trail forward and folds money away; a different situation folds differently.
 - **Setup you can skip entirely.** Three questions, all optional. Skipping produces a working notebook. Answering "not sure yet" is a real answer that changes what the app asks you later.
 - **Four locales with right to left working**, English, Spanish, Chinese, and Arabic, verified by running the app in Arabic on a device rather than by reading the code.
+- **Light or dark, your choice.** Follow the phone, or pin the app to one regardless of what the phone is doing. It applies the moment you pick it.
 - **Encrypted at rest**, SQLCipher with the key in the Android Keystore, proven by reading the file back and asserting it is not a plain SQLite database.
 - **A record that can survive sync it does not have yet.** Every row carries a locally generated id, timestamps, a revision, an origin device, and a tombstone column. **Deletion is always a tombstone, never a removed row**, and every write appends to a change log in the same transaction, enforced by database triggers rather than by application code remembering to.
 
