@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
@@ -77,6 +78,12 @@ fun CaptureSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = colors.card,
+        // **A scrim that actually dims.** Material's default is a light veil,
+        // and against this app's dark surfaces the notebook behind the sheet
+        // stayed almost as bright as the sheet itself and went on competing for
+        // the eye. Looked at on the phone, it did not read as a sheet over a
+        // screen so much as two screens at once.
+        scrimColor = Color.Black.copy(alpha = SCRIM_ALPHA),
         shape = Radius.bottomSheet,
         // **No drag handle**, and it is removed rather than labeled.
         //
@@ -173,3 +180,13 @@ private fun labelKey(kind: CaptureKind): String = when (kind) {
     CaptureKind.QUESTION -> "capture.question"
     CaptureKind.DOCUMENT -> "capture.document"
 }
+
+/**
+ * How far the scrim dims what is behind the sheet.
+ *
+ * Enough that the notebook reads as behind rather than beside, and not so much
+ * that the person loses where they were. Judged on the device in dark theme,
+ * which is the harder of the two: on warm paper a lighter scrim would do, and
+ * one value that works in both is worth more than two that each work in one.
+ */
+private const val SCRIM_ALPHA = 0.62f

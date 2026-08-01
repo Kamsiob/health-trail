@@ -176,5 +176,6 @@
   "measurement.unit": "单位",
   "measurement.note": "值得记下的任何事",
   "measurement.note.hint": "谁测的、她看起来怎么样，什么都行",
-  "measurement.record_only": "应用只负责记下并保存。它不会告诉您这代表什么。"
+  "measurement.record_only": "应用只负责记下并保存。它不会告诉您这代表什么。",
+  "capture.not_built": "保存文件的功能还没做好。它需要一个存放照片的地方，我们先把那部分做出来，这样您保存的任何东西都不会丢失。"
 }
