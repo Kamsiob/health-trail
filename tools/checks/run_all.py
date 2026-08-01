@@ -29,6 +29,7 @@ CHECKS = [
     ("check_self_contained.py", "nothing outside this project is named in the repository"),
     ("check_i18n.py", "the four locale catalogs against each other and their rules"),
     ("check_live_views.py", "no base table read outside a live view, so tombstones cannot leak"),
+    ("check_fixtures.py", "the fixture generator is deterministic and hits its stated scale"),
 ]
 
 # TESTING-PERSONAS.md section 5 checks that are not implemented yet, each named
