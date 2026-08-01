@@ -164,5 +164,17 @@
   "unfiled.suggested": "Suggested",
   "unfiled.none": "None of these",
   "unfiled.file": "File it",
-  "unfiled.no_threads": "This notebook has no care threads yet, so there is nowhere to file things. You can clear them from here in the meantime."
+  "unfiled.no_threads": "This notebook has no care threads yet, so there is nowhere to file things. You can clear them from here in the meantime.",
+  "measurement.pick.title": "What are you tracking?",
+  "measurement.pick.lead": "Pick one to start. You can track more later, and you can stop tracking anything without losing what you wrote.",
+  "measurement.tracked": "Already tracking",
+  "measurement.presets": "Start tracking something",
+  "measurement.value.number": "The number",
+  "measurement.value.number.hint": "Whatever the reading said",
+  "measurement.value.text": "What you saw",
+  "measurement.value.text.hint": "In your own words",
+  "measurement.unit": "Units",
+  "measurement.note": "Anything worth remembering",
+  "measurement.note.hint": "Who took it, how she seemed, anything at all",
+  "measurement.record_only": "The app writes this down and keeps it. It does not tell you what it means."
 }

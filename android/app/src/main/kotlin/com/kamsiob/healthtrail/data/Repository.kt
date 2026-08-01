@@ -328,6 +328,108 @@ class Repository private constructor(
         }
     }
 
+    // -- measures and measurements -----------------------------------------
+
+    /** A thing this notebook tracks over time. */
+    data class Measure(
+        val id: String,
+        val name: String,
+        val presetId: String?,
+        val unit: String?,
+        val isText: Boolean,
+    )
+
+    /** What this notebook already tracks, in the order it was set up. */
+    suspend fun measures(subjectId: String): List<Measure> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, name, preset_id, unit, style FROM live_measure " +
+                "WHERE subject_id = ? ORDER BY sort_index, created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Measure(
+                            id = cursor.getString(0),
+                            name = cursor.getString(1),
+                            presetId = cursor.getString(2),
+                            unit = cursor.getString(3),
+                            isText = cursor.getString(4) in TEXT_STYLES,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Starts tracking something, from a preset.
+     *
+     * **Created the first time the person records one, not at setup.** A
+     * notebook that arrives with sixteen empty charts is a list of things
+     * somebody has not done, which is the scorecard this app does not keep.
+     *
+     * `advice_risk` is carried from the preset onto the row so the rendering
+     * layer can hold the content rules without looking the preset up again. It
+     * is never shown to the person and never becomes a warning.
+     */
+    suspend fun createMeasure(
+        subjectId: String,
+        preset: TemplateCatalog.Preset,
+        unit: String?,
+        sortIndex: Int = 0,
+    ): String = insert(
+        "measure",
+        mapOf(
+            "subject_id" to subjectId,
+            "name" to preset.name,
+            "preset_id" to preset.id,
+            "unit" to unit,
+            "style" to preset.style,
+            "gap_tolerance" to preset.gapTolerance,
+            "advice_risk" to preset.adviceRisk,
+            "show_medication_markers" to if (preset.medicationMarkers) 1 else 0,
+            "sort_index" to sortIndex,
+        ),
+    )
+
+    /**
+     * Records one measurement.
+     *
+     * **A number and words are different columns, not one column that holds
+     * either.** "Ate about half her lunch" is not a number and storing it as
+     * one would either lose it or invent a figure nobody gave. The preset says
+     * which the thing being tracked is.
+     *
+     * `source` records who provided it, because a value the family measured
+     * and a value a clinician stated are different things and the record must
+     * not blur them. Nothing here is judged, ranged, or compared.
+     */
+    suspend fun recordMeasurement(
+        measureId: String,
+        number: Double? = null,
+        text: String? = null,
+        unit: String? = null,
+        occurred: Edtf.Date = Edtf.day(LocalDate.now()),
+        note: String? = null,
+        entryId: String? = null,
+        source: String = "family",
+    ): String = insert(
+        "measurement",
+        mapOf(
+            "measure_id" to measureId,
+            "entry_id" to entryId,
+            "value_number" to number,
+            "value_text" to text?.ifBlank { null },
+            "unit" to unit,
+            "note" to note?.ifBlank { null },
+            "source" to source,
+        ) + dateColumns("occurred", occurred),
+    )
+
+    /** Styles whose value is words rather than a number, per the preset catalog. */
+    private val TEXT_STYLES = setOf("categorical", "observational", "event_log", "photo_log")
+
     // -- the Unfiled tray -------------------------------------------------
 
     /**

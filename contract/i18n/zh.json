@@ -164,5 +164,17 @@
   "unfiled.suggested": "建议",
   "unfiled.none": "都不是",
   "unfiled.file": "归置",
-  "unfiled.no_threads": "这个笔记本还没有照护脉络，因此无处归置。在此期间您可以先把它们从这里清除。"
+  "unfiled.no_threads": "这个笔记本还没有照护脉络，因此无处归置。在此期间您可以先把它们从这里清除。",
+  "measurement.pick.title": "您在记录什么？",
+  "measurement.pick.lead": "先选一项开始。以后可以记录更多，也可以随时停止记录，不会丢失已经写下的内容。",
+  "measurement.tracked": "已在记录",
+  "measurement.presets": "开始记录一项内容",
+  "measurement.value.number": "数值",
+  "measurement.value.number.hint": "读数是多少就写多少",
+  "measurement.value.text": "您看到的情况",
+  "measurement.value.text.hint": "用您自己的话",
+  "measurement.unit": "单位",
+  "measurement.note": "值得记下的任何事",
+  "measurement.note.hint": "谁测的、她看起来怎么样，什么都行",
+  "measurement.record_only": "应用只负责记下并保存。它不会告诉您这代表什么。"
 }

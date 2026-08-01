@@ -35,6 +35,8 @@ import com.kamsiob.healthtrail.ui.screens.entryKind
 import com.kamsiob.healthtrail.ui.screens.usesTheSharedForm
 import com.kamsiob.healthtrail.ui.screens.Emphasis
 import com.kamsiob.healthtrail.ui.screens.emphasisFrom
+import com.kamsiob.healthtrail.ui.screens.MeasurementDraft
+import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
@@ -73,6 +75,10 @@ fun NotebookShell(repository: Repository) {
     // The entry being filed out of the tray, and where it is going. Null means
     // nothing is in flight.
     var filing by remember { mutableStateOf<Pair<String, String?>?>(null) }
+    // What this notebook already tracks, and the catalog of things it could.
+    var measures by remember { mutableStateOf<List<Repository.Measure>>(emptyList()) }
+    var presets by remember { mutableStateOf<List<TemplateCatalog.Preset>>(emptyList()) }
+    var recording by remember { mutableStateOf<MeasurementDraft?>(null) }
     // The threads this notebook carries, which the capture form offers as chips.
     // Empty is a real state: a notebook with no situation template has none, and
     // the form drops that question rather than showing an answerless one.
@@ -103,6 +109,8 @@ fun NotebookShell(repository: Repository) {
             }
             threads = subject?.let { repository.threads(it.id) }.orEmpty()
             unfiled = subject?.let { repository.unfiled(it.id) }.orEmpty()
+            measures = subject?.let { repository.measures(it.id) }.orEmpty()
+            presets = TemplateCatalog.presets(context)
         } catch (t: Throwable) {
             failed = true
         }
@@ -205,6 +213,50 @@ fun NotebookShell(repository: Repository) {
                 },
                 onCancel = { capturing = null },
             )
+        }
+
+        // Measurement has its own screen because it does not fit the shared
+        // form: a value needs to know what is being measured before anything
+        // else on the screen means anything.
+        if (kind == CaptureKind.MEASUREMENT) {
+            MeasurementScreen(
+                measures = measures,
+                presets = presets,
+                onSave = { draft ->
+                    capturing = null
+                    recording = draft
+                },
+                onCancel = { capturing = null },
+            )
+        }
+
+        val measurement = recording
+        if (measurement != null) {
+            LaunchedEffect(measurement) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    // A measure is created the first time the person records
+                    // one, never at setup. A notebook that arrives with sixteen
+                    // empty charts is a list of things somebody has not done.
+                    val measureId = measurement.measureId ?: repository.createMeasure(
+                        subjectId = subject.id,
+                        preset = measurement.preset!!,
+                        unit = measurement.unit,
+                        sortIndex = measures.size,
+                    )
+                    repository.recordMeasurement(
+                        measureId = measureId,
+                        number = measurement.number,
+                        text = measurement.text,
+                        unit = measurement.unit,
+                        occurred = measurement.rough.edtf(LocalDate.now()),
+                        note = measurement.note,
+                    )
+                }
+                recording = null
+                revision += 1
+                destination = Destination.NOTEBOOK
+            }
         }
 
         val draft = saving
