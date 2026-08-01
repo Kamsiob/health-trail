@@ -4,7 +4,7 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-08-01, on the branch `feat/53-unfiled-tray`, in the session where the owner sent the standing quality bar.
+**Last rewritten:** 2026-08-01, at the end of the long unattended run, in the session where the owner sent the standing quality bar.
 
 If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
 
@@ -40,15 +40,16 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
-**Issue #39, the date interface.** The model is built and proven, and nothing on screen uses the half that matters yet.
+**Issue #39, the date interface.** The model is built, proven by golden vectors, and used by exactly one screen. The half that the owner's directive actually asked for is not built.
 
 1. **The capture form's date control.** It offers four chips: today, yesterday, this week, not sure. The bar requires **an exact date and time always available as a peer of the chips, not behind them**, and natural expression for a month or a season. `DESIGN.md` section 10.9.
-2. **Editing a date from the entry itself, forever, with the same control.** Nothing can edit a date yet, because nothing shows a single entry yet.
-3. `EventDateText` is proven by the vectors and is called from exactly one screen, the Unfiled tray. **Every screen that shows a date from here on calls it rather than formatting one itself.**
+2. **This needs a date picker, which is a genuinely new component.** Nothing in the design language can carry it, so per section 10.2 it gets specified in section 5 first, with its states, before it is built. Material's own picker will not look like this app. That decision has not been made and is the first thing to settle.
+3. **Editing a date from the entry itself, forever, with the same control.** Nothing can edit a date yet because nothing shows a single entry yet, so this may follow the trail rather than lead it.
+4. `EventDateText` is proven and called from one screen. **Every screen that shows a date from here on calls it rather than formatting one itself.**
 
-**Then #57**, the document capture input, which is the last of the six. It is blocked on content addressed attachment storage, the same machinery #9 needs, so build that first.
+**Then #62**, the template catalog being English only, which is release blocking and was found by running the app in Arabic on the phone.
 
-**Then #43**, the retroactive audit, and the rest of #44, which is the screen reader half.
+**Then #58**, the section counts not being scoped to the subject. Small, and silently wrong the moment a second notebook exists.
 
 ## 4. What is done, and how each piece was verified
 
@@ -78,64 +79,48 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 92 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
+**The whole instrumented suite: 92 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All seven implemented compliance checks pass.
+
+**A pattern worth carrying forward.** Almost every defect this run found came from putting the built thing in a hand and changing one condition: the font at maximum, the keyboard up, the language set to Arabic, or simply looking at a screen that had already passed its tests. None of them were visible in the code, and several had passed a review. The tests are what keep them fixed; they are not what found them.
 
 ---
 
 ## 5. Remaining work inventory, in order
 
-**The standing bar, opened 2026-08-01.** These came out of D34 and several of them outrank the Phase 0 leftovers.
+**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #36 the notebook, #37 setup, #38 the date model, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray. #12 is closed for Latin and Arabic and open only for Chinese.
 
-| Issue | What |
-|---|---|
-| ~~#38~~ | **Done.** The contract, the schema, the repository, the renderer, and the vectors |
-| #39 | The date interface, which hides all of the model. Depends on #38 |
-| ~~#40~~ | **Done.** Every tappable surface in the app uses the one treatment in 5.14 |
-| ~~#41~~ | **Done.** Grouped by where the care is happening, ordered by how common, and visibly skippable |
-| ~~#42~~ | **Measurement done.** Document split to #57, because it needs attachment storage that does not exist |
-| #57 | The document capture input, once attachments exist. Shares machinery with #9 |
-| #62 | The template catalog is English only. Found by running the app in Arabic on the phone |
-| #58 | Notebook section counts are not scoped to the subject. Invisible with one notebook, silently wrong with two |
-| ~~#53~~ | **Done.** The Unfiled tray, which the capture form had been promising |
-| #43 | Retroactive: audit every screen already built against the bar. Opens further issues rather than fixing everything itself |
-| #44 | Accessibility gate, verified with the reader on, the font at maximum, and reduced motion enabled |
-| #45 | Capture from outside the app: widget, quick settings tile, share sheet target |
-| #46 | No dead ends. Every link goes both ways, context carries forward |
-| #47 | Search: universal from Today, scoped in every section |
-| #48 | Carry the universal parts of the bar into `kamsiob-project-template.md` |
+**In order. The first three are the ones to take.**
 
-**Phase 1, still open.**
-
-| Issue | What |
-|---|---|
-| ~~#37~~ | **Done.** Grouped, hinted, and the reassurance said once in words |
-
-**Phase 0, still open.**
-
-| Issue | What | Why this order |
+| Issue | What | Why here |
 |---|---|---|
-| #8 | A static check that makes querying a base table structurally hard | The repository layer is built and correct. What is missing is the check that stops the next person bypassing it |
-| #7 | Prove the change log append is transactional through the Kotlin path | The schema already proves it. This proves it through SQLCipher and Kotlin |
-| #13 | Four locale catalogs with right to left verified on a screen | Arabic has not been looked at on the device, which is the unmet half |
-| #15 | Golden test vectors both platforms run against | **The first vector, `dates.json`, exists and runs.** The engine vectors do not |
-| #14 | Encrypted database, remaining criteria | The migration mechanism and the key loss screen are the unmet parts |
-| #12 | Fonts covering all four scripts | **Latin and Arabic bundled and verified on the device.** Open only for Simplified Chinese, which is a size decision: Noto Sans SC is ten megabytes per weight |
-| #9 | Export container, manifest, encryption, round trip equality | **Now also has to round trip the EDTF column byte for byte** |
-| #10 | `SyncTransport` with the file implementation behind it | Needs the export container |
-| #17 | Deterministic fixture generator | Needed before any persona run means anything |
-| #16 | Web scaffold opening the same schema | `npm` is absent on this machine |
-| #18 | Content compliance checks in CI | Seven checks exist and run. The issue stays open for the ones not implementable yet |
-| #21 | Roadmap document | Documentation only |
-| #25 | About screen links the canonical privacy policy | Needs an About screen, which does not exist |
+| #39 | The date interface | The model is built and the half the owner asked for is not. Needs a date picker specified in `DESIGN.md` section 5 first, because nothing existing can carry it |
+| #62 | The template catalog is English only | Release blocking, and the app currently shows an Arabic interface wrapped around English content |
+| #58 | Section counts are not scoped to the subject | Small. Silently wrong the moment a second notebook exists |
+| #57 | The document capture input | The last of the six ways in. Blocked on attachment storage, which #9 also needs, so build that first |
+| #9 | The export container | Attachment storage, the round trip, and the only proof data survives an update. Now also has to round trip the EDTF column byte for byte |
+| #17 | Deterministic fixture generator | Nothing else makes a persona run mean anything, and the schema has settled |
+| #7 | The change log append is transactional through Kotlin | The schema proves it. This proves it through SQLCipher |
+| #8 | A check that makes querying a base table structurally hard | The repository layer is correct. What is missing is what stops the next person bypassing it |
+| #14 | Encrypted database, remaining criteria | The migration mechanism and the key loss screen |
+| #15 | Golden vectors | `dates.json` exists and runs. The engine vectors need the engine |
+| #46 | No dead ends, links both ways | Needs screens that can link to each other, so it follows the trail |
+| #47 | Search | Needs Today, which needs the digest engine |
+| #45 | Capture from outside the app | Independent. Widget, quick settings tile, share sheet target |
+| #10 | `SyncTransport` | Needs the export container |
+| #16 | The web scaffold | `npm` is absent on this machine |
+| #12 | Simplified Chinese fonts | A size decision for the owner. Ten megabytes per weight |
+| #13 | The locale scaffold | Largely met. Arabic is verified on the device now. What remains overlaps #62 |
+| #18 | Content checks in CI | Seven run. Open for the ones not implementable yet |
+| #21 | Roadmap | Documentation only |
+| #25 | About screen | Needs an About screen, which does not exist |
+| #43, #44 | The audit and the accessibility gate | Both partly done with findings recorded on the issues. What remains needs a supervised device |
+| #1 | Phase 0 parent | Closes when its children do |
 
-**The immediate Phase 1 feature queue after the above.**
+**In the review queue, waiting on the owner rather than on work:** #28 the disclaimer gate, #30 setup, #32 the situation picker, #34 the capture sheet and form, #50 the notebook, #55 the Unfiled tray. **Arabic screenshots are no longer blocked** for any of them.
 
-1. **Today, with the digest engine**, reading the change log for what changed since the person was last here.
-3. The trail itself, projects, and More.
+**Phase 1 feature work still ahead, none of it yet an issue:** Today with the digest engine, the trail itself, care team, medications, the emergency card, projects, and More.
 
-**Something that must not survive to release.** The Today, Projects, and More destinations render an honest interim screen saying that part is not built yet. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, so hiding them would break the rule that a person finds things where they last were. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
-
----
+**Something that must not survive to release.** The Today, Projects, and More destinations render an honest interim screen, and so does the document capture input. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, and section D44 says an interface may offer something it has not built but may not go quiet when someone takes it up. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
 
 ## 6. Blocked
 
@@ -152,6 +137,9 @@ The one thing still waiting rather than blocked: **the light theme screenshots**
 - Device: Pixel 10 Pro XL, serial `57241FDCQ0000H`, connected over USB. **The only test device.**
 - **No emulator.** Dropped from this project. Do not attempt to launch one, do not create an AVD, and do not treat its absence as a blocker. See D21, D23, and B4 in `DECISIONS.md`.
 - The phone is in **dark** system theme, which is why every committed screenshot is `-dark`.
+- **To run the app in one language without touching the phone's own settings**, which matters because this is the owner's daily driver: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --locales ar`, and `--locales ""` to clear it. Doing this found #62 within a minute.
+- **Accessibility settings used during this run were restored to exactly what the phone had before.** `font_scale` back to 1.0 and `animator_duration_scale` deleted rather than set to 1.0, because it was unset to begin with. Check both if a run ends unexpectedly: `adb shell settings get system font_scale` and `adb shell settings get global animator_duration_scale`.
+- **TalkBack was deliberately never enabled.** D43: it changes touch behavior, and a failure part way through an unattended run would leave the daily driver hard to use with nobody there.
 - **The notebook currently holds throwaway data**: a subject named Mom on a hospital stay template with four care threads. The last `connectedAndroidTest` run wiped it after the screenshots were taken, so what is on the phone right now is a fresh install sitting at the disclaimer gate. Nothing on it is worth preserving.
 
 **The one operational rule about the phone.** `connectedAndroidTest` uninstalls the application and takes its data with it. Before running it, if the phone holds anything worth keeping, export through the app's own export feature first and reimport after.
