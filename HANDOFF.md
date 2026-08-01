@@ -72,6 +72,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | Four locale catalogs, ICU MessageFormat | `check_i18n.py` on every push. `CopyIntegrityTest` on the phone proves no locale silently falls back to English for the disclaimer |
 | Contrast in both themes | `check_contrast.py` measures 80 pairs against the actual token values on every push |
 | Content compliance | `check_copy.py`, `check_templates.py`, `check_contract_isolation.py`, `check_self_contained.py` |
+| The fixture generator | `check_fixtures.py` generates twice and compares bytes, checks a different seed differs, checks all six points grow, and checks year five hits its stated scale. Proven to catch drift by removing the seed on purpose |
 | The export container | `ExportContainerTest` on the phone. What goes in comes out byte for byte, the manifest survives to the millisecond including tables with zero rows, the manifest is the first entry, and six of the eight files that must fail cleanly each name what was wrong |
 | Attachment storage | `AttachmentsTest` on the phone. The same bytes are one file, the streaming and whole-file paths agree, a changed file fails verification, and a half written file is never visible under its hash |
 | The date picker | Walked on the Pixel: opened from the capture form, picked August 18 with a time, and the form read back "August 18, 2026 at 2:00 PM" through the same renderer every other date uses |
@@ -89,7 +90,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 121 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All eight implemented compliance checks pass.
+**The whole instrumented suite: 121 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All nine implemented compliance checks pass.
 
 **A pattern worth carrying forward.** Almost every defect this run found came from putting the built thing in a hand and changing one condition: the font at maximum, the keyboard up, the language set to Arabic, or simply looking at a screen that had already passed its tests. None of them were visible in the code, and several had passed a review. The tests are what keep them fixed; they are not what found them.
 
@@ -106,8 +107,9 @@ Verified means checked through the mechanism, not inferred from the code being w
 | #39 | The date interface | The model is built and the half the owner asked for is not. Needs a date picker specified in `DESIGN.md` section 5 first, because nothing existing can carry it |
 | #62 | The template catalog is English only | Release blocking, and the app currently shows an Arabic interface wrapped around English content |
 | #57 | The document capture input | The last of the six ways in. Blocked on attachment storage, which #9 also needs, so build that first |
-| #9 | The export container | Attachment storage, the round trip, and the only proof data survives an update. Now also has to round trip the EDTF column byte for byte |
-| #17 | Deterministic fixture generator | Nothing else makes a persona run mean anything, and the schema has settled |
+| #9 | The fixture generator | `check_fixtures.py` generates twice and compares bytes, checks a different seed differs, checks all six points grow, and checks year five hits its stated scale. Proven to catch drift by removing the seed on purpose |
+| The export container | Attachment storage, the round trip, and the only proof data survives an update. Now also has to round trip the EDTF column byte for byte |
+| #17 | Fixture generator, the rest of it | The core is built and deterministic. Open for incidents, bills in every state, standing instructions, projects, documents with attachments, and the four language variants, which wait on #62 |
 | #7 | The change log append is transactional through Kotlin | The schema proves it. This proves it through SQLCipher |
 | #14 | Encrypted database, remaining criteria | The migration mechanism and the key loss screen |
 | #15 | Golden vectors | `dates.json` exists and runs. The engine vectors need the engine |
@@ -182,7 +184,7 @@ The one thing still waiting rather than blocked: **the light theme screenshots**
 
 **Everything else:** Gradle 9.6.1, AGP 9.3.1, Kotlin 2.4.10, Compose BOM 2026.06.01, JDK 21, compileSdk 37, targetSdk 36, minSdk 26. minSdk 26 is why `java.time` is available to `Edtf.kt` without desugaring. Android's `execSQL` refuses any statement that returns rows and `PRAGMA journal_mode` returns one, so `ContractAssets.splitStatements` handles the splitting including trigger bodies and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
-**Verification.** `tools/verify.sh` is the honest runner: it captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. `python3 tools/checks/run_all.py` runs the eight content and contract checks alone. **Never chain a commit on a grep of output.**
+**Verification.** `tools/verify.sh` is the honest runner: it captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. `python3 tools/checks/run_all.py` runs the nine content and contract checks alone. **Never chain a commit on a grep of output.**
 
 ---
 
