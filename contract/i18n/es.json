@@ -195,5 +195,17 @@
   "date.pick.today": "Hoy",
   "capture.when.exact": "Elegir una fecha",
   "today.digest.not_built": "El resumen de lo que ha cambiado desde su última visita todavía se está construyendo. Mientras tanto se guarda todo lo que usted anota, y nada de ello depende de esto.",
-  "today.coach.heading": "Vale la pena hacer esto"
+  "today.coach.heading": "Vale la pena hacer esto",
+  "appearance.title": "Apariencia",
+  "appearance.subtitle": "Cómo se ve esta aplicación en este teléfono. No cambia nada de lo que usted haya anotado.",
+  "appearance.group": "Tema",
+  "appearance.system.label": "Seguir al teléfono",
+  "appearance.system.detail": "Claro u oscuro, según como esté configurado su teléfono en este momento.",
+  "appearance.light.label": "Claro",
+  "appearance.light.detail": "Siempre claro, aunque el teléfono esté en oscuro.",
+  "appearance.dark.label": "Oscuro",
+  "appearance.dark.detail": "Siempre oscuro, aunque el teléfono esté en claro.",
+  "nav.more.appearance": "Apariencia",
+  "more.coming.group": "También vendrá aquí",
+  "more.coming.body": "Exportar su cuaderno, una página de información con la política de privacidad, el idioma de la aplicación y una forma de borrarlo todo. Nada de eso está hecho todavía. Todo lo que anote ahora seguirá aquí cuando lo esté."
 }

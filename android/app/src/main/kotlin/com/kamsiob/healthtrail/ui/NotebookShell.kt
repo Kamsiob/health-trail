@@ -25,6 +25,8 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.screens.MoreScreen
+import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 import androidx.compose.foundation.background
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -65,7 +67,11 @@ object ShellTags {
  * out here.
  */
 @Composable
-fun NotebookShell(repository: Repository) {
+fun NotebookShell(
+    repository: Repository,
+    themeChoice: ThemeChoice,
+    onThemeChoice: (ThemeChoice) -> Unit,
+) {
     val strings = LocalStrings.current
     var destination by remember { mutableStateOf(Destination.NOTEBOOK) }
     var counts by remember { mutableStateOf<List<SectionCount>?>(null) }
@@ -167,7 +173,12 @@ fun NotebookShell(repository: Repository) {
                         hasAnything = (counts?.sumOf { it.count } ?: 0) > 0,
                     )
                     Destination.PROJECTS -> NotBuiltYet(strings["nav.projects"])
-                    Destination.MORE -> NotBuiltYet(strings["nav.more"])
+                    // More is no longer entirely unbuilt. Appearance is
+                    // real; everything else in it still says so plainly.
+                    Destination.MORE -> MoreScreen(
+                        choice = themeChoice,
+                        onChoose = onThemeChoice,
+                    )
                 }
             }
 

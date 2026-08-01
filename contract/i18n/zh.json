@@ -195,5 +195,17 @@
   "date.pick.today": "今天",
   "capture.when.exact": "选择日期",
   "today.digest.not_built": "“上次之后有什么变化”的摘要还在做。这期间您记下的一切都会保存好，没有任何内容需要等它。",
-  "today.coach.heading": "接下来值得做的"
+  "today.coach.heading": "接下来值得做的",
+  "appearance.title": "外观",
+  "appearance.subtitle": "本应用在这部手机上的显示方式。不会更改您记下的任何内容。",
+  "appearance.group": "主题",
+  "appearance.system.label": "跟随手机",
+  "appearance.system.detail": "浅色或深色，取决于您手机当前的设置。",
+  "appearance.light.label": "浅色",
+  "appearance.light.detail": "始终浅色，即使手机为深色。",
+  "appearance.dark.label": "深色",
+  "appearance.dark.detail": "始终深色，即使手机为浅色。",
+  "nav.more.appearance": "外观",
+  "more.coming.group": "此处即将添加",
+  "more.coming.body": "导出您的笔记本、包含隐私政策的关于页面、本应用使用的语言，以及清除全部内容的方式。这些都尚未完成。您现在记下的一切，在完成之后依然会在这里。"
 }

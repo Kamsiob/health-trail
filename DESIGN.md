@@ -671,6 +671,26 @@ Composed from Display L, Body M, the Mono metadata style, cards 5.3, choice chip
 
 **Many things at once.** Care threads are parallel streams, each identified by a dashed route in its own color. The trail filters to any single thread. Ended threads keep their whole story. Capture forgives: every field optional, rough dates allowed, and anything the person could not categorize lands in an Unfiled tray where the app suggests a home by plain word matching and the person confirms. **The app never files anything on its own.**
 
+### Appearance, and More around it
+
+Not in `reference/screen-grid.html`. Composed under section 10 and logged here at the moment it was built, per rule 12. Tracked on issue #88, review on #89.
+
+**Three choices, and following the phone is the default.** Overriding what somebody has already told their device is presumptuous. The setting exists for the case where they want this one app to differ, which is a real case rather than a hypothetical: reading long text in a dark room, or in a bright corridor at three in the morning, is the situation this app is for.
+
+**It applies immediately, and that is the requirement rather than a nicety.** The choice is held above the theme in `MainActivity`, because state read inside the theme cannot change the theme reading it. A setting that needs a restart reads as one that did not take.
+
+**Following the phone means following it while the app is open**, not at launch. `isSystemInDarkTheme` is read inside composition rather than resolved once, so a phone that flips at sunset takes the app with it.
+
+**Selection is state, not a mark.** The row carries `selected` in its semantics as well as the dot, because a reader user who cannot see the dot would otherwise meet three identical rows. The marker is the bottom navigation's own selected dot rather than a new checkmark path: one drawing vocabulary, per section 10.2.
+
+**More says what else is coming, and that is not filler.** Appearance is currently the only thing in More, and three cards above two thirds of an empty screen reads as unfinished, which rule 14 forbids. The honest fix is not a fourth invented setting. It is to name what this destination will hold, which is D44 applied to a whole screen rather than to one control. It carries `ShellTags.NOT_BUILT` so it cannot survive to release.
+
+**More is not a list yet, deliberately.** A menu of one item is a tap paid for nothing. It becomes a list when there is a second thing in it.
+
+**One consequence worth recording outside this file.** `tools/screenshot.sh` used to read the theme from the device, per D31. With this setting the device is no longer the answer, since the app can be dark on a light phone. The script now reads the app's own stored choice first and consults the device only when that choice is to follow it. It also means both theme sets can be captured without touching anybody's system settings, which is what this screen was partly built to remove.
+
+Composed from Display L, Body M, the Mono eyebrow with its hairline 5.13, cards 5.3, the press treatment 5.14, and the navigation's selected dot. Nothing new was introduced.
+
 ---
 
 ## 9. Accessibility floor

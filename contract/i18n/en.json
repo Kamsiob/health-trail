@@ -195,5 +195,17 @@
   "date.pick.today": "Today",
   "capture.when.exact": "Pick a date",
   "today.digest.not_built": "The summary of what changed since you were last here is still being built. Everything you write down is being kept in the meantime, and none of it is waiting on this.",
-  "today.coach.heading": "Worth doing next"
+  "today.coach.heading": "Worth doing next",
+  "appearance.title": "Appearance",
+  "appearance.subtitle": "How this app looks on this phone. It does not change anything you have written down.",
+  "appearance.group": "Theme",
+  "appearance.system.label": "Follow the phone",
+  "appearance.system.detail": "Light or dark, whichever your phone is set to right now.",
+  "appearance.light.label": "Light",
+  "appearance.light.detail": "Always light, even when the phone is dark.",
+  "appearance.dark.label": "Dark",
+  "appearance.dark.detail": "Always dark, even when the phone is light.",
+  "nav.more.appearance": "Appearance",
+  "more.coming.group": "Also coming here",
+  "more.coming.body": "Exporting your notebook, an About page with the privacy policy, the language this app runs in, and a way to erase everything. None of it is built yet. Everything you write down now will still be here when it is."
 }

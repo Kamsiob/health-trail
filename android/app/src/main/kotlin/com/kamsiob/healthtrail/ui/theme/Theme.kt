@@ -99,6 +99,22 @@ fun HealthTrailTheme(
 }
 
 /**
+ * Whether [choice] means dark right now.
+ *
+ * **[ThemeChoice.FOLLOW_SYSTEM] reads `isSystemInDarkTheme` inside composition
+ * rather than resolving once**, so a phone that flips to dark while the app is
+ * open takes the app with it. Resolving it at the call site would freeze the
+ * app on whatever the system was at launch, which looks like a bug precisely
+ * when somebody is watching for the change.
+ */
+@Composable
+fun ThemeChoice.isDark(): Boolean = when (this) {
+    ThemeChoice.FOLLOW_SYSTEM -> isSystemInDarkTheme()
+    ThemeChoice.LIGHT -> false
+    ThemeChoice.DARK -> true
+}
+
+/**
  * Shorthand accessors, so a screen reads `HealthTrail.colors.blue` rather than
  * reaching into a composition local by hand.
  */

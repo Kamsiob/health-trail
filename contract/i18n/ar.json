@@ -195,5 +195,17 @@
   "date.pick.today": "اليوم",
   "capture.when.exact": "اختر تاريخًا",
   "today.digest.not_built": "ملخص ما تغيّر منذ زيارتك الأخيرة ما زال قيد الإنشاء. كل ما تكتبه يُحفظ في هذه الأثناء، ولا شيء منه ينتظر هذا.",
-  "today.coach.heading": "يستحق أن تفعله بعد ذلك"
+  "today.coach.heading": "يستحق أن تفعله بعد ذلك",
+  "appearance.title": "المظهر",
+  "appearance.subtitle": "شكل هذا التطبيق على هذا الهاتف. لا يغيّر أي شيء كتبته.",
+  "appearance.group": "السمة",
+  "appearance.system.label": "اتباع الهاتف",
+  "appearance.system.detail": "فاتح أو داكن، حسب إعداد هاتفك الحالي.",
+  "appearance.light.label": "فاتح",
+  "appearance.light.detail": "فاتح دائمًا، حتى لو كان الهاتف داكنًا.",
+  "appearance.dark.label": "داكن",
+  "appearance.dark.detail": "داكن دائمًا، حتى لو كان الهاتف فاتحًا.",
+  "nav.more.appearance": "المظهر",
+  "more.coming.group": "سيأتي هنا أيضًا",
+  "more.coming.body": "تصدير دفترك، وصفحة تعريف تحتوي على سياسة الخصوصية، ولغة تشغيل التطبيق، وطريقة لمحو كل شيء. لم يُبنَ أي منها بعد. كل ما تكتبه الآن سيبقى هنا عند اكتمالها."
 }
