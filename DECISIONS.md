@@ -548,6 +548,30 @@ Recorded here rather than only absorbed, because the parts of it that are judgme
 
 **The press step is 55% of the way toward `sand` rather than all of it.** A surface that changed completely would read as selected rather than pressed. Measured on the device at (26,36,43) resting and (30,43,50) pressed in dark theme, which is visible without being a state change.
 
+### D35. The burden line appears four times, not fourteen
+
+**Date:** 2026-08-01. **Decided by:** the session, building issue #41.
+
+`templates/SCHEMA.md` says the burden line is one sentence naming what is hard about a setting, and to use it as supporting text at setup so the person feels understood rather than processed. The first build put it on all fourteen rows.
+
+**Looked at on the phone, that is not warmth, it is a wall of other people's hardship**, on the first real screen after the disclaimer, in front of someone deciding whether to keep going. Six facility settings each ran to three lines and the second heading was below the fold.
+
+**Decided: the burden shows on the settings the catalog's `phase` marks as covering the most caregivers**, which are the ones each group leads with and the ones most people are here for. Everything else carries name and subtitle. That is the schema's own "where it helps" taken at its word rather than as decoration, and it gives each group the same shape the notebook has, where the likeliest option is the fullest row.
+
+The subtitle is never dropped from anything. A nursing home and assisted living are one word apart on this screen and are not the same thing.
+
+### D36. The picker's grouping lives in the catalog, not in the Kotlin
+
+**Date:** 2026-08-01. **Decided by:** the session, building issue #41.
+
+Grouping the fourteen settings needed a group per template. It could have been a `when` in `SituationPickerScreen.kt`, which would have been quicker.
+
+**Put in `templates/data/situations.json` as a `group` field instead**, because the web version will build this screen too and a grouping that exists only in Kotlin is one the two platforms drift on. That is the same reasoning the data contract already applies to the schema and the message catalog.
+
+**What lives in the app is only the order the headings appear in**, which is a presentation decision rather than a fact about a template.
+
+**A setting whose group this version does not recognize still renders**, under no heading, and a test fails loudly when one appears. Both halves matter: a person must never fail to find their own situation because of a data edit, and a stray must never look deliberate.
+
 ---
 
 ## BLOCKED

@@ -46,8 +46,6 @@ The parts that change how you work, compressed:
 2. **Editing a date from the entry itself, forever, with the same control.** Nothing can edit a date yet, because nothing shows an entry yet.
 3. **Rendering.** `EventDateText` exists and is proven by the vectors. Nothing calls it yet, because the trail is not built. **The first screen that shows a date must call it rather than formatting one itself.**
 
-**Then #41**, the situation picker rebuild, which is the last of the three screens the owner named as cluttered.
-
 ## 4. What is done, and how each piece was verified
 
 Verified means checked through the mechanism, not inferred from the code being written.
@@ -68,7 +66,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The notebook's fold behavior | Walked on the Pixel with a hospital stay template: appointments, the trail, documents, and standing instructions forward, money and progress collapsed, which is exactly what that template names |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 63 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
+**The whole instrumented suite: 67 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
 
 ---
 
@@ -81,7 +79,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | ~~#38~~ | **Done.** The contract, the schema, the repository, the renderer, and the vectors |
 | #39 | The date interface, which hides all of the model. Depends on #38 |
 | ~~#40~~ | **Done.** Every tappable surface in the app uses the one treatment in 5.14 |
-| #41 | Rebuild the situation picker. Fourteen options flat is a wall |
+| ~~#41~~ | **Done.** Grouped by where the care is happening, ordered by how common, and visibly skippable |
 | #42 | The remaining two capture inputs, measurement and document |
 | #43 | Retroactive: audit every screen already built against the bar. Opens further issues rather than fixing everything itself |
 | #44 | Accessibility gate, verified with the reader on, the font at maximum, and reduced motion enabled |
@@ -177,7 +175,7 @@ Every screen built without one is composed from existing components under `DESIG
 |---|---|---|---|
 | Disclaimer gate | 2026-07-31, rebuilt same day to the 10.6 bar | #28 | not yet |
 | Essentials first setup | 2026-07-31 | #30 | not yet, **and it does not meet the 10.6 bar. Issue #37** |
-| Situation picker | 2026-07-31 | #32 | not yet, **and it does not meet the 10.6 bar. Issue #41** |
+| Situation picker | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #32 | not yet |
 | Capture form, four kinds | 2026-07-31, rebuilt same day to screen 26 | #34 | not yet |
 | Notebook table of contents | 2026-08-01, rebuilt to the 10.6 bar | #36 | not yet |
 

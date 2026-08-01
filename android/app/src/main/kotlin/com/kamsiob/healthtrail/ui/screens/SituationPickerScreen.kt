@@ -1,10 +1,13 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,19 +16,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -37,8 +42,39 @@ object SituationPickerTags {
     const val ROOT = "situation_picker_root"
     const val LIST = "situation_picker_list"
     const val SKIP = "situation_picker_skip"
+    const val NOT_PERMANENT = "situation_not_permanent"
     fun row(id: String) = "situation_row_$id"
+    fun group(id: String) = "situation_group_$id"
 }
+
+/**
+ * The headings the fourteen settings sit under, in the order they appear.
+ *
+ * **Grouped by where the care is happening**, because that is the one thing
+ * someone standing in a hallway already knows. Fourteen options at one weight
+ * is a wall, and this is the first real screen after the disclaimer: it decides
+ * whether a person keeps going.
+ *
+ * **The membership is in the catalog, not here.** `templates/data/situations.json`
+ * carries a `group` on every template, so the web app groups identically rather
+ * than reimplementing this list and drifting from it. What lives here is only
+ * the order the headings appear in, which is a presentation decision.
+ *
+ * The order is by how many caregivers each covers, which is what the catalog's
+ * `phase` marks. Facility and home lead because that is where most people are.
+ */
+/**
+ * The catalog's `phase` value for the settings covering the most caregivers.
+ * They lead their group and they are the ones that carry a burden line.
+ */
+private const val MOST_COMMON = 1
+
+private val GROUP_ORDER = listOf(
+    "facility" to "situation.group.facility",
+    "home" to "situation.group.home",
+    "treatment" to "situation.group.treatment",
+    "comfort" to "situation.group.comfort",
+)
 
 /**
  * Choosing the care setting, which is what configures the notebook.
@@ -116,13 +152,71 @@ fun SituationPickerScreen(
                     .weight(1f)
                     .testTag(SituationPickerTags.LIST),
             ) {
-                items(situations.all, key = { it.id }) { situation ->
-                    SituationRow(situation = situation, onClick = { onChoose(situation) })
-                    Spacer(Modifier.height(Space.cardGap))
+                GROUP_ORDER.forEach { (id, labelKey) ->
+                    // Sorted by how many caregivers each setting covers, so the
+                    // common ones are the first read inside every heading.
+                    val inGroup = situations.all
+                        .filter { it.group == id }
+                        .sortedBy { it.phase }
+                    if (inGroup.isEmpty()) return@forEach
+
+                    item(key = "group_$id") {
+                        Spacer(Modifier.height(Space.sectionGap))
+                        GroupHeader(
+                            labelKey = labelKey,
+                            modifier = Modifier.testTag(SituationPickerTags.group(id)),
+                        )
+                        Spacer(Modifier.height(Space.headerGap))
+                    }
+                    inGroup.forEach { situation ->
+                        item(key = situation.id) {
+                            SituationRow(
+                                situation = situation,
+                                onClick = { onChoose(situation) },
+                            )
+                            Spacer(Modifier.height(Space.cardGap))
+                        }
+                    }
                 }
+
+                // A setting the catalog groups under a heading this version
+                // does not know about is still shown, under no heading, rather
+                // than disappearing. A person must never be unable to find
+                // their own situation because of a data edit.
+                val ungrouped = situations.all.filter { s ->
+                    GROUP_ORDER.none { it.first == s.group }
+                }.sortedBy { it.phase }
+                if (ungrouped.isNotEmpty()) {
+                    item(key = "ungrouped_gap") { Spacer(Modifier.height(Space.sectionGap)) }
+                    ungrouped.forEach { situation ->
+                        item(key = situation.id) {
+                            SituationRow(
+                                situation = situation,
+                                onClick = { onChoose(situation) },
+                            )
+                            Spacer(Modifier.height(Space.cardGap))
+                        }
+                    }
+                }
+
+                item { Spacer(Modifier.height(Space.s)) }
             }
 
             Spacer(Modifier.height(Space.sm))
+
+            // **Said once, here, where the decision is being made.** The whole
+            // weight of this screen is a person in a corridor worrying they
+            // will pick wrong, and this sentence is what removes it. It sits
+            // above the skip action rather than buried in the subtitle,
+            // because that is where someone hesitating is looking.
+            Text(
+                text = strings["situation.not_permanent"],
+                style = HealthTrail.type.bodyS,
+                color = colors.ink2,
+                modifier = Modifier.testTag(SituationPickerTags.NOT_PERMANENT),
+            )
+
+            Spacer(Modifier.height(Space.s))
 
             TextAction(
                 label = strings["situation.skip"],
@@ -138,10 +232,23 @@ fun SituationPickerScreen(
 /**
  * One setting, as a card.
  *
- * Carries the name, the subtitle that tells two similar settings apart, and the
- * burden line, which is one sentence naming what is hard about this setting. The
- * burden is there so the person feels understood rather than processed, which is
- * what `templates/SCHEMA.md` says it is for.
+ * **Name and subtitle always.** The subtitle exists specifically so two similar
+ * settings can be told apart, and a name alone forces a guess between a nursing
+ * home and assisted living, which is a guess this audience should not have to
+ * make.
+ *
+ * **The burden line, on the settings that lead their group only.** It is one
+ * sentence naming what is hard about a setting, written so the person feels
+ * understood rather than processed. Read once it does that. Read fourteen times
+ * in a row it is a wall of other people's hardship, on the screen that decides
+ * whether someone in a corridor keeps going. So it appears on the settings the
+ * catalog's `phase` marks as covering the most caregivers, which are the ones
+ * most people are here for and the ones each group leads with. That is
+ * `templates/SCHEMA.md`'s "use it as supporting text where it helps", taken at
+ * its word.
+ *
+ * It also gives the list a hierarchy inside each group, the same shape the
+ * notebook uses: the likeliest option is the fullest row.
  *
  * No chevron. A chevron implies going somewhere to look at something, and
  * tapping here chooses.
@@ -186,7 +293,7 @@ private fun SituationRow(
                 color = colors.ink2,
             )
         }
-        if (situation.burden.isNotBlank()) {
+        if (situation.burden.isNotBlank() && situation.phase == MOST_COMMON) {
             Spacer(Modifier.height(Space.s))
             Text(
                 text = situation.burden,
