@@ -102,7 +102,11 @@ Not "did the export succeed". Field by field equality after export, wipe, and im
 - every attachment present and hash verified
 - the schema version
 
-It runs on a fresh install, on an install with existing data, and on a device with less storage than the source. It runs on an emulator, never on the owner's device.
+It runs on a fresh install, on an install with existing data, and on a device with less storage than the source.
+
+**It runs in continuous integration and on the connected phone.** An earlier version of this line said "on an emulator, never on the owner's device", which is stale: the emulator was dropped from this project in D21, D23, and B4, and B4 corrected the reasoning behind it. Data survival is proven by this round trip running on every push, which is repeatable, rather than by preserving one phone's installation, which is a sample of one nobody can reproduce.
+
+On the phone the standing rule applies, and it is a checklist step rather than a reason to avoid anything: `connectedAndroidTest` uninstalls the application and takes its data with it, so anything worth keeping is exported through the app first and reimported after.
 
 **No feature is finished until it survives that round trip.**
 
