@@ -430,6 +430,68 @@ class Repository private constructor(
     /** Styles whose value is words rather than a number, per the preset catalog. */
     private val TEXT_STYLES = setOf("categorical", "observational", "event_log", "photo_log")
 
+    // -- deleting, which is always a tombstone ------------------------------
+
+    /**
+     * Marks one row deleted.
+     *
+     * **Never a DELETE.** The data contract's second named impossibility is a
+     * schema that removes rows: with the row gone there is nothing left to tell
+     * another device it was deleted, so the peer resurrects it on the next sync
+     * and the deletion appears to undo itself, forever. Sets `deleted_at`,
+     * bumps `rev`, and lets the change log trigger record it in the same
+     * transaction.
+     *
+     * Takes a [Section] rather than a table name for the same reason [count]
+     * does: a caller cannot reach a table by passing a string.
+     *
+     * **The row stays readable to the two operations the contract allows to see
+     * it**, the full data wipe and the tombstone purge, and to nothing else.
+     * Every read in this class goes through a `live_` view, so from the moment
+     * this returns the row is gone from the app's point of view.
+     */
+    suspend fun delete(section: Section, rowId: String) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE ${section.table} SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ? AND deleted_at IS NULL",
+            arrayOf<Any?>(
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                rowId,
+            ),
+        )
+    }
+
+    /**
+     * Whether a row is still physically present, tombstone and all.
+     *
+     * **For tests only, and named so nobody reaches for it by accident.** The
+     * app has no business asking this: every screen reads a live view and a
+     * deleted row is gone from its point of view. What a test needs to prove is
+     * the opposite, that the row survived the delete, because a row that was
+     * removed leaves nothing to tell another device it was deleted.
+     */
+    suspend fun rowExistsForTest(table: String, rowId: String): Boolean =
+        withContext(Dispatchers.IO) {
+            // allow-base-table: proving a tombstoned row still exists. Reading
+            // the live view here would assert the opposite of the point.
+            db().database.rawQuery(
+                "SELECT COUNT(*) FROM $table WHERE id = ?",
+                arrayOf(rowId),
+            ).use { it.moveToFirst() && it.getInt(0) == 1 }
+        }
+
+    /** The revision of one row, for tests that assert a write did or did not happen. */
+    suspend fun revisionForTest(table: String, rowId: String): Int =
+        withContext(Dispatchers.IO) {
+            // allow-base-table: a deleted row has no live view to read from,
+            // and its revision is exactly what these tests are about.
+            db().database.rawQuery(
+                "SELECT rev FROM $table WHERE id = ?",
+                arrayOf(rowId),
+            ).use { if (it.moveToFirst()) it.getInt(0) else -1 }
+        }
+
     // -- the Unfiled tray -------------------------------------------------
 
     /**
@@ -650,6 +712,17 @@ class Repository private constructor(
         ASK_NEXT_TIME("live_question"),
         EMERGENCY_CARD("live_emergency_card"),
         PROJECTS("live_project"),
+        ;
+
+        /**
+         * The base table behind the view, derived rather than listed a second
+         * time so the two cannot drift.
+         *
+         * Only [delete] uses it, because a write has to name the table: there
+         * is nothing to update through a view. Everything that reads uses
+         * [view] and therefore cannot see a tombstone.
+         */
+        internal val table: String get() = view.removePrefix("live_")
     }
 
     companion object {
