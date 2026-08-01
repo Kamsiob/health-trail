@@ -205,6 +205,9 @@ class DatabaseTest {
         try {
             net.zetetic.database.sqlcipher.SQLiteDatabase.openOrCreateDatabase(
                 file, "not the right passphrase", null, null,
+            // allow-base-table: proving the file will not open at all, so the
+            // query must reach the storage layer rather than a view. It is
+            // expected to throw before a single row is read.
             ).use { it.rawQuery("SELECT COUNT(*) FROM subject", null).use { c -> c.moveToFirst() } }
         } catch (_: Exception) {
             opened = false

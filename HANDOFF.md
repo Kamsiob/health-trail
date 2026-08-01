@@ -65,6 +65,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | Four locale catalogs, ICU MessageFormat | `check_i18n.py` on every push. `CopyIntegrityTest` on the phone proves no locale silently falls back to English for the disclaimer |
 | Contrast in both themes | `check_contrast.py` measures 80 pairs against the actual token values on every push |
 | Content compliance | `check_copy.py`, `check_templates.py`, `check_contract_isolation.py`, `check_self_contained.py` |
+| Tombstones cannot leak | `check_live_views.py` fails any read of a base table outside a live view, in app and test sources alike. Proven by three deliberate breakages: a leak inside the repository, a leak on a screen, and an allowance with no reason |
 | Every screen built so far | Instrumented, plus built, installed, opened, and looked at on the Pixel |
 | The notebook's fold behavior | Walked on the Pixel with a hospital stay template: appointments, the trail, documents, and standing instructions forward, money and progress collapsed, which is exactly what that template names |
 | Dynamic type at font scale 2.0 | Every built screen looked at on the phone with the system font at maximum. Two defects found and fixed, both invisible at 1.0. The setting was restored afterward |
@@ -77,7 +78,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 93 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All seven implemented compliance checks pass.
+**The whole instrumented suite: 93 tests, 0 failures**, run on the connected Pixel 10 Pro XL. **30 JVM unit tests, 0 failures.** All eight implemented compliance checks pass.
 
 **A pattern worth carrying forward.** Almost every defect this run found came from putting the built thing in a hand and changing one condition: the font at maximum, the keyboard up, the language set to Arabic, or simply looking at a screen that had already passed its tests. None of them were visible in the code, and several had passed a review. The tests are what keep them fixed; they are not what found them.
 
@@ -85,7 +86,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 ## 5. Remaining work inventory, in order
 
-**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #36 the notebook, #37 setup, #38 the date model, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray, #58 the subject scoped counts. #12 is closed for Latin and Arabic and open only for Chinese.
+**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #36 the notebook, #37 setup, #38 the date model, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray, #58 the subject scoped counts, and #8 in part. #12 is closed for Latin and Arabic and open only for Chinese.
 
 **In order. The first three are the ones to take.**
 
@@ -97,7 +98,6 @@ Verified means checked through the mechanism, not inferred from the code being w
 | #9 | The export container | Attachment storage, the round trip, and the only proof data survives an update. Now also has to round trip the EDTF column byte for byte |
 | #17 | Deterministic fixture generator | Nothing else makes a persona run mean anything, and the schema has settled |
 | #7 | The change log append is transactional through Kotlin | The schema proves it. This proves it through SQLCipher |
-| #8 | A check that makes querying a base table structurally hard | The repository layer is correct. What is missing is what stops the next person bypassing it |
 | #14 | Encrypted database, remaining criteria | The migration mechanism and the key loss screen |
 | #15 | Golden vectors | `dates.json` exists and runs. The engine vectors need the engine |
 | #46 | No dead ends, links both ways | Needs screens that can link to each other, so it follows the trail |
@@ -165,7 +165,7 @@ The one thing still waiting rather than blocked: **the light theme screenshots**
 
 **Everything else:** Gradle 9.6.1, AGP 9.3.1, Kotlin 2.4.10, Compose BOM 2026.06.01, JDK 21, compileSdk 37, targetSdk 36, minSdk 26. minSdk 26 is why `java.time` is available to `Edtf.kt` without desugaring. Android's `execSQL` refuses any statement that returns rows and `PRAGMA journal_mode` returns one, so `ContractAssets.splitStatements` handles the splitting including trigger bodies and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
-**Verification.** `tools/verify.sh` is the honest runner: it captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. `python3 tools/checks/run_all.py` runs the seven content and contract checks alone. **Never chain a commit on a grep of output.**
+**Verification.** `tools/verify.sh` is the honest runner: it captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. `python3 tools/checks/run_all.py` runs the eight content and contract checks alone. **Never chain a commit on a grep of output.**
 
 ---
 
