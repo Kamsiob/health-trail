@@ -220,6 +220,11 @@ dependencies {
     implementation(libs.androidx.sqlite.framework)
     implementation(libs.sqlcipher)
 
+    // Argon2id for the export's key derivation, and nothing else. The
+    // format names it and PBKDF2 is not an acceptable substitute, because the
+    // export file is the only recovery path from key loss. D24 and D51.
+    implementation(libs.bouncycastle)
+
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.kotlinx.coroutines.android)
 
