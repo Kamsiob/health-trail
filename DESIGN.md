@@ -593,6 +593,20 @@ Composed from Display L, Body M, Body S, the text field from section 5.9, the ch
 
 Composed from Display L, Body M, Display S, Label, the Mono count style, cards from 5.3, the icon tile from 5.12, the group header from 5.13, and the press state from 5.14. Four of the twelve icons had no drawing anywhere in the reference and were composed on the same 24 unit grid at the same weight, listed in the source. Tracked on issue #36.
 
+**Today, the empty state.** A coached three-step list, first item the Emergency Card.
+
+**Built because persona P1 required it and was not getting it.** P1 is the person in a corridor on the day of an admission, and one of the five things that must be true for them is exactly this. It was the not-built screen, which is the wrong thing to hand somebody at the moment they are most likely to put the phone away.
+
+**The three steps are guidance, not controls.** Two of them lead to screens that do not exist yet, and offering those as buttons would be the dead end D44 removed from the capture sheet. The one thing a person can act on now, capture, is already the gold button on every screen, so the list reads as what to do next rather than three disabled offers.
+
+**The numbering is allowed here**, and section 1 bans numbered markers only where the content is not genuinely a sequence. Filling in the emergency card first is the entire point of the list.
+
+**A notebook with something in it says the digest is still being built, and says nothing is waiting on it.** The second half matters more: a person reading that a summary is coming needs to know in the same breath that their records are kept regardless, or the sentence reads as a reason to stop writing things down. That branch carries `ShellTags.NOT_BUILT` so it cannot survive to release.
+
+`TodayScreenTest` asserts the empty state never scolds and never keeps score, which is rule 13 checked rather than remembered.
+
+Composed from Display L, Display S, Body L, Body M, the Mono style, and cards 5.3. Tracked on issue #78.
+
 **Adding a measurement.** The fifth of the six capture inputs, and the one with the sharpest content rule attached to it.
 
 **It does not fit the shared form, which is why it has its own screen.** The other four record that something happened and what was said. This one records a value, and a value needs to know what is being measured before anything else on the screen means anything.

@@ -41,6 +41,7 @@ import com.kamsiob.healthtrail.ui.screens.MeasurementDraft
 import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
+import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -152,7 +153,12 @@ fun NotebookShell(repository: Repository) {
                     // These arrive in their own increments. Until then each
                     // says plainly what it is rather than showing an empty
                     // frame, because a blank area reads as broken.
-                    Destination.TODAY -> NotBuiltYet(strings["nav.today"])
+                    // Today's empty state is a finished screen, per #78 and
+                    // persona P1. What is not built is the digest, and the
+                    // screen says so itself rather than standing in for it.
+                    Destination.TODAY -> TodayScreen(
+                        isEmpty = (counts?.sumOf { it.count } ?: 0) == 0,
+                    )
                     Destination.PROJECTS -> NotBuiltYet(strings["nav.projects"])
                     Destination.MORE -> NotBuiltYet(strings["nav.more"])
                 }

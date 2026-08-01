@@ -193,5 +193,6 @@
   "date.pick.year.down": "السنة السابقة",
   "date.pick.year.up": "السنة التالية",
   "date.pick.today": "اليوم",
-  "capture.when.exact": "اختر تاريخًا"
+  "capture.when.exact": "اختر تاريخًا",
+  "today.digest.not_built": "ملخص ما تغيّر منذ زيارتك الأخيرة ما زال قيد الإنشاء. كل ما تكتبه يُحفظ في هذه الأثناء، ولا شيء منه ينتظر هذا."
 }
