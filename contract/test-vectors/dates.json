@@ -1,0 +1,154 @@
+{
+  "_meta": {
+    "vector": "dates",
+    "covers": "contract/DATA-CONTRACT.md section 3.1, every supported precision",
+    "why": "Every other vector's output contains a date, so this one runs first. The failure it exists to catch is a renderer that turns 2024-11 into November 1, 2024, which is the app claiming a day the person never gave. Both platforms run this file.",
+    "zone": "America/New_York",
+    "note": "start and end are UTC milliseconds, resolved in the zone above. A null pair means the date is genuinely unknown and cannot be placed on a line. Renderings are not reviewed by a native speaker, the same caveat the locale catalogs carry."
+  },
+  "cases": [
+    {
+      "id": "moment",
+      "edtf": "2024-11-18T14:40",
+      "precision": "MOMENT",
+      "start": 1731958800000,
+      "end": 1731958800000,
+      "render": {
+        "en": "November 18, 2024 at 2:40 PM",
+        "es": "18 de noviembre de 2024 a las 14:40",
+        "ar": "18 نوفمبر 2024 في 2:40 م",
+        "zh": "2024年11月18日 14:40"
+      }
+    },
+    {
+      "id": "day",
+      "edtf": "2024-11-18",
+      "precision": "DAY",
+      "start": 1731906000000,
+      "end": 1731992399999,
+      "render": {
+        "en": "November 18, 2024",
+        "es": "18 de noviembre de 2024",
+        "ar": "18 نوفمبر 2024",
+        "zh": "2024年11月18日"
+      }
+    },
+    {
+      "id": "week",
+      "edtf": "2024-11-18/2024-11-24",
+      "precision": "WEEK",
+      "start": 1731906000000,
+      "end": 1732510799999,
+      "render": {
+        "en": "The week of November 18",
+        "es": "La semana del 18 de noviembre",
+        "ar": "أسبوع 18 نوفمبر",
+        "zh": "11月18日那一周"
+      }
+    },
+    {
+      "id": "month",
+      "edtf": "2024-11",
+      "precision": "MONTH",
+      "start": 1730433600000,
+      "end": 1733029199999,
+      "render": {
+        "en": "Sometime in November 2024",
+        "es": "En algún momento de noviembre de 2024",
+        "ar": "في وقت ما من نوفمبر 2024",
+        "zh": "2024年11月的某个时候"
+      }
+    },
+    {
+      "id": "season_autumn",
+      "edtf": "2024-23",
+      "precision": "SEASON",
+      "start": 1725163200000,
+      "end": 1733029199999,
+      "render": {
+        "en": "Fall 2024",
+        "es": "Otoño de 2024",
+        "ar": "خريف 2024",
+        "zh": "2024年秋"
+      }
+    },
+    {
+      "id": "year",
+      "edtf": "2024",
+      "precision": "YEAR",
+      "start": 1704085200000,
+      "end": 1735707599999,
+      "render": {
+        "en": "Sometime in 2024",
+        "es": "En algún momento de 2024",
+        "ar": "في وقت ما من 2024",
+        "zh": "2024年的某个时候"
+      }
+    },
+    {
+      "id": "range",
+      "edtf": "2024-11/2024-12",
+      "precision": "RANGE",
+      "start": 1730433600000,
+      "end": 1735707599999,
+      "render": {
+        "en": "Between November 2024 and December 2024",
+        "es": "Entre noviembre de 2024 y diciembre de 2024",
+        "ar": "بين نوفمبر 2024 وديسمبر 2024",
+        "zh": "2024年11月至2024年12月之间"
+      }
+    },
+    {
+      "id": "unknown",
+      "edtf": "XXXX-XX-XX",
+      "precision": "UNKNOWN",
+      "start": null,
+      "end": null,
+      "render": {
+        "en": "Date not known",
+        "es": "Fecha desconocida",
+        "ar": "التاريخ غير معروف",
+        "zh": "日期不详"
+      }
+    },
+    {
+      "id": "month_uncertain",
+      "edtf": "2024-11?",
+      "precision": "MONTH",
+      "start": 1730433600000,
+      "end": 1733029199999,
+      "render": {
+        "en": "Sometime in November 2024, not sure",
+        "es": "En algún momento de noviembre de 2024, sin seguridad",
+        "ar": "في وقت ما من نوفمبر 2024، غير مؤكد",
+        "zh": "2024年11月的某个时候，不确定"
+      }
+    },
+    {
+      "id": "day_approximate",
+      "edtf": "2024-11-18~",
+      "precision": "DAY",
+      "start": 1731906000000,
+      "end": 1731992399999,
+      "render": {
+        "en": "November 18, 2024, give or take",
+        "es": "18 de noviembre de 2024, más o menos",
+        "ar": "18 نوفمبر 2024، تقريبًا",
+        "zh": "2024年11月18日，大致如此"
+      }
+    },
+    {
+      "id": "year_both",
+      "edtf": "2024%",
+      "precision": "YEAR",
+      "start": 1704085200000,
+      "end": 1735707599999,
+      "render": {
+        "en": "Sometime in 2024, give or take, and not sure",
+        "es": "En algún momento de 2024, más o menos, y sin seguridad",
+        "ar": "في وقت ما من 2024، تقريبًا، وغير مؤكد",
+        "zh": "2024年的某个时候，大致如此，且不确定"
+      }
+    }
+  ]
+}

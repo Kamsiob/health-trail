@@ -4,7 +4,7 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-08-01, on the branch `feat/36-notebook-toc`, in the session where the owner sent the standing quality bar.
+**Last rewritten:** 2026-08-01, on the branch `feat/38-edtf-dates`, in the session where the owner sent the standing quality bar.
 
 If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
 
@@ -40,24 +40,15 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
-**Land pull request #49.** It was failing one CI step, "HANDOFF.md is current to within one increment", because this file had not been rewritten. Rewriting it is what you are reading. Push, re-trigger, merge.
+**The date model, issue #38, is built and the schema is converted.** What remains on it is the interface, which is issue #39, and it is the precise next action:
 
-**Then the date model, issue #38, which is already begun and is stashed.** `git stash list` holds one entry on this branch carrying:
+1. **The capture form's date control.** It currently offers four chips: today, yesterday, this week, not sure. The bar requires **an exact date and time always available as a peer of the chips, not behind them**, and natural expression for a month or a season. `DESIGN.md` section 10.9.
+2. **Editing a date from the entry itself, forever, with the same control.** Nothing can edit a date yet, because nothing shows an entry yet.
+3. **Rendering.** `EventDateText` exists and is proven by the vectors. Nothing calls it yet, because the trail is not built. **The first screen that shows a date must call it rather than formatting one itself.**
 
-- `contract/DATA-CONTRACT.md` **section 3.1, written and complete.** The columns, the canonical EDTF form, the derived range, the local wall-clock handling, every supported precision with its canonical string, the round trip requirement, and the golden vector requirement.
-- `android/.../time/Edtf.kt`, a complete parser, builder, and resolver. **20 JVM tests pass**, `EdtfTest`.
+**Then #40**, the press state sweep, which is small and mechanical: `DESIGN.md` 5.14 and `ui/components/Press.kt` exist and only the notebook rows use them. `FilledButton` passes `indication = null` and has no press state at all.
 
-What remains on #38, in order:
-
-1. **`contract/schema.sql`.** Replace `occurred_at` plus `occurred_precision` with the four column group in contract section 3.1, on every table that records when something happened: `entry`, `measurement`, `medication_event`, `milestone`, `cost_entry`, `instruction_violation`, and the `started`/`ended` pairs on `chapter` and `care_thread`.
-2. **`tools/checks/check_schema.py`** asserts the group exists wherever an event date does, and that no bare `occurred_at` survives.
-3. **`Repository.createEntry`** takes an `Edtf.Date` rather than a millisecond value and a precision enum. `Repository.WhenKnown` goes away.
-4. **The renderer**, which is the half that keeps the promise: catalog keys for each precision, so `2024-11` renders as "Sometime in November 2024" and never as "November 1, 2024". Four locales. This is where issue #39 begins.
-5. **Golden vectors** in `contract/test-vectors`, a case per row of the contract's precision table with its string, its range, and its rendering in all four locales. Ties to #15.
-
-**Then #40**, the press state sweep, which is small and mechanical: `DESIGN.md` 5.14 and `ui/components/Press.kt` exist and only the notebook rows use them. `FilledButton` currently passes `indication = null` and has no press state at all.
-
----
+**Then #41**, the situation picker rebuild, which is the last of the three screens the owner named as cluttered.
 
 ## 4. What is done, and how each piece was verified
 
@@ -68,6 +59,8 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The schema, 34 user data tables | `tools/checks/check_schema.py` runs it into a real SQLite database on every push and asserts the six contract columns, a `live_*` view, both change log triggers, no AUTOINCREMENT, and that a failing change log write rolls the data write back |
 | Locally generated ids | `IdsTest`, a JVM unit test. UUIDv7 with same millisecond sequence bits and backward clock protection |
 | Event dates, the EDTF model | `EdtfTest`, 20 JVM tests. Round trips every supported precision, proves a month never collapses to its first day, proves uncertainty never widens a range, proves unknown survives |
+| Event dates, as they read | `DateVectorTest` on the phone runs `contract/test-vectors/dates.json`, the shared file, and asserts every precision's string, range, and rendering in all four locales. It also asserts directly that nothing coarser than a day ever renders as its first day |
+| The date columns | `check_schema.py` asserts every event date is a full four column group and that no bare `<name>_at` survives on a world event. Both failures were verified by breaking the schema on purpose and watching the check catch them |
 | Encrypted database, SQLCipher, key in the Keystore | `DatabaseTest` on the connected phone |
 | The repository layer | Every read goes through a `live_*` view. Proven by the instrumented suite writing and counting through it |
 | Four locale catalogs, ICU MessageFormat | `check_i18n.py` on every push. `CopyIntegrityTest` on the phone proves no locale silently falls back to English for the disclaimer |
@@ -77,7 +70,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The notebook's fold behavior | Walked on the Pixel with a hospital stay template: appointments, the trail, documents, and standing instructions forward, money and progress collapsed, which is exactly what that template names |
 | The press state | Measured on the device. A row steps from (26,36,43) resting to (30,43,50) under a finger |
 
-**The whole instrumented suite: 57 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
+**The whole instrumented suite: 63 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
 
 ---
 
@@ -87,7 +80,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 | Issue | What |
 |---|---|
-| #38 | The EDTF date model in the contract, the schema, the export, and the vectors. **Begun, stashed, see section 3** |
+| ~~#38~~ | **Done.** The contract, the schema, the repository, the renderer, and the vectors |
 | #39 | The date interface, which hides all of the model. Depends on #38 |
 | #40 | Retroactive: a visible press state on every tappable thing already built. Small, mechanical |
 | #41 | Rebuild the situation picker. Fourteen options flat is a wall |
@@ -112,7 +105,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | #8 | A static check that makes querying a base table structurally hard | The repository layer is built and correct. What is missing is the check that stops the next person bypassing it |
 | #7 | Prove the change log append is transactional through the Kotlin path | The schema already proves it. This proves it through SQLCipher and Kotlin |
 | #13 | Four locale catalogs with right to left verified on a screen | Arabic has not been looked at on the device, which is the unmet half |
-| #15 | Golden test vectors both platforms run against | **Now also carries the date vectors from #38** |
+| #15 | Golden test vectors both platforms run against | **The first vector, `dates.json`, exists and runs.** The engine vectors do not |
 | #14 | Encrypted database, remaining criteria | The migration mechanism and the key loss screen are the unmet parts |
 | #12 | Fonts covering all four scripts | Independent. **Blocks the light theme and Arabic screenshot recaptures on every design review issue** |
 | #9 | Export container, manifest, encryption, round trip equality | **Now also has to round trip the EDTF column byte for byte** |
@@ -223,4 +216,4 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 
 ## 13. Uncommitted work
 
-**One stash on `feat/36-notebook-toc`**, described in section 3: the contract's date model section and `Edtf.kt` with its 20 passing tests. It was stashed only so the notebook pull request could be made green on its own. `git stash pop` it and carry on with #38.
+**None.** Everything described here is committed on `feat/38-edtf-dates`.

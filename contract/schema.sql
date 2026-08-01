@@ -199,7 +199,10 @@ CREATE TABLE IF NOT EXISTS subject (
   display_name  TEXT    NOT NULL,
   -- What the person calls them, which is often not the legal name.
   relationship  TEXT,
-  date_of_birth TEXT,
+  born_edtf  TEXT,
+  born_zone  TEXT,
+  born_start INTEGER,
+  born_end   INTEGER,
   -- Which situation template configured this notebook. Kept so the app can
   -- tell what was applied without implying it may reapply and clobber edits.
   situation_template_id TEXT,
@@ -225,8 +228,14 @@ CREATE TABLE IF NOT EXISTS chapter (
   name          TEXT    NOT NULL,
   kind          TEXT,
   organization_id TEXT REFERENCES organization (id),
-  started_at    INTEGER,
-  ended_at      INTEGER,
+  started_edtf  TEXT,
+  started_zone  TEXT,
+  started_start INTEGER,
+  started_end   INTEGER,
+  ended_edtf  TEXT,
+  ended_zone  TEXT,
+  ended_start INTEGER,
+  ended_end   INTEGER,
   -- Why the stay began, in the person's own words.
   reason        TEXT,
   -- Where they came from, so a transfer reads as a transfer rather than as two
@@ -237,7 +246,7 @@ CREATE TABLE IF NOT EXISTS chapter (
   sort_index    INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE INDEX IF NOT EXISTS ix_chapter_subject ON chapter (subject_id, started_at);
+CREATE INDEX IF NOT EXISTS ix_chapter_subject ON chapter (subject_id, started_start);
 
 -- Parallel streams that run at the same time: physical therapy, occupational
 -- therapy, speech, nursing, wound care. Threads answer "what is ongoing".
@@ -261,8 +270,14 @@ CREATE TABLE IF NOT EXISTS care_thread (
   -- dark theme substitution happens in the theme and a stored color can never
   -- fail contrast.
   color_index   INTEGER NOT NULL DEFAULT 0,
-  started_at    INTEGER,
-  ended_at      INTEGER,
+  started_edtf  TEXT,
+  started_zone  TEXT,
+  started_start INTEGER,
+  started_end   INTEGER,
+  ended_edtf  TEXT,
+  ended_zone  TEXT,
+  ended_start INTEGER,
+  ended_end   INTEGER,
   end_note      TEXT,
   notes         TEXT,
   sort_index    INTEGER NOT NULL DEFAULT 0
@@ -344,8 +359,8 @@ CREATE INDEX IF NOT EXISTS ix_person_chapter_chapter ON person_chapter (chapter_
 --
 -- Capture forgives, and that is a functional requirement rather than a nicety.
 -- Every field here except kind and the bookkeeping columns is nullable. A
--- half remembered note is a valid note. Dates can be rough, which is what
--- occurred_precision carries.
+-- half remembered note is a valid note. Dates can be rough, which is what the
+-- occurred_* group carries, per data contract section 3.1.
 CREATE TABLE IF NOT EXISTS entry (
   id            TEXT    NOT NULL PRIMARY KEY,
   created_at    INTEGER NOT NULL,
@@ -360,17 +375,15 @@ CREATE TABLE IF NOT EXISTS entry (
                   'question', 'document', 'note', 'transfer', 'milestone'
                 )),
 
-  -- When it happened, as distinct from when it was written down. Null means
-  -- the person genuinely did not know, which is a real answer and is rendered
-  -- as one rather than being guessed at.
-  occurred_at   INTEGER,
-  -- How precisely occurred_at is meant. 'exact' down to the minute, 'day',
-  -- 'week' for "sometime this week", 'month', and 'unknown'. The trail renders
-  -- an imprecise date as imprecise rather than pretending to a precision the
-  -- person did not have.
-  occurred_precision TEXT NOT NULL DEFAULT 'day' CHECK (occurred_precision IN (
-                  'exact', 'day', 'week', 'month', 'unknown'
-                )),
+  -- When it happened, as distinct from when it was written down. The EDTF
+  -- string is the truth and says exactly as much as the person did: '2024'
+  -- for a year, '2024-11' for a month, 'XXXX-XX-XX' for genuinely unknown.
+  -- An entry always happened, so this is never null. The range is derived
+  -- and is null only when the date is unknown. Data contract section 3.1.
+  occurred_edtf  TEXT NOT NULL DEFAULT 'XXXX-XX-XX',
+  occurred_zone  TEXT,
+  occurred_start INTEGER,
+  occurred_end   INTEGER,
 
   title         TEXT,
   body          TEXT,
@@ -387,10 +400,10 @@ CREATE TABLE IF NOT EXISTS entry (
   pinned_at     INTEGER
 );
 
-CREATE INDEX IF NOT EXISTS ix_entry_trail    ON entry (subject_id, occurred_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS ix_entry_kind     ON entry (subject_id, kind, occurred_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS ix_entry_chapter  ON entry (chapter_id, occurred_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS ix_entry_incident ON entry (incident_id, occurred_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS ix_entry_trail    ON entry (subject_id, occurred_start DESC) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS ix_entry_kind     ON entry (subject_id, kind, occurred_start DESC) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS ix_entry_chapter  ON entry (chapter_id, occurred_start DESC) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS ix_entry_incident ON entry (incident_id, occurred_start) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS ix_entry_unfiled  ON entry (subject_id) WHERE is_unfiled = 1 AND deleted_at IS NULL;
 
 -- Which threads an entry belongs to. An entry can carry several: a call about
@@ -460,8 +473,14 @@ CREATE TABLE IF NOT EXISTS visit_detail (
   rev           INTEGER NOT NULL DEFAULT 1,
 
   entry_id      TEXT    NOT NULL REFERENCES entry (id),
-  arrived_at    INTEGER,
-  left_at       INTEGER,
+  arrived_edtf  TEXT,
+  arrived_zone  TEXT,
+  arrived_start INTEGER,
+  arrived_end   INTEGER,
+  left_edtf  TEXT,
+  left_zone  TEXT,
+  left_start INTEGER,
+  left_end   INTEGER,
   location_note TEXT
 );
 
@@ -486,7 +505,10 @@ CREATE TABLE IF NOT EXISTS incident (
   title         TEXT    NOT NULL,
   description   TEXT,
   chapter_id    TEXT REFERENCES chapter (id),
-  reported_at   INTEGER,
+  reported_edtf  TEXT,
+  reported_zone  TEXT,
+  reported_start INTEGER,
+  reported_end   INTEGER,
   resolved_at   INTEGER,
   resolution_note TEXT,
   -- Recorded so "incidents over time" can count, and only count. What the
@@ -494,7 +516,7 @@ CREATE TABLE IF NOT EXISTS incident (
   shift_note    TEXT
 );
 
-CREATE INDEX IF NOT EXISTS ix_incident_subject ON incident (subject_id, reported_at DESC) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS ix_incident_subject ON incident (subject_id, reported_start DESC) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS ix_incident_open    ON incident (subject_id) WHERE resolved_at IS NULL AND deleted_at IS NULL;
 
 -- A medication. This is a record, not a tracker. The app does not remind, does
@@ -516,8 +538,14 @@ CREATE TABLE IF NOT EXISTS medication (
   dose_text     TEXT,
   purpose_text  TEXT,
   prescriber_person_id TEXT REFERENCES person (id),
-  started_at    INTEGER,
-  stopped_at    INTEGER,
+  started_edtf  TEXT,
+  started_zone  TEXT,
+  started_start INTEGER,
+  started_end   INTEGER,
+  stopped_edtf  TEXT,
+  stopped_zone  TEXT,
+  stopped_start INTEGER,
+  stopped_end   INTEGER,
   stop_reason   TEXT,
   notes         TEXT,
   -- Shown on the emergency card, which is designed to be handed to a paramedic.
@@ -543,12 +571,15 @@ CREATE TABLE IF NOT EXISTS medication_event (
   kind          TEXT    NOT NULL CHECK (kind IN (
                   'started', 'stopped', 'dose_changed', 'held', 'resumed', 'noted'
                 )),
-  occurred_at   INTEGER,
+  occurred_edtf  TEXT,
+  occurred_zone  TEXT,
+  occurred_start INTEGER,
+  occurred_end   INTEGER,
   dose_text     TEXT,
   note          TEXT
 );
 
-CREATE INDEX IF NOT EXISTS ix_medication_event_med ON medication_event (medication_id, occurred_at);
+CREATE INDEX IF NOT EXISTS ix_medication_event_med ON medication_event (medication_id, occurred_start);
 
 -- A concern flag stays attached to a medication forever. It is not a warning
 -- and it is not a judgment: it is the person recording that something was
@@ -562,7 +593,10 @@ CREATE TABLE IF NOT EXISTS medication_flag (
   rev           INTEGER NOT NULL DEFAULT 1,
 
   medication_id TEXT    NOT NULL REFERENCES medication (id),
-  raised_at     INTEGER,
+  raised_edtf  TEXT,
+  raised_zone  TEXT,
+  raised_start INTEGER,
+  raised_end   INTEGER,
   raised_with_person_id TEXT REFERENCES person (id),
   note          TEXT    NOT NULL
 );
@@ -582,14 +616,20 @@ CREATE TABLE IF NOT EXISTS appointment (
   person_id     TEXT REFERENCES person (id),
   organization_id TEXT REFERENCES organization (id),
   chapter_id    TEXT REFERENCES chapter (id),
-  scheduled_at  INTEGER,
+  scheduled_edtf  TEXT,
+  scheduled_zone  TEXT,
+  scheduled_start INTEGER,
+  scheduled_end   INTEGER,
   location_note TEXT,
   notes         TEXT,
-  attended_at   INTEGER,
+  attended_edtf  TEXT,
+  attended_zone  TEXT,
+  attended_start INTEGER,
+  attended_end   INTEGER,
   outcome_note  TEXT
 );
 
-CREATE INDEX IF NOT EXISTS ix_appointment_upcoming ON appointment (subject_id, scheduled_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS ix_appointment_upcoming ON appointment (subject_id, scheduled_start) WHERE deleted_at IS NULL;
 
 -- Ask next time. The question inbox, which surfaces on the right appointment's
 -- prep sheet.
@@ -610,12 +650,15 @@ CREATE TABLE IF NOT EXISTS question (
   -- What prompted it, so the question keeps its context months later.
   entry_id      TEXT REFERENCES entry (id),
   medication_id TEXT REFERENCES medication (id),
-  asked_at      INTEGER,
+  asked_edtf  TEXT,
+  asked_zone  TEXT,
+  asked_start INTEGER,
+  asked_end   INTEGER,
   asked_at_appointment_id TEXT REFERENCES appointment (id),
   answer_text   TEXT
 );
 
-CREATE INDEX IF NOT EXISTS ix_question_open ON question (subject_id) WHERE asked_at IS NULL AND deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS ix_question_open ON question (subject_id) WHERE asked_edtf IS NULL AND deleted_at IS NULL;
 
 -- A measure the person chose to track, created from a progress preset or from
 -- scratch. The preset's advice_risk is a build instruction rather than a label:
@@ -666,13 +709,10 @@ CREATE TABLE IF NOT EXISTS measurement (
   measure_id    TEXT    NOT NULL REFERENCES measure (id),
   entry_id      TEXT REFERENCES entry (id),
   chapter_id    TEXT REFERENCES chapter (id),
-  occurred_at   INTEGER,
-  occurred_precision TEXT NOT NULL DEFAULT 'day' CHECK (occurred_precision IN (
-                  'exact', 'day', 'week', 'month', 'unknown'
-                )),
-  -- Numeric where there is a number, text where the person was given words.
-  -- Both may be present: a wound stage is words a clinician said, and the
-  -- field label says so.
+  occurred_edtf  TEXT NOT NULL DEFAULT 'XXXX-XX-XX',
+  occurred_zone  TEXT,
+  occurred_start INTEGER,
+  occurred_end   INTEGER,
   value_number  REAL,
   value_text    TEXT,
   unit          TEXT,
@@ -683,7 +723,7 @@ CREATE TABLE IF NOT EXISTS measurement (
   note          TEXT
 );
 
-CREATE INDEX IF NOT EXISTS ix_measurement_series ON measurement (measure_id, occurred_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS ix_measurement_series ON measurement (measure_id, occurred_start) WHERE deleted_at IS NULL;
 
 -- A dated event on the person's path, shown on the milestone arc as a
 -- continuous trail rather than as a filter over entries.
@@ -697,13 +737,16 @@ CREATE TABLE IF NOT EXISTS milestone (
 
   subject_id    TEXT    NOT NULL REFERENCES subject (id),
   label         TEXT    NOT NULL,
-  occurred_at   INTEGER,
+  occurred_edtf  TEXT NOT NULL DEFAULT 'XXXX-XX-XX',
+  occurred_zone  TEXT,
+  occurred_start INTEGER,
+  occurred_end   INTEGER,
   chapter_id    TEXT REFERENCES chapter (id),
   measure_id    TEXT REFERENCES measure (id),
   note          TEXT
 );
 
-CREATE INDEX IF NOT EXISTS ix_milestone_subject ON milestone (subject_id, occurred_at);
+CREATE INDEX IF NOT EXISTS ix_milestone_subject ON milestone (subject_id, occurred_start);
 
 CREATE TABLE IF NOT EXISTS document (
   id            TEXT    NOT NULL PRIMARY KEY,
@@ -719,7 +762,10 @@ CREATE TABLE IF NOT EXISTS document (
   chapter_id    TEXT REFERENCES chapter (id),
   entry_id      TEXT REFERENCES entry (id),
   project_id    TEXT REFERENCES project (id),
-  received_at   INTEGER,
+  received_edtf  TEXT,
+  received_zone  TEXT,
+  received_start INTEGER,
+  received_end   INTEGER,
   -- Where the paper original physically is. This is one of the most useful
   -- fields in the app and it exists because the digital copy is rarely the one
   -- a clerk will accept.
@@ -779,17 +825,26 @@ CREATE TABLE IF NOT EXISTS bill (
   -- dispute.
   amount_minor  INTEGER,
   currency      TEXT NOT NULL DEFAULT 'USD',
-  received_at   INTEGER,
-  due_at        INTEGER,
+  received_edtf  TEXT,
+  received_zone  TEXT,
+  received_start INTEGER,
+  received_end   INTEGER,
+  due_edtf  TEXT,
+  due_zone  TEXT,
+  due_start INTEGER,
+  due_end   INTEGER,
   state         TEXT NOT NULL DEFAULT 'needs_attention' CHECK (state IN (
                   'needs_attention', 'disputed', 'waiting_on_insurance', 'paid', 'closed'
                 )),
   state_note    TEXT,
-  paid_at       INTEGER,
+  paid_edtf  TEXT,
+  paid_zone  TEXT,
+  paid_start INTEGER,
+  paid_end   INTEGER,
   notes         TEXT
 );
 
-CREATE INDEX IF NOT EXISTS ix_bill_subject ON bill (subject_id, received_at DESC) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS ix_bill_subject ON bill (subject_id, received_start DESC) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS ix_bill_state   ON bill (subject_id, state) WHERE deleted_at IS NULL;
 
 -- A running cost sheet for any long expense, not only a facility.
@@ -819,11 +874,14 @@ CREATE TABLE IF NOT EXISTS cost_entry (
   cost_sheet_id TEXT    NOT NULL REFERENCES cost_sheet (id),
   description   TEXT,
   amount_minor  INTEGER NOT NULL,
-  occurred_at   INTEGER,
+  occurred_edtf  TEXT,
+  occurred_zone  TEXT,
+  occurred_start INTEGER,
+  occurred_end   INTEGER,
   bill_id       TEXT REFERENCES bill (id)
 );
 
-CREATE INDEX IF NOT EXISTS ix_cost_entry_sheet ON cost_entry (cost_sheet_id, occurred_at);
+CREATE INDEX IF NOT EXISTS ix_cost_entry_sheet ON cost_entry (cost_sheet_id, occurred_start);
 
 -- What was asked, of whom, when, and how it was acknowledged.
 --
@@ -847,10 +905,19 @@ CREATE TABLE IF NOT EXISTS standing_instruction (
   tag           TEXT    NOT NULL CHECK (tag IN ('federal', 'request')),
   chapter_id    TEXT REFERENCES chapter (id),
   given_to_person_id TEXT REFERENCES person (id),
-  given_at      INTEGER,
-  acknowledged_at INTEGER,
+  given_edtf  TEXT,
+  given_zone  TEXT,
+  given_start INTEGER,
+  given_end   INTEGER,
+  acknowledged_edtf  TEXT,
+  acknowledged_zone  TEXT,
+  acknowledged_start INTEGER,
+  acknowledged_end   INTEGER,
   acknowledged_how TEXT,
-  ended_at      INTEGER,
+  ended_edtf  TEXT,
+  ended_zone  TEXT,
+  ended_start INTEGER,
+  ended_end   INTEGER,
   notes         TEXT
 );
 
@@ -867,14 +934,17 @@ CREATE TABLE IF NOT EXISTS instruction_violation (
   rev           INTEGER NOT NULL DEFAULT 1,
 
   instruction_id TEXT   NOT NULL REFERENCES standing_instruction (id),
-  occurred_at   INTEGER,
+  occurred_edtf  TEXT NOT NULL DEFAULT 'XXXX-XX-XX',
+  occurred_zone  TEXT,
+  occurred_start INTEGER,
+  occurred_end   INTEGER,
   entry_id      TEXT REFERENCES entry (id),
   incident_id   TEXT REFERENCES incident (id),
   bill_id       TEXT REFERENCES bill (id),
   note          TEXT
 );
 
-CREATE INDEX IF NOT EXISTS ix_instruction_violation ON instruction_violation (instruction_id, occurred_at);
+CREATE INDEX IF NOT EXISTS ix_instruction_violation ON instruction_violation (instruction_id, occurred_start);
 
 -- A long bureaucratic process, kept separate from the notebook because it has
 -- its own contacts, its own timeline, and its own end.
@@ -897,8 +967,14 @@ CREATE TABLE IF NOT EXISTS project (
   -- on is a first class field rather than a note.
   waiting_on    TEXT,
   waiting_since INTEGER,
-  started_at    INTEGER,
-  finished_at   INTEGER,
+  started_edtf  TEXT,
+  started_zone  TEXT,
+  started_start INTEGER,
+  started_end   INTEGER,
+  finished_edtf  TEXT,
+  finished_zone  TEXT,
+  finished_start INTEGER,
+  finished_end   INTEGER,
   notes         TEXT
 );
 
@@ -915,7 +991,10 @@ CREATE TABLE IF NOT EXISTS project_step (
   project_id    TEXT    NOT NULL REFERENCES project (id),
   text          TEXT    NOT NULL,
   sort_index    INTEGER NOT NULL DEFAULT 0,
-  completed_at  INTEGER,
+  completed_edtf  TEXT,
+  completed_zone  TEXT,
+  completed_start INTEGER,
+  completed_end   INTEGER,
   note          TEXT
 );
 

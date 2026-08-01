@@ -1,5 +1,8 @@
 package com.kamsiob.healthtrail.data
 
+import com.kamsiob.healthtrail.time.Edtf
+import java.time.LocalDate
+import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -180,16 +183,21 @@ class Repository private constructor(
 
     /**
      * A chapter is a place and a period. Setup creates the first one from the
-     * answer to "where are they right now", with no dates, because someone
-     * standing in a corridor does not know when this started or when it ends.
+     * answer to "where are they right now". It gets a start of today and no
+     * end, because someone standing in a corridor knows they are there now and
+     * does not know when this ends. A day rather than an instant: the instant
+     * would be a claim about when the stay began, and nobody made it.
      */
     suspend fun createChapter(subjectId: String, name: String): String = insert(
         "chapter",
         mapOf(
             "subject_id" to subjectId,
             "name" to name,
-            "started_at" to System.currentTimeMillis(),
-        ),
+            // The chapter began the day the person set the notebook up, which
+            // is as much as anyone in a corridor can say. Not the minute: the
+            // minute would be a claim about when the stay started, and nobody
+            // said that.
+        ) + dateColumns("started", Edtf.day(LocalDate.now())),
     )
 
     /**
@@ -238,24 +246,36 @@ class Repository private constructor(
                     "label" to label,
                     "template_id" to threadTemplateId,
                     "color_index" to index,
-                    "started_at" to System.currentTimeMillis(),
                     "sort_index" to index,
-                ),
+                    // A thread the person just turned on started today, and a
+                    // day is exactly as much as anyone knows about it.
+                ) + dateColumns("started", Edtf.day(LocalDate.now())),
             )
         }
     }
 
     /**
-     * How precisely a person knew when something happened.
+     * The four columns an event date occupies, per contract section 3.1.
      *
-     * Rough dates are a functional requirement rather than a convenience. A
-     * person writing at 11pm about a call three days ago genuinely does not know
-     * the time, and an app that demands one either gets a guess recorded as fact
-     * or gets nothing recorded at all. `UNKNOWN` is a real answer and the trail
-     * renders it as one.
+     * **The string is the truth and the range is an index.** The range is
+     * computed here, on the way in, from the string and the zone, and it is
+     * recomputed the same way on import rather than being trusted from the
+     * file. That is what keeps it an index rather than a second opinion that
+     * can drift.
+     *
+     * Replaced the older pair of a millisecond value and a precision enum,
+     * which could not tell "she was moved in the fall" from a specific
+     * afternoon and could not survive an export without losing which it was.
      */
-    enum class WhenKnown(internal val stored: String) {
-        EXACT("exact"), DAY("day"), WEEK("week"), MONTH("month"), UNKNOWN("unknown")
+    private fun dateColumns(base: String, date: Edtf.Date): Map<String, Any?> {
+        val zone = ZoneId.systemDefault()
+        val range = Edtf.resolve(date, zone)
+        return mapOf(
+            "${base}_edtf" to date.canonical,
+            "${base}_zone" to Edtf.zoneFor(date, zone),
+            "${base}_start" to range.start,
+            "${base}_end" to range.end,
+        )
     }
 
     /**
@@ -275,8 +295,7 @@ class Repository private constructor(
         kind: String,
         title: String? = null,
         body: String? = null,
-        occurredAt: Long? = System.currentTimeMillis(),
-        whenKnown: WhenKnown = WhenKnown.DAY,
+        occurred: Edtf.Date = Edtf.day(LocalDate.now()),
         chapterId: String? = null,
         isUnfiled: Boolean = false,
     ): String = insert(
@@ -286,12 +305,28 @@ class Repository private constructor(
             "kind" to kind,
             "title" to title?.ifBlank { null },
             "body" to body?.ifBlank { null },
-            "occurred_at" to occurredAt,
-            "occurred_precision" to whenKnown.stored,
             "chapter_id" to chapterId,
             "is_unfiled" to if (isUnfiled) 1 else 0,
-        ),
+        ) + dateColumns("occurred", occurred),
     )
+
+    /**
+     * The date one entry carries, read back through the live view.
+     *
+     * Returns null for a string this version cannot read, which is what an
+     * export from a later version of the app would carry. The caller shows it
+     * as a date it does not understand rather than dropping the entry, because
+     * the entry is still the person's and is still the record.
+     */
+    suspend fun entryOccurred(entryId: String): Edtf.Date? = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT occurred_edtf FROM live_entry WHERE id = ?",
+            arrayOf(entryId),
+        ).use { cursor ->
+            if (!cursor.moveToFirst()) return@use null
+            Edtf.parse(cursor.getString(0))
+        }
+    }
 
     /**
      * A care thread, which is one parallel stream of care running through the

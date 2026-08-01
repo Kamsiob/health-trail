@@ -184,6 +184,13 @@ val copyContractAssets by tasks.registering(Sync::class) {
         into("contract/i18n")
         include("*.json")
     }
+    // The golden vectors, so the test suite runs the same files the web app
+    // will. A vector kept in the test source tree would be a second opinion
+    // about correct, which is exactly what a shared vector exists to prevent.
+    from(contractDir.resolve("test-vectors")) {
+        into("contract/test-vectors")
+        include("*.json")
+    }
 
     into(layout.buildDirectory.dir("generated/contractAssets"))
 }
