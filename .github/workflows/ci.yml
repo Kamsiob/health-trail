@@ -100,6 +100,49 @@ jobs:
           fi
           echo "HANDOFF.md discipline satisfied."
 
+      - name: README.md describes the screens that exist
+        # The README told readers the app had "one screen" and could do
+        # "nothing yet" for a week after neither was true. A public README that
+        # undersells a working app is as much a lie as one that oversells it,
+        # and this is the class of staleness nobody notices, because the person
+        # who changed the code is not the person reading the front page.
+        #
+        # The trigger is narrow on purpose: a screen file appearing or
+        # disappearing. Editing a screen does not fire this, because most edits
+        # do not change what the README should say. Adding or removing one
+        # always does.
+        if: github.event_name == 'pull_request'
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          screens="android/app/src/main/kotlin/com/kamsiob/healthtrail/ui/screens/"
+          moved=$(git diff --name-status --diff-filter=AD "$base" "$head" -- "$screens" || true)
+          readme_changed=$(git diff --name-only "$base" "$head" | grep -x 'README.md' || true)
+          if [ -n "$moved" ] && [ -z "$readme_changed" ]; then
+            echo "::error file=README.md::This pull request adds or removes a screen but does not touch README.md. The front page says what the app can do, so it changes in the same commit."
+            echo "Screens added or removed:"
+            echo "$moved"
+            exit 1
+          fi
+          if [ -n "$moved" ]; then
+            echo "Screens changed and README.md was updated with them."
+          else
+            echo "No screen added or removed."
+          fi
+
+      - name: Every screenshot the README points at exists
+        # A broken image on the front page of a public repository reads as
+        # abandoned. This is cheap and it catches a rename immediately.
+        run: |
+          missing=0
+          for img in $(grep -o 'src="docs/screenshots/[^"]*"' README.md | cut -d'"' -f2); do
+            if [ ! -f "$img" ]; then
+              echo "::error file=README.md::README references a screenshot that does not exist: $img"
+              missing=1
+            fi
+          done
+          exit $missing
+
   android:
     name: Android build and tests
     runs-on: ubuntu-latest

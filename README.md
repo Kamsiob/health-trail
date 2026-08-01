@@ -3,11 +3,11 @@
 [![CI](https://github.com/Kamsiob/health-trail/actions/workflows/ci.yml/badge.svg)](https://github.com/Kamsiob/health-trail/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-2F6F8F)](LICENSE)
 [![Content license](https://img.shields.io/badge/templates-CC%20BY--SA%204.0-4E8A5C)](templates/LICENSE-CONTENT.md)
-[![Status](https://img.shields.io/badge/status-in%20development%2C%20not%20yet%20installable-D99D2B)](https://github.com/Kamsiob/health-trail/issues/1)
+[![Status](https://img.shields.io/badge/status-Phase%201%2C%20not%20yet%20installable-D99D2B)](https://github.com/Kamsiob/health-trail/issues/1)
 
 **A private care notebook for family caregivers. Everything stays on your phone.**
 
-> **Not installable yet.** This is being built in the open and Phase 0 is in progress. There is no release, no APK, and no store listing. [Issue #1](https://github.com/Kamsiob/health-trail/issues/1) is the current state, and the [board](https://github.com/users/Kamsiob/projects/2) has the detail.
+> **Not installable yet.** This is being built in the open. There is no release, no APK, and no store listing. Phase 0, the foundation and the data contract, is substantially built. Phase 1, the screens people actually use, is where the work is. The [board](https://github.com/users/Kamsiob/projects/2) has the detail and `HANDOFF.md` is the current state in full.
 
 ---
 
@@ -23,26 +23,45 @@ It is a record-keeping app. It is not a medical app, and it gives no medical adv
 
 ## What it looks like
 
-Not much yet. The app currently has one screen, and it exists to prove the foundation runs rather than to be used:
+Real captures from the running app on a Pixel 10 Pro XL. **Nothing here is a mockup or a rendering of a design file**, and the capture script refuses to run unless this app is the focused window.
 
-<img src="docs/screenshots/foundation-dark.png" width="300" alt="The Phase 0 foundation screen, showing the counts read from the shared schema and template catalog on the device.">
+| | | |
+|---|---|---|
+| <img src="docs/screenshots/today-empty-light.png" width="230" alt="Today on a new notebook, coaching three things to do first with the emergency card first."> | <img src="docs/screenshots/notebook-toc-light.png" width="230" alt="The notebook table of contents, twelve sections grouped under People and care, The record, and Paperwork."> | <img src="docs/screenshots/capture-sheet-light.png" width="230" alt="The capture sheet listing six things to log: a call, a visit, an incident, a measurement, a question, a document."> |
+| **Today**, on a notebook with nothing in it. It coaches rather than sitting blank, and the emergency card is always the first suggestion. | **The notebook.** Twelve sections that never move, so nothing is ever somewhere new. | **Capture.** One gold button on every screen, six ways in. |
+| <img src="docs/screenshots/log-call-light.png" width="230" alt="The log a call form: who you spoke to, when, and what was said, with rough date chips and a save button reading Save what you have."> | <img src="docs/screenshots/unfiled-tray-light.png" width="230" alt="The unfiled tray showing one saved call and suggesting which care thread it belongs to."> | <img src="docs/screenshots/fonts-arabic-light.png" width="230" alt="The notebook in Arabic, fully mirrored right to left with real Arabic glyphs."> |
+| **A call, logged.** Every field optional. "Roughly is fine" for the date, and the button says **Save what you have**. | **Nothing gets filed for you.** Anything saved without a home waits here, with a suggestion you confirm. | **Arabic, on the device.** Mirrored right to left, real glyphs. Right to left was built in from the first screen rather than added at the end. |
 
-That is a real capture from the running app on a device, as every screenshot here will be. Nothing in this section is ever a mockup or a rendering of a design file, and the capture script refuses to run unless this app is the focused window.
+`reference/screen-grid.html` holds the 27 approved screens as the binding visual reference, and `DESIGN.md` holds the tokens, type scale, motion, and copy rules the built app is held to.
 
-`reference/screen-grid.html` holds the 27 approved screens as the binding visual reference, and `DESIGN.md` holds the tokens, type scale, motion, and copy rules the built app is held to. Screenshots of the real screens replace this one as they are built.
+**One honest note about these captures.** They are all in light theme because that is what the test phone is set to, and it is somebody's daily driver rather than a lab device. Dark theme is fully implemented and every color pair in both themes is measured against the WCAG AA floors by `check_contrast.py` on every push.
 
-## What it can do
+## What it can do today
 
-Nothing yet. The list below is what is being built, and this section becomes a description of the shipped app as each part lands rather than a promise.
+**This section describes the built app, not the plan.** Everything listed here runs on a real device and has a test holding it there. What is still ahead is in the section after it.
 
-- **Capture that forgives.** One button on every screen, six things to log: a call, a visit, an incident, a measurement, a question for next time, a document. Every field is optional. Rough dates are allowed, including "sometime this week". Anything you cannot categorize goes to an Unfiled tray where the app suggests a home and you confirm with one tap. The app never files anything on its own.
-- **Three ways to see the same entries.** Chapters answer where, as a place and a period. Care threads answer what is ongoing, as parallel streams like physical therapy or wound care. The trail answers when. Every entry can carry all three.
-- **Everything connects.** A medication knows its own incidents, its pending questions, its dose history, and its place on the emergency card. A person knows every call and visit involving them. A bill knows its chapter, the call where it was disputed, and the standing instruction it broke. You never have to remember where something was filed.
-- **An emergency card** designed to be handed to a paramedic.
-- **Standing instructions** recording what you asked, of whom, when, how it was acknowledged, and every documented violation, tagged by whether federal nursing home rules back it up or it is your request. The difference is stated precisely, including where the backing stops.
-- **Exports that stand on their own.** An incident, a project, a chapter, a month, or the whole notebook, generated on your phone as a document a relative can read without ever having seen the app.
-- **Four languages,** English, Spanish, Chinese, and Arabic, with right to left layout built in from the first screen rather than added at the end.
+- **Capture that forgives, all six ways in.** A call, a visit, an incident, a measurement, a question for next time, and a document. **Every field is optional** and the button says "Save what you have". Rough dates are first-class: today, yesterday, this week, not sure, or a picked date.
+- **Dates that do not lie about their own precision.** Built on EDTF, the extended date format from ISO 8601-2. "August 2026" stays August 2026 and never quietly becomes August 1st. Unknown is a real value rather than a blank, and uncertainty is recorded separately from precision.
+- **Nothing gets filed for you.** Anything saved without a home lands in an Unfiled tray, where the app reads the words you wrote, suggests a care thread, and waits for you to confirm. It never files on its own.
+- **A notebook with twelve sections that never move**, grouped and folded to the kind of care being given. A hospital stay brings appointments and the trail forward and folds money away; a different situation folds differently.
+- **Setup you can skip entirely.** Three questions, all optional. Skipping produces a working notebook. Answering "not sure yet" is a real answer that changes what the app asks you later.
+- **Four locales with right to left working**, English, Spanish, Chinese, and Arabic, verified by running the app in Arabic on a device rather than by reading the code.
+- **Encrypted at rest**, SQLCipher with the key in the Android Keystore, proven by reading the file back and asserting it is not a plain SQLite database.
+- **A record that can survive sync it does not have yet.** Every row carries a locally generated id, timestamps, a revision, an origin device, and a tombstone column. **Deletion is always a tombstone, never a removed row**, and every write appends to a change log in the same transaction, enforced by database triggers rather than by application code remembering to.
+
+## What is still being built
+
+The honest list. This section shrinks as things land.
+
+- **Today's digest**, the deterministic summary of what changed since you were last here. The screen exists and says plainly that the summary is still being built, rather than showing a fake one.
+- **The trail, care team, medications, the emergency card, projects, and settings.** Each is a section in the notebook that currently reads "Nothing yet".
+- **Exports that stand on their own.** An incident, a project, a chapter, a month, or the whole notebook, generated on your phone as a document a relative can read without ever having seen the app. The container writes and reads; encryption and the full round trip are next.
+- **Everything connects, both ways.** A medication knowing its own incidents, its pending questions, and its place on the emergency card. Needs the screens that would link to each other.
+- **Standing instructions** recording what you asked, of whom, when, how it was acknowledged, and every documented violation, tagged by whether federal nursing home rules back it up or it is your own request.
+- **Search**, universal from Today and scoped inside every section.
+- **Capture from outside the app**, as a widget, a quick settings tile, and a share sheet target.
 - **Automatic local backup** to a folder you choose, with no cloud involved.
+- **Language access for caregivers in the United States** who do not read English well. Ten languages chosen by limited English proficiency population. **This is language access, not international expansion:** the federal, Medicare, and Medicaid content is specific to this country, so translating for a Spanish speaker in Texas is right and presenting the same app to someone in Spain would be wrong.
 
 ## What it cannot do, and will not
 
@@ -89,7 +108,7 @@ web/          a scaffold whose only job is to open the same schema, which is wha
 tools/        the fixture generator, the compliance checks, and the build scripts.
 reference/    the 27 approved screens.
 docs/         the roadmap's supporting notes, the bundled font licenses, and the
-              device screenshots.
+              device screenshots, which are real captures and never mockups.
 ```
 
 [ROADMAP.md](ROADMAP.md) is what is planned, what is being worked on now, and what this app will deliberately never do.
@@ -98,7 +117,7 @@ docs/         the roadmap's supporting notes, the bundled font licenses, and the
 
 The app is specified before it is built, and the specification is kept current with the code rather than written once. `MASTER_SPEC.md` is what the app is, `DESIGN.md` is binding on every visual and copy decision, and `contract/DATA-CONTRACT.md` governs the data model and cannot be changed without an explicit decision, because changing a schema after real data exists means discarding someone's records.
 
-Decisions are recorded in `DECISIONS.md` as they are made, with the alternatives considered and the reasoning, so the same question does not get reopened later. The issue tracker and the board are the authoritative record of what is done, what is in progress, and what is blocked. Work is verified on real hardware before it is marked complete, and an issue is closed only after the behavior was checked on a device or an emulator, never because code was written. `HANDOFF.md` is kept current to within one increment so the project can be picked up cold.
+Decisions are recorded in `DECISIONS.md` as they are made, with the alternatives considered and the reasoning, so the same question does not get reopened later. The issue tracker and the board are the authoritative record of what is done, what is in progress, and what is blocked. Work is verified on real hardware before it is marked complete, and an issue is closed only after the behavior was looked at on a connected phone, never because code was written. There is no emulator on this project and its absence is deliberate: a long lived installation on one device is a sample of one that nobody can reproduce, so data survival is proven by the export and import round trip against shared test vectors in continuous integration instead. `HANDOFF.md` is kept current to within one increment so the project can be picked up cold.
 
 ### How this is built
 
@@ -106,11 +125,17 @@ The implementation is written by Claude Code, a coding agent, working from the s
 
 That person's half is the part the agent cannot do: deciding what the app is and who it is for, writing and owning the specifications, resolving what happens when two of them conflict, judging whether the built thing is actually usable by an exhausted person in a hospital corridor, and testing it against a real situation rather than a test case.
 
-Directing long autonomous runs turned out to require a specific set of guards, each answering a failure that happens rather than one that might. A run can destroy hours of work with a single command, so destructive commands are refused by a hook rather than avoided by intention. Context gets compacted on a long run, after which the session can revert to an earlier understanding and redo work it already finished, so state is committed and pushed before compaction and the repository is treated as the truth afterward rather than memory. An agent that hits the same error repeatedly will fix the same wrong thing twenty times and report success each round, so attempts are capped at three and then escalated in writing. A delegated task that needs a permission cannot ask for one, and silently reports success for a change that never reached disk, so the agents that assist are scoped to read only and cannot write anything. Work is claimed complete only against the working tree, never against recollection.
+Directing long autonomous runs turned out to require a specific set of guards, each answering a failure that happens rather than one that might. A run can destroy hours of work with a single command, so destructive commands are meant to be refused by a hook rather than avoided by intention. Context gets compacted on a long run, after which the session can revert to an earlier understanding and redo work it already finished, so state is committed before compaction and the repository is treated as the truth afterward rather than memory. An agent that hits the same error repeatedly will fix the same wrong thing twenty times and report success each round, so attempts are capped at three and then escalated in writing. A delegated task that needs a permission cannot ask for one, and silently reports success for a change that never reached disk, so the agents that assist are scoped to read only and cannot write anything. Work is claimed complete only against the working tree, never against recollection.
+
+**The most useful thing this project has learned about those guards is that all three of them were broken, and that the repository said otherwise for a week.** The hook command interpolated a path, the path contains spaces, the shell split it, the executable was never found, and the hook exited 127. A blocking hook has to exit 2, so 127 read as "nothing to say" and every destructive command ran. The pre-compaction save had the identical defect. The retry cap turned out not to be a hook at all but a tool nothing ever called.
+
+None of that produced a single line of output, which is the whole point: **a guard that does not fire looks exactly like a guard with nothing to do.** It surfaced only when a command that should have been refused reached a real phone. The first diagnosis was wrong too, and confidently so, which cost another week.
+
+What changed is not the guards, which were a one line fix. It is that a guard is now considered unproven until a command that must be refused has actually been refused, that check runs at the start of every session rather than once, and a check in continuous integration fails the build if the quoting regresses. `DECISIONS.md` D29 and D49 have the full account, including the wrong diagnosis, kept rather than tidied away.
 
 What came out of it is a repository where the specification, the reasoning, and the state are all readable by someone arriving with no context, and where the app's promises about medical advice, interpretation, and data leaving the device are checked by tests on every push rather than upheld by good intentions.
 
-Specialized agents handle review, testing, and verification, and their definitions are in `.claude/agents/`.
+Specialized agents handle review, testing, and verification, and their definitions are in `.claude/agents/`. They can read, run, and report. They cannot write.
 
 ## License
 
