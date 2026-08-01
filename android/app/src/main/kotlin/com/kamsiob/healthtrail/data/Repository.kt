@@ -328,6 +328,117 @@ class Repository private constructor(
         }
     }
 
+    // -- the Unfiled tray -------------------------------------------------
+
+    /**
+     * One entry the person could not place, with everything the tray needs to
+     * show it and nothing more.
+     */
+    data class UnfiledEntry(
+        val id: String,
+        val kind: String,
+        val title: String?,
+        val body: String?,
+        /** The EDTF string, rendered by `EventDateText` rather than here. */
+        val occurredEdtf: String?,
+        /** For ordering when the date is unknown, which is a common case here. */
+        val createdAt: Long,
+    )
+
+    /**
+     * Everything waiting to be filed, oldest first.
+     *
+     * **Ordered by when it was written down, not by when it happened.** An
+     * entry reaches this tray precisely because the person could not place it,
+     * and a good share of them have an unknown date and therefore no position
+     * on a timeline at all. When it was captured is the one ordering every row
+     * here definitely has.
+     */
+    suspend fun unfiled(subjectId: String): List<UnfiledEntry> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, kind, title, body, occurred_edtf, created_at FROM live_entry " +
+                "WHERE subject_id = ? AND is_unfiled = 1 ORDER BY created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        UnfiledEntry(
+                            id = cursor.getString(0),
+                            kind = cursor.getString(1),
+                            title = cursor.getString(2),
+                            body = cursor.getString(3),
+                            occurredEdtf = cursor.getString(4),
+                            createdAt = cursor.getLong(5),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /** How many are waiting. Read on its own so a caller can ask without loading them. */
+    suspend fun unfiledCount(subjectId: String): Int = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT COUNT(*) FROM live_entry WHERE subject_id = ? AND is_unfiled = 1",
+            arrayOf(subjectId),
+        ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+    }
+
+    /**
+     * Files one entry into a thread, or clears it from the tray with no thread.
+     *
+     * **Both halves in one transaction.** Linking without clearing leaves the
+     * entry filed and still in the tray. Clearing without linking loses the
+     * answer the person just gave. Either alone is worse than neither, and the
+     * change log triggers fire inside the same transaction on both writes, per
+     * the data contract.
+     *
+     * A null [threadId] is a real answer: it means the person decided this
+     * belongs to nothing in particular. It leaves the tray all the same,
+     * because the tray is for things nobody has looked at yet rather than for
+     * things without a thread.
+     */
+    suspend fun fileEntry(entryId: String, threadId: String?) = withContext(Dispatchers.IO) {
+        val database = db().database
+        database.beginTransaction()
+        try {
+            if (threadId != null) {
+                val now = System.currentTimeMillis()
+                database.execSQL(
+                    "INSERT INTO entry_thread " +
+                        "(id, created_at, updated_at, origin_device, rev, entry_id, thread_id) " +
+                        "VALUES (?, ?, ?, ?, 1, ?, ?)",
+                    arrayOf<Any?>(Ids.new(), now, now, db().deviceId, entryId, threadId),
+                )
+            }
+            database.execSQL(
+                "UPDATE entry SET is_unfiled = 0, updated_at = ?, rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(System.currentTimeMillis(), entryId),
+            )
+            database.setTransactionSuccessful()
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    /**
+     * The threads one entry is linked to.
+     *
+     * Read through the live views on both sides, so a thread the person deleted
+     * does not resurface here attached to an entry.
+     */
+    suspend fun threadsForEntry(entryId: String): List<String> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT t.id FROM live_entry_thread et " +
+                "JOIN live_care_thread t ON t.id = et.thread_id " +
+                "WHERE et.entry_id = ?",
+            arrayOf(entryId),
+        ).use { cursor ->
+            buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
+        }
+    }
+
     /**
      * A care thread, which is one parallel stream of care running through the
      * whole notebook.

@@ -47,6 +47,7 @@ object NotebookTags {
     fun section(section: Repository.Section) = "notebook_section_${section.name.lowercase()}"
     fun count(section: Repository.Section) = "notebook_count_${section.name.lowercase()}"
     fun group(group: NotebookGroup) = "notebook_group_${group.name.lowercase()}"
+    const val WAITING = "notebook_waiting"
 }
 
 /**
@@ -184,6 +185,9 @@ fun NotebookScreen(
     sections: List<SectionCount>,
     onOpen: (Repository.Section) -> Unit,
     modifier: Modifier = Modifier,
+    /** How many entries are waiting in the Unfiled tray. Zero shows nothing. */
+    waiting: Int = 0,
+    onOpenUnfiled: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -220,6 +224,18 @@ fun NotebookScreen(
                 )
             }
 
+            // **Present only when something is actually waiting.** It is not a
+            // thirteenth section and it never becomes one: the twelve are fixed
+            // and this is a thing waiting for the person rather than a place
+            // they filed something. When the tray is empty there is nothing to
+            // find, so there is nothing here and no empty room to walk into.
+            if (waiting > 0) {
+                item(key = "waiting") {
+                    Spacer(Modifier.height(Space.l))
+                    WaitingCard(count = waiting, onClick = onOpenUnfiled)
+                }
+            }
+
             NotebookGroup.entries.forEach { group ->
                 val rows = group.sections.mapNotNull { bySection[it] }
                 if (rows.isEmpty()) return@forEach
@@ -247,6 +263,50 @@ fun NotebookScreen(
             // readable rather than merely uncovered.
             item { Spacer(Modifier.height(Space.xxl + Space.l)) }
         }
+    }
+}
+
+/**
+ * Something is waiting to be filed.
+ *
+ * Uses `blaze_soft`, which section 2.2 allows as a gold tonal background for a
+ * waiting-on card and which is not the accent: `blue` still owns every action
+ * and the trail still owns the gold line. It carries a word as well as a color,
+ * so it is never "the gold one".
+ */
+@Composable
+private fun WaitingCard(count: Int, onClick: () -> Unit) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.blazeSoft)
+    val ring by focusRingAlpha(interaction)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = Space.touchTarget)
+            .clip(Radius.card)
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .testTag(NotebookTags.WAITING)
+            .padding(Space.cardPadding),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = strings("unfiled.waiting", "count" to count),
+            style = HealthTrail.type.label,
+            color = colors.blazeText,
+            modifier = Modifier.weight(1f),
+        )
+        Spacer(Modifier.width(Space.sm))
+        Chevron()
     }
 }
 
