@@ -64,6 +64,48 @@ if ! echo "$focused" | grep -q "$PACKAGE"; then
   exit 1
 fi
 
+# Focus is not enough, and this was learned the expensive way.
+#
+# On 2026-08-01 a capture of a fully focused Health Trail came back with an
+# incoming call banner across the top of it, carrying a phone number and a
+# contact photo belonging to the owner. **A heads-up notification never takes
+# focus**, so every check above passed and the image was wrong anyway. It was
+# caught by looking at the picture, which is not a control.
+#
+# So heads-up notifications are switched off for the duration of the capture
+# and switched back immediately. The trap restores the previous value on every
+# exit path, including a failure, a refusal, and an interrupt, because leaving
+# somebody's daily driver silent is its own kind of damage.
+heads_up_before="$("$ADB" shell settings get global heads_up_notifications_enabled 2>/dev/null | tr -d '\r')"
+
+restore_heads_up() {
+  if [ "$heads_up_before" = "null" ] || [ -z "$heads_up_before" ]; then
+    "$ADB" shell settings delete global heads_up_notifications_enabled >/dev/null 2>&1 || true
+  else
+    "$ADB" shell settings put global heads_up_notifications_enabled "$heads_up_before" >/dev/null 2>&1 || true
+  fi
+}
+trap restore_heads_up EXIT INT TERM
+
+"$ADB" shell settings put global heads_up_notifications_enabled 0 >/dev/null 2>&1 || true
+
+# Anything already on screen from another application, checked as well, because
+# suppressing new notifications does nothing about one that is already up.
+# Looks for visible windows belonging to a package that is neither this app nor
+# the system chrome that is always present.
+intruders="$("$ADB" shell dumpsys window windows 2>/dev/null \
+  | grep -E '^\s+Window\{' \
+  | grep -vE "$PACKAGE|StatusBar|NavigationBar|ScreenDecor|InputMethod|DockedStackDivider|NotificationShade u0 NotificationShade\}" \
+  | grep -iE 'heads-up|HeadsUp|Toast|PopupWindow' || true)"
+
+if [ -n "$intruders" ]; then
+  echo "Refusing to capture: something is overlaying the app." >&2
+  echo "$intruders" >&2
+  echo "" >&2
+  echo "This device is the owner's daily driver. Wait for it to clear." >&2
+  exit 1
+fi
+
 # What the device is actually showing. The label comes from here, never from
 # the argument, so the filename cannot disagree with the image.
 night="$("$ADB" shell cmd uimode night 2>/dev/null | tr -d '\r')"

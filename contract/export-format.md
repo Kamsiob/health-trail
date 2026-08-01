@@ -80,6 +80,25 @@ The payload, meaning `data.sqlite` and everything under `attachments/`, is encry
 
 **An unencrypted export is available** for someone who wants to inspect their own data, with a plain warning rather than a scolding. It is their data and wanting to read it is reasonable.
 
+### 4.1 What implements it, and what may not
+
+**The algorithms above are the specification, not a preference.** Argon2id for the key derivation and AES-256-GCM for the payload.
+
+**AES-256-GCM comes from the platform.** It is in the Java Cryptography Extension on every supported Android version and needs no dependency.
+
+**Argon2id comes from Bouncy Castle**, `Argon2BytesGenerator`. It is pure Java, so it adds no native library and no NDK build step. Neither the platform nor SQLCipher exposes an Argon2 implementation, which is the whole reason a dependency is needed at all.
+
+**PBKDF2 is not an acceptable substitute.** It is what is already in the platform, which makes it the easy path, and it is a materially weaker claim than this format makes. PBKDF2 is cheap to attack with parallel hardware because it needs almost no memory; Argon2id is memory-hard specifically to remove that advantage. Per D24 **the export file is the only recovery path from key loss**, which makes it the most security sensitive artifact this project produces. Weakening its key derivation to avoid one pure-Java dependency is the wrong trade, and it would be an invisible one: a file encrypted with PBKDF2 looks exactly as safe as one encrypted properly.
+
+### 4.2 Why the parameters are in the manifest
+
+`kdf_iterations`, `kdf_memory_kib`, and `kdf_parallelism` are recorded in the manifest of every encrypted file, and **an importer reads them from the file rather than assuming the values this build happens to use.**
+
+That is what allows the cost to be raised later without stranding anything. Hardware gets faster and the recommended cost goes up with it; a file written in 2026 must still open in 2031 against whatever the parameters were when it was written. An importer that assumes today's constants silently fails to derive the right key from a correct passphrase, and reports it as a wrong passphrase, which is the worst available failure for a file that is somebody's only copy.
+
+The shipped values, 3 iterations over 64 MiB with parallelism 1, sit above the OWASP baseline rather than at it. **Tune only if it measures unusably slow on the phone**, and if it is tuned, the manifest records what was used and older files keep opening.
+
+
 ## 5. Import
 
 **Atomic.** It fully succeeds or it changes nothing. A partially restored state that looks complete is worse than a clean failure, because the person stops worrying.

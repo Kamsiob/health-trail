@@ -781,10 +781,63 @@ To recapture the first-run screens, which cannot be reached any other way once t
 **What changes.**
 
 - **The remaining dark theme captures will not be taken this way.** The in-app theme setting is the answer, and it is now in `HANDOFF.md` section 5 as a real feature rather than a testing convenience. No further uninstall is needed for screenshots.
-- **First-run verification is a real need and the blocklist should answer it rather than be worked around.** The disclaimer, setup, and the situation picker are unreachable after the first launch, and they are three of the app's most important screens. Whether that warrants a carve-out, a debug-only reset inside the app, or an explicit BLOCKED entry each time is the owner's call. **A debug-only "start over" action inside the app is the obvious answer** and it needs no exception to any rule.
+- **First-run verification turned out to need no exception at all, which makes the uninstall doubly unnecessary.** `connectedAndroidTest` uninstalls the app and reinstalls it as part of every run, which is documented in B4 and is already the sanctioned path. **Running the instrumented suite leaves the phone at the disclaimer gate**, for free, with no blocklisted command. It was used that way an hour later, without noticing at the time that it had answered this. The export-first checklist step in B4 is the only precaution needed.
+- A debug-only "start over" action inside the app would still be worth having, so first-run work does not require a full test run, but nothing is blocked on it.
 - Recorded here rather than quietly, because the session that hides a rule break is worse than the break.
 
-**Revisit if.** The owner decides how first-run screens should be reached. Until then, treat another uninstall as blocked and take the BLOCKED route.
+**Revisit if.** Nothing. The need that prompted it is met by the instrumented suite. Treat another `adb uninstall` as blocked, because it is.
+
+### D51. The export keeps Argon2id, and Bouncy Castle provides it
+
+**Date:** 2026-08-01. **Decided by:** the owner.
+
+`contract/export-format.md` has always named Argon2id and AES-256-GCM. The open question was what implements Argon2id, since neither the platform nor SQLCipher exposes one, and the easy answer was to quietly use PBKDF2 because it is already there.
+
+**The format stays exactly as written.** AES-256-GCM comes from the platform JCE. Argon2id comes from **Bouncy Castle**, `Argon2BytesGenerator`, which is pure Java and needs no native library and no NDK step.
+
+**PBKDF2 is not an acceptable substitute and the reasoning is not close.** Per D24 the export file is the only recovery path from key loss, which makes it the most security sensitive artifact this project produces. PBKDF2 needs almost no memory and is therefore cheap to attack with parallel hardware; Argon2id is memory-hard precisely to remove that advantage. The substitution would also be invisible: a file encrypted with PBKDF2 looks exactly as safe as one encrypted properly.
+
+**The parameters live in the manifest**, which the format already provided for, and an importer reads them from the file rather than assuming what this build uses. That is what lets the cost be raised as hardware improves without stranding a file written years earlier. An importer that assumes today's constants fails to derive the key from a correct passphrase and reports it as a wrong passphrase, which is the worst available failure for somebody's only copy.
+
+Shipped values are 3 iterations over 64 MiB at parallelism 1, above the OWASP baseline rather than at it. Tune only if it measures unusably slow on the phone.
+
+**Not yet implemented.** Recorded now because the decision was made now, and because per the work order the round trip test comes before encryption. `contract/export-format.md` section 4.1 and 4.2 carry the binding version.
+
+### D52. Chinese uses the system face, and looking for that found that Chinese did not work at all
+
+**Date:** 2026-08-01. **Decided by:** the owner for the typeface, the session for the defect it uncovered.
+
+**The typeface decision. Do not bundle a CJK face.** Android ships Noto Sans CJK, renders it well, and it is the face a Chinese-reading person already sees everywhere else on their phone. Bundling Noto Sans SC would add roughly ten megabytes per weight to reproduce something already present and already correct. Arabic stays bundled because coverage there is genuinely inconsistent across devices; CJK is not, so the same reasoning gives the opposite answer.
+
+**Never subset, and never subset to make bundling affordable.** A subset covers the glyphs somebody thought to include, and **in a record-keeping app the thing most likely to fall outside one is a person's name or a facility's name.** The cost is not cosmetic: it is a record that cannot be read back. A face too large to bundle whole is an argument for the system face, not for cutting the face down.
+
+**Verified on the device**, and the result is in `DESIGN.md` section 1. Every glyph renders, no boxes anywhere. The mono eyebrow is served by the system CJK face rather than JetBrains Mono, which has no CJK coverage, and that substitution is accepted rather than treated as a defect.
+
+**What the verification actually found, which is the larger half of this entry.** Setting the app to Chinese produced an English app.
+
+`Strings.load` read `Locale.getDefault()`, which is one locale: the first entry of the configuration's list. Asking Android for Chinese produced a configuration of `en-US,zh-Hans`. **The requested language was appended rather than promoted**, because the app ships no `values-zh` resources for Android to serve, so English ranked higher for resource resolution. English was therefore the default, the English catalog loaded, and a person who had explicitly chosen Chinese got English with no error anywhere.
+
+**Spanish and Arabic worked**, because they landed first in their own lists, Arabic in particular because its direction has to be honored. That is what disguised a general resolution bug as a Chinese one.
+
+**Every test passed throughout.** All of them call `Strings.load(context, someLocale)` with the locale passed in, which proves the catalog and the lookup and says nothing about how a locale is chosen. **A test that takes a shortcut the person cannot take proves something the person does not get.** `AppLanguageTest` now goes through `LocaleManager`, the same API Android's own language picker uses, and asserts all four shipped languages plus an unshipped one.
+
+**Two fixes, both needed.** `Strings.resolve` asks `LocaleManager` for the per-app language first and falls back to walking the device preference list with `getFirstMatch`, rather than reading one default. And `res/xml/locales_config.xml` declares the four languages, which also puts Health Trail in Android's per-app language picker under Settings, where it was absent entirely.
+
+**Worth stating plainly:** the app shipped four catalogs and could deliver three, and the one it could not deliver was the one with the largest number of speakers. It held for as long as it did because nothing failed. It rendered a complete, correct, English screen.
+
+### D53. The screenshot script guarded the wrong thing, and a private notification reached a capture
+
+**Date:** 2026-08-01. **Found by:** looking at the image.
+
+A capture of a fully focused Health Trail came back with an incoming call banner across the top, carrying **a phone number and a contact photo belonging to the owner**. The file was deleted immediately and never staged, never committed, and is in no git history.
+
+**Every check in `tools/screenshot.sh` passed.** It verifies `mCurrentFocus` before the capture and again afterward, specifically so nothing else can be in front. **A heads-up notification never takes focus**, so it is in front and the focus check cannot see it.
+
+The mechanism was written against the shade being pulled down and against another app coming forward. It was not written against a notification that appears over a still-focused app, which is the ordinary case on any phone in use.
+
+**What changed.** The script now switches heads-up notifications off for the duration of the capture and restores the previous value through a `trap` on every exit path, including failure and interrupt, because leaving somebody's daily driver silent is its own kind of damage. It also refuses if a heads-up, toast, or popup window from another package is already on screen, since suppressing new notifications does nothing about one already up.
+
+**The general shape, which is the third instance this week.** A guard that checks the thing it was written to check, while the actual risk arrives through a door nobody thought about. The focus check was not wrong. It was answering a narrower question than the one it appeared to answer.
 
 ---
 
