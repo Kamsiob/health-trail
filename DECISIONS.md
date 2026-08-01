@@ -867,6 +867,37 @@ A restore script was written **before** the first change rather than after, so r
 
 **Revisit if.** New screens land. #44 still wants the remaining screens walked, and the pass is now cheap and proven safe to run.
 
+### D55. The test the emulator decision rested on did not exist
+
+**Date:** 2026-08-01.
+
+B4 removed the emulator from this project, and the reasoning was explicit and good: a long lived installation on one phone is a sample of one that nobody can reproduce, so **data survival is proven by the export and import round trip against shared vectors in continuous integration** rather than by a device's history.
+
+**That test had never been written.** So from the day B4 was decided until today, the argument that made dropping the emulator safe rested on something that did not exist, and **nothing in this project proved that a person's records survive an update at all.** Every other test proves a part in isolation: the container writes and reads, the schema holds its shape, the dates parse. None of them put a notebook through the whole path and compared what came out.
+
+It is built now, unencrypted, and it is first in the work order for exactly this reason: the central claim stops being unproven while the encryption dependency is settled.
+
+**What it actually asserts**, nine tests on the phone:
+
+- Every row of every user table, compared **column by column**, before and after. Not a row count.
+- The EDTF string survives **byte for byte**, which is what the format names.
+- A month never collapses to its first day.
+- Unknown survives as unknown, rather than as null or as today.
+- The uncertainty qualifier is not stripped in transit.
+- Tombstones travel, so restoring a backup does not resurrect what the person deleted. That was the last unmet criterion on #8.
+- The manifest describes the file, including tables with zero rows.
+- **The derived range is recomputed on import rather than trusted.** Tested by writing a deliberately wrong range into the file and watching the import correct it, which is the only way to test the difference between recomputing and copying.
+
+**Two things worth carrying beyond this issue.**
+
+**The EDTF column groups are found, not listed.** There are thirty of them, and a hard coded list in Kotlin would be the second declaration of the schema that D16 exists to prevent. `Backup.edtfGroups` reads them out of the table definitions, so a table added later is covered without anyone remembering to add it.
+
+**The fixture is deliberately awkward.** A round trip over one clean row proves almost nothing. The seeded notebook carries a coarse date, an unknown date, an uncertain date, and a tombstone, because those are the rows that get lost.
+
+**A test isolation trap, recorded because it read as a product defect.** The database persists across tests in this class, since it is the app's real one, so each seed adds another set of rows. Looking a row up by its EDTF string found every previous test's copy too and failed as "expected one, found three", which looks exactly like a round trip that duplicated data. Keying off the returned id removed the ambiguity. **A test that fails for a test reason and reads like a product reason costs more than the bug it was chasing.**
+
+**Revisit if.** Encryption lands, at which point the same suite runs against an encrypted container and the assertions do not change.
+
 ---
 
 ## BLOCKED
