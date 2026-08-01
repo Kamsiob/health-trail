@@ -46,7 +46,7 @@ Nothing yet. The list below is what is being built, and this section becomes a d
 
 ## What it cannot do, and will not
 
-These are decisions rather than gaps. The [roadmap](https://github.com/Kamsiob/health-trail/issues/21) carries the reasoning for each.
+These are decisions rather than gaps. [ROADMAP.md](ROADMAP.md) carries the reasoning for each, along with what is planned and what is only under consideration.
 
 - **No cloud, no server, no account.** There is nothing to sign in to. Sharing means exporting a document and sending it yourself, which also means there is no live shared view for several family members.
 - **No medical or legal advice, and no educational content.** The app records, organizes, and counts. It never concludes.
@@ -88,7 +88,11 @@ web/          a scaffold whose only job is to open the same schema, which is wha
               stops the two platforms drifting. It has no features.
 tools/        the fixture generator, the compliance checks, and the build scripts.
 reference/    the 27 approved screens.
+docs/         the roadmap's supporting notes, the bundled font licenses, and the
+              device screenshots.
 ```
+
+[ROADMAP.md](ROADMAP.md) is what is planned, what is being worked on now, and what this app will deliberately never do.
 
 ## Approach and methodology
 
