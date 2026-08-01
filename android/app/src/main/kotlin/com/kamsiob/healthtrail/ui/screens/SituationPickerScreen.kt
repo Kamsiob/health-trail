@@ -202,7 +202,12 @@ fun SituationPickerScreen(
                 item { Spacer(Modifier.height(Space.s)) }
             }
 
-            Spacer(Modifier.height(Space.sm))
+            // **A real gap between the list and the pinned footer.** At the
+            // largest system font the list fills the screen and the card at its
+            // edge ends directly against this sentence, which on the phone read
+            // as text overlapping a card rather than as a list scrolling behind
+            // one. Found at font scale 2.0 and invisible at 1.0.
+            Spacer(Modifier.height(Space.m))
 
             // **Said once, here, where the decision is being made.** The whole
             // weight of this screen is a person in a corridor worrying they

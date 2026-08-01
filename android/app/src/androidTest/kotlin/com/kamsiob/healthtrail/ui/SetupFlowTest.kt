@@ -1,6 +1,8 @@
 package com.kamsiob.healthtrail.ui
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -55,6 +57,66 @@ class SetupFlowTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun theScreenSaysNoneOfItIsRequiredWithoutRepeatingItPerField() {
+        // Said once, in words, at the top. The screen used to carry a mono
+        // "Optional" here, which is accurate and is the vocabulary of a form
+        // being administered, on the first real screen after the disclaimer.
+        showSetup(onContinue = {})
+        compose.onNodeWithTag(SetupTags.REASSURE).assertIsDisplayed()
+
+        val strings = Strings.load(context)
+        val reassurance = strings["setup.reassure"]
+        // One reassurance on the screen, not five.
+        assertEquals(
+            "the reassurance is repeated",
+            1,
+            compose.onAllNodesWithText(reassurance).fetchSemanticsNodes().size,
+        )
+    }
+
+    @Test
+    fun everyFieldCarriesGuidanceRatherThanAnEmptyBox() {
+        // Four of the five were bare gray boxes with a label above them, which
+        // is what made this read as paperwork more than anything else on it.
+        // Section 5.9: a hint is genuine guidance, never a repeat of the label.
+        showSetup(onContinue = {})
+        val strings = Strings.load(context)
+        listOf(
+            "setup.name.hint",
+            "setup.relationship.hint",
+            "setup.where.hint",
+            "setup.phone.person.hint",
+            "setup.phone.number.hint",
+        ).forEach { key ->
+            val hint = strings[key]
+            assertTrue(
+                "the hint for $key is missing from the screen",
+                compose.onAllNodesWithText(hint).fetchSemanticsNodes().isNotEmpty(),
+            )
+        }
+    }
+
+    @Test
+    fun noGroupHeadingRepeatsAFieldLabel() {
+        // Built with them shared, the screen showed the same sentence twice in
+        // a row and a screen reader announced it twice. Asserted rather than
+        // remembered, because the next person editing the copy will not know.
+        val strings = Strings.load(context)
+        val headings = listOf("setup.group.who", "setup.group.where", "setup.group.reach")
+            .map { strings[it].lowercase() }
+        val labels = listOf(
+            "setup.name.label",
+            "setup.relationship.label",
+            "setup.where.label",
+            "setup.phone.person.label",
+            "setup.phone.number.label",
+        ).map { strings[it].lowercase() }
+
+        val clashes = headings.filter { it in labels }
+        assertTrue("a group heading repeats a field label: $clashes", clashes.isEmpty())
     }
 
     @Test

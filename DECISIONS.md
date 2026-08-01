@@ -572,9 +572,25 @@ Grouping the fourteen settings needed a group per template. It could have been a
 
 **A setting whose group this version does not recognize still renders**, under no heading, and a test fails loudly when one appears. Both halves matter: a person must never fail to find their own situation because of a data edit, and a stray must never look deliberate.
 
----
+### D37. A hint is worth more than a heading
 
-## BLOCKED
+**Date:** 2026-08-01. **Decided by:** the session, building issue #37.
+
+The setup screen was rebuilt with three things: a warm reassurance replacing a mono "Optional", group headers, and a hint on every field. Looked at on the phone, **the hints did most of the work and the grouping did the least.**
+
+Worth recording because the instinct on a thin screen is to add structure, and structure was not what was missing. Four of the five fields were empty gray boxes with a label above them. "Who they are to you" over an empty box is an interrogation. "Mom, Dad, my aunt, whatever fits" inside it is a person talking. The grouping made the screen scannable; the hints made it kind.
+
+**The general rule, since it will recur:** when a screen reads as paperwork, look at what the empty state of each control says before reaching for headings. `DESIGN.md` section 5.9 already required this and the screen shipped without it, which means the checklist in 10.6 needs to be run rather than remembered.
+
+### D38. Two defects found only with the keyboard up
+
+**Date:** 2026-08-01. **Decided by:** the session, building issue #37.
+
+The resting screenshot of the setup screen looked correct. With the keyboard open, the Continue button sat on top of the last field, and the field was sliced through the middle of its box.
+
+Neither was visible in the layout at rest, in a screenshot, or in the code. Both were obvious within a second of opening the keyboard on the phone.
+
+**Recorded as a checklist item rather than as a bug:** a screen with any text field is looked at with the keyboard up before its issue closes. That is the state the person actually spends their time in, and it is not the state anything else in this project tests. It joins section 10.6 line 1, which already said the real device and now says which states on it.
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
 **Nothing is blocked as of 2026-07-31.** All four entries that ever appeared here are resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. A fresh session reading this needs nothing from the owner in order to continue.

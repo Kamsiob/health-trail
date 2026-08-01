@@ -4,7 +4,7 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-08-01, on the branch `feat/38-edtf-dates`, in the session where the owner sent the standing quality bar.
+**Last rewritten:** 2026-08-01, on the branch `feat/37-setup-screen`, in the session where the owner sent the standing quality bar.
 
 If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
 
@@ -64,9 +64,12 @@ Verified means checked through the mechanism, not inferred from the code being w
 | Content compliance | `check_copy.py`, `check_templates.py`, `check_contract_isolation.py`, `check_self_contained.py` |
 | Every screen built so far | Instrumented, plus built, installed, opened, and looked at on the Pixel |
 | The notebook's fold behavior | Walked on the Pixel with a hospital stay template: appointments, the trail, documents, and standing instructions forward, money and progress collapsed, which is exactly what that template names |
+| Dynamic type at font scale 2.0 | Every built screen looked at on the phone with the system font at maximum. Two defects found and fixed, both invisible at 1.0. The setting was restored afterward |
+| Reduced motion | Verified with `animator_duration_scale` actually set to 0 on the phone, not by reading the code. A press still acknowledges, reaching the same target through a 100ms fade rather than a spring. The setting was restored afterward |
+| Every screen looked at with the keyboard up | Two defects found that way and nowhere else: the setup button colliding with the last field, and the field clipped mid-box at the scroll boundary |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 67 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
+**The whole instrumented suite: 70 tests, 0 failures**, run on the connected Pixel 10 Pro XL. All seven implemented compliance checks pass. JVM unit tests pass.
 
 ---
 
@@ -92,7 +95,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 | Issue | What |
 |---|---|
-| #37 | Rebuild the essentials first setup screen to the section 10.6 bar |
+| ~~#37~~ | **Done.** Grouped, hinted, and the reassurance said once in words |
 
 **Phase 0, still open.**
 
@@ -174,7 +177,7 @@ Every screen built without one is composed from existing components under `DESIG
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
 | Disclaimer gate | 2026-07-31, rebuilt same day to the 10.6 bar | #28 | not yet |
-| Essentials first setup | 2026-07-31 | #30 | not yet, **and it does not meet the 10.6 bar. Issue #37** |
+| Essentials first setup | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #30 | not yet |
 | Situation picker | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #32 | not yet |
 | Capture form, four kinds | 2026-07-31, rebuilt same day to screen 26 | #34 | not yet |
 | Notebook table of contents | 2026-08-01, rebuilt to the 10.6 bar | #36 | not yet |

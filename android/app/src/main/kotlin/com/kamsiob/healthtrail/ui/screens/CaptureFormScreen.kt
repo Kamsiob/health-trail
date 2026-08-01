@@ -236,6 +236,12 @@ fun CaptureFormScreen(
                 Spacer(Modifier.height(Space.l))
             }
 
+            // The gap the pinned action footer requires, per DESIGN.md 5.15.
+            // Without it the content at the scroll edge ends against the button
+            // and reads as an overlap, which is what it did here at the largest
+            // system font.
+            Spacer(Modifier.height(Space.m))
+
             FilledButton(
                 label = strings["capture.save"],
                 onClick = {
