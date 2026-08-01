@@ -20,9 +20,30 @@ The hook refuses the command and returns a message saying it was blocked and why
 
 This exists because the most expensive documented accident in unattended runs is exactly this: an agent clearing a working tree or force pushing and destroying hours or weeks of work that no test would have caught.
 
+**Prove it before trusting it, every session, as the first action of the run.** This guard was inert for its entire first week and looked installed the whole time. There is no output when a guard does not fire, so the only evidence that counts is a command that must be refused, actually being refused.
+
+Run both. The first is safe on a clean tree, the second targets an installation holding nothing but throwaway test rows:
+
+    git reset --hard HEAD
+    adb shell pm clear com.kamsiob.healthtrail
+
+**Refusal looks like this**, and nothing else counts:
+
+> Blocked by the Health Trail destructive command guard (RUN-SAFETY.md section 1.1).
+
+If either command runs, **the guard is not protecting this device and fixing it comes before any other work.** Check the quoting first, described below. Record the outcome in DECISIONS.md D49 either way, including a pass, because that entry is currently the only place where the result of this test is written down.
+
+**Every hook command that interpolates a path is quoted.** This project lives at a path containing spaces, `/var/home/Kamsiob/Kamiob Apps/-- Android/Health Trail`. An unquoted `${CLAUDE_PROJECT_DIR}/...` is split by the shell, the executable is never found, and the hook exits 127. A PreToolUse hook blocks on exit 2 and only on exit 2, so 127 passes the command straight through. That is D49, and it is the bug this section is warning about rather than a hypothetical.
+
+**Feeding the script a payload proves nothing about the wiring.** It proves the script. The hook is a separate question and it is the one that failed.
+
+**A fix made mid session does not take effect in that session.** Configuration is read at session start. This was confirmed with a sentinel hook that also never fired, so a guard repaired during a run stays inert for the rest of it, and that run has only rule 6 in `CLAUDE.md` protecting the device.
+
 ### 1.2 Save state before context compaction
 
 A hook on the compaction event that writes and commits the current state to HANDOFF.md before the context is compacted.
+
+**Unproven as of 2026-08-01, and it has never once fired.** It carried the same unquoted path defect as guard 1 and exited 127 every time. The quoting is fixed, and unlike guard 1 there is no way to trigger this one deliberately: compaction happens when it happens. The evidence it worked will be a commit appearing in `git log` at a compaction boundary that no session remembers making. Until such a commit exists, treat this guard as absent and keep HANDOFF.md current by hand.
 
 This matters more than it sounds. Compaction summarizes older parts of a session to make room, and two things follow from it that are documented and repeatable. Instructions dilute, meaning rules that were clear early in a session lose force after several rounds of compaction. And the session can revert to an earlier understanding of the project, then redo or overwrite work it already completed, because from its own point of view that work never happened. A state file written just before compaction is what makes the difference between a session that re-orients and a session that repeats itself.
 
@@ -33,6 +54,8 @@ After three failed attempts at the same thing, stop. Write to the BLOCKED sectio
 The failure this prevents is the documented loop where an agent fixes, checks, sees the same error, fixes again, and repeats twenty times, reporting success each round. It is not dishonest, it is fixing the same wrong thing repeatedly, and without a cap it can consume an entire run.
 
 Also cap any subagent with a turn limit so a delegated task cannot spin indefinitely, and never point a subagent at a paid external service in a loop.
+
+**This one is not a hook and nothing calls it.** `.claude/hooks/retry-guard.py` is a command line tool, `attempt`, `clear`, and `status`, that a session has to choose to run. No session ever has. It is not miswired the way guards 1 and 2 were, but the effect is the same, so the count of three working guards was wrong on all three. Call it when something fails a second time, or the cap is only a rule in a document.
 
 ---
 

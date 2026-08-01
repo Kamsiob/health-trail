@@ -457,6 +457,8 @@ Worth noting this would have reached a person. The full data wipe closes the dat
 
 ### D29. The destructive command hook has not been active this whole run
 
+> **Corrected by D49 on 2026-08-01. The cause named below is wrong.** The hook was not waiting for the next session. Its command was unquoted and this project's path contains spaces, so it exited 127 and never blocked anything, in this session or any that followed. Read D49 before relying on anything in this entry.
+
 **Found on 2026-07-31 by testing the hook rather than the script.** `git rebase --help`, which is on the blocklist, ran without being refused. So did `adb shell pm clear`, which is how it surfaced: I cleared app data on the owner's phone to get back to a fresh install, and nothing stopped me.
 
 **The script is fine. The wiring was not.** `.claude/hooks/block-destructive.py` returns exit code 2 for every blocked pattern, verified again just now including the `$ADB` variable form. The hook simply never ran.
@@ -469,7 +471,7 @@ Worth noting this would have reached a person. The full data wipe closes the dat
 
 **What changes.**
 
-- The guard is live from the next session, with no action needed.
+- ~~The guard is live from the next session, with no action needed.~~ **False, and this is the sentence D49 exists to correct.** It was never true. It was also never tested, which is the actual failure.
 - `HANDOFF.md` states plainly that guard 1 was inert for this run, so nobody reads the Phase 0 entry as meaning it was protecting the work.
 - Every future claim that a guard is in place has to be verified through the mechanism rather than against the artifact. For a hook, that means running a blocked command and being refused.
 - The same question applies to guard 2, the pre compaction state save, which has also never fired. It is written and committed and unproven in practice.
@@ -715,6 +717,50 @@ They are restored above from the commit messages and pull request bodies that qu
 **It then happened a second time, after this entry was written.** The export container was built and committed on `main` for exactly the same reason: a merge, a `git checkout main`, a `git pull`, and then an increment begun without branching. Writing the rule down did not prevent the rule being broken, which is worth more as evidence than the rule was.
 
 **The mechanical fix, which is the only kind that works here:** create the branch as the first action of an increment, before a single file is touched, rather than at the point of committing. A branch made before the work cannot be forgotten after it. Both commits were verified by continuous integration on push to `main` and both have branch pointers left at them, `feat/8-live-view-check` and `feat/9-export-container`. Every way of undoing that is a command rule 6 forbids: `git reset --hard`, `git checkout .`, branch deletion. Rule 6 says to stop and write it down rather than reach for one, so the commit stayed, verified by continuous integration on push to `main`, with the branch pointer `feat/8-live-view-check` left at it. **Check `git branch --show-current` before committing, not after pushing.**
+
+### D49. The guards were never wired, and D29 diagnosed the wrong cause
+
+**Date:** 2026-08-01. **Decided by:** the session, at the owner's instruction to prove the guard through the mechanism rather than against the artifact.
+
+**D29 was right that the guard was inert and wrong about why.** It concluded that `.claude/settings.json` had been created mid session and would therefore be live from the next session with no action needed. That was plausible, it was never tested, and it was false. Several sessions have started since. The guard has been inert in every one of them.
+
+**The actual cause is the project path.** The hook command was written unquoted:
+
+    ${CLAUDE_PROJECT_DIR}/.claude/hooks/block-destructive.py
+
+This project lives at `/var/home/Kamsiob/Kamiob Apps/-- Android/Health Trail`. The shell splits that on its spaces and tries to run `/var/home/Kamsiob/Kamiob`, which does not exist. The hook exits **127**.
+
+**A PreToolUse hook blocks on exit 2 and only on exit 2.** Exit 127 means "this hook had nothing to say", so the command proceeds. The guard was a no-op wearing the shape of a guard.
+
+**Both hooks carried the identical defect**, which is the single explanation for guard 2 as well. The pre compaction state save has never fired for the same reason, and D29 was right to flag it as unproven without knowing they shared a cause.
+
+**Quoting the path is the whole fix**, and it is committed.
+
+**Why it survived two rounds of scrutiny.** There is no output when a guard does not fire. D29 caught the symptom by accident, when `adb shell pm clear` reached the phone. The diagnosis that followed reasoned from a rule the project already knew about, session start loading, which fit the evidence and was the wrong rule. Reasoning to a plausible cause and stopping is how the same failure gets recorded twice.
+
+**What was proven this time, and what was not. This matters, because the previous entry failed exactly here.**
+
+Proven, by running it:
+
+- The unquoted form exits 127 and does not block. Reproduced directly.
+- The quoted form exits 2 and blocks, for `git reset --hard HEAD` and for `adb shell pm clear com.kamsiob.healthtrail`, and exits 0 for a harmless command.
+- **The fix is not live in the session that made it.** `git reset --hard HEAD` still executed after the fix was committed. A sentinel hook added to the same file also never fired, which distinguishes "the config did not reload" from "the fix is wrong". Claude Code reads its configuration at session start and does not pick up changes mid session.
+
+Not proven, and deliberately not asserted:
+
+- That the guard is live in the next session. **That is precisely the claim D29 made and could not support.** It is not being made again. It is instead written as a test the next session runs before anything else, in `RUN-SAFETY.md` section 1.1 and `HANDOFF.md` section 7.
+
+**What this cost, and what it still costs.** Nothing irreversible, again by luck rather than design. It also means the session that fixed it ran to its end with no automatic protection on the phone, relying only on rule 6 in `CLAUDE.md`. A rule a session must remember is not a guard.
+
+**Guard 3 is a different shape of gap.** `.claude/hooks/retry-guard.py` is not a hook at all. It is a command line tool a session is expected to call before a retry, and nothing in the repository says when to call it, so nothing ever has. It is not miswired. It is unused, which reaches the same place.
+
+**What changes.**
+
+- Any hook command that interpolates a path is quoted. This project's path contains spaces and always will.
+- **A guard is unproven until a command that must be refused has been run and was refused.** Not the script fed a payload, not the settings file read back: the actual command, through the actual tool. That is the only evidence that counts, and both entries about this now say so.
+- A claim about what will be true in a future session is not a verification. Where the check can only run later, the repository carries the check rather than the conclusion.
+
+**Revisit if.** The first session after this one runs the two commands in `RUN-SAFETY.md` section 1.1 and is refused. Record the result there either way, including if it fails again.
 
 ---
 
