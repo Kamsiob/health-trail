@@ -42,7 +42,12 @@ import com.kamsiob.healthtrail.ui.screens.emphasisFrom
 import com.kamsiob.healthtrail.ui.screens.MeasurementDraft
 import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
+import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
+import com.kamsiob.healthtrail.ui.screens.TrailScreen
+import com.kamsiob.healthtrail.ui.screens.labelKey
+import com.kamsiob.healthtrail.ui.components.DatePickerSheet
+import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -99,6 +104,18 @@ fun NotebookShell(
     // form already promises them this tray exists.
     var unfiled by remember { mutableStateOf<List<Repository.UnfiledEntry>>(emptyList()) }
     var trayOpen by remember { mutableStateOf(false) }
+    // Which section of the table of contents is open, if any. Null is the
+    // notebook itself. **Every section opens**, because a row that counts
+    // things and then does nothing when tapped is a dead end, per rules 16
+    // and 18, and twelve of them was the largest one in the app.
+    var openSection by remember { mutableStateOf<Repository.Section?>(null) }
+    var trail by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
+    var people by remember { mutableStateOf<List<Repository.Person>>(emptyList()) }
+    // The entry whose date is being corrected, per rule 17. Null means nothing
+    // is being edited.
+    var editingDate by remember { mutableStateOf<Repository.TrailEntry?>(null) }
+    // The correction in flight: which entry, and the date the person chose.
+    var correcting by remember { mutableStateOf<Pair<String, Edtf.Date>?>(null) }
     val context = LocalContext.current
 
     // Recounted whenever the tab changes, so returning to the notebook after
@@ -127,6 +144,11 @@ fun NotebookShell(
             } ?: SECTION_ORDER.map { SectionCount(it, 0, Emphasis.STANDING) }
             threads = subject?.let { repository.threads(it.id) }.orEmpty()
             unfiled = subject?.let { repository.unfiled(it.id) }.orEmpty()
+            // Read alongside the counts rather than when a section opens, so
+            // opening one is instant and never shows a spinner over a number
+            // the person is already looking at.
+            trail = subject?.let { repository.trail(it.id) }.orEmpty()
+            people = subject?.let { repository.people(it.id) }.orEmpty()
             measures = subject?.let { repository.measures(it.id) }.orEmpty()
             presets = TemplateCatalog.presets(context)
         } catch (t: Throwable) {
@@ -150,7 +172,7 @@ fun NotebookShell(
                             loaded == null -> Loading()
                             else -> NotebookScreen(
                                 sections = loaded,
-                                onOpen = { },
+                                onOpen = { openSection = it },
                                 waiting = unfiled.size,
                                 onOpenUnfiled = { trayOpen = true },
                             )
@@ -196,6 +218,82 @@ fun NotebookShell(
                 },
                 captureDescription = strings["capture.button.description"],
             )
+        }
+
+        // **A section, opened from the table of contents.**
+        //
+        // The trail and the care team are built. The other ten open onto the
+        // same honest interim screen the unbuilt destinations use, which names
+        // the section and says plainly that it is not built. That is worse than
+        // having them all built and far better than a row that swallows a tap:
+        // rule 16 says a control that does nothing on press reads as broken,
+        // and until tonight all twelve did nothing.
+        //
+        // Each of these disappears as its section lands, and ShellTags.NOT_BUILT
+        // makes the remainder greppable so none can survive to release.
+        when (openSection) {
+            null -> Unit
+
+            Repository.Section.TRAIL -> TrailScreen(
+                entries = trail,
+                onEditDate = { editingDate = it },
+                onBack = { openSection = null },
+            )
+
+            Repository.Section.CARE_TEAM -> CareTeamScreen(
+                people = people,
+                // ACTION_DIAL rather than ACTION_CALL, which would need the
+                // call permission. The dialer opens with the number filled in
+                // and the person presses the green button themselves. That is
+                // one extra tap and it is the right one: this app asks for no
+                // permission it does not need, and placing a call on somebody's
+                // behalf is not a thing it should be able to do silently.
+                onCall = { person ->
+                    person.phone?.takeIf { it.isNotBlank() }?.let { number ->
+                        context.startActivity(
+                            android.content.Intent(
+                                android.content.Intent.ACTION_DIAL,
+                                android.net.Uri.fromParts("tel", number, null),
+                            ),
+                        )
+                    }
+                },
+                onBack = { openSection = null },
+            )
+
+            else -> {
+                val section = openSection!!
+                NotBuiltYet(
+                    name = strings[labelKey(section)],
+                    onClose = { openSection = null },
+                )
+            }
+        }
+
+        // Correcting when something happened, from the entry itself, per rule
+        // 17. The same picker every other date in the app opens, so a date is
+        // edited the way it was entered rather than through a second control
+        // that behaves almost the same.
+        val editing = editingDate
+        if (editing != null) {
+            DatePickerSheet(
+                initial = editing.occurredEdtf?.let { Edtf.parse(it) },
+                onPick = { picked ->
+                    editingDate = null
+                    correcting = editing.id to picked
+                },
+                onDismiss = { editingDate = null },
+            )
+        }
+
+        val correction = correcting
+        if (correction != null) {
+            LaunchedEffect(correction) {
+                repository.updateEntryOccurred(correction.first, correction.second)
+                correcting = null
+                // Reread, which reorders the trail if the new date moves it.
+                revision += 1
+            }
         }
 
         if (trayOpen) {

@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.time
 import com.kamsiob.healthtrail.i18n.Strings
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 /**
@@ -86,6 +87,22 @@ object EventDateText {
             )
         }
     }
+
+    /**
+     * The month a run of trail entries belongs to, as its group heading.
+     *
+     * **A heading, so it carries no hedge.** Everywhere else a coarse date is
+     * framed, because "November 2024" standing alone reads as a claim that
+     * something happened across the whole month. A group header is not making
+     * that claim: it is naming the run of entries beneath it, and each of those
+     * still says its own date at its own precision.
+     *
+     * Formatted through the catalog's own pattern, so the shape of the heading
+     * is part of the translation rather than something applied to it.
+     */
+    fun monthHeading(strings: Strings, epochMillis: Long, zone: ZoneId): String =
+        LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(epochMillis), zone)
+            .format(pattern(strings, "date.format.month_year"))
 
     /** The date itself, formatted, with no hedge around it. */
     private fun bare(strings: Strings, date: Edtf.Date): String {

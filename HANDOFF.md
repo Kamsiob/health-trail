@@ -12,6 +12,28 @@ If you find yourself re-reading files you already read this session, compaction 
 
 ---
 
+## 0a. The guard was tested again on 2026-08-01 at 22:31, and it failed again
+
+**Read this before section 0, which describes the state before the test.**
+
+The probe was run first thing, as instructed. **The guard did not fire.** D49 carries the full account and D56 and D57 carry two standing rules the owner set during the same run.
+
+**The two commands section 0 names were both refused by Claude Code's own auto mode classifier rather than by this guard**, so neither tested what it was meant to test. **A refusal arriving from somewhere else is not evidence about the guard.** The test that answered it was `git restore --version`: on the blocklist, harmless if it runs, dull enough that the classifier allowed it. It ran.
+
+**`CLAUDE_PROJECT_DIR` is empty in a session's shell.** The quoting fix was real and insufficient: an unset variable yields an unusable path exactly as surely as an unquoted one. The hook path is now **absolute, with no variable in it**.
+
+**The guard now logs every invocation** to `~/.claude/health-trail-guard.log`, blocked or passed. This is the change that matters. Three times this project has been unable to answer "did the guard run", because a guard that does not fire produces exactly as much output as a guard with nothing to do.
+
+**So the test for the next session is now a one liner, and it comes before the two commands:**
+
+    cat ~/.claude/health-trail-guard.log
+
+**If it has no line stamped inside your session, you have no guard**, whatever the configuration says. Run the two commands in section 0 anyway to confirm, and record the outcome in D49 either way.
+
+**What protected the phone through this run** was the auto mode classifier, not this project's guard.
+
+---
+
 ## 0. Read this before you trust anything about safety
 
 **All three run safety guards were decorative until 2026-08-01, and the repository said otherwise for a week.** D29, D49, D50, D53.
@@ -58,6 +80,14 @@ The parts that change how you work, compressed:
 **All four screens the owner named as visually thin have been rebuilt** and their issues are closed: the disclaimer gate, setup, the situation picker, and the capture form, plus the notebook table of contents last, #36 through pull request #49. Nothing is in flight.
 
 ---
+
+## 2a. Two standing rules the owner set on 2026-08-01, both binding
+
+**One current build of the app stays installed on the phone at all times.** D56. He went to use it and it was not there: the previous session ended on an instrumented run, and `connectedAndroidTest` uninstalls the app. **The phone is where he tests, and he cannot test an app that is not installed.** So an instrumented run is followed by a reinstall in the same increment, before anything else is picked up, and a session never ends with the app absent. The old rule about exporting first was about not losing data and missed the more basic thing.
+
+**Another application of his on the same phone is out of bounds entirely**, and is deliberately not named in this repository. D57. Enumerating a shared device surfaces things that are not this project's, and the right response to seeing them is to stop looking.
+
+**A third instruction governs the languages.** D58: the translated languages ship with a friendly disclaimer on the language selection screen rather than behind a native speaker gate, English never carries one because it is authored rather than translated, and the translations get a good faith check at the very end. #102 is closed and #109 carries the disclaimer. **#62 lost `release-blocking`**: the app ships in English, and the rest of language access sits behind the app itself.
 
 ## 3. The precise next action
 
@@ -283,6 +313,8 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| The trail | 2026-08-01 | #111 | not yet |
+| Care team, read only | 2026-08-01 | #111 | not yet |
 | Disclaimer gate | 2026-07-31, rebuilt same day to the 10.6 bar | #28 | not yet |
 | Essentials first setup | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #30 | not yet |
 | Situation picker | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #32 | not yet |

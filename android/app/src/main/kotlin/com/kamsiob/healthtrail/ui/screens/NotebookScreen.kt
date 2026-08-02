@@ -419,7 +419,7 @@ private fun SectionRow(row: SectionCount, onClick: () -> Unit) {
     }
 }
 
-private fun labelKey(section: Repository.Section): String = when (section) {
+internal fun labelKey(section: Repository.Section): String = when (section) {
     Repository.Section.CARE_TEAM -> "notebook.section.care_team"
     Repository.Section.MEDICATIONS -> "notebook.section.medications"
     Repository.Section.APPOINTMENTS -> "notebook.section.appointments"

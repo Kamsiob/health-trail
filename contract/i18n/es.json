@@ -207,5 +207,14 @@
   "appearance.dark.detail": "Siempre oscuro, aunque el teléfono esté en claro.",
   "nav.more.appearance": "Apariencia",
   "more.coming.group": "También vendrá aquí",
-  "more.coming.body": "Exportar su cuaderno, una página de información con la política de privacidad, el idioma de la aplicación y una forma de borrarlo todo. Nada de eso está hecho todavía. Todo lo que anote ahora seguirá aquí cuando lo esté."
+  "more.coming.body": "Exportar su cuaderno, una página de información con la política de privacidad, el idioma de la aplicación y una forma de borrarlo todo. Nada de eso está hecho todavía. Todo lo que anote ahora seguirá aquí cuando lo esté.",
+  "trail.subtitle": "Todo lo que usted ha anotado, empezando por lo más reciente.",
+  "trail.unfiled": "Sin archivar",
+  "careteam.subtitle": "Todas las personas que participan en la atención, y cómo comunicarse con ellas.",
+  "careteam.empty": "Aún no hay nadie. Aquí van las personas con las que más trata, para tener su número a un toque.",
+  "careteam.call": "Llamar",
+  "careteam.no_phone": "Sin número todavía",
+  "section.back": "Volver al cuaderno",
+  "trail.date.action": "{date}. Cambiar la fecha.",
+  "careteam.call.number": "Llamar al {number}"
 }

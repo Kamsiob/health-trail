@@ -44,6 +44,8 @@ Every color pair in both themes is measured against the WCAG AA floors by `check
 
 - **Capture that forgives, all six ways in.** A call, a visit, an incident, a measurement, a question for next time, and a document. **Every field is optional** and the button says "Save what you have". Rough dates are first-class: today, yesterday, this week, not sure, or a picked date.
 - **Dates that do not lie about their own precision.** Built on EDTF, the extended date format from ISO 8601-2. "August 2026" stays August 2026 and never quietly becomes August 1st. Unknown is a real value rather than a blank, and uncertainty is recorded separately from precision.
+- **The trail, which is the record you can actually read back.** Everything written down, on a dashed route with a node per entry colored by what it was, headed by month. Ordered by **when things happened rather than when they were typed**, so a call logged Tuesday about Sunday sits on Sunday. Entries whose date is not known gather at the end under their own heading rather than being quietly placed at today.
+- **Every date is editable forever, from the entry itself.** Tap the date on any entry in the trail and the same picker every other date uses opens on it. A date written down in a hallway is the one most likely to be wrong.
 - **Nothing gets filed for you.** Anything saved without a home lands in an Unfiled tray, where the app reads the words you wrote, suggests a care thread, and waits for you to confirm. It never files on its own.
 - **A notebook with twelve sections that never move**, grouped and folded to the kind of care being given. A hospital stay brings appointments and the trail forward and folds money away; a different situation folds differently.
 - **Setup you can skip entirely.** Three questions, all optional. Skipping produces a working notebook. Answering "not sure yet" is a real answer that changes what the app asks you later.
@@ -57,7 +59,8 @@ Every color pair in both themes is measured against the WCAG AA floors by `check
 The honest list. This section shrinks as things land.
 
 - **Today's digest**, the deterministic summary of what changed since you were last here. The screen exists and says plainly that the summary is still being built, rather than showing a fake one.
-- **The trail, care team, medications, the emergency card, projects, and settings.** Each is a section in the notebook that currently reads "Nothing yet".
+- **Medications, appointments, chapters, documents, money, standing instructions, questions, the emergency card, and projects.** Each is a section in the notebook. **Every one of them opens now**, which it did not before: the table of contents counted twelve sections and none of them responded to a tap. The ones without a screen yet say plainly that they are not built rather than swallowing the tap.
+- **Adding somebody to the care team.** The section reads the people who are there and setup writes the first one, but there is no way to add a second from inside the app yet.
 - **Exports that stand on their own.** An incident, a project, a chapter, a month, or the whole notebook, generated on your phone as a document a relative can read without ever having seen the app. The container writes and reads; encryption and the full round trip are next.
 - **Everything connects, both ways.** A medication knowing its own incidents, its pending questions, and its place on the emergency card. Needs the screens that would link to each other.
 - **Standing instructions** recording what you asked, of whom, when, how it was acknowledged, and every documented violation, tagged by whether federal nursing home rules back it up or it is your own request.

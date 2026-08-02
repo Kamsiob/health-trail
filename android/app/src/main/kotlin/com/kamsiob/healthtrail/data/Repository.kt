@@ -328,6 +328,29 @@ class Repository private constructor(
         }
     }
 
+    /**
+     * Changes when an entry happened.
+     *
+     * **This exists because rule 17 requires it**: every date is editable
+     * forever, from the entry itself. A date captured in a hallway is the one
+     * most likely to be wrong, and a record that will not let somebody correct
+     * it is a record that quietly accumulates errors nobody can reach.
+     *
+     * All four columns of the group move together, through [dateColumns], so
+     * the derived range can never disagree with the EDTF string it came from.
+     * Writing the string alone would leave the trail ordering by the old date
+     * while displaying the new one.
+     */
+    suspend fun updateEntryOccurred(entryId: String, occurred: Edtf.Date) =
+        withContext(Dispatchers.IO) {
+            val columns = dateColumns("occurred", occurred)
+            val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+            db().database.execSQL(
+                "UPDATE entry SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+                (columns.values + listOf(System.currentTimeMillis(), entryId)).toTypedArray(),
+            )
+        }
+
     // -- measures and measurements -----------------------------------------
 
     /** A thing this notebook tracks over time. */
@@ -722,6 +745,133 @@ class Repository private constructor(
                 "outcome" to outcome?.ifBlank { null },
             ),
         )
+    }
+
+    // -- reading a section back -------------------------------------------
+
+    /**
+     * One entry as the trail shows it, with the threads it belongs to already
+     * attached.
+     *
+     * The threads come along because a trail row shows them, and fetching them
+     * per row would be one query per entry on a screen whose whole job is to
+     * hold years of them.
+     */
+    data class TrailEntry(
+        val id: String,
+        val kind: String,
+        val title: String?,
+        val body: String?,
+        /** The EDTF string. Rendered by `EventDateText`, never parsed here. */
+        val occurredEdtf: String?,
+        /** Null exactly when the date is unknown, which is a real answer. */
+        val occurredStart: Long?,
+        val createdAt: Long,
+        val isUnfiled: Boolean,
+        val threads: List<CareThread>,
+    )
+
+    /**
+     * The whole trail for one subject, most recent first.
+     *
+     * **Ordered by when things happened, not by when they were written down.**
+     * That is the distinction the schema draws with `occurred_start` against
+     * `created_at`, and it is the one that matters to somebody looking back:
+     * a call logged on Tuesday about something that happened on Sunday belongs
+     * on Sunday.
+     *
+     * **An unknown date sorts last rather than sorting as zero or as today.**
+     * Both of those would be the app inventing a position on the timeline that
+     * the person never gave it, which rule 17 forbids and which would be a
+     * quiet lie in a care record. Entries with no date sit together at the end,
+     * ordered by when they were captured, and each says the date is not known.
+     * `occurred_start IS NULL` sorts before `DESC` rather than relying on
+     * NULLS LAST, whose availability varies by SQLite build.
+     */
+    suspend fun trail(subjectId: String): List<TrailEntry> = withContext(Dispatchers.IO) {
+        val threadsByEntry = mutableMapOf<String, MutableList<CareThread>>()
+        db().database.rawQuery(
+            "SELECT et.entry_id, t.id, t.label, t.color_index " +
+                "FROM live_entry_thread et " +
+                "JOIN live_care_thread t ON t.id = et.thread_id " +
+                "JOIN live_entry e ON e.id = et.entry_id " +
+                "WHERE e.subject_id = ? ORDER BY t.sort_index, t.created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                threadsByEntry
+                    .getOrPut(cursor.getString(0)) { mutableListOf() }
+                    .add(CareThread(cursor.getString(1), cursor.getString(2), cursor.getInt(3)))
+            }
+        }
+
+        db().database.rawQuery(
+            "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, is_unfiled " +
+                "FROM live_entry WHERE subject_id = ? " +
+                "ORDER BY occurred_start IS NULL, occurred_start DESC, created_at DESC",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    val id = cursor.getString(0)
+                    add(
+                        TrailEntry(
+                            id = id,
+                            kind = cursor.getString(1),
+                            title = cursor.getString(2),
+                            body = cursor.getString(3),
+                            occurredEdtf = cursor.getString(4),
+                            occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                            createdAt = cursor.getLong(6),
+                            isUnfiled = cursor.getInt(7) == 1,
+                            threads = threadsByEntry[id].orEmpty(),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /** One person on the care team, with everything a row about them shows. */
+    data class Person(
+        val id: String,
+        val displayName: String,
+        val roleLabel: String?,
+        val phone: String?,
+        val email: String?,
+        val notes: String?,
+    )
+
+    /**
+     * The care team, in the order they were added.
+     *
+     * **Archived people are excluded and deleted people never reach here**,
+     * the first by the `archived_at` test and the second by the live view. They
+     * are different states: archiving is the person saying somebody is no
+     * longer involved, deleting is them saying the row should not exist.
+     */
+    suspend fun people(subjectId: String): List<Person> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, display_name, role_label, phone, email, notes " +
+                "FROM live_person WHERE subject_id = ? AND archived_at IS NULL " +
+                "ORDER BY created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Person(
+                            id = cursor.getString(0),
+                            displayName = cursor.getString(1),
+                            roleLabel = cursor.getString(2),
+                            phone = cursor.getString(3),
+                            email = cursor.getString(4),
+                            notes = cursor.getString(5),
+                        ),
+                    )
+                }
+            }
+        }
     }
 
     // -- counting, for the table of contents ------------------------------

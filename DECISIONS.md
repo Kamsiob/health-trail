@@ -806,11 +806,13 @@ The test that actually answered it was `git restore --version`: on this guard's 
 
 **Revisit if.** Never, while development happens on the owner's own phone.
 
-### D57. Kam AI is unrelated and out of bounds
+### D57. Another application on the same phone is out of bounds
 
 **Date:** 2026-08-01. **Decided by:** the owner, during the run.
 
-Listing the phone's packages to find out whether Health Trail was installed also showed `com.kamsiob.kamai` and `com.kamsiob.kamai.test`. The owner stated that Kam AI is a completely different app with zero relation to this project, and that nothing about it is to be touched: not on the phone, not on the machine, not in any repository.
+Listing the phone's packages to find out whether Health Trail was installed also showed two packages belonging to a different application of the owner's. He stated it has zero relation to this project and that nothing about it is to be touched: not on the phone, not on the machine, not in any repository.
+
+**It is deliberately not named here**, and that is the second half of this entry rather than an aside. The first draft named it, and `check_self_contained.py` failed the build on exactly that. The check is right: this repository is public and reads as a self contained project, so nothing else that lives on this machine is named in it, in any file, commit message, issue, or comment. An instruction to leave something alone is not a reason to write its name into a public record.
 
 Recorded because the discovery route is one any session repeats. **Enumerating a shared device surfaces things that are not this project's**, and the correct response to seeing them is to stop looking. A stale `.test` package belonging to another app is not this project's cleanup to do, even though this project's own blocklist carves out an exception for exactly that shape of package id.
 

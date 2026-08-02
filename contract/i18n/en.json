@@ -207,5 +207,14 @@
   "appearance.dark.detail": "Always dark, even when the phone is light.",
   "nav.more.appearance": "Appearance",
   "more.coming.group": "Also coming here",
-  "more.coming.body": "Exporting your notebook, an About page with the privacy policy, the language this app runs in, and a way to erase everything. None of it is built yet. Everything you write down now will still be here when it is."
+  "more.coming.body": "Exporting your notebook, an About page with the privacy policy, the language this app runs in, and a way to erase everything. None of it is built yet. Everything you write down now will still be here when it is.",
+  "trail.subtitle": "Everything you have written down, with the most recent first.",
+  "trail.unfiled": "Not filed yet",
+  "careteam.subtitle": "Everyone involved in the care, and how to reach them.",
+  "careteam.empty": "Nobody added yet. The people you deal with most belong here, so their number is one tap away.",
+  "careteam.call": "Call",
+  "careteam.no_phone": "No number yet",
+  "section.back": "Back to the notebook",
+  "trail.date.action": "{date}. Change the date.",
+  "careteam.call.number": "Call {number}"
 }

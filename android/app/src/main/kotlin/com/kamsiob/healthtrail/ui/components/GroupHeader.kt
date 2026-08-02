@@ -43,6 +43,21 @@ import com.kamsiob.healthtrail.ui.theme.Space
  */
 @Composable
 fun GroupHeader(labelKey: String, modifier: Modifier = Modifier) {
+    GroupHeaderText(label = LocalStrings.current[labelKey], modifier = modifier)
+}
+
+/**
+ * The same header over a label the catalog cannot hold, which in practice means
+ * a month in the trail.
+ *
+ * **A month heading is data, not copy.** "November 2024" is composed from an
+ * entry's own date through the catalog's own pattern, so it cannot be a key.
+ * It shares this component rather than growing a second one, because section
+ * 5.13 describes one way of heading a run of rows and two implementations of it
+ * would drift the moment either was touched.
+ */
+@Composable
+fun GroupHeaderText(label: String, modifier: Modifier = Modifier) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -51,7 +66,7 @@ fun GroupHeader(labelKey: String, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = strings[labelKey].uppercase(strings.locale),
+            text = label.uppercase(strings.locale),
             style = HealthTrail.type.mono,
             color = colors.ink3Text,
         )

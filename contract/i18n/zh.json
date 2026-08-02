@@ -207,5 +207,14 @@
   "appearance.dark.detail": "始终深色，即使手机为浅色。",
   "nav.more.appearance": "外观",
   "more.coming.group": "此处即将添加",
-  "more.coming.body": "导出您的笔记本、包含隐私政策的关于页面、本应用使用的语言，以及清除全部内容的方式。这些都尚未完成。您现在记下的一切，在完成之后依然会在这里。"
+  "more.coming.body": "导出您的笔记本、包含隐私政策的关于页面、本应用使用的语言，以及清除全部内容的方式。这些都尚未完成。您现在记下的一切，在完成之后依然会在这里。",
+  "trail.subtitle": "您记下的所有内容，最近的排在最前面。",
+  "trail.unfiled": "尚未归置",
+  "careteam.subtitle": "参与照护的每一位，以及如何联系他们。",
+  "careteam.empty": "还没有添加任何人。把您打交道最多的人放在这里，一触即可拨号。",
+  "careteam.call": "拨打",
+  "careteam.no_phone": "暂无号码",
+  "section.back": "返回笔记本",
+  "trail.date.action": "{date}。更改日期。",
+  "careteam.call.number": "拨打 {number}"
 }
