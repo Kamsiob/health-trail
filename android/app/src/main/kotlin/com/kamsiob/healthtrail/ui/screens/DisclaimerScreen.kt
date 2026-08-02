@@ -1,7 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import android.content.Intent
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -173,7 +173,7 @@ fun DisclaimerScreen(onAccept: () -> Unit) {
                         // link in the product. Nothing is sent and nothing is
                         // recorded about the tap.
                         context.startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL)),
+                            Intent(Intent.ACTION_VIEW, SUPPORT_URL.toUri()),
                         )
                     },
                     modifier = Modifier
