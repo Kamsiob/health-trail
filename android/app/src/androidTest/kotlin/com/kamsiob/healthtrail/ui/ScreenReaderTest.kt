@@ -18,6 +18,9 @@ import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
+import com.kamsiob.healthtrail.data.ExportContainer
+import com.kamsiob.healthtrail.ui.screens.RestoreScreen
+import com.kamsiob.healthtrail.ui.screens.RestoreState
 import com.kamsiob.healthtrail.ui.screens.ExportState
 import com.kamsiob.healthtrail.ui.screens.AcknowledgeSheet
 import com.kamsiob.healthtrail.ui.screens.AnswerSheet
@@ -634,6 +637,65 @@ class ScreenReaderTest {
         assertEverythingIsLabeled("export, working")
     }
 
+    /**
+     * Each restore state renders different controls, so each gets its own case.
+     * The compose rule takes content once per test, which is why this is four
+     * tests rather than a loop over the states.
+     */
+    @Test
+    fun restoreLabelsEverythingBeforeAFileIsChosen() {
+        compose.show { restoreAt(RestoreState.Empty) }
+        assertEverythingIsLabeled("restore, nothing chosen")
+    }
+
+    @Test
+    fun restoreLabelsEverythingWhenLocked() {
+        compose.show { restoreAt(RestoreState.NeedsPassphrase("That did not open it.")) }
+        assertEverythingIsLabeled("restore, locked after a failed attempt")
+    }
+
+    @Test
+    fun restoreLabelsEverythingWhenReady() {
+        compose.show {
+            restoreAt(
+                RestoreState.Ready(
+                    ExportContainer.Manifest(
+                        formatVersion = 1,
+                        appVersion = "0.1.0",
+                        platform = "android",
+                        exportedAt = 1_785_657_781_157,
+                        originDevice = "device",
+                        encrypted = true,
+                        databaseSha256 = "abc",
+                        databaseBytes = 1,
+                        rowCounts = mapOf("entry" to 4),
+                        attachmentCount = 0,
+                        attachmentBytes = 0,
+                        subjectCount = 1,
+                    ),
+                ),
+            )
+        }
+        assertEverythingIsLabeled("restore, ready to replace")
+    }
+
+    @Test
+    fun restoreLabelsEverythingOnAProblem() {
+        compose.show { restoreAt(RestoreState.Problem("This file could not be opened.")) }
+        assertEverythingIsLabeled("restore, problem")
+    }
+
+    @androidx.compose.runtime.Composable
+    private fun restoreAt(state: RestoreState) {
+        RestoreScreen(
+            state = state,
+            onChoose = {},
+            onUnlock = {},
+            onRestore = {},
+            onBack = {},
+        )
+    }
+
     @Test
     fun aboutLabelsEverything() {
         compose.show { AboutScreen(onBack = {}) }
@@ -648,6 +710,7 @@ class ScreenReaderTest {
                 onChoose = {},
                 onAbout = {},
                 onExport = {},
+                onRestore = {},
             )
         }
         assertEverythingIsLabeled("more")

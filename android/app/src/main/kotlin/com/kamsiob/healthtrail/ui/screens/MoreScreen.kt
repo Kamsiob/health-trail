@@ -20,6 +20,7 @@ object MoreTags {
     const val COMING = "more_coming"
     const val ABOUT = "more_about"
     const val EXPORT = "more_export"
+    const val RESTORE = "more_restore"
 }
 
 /**
@@ -46,13 +47,20 @@ fun MoreScreen(
     onChoose: (ThemeChoice) -> Unit,
     onAbout: () -> Unit,
     onExport: () -> Unit,
+    onRestore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AppearanceScreen(
         choice = choice,
         onChoose = onChoose,
         modifier = modifier,
-        footer = { MoreBelowAppearance(onAbout = onAbout, onExport = onExport) },
+        footer = {
+            MoreBelowAppearance(
+                onAbout = onAbout,
+                onExport = onExport,
+                onRestore = onRestore,
+            )
+        },
     )
 }
 
@@ -65,7 +73,11 @@ fun MoreScreen(
  * and it may not keep saying so once it has.
  */
 @Composable
-private fun MoreBelowAppearance(onAbout: () -> Unit, onExport: () -> Unit) {
+private fun MoreBelowAppearance(
+    onAbout: () -> Unit,
+    onExport: () -> Unit,
+    onRestore: () -> Unit,
+) {
     val strings = LocalStrings.current
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -74,6 +86,12 @@ private fun MoreBelowAppearance(onAbout: () -> Unit, onExport: () -> Unit) {
             label = strings["more.export"],
             onClick = onExport,
             modifier = Modifier.fillMaxWidth().testTag(MoreTags.EXPORT),
+        )
+        Spacer(Modifier.height(Space.cardGap))
+        QuietButton(
+            label = strings["more.restore"],
+            onClick = onRestore,
+            modifier = Modifier.fillMaxWidth().testTag(MoreTags.RESTORE),
         )
         Spacer(Modifier.height(Space.cardGap))
         QuietButton(

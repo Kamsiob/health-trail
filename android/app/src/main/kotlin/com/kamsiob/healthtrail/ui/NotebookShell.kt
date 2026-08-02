@@ -33,6 +33,9 @@ import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
+import com.kamsiob.healthtrail.ui.screens.RestoreScreen
+import com.kamsiob.healthtrail.ui.screens.RestoreState
+import com.kamsiob.healthtrail.data.ExportContainer
 import com.kamsiob.healthtrail.ui.screens.ExportState
 import com.kamsiob.healthtrail.data.Backup
 import com.kamsiob.healthtrail.ui.screens.MoreScreen
@@ -189,6 +192,14 @@ fun NotebookShell(
     // because the system picker is a round trip through another activity.
     var pendingPassphrase by remember { mutableStateOf<String?>(null) }
     var writeTo by remember { mutableStateOf<android.net.Uri?>(null) }
+    var restoreOpen by remember { mutableStateOf(false) }
+    var restoreState by remember { mutableStateOf<RestoreState>(RestoreState.Empty) }
+    // The chosen file, copied into the cache so it can be read more than once:
+    // once to find out whether it is locked, and again with the passphrase.
+    var restoreFile by remember { mutableStateOf<File?>(null) }
+    var openWith by remember { mutableStateOf<String?>(null) }
+    var openNow by remember { mutableStateOf(false) }
+    var applyNow by remember { mutableStateOf(false) }
     // The emergency card, and whether it is being filled in.
     var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
     var editingEmergencyCard by remember { mutableStateOf(false) }
@@ -324,6 +335,11 @@ fun NotebookShell(
     BackHandler(enabled = openProject != null) { openProject = null }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
+    BackHandler(enabled = restoreOpen) {
+        restoreOpen = false
+        restoreState = RestoreState.Empty
+        restoreFile = null
+    }
     BackHandler(enabled = answering != null) { answering = null }
     BackHandler(enabled = acknowledging != null) { acknowledging = null }
     BackHandler(enabled = startingProject) { startingProject = false }
@@ -438,6 +454,11 @@ fun NotebookShell(
                         onChoose = onThemeChoice,
                         onAbout = { aboutOpen = true },
                         onExport = { exportState = ExportState.READY; exportOpen = true },
+                        onRestore = {
+                            restoreState = RestoreState.Empty
+                            restoreFile = null
+                            restoreOpen = true
+                        },
                     )
                 }
             }
@@ -528,6 +549,124 @@ fun NotebookShell(
                 }
                 writeTo = null
                 pendingPassphrase = null
+            }
+        }
+
+        val chooseFile = rememberLauncherForActivityResult(
+            ActivityResultContracts.OpenDocument(),
+        ) { uri ->
+            if (uri != null) {
+                val staged = File(context.cacheDir, "restore-source.htx")
+                runCatching {
+                    context.contentResolver.openInputStream(uri)?.use { input ->
+                        staged.outputStream().use { input.copyTo(it) }
+                    } ?: error("no input stream")
+                }.onSuccess {
+                    restoreFile = staged
+                    openWith = null
+                    openNow = true
+                }.onFailure {
+                    restoreState = RestoreState.Problem(strings["export.failed"])
+                }
+            }
+        }
+
+        if (restoreOpen) {
+            RestoreScreen(
+                state = restoreState,
+                onChoose = {
+                    restoreState = RestoreState.Empty
+                    chooseFile.launch(arrayOf("*/*"))
+                },
+                onUnlock = { entered -> openWith = entered; openNow = true },
+                onRestore = { applyNow = true },
+                onBack = {
+                    restoreOpen = false
+                    restoreState = RestoreState.Empty
+                    restoreFile = null
+                },
+            )
+        }
+
+        // **Reading is separate from applying, and this is the reading half.**
+        // Nothing about the notebook changes here, whatever the file turns out
+        // to be.
+        // **The guard is cleared last, never first.** Setting it false at the
+        // top of the effect removes the effect from composition and cancels the
+        // coroutine before it finishes, which looked exactly like the file
+        // being unreadable: the staging directory filled up and the screen
+        // never moved off its empty state.
+        if (openNow) {
+            val source = restoreFile
+            LaunchedEffect(source, openWith) {
+                if (source == null) {
+                    openNow = false
+                    return@LaunchedEffect
+                }
+                val staging = File(context.cacheDir, "restore-staging")
+                val result = ExportContainer.open(
+                    file = source,
+                    staging = staging,
+                    passphrase = openWith?.takeIf { it.isNotEmpty() }?.toCharArray(),
+                )
+                restoreState = result.fold(
+                    onSuccess = { RestoreState.Ready(it.manifest) },
+                    onFailure = { failure ->
+                        val problem = failure as? ExportContainer.ExportProblem
+                        when (val p = problem?.problem) {
+                            is ExportContainer.Problem.PassphraseNeeded ->
+                                RestoreState.NeedsPassphrase()
+                            // **A wrong passphrase leaves them here to try
+                            // again.** Retyping is the expected case, and
+                            // sending somebody back to pick the file a second
+                            // time punishes a typo.
+                            is ExportContainer.Problem.CouldNotDecrypt ->
+                                RestoreState.NeedsPassphrase(p.message)
+                            null -> RestoreState.Problem(
+                                failure.message ?: strings["common.error.generic"],
+                            )
+                            else -> RestoreState.Problem(p.message)
+                        }
+                    },
+                )
+                openNow = false
+            }
+        }
+
+        if (applyNow) {
+            val source = restoreFile
+            LaunchedEffect(source) {
+                if (source == null) {
+                    applyNow = false
+                    return@LaunchedEffect
+                }
+                restoreState = RestoreState.Working
+                val staging = File(context.cacheDir, "restore-staging")
+                val opened = ExportContainer.open(
+                    file = source,
+                    staging = staging,
+                    passphrase = openWith?.takeIf { it.isNotEmpty() }?.toCharArray(),
+                )
+                restoreState = opened.fold(
+                    onSuccess = { container ->
+                        Backup.restore(context, container).fold(
+                            onSuccess = { RestoreState.Done },
+                            onFailure = {
+                                RestoreState.Problem(
+                                    it.message ?: strings["common.error.generic"],
+                                )
+                            },
+                        )
+                    },
+                    onFailure = {
+                        RestoreState.Problem(it.message ?: strings["common.error.generic"])
+                    },
+                )
+                // Everything on screen came from the database that was just
+                // replaced, so it is all reread rather than left showing the
+                // notebook that no longer exists.
+                revision += 1
+                applyNow = false
             }
         }
 

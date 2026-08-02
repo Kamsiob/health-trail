@@ -411,5 +411,18 @@
   "export.done": "Saved. Check that you can find it before you rely on it.",
   "export.failed": "That did not work and nothing was saved. Your notebook is untouched.",
   "more.export": "Export your notebook",
-  "section.back.more2": "Back to More"
+  "section.back.more2": "Back to More",
+  "restore.title": "Restore from a file",
+  "restore.lead": "Open an export you made earlier. Nothing changes until you have seen what is in the file and said so.",
+  "restore.choose": "Choose a file",
+  "restore.passphrase": "This file is locked. What is its passphrase?",
+  "restore.unlock": "Open it",
+  "restore.found": "What is in this file",
+  "restore.made": "Made {date}",
+  "restore.rows": "{count, plural, =0 {Nothing recorded in it} one {1 record} other {# records}}",
+  "restore.warning": "Restoring replaces everything in this app with what is in the file. Anything you have written since that file was made is gone.",
+  "restore.confirm": "Replace everything with this",
+  "restore.working": "Restoring. Do not close the app.",
+  "restore.done": "Restored. Your notebook is what was in the file.",
+  "more.restore": "Restore from a file"
 }

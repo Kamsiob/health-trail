@@ -411,5 +411,18 @@
   "export.done": "Guardado. Compruebe que puede encontrarlo antes de confiar en él.",
   "export.failed": "No funcionó y no se guardó nada. Su cuaderno está intacto.",
   "more.export": "Exportar su cuaderno",
-  "section.back.more2": "Volver a Más"
+  "section.back.more2": "Volver a Más",
+  "restore.title": "Restaurar desde un archivo",
+  "restore.lead": "Abra una exportación que hizo antes. Nada cambia hasta que haya visto lo que contiene y lo confirme.",
+  "restore.choose": "Elegir un archivo",
+  "restore.passphrase": "Este archivo está protegido. ¿Cuál es su contraseña?",
+  "restore.unlock": "Abrirlo",
+  "restore.found": "Qué contiene este archivo",
+  "restore.made": "Creado el {date}",
+  "restore.rows": "{count, plural, =0 {No contiene nada} one {1 registro} other {# registros}}",
+  "restore.warning": "Restaurar reemplaza todo lo que hay en la aplicación por lo que contiene el archivo. Todo lo que haya anotado desde que se creó ese archivo se pierde.",
+  "restore.confirm": "Reemplazar todo con esto",
+  "restore.working": "Restaurando. No cierre la aplicación.",
+  "restore.done": "Restaurado. Su cuaderno es lo que contenía el archivo.",
+  "more.restore": "Restaurar desde un archivo"
 }
