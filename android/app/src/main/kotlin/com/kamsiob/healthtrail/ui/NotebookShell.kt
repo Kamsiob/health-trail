@@ -59,6 +59,10 @@ import com.kamsiob.healthtrail.ui.screens.StandingInstructionsScreen
 import com.kamsiob.healthtrail.ui.screens.AddBillScreen
 import com.kamsiob.healthtrail.ui.screens.BillDraft
 import com.kamsiob.healthtrail.ui.screens.MoneyScreen
+import com.kamsiob.healthtrail.ui.screens.AddDocumentScreen
+import com.kamsiob.healthtrail.ui.screens.DocumentDraft
+import com.kamsiob.healthtrail.ui.screens.DocumentsScreen
+import com.kamsiob.healthtrail.data.Attachments
 import com.kamsiob.healthtrail.ui.screens.parseAmountToMinor
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
@@ -171,6 +175,12 @@ fun NotebookShell(
     var addingInstruction by remember { mutableStateOf(false) }
     var bills by remember { mutableStateOf<List<Repository.Bill>>(emptyList()) }
     var addingBill by remember { mutableStateOf(false) }
+    var documents by remember { mutableStateOf<List<Repository.Document>>(emptyList()) }
+    var addingDocument by remember { mutableStateOf(false) }
+    var savingDocument by remember { mutableStateOf<DocumentDraft?>(null) }
+    // Said only when a file was refused, and cleared the moment the person
+    // picks another, so it never lingers over a choice it does not describe.
+    var documentError by remember { mutableStateOf<String?>(null) }
     var savingBill by remember { mutableStateOf<BillDraft?>(null) }
     var savingInstruction by remember {
         mutableStateOf<TemplateCatalog.Instruction?>(null)
@@ -219,6 +229,7 @@ fun NotebookShell(
             appointments = subject?.let { repository.appointments(it.id) }.orEmpty()
             instructions = subject?.let { repository.standingInstructions(it.id) }.orEmpty()
             bills = subject?.let { repository.bills(it.id) }.orEmpty()
+            documents = subject?.let { repository.documents(it.id) }.orEmpty()
             instructionCatalog = TemplateCatalog.instructions(context)
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
@@ -311,6 +322,12 @@ fun NotebookShell(
             Repository.Section.TRAIL -> TrailScreen(
                 entries = trail,
                 onEditDate = { editingDate = it },
+                onBack = { openSection = null },
+            )
+
+            Repository.Section.DOCUMENTS -> DocumentsScreen(
+                documents = documents,
+                onAdd = { documentError = null; addingDocument = true },
                 onBack = { openSection = null },
             )
 
@@ -453,6 +470,57 @@ fun NotebookShell(
             LaunchedEffect(asked) {
                 repository.markQuestionAsked(asked.id, Edtf.day(LocalDate.now()))
                 markingAsked = null
+                revision += 1
+            }
+        }
+
+        if (addingDocument) {
+            AddDocumentScreen(
+                error = documentError,
+                onSave = { draft ->
+                    savingDocument = draft
+                },
+                onCancel = { addingDocument = false; documentError = null },
+            )
+        }
+
+        val documentDraft = savingDocument
+        if (documentDraft != null) {
+            LaunchedEffect(documentDraft) {
+                val subject = repository.activeSubject()
+                val title = documentDraft.title.trim()
+                if (subject != null && title.isNotBlank()) {
+                    // **The bytes go to disk before the rows exist**, so a
+                    // document row can never point at a file that was never
+                    // written. Attachments is content addressed, so the same
+                    // photograph chosen twice is one file rather than two.
+                    val picked = documentDraft.picked
+                    val file = if (picked == null) null else storePicked(context, picked)
+
+                    if (picked != null && file == null) {
+                        // Refused or unreadable. Nothing is written and the
+                        // screen says so, because the worst outcome here is
+                        // somebody believing a document went in when it did not.
+                        documentError = strings["docs.too_large"]
+                    } else {
+                        repository.createDocument(
+                            subjectId = subject.id,
+                            title = title,
+                            received = Edtf.day(LocalDate.now()),
+                            originalLocation = documentDraft.originalLocation,
+                            notes = documentDraft.notes,
+                            sha256 = file?.sha256,
+                            byteSize = file?.byteSize ?: 0,
+                            mimeType = picked?.let { context.contentResolver.getType(it) },
+                        )
+                        addingDocument = false
+                        capturing = null
+                        documentError = null
+                    }
+                } else {
+                    addingDocument = false
+                }
+                savingDocument = null
                 revision += 1
             }
         }
@@ -748,11 +816,18 @@ fun NotebookShell(
         // and why, which is the same honesty the not-yet-built destinations
         // carry, and it is greppable through ShellTags.NOT_BUILT so it cannot
         // survive to release. Issue #57.
+        // **The sixth way in, which used to say it was not built.** D44 said an
+        // interface may offer something it has not built but may not go quiet
+        // when somebody takes it up. It is built now, so the honest interim
+        // screen is gone rather than kept alongside it.
         if (kind == CaptureKind.DOCUMENT) {
-            NotBuiltYet(
-                name = strings["capture.document"],
-                detail = strings["capture.not_built"],
-                onClose = { capturing = null },
+            AddDocumentScreen(
+                error = documentError,
+                onSave = { draft ->
+                    capturing = null
+                    savingDocument = draft
+                },
+                onCancel = { capturing = null; documentError = null },
             )
         }
 
@@ -900,6 +975,41 @@ private fun dial(context: android.content.Context, phone: String?) {
         )
     }
 }
+
+/**
+ * The most one attachment may hold, per the schema comment and D13.
+ *
+ * Stated to the person before they choose rather than after, and a photograph
+ * taken on this phone is comfortably under it.
+ */
+private const val MAX_ATTACHMENT_BYTES = 25L * 1024 * 1024
+
+/** A stored attachment: where it landed and how big it was. */
+private data class StoredFile(val sha256: String, val byteSize: Long)
+
+/**
+ * Copies a chosen image into content addressed storage.
+ *
+ * Returns null when the file is over the cap or cannot be read, and writes
+ * nothing in that case. The size is checked before a single byte is copied,
+ * so an oversized file never briefly occupies the phone.
+ */
+private suspend fun storePicked(
+    context: android.content.Context,
+    uri: android.net.Uri,
+): StoredFile? = runCatching {
+    val size = context.contentResolver
+        .openAssetFileDescriptor(uri, "r")
+        ?.use { it.length }
+        ?: -1L
+    if (size > MAX_ATTACHMENT_BYTES) return null
+
+    val attachments = Attachments.open(context)
+    val hash = context.contentResolver.openInputStream(uri)
+        ?.use { attachments.put(it) }
+        ?: return null
+    StoredFile(hash, size.coerceAtLeast(0))
+}.getOrNull()
 
 private val SECTION_ORDER = listOf(
     Repository.Section.CARE_TEAM,

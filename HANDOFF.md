@@ -106,7 +106,7 @@ The parts that change how you work, compressed:
 ### Where to pick up
 
 1. **Merge #112** if it is still open and green. It is large and every increment in it is committed separately.
-2. **One section is still on the interim screen: documents.** It is #57 and its blocker, attachment storage, is already cleared. **Each is blocked on the same thing rather than on screen work:** nothing in the app creates one. There is no way to record an appointment, a document, a bill, or a standing instruction, so a screen for any of them could only ever be empty. **Build the way in first**, then the section.
+2. **Every one of the twelve sections opens onto a real screen**, and all six capture inputs are built. What is left in each section is depth rather than existence: editing what was saved, the links between things, and the Phase 2 views. Each design review issue lists what its own screen still owes. **Each is blocked on the same thing rather than on screen work:** nothing in the app creates one. There is no way to record an appointment, a document, a bill, or a standing instruction, so a screen for any of them could only ever be empty. **Build the way in first**, then the section.
 3. **#57, the document capture input**, is exactly that problem for documents and is already open with its blocker cleared.
 4. **The design reviews are stacking up**: #111, #113, #114, #115, #116, #117, #118, all opened tonight, all with device screenshots, all waiting on the owner rather than on work.
 5. **#9's last two failure cases** are still the smallest remaining piece of the export.
@@ -244,7 +244,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 **Do not begin any of it until everything ahead of it is done.**
 
-**Something that must not survive to release.** The Projects and More destinations render an honest interim screen, Today says plainly that its digest is still being built, and so does the document capture input. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, and D44 says an interface may offer something it has not built but may not go quiet when someone takes it up. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
+**Something that must not survive to release.** The Projects and More destinations render an honest interim screen, and Today says plainly that its digest is still being built. **The document capture input no longer does**, because it is built, #57. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, and D44 says an interface may offer something it has not built but may not go quiet when someone takes it up. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
 
 ---
 
@@ -354,6 +354,7 @@ Every screen built without one is composed from existing components under `DESIG
 | Appointments, and adding one | 2026-08-02 | #119 | not yet |
 | Standing instructions, and asking for one | 2026-08-02 | #120 | not yet |
 | Money, and adding a bill | 2026-08-02 | #121 | not yet |
+| Documents, and saving one | 2026-08-02 | #122 | not yet |
 | Care team, read only | 2026-08-01 | #111 | not yet |
 | Disclaimer gate | 2026-07-31, rebuilt same day to the 10.6 bar | #28 | not yet |
 | Essentials first setup | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #30 | not yet |

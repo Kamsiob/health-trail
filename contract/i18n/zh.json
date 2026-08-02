@@ -328,5 +328,18 @@
   "money.state.paid": "已支付",
   "money.state.closed": "已结清",
   "money.open_total": "尚未结清",
-  "money.no_amount": "暂无金额"
+  "money.no_amount": "暂无金额",
+  "docs.subtitle": "文件的照片，以及每份原件的实际存放处。",
+  "docs.empty": "还没有保存任何内容。一张表格的照片，加上纸质件去向的备注，日后能省一通电话。",
+  "docs.add": "保存文件",
+  "docs.add.lead": "拍一张照片或从相册选择，然后说明纸质原件的去向。",
+  "docs.pick": "选择照片",
+  "docs.replace": "重新选择",
+  "docs.title": "文件名称",
+  "docs.title.hint": "出院小结、保险函件、已签署的表格",
+  "docs.original": "纸质原件在哪里",
+  "docs.original.hint": "办事人员通常不接受电子版",
+  "docs.no_photo": "无照片",
+  "docs.too_large": "该文件超过 25 MB，这是单个附件的上限。未保存任何内容。在应用内拍摄的照片远低于此上限。",
+  "docs.limit_note": "每份最多 25 MB。"
 }

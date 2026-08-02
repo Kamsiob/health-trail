@@ -328,5 +328,18 @@
   "money.state.paid": "Pagada",
   "money.state.closed": "Cerrada",
   "money.open_total": "Sin resolver todavía",
-  "money.no_amount": "Sin importe todavía"
+  "money.no_amount": "Sin importe todavía",
+  "docs.subtitle": "Fotos de los documentos, y dónde está realmente cada original.",
+  "docs.empty": "Todavía no hay nada guardado. Una foto de un formulario, con una nota de dónde quedó el papel, ahorra una llamada más adelante.",
+  "docs.add": "Guardar un documento",
+  "docs.add.lead": "Haga una foto o elija una, y luego indique dónde acabó el original en papel.",
+  "docs.pick": "Elegir una foto",
+  "docs.replace": "Elegir otra",
+  "docs.title": "Qué es",
+  "docs.title.hint": "Informe de alta, carta del seguro, el formulario firmado",
+  "docs.original": "Dónde está el original en papel",
+  "docs.original.hint": "La copia digital rara vez es la que acepta un funcionario",
+  "docs.no_photo": "Sin foto",
+  "docs.too_large": "Ese archivo supera los 25 MB, el máximo por adjunto. No se guardó nada. Una foto hecha con la aplicación queda muy por debajo.",
+  "docs.limit_note": "Hasta 25 MB por cada uno."
 }

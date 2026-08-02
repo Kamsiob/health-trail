@@ -328,5 +328,18 @@
   "money.state.paid": "Paid",
   "money.state.closed": "Closed",
   "money.open_total": "Not settled yet",
-  "money.no_amount": "No amount yet"
+  "money.no_amount": "No amount yet",
+  "docs.subtitle": "Photographs of the paperwork, and where each original actually is.",
+  "docs.empty": "Nothing saved yet. A photograph of a form, with a note on where the paper went, saves a phone call later.",
+  "docs.add": "Save a document",
+  "docs.add.lead": "Take a photograph or pick one, then say where the paper original ended up.",
+  "docs.pick": "Choose a photograph",
+  "docs.replace": "Choose a different one",
+  "docs.title": "What it is",
+  "docs.title.hint": "Discharge summary, insurance letter, the signed form",
+  "docs.original": "Where the paper original is",
+  "docs.original.hint": "The digital copy is rarely the one a clerk will accept",
+  "docs.no_photo": "No photograph",
+  "docs.too_large": "That file is larger than 25 MB, which is the most one attachment can hold. Nothing was saved. A photograph taken in the app is well under it.",
+  "docs.limit_note": "Up to 25 MB for each one."
 }

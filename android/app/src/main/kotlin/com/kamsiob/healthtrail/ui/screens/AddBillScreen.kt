@@ -142,7 +142,7 @@ fun AddBillScreen(
                     label = strings["appts.notes"],
                     value = draft.notes,
                     onValueChange = { draft = draft.copy(notes = it) },
-                    hint = strings["money.what.hint"],
+                    hint = strings["appts.notes.hint"],
                     singleLine = false,
                     imeAction = ImeAction.Done,
                     fieldTestTag = AddBillTags.field("notes"),

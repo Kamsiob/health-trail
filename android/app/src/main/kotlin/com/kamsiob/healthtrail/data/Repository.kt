@@ -1178,6 +1178,112 @@ class Repository private constructor(
             )
         }
 
+    // -- documents -------------------------------------------------------------
+
+    /**
+     * One document, with the attachment that carries its image.
+     *
+     * **`originalLocation` is the field that makes this section worth having.**
+     * The schema says so in its own comment: the digital copy is rarely the one
+     * a clerk will accept, so where the paper physically is matters more than
+     * the photograph does.
+     */
+    data class Document(
+        val id: String,
+        val title: String,
+        val category: String?,
+        val originalLocation: String?,
+        val notes: String?,
+        val receivedEdtf: String?,
+        /** Null when the document was recorded without a photograph. */
+        val sha256: String?,
+        val byteSize: Long?,
+    )
+
+    /** Every document, most recently received first. */
+    suspend fun documents(subjectId: String): List<Document> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT d.id, d.title, d.category, d.original_location, d.notes, " +
+                "d.received_edtf, a.sha256, a.byte_size " +
+                "FROM live_document d " +
+                "LEFT JOIN live_attachment a ON a.document_id = d.id " +
+                "WHERE d.subject_id = ? " +
+                "ORDER BY d.received_start IS NULL, d.received_start DESC, d.created_at DESC",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Document(
+                            id = cursor.getString(0),
+                            title = cursor.getString(1),
+                            category = cursor.getString(2),
+                            originalLocation = cursor.getString(3),
+                            notes = cursor.getString(4),
+                            receivedEdtf = cursor.getString(5),
+                            sha256 = cursor.getString(6),
+                            byteSize = if (cursor.isNull(7)) null else cursor.getLong(7),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Records a document and the file that carries it, in one transaction.
+     *
+     * **Both or neither.** A document row whose attachment is missing points at
+     * a file that is not there, and an attachment with no document is a file
+     * nothing can reach. The bytes are already on disk by this point, written
+     * content addressed by [Attachments], so this is only the rows.
+     *
+     * `sha256` null records a document nobody photographed, which is a real
+     * case: knowing the discharge summary exists and lives in the blue folder
+     * is worth writing down before there is a picture of it.
+     */
+    suspend fun createDocument(
+        subjectId: String,
+        title: String,
+        received: Edtf.Date,
+        originalLocation: String? = null,
+        notes: String? = null,
+        sha256: String? = null,
+        byteSize: Long = 0,
+        mimeType: String? = null,
+        originalFilename: String? = null,
+    ): String = withContext(Dispatchers.IO) {
+        val database = db().database
+        database.beginTransaction()
+        try {
+            val documentId = insertRow(
+                "document",
+                mapOf(
+                    "subject_id" to subjectId,
+                    "title" to title,
+                    "original_location" to originalLocation?.ifBlank { null },
+                    "notes" to notes?.ifBlank { null },
+                ) + dateColumns("received", received),
+            )
+            if (sha256 != null) {
+                insertRow(
+                    "attachment",
+                    mapOf(
+                        "sha256" to sha256,
+                        "original_filename" to originalFilename,
+                        "mime_type" to mimeType,
+                        "byte_size" to byteSize,
+                        "document_id" to documentId,
+                    ),
+                )
+            }
+            database.setTransactionSuccessful()
+            documentId
+        } finally {
+            database.endTransaction()
+        }
+    }
+
     // -- money ----------------------------------------------------------------
 
     /**
