@@ -304,5 +304,13 @@
   "appts.notes": "Algo que recordar",
   "appts.notes.hint": "Qué llevar, por quién preguntar, de qué se trata",
   "appts.when": "Cuándo",
-  "date.pick.title.future": "¿Cuándo es?"
+  "date.pick.title.future": "¿Cuándo es?",
+  "instructions.subtitle": "Lo que les ha pedido que hagan, y si alguna norma lo respalda.",
+  "instructions.empty": "Todavía no ha pedido nada. Anotar lo que pidió, y cuándo, es lo que permite remitirse a ello después.",
+  "instructions.add": "Pedir algo",
+  "instructions.add.lead": "Once cosas que las familias suelen pedir. Elija una para dejar constancia de que la pidió, y cuándo.",
+  "instructions.asked_on": "Pedido el {date}",
+  "instructions.what_to_say": "Qué decir",
+  "instructions.how_to_ask": "Cómo pedirlo",
+  "instructions.record": "Pedí esto"
 }

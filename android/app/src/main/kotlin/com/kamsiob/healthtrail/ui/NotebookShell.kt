@@ -54,6 +54,8 @@ import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
 import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentDraft
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
+import com.kamsiob.healthtrail.ui.screens.AddInstructionScreen
+import com.kamsiob.healthtrail.ui.screens.StandingInstructionsScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyDraft
@@ -156,6 +158,16 @@ fun NotebookShell(
         mutableStateOf<List<Repository.Appointment>>(emptyList())
     }
     var addingAppointment by remember { mutableStateOf(false) }
+    var instructions by remember {
+        mutableStateOf<List<Repository.StandingInstruction>>(emptyList())
+    }
+    var instructionCatalog by remember {
+        mutableStateOf<TemplateCatalog.Instructions?>(null)
+    }
+    var addingInstruction by remember { mutableStateOf(false) }
+    var savingInstruction by remember {
+        mutableStateOf<TemplateCatalog.Instruction?>(null)
+    }
     var savingAppointment by remember { mutableStateOf<AppointmentDraft?>(null) }
     var markingAsked by remember { mutableStateOf<Repository.Question?>(null) }
     val context = LocalContext.current
@@ -198,6 +210,8 @@ fun NotebookShell(
             readings = subject?.let { repository.readings(it.id) }.orEmpty()
             chapters = subject?.let { repository.chapters(it.id) }.orEmpty()
             appointments = subject?.let { repository.appointments(it.id) }.orEmpty()
+            instructions = subject?.let { repository.standingInstructions(it.id) }.orEmpty()
+            instructionCatalog = TemplateCatalog.instructions(context)
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
                 .orEmpty()
@@ -289,6 +303,13 @@ fun NotebookShell(
             Repository.Section.TRAIL -> TrailScreen(
                 entries = trail,
                 onEditDate = { editingDate = it },
+                onBack = { openSection = null },
+            )
+
+            Repository.Section.STANDING_INSTRUCTIONS -> StandingInstructionsScreen(
+                instructions = instructions,
+                tags = instructionCatalog?.tags.orEmpty(),
+                onAdd = { addingInstruction = true },
                 onBack = { openSection = null },
             )
 
@@ -418,6 +439,41 @@ fun NotebookShell(
             LaunchedEffect(asked) {
                 repository.markQuestionAsked(asked.id, Edtf.day(LocalDate.now()))
                 markingAsked = null
+                revision += 1
+            }
+        }
+
+        val catalog = instructionCatalog
+        if (addingInstruction && catalog != null) {
+            AddInstructionScreen(
+                catalog = catalog,
+                onChoose = { starter ->
+                    addingInstruction = false
+                    savingInstruction = starter
+                },
+                onCancel = { addingInstruction = false },
+            )
+        }
+
+        val instructionDraft = savingInstruction
+        if (instructionDraft != null) {
+            LaunchedEffect(instructionDraft) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    // Recorded as asked today, because the person is tapping it
+                    // at the moment they ask. The wording and the tag are
+                    // copied from the catalog rather than referenced, so a
+                    // later catalog edit never rewrites what somebody asked for.
+                    repository.createStandingInstruction(
+                        subjectId = subject.id,
+                        templateId = instructionDraft.id,
+                        name = instructionDraft.name,
+                        wording = instructionDraft.wording,
+                        tag = instructionDraft.tag,
+                        given = Edtf.day(LocalDate.now()),
+                    )
+                }
+                savingInstruction = null
                 revision += 1
             }
         }

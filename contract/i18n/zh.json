@@ -304,5 +304,13 @@
   "appts.notes": "需要记住的事",
   "appts.notes.hint": "要带什么、找谁、事关什么",
   "appts.when": "时间",
-  "date.pick.title.future": "什么时候？"
+  "date.pick.title.future": "什么时候？",
+  "instructions.subtitle": "您要求他们做的事，以及是否有规定作为依据。",
+  "instructions.empty": "还没有提出要求。记下您提出了什么、何时提出，日后才有据可循。",
+  "instructions.add": "提出要求",
+  "instructions.add.lead": "家属常见的十一项要求。选择一项，记录您已提出以及提出的时间。",
+  "instructions.asked_on": "提出于 {date}",
+  "instructions.what_to_say": "怎么说",
+  "instructions.how_to_ask": "如何提出",
+  "instructions.record": "我已提出"
 }

@@ -1178,6 +1178,77 @@ class Repository private constructor(
             )
         }
 
+    // -- standing instructions ------------------------------------------------
+
+    /**
+     * One thing this family has asked for, as recorded.
+     *
+     * **`tag` is never null and never empty**, because the schema constrains it
+     * to `federal` or `request` and because an instruction rendered without it
+     * would let the app imply a right that may not exist.
+     */
+    data class StandingInstruction(
+        val id: String,
+        val name: String,
+        val wording: String,
+        val tag: String,
+        val givenEdtf: String?,
+        val acknowledgedEdtf: String?,
+        val acknowledgedHow: String?,
+        val notes: String?,
+    ) {
+        val isAcknowledged: Boolean get() = !acknowledgedEdtf.isNullOrBlank()
+    }
+
+    /** Everything asked for, most recently recorded first. */
+    suspend fun standingInstructions(subjectId: String): List<StandingInstruction> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, name, wording, tag, given_edtf, acknowledged_edtf, " +
+                    "acknowledged_how, notes FROM live_standing_instruction " +
+                    "WHERE subject_id = ? ORDER BY created_at DESC",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            StandingInstruction(
+                                id = cursor.getString(0),
+                                name = cursor.getString(1),
+                                wording = cursor.getString(2),
+                                tag = cursor.getString(3),
+                                givenEdtf = cursor.getString(4),
+                                acknowledgedEdtf = cursor.getString(5),
+                                acknowledgedHow = cursor.getString(6),
+                                notes = cursor.getString(7),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /** Records that this was asked for, on the day it was asked. */
+    suspend fun createStandingInstruction(
+        subjectId: String,
+        templateId: String?,
+        name: String,
+        wording: String,
+        tag: String,
+        given: Edtf.Date,
+        notes: String? = null,
+    ): String = insert(
+        "standing_instruction",
+        mapOf(
+            "subject_id" to subjectId,
+            "template_id" to templateId,
+            "name" to name,
+            "wording" to wording,
+            "tag" to tag,
+            "notes" to notes?.ifBlank { null },
+        ) + dateColumns("given", given),
+    )
+
     // -- appointments ---------------------------------------------------------
 
     /**

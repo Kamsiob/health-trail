@@ -159,6 +159,69 @@ object TemplateCatalog {
         }
     }
 
+    /**
+     * One thing a family can ask a facility to do, as the catalog ships it.
+     *
+     * **The tag is the load bearing field and it is never optional.** It says
+     * whether federal nursing home rules back the request or whether it is
+     * something reasonable to ask for that nobody is required to agree to.
+     * Showing an instruction without it would let the app imply a right that
+     * may not exist, which is the sharpest way this project could break rule 2.
+     */
+    data class Instruction(
+        val id: String,
+        val name: String,
+        val wording: String,
+        /** Either `federal` or `request`. The schema constrains it to those two. */
+        val tag: String,
+        /** Why the rules back it, in the catalog's words. Empty for a request. */
+        val basis: String,
+        /** How to actually ask for it. Practical, never legal advice. */
+        val askFor: String,
+    )
+
+    /** What a tag means, in words the person reads rather than a code. */
+    data class InstructionTag(val label: String, val explainer: String)
+
+    /**
+     * The eleven starters and the two tags, read together because an
+     * instruction without its tag's wording cannot be rendered safely.
+     */
+    data class Instructions(
+        val starters: List<Instruction>,
+        val tags: Map<String, InstructionTag>,
+    )
+
+    suspend fun instructions(context: Context): Instructions = withContext(Dispatchers.IO) {
+        val root = JSONObject(
+            context.assets.open("templates/progress-and-instructions.json")
+                .bufferedReader().use { it.readText() }
+        )
+        val tagsObject = root.getJSONObject("standing_instruction_tags")
+        val tags = tagsObject.keys().asSequence().associateWith { key ->
+            val item = tagsObject.getJSONObject(key)
+            InstructionTag(
+                label = item.getString("label"),
+                explainer = item.getString("explainer"),
+            )
+        }
+        val array = root.getJSONArray("standing_instructions")
+        Instructions(
+            starters = (0 until array.length()).map { index ->
+                val item = array.getJSONObject(index)
+                Instruction(
+                    id = item.getString("id"),
+                    name = item.getString("name"),
+                    wording = item.getString("wording"),
+                    tag = item.getString("tag"),
+                    basis = item.optString("basis"),
+                    askFor = item.optString("ask_for"),
+                )
+            },
+            tags = tags,
+        )
+    }
+
     private fun org.json.JSONArray?.toThreads(): List<Thread> {
         if (this == null) return emptyList()
         return (0 until length()).map {

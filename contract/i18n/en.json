@@ -304,5 +304,13 @@
   "appts.notes": "Anything to remember",
   "appts.notes.hint": "What to bring, who to ask for, what it is about",
   "appts.when": "When",
-  "date.pick.title.future": "When is it?"
+  "date.pick.title.future": "When is it?",
+  "instructions.subtitle": "What you have asked them to do, and whether any rule backs it up.",
+  "instructions.empty": "Nothing asked for yet. Writing down what you asked, and when, is what makes it possible to point back to it.",
+  "instructions.add": "Ask for something",
+  "instructions.add.lead": "Eleven things families commonly ask for. Pick one to record that you asked, and when.",
+  "instructions.asked_on": "Asked {date}",
+  "instructions.what_to_say": "What to say",
+  "instructions.how_to_ask": "How to ask",
+  "instructions.record": "I asked for this"
 }

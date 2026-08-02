@@ -304,5 +304,13 @@
   "appts.notes": "أي شيء يجب تذكره",
   "appts.notes.hint": "ماذا تحضر، عمن تسأل، وما موضوعه",
   "appts.when": "متى",
-  "date.pick.title.future": "متى موعده؟"
+  "date.pick.title.future": "متى موعده؟",
+  "instructions.subtitle": "ما طلبت منهم فعله، وهل تدعمه أي قاعدة.",
+  "instructions.empty": "لم تطلب شيئًا بعد. تدوين ما طلبته ومتى هو ما يتيح لك الرجوع إليه لاحقًا.",
+  "instructions.add": "اطلب شيئًا",
+  "instructions.add.lead": "أحد عشر أمرًا تطلبها العائلات عادة. اختر واحدًا لتسجيل أنك طلبته ومتى.",
+  "instructions.asked_on": "طُلب في {date}",
+  "instructions.what_to_say": "ماذا تقول",
+  "instructions.how_to_ask": "كيف تطلبه",
+  "instructions.record": "طلبت هذا"
 }
