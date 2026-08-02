@@ -51,6 +51,7 @@ object MedsTags {
 fun MedicationsScreen(
     medications: List<Repository.Medication>,
     onRemove: (Repository.Medication) -> Unit,
+    onEdit: (Repository.Medication) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -73,7 +74,11 @@ fun MedicationsScreen(
 
         for (medication in medications) {
             item(key = medication.id) {
-                MedicationRow(medication = medication, onRemove = { onRemove(medication) })
+                MedicationRow(
+                    medication = medication,
+                    onRemove = { onRemove(medication) },
+                    onEdit = { onEdit(medication) },
+                )
                 Spacer(Modifier.height(Space.cardGap))
             }
         }
@@ -102,6 +107,7 @@ fun MedicationsScreen(
 private fun MedicationRow(
     medication: Repository.Medication,
     onRemove: () -> Unit,
+    onEdit: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -111,7 +117,7 @@ private fun MedicationRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["remove.hint"], onRemove)
+            .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
             .testTag(MedsTags.row(medication.id))
             .padding(Space.cardPadding),
     ) {

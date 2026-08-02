@@ -146,6 +146,10 @@ fun NotebookShell(
     // Somebody being added to the care team, and the draft being written.
     var addingPerson by remember { mutableStateOf(false) }
     var savingPerson by remember { mutableStateOf<PersonDraft?>(null) }
+    // The person or medication being corrected. Null means the form, when
+    // open, is adding rather than editing.
+    var editingPerson by remember { mutableStateOf<Repository.Person?>(null) }
+    var editingMedication by remember { mutableStateOf<Repository.Medication?>(null) }
     // The emergency card, and whether it is being filled in.
     var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
     var editingEmergencyCard by remember { mutableStateOf(false) }
@@ -427,7 +431,11 @@ fun NotebookShell(
                         Repository.Section.MEDICATIONS, medication.id, medication.name,
                     )
                 },
-                onAdd = { addingMedication = true },
+                onEdit = { medication ->
+                    editingMedication = medication
+                    addingMedication = true
+                },
+                onAdd = { editingMedication = null; addingMedication = true },
                 onBack = { openSection = null },
             )
 
@@ -464,7 +472,8 @@ fun NotebookShell(
                         },
                     )
                 },
-                onAdd = { addingPerson = true },
+                onEdit = { person -> editingPerson = person; addingPerson = true },
+                onAdd = { editingPerson = null; addingPerson = true },
                 onBack = { openSection = null },
             )
 
@@ -518,11 +527,12 @@ fun NotebookShell(
 
         if (addingPerson) {
             AddPersonScreen(
+                existing = editingPerson,
                 onSave = { draft ->
                     addingPerson = false
                     savingPerson = draft
                 },
-                onCancel = { addingPerson = false },
+                onCancel = { addingPerson = false; editingPerson = null },
             )
         }
 
@@ -700,11 +710,12 @@ fun NotebookShell(
 
         if (addingMedication) {
             AddMedicationScreen(
+                existing = editingMedication,
                 onSave = { draft ->
                     addingMedication = false
                     savingMedication = draft
                 },
-                onCancel = { addingMedication = false },
+                onCancel = { addingMedication = false; editingMedication = null },
             )
         }
 
@@ -717,7 +728,17 @@ fun NotebookShell(
                 // record of anything. Everything else is optional. Saving with
                 // nothing typed writes nothing and says nothing about it, the
                 // same as the care team.
-                if (subject != null && medicationDraft.name.isNotBlank()) {
+                val correcting = editingMedication
+                if (correcting != null && medicationDraft.name.isNotBlank()) {
+                    repository.updateMedication(
+                        medicationId = correcting.id,
+                        name = medicationDraft.name.trim(),
+                        doseText = medicationDraft.dose,
+                        purposeText = medicationDraft.purpose,
+                        notes = medicationDraft.notes,
+                        onEmergencyCard = medicationDraft.onEmergencyCard,
+                    )
+                } else if (subject != null && medicationDraft.name.isNotBlank()) {
                     repository.createMedication(
                         subjectId = subject.id,
                         name = medicationDraft.name.trim(),
@@ -727,6 +748,7 @@ fun NotebookShell(
                         onEmergencyCard = medicationDraft.onEmergencyCard,
                     )
                 }
+                editingMedication = null
                 savingMedication = null
                 revision += 1
             }
@@ -809,7 +831,18 @@ fun NotebookShell(
                 // written and nothing is said about it either.
                 val anything = listOf(person.name, person.role, person.phone)
                     .any { it.isNotBlank() }
-                if (subject != null && anything) {
+                val correcting = editingPerson
+                if (correcting != null) {
+                    // A correction may legitimately empty every field except
+                    // the name, so the all-blank guard below does not apply:
+                    // the row already exists and the person is changing it.
+                    repository.updatePerson(
+                        personId = correcting.id,
+                        displayName = person.name.trim(),
+                        phone = person.phone.trim(),
+                        roleLabel = person.role.trim(),
+                    )
+                } else if (subject != null && anything) {
                     repository.createPerson(
                         subjectId = subject.id,
                         displayName = person.name.trim(),
@@ -817,6 +850,7 @@ fun NotebookShell(
                         roleLabel = person.role.trim().ifBlank { null },
                     )
                 }
+                editingPerson = null
                 savingPerson = null
                 revision += 1
             }

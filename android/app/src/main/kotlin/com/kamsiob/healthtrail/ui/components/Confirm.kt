@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -173,26 +174,42 @@ private fun DestructiveButton(
 }
 
 /**
- * Makes a card removable by a long press.
+ * Makes a card removable by a long press, and optionally editable by a tap.
  *
- * **A long press rather than a visible button, and the reasoning is section
- * 5.4's.** A Remove control resting on every row of every list is a destructive
- * affordance sitting on the screen, which that section rules out. The long
- * press is also what Android already means by "more to do with this row", and
- * a screen reader announces it as an available action rather than hiding it.
+ * **A long press rather than a visible Remove button, and the reasoning is
+ * section 5.4's.** A destructive control resting on every row of every list is
+ * exactly the resting state that section rules out, multiplied across eight
+ * sections. The long press is also what Android already means by "more to do
+ * with this row".
  *
- * **The card still does nothing on a short press**, because it did nothing
- * before, and inventing a tap target that opens something unrelated would be
- * worse than the honest absence.
+ * **A tap opens the same form that created the row**, where one is offered. That
+ * is what makes the card answer a short press with something real rather than
+ * with nothing, which rule 16 requires, and it means correcting a typo uses the
+ * screen the person already knows instead of a second near identical one.
+ *
+ * The gesture and the reader actions are declared separately from
+ * `combinedClickable`, because that would give a card with no edit form a short
+ * press that does nothing.
  */
 @Composable
 fun Modifier.removableByLongPress(
     label: String,
     onLongPress: () -> Unit,
+    onTap: (() -> Unit)? = null,
 ): Modifier = this
-    .pointerInput(onLongPress) {
-        detectTapGestures(onLongPress = { onLongPress() })
+    .pointerInput(onLongPress, onTap) {
+        detectTapGestures(
+            onLongPress = { onLongPress() },
+            onTap = if (onTap == null) null else { _ -> onTap() },
+        )
     }
+    .then(
+        if (onTap == null) {
+            Modifier
+        } else {
+            Modifier.semantics { onClick(label = label) { onTap(); true } }
+        },
+    )
     // **The gesture and the reader action are declared separately on purpose.**
     // `combinedClickable` would give both at once and would also make the card
     // respond to a short press with nothing, which rule 16 calls broken. A

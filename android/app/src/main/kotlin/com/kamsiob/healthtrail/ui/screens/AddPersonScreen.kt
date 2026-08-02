@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -74,13 +75,22 @@ fun AddPersonScreen(
     onSave: (PersonDraft) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * The person being corrected, or null when this is somebody new.
+     *
+     * **The same screen does both**, because they ask exactly the same
+     * questions and a second near identical form is how two screens drift
+     * apart. Only the heading changes, so somebody correcting a number is not
+     * told they are adding a person.
+     */
+    existing: Repository.Person? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var name by remember { mutableStateOf("") }
-    var role by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
+    var name by remember(existing?.id) { mutableStateOf(existing?.displayName.orEmpty()) }
+    var role by remember(existing?.id) { mutableStateOf(existing?.roleLabel.orEmpty()) }
+    var phone by remember(existing?.id) { mutableStateOf(existing?.phone.orEmpty()) }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -100,7 +110,11 @@ fun AddPersonScreen(
             ) {
                 Spacer(Modifier.height(Space.l))
                 Text(
-                    text = strings["careteam.add.title"],
+                    text = if (existing == null) {
+                        strings["careteam.add.title"]
+                    } else {
+                        strings["careteam.edit.title"]
+                    },
                     style = HealthTrail.type.displayL,
                     color = colors.ink,
                     modifier = Modifier.semantics { heading() },

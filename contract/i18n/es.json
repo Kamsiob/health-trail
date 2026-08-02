@@ -346,5 +346,8 @@
   "remove.body": "Dejará de aparecer en el cuaderno. Sus otros registros no se ven afectados.",
   "remove.confirm": "Quitarlo",
   "remove.keep": "Conservarlo",
-  "remove.hint": "Mantenga pulsado para quitar"
+  "remove.hint": "Mantenga pulsado para quitar",
+  "careteam.edit.title": "Cambiar lo que anotó",
+  "meds.edit.title": "Cambiar lo que anotó",
+  "edit.hint": "Toque para cambiarlo, mantenga pulsado para quitarlo"
 }

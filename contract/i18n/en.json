@@ -346,5 +346,8 @@
   "remove.body": "It stops appearing anywhere in the notebook. Your other records are not affected.",
   "remove.confirm": "Remove it",
   "remove.keep": "Keep it",
-  "remove.hint": "Press and hold to remove"
+  "remove.hint": "Press and hold to remove",
+  "careteam.edit.title": "Change what you wrote",
+  "meds.edit.title": "Change what you wrote",
+  "edit.hint": "Tap to change it, press and hold to remove it"
 }

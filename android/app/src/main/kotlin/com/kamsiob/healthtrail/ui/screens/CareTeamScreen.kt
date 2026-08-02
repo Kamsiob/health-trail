@@ -51,6 +51,7 @@ fun CareTeamScreen(
     people: List<Repository.Person>,
     onCall: (Repository.Person) -> Unit,
     onRemove: (Repository.Person) -> Unit,
+    onEdit: (Repository.Person) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -75,6 +76,7 @@ fun CareTeamScreen(
                     person = person,
                     onCall = { onCall(person) },
                     onRemove = { onRemove(person) },
+                    onEdit = { onEdit(person) },
                 )
                 Spacer(Modifier.height(Space.cardGap))
             }
@@ -107,6 +109,7 @@ private fun PersonRow(
     person: Repository.Person,
     onCall: () -> Unit,
     onRemove: () -> Unit,
+    onEdit: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -128,7 +131,7 @@ private fun PersonRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["remove.hint"], onRemove)
+            .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
             .testTag(CareTeamTags.person(person.id))
             .padding(Space.cardPadding),
     ) {

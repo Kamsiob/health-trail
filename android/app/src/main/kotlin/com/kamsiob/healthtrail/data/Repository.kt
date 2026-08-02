@@ -230,6 +230,58 @@ class Repository private constructor(
     )
 
     /**
+     * Changes what is recorded about somebody.
+     *
+     * **Every field can be corrected, including to blank.** A phone number
+     * written down wrong is worse than none, so clearing one has to be
+     * possible. Blank is stored as null, so "never given" and "taken back out"
+     * read the same way downstream, which is what the card wants: both mean the
+     * app knows nothing.
+     */
+    suspend fun updatePerson(
+        personId: String,
+        displayName: String,
+        phone: String?,
+        roleLabel: String?,
+    ) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE person SET display_name = ?, phone = ?, role_label = ?, " +
+                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(
+                displayName,
+                phone?.ifBlank { null },
+                roleLabel?.ifBlank { null },
+                System.currentTimeMillis(),
+                personId,
+            ),
+        )
+    }
+
+    /** Changes what is recorded about a medication. The dose stays text. */
+    suspend fun updateMedication(
+        medicationId: String,
+        name: String,
+        doseText: String?,
+        purposeText: String?,
+        notes: String?,
+        onEmergencyCard: Boolean,
+    ) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE medication SET name = ?, dose_text = ?, purpose_text = ?, notes = ?, " +
+                "on_emergency_card = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(
+                name,
+                doseText?.ifBlank { null },
+                purposeText?.ifBlank { null },
+                notes?.ifBlank { null },
+                if (onEmergencyCard) 1 else 0,
+                System.currentTimeMillis(),
+                medicationId,
+            ),
+        )
+    }
+
+    /**
      * Applies a situation template to a notebook.
      *
      * Records which template was used and creates a care thread per thread the

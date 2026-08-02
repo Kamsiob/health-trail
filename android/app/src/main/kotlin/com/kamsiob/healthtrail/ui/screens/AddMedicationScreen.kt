@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
@@ -73,11 +74,23 @@ fun AddMedicationScreen(
     onSave: (MedicationDraft) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The medication being corrected, or null when this one is new. */
+    existing: Repository.Medication? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var draft by remember { mutableStateOf(MedicationDraft()) }
+    var draft by remember(existing?.id) {
+        mutableStateOf(
+            MedicationDraft(
+                name = existing?.name.orEmpty(),
+                dose = existing?.doseText.orEmpty(),
+                purpose = existing?.purposeText.orEmpty(),
+                notes = existing?.notes.orEmpty(),
+                onEmergencyCard = existing?.onEmergencyCard == true,
+            ),
+        )
+    }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -95,7 +108,11 @@ fun AddMedicationScreen(
             ) {
                 Spacer(Modifier.height(Space.l))
                 Text(
-                    text = strings["meds.add.title"],
+                    text = if (existing == null) {
+                        strings["meds.add.title"]
+                    } else {
+                        strings["meds.edit.title"]
+                    },
                     style = HealthTrail.type.displayL,
                     color = colors.ink,
                     modifier = Modifier.semantics { heading() },

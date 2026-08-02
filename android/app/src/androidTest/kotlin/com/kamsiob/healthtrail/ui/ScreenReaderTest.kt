@@ -298,6 +298,7 @@ class ScreenReaderTest {
                 ),
                 onCall = {},
                 onRemove = {},
+                onEdit = {},
                 onAdd = {},
                 onBack = {},
             )
@@ -371,6 +372,7 @@ class ScreenReaderTest {
                     Repository.Medication("m2", "Metformin", null, null, null, false, "2026-03"),
                 ),
                 onRemove = {},
+                onEdit = {},
                 onAdd = {},
                 onBack = {},
             )
