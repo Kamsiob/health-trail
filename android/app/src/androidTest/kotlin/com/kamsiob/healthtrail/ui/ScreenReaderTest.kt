@@ -16,7 +16,15 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
+import com.kamsiob.healthtrail.ui.screens.AddInstructionScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
+import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
+import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
+import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
+import com.kamsiob.healthtrail.ui.screens.ProgressScreen
+import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
+import com.kamsiob.healthtrail.ui.screens.StandingInstructionsScreen
 import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
 import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
@@ -367,5 +375,120 @@ class ScreenReaderTest {
     fun addingAMedicationLabelsEverything() {
         compose.show { AddMedicationScreen(onSave = {}, onCancel = {}) }
         assertEverythingIsLabeled("add a medication")
+    }
+
+    @Test
+    fun askNextTimeLabelsEverything() {
+        compose.show {
+            QuestionsScreen(
+                questions = listOf(
+                    Repository.Question("q1", "Is the dressing changed daily?", "The wound nurse", "e1", null, null),
+                    // Already asked, which renders differently and carries no
+                    // action at all.
+                    Repository.Question("q2", "Can the water pill move earlier?", null, null, "2026-08-01", "They will review it"),
+                ),
+                onMarkAsked = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("ask next time")
+    }
+
+    @Test
+    fun careThreadsLabelEverything() {
+        compose.show {
+            CareThreadsScreen(
+                threads = listOf(
+                    Repository.ThreadWithCount(Repository.CareThread("t1", "Nursing", 0), 4),
+                    // A thread with nothing on it, which is the common case on
+                    // day one and the row most likely to announce a bare zero.
+                    Repository.ThreadWithCount(Repository.CareThread("t2", "Discharge planning", 1), 0),
+                ),
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("care threads")
+    }
+
+    @Test
+    fun progressLabelsEverything() {
+        compose.show {
+            ProgressScreen(
+                measures = listOf(Repository.Measure("me1", "Weight", "weight", "lb", false)),
+                readings = listOf(
+                    Repository.Reading("r1", "me1", 148.0, null, "lb", "2026-08-02", 1L, null, "family"),
+                    // No date and a clinician source, the two variations that
+                    // add extra lines to a row.
+                    Repository.Reading("r2", "me1", 151.5, null, "lb", null, null, "After dialysis", "clinician"),
+                ),
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("progress")
+    }
+
+    @Test
+    fun chaptersLabelEverything() {
+        compose.show {
+            ChaptersScreen(
+                chapters = listOf(
+                    Repository.Chapter("c1", "Maplewood General, 4West", "Admitted after a fall", null, "2026-08-01", null),
+                    // No dates at all, which is what setup creates.
+                    Repository.Chapter("c2", "Home", null, null, null, "2026-07-01"),
+                ),
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("chapters")
+    }
+
+    @Test
+    fun appointmentsLabelEverything() {
+        compose.show {
+            AppointmentsScreen(
+                appointments = listOf(
+                    Repository.Appointment("a1", "Care plan meeting", "2026-08-12", 2L, "4West day room", "Bring the folder"),
+                    // No date, which lands in Coming up and renders its date as
+                    // not known.
+                    Repository.Appointment("a2", "Podiatry", null, null, null, null),
+                ),
+                todayMillis = 1L,
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("appointments")
+    }
+
+    @Test
+    fun addingAnAppointmentLabelsEverything() {
+        compose.show { AddAppointmentScreen(onSave = {}, onCancel = {}) }
+        assertEverythingIsLabeled("add an appointment")
+    }
+
+    @Test
+    fun standingInstructionsLabelEverything() {
+        val catalog = runBlocking { TemplateCatalog.instructions(context) }
+        compose.show {
+            StandingInstructionsScreen(
+                instructions = listOf(
+                    Repository.StandingInstruction("s1", "Call me about any fall", "Please call me right away.", "federal", "2026-08-02", null, null, null),
+                    Repository.StandingInstruction("s2", "Tell me before a room change", "Please tell me first.", "request", null, null, null, null),
+                ),
+                tags = catalog.tags,
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("standing instructions")
+    }
+
+    @Test
+    fun askingForSomethingLabelsEverything() {
+        val catalog = runBlocking { TemplateCatalog.instructions(context) }
+        compose.show {
+            AddInstructionScreen(catalog = catalog, onChoose = {}, onCancel = {})
+        }
+        assertEverythingIsLabeled("ask for something")
     }
 }
