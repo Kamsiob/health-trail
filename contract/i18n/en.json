@@ -285,5 +285,10 @@
   "progress.subtitle": "What you have written down over time. The app records these and never says what any of them mean.",
   "progress.empty": "Nothing recorded yet. Anything you track turns up here, with the dates you gave it.",
   "progress.by_clinician": "Stated by a clinician",
-  "progress.readings": "{count, plural, =0 {Nothing recorded} one {1 reading} other {# readings}}"
+  "progress.readings": "{count, plural, =0 {Nothing recorded} one {1 reading} other {# readings}}",
+  "chapters.subtitle": "The places they have been, in order. Each one holds what happened while they were there.",
+  "chapters.empty": "No places yet. Setup asks where they are, and you can add more whenever they move.",
+  "chapters.current": "Where they are now",
+  "chapters.earlier": "Before that",
+  "chapters.since": "Since {date}"
 }

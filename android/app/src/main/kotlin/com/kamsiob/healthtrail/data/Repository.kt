@@ -1178,6 +1178,51 @@ class Repository private constructor(
             )
         }
 
+    // -- chapters, the places -------------------------------------------------
+
+    /**
+     * One place, and when they were there.
+     *
+     * `endedEdtf` null means this is where they are now, which is what makes
+     * the current chapter identifiable without a separate flag that could
+     * disagree with the dates.
+     */
+    data class Chapter(
+        val id: String,
+        val name: String,
+        val reason: String?,
+        val notes: String?,
+        val startedEdtf: String?,
+        val endedEdtf: String?,
+    ) {
+        val isCurrent: Boolean get() = endedEdtf.isNullOrBlank()
+    }
+
+    /** Every place, most recent first. */
+    suspend fun chapters(subjectId: String): List<Chapter> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, name, reason, notes, started_edtf, ended_edtf " +
+                "FROM live_chapter WHERE subject_id = ? " +
+                "ORDER BY started_start IS NULL, started_start DESC, created_at DESC",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Chapter(
+                            id = cursor.getString(0),
+                            name = cursor.getString(1),
+                            reason = cursor.getString(2),
+                            notes = cursor.getString(3),
+                            startedEdtf = cursor.getString(4),
+                            endedEdtf = cursor.getString(5),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
     // -- readings, for the progress section ----------------------------------
 
     /**

@@ -285,5 +285,10 @@
   "progress.subtitle": "ما دوّنته على مدى الوقت. التطبيق يسجّل هذه القيم ولا يقول أبدًا ما تعنيه.",
   "progress.empty": "لا توجد تسجيلات بعد. كل ما تتابعه سيظهر هنا، بالتواريخ التي أعطيتها.",
   "progress.by_clinician": "ذكره أحد الأطباء",
-  "progress.readings": "{count, plural, =0 {لا تسجيلات} one {تسجيل واحد} two {تسجيلان} few {# تسجيلات} many {# تسجيلاً} other {# تسجيل}}"
+  "progress.readings": "{count, plural, =0 {لا تسجيلات} one {تسجيل واحد} two {تسجيلان} few {# تسجيلات} many {# تسجيلاً} other {# تسجيل}}",
+  "chapters.subtitle": "الأماكن التي كان فيها، بالترتيب. كل مكان يحفظ ما حدث أثناء وجوده هناك.",
+  "chapters.empty": "لا توجد أماكن بعد. الإعداد يسأل أين هو، ويمكنك إضافة المزيد كلما انتقل.",
+  "chapters.current": "أين هو الآن",
+  "chapters.earlier": "قبل ذلك",
+  "chapters.since": "منذ {date}"
 }

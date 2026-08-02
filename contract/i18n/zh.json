@@ -285,5 +285,10 @@
   "progress.subtitle": "您长期以来记录的数据。应用只负责记录，从不解读它们的含义。",
   "progress.empty": "还没有记录。您追踪的内容会出现在这里，并附上您填写的日期。",
   "progress.by_clinician": "由医护人员告知",
-  "progress.readings": "{count, plural, other {# 条记录}}"
+  "progress.readings": "{count, plural, other {# 条记录}}",
+  "chapters.subtitle": "他们待过的地方，按顺序排列。每一处都记录着当时发生的事。",
+  "chapters.empty": "还没有地点。初始设置会询问他们在哪里，之后每次转移都可以添加。",
+  "chapters.current": "目前所在",
+  "chapters.earlier": "此前",
+  "chapters.since": "自 {date} 起"
 }

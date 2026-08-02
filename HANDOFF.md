@@ -322,6 +322,7 @@ Every screen built without one is composed from existing components under `DESIG
 | Ask next time | 2026-08-02 | #115 | not yet |
 | Care threads | 2026-08-02 | #116 | not yet |
 | Progress, the readable record | 2026-08-02 | #117 | not yet |
+| Chapters, the places | 2026-08-02 | #118 | not yet |
 | Care team, read only | 2026-08-01 | #111 | not yet |
 | Disclaimer gate | 2026-07-31, rebuilt same day to the 10.6 bar | #28 | not yet |
 | Essentials first setup | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #30 | not yet |
