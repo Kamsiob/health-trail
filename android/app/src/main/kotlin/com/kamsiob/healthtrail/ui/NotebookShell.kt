@@ -56,6 +56,10 @@ import com.kamsiob.healthtrail.ui.screens.AppointmentDraft
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
 import com.kamsiob.healthtrail.ui.screens.AddInstructionScreen
 import com.kamsiob.healthtrail.ui.screens.StandingInstructionsScreen
+import com.kamsiob.healthtrail.ui.screens.AddBillScreen
+import com.kamsiob.healthtrail.ui.screens.BillDraft
+import com.kamsiob.healthtrail.ui.screens.MoneyScreen
+import com.kamsiob.healthtrail.ui.screens.parseAmountToMinor
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyDraft
@@ -165,6 +169,9 @@ fun NotebookShell(
         mutableStateOf<TemplateCatalog.Instructions?>(null)
     }
     var addingInstruction by remember { mutableStateOf(false) }
+    var bills by remember { mutableStateOf<List<Repository.Bill>>(emptyList()) }
+    var addingBill by remember { mutableStateOf(false) }
+    var savingBill by remember { mutableStateOf<BillDraft?>(null) }
     var savingInstruction by remember {
         mutableStateOf<TemplateCatalog.Instruction?>(null)
     }
@@ -211,6 +218,7 @@ fun NotebookShell(
             chapters = subject?.let { repository.chapters(it.id) }.orEmpty()
             appointments = subject?.let { repository.appointments(it.id) }.orEmpty()
             instructions = subject?.let { repository.standingInstructions(it.id) }.orEmpty()
+            bills = subject?.let { repository.bills(it.id) }.orEmpty()
             instructionCatalog = TemplateCatalog.instructions(context)
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
@@ -303,6 +311,12 @@ fun NotebookShell(
             Repository.Section.TRAIL -> TrailScreen(
                 entries = trail,
                 onEditDate = { editingDate = it },
+                onBack = { openSection = null },
+            )
+
+            Repository.Section.MONEY -> MoneyScreen(
+                bills = bills,
+                onAdd = { addingBill = true },
                 onBack = { openSection = null },
             )
 
@@ -439,6 +453,38 @@ fun NotebookShell(
             LaunchedEffect(asked) {
                 repository.markQuestionAsked(asked.id, Edtf.day(LocalDate.now()))
                 markingAsked = null
+                revision += 1
+            }
+        }
+
+        if (addingBill) {
+            AddBillScreen(
+                onSave = { draft ->
+                    addingBill = false
+                    savingBill = draft
+                },
+                onCancel = { addingBill = false },
+            )
+        }
+
+        val billDraft = savingBill
+        if (billDraft != null) {
+            LaunchedEffect(billDraft) {
+                val subject = repository.activeSubject()
+                // A bill with no description is not a record of anything. The
+                // amount stays optional, because a bill that has not said one
+                // yet is the common case rather than the exception.
+                if (subject != null && billDraft.description.isNotBlank()) {
+                    repository.createBill(
+                        subjectId = subject.id,
+                        description = billDraft.description.trim(),
+                        amountMinor = parseAmountToMinor(billDraft.amount),
+                        state = billDraft.state,
+                        received = Edtf.day(LocalDate.now()),
+                        notes = billDraft.notes,
+                    )
+                }
+                savingBill = null
                 revision += 1
             }
         }

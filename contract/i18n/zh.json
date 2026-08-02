@@ -312,5 +312,21 @@
   "instructions.asked_on": "提出于 {date}",
   "instructions.what_to_say": "怎么说",
   "instructions.how_to_ask": "如何提出",
-  "instructions.record": "我已提出"
+  "instructions.record": "我已提出",
+  "money.subtitle": "账单及其各自的状态。应用只做汇总，不对它们下任何判断。",
+  "money.empty": "还没有记录。账单一到就记下来，哪怕还不知道该怎么处理。",
+  "money.add": "添加账单",
+  "money.add.lead": "是什么账单、金额多少。您可以现在标注状态，也可以先留作待处理。",
+  "money.what": "账单事由",
+  "money.what.hint": "谁寄来的，涵盖什么",
+  "money.amount": "金额",
+  "money.amount.hint": "如果账单上还没写，就留空",
+  "money.state": "目前状态",
+  "money.state.needs_attention": "待处理",
+  "money.state.disputed": "有异议",
+  "money.state.waiting_on_insurance": "等待保险处理",
+  "money.state.paid": "已支付",
+  "money.state.closed": "已结清",
+  "money.open_total": "尚未结清",
+  "money.no_amount": "暂无金额"
 }

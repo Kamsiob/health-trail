@@ -1178,6 +1178,90 @@ class Repository private constructor(
             )
         }
 
+    // -- money ----------------------------------------------------------------
+
+    /**
+     * One bill.
+     *
+     * **The amount is minor units as an integer and never a floating point
+     * number.** The schema says so and the reason is in its comment: floating
+     * point money is a defect waiting for a rounding boundary, and this record
+     * may be read out in a dispute. Null means the bill has not said an amount
+     * yet, which happens constantly and is not the same as zero.
+     */
+    data class Bill(
+        val id: String,
+        val description: String,
+        val amountMinor: Long?,
+        val currency: String,
+        val state: String,
+        val stateNote: String?,
+        val receivedEdtf: String?,
+        val notes: String?,
+    ) {
+        /**
+         * Whether this is still hanging over somebody.
+         *
+         * Paid and closed are settled. Everything else is not, and that is the
+         * set the total above the list adds up.
+         */
+        val isOpen: Boolean get() = state != "paid" && state != "closed"
+    }
+
+    /** Every bill, most recently received first. */
+    suspend fun bills(subjectId: String): List<Bill> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, description, amount_minor, currency, state, state_note, " +
+                "received_edtf, notes FROM live_bill WHERE subject_id = ? " +
+                "ORDER BY received_start IS NULL, received_start DESC, created_at DESC",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Bill(
+                            id = cursor.getString(0),
+                            description = cursor.getString(1),
+                            amountMinor = if (cursor.isNull(2)) null else cursor.getLong(2),
+                            currency = cursor.getString(3),
+                            state = cursor.getString(4),
+                            stateNote = cursor.getString(5),
+                            receivedEdtf = cursor.getString(6),
+                            notes = cursor.getString(7),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /** Records a bill. Only the description is required. */
+    suspend fun createBill(
+        subjectId: String,
+        description: String,
+        amountMinor: Long?,
+        state: String,
+        received: Edtf.Date,
+        notes: String? = null,
+    ): String = insert(
+        "bill",
+        mapOf(
+            "subject_id" to subjectId,
+            "description" to description,
+            "amount_minor" to amountMinor,
+            "state" to state,
+            "notes" to notes?.ifBlank { null },
+        ) + dateColumns("received", received),
+    )
+
+    /** Moves a bill to another state. Nothing else about it changes. */
+    suspend fun setBillState(billId: String, state: String) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE bill SET state = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(state, System.currentTimeMillis(), billId),
+        )
+    }
+
     // -- standing instructions ------------------------------------------------
 
     /**

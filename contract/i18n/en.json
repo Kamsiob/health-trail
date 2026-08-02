@@ -312,5 +312,21 @@
   "instructions.asked_on": "Asked {date}",
   "instructions.what_to_say": "What to say",
   "instructions.how_to_ask": "How to ask",
-  "instructions.record": "I asked for this"
+  "instructions.record": "I asked for this",
+  "money.subtitle": "Bills and what state each one is in. The app adds them up and decides nothing about them.",
+  "money.empty": "Nothing written down yet. Add a bill when it arrives, even before you know what to do about it.",
+  "money.add": "Add a bill",
+  "money.add.lead": "What it is and how much. You can say what state it is in now or leave it as needing attention.",
+  "money.what": "What it is for",
+  "money.what.hint": "Who sent it, and what it covers",
+  "money.amount": "How much",
+  "money.amount.hint": "Leave it blank if the bill does not say yet",
+  "money.state": "Where it stands",
+  "money.state.needs_attention": "Needs attention",
+  "money.state.disputed": "Disputed",
+  "money.state.waiting_on_insurance": "Waiting on insurance",
+  "money.state.paid": "Paid",
+  "money.state.closed": "Closed",
+  "money.open_total": "Not settled yet",
+  "money.no_amount": "No amount yet"
 }

@@ -312,5 +312,21 @@
   "instructions.asked_on": "طُلب في {date}",
   "instructions.what_to_say": "ماذا تقول",
   "instructions.how_to_ask": "كيف تطلبه",
-  "instructions.record": "طلبت هذا"
+  "instructions.record": "طلبت هذا",
+  "money.subtitle": "الفواتير وحالة كل منها. التطبيق يجمعها ولا يقرر بشأنها شيئًا.",
+  "money.empty": "لا يوجد شيء مدوّن بعد. أضف الفاتورة عند وصولها، حتى قبل أن تعرف ما ستفعله بها.",
+  "money.add": "إضافة فاتورة",
+  "money.add.lead": "ما هي وكم قيمتها. يمكنك تحديد حالتها الآن أو تركها بحاجة إلى متابعة.",
+  "money.what": "لماذا هذه الفاتورة",
+  "money.what.hint": "من أرسلها وما الذي تغطيه",
+  "money.amount": "المبلغ",
+  "money.amount.hint": "اتركه فارغًا إذا لم تحدد الفاتورة المبلغ بعد",
+  "money.state": "أين وصلت",
+  "money.state.needs_attention": "تحتاج متابعة",
+  "money.state.disputed": "معترض عليها",
+  "money.state.waiting_on_insurance": "بانتظار التأمين",
+  "money.state.paid": "مدفوعة",
+  "money.state.closed": "مغلقة",
+  "money.open_total": "لم تُسوَّ بعد",
+  "money.no_amount": "لا يوجد مبلغ بعد"
 }

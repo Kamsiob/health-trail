@@ -312,5 +312,21 @@
   "instructions.asked_on": "Pedido el {date}",
   "instructions.what_to_say": "Qué decir",
   "instructions.how_to_ask": "Cómo pedirlo",
-  "instructions.record": "Pedí esto"
+  "instructions.record": "Pedí esto",
+  "money.subtitle": "Facturas y en qué estado está cada una. La aplicación las suma y no decide nada sobre ellas.",
+  "money.empty": "Todavía no hay nada anotado. Añada una factura cuando llegue, incluso antes de saber qué hacer con ella.",
+  "money.add": "Añadir una factura",
+  "money.add.lead": "Qué es y de cuánto. Puede indicar en qué estado está o dejarla como pendiente de atención.",
+  "money.what": "De qué es",
+  "money.what.hint": "Quién la envió y qué cubre",
+  "money.amount": "Cuánto",
+  "money.amount.hint": "Déjelo en blanco si la factura aún no lo dice",
+  "money.state": "En qué punto está",
+  "money.state.needs_attention": "Pendiente de atención",
+  "money.state.disputed": "En disputa",
+  "money.state.waiting_on_insurance": "Esperando al seguro",
+  "money.state.paid": "Pagada",
+  "money.state.closed": "Cerrada",
+  "money.open_total": "Sin resolver todavía",
+  "money.no_amount": "Sin importe todavía"
 }

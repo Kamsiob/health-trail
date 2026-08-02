@@ -1,0 +1,207 @@
+package com.kamsiob.healthtrail.ui.screens
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.ChoiceChip
+import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.TextAction
+import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.Space
+
+object AddBillTags {
+    const val ROOT = "add_bill_root"
+    const val SAVE = "add_bill_save"
+    const val CANCEL = "add_bill_cancel"
+    fun field(key: String) = "add_bill_$key"
+    fun state(key: String) = "add_bill_state_$key"
+}
+
+/** What the person typed about a bill. */
+data class BillDraft(
+    val description: String = "",
+    val amount: String = "",
+    val state: String = "needs_attention",
+    val notes: String = "",
+)
+
+/**
+ * Recording a bill.
+ *
+ * **The amount is optional and that is not a courtesy.** Bills arrive saying
+ * "this is not a bill", with the amount pending, or with a number nobody can
+ * find. A record that refuses to hold one until a number exists loses the
+ * thing at the moment it appears, which is the moment it is most likely to be
+ * lost.
+ *
+ * **Nothing is calculated and nothing is advised.** No due date arithmetic, no
+ * suggestion to dispute, no flag on a large amount. The person says where it
+ * stands and the app writes that down.
+ */
+@Composable
+fun AddBillScreen(
+    onSave: (BillDraft) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+
+    var draft by remember { mutableStateOf(BillDraft()) }
+
+    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .imePadding()
+                .testTag(AddBillTags.ROOT),
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Space.screenHorizontal),
+            ) {
+                Spacer(Modifier.height(Space.l))
+                Text(
+                    text = strings["money.add"],
+                    style = HealthTrail.type.displayL,
+                    color = colors.ink,
+                    modifier = Modifier.semantics { heading() },
+                )
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = strings["money.add.lead"],
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
+                Spacer(Modifier.height(Space.l))
+
+                HealthTrailTextField(
+                    label = strings["money.what"],
+                    value = draft.description,
+                    onValueChange = { draft = draft.copy(description = it) },
+                    hint = strings["money.what.hint"],
+                    fieldTestTag = AddBillTags.field("what"),
+                )
+                Spacer(Modifier.height(Space.m))
+
+                HealthTrailTextField(
+                    label = strings["money.amount"],
+                    value = draft.amount,
+                    onValueChange = { draft = draft.copy(amount = it) },
+                    hint = strings["money.amount.hint"],
+                    keyboardType = KeyboardType.Decimal,
+                    fieldTestTag = AddBillTags.field("amount"),
+                )
+                Spacer(Modifier.height(Space.m))
+
+                ChoiceChipGroup(label = strings["money.state"]) {
+                    listOf(
+                        "needs_attention",
+                        "disputed",
+                        "waiting_on_insurance",
+                        "paid",
+                    ).forEach { state ->
+                        ChoiceChip(
+                            label = strings["money.state.$state"],
+                            selected = draft.state == state,
+                            onClick = { draft = draft.copy(state = state) },
+                            modifier = Modifier.testTag(AddBillTags.state(state)),
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(Space.m))
+
+                HealthTrailTextField(
+                    label = strings["appts.notes"],
+                    value = draft.notes,
+                    onValueChange = { draft = draft.copy(notes = it) },
+                    hint = strings["money.what.hint"],
+                    singleLine = false,
+                    imeAction = ImeAction.Done,
+                    fieldTestTag = AddBillTags.field("notes"),
+                )
+
+                Spacer(Modifier.height(Space.xl))
+            }
+
+            Spacer(Modifier.height(Space.m))
+
+            FilledButton(
+                label = strings["capture.save"],
+                onClick = { onSave(draft) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Space.screenHorizontal)
+                    .testTag(AddBillTags.SAVE),
+            )
+
+            Spacer(Modifier.height(Space.s))
+
+            TextAction(
+                label = strings["common.cancel"],
+                onClick = onCancel,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Space.screenHorizontal)
+                    .testTag(AddBillTags.CANCEL),
+            )
+
+            Spacer(Modifier.height(Space.l))
+        }
+    }
+}
+
+/**
+ * What the person typed, as minor units, or null when they typed nothing usable.
+ *
+ * **Forgiving on the way in and exact once stored.** Somebody copying an amount
+ * off a statement types "$1,284.50", "1284.50", or "1,284". All three mean the
+ * same thing and all three are accepted. Anything with no digits in it at all
+ * is null rather than zero, because zero is a claim the person did not make.
+ *
+ * **Parsed through BigDecimal, never a double.** The schema stores minor units
+ * as an integer precisely so no rounding boundary can move somebody's money,
+ * and parsing through a double here would reintroduce exactly that on the way
+ * in. A value with more decimal places than the currency has is truncated
+ * rather than rounded up, so the app never records more than was written.
+ */
+internal fun parseAmountToMinor(raw: String, fractionDigits: Int = 2): Long? {
+    val cleaned = raw.filter { it.isDigit() || it == '.' || it == ',' }
+        // A comma is a thousands separator here, since the app is United States
+        // only per MASTER_SPEC section 7.1 and every amount in it is dollars.
+        .replace(",", "")
+    if (cleaned.none { it.isDigit() }) return null
+    return runCatching {
+        java.math.BigDecimal(cleaned)
+            .movePointRight(fractionDigits)
+            .setScale(0, java.math.RoundingMode.DOWN)
+            .toLong()
+    }.getOrNull()
+}
