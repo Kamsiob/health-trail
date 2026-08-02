@@ -276,6 +276,7 @@ class ScreenReaderTest {
                     ),
                 ),
                 onEditDate = {},
+                onRemove = {},
                 onBack = {},
             )
         }
@@ -296,6 +297,7 @@ class ScreenReaderTest {
                     Repository.Person("p3", "Dr. Prasad", "Attending", null, null, null),
                 ),
                 onCall = {},
+                onRemove = {},
                 onAdd = {},
                 onBack = {},
             )
@@ -368,6 +370,7 @@ class ScreenReaderTest {
                     // still announce what it is.
                     Repository.Medication("m2", "Metformin", null, null, null, false, "2026-03"),
                 ),
+                onRemove = {},
                 onAdd = {},
                 onBack = {},
             )
@@ -392,6 +395,7 @@ class ScreenReaderTest {
                     Repository.Question("q2", "Can the water pill move earlier?", null, null, "2026-08-01", "They will review it"),
                 ),
                 onMarkAsked = {},
+                onRemove = {},
                 onBack = {},
             )
         }
@@ -457,6 +461,7 @@ class ScreenReaderTest {
                     Repository.Appointment("a2", "Podiatry", null, null, null, null),
                 ),
                 todayMillis = 1L,
+                onRemove = {},
                 onAdd = {},
                 onBack = {},
             )
@@ -480,6 +485,7 @@ class ScreenReaderTest {
                     Repository.StandingInstruction("s2", "Tell me before a room change", "Please tell me first.", "request", null, null, null, null),
                 ),
                 tags = catalog.tags,
+                onRemove = {},
                 onAdd = {},
                 onBack = {},
             )
@@ -498,6 +504,7 @@ class ScreenReaderTest {
                     Repository.Bill("b2", "Ambulance transfer", null, "USD", "disputed", "They billed the wrong plan", null, null),
                     Repository.Bill("b3", "Pharmacy", 31000, "USD", "paid", null, "2026-07-30", null),
                 ),
+                onRemove = {},
                 onAdd = {},
                 onBack = {},
             )
@@ -522,6 +529,7 @@ class ScreenReaderTest {
                     // No photograph at all, which is a real document.
                     Repository.Document("d2", "Discharge summary", null, "With the ward clerk", null, null, null, null),
                 ),
+                onRemove = {},
                 onAdd = {},
                 onBack = {},
             )
