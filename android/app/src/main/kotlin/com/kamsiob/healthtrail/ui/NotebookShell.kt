@@ -509,6 +509,7 @@ fun NotebookShell(
                     exportState = ExportState.READY
                     pendingPassphrase = null
                 },
+                onAgain = { exportState = ExportState.READY },
             )
         }
 

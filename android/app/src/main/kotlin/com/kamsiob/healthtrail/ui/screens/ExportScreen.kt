@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,6 +19,7 @@ import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -28,6 +30,8 @@ object ExportTags {
     const val SAVE = "export_save"
     const val PLAIN = "export_plain"
     const val STATUS = "export_status"
+    const val REVEAL = "export_reveal"
+    const val AGAIN_ACTION = "export_again_action"
 }
 
 /** What the export screen is doing right now. */
@@ -62,16 +66,32 @@ fun ExportScreen(
     onExport: (passphrase: String?) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Puts the screen back to its resting state so another copy can be saved. */
+    onAgain: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
     var passphrase by remember { mutableStateOf("") }
     var again by remember { mutableStateOf("") }
+    var revealed by remember { mutableStateOf(false) }
 
     val mismatch = again.isNotEmpty() && passphrase != again
     val canEncrypt = passphrase.isNotEmpty() && passphrase == again
     val busy = state == ExportState.WORKING
+    val done = state == ExportState.DONE
+
+    // **Forgotten the moment the file exists.** Holding the passphrase in
+    // composition after the export is finished keeps the app's most consequential
+    // secret alive for no remaining purpose, and leaves it on screen behind
+    // whatever the person does next.
+    LaunchedEffect(done) {
+        if (done) {
+            passphrase = ""
+            again = ""
+            revealed = false
+        }
+    }
 
     SectionScaffold(
         name = ExportTags.NAME,
@@ -81,6 +101,36 @@ fun ExportScreen(
         backLabelKey = "section.back.more",
         modifier = modifier,
     ) {
+        // **The result replaces the form rather than sitting under it.** Left
+        // in place, the screen said "Saved" in body text below two live buttons
+        // and a passphrase still on display, which buries the one thing that
+        // just happened beneath the machinery that did it and invites a second
+        // file nobody asked for.
+        if (done) {
+            item {
+                Text(
+                    text = strings["export.done.title"],
+                    style = HealthTrail.type.displayS,
+                    color = colors.ink,
+                    modifier = Modifier.testTag(ExportTags.STATUS),
+                )
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = strings["export.done.where"],
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink2,
+                )
+                Spacer(Modifier.height(Space.l))
+                QuietButton(
+                    label = strings["export.done.again"],
+                    onClick = { onAgain() },
+                    modifier = Modifier.fillMaxWidth().testTag(ExportTags.AGAIN_ACTION),
+                )
+                Spacer(Modifier.height(Space.l))
+            }
+            return@SectionScaffold
+        }
+
         item {
             Text(
                 text = strings["export.why"],
@@ -99,6 +149,7 @@ fun ExportScreen(
                 hint = strings["export.passphrase.hint"],
                 enabled = !busy,
                 keyboardType = KeyboardType.Password,
+                masked = !revealed,
                 fieldTestTag = ExportTags.PASSPHRASE,
             )
             Spacer(Modifier.height(Space.m))
@@ -112,8 +163,22 @@ fun ExportScreen(
                 note = if (mismatch) strings["export.mismatch"] else null,
                 enabled = !busy,
                 keyboardType = KeyboardType.Password,
+                masked = !revealed,
                 imeAction = ImeAction.Done,
                 fieldTestTag = ExportTags.AGAIN,
+            )
+
+            // **Hidden by default, with the person free to look.** Typing a
+            // passphrase blind, twice, and being told only that the two do not
+            // match is a trap for anybody tired, and this screen is used by
+            // people who are. Concealing it is the safe default; refusing to
+            // ever show it would just move the failure.
+            Spacer(Modifier.height(Space.s))
+            TextAction(
+                label = if (revealed) strings["export.conceal"] else strings["export.reveal"],
+                onClick = { revealed = !revealed },
+                enabled = !busy,
+                modifier = Modifier.testTag(ExportTags.REVEAL),
             )
 
             Spacer(Modifier.height(Space.m))
@@ -149,12 +214,12 @@ fun ExportScreen(
                 modifier = Modifier.fillMaxWidth().testTag(ExportTags.PLAIN),
             )
 
-            // One line, and only when there is something true to say.
+            // One line, and only when there is something true to say. DONE
+            // never reaches here: it replaces the form above.
             val status = when (state) {
                 ExportState.WORKING -> strings["export.working"]
-                ExportState.DONE -> strings["export.done"]
                 ExportState.FAILED -> strings["export.failed"]
-                ExportState.READY -> null
+                ExportState.DONE, ExportState.READY -> null
             }
             if (status != null) {
                 Spacer(Modifier.height(Space.l))

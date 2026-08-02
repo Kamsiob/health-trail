@@ -657,7 +657,7 @@ class ScreenReaderTest {
     @Test
     fun restoreLabelsEverythingWhenReady() {
         compose.show {
-            restoreAt(
+            RestoreAt(
                 RestoreState.Ready(
                     ExportContainer.Manifest(
                         formatVersion = 1,

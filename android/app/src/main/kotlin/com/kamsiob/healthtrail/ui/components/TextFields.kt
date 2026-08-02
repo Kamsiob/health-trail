@@ -25,6 +25,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -65,6 +67,16 @@ fun HealthTrailTextField(
     singleLine: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
+    /**
+     * Whether the characters are hidden as they are typed.
+     *
+     * **[KeyboardType.Password] does not do this.** It asks for a keyboard
+     * without autocorrect and nothing more, so a field set that way and nothing
+     * else renders the secret in full on screen, which is how the export
+     * passphrase came to sit in the clear on the one screen where it matters.
+     * Masking is a visual transformation and has to be asked for separately.
+     */
+    masked: Boolean = false,
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
@@ -105,6 +117,11 @@ fun HealthTrailTextField(
                     keyboardType = keyboardType,
                     imeAction = imeAction,
                 ),
+                visualTransformation = if (masked) {
+                    PasswordVisualTransformation()
+                } else {
+                    VisualTransformation.None
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     // 48dp minimum touch target including the padding above.

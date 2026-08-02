@@ -139,6 +139,7 @@ fun RestoreScreen(
                         value = passphrase,
                         onValueChange = { passphrase = it },
                         keyboardType = KeyboardType.Password,
+                        masked = true,
                         imeAction = ImeAction.Done,
                         fieldTestTag = RestoreTags.PASSPHRASE,
                     )
