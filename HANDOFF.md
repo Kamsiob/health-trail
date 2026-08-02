@@ -4,9 +4,11 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-08-01, at the end of the session that found all three run safety guards were decorative, rebuilt section 5 from the tracker, and closed the export round trip and its encryption.
+**Last rewritten:** 2026-08-02, during the long run that made the notebook's twelve sections open. Sections 0a, 2a, 3, and 9 are current to that run; the rest predates it and is still accurate.
 
-**The repository is current and nothing is in flight.** No uncommitted work, no open pull requests, every branch merged, the board synced. A session starting cold needs this file, `CLAUDE.md`, and the tracker, and nothing else.
+**There is one pull request in flight, #112**, on branch `fix/guard-observable`. It is large, every increment inside it is a separate commit, and it carries eight new sections plus the Arabic typography fix. Section 3 says where to pick up.
+
+**The phone holds a current build with a seeded notebook**, per D56. If an instrumented run has just wiped it, reinstall and reseed before doing anything else.
 
 If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
 
@@ -91,7 +93,29 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
-**The last two failure cases on #9**, and then #9 closes. Section 5 agrees; if the two ever disagree again, section 5 is rebuilt from the tracker and this one follows it.
+**Rewritten 2026-08-02 after the long run that opened the notebook.** What is below the horizontal rule is the older export work and it is still accurate; what is here is what changed.
+
+### What happened on the night of 2026-08-01 into 08-02
+
+**The notebook opened.** `onOpen` was an empty lambda: twelve sections with live counts and not one of them opened. Capture wrote entries and nothing anywhere gave one back. **Eight sections now have real screens**: the trail, care team, the emergency card, medications, ask next time, care threads, progress, and chapters. The remaining four reach the honest interim screen.
+
+**Built alongside them:** adding somebody to the care team, filling in the emergency card, adding a medication, and correcting any date from the entry itself.
+
+**The pull request is #112**, on branch `fix/guard-observable`, and it carries all of it.
+
+### Where to pick up
+
+1. **Merge #112** if it is still open and green. It is large and every increment in it is committed separately.
+2. **The four sections still on the interim screen:** appointments, documents, money, standing instructions. **Each is blocked on the same thing rather than on screen work:** nothing in the app creates one. There is no way to record an appointment, a document, a bill, or a standing instruction, so a screen for any of them could only ever be empty. **Build the way in first**, then the section.
+3. **#57, the document capture input**, is exactly that problem for documents and is already open with its blocker cleared.
+4. **The design reviews are stacking up**: #111, #113, #114, #115, #116, #117, #118, all opened tonight, all with device screenshots, all waiting on the owner rather than on work.
+5. **#9's last two failure cases** are still the smallest remaining piece of the export.
+
+### What is owed on the screens built tonight
+
+**The reader pass with TalkBack actually running.** Font scale 2.0 and Arabic were both walked on the device and both pass. `ScreenReaderTest` grew seven cases so the labeling check runs forever. **What has not been done is a hand pass with TalkBack on**, for traversal order and phrasing, and that is #44.
+
+---
 
 **Six of the eight failure cases in `contract/export-format.md` section 7 are covered.** The two that are not:
 
@@ -151,6 +175,10 @@ Verified means checked through the mechanism, not inferred from the code being w
 | A deleted row is actually gone | `TombstoneTest` on the phone deletes through the repository and asserts it leaves every read the app has: the count, the Unfiled tray, the date lookup, the thread chips, and a link table join. It also asserts the row physically survives, because a removed row leaves nothing to tell a peer it was deleted |
 | Tombstones cannot leak | `check_live_views.py` fails any read of a base table outside a live view, in app and test sources alike. Proven by three deliberate breakages: a leak inside the repository, a leak on a screen, and an allowance with no reason |
 | Every screen built so far | Instrumented, plus built, installed, opened, and looked at on the Pixel |
+| **The eight sections the notebook opens onto** | Each walked on the Pixel with real data typed through the app's own forms, in both themes, at font scale 2.0, and in Arabic. `ScreenReaderTest` covers all of them for labeling, 16 cases. **The reader pass with TalkBack actually running is not done and is not claimed**, #44 |
+| The trail's route | Drawn to `DESIGN.md` 5.2 and checked on the device: the dashed gold line runs continuously through the month headings, the node lands on its date at both font scales, node color carries the entry kind, and the whole thing mirrors to the start edge in Arabic |
+| Links that go both ways | A medication flagged for the emergency card appears on it, and one that is not does not. Walked with two medications. Taking somebody off the emergency card leaves them on the care team, walked and confirmed |
+| A date corrected from the entry | Changed an entry's date in the trail, force stopped the app, relaunched, and the new date was still there, so it is in the database rather than in composition state |
 | The notebook's fold behavior | Walked on the Pixel with a hospital stay template: appointments, the trail, documents, and standing instructions forward, money and progress collapsed, which is exactly what that template names |
 | Dynamic type at font scale 2.0 | Every built screen looked at on the phone with the system font at maximum. Two defects found and fixed, both invisible at 1.0. The setting was restored afterward |
 | Reduced motion | Verified with `animator_duration_scale` actually set to 0 on the phone, not by reading the code. A press still acknowledges, reaching the same target through a 100ms fade rather than a spring. The setting was restored afterward |
