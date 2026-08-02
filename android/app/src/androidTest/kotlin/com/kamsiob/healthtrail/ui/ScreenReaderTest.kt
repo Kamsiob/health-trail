@@ -17,6 +17,10 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
+import com.kamsiob.healthtrail.ui.screens.AddBillScreen
+import com.kamsiob.healthtrail.ui.screens.AddDocumentScreen
+import com.kamsiob.healthtrail.ui.screens.DocumentsScreen
+import com.kamsiob.healthtrail.ui.screens.MoneyScreen
 import com.kamsiob.healthtrail.ui.screens.AddInstructionScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
@@ -481,6 +485,63 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("standing instructions")
+    }
+
+    @Test
+    fun moneyLabelsEverything() {
+        compose.show {
+            MoneyScreen(
+                bills = listOf(
+                    Repository.Bill("b1", "Maplewood General, room and board", 128450, "USD", "waiting_on_insurance", null, "2026-08-02", null),
+                    // No amount, which is the row that would otherwise render a
+                    // bare gap where a number goes.
+                    Repository.Bill("b2", "Ambulance transfer", null, "USD", "disputed", "They billed the wrong plan", null, null),
+                    Repository.Bill("b3", "Pharmacy", 31000, "USD", "paid", null, "2026-07-30", null),
+                ),
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("money")
+    }
+
+    @Test
+    fun addingABillLabelsEverything() {
+        compose.show { AddBillScreen(onSave = {}, onCancel = {}) }
+        assertEverythingIsLabeled("add a bill")
+    }
+
+    @Test
+    fun documentsLabelEverything() {
+        compose.show {
+            DocumentsScreen(
+                documents = listOf(
+                    // A hash that is not on disk, so the thumbnail cannot
+                    // decode. The row must still announce itself.
+                    Repository.Document("d1", "Signed consent form", null, "Blue folder", null, "2026-08-02", "deadbeef", 2361),
+                    // No photograph at all, which is a real document.
+                    Repository.Document("d2", "Discharge summary", null, "With the ward clerk", null, null, null, null),
+                ),
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("documents")
+    }
+
+    @Test
+    fun savingADocumentLabelsEverything() {
+        compose.show { AddDocumentScreen(onSave = {}, onCancel = {}) }
+        assertEverythingIsLabeled("save a document")
+    }
+
+    @Test
+    fun savingADocumentLabelsEverythingWhenAFileWasRefused() {
+        val strings = Strings.load(context)
+        compose.show {
+            AddDocumentScreen(onSave = {}, onCancel = {}, error = strings["docs.too_large"])
+        }
+        assertEverythingIsLabeled("save a document, file refused")
     }
 
     @Test
