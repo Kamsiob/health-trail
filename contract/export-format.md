@@ -138,7 +138,7 @@ Each of these changes nothing and names what was wrong:
 - a truncated file
 - a valid zip with no manifest
 - a manifest claiming a format version from the future
-- a database with an unknown table or column
+- a database with an unknown table or column, which is distinct from a manifest claiming a later format: that one means update the app, this one means the file was altered
 - an attachment whose hash does not match its filename
 - an attachment referenced by the database but absent from the archive
 - a manifest whose row counts disagree with the database

@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.data
 
+import android.database.sqlite.SQLiteDatabase
 import java.io.File
 import java.io.InputStream
 import java.util.zip.ZipEntry
@@ -89,6 +90,16 @@ object ExportContainer {
         val salt: String,
         val nonce: String,
     )
+
+    /**
+     * The shape this build expects, as table name to column names.
+     *
+     * Supplied by the caller from the database it actually created, rather than
+     * written out a second time here. A hard coded copy of the schema is the
+     * duplication D16 exists to prevent, and it would go stale the first time a
+     * table was added.
+     */
+    typealias Schema = Map<String, Set<String>>
 
     /** Everything the writer needs, gathered by the caller so this stays pure plumbing. */
     data class Source(
@@ -231,6 +242,33 @@ object ExportContainer {
         data class AttachmentCorrupt(val hash: String, override val message: String) : Problem
         data class RowCountsDisagree(override val message: String) : Problem
 
+        /**
+         * The database holds a table or column this build does not know.
+         *
+         * **Distinct from [FromTheFuture] on purpose.** A file whose manifest
+         * claims a later format is a file this app has simply not caught up
+         * with, and the answer is to update the app. A file whose manifest
+         * claims *this* format while carrying a shape this format does not have
+         * is a file that has been altered, and telling somebody to update the
+         * app would send them somewhere that cannot help.
+         */
+        data class UnknownSchema(
+            val what: String,
+            override val message: String,
+        ) : Problem
+
+        /**
+         * The database points at an attached file the archive does not carry.
+         *
+         * Caught here rather than at use, because finding it later means
+         * finding it after the import said it worked, and by then the notebook
+         * has a photograph of a discharge letter that opens onto nothing.
+         */
+        data class AttachmentMissing(
+            val hash: String,
+            override val message: String,
+        ) : Problem
+
         /** Encrypted, and no passphrase was offered. Not a failure, a question. */
         data class PassphraseNeeded(override val message: String) : Problem
 
@@ -268,6 +306,14 @@ object ExportContainer {
         staging: File,
         /** Cleared before this function returns, on every path. */
         passphrase: CharArray? = null,
+        /**
+         * The shape to check the payload against, or null to skip that check.
+         *
+         * Null is for callers holding a file rather than an app, such as the
+         * container's own tests, which build payloads that are not databases at
+         * all. A real import always passes one.
+         */
+        expected: Schema? = null,
     ): Result<Opened> = withContext(Dispatchers.IO) {
         staging.mkdirs()
 
@@ -405,8 +451,134 @@ object ExportContainer {
             }
         }
 
+        // The payload is a plain SQLite file, which is what makes it portable,
+        // and that is also what makes these last two checks possible at all.
+        // While the archive carried a device keyed SQLCipher file there was no
+        // way to look inside one without the key that could not travel.
+        if (expected != null) {
+            inspect(database, attachments.map { it.name }.toSet(), expected)
+                ?.let { return@withContext failure<Opened>(it) }
+        }
+
         Result.success(Opened(manifest, database, attachments))
     }
+
+    /**
+     * The last two checks the format's section 7 asks for, both of which have
+     * to read the database rather than the envelope.
+     *
+     * Returns the problem, or null when the file is sound.
+     */
+    private fun inspect(
+        database: File,
+        present: Set<String>,
+        expected: Schema,
+    ): Problem? {
+        val db = try {
+            SQLiteDatabase.openDatabase(database.path, null, SQLiteDatabase.OPEN_READONLY)
+        } catch (_: Throwable) {
+            return Problem.DatabaseCorrupt(
+                "The records in this export could not be read at all. The file was " +
+                    "probably damaged in transit. Nothing was changed."
+            )
+        }
+
+        return db.use { open ->
+            unknownShape(open, expected) ?: missingAttachment(open, present)
+        }
+    }
+
+    /**
+     * A table or column this build does not have, per section 7.
+     *
+     * **Checked against the schema this build actually created**, passed in by
+     * the caller, rather than a list of tables written out a second time in
+     * Kotlin. That duplication is what D16 exists to prevent, and it would go
+     * stale the first time a table was added.
+     */
+    private fun unknownShape(open: SQLiteDatabase, expected: Schema): Problem? {
+        open.rawQuery(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
+            null,
+        ).use { tables ->
+            while (tables.moveToNext()) {
+                val table = tables.getString(0)
+                if (table in PLATFORM_TABLES) continue
+                val columns = expected[table]
+                    ?: return Problem.UnknownSchema(
+                        table,
+                        "This export holds a kind of record this version of Health Trail " +
+                            "does not have, called \"$table\". It says it is a format this " +
+                            "app understands, so it has been altered since it was made. " +
+                            "Nothing was changed.",
+                    )
+
+                open.rawQuery("PRAGMA table_info(\"$table\")", null).use { info ->
+                    val nameColumn = info.getColumnIndexOrThrow("name")
+                    while (info.moveToNext()) {
+                        val column = info.getString(nameColumn)
+                        if (column !in columns) {
+                            return Problem.UnknownSchema(
+                                "$table.$column",
+                                "This export holds a detail this version of Health Trail " +
+                                    "does not have, called \"$column\" on \"$table\". It " +
+                                    "says it is a format this app understands, so it has " +
+                                    "been altered since it was made. Nothing was changed.",
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * An attachment the database points at that the archive does not carry.
+     *
+     * **Only rows that are not tombstoned.** A deleted attachment's bytes are
+     * legitimately gone while its row still travels, because the row is how a
+     * restore learns the deletion happened at all. Requiring the file for a row
+     * that records its own removal would reject every export taken after
+     * somebody deleted a photograph.
+     */
+    private fun missingAttachment(open: SQLiteDatabase, present: Set<String>): Problem? {
+        val hasAttachments = open.rawQuery(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'attachment'",
+            null,
+        ).use { it.moveToFirst() }
+        if (!hasAttachments) return null
+
+        open.rawQuery(
+            // allow-base-table: an export carries tombstones, and the live view
+            // would hide exactly the rows whose files are allowed to be absent.
+            "SELECT sha256 FROM attachment WHERE deleted_at IS NULL",
+            null,
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                val hash = cursor.getString(0)
+                if (hash !in present) {
+                    return Problem.AttachmentMissing(
+                        hash,
+                        "This export refers to an attached file that is not in it. The " +
+                            "file was probably not copied completely. Nothing was changed.",
+                    )
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * Tables the platform creates for itself, which are not records.
+     *
+     * Android's SQLite writes `android_metadata` into every database it makes,
+     * to hold the locale. It is nobody's record and it is not in the contract,
+     * so it is skipped rather than treated as an alteration. Leaving it to the
+     * expectation to happen to contain it would work today and break the first
+     * time an expectation is built any other way.
+     */
+    private val PLATFORM_TABLES = setOf("android_metadata")
 
     private fun <T> failure(problem: Problem): Result<T> =
         Result.failure(ExportProblem(problem))

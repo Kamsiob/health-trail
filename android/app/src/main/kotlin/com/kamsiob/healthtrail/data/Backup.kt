@@ -86,6 +86,37 @@ object Backup {
     }
 
     /**
+     * The shape this build creates, read from the database rather than listed.
+     *
+     * **This is the single source of truth for what an import may contain.**
+     * `contract/schema.sql` created this database, so asking it what tables and
+     * columns exist is asking the contract, with no second declaration to drift
+     * out of step the first time a table is added. That is D16.
+     */
+    suspend fun schema(context: Context): ExportContainer.Schema =
+        withContext(Dispatchers.IO) {
+            val handle = HealthTrailDatabase.open(context).database
+            handle.rawQuery(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE " +
+                    "'sqlite_%'",
+                null,
+            ).use { tables ->
+                buildMap {
+                    while (tables.moveToNext()) {
+                        val table = tables.getString(0)
+                        handle.rawQuery("PRAGMA table_info(\"$table\")", null).use { info ->
+                            val nameColumn = info.getColumnIndexOrThrow("name")
+                            val columns = buildSet {
+                                while (info.moveToNext()) add(info.getString(nameColumn))
+                            }
+                            put(table, columns)
+                        }
+                    }
+                }
+            }
+        }
+
+    /**
      * A portable, unencrypted copy of the whole database.
      *
      * `sqlcipher_export` is SQLCipher's own mechanism for this and it copies

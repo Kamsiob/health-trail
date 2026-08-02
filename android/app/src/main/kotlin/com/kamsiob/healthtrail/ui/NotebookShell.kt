@@ -641,6 +641,7 @@ fun NotebookShell(
                     file = source,
                     staging = staging,
                     passphrase = openWith?.takeIf { it.isNotEmpty() }?.toCharArray(),
+                    expected = Backup.schema(context),
                 )
                 restoreState = result.fold(
                     onSuccess = { RestoreState.Ready(it.manifest) },
@@ -679,6 +680,7 @@ fun NotebookShell(
                     file = source,
                     staging = staging,
                     passphrase = openWith?.takeIf { it.isNotEmpty() }?.toCharArray(),
+                    expected = Backup.schema(context),
                 )
                 restoreState = opened.fold(
                     onSuccess = { container ->
