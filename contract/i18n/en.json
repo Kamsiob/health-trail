@@ -281,5 +281,9 @@
   "questions.mark_asked": "I asked this",
   "questions.asked_on": "Asked {date}",
   "threads.subtitle": "The parallel streams running through this notebook. Everything you write down can belong to one of them.",
-  "threads.empty": "No threads yet. Choosing a situation sets some up, and you can always work without them."
+  "threads.empty": "No threads yet. Choosing a situation sets some up, and you can always work without them.",
+  "progress.subtitle": "What you have written down over time. The app records these and never says what any of them mean.",
+  "progress.empty": "Nothing recorded yet. Anything you track turns up here, with the dates you gave it.",
+  "progress.by_clinician": "Stated by a clinician",
+  "progress.readings": "{count, plural, =0 {Nothing recorded} one {1 reading} other {# readings}}"
 }

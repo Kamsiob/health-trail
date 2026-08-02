@@ -1178,6 +1178,72 @@ class Repository private constructor(
             )
         }
 
+    // -- readings, for the progress section ----------------------------------
+
+    /**
+     * One reading, exactly as it was recorded.
+     *
+     * **The number is carried as it was entered and never interpreted.** No
+     * range, no threshold, no comparison to a previous value. `MASTER_SPEC.md`
+     * section 4.3 and rule 2: the app records and counts, it never concludes.
+     *
+     * `source` is kept because a value the family measured and a value a
+     * clinician stated are different things and the record must not blur them.
+     * The schema says so in a comment and this is the read that honors it.
+     */
+    data class Reading(
+        val id: String,
+        val measureId: String,
+        val number: Double?,
+        val text: String?,
+        val unit: String?,
+        val occurredEdtf: String?,
+        val occurredStart: Long?,
+        val note: String?,
+        val source: String?,
+    )
+
+    /**
+     * Every reading for one subject, newest first within each measure.
+     *
+     * Read in one query across all measures rather than per measure, and
+     * grouped by the caller, for the same reason the thread counts are: a
+     * screen whose content is a series should not issue a query per series.
+     *
+     * **An unknown date sorts last**, exactly as the trail does, because
+     * placing a reading with no date at zero or at today would put it somewhere
+     * on the series the person never put it.
+     */
+    suspend fun readings(subjectId: String): List<Reading> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT m.id, m.measure_id, m.value_number, m.value_text, m.unit, " +
+                "m.occurred_edtf, m.occurred_start, m.note, m.source " +
+                "FROM live_measurement m " +
+                "JOIN live_measure me ON me.id = m.measure_id " +
+                "WHERE me.subject_id = ? " +
+                "ORDER BY m.occurred_start IS NULL, m.occurred_start DESC, m.created_at DESC",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Reading(
+                            id = cursor.getString(0),
+                            measureId = cursor.getString(1),
+                            number = if (cursor.isNull(2)) null else cursor.getDouble(2),
+                            text = cursor.getString(3),
+                            unit = cursor.getString(4),
+                            occurredEdtf = cursor.getString(5),
+                            occurredStart = if (cursor.isNull(6)) null else cursor.getLong(6),
+                            note = cursor.getString(7),
+                            source = cursor.getString(8),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
     // -- care threads --------------------------------------------------------
 
     /** A thread, with how much of the record runs through it. */

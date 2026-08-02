@@ -281,5 +281,9 @@
   "questions.mark_asked": "Ya lo pregunté",
   "questions.asked_on": "Preguntada el {date}",
   "threads.subtitle": "Los hilos paralelos que recorren este cuaderno. Todo lo que anote puede pertenecer a uno de ellos.",
-  "threads.empty": "Todavía no hay hilos. Elegir una situación crea algunos, y siempre puede trabajar sin ellos."
+  "threads.empty": "Todavía no hay hilos. Elegir una situación crea algunos, y siempre puede trabajar sin ellos.",
+  "progress.subtitle": "Lo que ha ido anotando con el tiempo. La aplicación registra estos datos y nunca dice lo que significan.",
+  "progress.empty": "Aún no hay registros. Lo que vaya siguiendo aparecerá aquí, con las fechas que le haya puesto.",
+  "progress.by_clinician": "Indicado por un profesional",
+  "progress.readings": "{count, plural, =0 {Sin registros} one {1 lectura} other {# lecturas}}"
 }
