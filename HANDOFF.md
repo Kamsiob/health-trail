@@ -97,23 +97,35 @@ The parts that change how you work, compressed:
 
 ### What happened on the night of 2026-08-01 into 08-02
 
-**The notebook opened.** `onOpen` was an empty lambda: twelve sections with live counts and not one of them opened. Capture wrote entries and nothing anywhere gave one back. **Eight sections now have real screens**: the trail, care team, the emergency card, medications, ask next time, care threads, progress, and chapters. The remaining four reach the honest interim screen.
+**The notebook opened.** `onOpen` was an empty lambda: twelve sections with live counts and not one of them opened. Capture wrote entries and nothing anywhere gave one back.
 
-**Built alongside them:** adding somebody to the care team, filling in the emergency card, adding a medication, and correcting any date from the entry itself.
+**All twelve sections now open onto real screens**, and **all six capture inputs are built**, which closed #57 and removed the last `NOT_BUILT` screen except More's note about what is still coming.
 
-**The pull request is #112**, on branch `fix/guard-observable`, and it carries all of it.
+| What landed | Notes |
+|---|---|
+| The trail | Built to `DESIGN.md` 5.2, dashed route and kind-colored nodes, after first being built as a plain card list and rejected under rule 14 |
+| Care team, medications, appointments, money, documents | Each with its own way in, since none could be created before |
+| Ask next time, standing instructions | Both were counting zero while the thing they count was being captured |
+| Care threads, progress, chapters | Read-only sections the notebook counted and would not open |
+| **Projects** | The whole destination said "not built". Sixteen catalog processes with their ordered steps |
+| **About** | Closed #25, the oldest open issue. Links the canonical privacy policy |
+| Removing and correcting | Long press removes anything, a tap corrects it, everywhere |
+| **The system back button** | It left the app from every screen above the notebook. That was the worst defect found all night |
+| Arabic headings | Every Display L title broke mid-word, in every language using a connected script, since the type scale was written |
+
+**The pull request is #112**, on branch `fix/guard-observable`, and every increment in it is a separate commit.
 
 ### Where to pick up
 
-1. **Merge #112** if it is still open and green. It is large and every increment in it is committed separately.
-2. **Every one of the twelve sections opens onto a real screen**, and all six capture inputs are built. What is left in each section is depth rather than existence: editing what was saved, the links between things, and the Phase 2 views. Each design review issue lists what its own screen still owes. **Each is blocked on the same thing rather than on screen work:** nothing in the app creates one. There is no way to record an appointment, a document, a bill, or a standing instruction, so a screen for any of them could only ever be empty. **Build the way in first**, then the section.
-3. **#57, the document capture input**, is exactly that problem for documents and is already open with its blocker cleared.
-4. **The design reviews are stacking up**: #111, #113, #114, #115, #116, #117, #118, all opened tonight, all with device screenshots, all waiting on the owner rather than on work.
-5. **#9's last two failure cases** are still the smallest remaining piece of the export.
+1. **Merge #112** if it is still open and green.
+2. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
+3. **The biggest single gap is Today's digest**, which is the last thing the app admits is unbuilt. It needs the change log engine and golden vectors, #15.
+4. **#9's last two failure cases** are still the smallest remaining piece of the export, and **nothing in the interface exports anything yet**, which matters because D24 makes the export the only recovery path from key loss.
+5. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? `MASTER_SPEC.md` calls Today the dashboard and the app opens on the Notebook.
 
 ### What is owed on the screens built tonight
 
-**The reader pass with TalkBack actually running.** Font scale 2.0 and Arabic were both walked on the device and both pass. `ScreenReaderTest` grew seven cases so the labeling check runs forever. **What has not been done is a hand pass with TalkBack on**, for traversal order and phrasing, and that is #44.
+**The reader pass with TalkBack actually running.** Font scale 2.0 and Arabic were both walked on the device and both pass. **`ScreenReaderTest` covers 30 screens now, up from 10**, so the labeling check runs forever and every screen built this run went in at the moment it was built. **What has not been done is a hand pass with TalkBack on**, for traversal order and phrasing, and that is #44. It is the one thing this run consistently owes and did not do.
 
 ---
 
