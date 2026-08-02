@@ -341,5 +341,10 @@
   "docs.original.hint": "La copia digital rara vez es la que acepta un funcionario",
   "docs.no_photo": "Sin foto",
   "docs.too_large": "Ese archivo supera los 25 MB, el máximo por adjunto. No se guardó nada. Una foto hecha con la aplicación queda muy por debajo.",
-  "docs.limit_note": "Hasta 25 MB por cada uno."
+  "docs.limit_note": "Hasta 25 MB por cada uno.",
+  "remove.title": "¿Quitar esto?",
+  "remove.body": "Dejará de aparecer en el cuaderno. Sus otros registros no se ven afectados.",
+  "remove.confirm": "Quitarlo",
+  "remove.keep": "Conservarlo",
+  "remove.hint": "Mantenga pulsado para quitar"
 }

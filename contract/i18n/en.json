@@ -341,5 +341,10 @@
   "docs.original.hint": "The digital copy is rarely the one a clerk will accept",
   "docs.no_photo": "No photograph",
   "docs.too_large": "That file is larger than 25 MB, which is the most one attachment can hold. Nothing was saved. A photograph taken in the app is well under it.",
-  "docs.limit_note": "Up to 25 MB for each one."
+  "docs.limit_note": "Up to 25 MB for each one.",
+  "remove.title": "Remove this?",
+  "remove.body": "It stops appearing anywhere in the notebook. Your other records are not affected.",
+  "remove.confirm": "Remove it",
+  "remove.keep": "Keep it",
+  "remove.hint": "Press and hold to remove"
 }

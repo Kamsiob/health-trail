@@ -238,7 +238,11 @@ The signature element, specified exactly:
 Filled: `blue` fill, `on_blue` label, pill, 48dp minimum height, Label type.
 Quiet: `card` surface with elevation, `ink` label, same geometry. **Use it where a real, common, structural action is not the point of the screen it sits on**, which is what "Add someone" on the care team is. As a filled button that was a full width blue bar and the loudest thing on a screen whose subject is the people above it, which inverts 10.8.
 Text: no container, `blue` label, still 48dp of touch area.
-Destructive: `alert` fill, white label, and only ever inside a confirmation flow, never as a resting state on a screen.
+Destructive: `alert` fill, white label, and only ever inside a confirmation flow, never as a resting state on a screen. It lives in `Confirm.kt` rather than with the other buttons, so it cannot be reached without also reaching the confirmation it belongs to.
+
+**Removing something is reached by a long press, and that follows from the sentence above.** A Remove control resting on every row of every list is a destructive affordance sitting on the screen, which this section rules out, multiplied across eight sections. The long press is also what Android already means by "more to do with this row". It is declared as a gesture plus an explicit long click action rather than through `combinedClickable`, because that would also make the card answer a short press with nothing, which rule 16 calls broken, and because the explicit action is what puts removal in a reader user's list rather than leaving it a gesture they cannot discover.
+
+**The confirmation says what happens, not "are you sure".** It stops appearing in the notebook, and nothing else the person wrote is touched. Both halves matter: somebody removing one row needs to know the rest is safe. It shows the thing back in the person's own words, so a wrong long press is caught before the tap that matters, and it never mentions tombstones, which are the schema's business per rule 20.
 Support: the app's **only outlined button**. 2dp `blaze` outline, `ink` label, tile radius, same 48dp floor. One purpose and one destination, the canonical support link. It is the recorded exception in 2.2 and it must never read as a request: it sits after the sentence saying the app asks for nothing, and never before it. D59.
 
 An action keeps the same word through its whole flow. The button that says Export produces a result that says Exported.

@@ -16,6 +16,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.TextAction
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -49,6 +50,7 @@ object QuestionTags {
 fun QuestionsScreen(
     questions: List<Repository.Question>,
     onMarkAsked: (Repository.Question) -> Unit,
+    onRemove: (Repository.Question) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -76,7 +78,11 @@ fun QuestionsScreen(
             }
             for (question in waiting) {
                 item(key = question.id) {
-                    QuestionRow(question = question, onMarkAsked = { onMarkAsked(question) })
+                    QuestionRow(
+                        question = question,
+                        onMarkAsked = { onMarkAsked(question) },
+                        onRemove = { onRemove(question) },
+                    )
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
@@ -90,7 +96,11 @@ fun QuestionsScreen(
             }
             for (question in asked) {
                 item(key = question.id) {
-                    QuestionRow(question = question, onMarkAsked = null)
+                    QuestionRow(
+                        question = question,
+                        onMarkAsked = null,
+                        onRemove = { onRemove(question) },
+                    )
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
@@ -109,6 +119,7 @@ fun QuestionsScreen(
 private fun QuestionRow(
     question: Repository.Question,
     onMarkAsked: (() -> Unit)?,
+    onRemove: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -118,6 +129,7 @@ private fun QuestionRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
+            .removableByLongPress(strings["remove.hint"], onRemove)
             .testTag(QuestionTags.row(question.id))
             .padding(Space.cardPadding),
     ) {

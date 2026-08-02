@@ -16,6 +16,7 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -53,6 +54,7 @@ object InstructionTags {
 fun StandingInstructionsScreen(
     instructions: List<Repository.StandingInstruction>,
     tags: Map<String, TemplateCatalog.InstructionTag>,
+    onRemove: (Repository.StandingInstruction) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -75,7 +77,11 @@ fun StandingInstructionsScreen(
 
         for (instruction in instructions) {
             item(key = instruction.id) {
-                InstructionRow(instruction = instruction, tag = tags[instruction.tag])
+                InstructionRow(
+                    instruction = instruction,
+                    tag = tags[instruction.tag],
+                    onRemove = { onRemove(instruction) },
+                )
                 Spacer(Modifier.height(Space.cardGap))
             }
         }
@@ -95,6 +101,7 @@ fun StandingInstructionsScreen(
 private fun InstructionRow(
     instruction: Repository.StandingInstruction,
     tag: TemplateCatalog.InstructionTag?,
+    onRemove: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -104,6 +111,7 @@ private fun InstructionRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
+            .removableByLongPress(strings["remove.hint"], onRemove)
             .testTag(InstructionTags.row(instruction.id))
             .padding(Space.cardPadding),
     ) {

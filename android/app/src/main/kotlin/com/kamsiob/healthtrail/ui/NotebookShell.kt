@@ -70,7 +70,9 @@ import com.kamsiob.healthtrail.ui.screens.EmergencyDraft
 import com.kamsiob.healthtrail.ui.screens.PersonDraft
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.TrailScreen
+import com.kamsiob.healthtrail.ui.components.ConfirmRemoveSheet
 import com.kamsiob.healthtrail.ui.screens.labelKey
+import com.kamsiob.healthtrail.ui.screens.kindLabelKey
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
@@ -181,6 +183,11 @@ fun NotebookShell(
     // Said only when a file was refused, and cleared the moment the person
     // picks another, so it never lingers over a choice it does not describe.
     var documentError by remember { mutableStateOf<String?>(null) }
+    // What the person long pressed, and what removing it means. Held as the
+    // section plus the row plus the words to show back, so one sheet serves
+    // every list rather than each screen growing its own.
+    var removing by remember { mutableStateOf<Removal?>(null) }
+    var confirmedRemoval by remember { mutableStateOf<Removal?>(null) }
     var savingBill by remember { mutableStateOf<BillDraft?>(null) }
     var savingInstruction by remember {
         mutableStateOf<TemplateCatalog.Instruction?>(null)
@@ -322,17 +329,33 @@ fun NotebookShell(
             Repository.Section.TRAIL -> TrailScreen(
                 entries = trail,
                 onEditDate = { editingDate = it },
+                onRemove = { entry ->
+                    removing = Removal(
+                        section = Repository.Section.TRAIL,
+                        rowId = entry.id,
+                        what = entry.title?.takeIf { it.isNotBlank() }
+                            ?: strings[kindLabelKey(entry.kind)],
+                    )
+                },
                 onBack = { openSection = null },
             )
 
             Repository.Section.DOCUMENTS -> DocumentsScreen(
                 documents = documents,
+                onRemove = { document ->
+                    removing = Removal(
+                        Repository.Section.DOCUMENTS, document.id, document.title,
+                    )
+                },
                 onAdd = { documentError = null; addingDocument = true },
                 onBack = { openSection = null },
             )
 
             Repository.Section.MONEY -> MoneyScreen(
                 bills = bills,
+                onRemove = { bill ->
+                    removing = Removal(Repository.Section.MONEY, bill.id, bill.description)
+                },
                 onAdd = { addingBill = true },
                 onBack = { openSection = null },
             )
@@ -340,6 +363,13 @@ fun NotebookShell(
             Repository.Section.STANDING_INSTRUCTIONS -> StandingInstructionsScreen(
                 instructions = instructions,
                 tags = instructionCatalog?.tags.orEmpty(),
+                onRemove = { instruction ->
+                    removing = Removal(
+                        Repository.Section.STANDING_INSTRUCTIONS,
+                        instruction.id,
+                        instruction.name,
+                    )
+                },
                 onAdd = { addingInstruction = true },
                 onBack = { openSection = null },
             )
@@ -353,6 +383,11 @@ fun NotebookShell(
                     .atStartOfDay(java.time.ZoneId.systemDefault())
                     .toInstant()
                     .toEpochMilli(),
+                onRemove = { appointment ->
+                    removing = Removal(
+                        Repository.Section.APPOINTMENTS, appointment.id, appointment.title,
+                    )
+                },
                 onAdd = { addingAppointment = true },
                 onBack = { openSection = null },
             )
@@ -375,6 +410,9 @@ fun NotebookShell(
 
             Repository.Section.ASK_NEXT_TIME -> QuestionsScreen(
                 questions = questions,
+                onRemove = { question ->
+                    removing = Removal(Repository.Section.ASK_NEXT_TIME, question.id, question.text)
+                },
                 // Marked asked as of today, which is the honest default: the
                 // person is tapping it because it just happened. The date is
                 // editable later like every other date, per rule 17.
@@ -384,6 +422,11 @@ fun NotebookShell(
 
             Repository.Section.MEDICATIONS -> MedicationsScreen(
                 medications = medications,
+                onRemove = { medication ->
+                    removing = Removal(
+                        Repository.Section.MEDICATIONS, medication.id, medication.name,
+                    )
+                },
                 onAdd = { addingMedication = true },
                 onBack = { openSection = null },
             )
@@ -412,6 +455,15 @@ fun NotebookShell(
                 // permission it does not need, and placing a call on somebody's
                 // behalf is not a thing it should be able to do silently.
                 onCall = { person -> dial(context, person.phone) },
+                onRemove = { person ->
+                    removing = Removal(
+                        section = Repository.Section.CARE_TEAM,
+                        rowId = person.id,
+                        what = person.displayName.ifBlank {
+                            person.phone.orEmpty().ifBlank { person.roleLabel.orEmpty() }
+                        },
+                    )
+                },
                 onAdd = { addingPerson = true },
                 onBack = { openSection = null },
             )
@@ -429,6 +481,29 @@ fun NotebookShell(
         // 17. The same picker every other date in the app opens, so a date is
         // edited the way it was entered rather than through a second control
         // that behaves almost the same.
+        val toRemove = removing
+        if (toRemove != null) {
+            ConfirmRemoveSheet(
+                what = toRemove.what,
+                onConfirm = {
+                    confirmedRemoval = toRemove
+                    removing = null
+                },
+                onDismiss = { removing = null },
+            )
+        }
+
+        val confirmed = confirmedRemoval
+        if (confirmed != null) {
+            LaunchedEffect(confirmed) {
+                // A tombstone, per the data contract, which the repository
+                // handles. Nothing here knows or needs to know that.
+                repository.delete(confirmed.section, confirmed.rowId)
+                confirmedRemoval = null
+                revision += 1
+            }
+        }
+
         val editing = editingDate
         if (editing != null) {
             DatePickerSheet(
@@ -1010,6 +1085,19 @@ private suspend fun storePicked(
         ?: return null
     StoredFile(hash, size.coerceAtLeast(0))
 }.getOrNull()
+
+/**
+ * Something the person asked to remove.
+ *
+ * **One shape for every list**, so a single confirmation sheet serves all of
+ * them rather than each screen growing its own. `what` is the person's own
+ * words for the thing, shown back to them before the tap that matters.
+ */
+private data class Removal(
+    val section: Repository.Section,
+    val rowId: String,
+    val what: String,
+)
 
 private val SECTION_ORDER = listOf(
     Repository.Section.CARE_TEAM,

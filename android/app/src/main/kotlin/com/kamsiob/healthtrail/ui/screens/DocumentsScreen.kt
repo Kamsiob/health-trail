@@ -28,6 +28,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -60,6 +61,7 @@ object DocTags {
 @Composable
 fun DocumentsScreen(
     documents: List<Repository.Document>,
+    onRemove: (Repository.Document) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -82,7 +84,7 @@ fun DocumentsScreen(
 
         for (document in documents) {
             item(key = document.id) {
-                DocumentRow(document)
+                DocumentRow(document = document, onRemove = { onRemove(document) })
                 Spacer(Modifier.height(Space.cardGap))
             }
         }
@@ -99,7 +101,7 @@ fun DocumentsScreen(
 }
 
 @Composable
-private fun DocumentRow(document: Repository.Document) {
+private fun DocumentRow(document: Repository.Document, onRemove: () -> Unit) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -108,6 +110,7 @@ private fun DocumentRow(document: Repository.Document) {
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
+            .removableByLongPress(strings["remove.hint"], onRemove)
             .testTag(DocTags.row(document.id))
             .padding(Space.cardPadding),
     ) {

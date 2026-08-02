@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -49,6 +50,7 @@ object CareTeamTags {
 fun CareTeamScreen(
     people: List<Repository.Person>,
     onCall: (Repository.Person) -> Unit,
+    onRemove: (Repository.Person) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -69,7 +71,11 @@ fun CareTeamScreen(
 
         for (person in people) {
             item(key = person.id) {
-                PersonRow(person = person, onCall = { onCall(person) })
+                PersonRow(
+                    person = person,
+                    onCall = { onCall(person) },
+                    onRemove = { onRemove(person) },
+                )
                 Spacer(Modifier.height(Space.cardGap))
             }
         }
@@ -97,7 +103,11 @@ fun CareTeamScreen(
  * number is an action rather than a line of text to read out and dial by hand.
  */
 @Composable
-private fun PersonRow(person: Repository.Person, onCall: () -> Unit) {
+private fun PersonRow(
+    person: Repository.Person,
+    onCall: () -> Unit,
+    onRemove: () -> Unit,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -118,6 +128,7 @@ private fun PersonRow(person: Repository.Person, onCall: () -> Unit) {
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
+            .removableByLongPress(strings["remove.hint"], onRemove)
             .testTag(CareTeamTags.person(person.id))
             .padding(Space.cardPadding),
     ) {

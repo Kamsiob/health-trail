@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -49,6 +50,7 @@ object MedsTags {
 @Composable
 fun MedicationsScreen(
     medications: List<Repository.Medication>,
+    onRemove: (Repository.Medication) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -71,7 +73,7 @@ fun MedicationsScreen(
 
         for (medication in medications) {
             item(key = medication.id) {
-                MedicationRow(medication)
+                MedicationRow(medication = medication, onRemove = { onRemove(medication) })
                 Spacer(Modifier.height(Space.cardGap))
             }
         }
@@ -97,7 +99,10 @@ fun MedicationsScreen(
  * and it is stated rather than styled as a badge competing with the name.
  */
 @Composable
-private fun MedicationRow(medication: Repository.Medication) {
+private fun MedicationRow(
+    medication: Repository.Medication,
+    onRemove: () -> Unit,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -106,6 +111,7 @@ private fun MedicationRow(medication: Repository.Medication) {
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
+            .removableByLongPress(strings["remove.hint"], onRemove)
             .testTag(MedsTags.row(medication.id))
             .padding(Space.cardPadding),
     ) {

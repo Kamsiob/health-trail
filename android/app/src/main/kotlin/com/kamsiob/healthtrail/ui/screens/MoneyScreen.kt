@@ -20,6 +20,7 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -71,6 +72,7 @@ private val STATE_ORDER = listOf(
 @Composable
 fun MoneyScreen(
     bills: List<Repository.Bill>,
+    onRemove: (Repository.Bill) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -134,7 +136,7 @@ fun MoneyScreen(
             }
             for (bill in inState) {
                 item(key = bill.id) {
-                    BillRow(bill)
+                    BillRow(bill = bill, onRemove = { onRemove(bill) })
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
@@ -152,7 +154,7 @@ fun MoneyScreen(
 }
 
 @Composable
-private fun BillRow(bill: Repository.Bill) {
+private fun BillRow(bill: Repository.Bill, onRemove: () -> Unit) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -161,6 +163,7 @@ private fun BillRow(bill: Repository.Bill) {
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
+            .removableByLongPress(strings["remove.hint"], onRemove)
             .testTag(MoneyTags.row(bill.id))
             .padding(Space.cardPadding),
     ) {

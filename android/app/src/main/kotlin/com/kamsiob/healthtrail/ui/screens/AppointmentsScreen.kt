@@ -16,6 +16,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -52,6 +53,7 @@ object ApptTags {
 fun AppointmentsScreen(
     appointments: List<Repository.Appointment>,
     todayMillis: Long,
+    onRemove: (Repository.Appointment) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -85,7 +87,7 @@ fun AppointmentsScreen(
             }
             for (appointment in upcoming) {
                 item(key = appointment.id) {
-                    AppointmentRow(appointment)
+                    AppointmentRow(appointment = appointment, onRemove = { onRemove(appointment) })
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
@@ -101,7 +103,10 @@ fun AppointmentsScreen(
             // somebody looking back actually wants.
             for (appointment in past.reversed()) {
                 item(key = appointment.id) {
-                    AppointmentRow(appointment)
+                    AppointmentRow(
+                        appointment = appointment,
+                        onRemove = { onRemove(appointment) },
+                    )
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
@@ -119,7 +124,10 @@ fun AppointmentsScreen(
 }
 
 @Composable
-private fun AppointmentRow(appointment: Repository.Appointment) {
+private fun AppointmentRow(
+    appointment: Repository.Appointment,
+    onRemove: () -> Unit,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -128,6 +136,7 @@ private fun AppointmentRow(appointment: Repository.Appointment) {
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
+            .removableByLongPress(strings["remove.hint"], onRemove)
             .testTag(ApptTags.row(appointment.id))
             .padding(Space.cardPadding),
     ) {

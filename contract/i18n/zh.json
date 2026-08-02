@@ -341,5 +341,10 @@
   "docs.original.hint": "办事人员通常不接受电子版",
   "docs.no_photo": "无照片",
   "docs.too_large": "该文件超过 25 MB，这是单个附件的上限。未保存任何内容。在应用内拍摄的照片远低于此上限。",
-  "docs.limit_note": "每份最多 25 MB。"
+  "docs.limit_note": "每份最多 25 MB。",
+  "remove.title": "要移除吗？",
+  "remove.body": "它将不再出现在笔记本中的任何位置。您的其他记录不受影响。",
+  "remove.confirm": "移除",
+  "remove.keep": "保留",
+  "remove.hint": "长按可移除"
 }

@@ -42,6 +42,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -109,6 +110,7 @@ private val NodeCenterY = 40.dp
 fun TrailScreen(
     entries: List<Repository.TrailEntry>,
     onEditDate: (Repository.TrailEntry) -> Unit,
+    onRemove: (Repository.TrailEntry) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     zone: ZoneId = ZoneId.systemDefault(),
@@ -177,7 +179,11 @@ fun TrailScreen(
                         nodeDelayMillis = position * motion.trailNodeStaggerMillis,
                     ) {
                         Column {
-                            TrailRow(entry = entry, onEditDate = { onEditDate(entry) })
+                            TrailRow(
+                            entry = entry,
+                            onEditDate = { onEditDate(entry) },
+                            onRemove = { onRemove(entry) },
+                        )
                             Spacer(Modifier.height(Space.cardGap))
                         }
                     }
@@ -307,7 +313,11 @@ private fun nodeColor(kind: String): Color {
  * route dots the rest of the app already uses for them.
  */
 @Composable
-private fun TrailRow(entry: Repository.TrailEntry, onEditDate: () -> Unit) {
+private fun TrailRow(
+    entry: Repository.TrailEntry,
+    onEditDate: () -> Unit,
+    onRemove: () -> Unit,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -316,6 +326,7 @@ private fun TrailRow(entry: Repository.TrailEntry, onEditDate: () -> Unit) {
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
+            .removableByLongPress(strings["remove.hint"], onRemove)
             .testTag(TrailTags.entry(entry.id))
             .padding(Space.cardPadding),
     ) {
