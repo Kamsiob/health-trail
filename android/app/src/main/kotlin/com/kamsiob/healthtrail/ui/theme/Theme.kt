@@ -7,6 +7,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.staticCompositionLocalOf
 
 val LocalHealthTrailColors = staticCompositionLocalOf { LightColors }
@@ -74,20 +75,28 @@ fun HealthTrailTheme(
         )
     }
 
+    // **The type scale depends on the locale**, because the display face's
+    // tight tracking is a Latin device that breaks a connected script. Read
+    // from the configuration rather than from LocalStrings, since the theme
+    // sits above the catalog and a per-app locale is applied to the
+    // configuration either way. See healthTrailTypeFor.
+    val locale = LocalConfiguration.current.locales[0]
+    val type = healthTrailTypeFor(locale)
+
     val materialType = Typography(
-        headlineLarge = HealthTrailType.displayL,
-        headlineMedium = HealthTrailType.displayM,
-        titleLarge = HealthTrailType.displayS,
-        bodyLarge = HealthTrailType.bodyL,
-        bodyMedium = HealthTrailType.bodyM,
-        bodySmall = HealthTrailType.bodyS,
-        labelLarge = HealthTrailType.label,
-        labelSmall = HealthTrailType.navLabel,
+        headlineLarge = type.displayL,
+        headlineMedium = type.displayM,
+        titleLarge = type.displayS,
+        bodyLarge = type.bodyL,
+        bodyMedium = type.bodyM,
+        bodySmall = type.bodyS,
+        labelLarge = type.label,
+        labelSmall = type.navLabel,
     )
 
     CompositionLocalProvider(
         LocalHealthTrailColors provides colors,
-        LocalHealthTrailType provides HealthTrailType,
+        LocalHealthTrailType provides type,
         LocalMotion provides motion,
     ) {
         MaterialTheme(

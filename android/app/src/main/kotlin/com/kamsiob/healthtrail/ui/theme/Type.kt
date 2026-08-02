@@ -7,6 +7,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.kamsiob.healthtrail.R
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
@@ -154,3 +155,44 @@ val HealthTrailType = HealthTrailTypography(
         letterSpacing = 0.12.em,
     ),
 )
+
+/**
+ * Languages whose script joins its letters, where tracking is not a stylistic
+ * choice but a defect.
+ *
+ * Currently Arabic, which is the only connected script the app ships. Persian
+ * and Urdu are here in advance because they use the same script and would
+ * arrive with the same problem, and a one line addition later is cheaper than
+ * rediscovering this.
+ */
+private val CONNECTED_SCRIPTS = setOf("ar", "fa", "ur")
+
+/**
+ * The type scale for one locale.
+ *
+ * **The display face is Bricolage Grotesque, a Latin face, and its tight
+ * tracking is a Latin typographic device.** `displayL` and `displayM` carry
+ * negative letter spacing to hold large headings together. On a connected
+ * script that is wrong twice over: it crushes the joins that make the script
+ * legible, and on the device it broke line layout outright.
+ *
+ * **The symptom was a title split in the middle of a word.** In Arabic the
+ * notebook's own title rendered as two lines, the last letter alone on the
+ * second, on a screen with most of its width empty. Every Display L heading in
+ * the app did the same, which is every screen title. `displayS` carries no
+ * tracking and was always correct, which is what identified the cause.
+ *
+ * It was found by looking at the device in Arabic, not by any check and not in
+ * the code, and it had been shipping since the type scale was written. The
+ * Arabic pass that came before it confirmed real glyphs and a mirrored layout
+ * and did not look at a heading.
+ */
+fun healthTrailTypeFor(locale: java.util.Locale): HealthTrailTypography =
+    if (locale.language in CONNECTED_SCRIPTS) {
+        HealthTrailType.copy(
+            displayL = HealthTrailType.displayL.copy(letterSpacing = TextUnit.Unspecified),
+            displayM = HealthTrailType.displayM.copy(letterSpacing = TextUnit.Unspecified),
+        )
+    } else {
+        HealthTrailType
+    }
