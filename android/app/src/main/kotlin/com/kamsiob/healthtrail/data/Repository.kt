@@ -1916,6 +1916,30 @@ class Repository private constructor(
         }
     }
 
+    /**
+     * Records what came back.
+     *
+     * **The answer is the other half of the record.** "We asked in March" is
+     * worth something; "we asked in March and were told it would be reviewed at
+     * the next care plan meeting" is the thing somebody actually needs six
+     * months later, and until now the app could hold only the first half.
+     *
+     * It never touches whether the question was asked or when. Somebody
+     * correcting what they were told is not un-asking the question.
+     */
+    suspend fun setQuestionAnswer(questionId: String, answerText: String?) =
+        withContext(Dispatchers.IO) {
+            db().database.execSQL(
+                "UPDATE question SET answer_text = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(
+                    answerText?.ifBlank { null },
+                    System.currentTimeMillis(),
+                    questionId,
+                ),
+            )
+        }
+
     // -- care threads --------------------------------------------------------
 
     /** A thread, with how much of the record runs through it. */

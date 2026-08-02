@@ -51,6 +51,7 @@ fun QuestionsScreen(
     questions: List<Repository.Question>,
     onMarkAsked: (Repository.Question) -> Unit,
     onRemove: (Repository.Question) -> Unit,
+    onAnswer: (Repository.Question) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -82,6 +83,7 @@ fun QuestionsScreen(
                         question = question,
                         onMarkAsked = { onMarkAsked(question) },
                         onRemove = { onRemove(question) },
+                        onAnswer = { onAnswer(question) },
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
@@ -100,6 +102,7 @@ fun QuestionsScreen(
                         question = question,
                         onMarkAsked = null,
                         onRemove = { onRemove(question) },
+                        onAnswer = { onAnswer(question) },
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
@@ -120,6 +123,7 @@ private fun QuestionRow(
     question: Repository.Question,
     onMarkAsked: (() -> Unit)?,
     onRemove: () -> Unit,
+    onAnswer: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -129,7 +133,12 @@ private fun QuestionRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["remove.hint"], onRemove)
+            // A tap records what came back, once the question has been asked.
+            .removableByLongPress(
+                if (question.isOpen) strings["remove.hint"] else strings["edit.hint"],
+                onRemove,
+                if (question.isOpen) null else onAnswer,
+            )
             .testTag(QuestionTags.row(question.id))
             .padding(Space.cardPadding),
     ) {
@@ -163,10 +172,21 @@ private fun QuestionRow(
                 style = HealthTrail.type.mono,
                 color = colors.ink3Text,
             )
-            question.answerText?.takeIf { it.isNotBlank() }?.let { answer ->
-                Spacer(Modifier.height(Space.xs))
-                Text(text = answer, style = HealthTrail.type.bodyM, color = colors.ink2)
-            }
+            Spacer(Modifier.height(Space.xs))
+            // **An asked question with no answer says so**, rather than
+            // leaving a gap that reads as though nothing came back. Not
+            // knowing yet and being told nothing are different, and the app
+            // only knows the first.
+            Text(
+                text = question.answerText?.takeIf { it.isNotBlank() }
+                    ?: strings["questions.answer.none"],
+                style = HealthTrail.type.bodyM,
+                color = if (question.answerText.isNullOrBlank()) {
+                    colors.ink3Text
+                } else {
+                    colors.ink2
+                },
+            )
         }
     }
 }

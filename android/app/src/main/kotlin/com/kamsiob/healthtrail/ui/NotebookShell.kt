@@ -49,6 +49,7 @@ import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationDraft
 import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
+import com.kamsiob.healthtrail.ui.screens.AnswerSheet
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
@@ -221,6 +222,9 @@ fun NotebookShell(
     }
     var savingAppointment by remember { mutableStateOf<AppointmentDraft?>(null) }
     var markingAsked by remember { mutableStateOf<Repository.Question?>(null) }
+    // The question whose answer is being recorded, and the answer in flight.
+    var answering by remember { mutableStateOf<Repository.Question?>(null) }
+    var savingAnswer by remember { mutableStateOf<Pair<String, String>?>(null) }
     val context = LocalContext.current
 
     // Recounted whenever the tab changes, so returning to the notebook after
@@ -302,6 +306,7 @@ fun NotebookShell(
     BackHandler(enabled = openSection != null) { openSection = null }
     BackHandler(enabled = openProject != null) { openProject = null }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
+    BackHandler(enabled = answering != null) { answering = null }
     BackHandler(enabled = startingProject) { startingProject = false }
     BackHandler(enabled = trayOpen) { trayOpen = false }
     BackHandler(enabled = sheetOpen) { sheetOpen = false }
@@ -637,6 +642,7 @@ fun NotebookShell(
                 // person is tapping it because it just happened. The date is
                 // editable later like every other date, per rule 17.
                 onMarkAsked = { markingAsked = it },
+                onAnswer = { answering = it },
                 onBack = { openSection = null },
             )
 
@@ -764,6 +770,27 @@ fun NotebookShell(
                 },
                 onCancel = { editingEmergencyCard = false },
             )
+        }
+
+        val toAnswer = answering
+        if (toAnswer != null) {
+            AnswerSheet(
+                question = toAnswer,
+                onSave = { text ->
+                    savingAnswer = toAnswer.id to text
+                    answering = null
+                },
+                onDismiss = { answering = null },
+            )
+        }
+
+        val answerToSave = savingAnswer
+        if (answerToSave != null) {
+            LaunchedEffect(answerToSave) {
+                repository.setQuestionAnswer(answerToSave.first, answerToSave.second)
+                savingAnswer = null
+                revision += 1
+            }
         }
 
         val asked = markingAsked

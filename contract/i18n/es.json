@@ -385,5 +385,10 @@
   "about.version": "Versión {version}",
   "more.about": "Acerca de esta aplicación",
   "section.back.more": "Volver a Más",
-  "today.open.group": "Sigue abierto"
+  "today.open.group": "Sigue abierto",
+  "questions.answer.title": "¿Qué le dijeron?",
+  "questions.answer.lead": "Con sus palabras si puede. Puede dejarlo en blanco y completarlo después.",
+  "questions.answer.hint": "Lo que dijeron, y quién lo dijo",
+  "questions.answer.save": "Guardar lo que tenga",
+  "questions.answer.none": "No hay nada anotado sobre lo que dijeron."
 }

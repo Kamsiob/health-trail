@@ -385,5 +385,10 @@
   "about.version": "Version {version}",
   "more.about": "About this app",
   "section.back.more": "Back to More",
-  "today.open.group": "Still open"
+  "today.open.group": "Still open",
+  "questions.answer.title": "What were you told?",
+  "questions.answer.lead": "In their words if you can. You can leave it blank and fill it in later.",
+  "questions.answer.hint": "What they said, and who said it",
+  "questions.answer.save": "Save what you have",
+  "questions.answer.none": "Nothing written down about what they said."
 }

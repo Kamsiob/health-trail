@@ -385,5 +385,10 @@
   "about.version": "版本 {version}",
   "more.about": "关于本应用",
   "section.back.more": "返回更多",
-  "today.open.group": "仍未了结"
+  "today.open.group": "仍未了结",
+  "questions.answer.title": "对方怎么说？",
+  "questions.answer.lead": "尽量用对方的原话。也可以先留空，之后再补。",
+  "questions.answer.hint": "他们说了什么，以及是谁说的",
+  "questions.answer.save": "保存已填内容",
+  "questions.answer.none": "还没有记录对方说了什么。"
 }

@@ -17,6 +17,7 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.AnswerSheet
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.MoreScreen
 import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
@@ -404,10 +405,26 @@ class ScreenReaderTest {
                 ),
                 onMarkAsked = {},
                 onRemove = {},
+                onAnswer = {},
                 onBack = {},
             )
         }
         assertEverythingIsLabeled("ask next time")
+    }
+
+    @Test
+    fun answeringAQuestionLabelsEverything() {
+        compose.show {
+            AnswerSheet(
+                question = Repository.Question(
+                    "q1", "Is the dressing changed daily?", "The wound nurse",
+                    null, "2026-08-01", null,
+                ),
+                onSave = {},
+                onDismiss = {},
+            )
+        }
+        assertEverythingIsLabeled("answering a question")
     }
 
     @Test

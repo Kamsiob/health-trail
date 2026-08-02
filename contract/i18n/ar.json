@@ -385,5 +385,10 @@
   "about.version": "الإصدار {version}",
   "more.about": "عن هذا التطبيق",
   "section.back.more": "العودة إلى المزيد",
-  "today.open.group": "ما زال مفتوحًا"
+  "today.open.group": "ما زال مفتوحًا",
+  "questions.answer.title": "بماذا أُجبت؟",
+  "questions.answer.lead": "بكلماتهم إن أمكن. يمكنك تركه فارغًا وإكماله لاحقًا.",
+  "questions.answer.hint": "ما قالوه، ومن قاله",
+  "questions.answer.save": "احفظ ما لديك",
+  "questions.answer.none": "لا يوجد شيء مدوّن عما قالوه."
 }
