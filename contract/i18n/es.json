@@ -368,5 +368,8 @@
   "projects.status.done": "Terminada",
   "projects.status.abandoned": "Abandonada",
   "projects.step_count": "{count, plural, one {1 paso} other {# pasos}}",
-  "section.back.projects": "Volver a gestiones"
+  "section.back.projects": "Volver a gestiones",
+  "projects.waiting_field": "A quién está esperando",
+  "projects.waiting_field.hint": "Un nombre, una oficina, o lo que le dijeron",
+  "projects.waiting_save": "Guardar eso"
 }

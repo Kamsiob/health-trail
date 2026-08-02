@@ -170,6 +170,7 @@ fun NotebookShell(
     var projectSteps by remember { mutableStateOf<List<Repository.ProjectStep>>(emptyList()) }
     var togglingStep by remember { mutableStateOf<Repository.ProjectStep?>(null) }
     var settingProjectStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var settingWaitingOn by remember { mutableStateOf<Pair<String, String>?>(null) }
     // The emergency card, and whether it is being filled in.
     var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
     var editingEmergencyCard by remember { mutableStateOf(false) }
@@ -400,6 +401,7 @@ fun NotebookShell(
                 steps = projectSteps,
                 onToggleStep = { togglingStep = it },
                 onSetStatus = { status -> settingProjectStatus = currentProject.id to status },
+                onSetWaitingOn = { who -> settingWaitingOn = currentProject.id to who },
                 onBack = { openProject = null },
             )
         }
@@ -437,6 +439,22 @@ fun NotebookShell(
             LaunchedEffect(step) {
                 repository.setProjectStepDone(step.id, !step.isDone)
                 togglingStep = null
+                revision += 1
+            }
+        }
+
+        val waitingChange = settingWaitingOn
+        if (waitingChange != null) {
+            LaunchedEffect(waitingChange) {
+                val current = projects.firstOrNull { it.id == waitingChange.first }
+                repository.setProjectStatus(
+                    projectId = waitingChange.first,
+                    // Naming somebody does not by itself declare the project
+                    // stalled, so the status is left exactly as it was.
+                    status = current?.status ?: "active",
+                    waitingOn = waitingChange.second,
+                )
+                settingWaitingOn = null
                 revision += 1
             }
         }

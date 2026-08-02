@@ -606,6 +606,7 @@ class ScreenReaderTest {
                 ),
                 onToggleStep = {},
                 onSetStatus = {},
+                onSetWaitingOn = {},
                 onBack = {},
             )
         }

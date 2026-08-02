@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +33,8 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -39,6 +43,8 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object ProjectDetailTags {
     const val NAME = "project_detail"
     fun step(id: String) = "project_step_$id"
+    const val WAITING = "project_waiting"
+    const val SAVE_WAITING = "project_save_waiting"
     fun status(key: String) = "project_status_$key"
 }
 
@@ -70,11 +76,15 @@ fun ProjectDetailScreen(
     steps: List<Repository.ProjectStep>,
     onToggleStep: (Repository.ProjectStep) -> Unit,
     onSetStatus: (String) -> Unit,
+    onSetWaitingOn: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
+    var waitingOn by remember(project.id, project.waitingOn) {
+        mutableStateOf(project.waitingOn.orEmpty())
+    }
 
     SectionScaffold(
         name = ProjectDetailTags.NAME,
@@ -103,6 +113,33 @@ fun ProjectDetailScreen(
                     )
                 }
             }
+            // **Who you are waiting on, which is the most useful field a
+            // project has.** The schema makes it first class for that reason.
+            // It is always offered rather than only when the status is
+            // "waiting", because somebody is usually waiting on somebody long
+            // before they think to change a status.
+            Spacer(Modifier.height(Space.m))
+            HealthTrailTextField(
+                label = strings["projects.waiting_field"],
+                value = waitingOn,
+                onValueChange = { waitingOn = it },
+                hint = strings["projects.waiting_field.hint"],
+                fieldTestTag = ProjectDetailTags.WAITING,
+            )
+
+            // **Saving is explicit and the control only exists when there is
+            // something to save.** Writing on every keystroke would bump the
+            // revision and append to the change log once per letter, which the
+            // data contract would carry but nobody should have to read.
+            if (waitingOn.trim() != project.waitingOn.orEmpty().trim()) {
+                Spacer(Modifier.height(Space.s))
+                QuietButton(
+                    label = strings["projects.waiting_save"],
+                    onClick = { onSetWaitingOn(waitingOn.trim()) },
+                    modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.SAVE_WAITING),
+                )
+            }
+
             Spacer(Modifier.height(Space.l))
         }
 

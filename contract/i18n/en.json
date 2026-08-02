@@ -368,5 +368,8 @@
   "projects.status.done": "Done",
   "projects.status.abandoned": "Left alone",
   "projects.step_count": "{count, plural, one {1 step} other {# steps}}",
-  "section.back.projects": "Back to projects"
+  "section.back.projects": "Back to projects",
+  "projects.waiting_field": "Who you are waiting on",
+  "projects.waiting_field.hint": "A name, an office, or just what you were told",
+  "projects.waiting_save": "Save that"
 }

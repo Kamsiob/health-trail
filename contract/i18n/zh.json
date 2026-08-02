@@ -368,5 +368,8 @@
   "projects.status.done": "已完成",
   "projects.status.abandoned": "已放弃",
   "projects.step_count": "{count, plural, other {# 个步骤}}",
-  "section.back.projects": "返回事项"
+  "section.back.projects": "返回事项",
+  "projects.waiting_field": "您在等谁",
+  "projects.waiting_field.hint": "姓名、办事处，或别人告诉您的说法",
+  "projects.waiting_save": "保存"
 }
