@@ -11,12 +11,14 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.ShellTags
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 
 object MoreTags {
     const val COMING = "more_coming"
+    const val ABOUT = "more_about"
 }
 
 /**
@@ -41,14 +43,38 @@ object MoreTags {
 fun MoreScreen(
     choice: ThemeChoice,
     onChoose: (ThemeChoice) -> Unit,
+    onAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AppearanceScreen(
         choice = choice,
         onChoose = onChoose,
         modifier = modifier,
-        footer = { ComingHere() },
+        footer = { MoreBelowAppearance(onAbout = onAbout) },
     )
+}
+
+/**
+ * What sits under Appearance in More.
+ *
+ * **About is a real destination now, so it is offered rather than promised.**
+ * The note about what is still coming shrank to what is actually still coming,
+ * which is the point of D44: the interface may say it has not built something,
+ * and it may not keep saying so once it has.
+ */
+@Composable
+private fun MoreBelowAppearance(onAbout: () -> Unit) {
+    val strings = LocalStrings.current
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(Modifier.height(Space.sectionGap))
+        QuietButton(
+            label = strings["more.about"],
+            onClick = onAbout,
+            modifier = Modifier.fillMaxWidth().testTag(MoreTags.ABOUT),
+        )
+        ComingHere()
+    }
 }
 
 @Composable

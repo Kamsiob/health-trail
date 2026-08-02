@@ -207,7 +207,7 @@
   "appearance.dark.detail": "Siempre oscuro, aunque el teléfono esté en claro.",
   "nav.more.appearance": "Apariencia",
   "more.coming.group": "También vendrá aquí",
-  "more.coming.body": "Exportar su cuaderno, una página de información con la política de privacidad, el idioma de la aplicación y una forma de borrarlo todo. Nada de eso está hecho todavía. Todo lo que anote ahora seguirá aquí cuando lo esté.",
+  "more.coming.body": "Exportar su cuaderno, el idioma en que funciona la aplicación, y una forma de borrarlo todo. Nada de eso está hecho todavía. Todo lo que anote ahora seguirá aquí cuando lo esté.",
   "trail.subtitle": "Todo lo que usted ha anotado, empezando por lo más reciente.",
   "trail.unfiled": "Sin archivar",
   "careteam.subtitle": "Todas las personas que participan en la atención, y cómo comunicarse con ellas.",
@@ -371,5 +371,18 @@
   "section.back.projects": "Volver a gestiones",
   "projects.waiting_field": "A quién está esperando",
   "projects.waiting_field.hint": "Un nombre, una oficina, o lo que le dijeron",
-  "projects.waiting_save": "Guardar eso"
+  "projects.waiting_save": "Guardar eso",
+  "about.title": "Acerca de Health Trail",
+  "about.lead": "Un cuaderno para quien lleva el seguimiento de los cuidados de otra persona.",
+  "about.open": "Abrir",
+  "about.group.privacy": "Privacidad",
+  "about.privacy.body": "Todo lo que escribe se queda en este teléfono. No hay cuenta ni nube, y nada se envía a ningún sitio salvo que usted lo envíe.",
+  "about.privacy.link": "La política de privacidad completa",
+  "about.group.support": "Apoye este trabajo",
+  "about.support.body": "Creada y mantenida por una sola persona. La aplicación es gratuita, no tiene nada que comprar y no rastrea nada. En cualquier caso, es suya.",
+  "about.group.licenses": "Licencias",
+  "about.licenses.body": "El código es AGPL-3.0. El contenido de las plantillas es CC BY-SA 4.0, publicado por separado para que sirva con una carpeta de papel o una hoja de cálculo, a personas que nunca instalan nada. Las tipografías incluidas tienen sus propias licencias.",
+  "about.version": "Versión {version}",
+  "more.about": "Acerca de esta aplicación",
+  "section.back.more": "Volver a Más"
 }

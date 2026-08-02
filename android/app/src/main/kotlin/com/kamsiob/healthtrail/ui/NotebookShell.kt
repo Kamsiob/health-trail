@@ -26,6 +26,7 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.screens.AboutScreen
 import com.kamsiob.healthtrail.ui.screens.MoreScreen
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 import androidx.compose.foundation.background
@@ -171,6 +172,7 @@ fun NotebookShell(
     var togglingStep by remember { mutableStateOf<Repository.ProjectStep?>(null) }
     var settingProjectStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     var settingWaitingOn by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var aboutOpen by remember { mutableStateOf(false) }
     // The emergency card, and whether it is being filled in.
     var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
     var editingEmergencyCard by remember { mutableStateOf(false) }
@@ -299,6 +301,7 @@ fun NotebookShell(
     // person expects there.
     BackHandler(enabled = openSection != null) { openSection = null }
     BackHandler(enabled = openProject != null) { openProject = null }
+    BackHandler(enabled = aboutOpen) { aboutOpen = false }
     BackHandler(enabled = startingProject) { startingProject = false }
     BackHandler(enabled = trayOpen) { trayOpen = false }
     BackHandler(enabled = sheetOpen) { sheetOpen = false }
@@ -374,6 +377,7 @@ fun NotebookShell(
                     Destination.MORE -> MoreScreen(
                         choice = themeChoice,
                         onChoose = onThemeChoice,
+                        onAbout = { aboutOpen = true },
                     )
                 }
             }
@@ -392,6 +396,10 @@ fun NotebookShell(
                 },
                 captureDescription = strings["capture.button.description"],
             )
+        }
+
+        if (aboutOpen) {
+            AboutScreen(onBack = { aboutOpen = false })
         }
 
         val currentProject = openProject

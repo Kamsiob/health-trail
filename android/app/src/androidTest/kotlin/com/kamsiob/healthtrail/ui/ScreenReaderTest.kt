@@ -16,6 +16,8 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.MoreScreen
 import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
 import com.kamsiob.healthtrail.ui.screens.AddBillScreen
 import com.kamsiob.healthtrail.ui.screens.AddDocumentScreen
@@ -558,6 +560,24 @@ class ScreenReaderTest {
             AddDocumentScreen(onSave = {}, onCancel = {}, error = strings["docs.too_large"])
         }
         assertEverythingIsLabeled("save a document, file refused")
+    }
+
+    @Test
+    fun aboutLabelsEverything() {
+        compose.show { AboutScreen(onBack = {}) }
+        assertEverythingIsLabeled("about")
+    }
+
+    @Test
+    fun moreLabelsEverything() {
+        compose.show {
+            MoreScreen(
+                choice = com.kamsiob.healthtrail.ui.theme.ThemeChoice.DEFAULT,
+                onChoose = {},
+                onAbout = {},
+            )
+        }
+        assertEverythingIsLabeled("more")
     }
 
     @Test

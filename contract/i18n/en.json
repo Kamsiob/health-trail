@@ -207,7 +207,7 @@
   "appearance.dark.detail": "Always dark, even when the phone is light.",
   "nav.more.appearance": "Appearance",
   "more.coming.group": "Also coming here",
-  "more.coming.body": "Exporting your notebook, an About page with the privacy policy, the language this app runs in, and a way to erase everything. None of it is built yet. Everything you write down now will still be here when it is.",
+  "more.coming.body": "Exporting your notebook, the language this app runs in, and a way to erase everything. None of it is built yet. Everything you write down now will still be here when it is.",
   "trail.subtitle": "Everything you have written down, with the most recent first.",
   "trail.unfiled": "Not filed yet",
   "careteam.subtitle": "Everyone involved in the care, and how to reach them.",
@@ -371,5 +371,18 @@
   "section.back.projects": "Back to projects",
   "projects.waiting_field": "Who you are waiting on",
   "projects.waiting_field.hint": "A name, an office, or just what you were told",
-  "projects.waiting_save": "Save that"
+  "projects.waiting_save": "Save that",
+  "about.title": "About Health Trail",
+  "about.lead": "A notebook for the person keeping track of somebody else's care.",
+  "about.open": "Open",
+  "about.group.privacy": "Privacy",
+  "about.privacy.body": "Everything you write stays on this phone. There is no account, no cloud, and nothing is sent anywhere unless you send it yourself.",
+  "about.privacy.link": "The full privacy policy",
+  "about.group.support": "Support this work",
+  "about.support.body": "Built and carried by one person. The app is free, has nothing to buy, and tracks nothing. Either way, it is yours.",
+  "about.group.licenses": "Licenses",
+  "about.licenses.body": "The code is AGPL-3.0. The template content is CC BY-SA 4.0, published separately so it is useful with a paper binder or a spreadsheet, by people who never install anything. The bundled typefaces carry their own licenses.",
+  "about.version": "Version {version}",
+  "more.about": "About this app",
+  "section.back.more": "Back to More"
 }

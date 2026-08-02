@@ -207,7 +207,7 @@
   "appearance.dark.detail": "始终深色，即使手机为浅色。",
   "nav.more.appearance": "外观",
   "more.coming.group": "此处即将添加",
-  "more.coming.body": "导出您的笔记本、包含隐私政策的关于页面、本应用使用的语言，以及清除全部内容的方式。这些都尚未完成。您现在记下的一切，在完成之后依然会在这里。",
+  "more.coming.body": "导出您的笔记本、应用的显示语言，以及彻底清除全部内容的方式。这些都还没有做。您现在记下的一切，等它们做好时仍会在这里。",
   "trail.subtitle": "您记下的所有内容，最近的排在最前面。",
   "trail.unfiled": "尚未归置",
   "careteam.subtitle": "参与照护的每一位，以及如何联系他们。",
@@ -371,5 +371,18 @@
   "section.back.projects": "返回事项",
   "projects.waiting_field": "您在等谁",
   "projects.waiting_field.hint": "姓名、办事处，或别人告诉您的说法",
-  "projects.waiting_save": "保存"
+  "projects.waiting_save": "保存",
+  "about.title": "关于 Health Trail",
+  "about.lead": "为照护他人的人准备的笔记本。",
+  "about.open": "打开",
+  "about.group.privacy": "隐私",
+  "about.privacy.body": "您写下的一切都留在这部手机上。没有账户，没有云端，除非您自己发送，否则不会传送到任何地方。",
+  "about.privacy.link": "完整隐私政策",
+  "about.group.support": "支持这项工作",
+  "about.support.body": "由一个人独立开发和维护。应用免费，没有任何付费项目，也不做任何追踪。无论如何，它都属于您。",
+  "about.group.licenses": "许可",
+  "about.licenses.body": "代码采用 AGPL-3.0。模板内容采用 CC BY-SA 4.0，单独发布，以便从不安装任何应用的人也能用纸质活页夹或电子表格使用它。随附字体各有其许可。",
+  "about.version": "版本 {version}",
+  "more.about": "关于本应用",
+  "section.back.more": "返回更多"
 }
