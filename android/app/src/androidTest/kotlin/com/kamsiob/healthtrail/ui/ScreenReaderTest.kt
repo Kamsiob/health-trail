@@ -644,13 +644,13 @@ class ScreenReaderTest {
      */
     @Test
     fun restoreLabelsEverythingBeforeAFileIsChosen() {
-        compose.show { restoreAt(RestoreState.Empty) }
+        compose.show { RestoreAt(RestoreState.Empty) }
         assertEverythingIsLabeled("restore, nothing chosen")
     }
 
     @Test
     fun restoreLabelsEverythingWhenLocked() {
-        compose.show { restoreAt(RestoreState.NeedsPassphrase("That did not open it.")) }
+        compose.show { RestoreAt(RestoreState.NeedsPassphrase("That did not open it.")) }
         assertEverythingIsLabeled("restore, locked after a failed attempt")
     }
 
@@ -681,12 +681,12 @@ class ScreenReaderTest {
 
     @Test
     fun restoreLabelsEverythingOnAProblem() {
-        compose.show { restoreAt(RestoreState.Problem("This file could not be opened.")) }
+        compose.show { RestoreAt(RestoreState.Problem("This file could not be opened.")) }
         assertEverythingIsLabeled("restore, problem")
     }
 
     @androidx.compose.runtime.Composable
-    private fun restoreAt(state: RestoreState) {
+    private fun RestoreAt(state: RestoreState) {
         RestoreScreen(
             state = state,
             onChoose = {},

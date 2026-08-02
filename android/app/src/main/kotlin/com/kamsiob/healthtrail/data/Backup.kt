@@ -46,13 +46,22 @@ object Backup {
         passphrase: CharArray? = null,
     ): ExportContainer.Manifest = withContext(Dispatchers.IO) {
         val database = HealthTrailDatabase.open(context)
-        val file = context.getDatabasePath(HealthTrailDatabase.FILE_NAME)
 
-        // The database is written to as this runs in the app. A checkpoint is
-        // not enough on its own, so the file is copied to a staging path and
-        // the copy is what goes in the archive, hashed as stored.
-        val staged = File(context.cacheDir, "export-staging-$exportedAt.sqlite")
-        file.copyTo(staged, overwrite = true)
+        // **The archive carries a plain SQLite file, never the encrypted one as
+        // it sits on disk.** The database at rest is SQLCipher, keyed by 32
+        // random bytes wrapped by this device's Keystore, and that wrapping key
+        // cannot be exported and does not travel. Copying the file verbatim
+        // therefore produced an archive that only the phone that wrote it could
+        // ever open, which is not a backup, it is a copy. It passed every round
+        // trip test for exactly as long as those tests restored onto the same
+        // device. D24 makes this file the only recovery path from key loss, so
+        // a payload that needs the lost key to read is the one shape it must
+        // not have. See `PortabilityTest`.
+        //
+        // What protects the contents is the container's own passphrase, chosen
+        // by the person, which is what `contract/export-format.md` always said
+        // and what an unencrypted export deliberately declines.
+        val staged = decryptedCopy(context, database, exportedAt)
 
         val store = Attachments.open(context)
         val attachments = store.all().map { store.fileFor(it) }
@@ -73,6 +82,87 @@ object Backup {
             )
         } finally {
             staged.delete()
+        }
+    }
+
+    /**
+     * A portable, unencrypted copy of the whole database.
+     *
+     * `sqlcipher_export` is SQLCipher's own mechanism for this and it copies
+     * the entire schema rather than the rows alone: tables, indexes, views, and
+     * the change log triggers, which is what the contract requires to survive.
+     * Rebuilding the schema from `contract/schema.sql` on the way out would work
+     * too and would be a second declaration of it, which is what D16 exists to
+     * prevent.
+     *
+     * **Inside a transaction**, because the app writes to this database while
+     * the export runs and a copy taken across a half applied write would be a
+     * file that fails its own hash check on the way back in, at the moment it is
+     * needed most.
+     *
+     * The caller deletes the file. It is the one place in the app where records
+     * exist unencrypted, so it lives in the cache under a name unique to the
+     * export and does not outlive it.
+     */
+    private fun decryptedCopy(
+        context: Context,
+        database: HealthTrailDatabase,
+        exportedAt: Long,
+    ): File {
+        val staged = File(context.cacheDir, "export-staging-$exportedAt.sqlite")
+        // sqlcipher_export appends into whatever it finds, so a leftover file
+        // from an interrupted export would be exported into rather than
+        // replaced, and the archive would carry both notebooks.
+        staged.delete()
+
+        val handle = database.database
+        handle.execSQL("ATTACH DATABASE ? AS portable KEY ''", arrayOf(staged.path))
+        try {
+            handle.beginTransaction()
+            try {
+                handle.rawQuery("SELECT sqlcipher_export('portable')", null).use { it.moveToNext() }
+                handle.setTransactionSuccessful()
+            } finally {
+                handle.endTransaction()
+            }
+        } finally {
+            handle.execSQL("DETACH DATABASE portable")
+        }
+        return staged
+    }
+
+    /**
+     * The reverse: a portable file turned back into this device's encrypted one.
+     *
+     * The restored database is keyed with **this** device's passphrase rather
+     * than the one that wrote the file, which is the entire point. A notebook
+     * moved to a new phone is encrypted at rest there by that phone's Keystore,
+     * and the old device's key is neither needed nor recoverable.
+     *
+     * Built at a temporary path and moved into place by the caller, so a failure
+     * partway through never leaves a half written database where the live one
+     * belongs.
+     */
+    private fun encryptedCopy(context: Context, portable: File, target: File) {
+        target.delete()
+        val key = DatabaseKey(context)
+        val passphrase = key.passphrase()
+        val encrypted = try {
+            SQLiteDatabase.openOrCreateDatabase(target, passphrase, null, null)
+        } finally {
+            passphrase.fill(0)
+        }
+
+        try {
+            encrypted.execSQL("ATTACH DATABASE ? AS portable KEY ''", arrayOf(portable.path))
+            try {
+                encrypted.rawQuery("SELECT sqlcipher_export('main', 'portable')", null)
+                    .use { it.moveToNext() }
+            } finally {
+                encrypted.execSQL("DETACH DATABASE portable")
+            }
+        } finally {
+            encrypted.close()
         }
     }
 
@@ -216,7 +306,26 @@ object Backup {
         if (live.exists()) live.copyTo(backup, overwrite = true)
 
         try {
-            opened.database.copyTo(live, overwrite = true)
+            // **Re-encrypted with this device's key, never copied in.** The
+            // file in the archive is a plain SQLite database, which is what
+            // makes it portable at all, and putting it at the live path
+            // unchanged would leave the notebook sitting unencrypted on disk.
+            // The one built here is keyed by this phone's Keystore, so a
+            // notebook that arrives from another device is protected here the
+            // same way it was there.
+            val rebuilt = File(live.parentFile, "${HealthTrailDatabase.FILE_NAME}.arriving")
+            try {
+                encryptedCopy(context, opened.database, rebuilt)
+                rebuilt.copyTo(live, overwrite = true)
+                // The write ahead log and shared memory file belong to the
+                // database that was just replaced. Left behind, they describe
+                // pages that no longer exist in the file beside them, which is
+                // how a restore that reported success opens corrupt afterward.
+                File(live.path + "-wal").delete()
+                File(live.path + "-shm").delete()
+            } finally {
+                rebuilt.delete()
+            }
 
             val attachments = Attachments.open(context)
             for (file in opened.attachments) {
