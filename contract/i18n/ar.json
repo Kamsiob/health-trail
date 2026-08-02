@@ -279,5 +279,7 @@
   "questions.group.waiting": "لم يُسأل بعد",
   "questions.group.asked": "سُئلت",
   "questions.mark_asked": "سألت هذا",
-  "questions.asked_on": "سُئلت في {date}"
+  "questions.asked_on": "سُئلت في {date}",
+  "threads.subtitle": "المسارات المتوازية التي تمر عبر هذا الدفتر. كل ما تدوّنه يمكن أن ينتمي إلى أحدها.",
+  "threads.empty": "لا توجد مسارات بعد. اختيار حالة ينشئ بعضها، ويمكنك دائمًا العمل بدونها."
 }

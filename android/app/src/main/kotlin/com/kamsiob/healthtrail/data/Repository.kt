@@ -1178,6 +1178,51 @@ class Repository private constructor(
             )
         }
 
+    // -- care threads --------------------------------------------------------
+
+    /** A thread, with how much of the record runs through it. */
+    data class ThreadWithCount(val thread: CareThread, val entryCount: Int)
+
+    /**
+     * The threads and what is on each, in the order the person sees them.
+     *
+     * **Counted with a join rather than a query per thread**, because this is a
+     * screen whose whole content is counts and one query per row is how a list
+     * gets slow on the notebooks that have been kept longest.
+     *
+     * A thread with nothing on it is still returned. Applying a situation
+     * template creates several at once, and most of them are empty on day one:
+     * they are places the record will go, not places it has been.
+     */
+    suspend fun threadsWithCounts(subjectId: String): List<ThreadWithCount> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT t.id, t.label, t.color_index, COUNT(et.id) " +
+                    "FROM live_care_thread t " +
+                    "LEFT JOIN live_entry_thread et ON et.thread_id = t.id " +
+                    "LEFT JOIN live_entry e ON e.id = et.entry_id " +
+                    "WHERE t.subject_id = ? " +
+                    "GROUP BY t.id, t.label, t.color_index, t.sort_index, t.created_at " +
+                    "ORDER BY t.sort_index, t.created_at",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            ThreadWithCount(
+                                thread = CareThread(
+                                    id = cursor.getString(0),
+                                    label = cursor.getString(1),
+                                    colorIndex = cursor.getInt(2),
+                                ),
+                                entryCount = cursor.getInt(3),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
     // -- questions to ask next time ------------------------------------------
 
     /**

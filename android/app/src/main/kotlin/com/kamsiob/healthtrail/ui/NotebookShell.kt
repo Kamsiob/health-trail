@@ -48,6 +48,7 @@ import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationDraft
 import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
+import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyDraft
@@ -141,6 +142,9 @@ fun NotebookShell(
     var addingMedication by remember { mutableStateOf(false) }
     var savingMedication by remember { mutableStateOf<MedicationDraft?>(null) }
     var questions by remember { mutableStateOf<List<Repository.Question>>(emptyList()) }
+    var threadCounts by remember {
+        mutableStateOf<List<Repository.ThreadWithCount>>(emptyList())
+    }
     var markingAsked by remember { mutableStateOf<Repository.Question?>(null) }
     val context = LocalContext.current
 
@@ -178,6 +182,7 @@ fun NotebookShell(
             emergencyCard = subject?.let { repository.emergencyCard(it.id) }
             medications = subject?.let { repository.medications(it.id) }.orEmpty()
             questions = subject?.let { repository.questions(it.id) }.orEmpty()
+            threadCounts = subject?.let { repository.threadsWithCounts(it.id) }.orEmpty()
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
                 .orEmpty()
@@ -269,6 +274,11 @@ fun NotebookShell(
             Repository.Section.TRAIL -> TrailScreen(
                 entries = trail,
                 onEditDate = { editingDate = it },
+                onBack = { openSection = null },
+            )
+
+            Repository.Section.THREADS -> CareThreadsScreen(
+                threads = threadCounts,
                 onBack = { openSection = null },
             )
 
