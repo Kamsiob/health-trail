@@ -290,5 +290,19 @@
   "chapters.empty": "还没有地点。初始设置会询问他们在哪里，之后每次转移都可以添加。",
   "chapters.current": "目前所在",
   "chapters.earlier": "此前",
-  "chapters.since": "自 {date} 起"
+  "chapters.since": "自 {date} 起",
+  "appts.subtitle": "即将到来的和已经发生的。这里的任何内容都不会提醒您。",
+  "appts.empty": "还没有记录。一旦有人告诉您日期，就把它加进来。",
+  "appts.group.upcoming": "即将到来",
+  "appts.group.past": "已经发生",
+  "appts.add": "添加预约",
+  "appts.add.lead": "有日期和名称就够了。其余的等知道了再补。",
+  "appts.title": "预约事项",
+  "appts.title.hint": "与谁见面，或为了什么",
+  "appts.where": "地点",
+  "appts.where.hint": "楼栋、楼层，知道的话还有房间号",
+  "appts.notes": "需要记住的事",
+  "appts.notes.hint": "要带什么、找谁、事关什么",
+  "appts.when": "时间",
+  "date.pick.title.future": "什么时候？"
 }

@@ -290,5 +290,19 @@
   "chapters.empty": "No places yet. Setup asks where they are, and you can add more whenever they move.",
   "chapters.current": "Where they are now",
   "chapters.earlier": "Before that",
-  "chapters.since": "Since {date}"
+  "chapters.since": "Since {date}",
+  "appts.subtitle": "What is coming up, and what already happened. Nothing here reminds you.",
+  "appts.empty": "Nothing written down yet. Add one as soon as somebody tells you a date.",
+  "appts.group.upcoming": "Coming up",
+  "appts.group.past": "Already happened",
+  "appts.add": "Add an appointment",
+  "appts.add.lead": "A date and a name is plenty. You can fill in the rest whenever you learn it.",
+  "appts.title": "What it is",
+  "appts.title.hint": "Who it is with, or what it is for",
+  "appts.where": "Where",
+  "appts.where.hint": "The building, the floor, the room if you know it",
+  "appts.notes": "Anything to remember",
+  "appts.notes.hint": "What to bring, who to ask for, what it is about",
+  "appts.when": "When",
+  "date.pick.title.future": "When is it?"
 }

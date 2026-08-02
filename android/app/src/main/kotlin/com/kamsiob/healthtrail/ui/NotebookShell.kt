@@ -51,6 +51,9 @@ import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
+import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
+import com.kamsiob.healthtrail.ui.screens.AppointmentDraft
+import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyDraft
@@ -149,6 +152,11 @@ fun NotebookShell(
     }
     var readings by remember { mutableStateOf<List<Repository.Reading>>(emptyList()) }
     var chapters by remember { mutableStateOf<List<Repository.Chapter>>(emptyList()) }
+    var appointments by remember {
+        mutableStateOf<List<Repository.Appointment>>(emptyList())
+    }
+    var addingAppointment by remember { mutableStateOf(false) }
+    var savingAppointment by remember { mutableStateOf<AppointmentDraft?>(null) }
     var markingAsked by remember { mutableStateOf<Repository.Question?>(null) }
     val context = LocalContext.current
 
@@ -189,6 +197,7 @@ fun NotebookShell(
             threadCounts = subject?.let { repository.threadsWithCounts(it.id) }.orEmpty()
             readings = subject?.let { repository.readings(it.id) }.orEmpty()
             chapters = subject?.let { repository.chapters(it.id) }.orEmpty()
+            appointments = subject?.let { repository.appointments(it.id) }.orEmpty()
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
                 .orEmpty()
@@ -280,6 +289,19 @@ fun NotebookShell(
             Repository.Section.TRAIL -> TrailScreen(
                 entries = trail,
                 onEditDate = { editingDate = it },
+                onBack = { openSection = null },
+            )
+
+            Repository.Section.APPOINTMENTS -> AppointmentsScreen(
+                appointments = appointments,
+                // Midnight this morning, so something scheduled earlier today
+                // still reads as coming up rather than dropping into the past
+                // the moment its hour passes.
+                todayMillis = LocalDate.now()
+                    .atStartOfDay(java.time.ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli(),
+                onAdd = { addingAppointment = true },
                 onBack = { openSection = null },
             )
 
@@ -396,6 +418,37 @@ fun NotebookShell(
             LaunchedEffect(asked) {
                 repository.markQuestionAsked(asked.id, Edtf.day(LocalDate.now()))
                 markingAsked = null
+                revision += 1
+            }
+        }
+
+        if (addingAppointment) {
+            AddAppointmentScreen(
+                onSave = { draft ->
+                    addingAppointment = false
+                    savingAppointment = draft
+                },
+                onCancel = { addingAppointment = false },
+            )
+        }
+
+        val appointmentDraft = savingAppointment
+        if (appointmentDraft != null) {
+            LaunchedEffect(appointmentDraft) {
+                val subject = repository.activeSubject()
+                // A date with no name is not an appointment. A name with no
+                // date is: "the care plan meeting, not scheduled yet" is worth
+                // writing down before it slips.
+                if (subject != null && appointmentDraft.title.isNotBlank()) {
+                    repository.createAppointment(
+                        subjectId = subject.id,
+                        title = appointmentDraft.title.trim(),
+                        scheduled = appointmentDraft.scheduled ?: Edtf.unknown(),
+                        locationNote = appointmentDraft.where,
+                        notes = appointmentDraft.notes,
+                    )
+                }
+                savingAppointment = null
                 revision += 1
             }
         }

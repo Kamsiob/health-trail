@@ -83,6 +83,16 @@ fun DatePickerSheet(
     onPick: (Edtf.Date) -> Unit,
     onDismiss: () -> Unit,
     today: LocalDate = LocalDate.now(),
+    /**
+     * The heading, which defaults to asking when something happened.
+     *
+     * **Overridable because the same picker asks about the future.** An
+     * appointment is usually ahead, and "When was this?" over a date somebody
+     * is scheduling reads as the app not knowing what it is asking about. The
+     * default is the past tense because five of the six things that open this
+     * are records of something that already happened.
+     */
+    titleKey: String = "date.pick.title",
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -114,7 +124,7 @@ fun DatePickerSheet(
         ) {
             Spacer(Modifier.height(Space.s))
             Text(
-                text = strings["date.pick.title"],
+                text = strings[titleKey],
                 style = HealthTrail.type.displayM,
                 color = colors.ink,
             )

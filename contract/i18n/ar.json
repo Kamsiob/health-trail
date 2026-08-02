@@ -290,5 +290,19 @@
   "chapters.empty": "لا توجد أماكن بعد. الإعداد يسأل أين هو، ويمكنك إضافة المزيد كلما انتقل.",
   "chapters.current": "أين هو الآن",
   "chapters.earlier": "قبل ذلك",
-  "chapters.since": "منذ {date}"
+  "chapters.since": "منذ {date}",
+  "appts.subtitle": "ما هو قادم، وما حدث بالفعل. لا شيء هنا يذكّرك.",
+  "appts.empty": "لا يوجد شيء مدوّن بعد. أضف موعدًا بمجرد أن يخبرك أحد بتاريخ.",
+  "appts.group.upcoming": "قادم",
+  "appts.group.past": "حدث بالفعل",
+  "appts.add": "إضافة موعد",
+  "appts.add.lead": "التاريخ والاسم يكفيان. يمكنك إكمال الباقي وقتما تعرفه.",
+  "appts.title": "ما هو الموعد",
+  "appts.title.hint": "مع من، أو لأي غرض",
+  "appts.where": "أين",
+  "appts.where.hint": "المبنى، الطابق، والغرفة إن كنت تعرفها",
+  "appts.notes": "أي شيء يجب تذكره",
+  "appts.notes.hint": "ماذا تحضر، عمن تسأل، وما موضوعه",
+  "appts.when": "متى",
+  "date.pick.title.future": "متى موعده؟"
 }

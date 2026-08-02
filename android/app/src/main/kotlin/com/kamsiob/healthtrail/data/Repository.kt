@@ -1178,6 +1178,70 @@ class Repository private constructor(
             )
         }
 
+    // -- appointments ---------------------------------------------------------
+
+    /**
+     * One appointment.
+     *
+     * **Upcoming and past are decided by the date rather than by a flag.** The
+     * schema keeps `attended_*` for what actually happened, which is a
+     * different question from whether the date has passed, and conflating the
+     * two would mean an appointment nobody attended quietly stays "coming up"
+     * forever.
+     */
+    data class Appointment(
+        val id: String,
+        val title: String,
+        val scheduledEdtf: String?,
+        val scheduledStart: Long?,
+        val locationNote: String?,
+        val notes: String?,
+    )
+
+    /** Every appointment, soonest first. */
+    suspend fun appointments(subjectId: String): List<Appointment> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, title, scheduled_edtf, scheduled_start, location_note, notes " +
+                    "FROM live_appointment WHERE subject_id = ? " +
+                    "ORDER BY scheduled_start IS NULL, scheduled_start",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            Appointment(
+                                id = cursor.getString(0),
+                                title = cursor.getString(1),
+                                scheduledEdtf = cursor.getString(2),
+                                scheduledStart =
+                                    if (cursor.isNull(3)) null else cursor.getLong(3),
+                                locationNote = cursor.getString(4),
+                                notes = cursor.getString(5),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /** Records an appointment. Only the title is required, and the date may be coarse. */
+    suspend fun createAppointment(
+        subjectId: String,
+        title: String,
+        scheduled: Edtf.Date,
+        locationNote: String? = null,
+        notes: String? = null,
+    ): String = insert(
+        "appointment",
+        mapOf(
+            "subject_id" to subjectId,
+            "title" to title,
+            "location_note" to locationNote?.ifBlank { null },
+            "notes" to notes?.ifBlank { null },
+        ) + dateColumns("scheduled", scheduled),
+    )
+
     // -- chapters, the places -------------------------------------------------
 
     /**

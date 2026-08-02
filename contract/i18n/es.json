@@ -290,5 +290,19 @@
   "chapters.empty": "Todavía no hay lugares. La configuración pregunta dónde está, y puede añadir más cuando se traslade.",
   "chapters.current": "Dónde está ahora",
   "chapters.earlier": "Antes de eso",
-  "chapters.since": "Desde {date}"
+  "chapters.since": "Desde {date}",
+  "appts.subtitle": "Lo que viene y lo que ya ocurrió. Nada de esto le avisa.",
+  "appts.empty": "Todavía no hay nada anotado. Añada uno en cuanto alguien le diga una fecha.",
+  "appts.group.upcoming": "Próximamente",
+  "appts.group.past": "Ya ocurrió",
+  "appts.add": "Añadir una cita",
+  "appts.add.lead": "Con una fecha y un nombre basta. Puede completar el resto cuando lo sepa.",
+  "appts.title": "De qué se trata",
+  "appts.title.hint": "Con quién es, o para qué es",
+  "appts.where": "Dónde",
+  "appts.where.hint": "El edificio, la planta, la sala si la sabe",
+  "appts.notes": "Algo que recordar",
+  "appts.notes.hint": "Qué llevar, por quién preguntar, de qué se trata",
+  "appts.when": "Cuándo",
+  "date.pick.title.future": "¿Cuándo es?"
 }
