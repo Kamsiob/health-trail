@@ -15,6 +15,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -23,6 +24,8 @@ object EmergencyTags {
     const val NAME = "emergency_card"
     const val EDIT = "emergency_card_edit"
     fun field(key: String) = "emergency_field_$key"
+    fun contact(id: String) = "emergency_contact_$id"
+    fun call(id: String) = "emergency_call_$id"
 }
 
 /**
@@ -52,6 +55,8 @@ object EmergencyTags {
 @Composable
 fun EmergencyCardScreen(
     card: Repository.EmergencyCard?,
+    contacts: List<Repository.EmergencyContact>,
+    onCall: (Repository.EmergencyContact) -> Unit,
     onEdit: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -65,7 +70,26 @@ fun EmergencyCardScreen(
         onBack = onBack,
         modifier = modifier,
     ) {
-        if (card == null || card.isEmpty) {
+        // **Who to call comes first, above everything else on the card.**
+        // Somebody holding this phone in an emergency needs a number before
+        // they need a blood type: the number reaches a person who knows the
+        // rest. The paperwork below it is what they read once they have made
+        // the call.
+        if (contacts.isNotEmpty()) {
+            item {
+                GroupHeader(labelKey = "emergency.group.who")
+                Spacer(Modifier.height(Space.headerGap))
+            }
+            for (contact in contacts) {
+                item(key = contact.id) {
+                    ContactRow(contact = contact, onCall = { onCall(contact) })
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            }
+            item { Spacer(Modifier.height(Space.s)) }
+        }
+
+        if (card == null || (card.isEmpty && contacts.isEmpty())) {
             item {
                 SectionEmpty(name = EmergencyTags.NAME, text = strings["emergency.empty"])
                 Spacer(Modifier.height(Space.l))
@@ -133,6 +157,66 @@ fun EmergencyCardScreen(
                 label = strings["emergency.edit"],
                 onClick = onEdit,
                 modifier = Modifier.fillMaxWidth().testTag(EmergencyTags.EDIT),
+            )
+        }
+    }
+}
+
+/**
+ * One person to call, with the number as the action.
+ *
+ * The same treatment the care team gives a person, in the card's own tone. The
+ * relationship is the eyebrow, because on this card "her daughter" or "the
+ * facility" is what tells a stranger which call to make first.
+ */
+@Composable
+private fun ContactRow(
+    contact: Repository.EmergencyContact,
+    onCall: () -> Unit,
+) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    val phone = contact.phone?.takeIf { it.isNotBlank() }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(Radius.card)
+            .background(colors.alertSoft)
+            .testTag(EmergencyTags.contact(contact.id))
+            .padding(Space.cardPadding),
+    ) {
+        contact.relationship?.takeIf { it.isNotBlank() }?.let { relationship ->
+            Text(
+                text = relationship,
+                style = HealthTrail.type.mono,
+                color = colors.alertText,
+            )
+            Spacer(Modifier.height(Space.xs))
+        }
+
+        Text(
+            text = contact.displayName,
+            style = HealthTrail.type.displayS,
+            color = colors.ink,
+        )
+
+        Spacer(Modifier.height(Space.xs))
+
+        if (phone != null) {
+            TextAction(
+                label = strings("careteam.call.number", "number" to phone),
+                onClick = onCall,
+                modifier = Modifier.testTag(EmergencyTags.call(contact.id)),
+            )
+        } else {
+            // Somebody can be on the card without a number, and saying so is
+            // better than leaving a gap where an action should be. It is also
+            // the honest prompt to go and find one.
+            Text(
+                text = strings["careteam.no_phone"],
+                style = HealthTrail.type.bodyS,
+                color = colors.alertText,
             )
         }
     }

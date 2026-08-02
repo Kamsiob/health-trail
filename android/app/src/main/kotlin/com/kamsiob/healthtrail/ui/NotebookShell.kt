@@ -128,6 +128,11 @@ fun NotebookShell(
     var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
     var editingEmergencyCard by remember { mutableStateOf(false) }
     var savingEmergencyCard by remember { mutableStateOf<EmergencyDraft?>(null) }
+    var emergencyContacts by remember {
+        mutableStateOf<List<Repository.EmergencyContact>>(emptyList())
+    }
+    // Somebody being put on or taken off the card. Null means nothing in flight.
+    var togglingContact by remember { mutableStateOf<Repository.Person?>(null) }
     val context = LocalContext.current
 
     // Recounted whenever the tab changes, so returning to the notebook after
@@ -162,6 +167,9 @@ fun NotebookShell(
             trail = subject?.let { repository.trail(it.id) }.orEmpty()
             people = subject?.let { repository.people(it.id) }.orEmpty()
             emergencyCard = subject?.let { repository.emergencyCard(it.id) }
+            emergencyContacts = emergencyCard
+                ?.let { repository.emergencyContacts(it.id) }
+                .orEmpty()
             measures = subject?.let { repository.measures(it.id) }.orEmpty()
             presets = TemplateCatalog.presets(context)
         } catch (t: Throwable) {
@@ -255,6 +263,8 @@ fun NotebookShell(
 
             Repository.Section.EMERGENCY_CARD -> EmergencyCardScreen(
                 card = emergencyCard,
+                contacts = emergencyContacts,
+                onCall = { contact -> dial(context, contact.phone) },
                 onEdit = { editingEmergencyCard = true },
                 onBack = { openSection = null },
             )
@@ -267,16 +277,7 @@ fun NotebookShell(
                 // one extra tap and it is the right one: this app asks for no
                 // permission it does not need, and placing a call on somebody's
                 // behalf is not a thing it should be able to do silently.
-                onCall = { person ->
-                    person.phone?.takeIf { it.isNotBlank() }?.let { number ->
-                        context.startActivity(
-                            android.content.Intent(
-                                android.content.Intent.ACTION_DIAL,
-                                android.net.Uri.fromParts("tel", number, null),
-                            ),
-                        )
-                    }
-                },
+                onCall = { person -> dial(context, person.phone) },
                 onAdd = { addingPerson = true },
                 onBack = { openSection = null },
             )
@@ -319,12 +320,56 @@ fun NotebookShell(
         if (editingEmergencyCard) {
             EmergencyCardEditScreen(
                 card = emergencyCard,
+                people = people,
+                onTheCard = emergencyContacts.mapNotNull { it.personId }.toSet(),
+                onToggleContact = { togglingContact = it },
                 onSave = { draft ->
                     editingEmergencyCard = false
                     savingEmergencyCard = draft
                 },
                 onCancel = { editingEmergencyCard = false },
             )
+        }
+
+        val toggling = togglingContact
+        if (toggling != null) {
+            LaunchedEffect(toggling) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    // The card row has to exist before anybody can be put on
+                    // it, and the person may be doing this before they have
+                    // typed a single field. Creating it here rather than
+                    // refusing is the difference between the app absorbing its
+                    // own storage model and asking the person to understand it,
+                    // which is rule 20.
+                    val cardId = emergencyCard?.id
+                        ?: repository.saveEmergencyCard(subjectId = subject.id)
+                    val existing = repository.emergencyContacts(cardId)
+                        .firstOrNull { it.personId == toggling.id }
+                    if (existing != null) {
+                        repository.removeEmergencyContact(existing.id)
+                    } else {
+                        repository.addEmergencyContact(
+                            cardId = cardId,
+                            personId = toggling.id,
+                            // Copied onto the card rather than read through the
+                            // link, so archiving a care team row never blanks
+                            // the card. A person with no name is carried by
+                            // whatever they do have.
+                            displayName = toggling.displayName.ifBlank {
+                                toggling.phone.orEmpty().ifBlank {
+                                    toggling.roleLabel.orEmpty()
+                                }
+                            },
+                            phone = toggling.phone,
+                            relationship = toggling.roleLabel,
+                            sortIndex = repository.emergencyContacts(cardId).size,
+                        )
+                    }
+                }
+                togglingContact = null
+                revision += 1
+            }
         }
 
         val emergencyDraft = savingEmergencyCard
@@ -556,6 +601,28 @@ private suspend fun emphasisFor(
     val situation = TemplateCatalog.situations(context).all.firstOrNull { it.id == templateId }
         ?: return emptyMap()
     return emphasisFrom(forward = situation.forward, folded = situation.folded)
+}
+
+/**
+ * Opens the dialer with a number filled in.
+ *
+ * **`ACTION_DIAL` rather than `ACTION_CALL`**, which would need the call
+ * permission. The person presses the green button themselves. That is one extra
+ * tap and it is the right one: this app asks for no permission it does not
+ * need, and placing a call on somebody's behalf is not something it should be
+ * able to do silently.
+ *
+ * A blank number does nothing rather than opening an empty dialer.
+ */
+private fun dial(context: android.content.Context, phone: String?) {
+    phone?.takeIf { it.isNotBlank() }?.let { number ->
+        context.startActivity(
+            android.content.Intent(
+                android.content.Intent.ACTION_DIAL,
+                android.net.Uri.fromParts("tel", number, null),
+            ),
+        )
+    }
 }
 
 private val SECTION_ORDER = listOf(

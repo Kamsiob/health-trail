@@ -735,7 +735,13 @@ Composed from Display L, Display S, Body M, Body S, the Mono eyebrow, cards 5.3,
 
 **Only what has been filled in appears.** An empty field is not shown as an empty field, and a group header appears only when its group has something under it. Three lines that are all true beat nine where six say nothing, and under time pressure the blanks are noise somebody has to read past. This is rule 13 doing real work rather than being quoted: the card is complete at any size.
 
-**The whole card is `alert` toned**, which section 2.2 gives to this one section and nothing else.
+**The whole card is `alert` toned**, which section 2.2 gives to this one section and nothing else. That produced two color pairings no other screen makes, blue action text and `ink` values on `alert_soft`, and both are now measured by `check_contrast.py` rather than assumed. Neither existed before this card and nothing would have caught them.
+
+**Who to call comes first, above everything else.** Somebody holding this phone in an emergency needs a number before they need a blood type: the number reaches a person who knows the rest. The paperwork below is what they read once the call is made.
+
+**Contacts are chosen from the care team, never typed a second time.** Everybody there already has a name and a number in this notebook, and asking again would be the interface making the person do the app's filing, which rule 20 forbids. One tap puts somebody on the card, one tap takes them off, and taking them off the card never takes them off the care team.
+
+**The card keeps its own copy of the name and number**, with the link recorded alongside it. A card that goes blank because somebody archived a care team row is a card that fails at the worst possible moment.
 
 **The resuscitation line is the sharpest content rule in the app.** It is stored and shown as **what the signed paperwork says**, in the words on the form, beside where the original is kept. The app does not summarize it, does not shorten it to an abbreviation, and never says what it means. It is not a choice between options and it must never become one: that would be the app interpreting a legal document, which rule 2 forbids and which cannot be done correctly across fifty states. **A card that is wrong about this is worse than no card**, and the only safe thing the app can do is repeat the sentence and say where the paper is.
 

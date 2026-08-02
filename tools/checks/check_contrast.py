@@ -115,6 +115,12 @@ def pairs_for(theme: dict) -> list:
         ("alertText", "paper", TEXT_FLOOR, "alert text on the app background"),
         ("alertText", "card", TEXT_FLOOR, "alert text on a card"),
         ("alertText", "alertSoft", TEXT_FLOOR, "alert text in a red tonal pill"),
+        # The emergency card puts its cards on alertSoft, and the one action on
+        # them is a call. That is blue text on a red tonal surface, which no
+        # other screen produces and which nothing measured until the card was
+        # built. `ink` is the value on the same surface.
+        ("blue", "alertSoft", TEXT_FLOOR, "the call action on an emergency card row"),
+        ("ink", "alertSoft", TEXT_FLOOR, "a value on an emergency card row"),
         ("onAlertFill", "alertFill", TEXT_FLOOR, "the emergency card header text"),
         # Controls and meaningful graphics. 3:1, per WCAG 1.4.11.
         ("onBlaze", "blaze", UI_FLOOR, "the plus glyph on the capture button"),

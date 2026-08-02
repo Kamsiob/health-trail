@@ -250,5 +250,9 @@
   "emergency.insurance": "Seguro",
   "emergency.insurance.hint": "Plan, número de afiliado, lo que le pidan",
   "emergency.other": "Cualquier otra cosa",
-  "emergency.other.hint": "Cosas que diría en voz alta si estuviera presente"
+  "emergency.other.hint": "Cosas que diría en voz alta si estuviera presente",
+  "emergency.group.who": "A quién llamar primero",
+  "emergency.who.none": "Todavía no hay nadie en la tarjeta. Cualquier persona del equipo de atención puede ir aquí.",
+  "emergency.who.lead": "Toque a cualquier persona del equipo de atención para ponerla en la tarjeta. Toque otra vez para quitarla.",
+  "emergency.who.empty_team": "El equipo de atención está vacío, así que todavía no hay nadie que poner en la tarjeta. Añada a alguien allí primero."
 }

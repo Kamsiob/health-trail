@@ -24,6 +24,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.ChoiceChip
+import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -76,6 +78,9 @@ data class EmergencyDraft(
 @Composable
 fun EmergencyCardEditScreen(
     card: Repository.EmergencyCard?,
+    people: List<Repository.Person>,
+    onTheCard: Set<String>,
+    onToggleContact: (Repository.Person) -> Unit,
     onSave: (EmergencyDraft) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
@@ -128,7 +133,45 @@ fun EmergencyCardEditScreen(
                     color = colors.ink2,
                 )
 
+                // **Who to call is chosen, never typed again.** Everybody on
+                // the care team already has a name and a number in this
+                // notebook, and asking for them a second time would be the
+                // interface making the person do the app's filing, which rule
+                // 20 forbids. One tap puts somebody on the card, one tap takes
+                // them off.
                 Spacer(Modifier.height(Space.l))
+                GroupHeader(labelKey = "emergency.group.who")
+                Spacer(Modifier.height(Space.headerGap))
+
+                if (people.isEmpty()) {
+                    Text(
+                        text = strings["emergency.who.empty_team"],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
+                    )
+                } else {
+                    Text(
+                        text = strings["emergency.who.lead"],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
+                    )
+                    Spacer(Modifier.height(Space.sm))
+                    ChoiceChipGroup(label = strings["emergency.group.who"]) {
+                        people.forEach { person ->
+                            ChoiceChip(
+                                label = person.displayName.ifBlank {
+                                    person.phone.orEmpty().ifBlank {
+                                        person.roleLabel.orEmpty()
+                                    }
+                                },
+                                selected = person.id in onTheCard,
+                                onClick = { onToggleContact(person) },
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(Space.m))
                 GroupHeader(labelKey = "emergency.group.medical")
                 Spacer(Modifier.height(Space.headerGap))
 

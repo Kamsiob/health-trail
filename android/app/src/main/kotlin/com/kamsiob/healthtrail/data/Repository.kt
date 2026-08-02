@@ -992,6 +992,88 @@ class Repository private constructor(
         return existing.id
     }
 
+    /**
+     * One person to call first, as the card carries them.
+     *
+     * **The name and number are copied onto the card rather than read through
+     * the link every time.** `personId` records who this came from so the two
+     * can be kept together, but the card holds its own copy, because a card
+     * that goes blank when somebody archives a care team row is a card that
+     * fails at the worst possible moment.
+     */
+    data class EmergencyContact(
+        val id: String,
+        val personId: String?,
+        val displayName: String,
+        val phone: String?,
+        val relationship: String?,
+    )
+
+    /** Who to call first, in the order they were added to the card. */
+    suspend fun emergencyContacts(cardId: String): List<EmergencyContact> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, person_id, display_name, phone, relationship " +
+                    "FROM live_emergency_contact WHERE emergency_card_id = ? " +
+                    "ORDER BY sort_index, created_at",
+                arrayOf(cardId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            EmergencyContact(
+                                id = cursor.getString(0),
+                                personId = cursor.getString(1),
+                                displayName = cursor.getString(2),
+                                phone = cursor.getString(3),
+                                relationship = cursor.getString(4),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /** Puts somebody on the card, copying what is known about them onto it. */
+    suspend fun addEmergencyContact(
+        cardId: String,
+        personId: String?,
+        displayName: String,
+        phone: String?,
+        relationship: String?,
+        sortIndex: Int,
+    ): String = insert(
+        "emergency_contact",
+        mapOf(
+            "emergency_card_id" to cardId,
+            "person_id" to personId,
+            "display_name" to displayName,
+            "phone" to phone?.ifBlank { null },
+            "relationship" to relationship?.ifBlank { null },
+            "sort_index" to sortIndex,
+        ),
+    )
+
+    /**
+     * Takes somebody off the card.
+     *
+     * A tombstone like every other deletion, per the data contract, so removing
+     * somebody from the card never removes them from the care team and the
+     * removal itself travels to a peer.
+     */
+    suspend fun removeEmergencyContact(contactId: String) =
+        withContext(Dispatchers.IO) {
+            db().database.execSQL(
+                "UPDATE emergency_contact SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis(),
+                    contactId,
+                ),
+            )
+        }
+
     // -- counting, for the table of contents ------------------------------
 
     /**

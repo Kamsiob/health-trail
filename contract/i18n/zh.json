@@ -250,5 +250,9 @@
   "emergency.insurance": "保险",
   "emergency.insurance.hint": "保险计划、会员号，以及可能被问到的信息",
   "emergency.other": "其他",
-  "emergency.other.hint": "如果您在场会说出口的事"
+  "emergency.other.hint": "如果您在场会说出口的事",
+  "emergency.group.who": "先联系谁",
+  "emergency.who.none": "卡片上还没有联系人。照护团队中的任何人都可以放在这里。",
+  "emergency.who.lead": "点按照护团队中的任何人即可加入卡片。再次点按即可移除。",
+  "emergency.who.empty_team": "照护团队还是空的，暂时没有人可以加入卡片。请先在那里添加成员。"
 }
