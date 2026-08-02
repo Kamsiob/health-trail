@@ -108,35 +108,49 @@ fun EmergencyCardScreen(
             item { Spacer(Modifier.height(Space.s)) }
         }
 
-        if (card == null || (card.isEmpty && contacts.isEmpty() && medications.isEmpty())) {
+        // **Emptiness is about what the card shows, not about whether a row
+        // exists.** Medications reach this card through their own flag and need
+        // no card row at all, so keying the empty state off `card == null`
+        // printed "Nothing on the card yet" directly underneath a medication
+        // that was plainly on it. Found by looking at the screen; nothing in
+        // the code looked wrong.
+        val hasSomething = (card != null && !card.isEmpty) ||
+            contacts.isNotEmpty() ||
+            medications.isNotEmpty()
+
+        if (!hasSomething) {
             item {
                 SectionEmpty(name = EmergencyTags.NAME, text = strings["emergency.empty"])
                 Spacer(Modifier.height(Space.l))
             }
         } else {
+            // Null throughout when no card row exists yet, which is the state a
+            // notebook is in when a medication put itself on the card before
+            // anybody opened the editor. Both lists come out empty and their
+            // headers do not appear.
             val inAHurry = listOfNotNull(
-                field("allergies", strings["emergency.allergies"], card.allergies),
-                field("blood_type", strings["emergency.blood_type"], card.bloodType),
-                field("conditions", strings["emergency.conditions"], card.conditions),
+                field("allergies", strings["emergency.allergies"], card?.allergies),
+                field("blood_type", strings["emergency.blood_type"], card?.bloodType),
+                field("conditions", strings["emergency.conditions"], card?.conditions),
             )
             val paperwork = listOfNotNull(
                 field(
                     "resuscitation",
                     strings["emergency.resuscitation"],
-                    card.resuscitationStatus,
+                    card?.resuscitationStatus,
                 ),
                 field(
                     "resuscitation_where",
                     strings["emergency.resuscitation.where"],
-                    card.resuscitationDocumentLocation,
+                    card?.resuscitationDocumentLocation,
                 ),
                 field(
                     "decision_maker_where",
                     strings["emergency.decision_maker.where"],
-                    card.decisionMakerDocumentLocation,
+                    card?.decisionMakerDocumentLocation,
                 ),
-                field("insurance", strings["emergency.insurance"], card.insuranceNote),
-                field("other", strings["emergency.other"], card.otherNotes),
+                field("insurance", strings["emergency.insurance"], card?.insuranceNote),
+                field("other", strings["emergency.other"], card?.otherNotes),
             )
 
             // A group header only appears when its group has something in it, so

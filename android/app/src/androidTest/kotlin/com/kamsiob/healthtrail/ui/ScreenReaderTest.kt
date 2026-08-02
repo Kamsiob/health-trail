@@ -16,6 +16,13 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
+import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
+import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
+import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
+import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
+import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
+import com.kamsiob.healthtrail.ui.screens.TrailScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.screens.CaptureSheet
@@ -217,5 +224,148 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("bottom navigation")
+    }
+
+    // -- the sections the notebook opens onto ------------------------------
+    //
+    // These arrived together with the table of contents finally opening. Each
+    // is here the moment it is built rather than at a later accessibility pass,
+    // because a screen added without a row here is a screen this test silently
+    // passes by never visiting.
+
+    @Test
+    fun theTrailLabelsEverything() {
+        compose.show {
+            TrailScreen(
+                entries = listOf(
+                    Repository.TrailEntry(
+                        id = "e1",
+                        kind = "call",
+                        title = "Nurse Patel on 4West",
+                        body = "Asked about the wound check.",
+                        occurredEdtf = "2026-07-22",
+                        occurredStart = 1_753_000_000_000,
+                        createdAt = 1_753_000_000_000,
+                        isUnfiled = true,
+                        threads = listOf(Repository.CareThread("t1", "Nursing", 0)),
+                    ),
+                    // An entry with no date, which is the row most likely to
+                    // announce nothing at all.
+                    Repository.TrailEntry(
+                        id = "e2",
+                        kind = "visit",
+                        title = null,
+                        body = null,
+                        occurredEdtf = null,
+                        occurredStart = null,
+                        createdAt = 1_753_000_000_000,
+                        isUnfiled = false,
+                        threads = emptyList(),
+                    ),
+                ),
+                onEditDate = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("the trail")
+    }
+
+    @Test
+    fun theCareTeamLabelsEverything() {
+        compose.show {
+            CareTeamScreen(
+                people = listOf(
+                    Repository.Person("p1", "Denise Okafor", "Case manager", "5550142", null, null),
+                    // Somebody with nothing but a number, which is the row whose
+                    // heading is not a name.
+                    Repository.Person("p2", "", null, "5550198", null, null),
+                    // Somebody with no number at all, so the row carries no
+                    // action and must still read as complete.
+                    Repository.Person("p3", "Dr. Prasad", "Attending", null, null, null),
+                ),
+                onCall = {},
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("care team")
+    }
+
+    @Test
+    fun addingSomebodyLabelsEverything() {
+        compose.show { AddPersonScreen(onSave = {}, onCancel = {}) }
+        assertEverythingIsLabeled("add someone to the care team")
+    }
+
+    @Test
+    fun theEmergencyCardLabelsEverything() {
+        compose.show {
+            EmergencyCardScreen(
+                card = Repository.EmergencyCard(
+                    id = "c1",
+                    allergies = "Penicillin",
+                    bloodType = null,
+                    conditions = null,
+                    resuscitationStatus = "Do Not Resuscitate, signed 14 March 2025",
+                    resuscitationDocumentLocation = "Blue folder",
+                    decisionMakerDocumentLocation = null,
+                    insuranceNote = null,
+                    otherNotes = null,
+                ),
+                contacts = listOf(
+                    Repository.EmergencyContact("x1", "p1", "Marisol Rivera", "5550142", "Her daughter"),
+                    // On the card with no number, which leaves the row with no
+                    // action on it.
+                    Repository.EmergencyContact("x2", null, "The ward desk", null, null),
+                ),
+                medications = listOf(
+                    Repository.Medication("m1", "Warfarin", "Small blue one", null, null, true, null),
+                ),
+                onCall = {},
+                onEdit = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("emergency card")
+    }
+
+    @Test
+    fun fillingInTheEmergencyCardLabelsEverything() {
+        compose.show {
+            EmergencyCardEditScreen(
+                card = null,
+                people = listOf(
+                    Repository.Person("p1", "Denise Okafor", "Case manager", "5550142", null, null),
+                ),
+                onTheCard = setOf("p1"),
+                onToggleContact = {},
+                onSave = {},
+                onCancel = {},
+            )
+        }
+        assertEverythingIsLabeled("filling in the emergency card")
+    }
+
+    @Test
+    fun medicationsLabelEverything() {
+        compose.show {
+            MedicationsScreen(
+                medications = listOf(
+                    Repository.Medication("m1", "Warfarin", "Small blue one", "Blood thinner", null, true, null),
+                    // A stopped medication, which reads differently and must
+                    // still announce what it is.
+                    Repository.Medication("m2", "Metformin", null, null, null, false, "2026-03"),
+                ),
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("medications")
+    }
+
+    @Test
+    fun addingAMedicationLabelsEverything() {
+        compose.show { AddMedicationScreen(onSave = {}, onCancel = {}) }
+        assertEverythingIsLabeled("add a medication")
     }
 }
