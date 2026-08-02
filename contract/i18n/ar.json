@@ -273,5 +273,11 @@
   "meds.on_card.badge": "على بطاقة الطوارئ",
   "meds.stopped": "متوقف",
   "emergency.group.meds": "ما يتناوله",
-  "meds.on_card.chip": "على البطاقة"
+  "meds.on_card.chip": "على البطاقة",
+  "questions.subtitle": "أشياء تسألها عندما تسنح الفرصة. تبقى هنا حتى تقول إنك سألتها.",
+  "questions.empty": "لا شيء بالانتظار. كل ما تحفظه كسؤال سيظهر هنا.",
+  "questions.group.waiting": "لم يُسأل بعد",
+  "questions.group.asked": "سُئلت",
+  "questions.mark_asked": "سألت هذا",
+  "questions.asked_on": "سُئلت في {date}"
 }

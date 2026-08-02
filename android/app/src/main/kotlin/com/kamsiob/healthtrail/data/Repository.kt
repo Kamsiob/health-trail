@@ -98,25 +98,34 @@ class Repository private constructor(
      * Returns the generated id.
      */
     private suspend fun insert(table: String, values: Map<String, Any?>): String =
-        withContext(Dispatchers.IO) {
-            val id = Ids.new()
-            val now = System.currentTimeMillis()
-            val all = LinkedHashMap<String, Any?>()
-            all["id"] = id
-            all["created_at"] = now
-            all["updated_at"] = now
-            all["origin_device"] = db().deviceId
-            all["rev"] = 1
-            all.putAll(values)
+        withContext(Dispatchers.IO) { insertRow(table, values) }
 
-            val columns = all.keys.joinToString(", ")
-            val placeholders = all.keys.joinToString(", ") { "?" }
-            db().database.execSQL(
-                "INSERT INTO $table ($columns) VALUES ($placeholders)",
-                all.values.toTypedArray(),
-            )
-            id
-        }
+    /**
+     * The insert itself, with no dispatcher of its own.
+     *
+     * Split out so a caller that has already opened a transaction can add rows
+     * to it. Switching dispatchers inside a transaction is how a write ends up
+     * on a different thread than the transaction it believes it is part of.
+     */
+    private suspend fun insertRow(table: String, values: Map<String, Any?>): String {
+        val id = Ids.new()
+        val now = System.currentTimeMillis()
+        val all = LinkedHashMap<String, Any?>()
+        all["id"] = id
+        all["created_at"] = now
+        all["updated_at"] = now
+        all["origin_device"] = db().deviceId
+        all["rev"] = 1
+        all.putAll(values)
+
+        val columns = all.keys.joinToString(", ")
+        val placeholders = all.keys.joinToString(", ") { "?" }
+        db().database.execSQL(
+            "INSERT INTO $table ($columns) VALUES ($placeholders)",
+            all.values.toTypedArray(),
+        )
+        return id
+    }
 
     /**
      * The person being looked after.
@@ -1168,6 +1177,138 @@ class Repository private constructor(
                 ),
             )
         }
+
+    // -- questions to ask next time ------------------------------------------
+
+    /**
+     * One thing to ask, and whether it has been asked yet.
+     *
+     * `askedEdtf` null means still waiting, which is what the schema's partial
+     * index keys off and what "open" means everywhere in the app.
+     */
+    data class Question(
+        val id: String,
+        val text: String,
+        val roleLabel: String?,
+        val entryId: String?,
+        val askedEdtf: String?,
+        val answerText: String?,
+    ) {
+        val isOpen: Boolean get() = askedEdtf.isNullOrBlank()
+    }
+
+    /** Everything to ask, still waiting first, oldest first within each group. */
+    suspend fun questions(subjectId: String): List<Question> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, text, role_label, entry_id, asked_edtf, answer_text " +
+                "FROM live_question WHERE subject_id = ? " +
+                "ORDER BY asked_edtf IS NOT NULL, created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Question(
+                            id = cursor.getString(0),
+                            text = cursor.getString(1),
+                            roleLabel = cursor.getString(2),
+                            entryId = cursor.getString(3),
+                            askedEdtf = cursor.getString(4),
+                            answerText = cursor.getString(5),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Records a question and the trail entry that carries it, in one transaction.
+     *
+     * **Both or neither.** Capturing "ask next time" was writing only the entry,
+     * so the question appeared in the trail and the Ask next time section
+     * counted zero forever. A section that counts nothing while the thing it
+     * counts is being captured is the app being wrong about itself, which is
+     * worse than the section not existing.
+     *
+     * The question keeps `entry_id` so it holds onto what prompted it months
+     * later, which is what the schema comment asks for and what makes the link
+     * work in both directions.
+     */
+    suspend fun createQuestionWithEntry(
+        subjectId: String,
+        text: String,
+        /**
+         * Who the question is for, kept in its own column rather than folded
+         * into the text. The schema wants it that way so a question waiting for
+         * the wound nurse does not turn up on the prep sheet for a billing
+         * meeting, and the screen reads it as the eyebrow above the question.
+         */
+        roleLabel: String?,
+        occurred: Edtf.Date,
+        threadId: String?,
+        isUnfiled: Boolean,
+    ): Pair<String, String> = withContext(Dispatchers.IO) {
+        val database = db().database
+        database.beginTransaction()
+        try {
+            val entryId = insertRow(
+                "entry",
+                mapOf(
+                    "subject_id" to subjectId,
+                    "kind" to "question",
+                    // The trail shows who it is for as the entry's subject and
+                    // the question itself as the body, which is how the other
+                    // five kinds already read.
+                    "title" to roleLabel?.ifBlank { null },
+                    "body" to text.ifBlank { null },
+                    "is_unfiled" to if (isUnfiled) 1 else 0,
+                ) + dateColumns("occurred", occurred),
+            )
+            if (threadId != null) {
+                insertRow(
+                    "entry_thread",
+                    mapOf("entry_id" to entryId, "thread_id" to threadId),
+                )
+            }
+            val questionId = insertRow(
+                "question",
+                mapOf(
+                    "subject_id" to subjectId,
+                    // The schema requires text, and an empty question is not a
+                    // question. The caller checks first; this is the backstop.
+                    "text" to text.ifBlank { "" },
+                    "role_label" to roleLabel?.ifBlank { null },
+                    "entry_id" to entryId,
+                ),
+            )
+            database.setTransactionSuccessful()
+            entryId to questionId
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    /**
+     * Marks a question as asked, on the day the person says it was asked.
+     *
+     * It is never removed. What was asked and what came back is the record, and
+     * "we asked in March and were told it would be reviewed" is exactly the
+     * kind of thing somebody needs six months later.
+     */
+    suspend fun markQuestionAsked(
+        questionId: String,
+        asked: Edtf.Date,
+        answerText: String? = null,
+    ) = withContext(Dispatchers.IO) {
+        val columns = dateColumns("asked", asked) +
+            mapOf("answer_text" to answerText?.ifBlank { null })
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+        db().database.execSQL(
+            "UPDATE question SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), questionId)).toTypedArray(),
+        )
+    }
 
     // -- counting, for the table of contents ------------------------------
 

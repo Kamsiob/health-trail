@@ -319,6 +319,7 @@ Every screen built without one is composed from existing components under `DESIG
 | The trail | 2026-08-01 | #111 | not yet |
 | The emergency card, and filling it in | 2026-08-01 | #113 | not yet |
 | Medications, and adding one | 2026-08-01 | #114 | not yet |
+| Ask next time | 2026-08-02 | #115 | not yet |
 | Care team, read only | 2026-08-01 | #111 | not yet |
 | Disclaimer gate | 2026-07-31, rebuilt same day to the 10.6 bar | #28 | not yet |
 | Essentials first setup | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #30 | not yet |

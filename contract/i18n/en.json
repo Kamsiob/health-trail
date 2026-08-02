@@ -273,5 +273,11 @@
   "meds.on_card.badge": "On the emergency card",
   "meds.stopped": "Stopped",
   "emergency.group.meds": "What they take",
-  "meds.on_card.chip": "On the card"
+  "meds.on_card.chip": "On the card",
+  "questions.subtitle": "Things to ask when you get the chance. They stay here until you say they were asked.",
+  "questions.empty": "Nothing waiting. Anything you save as a question turns up here.",
+  "questions.group.waiting": "Still to ask",
+  "questions.group.asked": "Asked",
+  "questions.mark_asked": "I asked this",
+  "questions.asked_on": "Asked {date}"
 }

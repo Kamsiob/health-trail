@@ -769,6 +769,18 @@ Composed from Display L, Display S, Body M, the Mono eyebrow, cards 5.3 in `aler
 
 Composed from Display L, Display S, Body L, Body M, Body S, the Mono eyebrow, cards 5.3, the text field 5.9, choice chips 5.11, and the quiet and filled buttons of 5.4. Tracked on issue #114.
 
+**Ask next time.**
+
+**This section counted zero for as long as it existed.** Capture wrote a trail entry and nothing else, so a question appeared in the trail while the section that exists to hold questions said "Nothing yet" forever. **A section that counts nothing while the thing it counts is actively being captured is the app being wrong about itself**, which is worse than the section not existing. Both rows are written in one transaction now.
+
+**Who it is for is its own column, never folded into the question.** The schema keeps `role_label` so a question waiting on the wound nurse does not turn up on the prep sheet for a billing meeting, and the screen reads it as the eyebrow above the question. Joining the two into one string was the first attempt and threw that away.
+
+**Asked questions stay**, in their own group, carrying the date. "We asked in March and were told it would be reviewed" is exactly what somebody needs six months later, and clearing it the moment it is asked discards the half that matters.
+
+**Marking one asked is one tap and never demands an answer.** The answer usually does not arrive in the same conversation, and requiring one would make the person either invent something or leave the question open when it is not.
+
+Composed from Display L, Body L, Body M, the Mono eyebrow, cards 5.3, the group header 5.13, and one text action. Tracked on issue #115.
+
 ---
 
 ## 9. Accessibility floor
