@@ -390,5 +390,10 @@
   "questions.answer.lead": "Con sus palabras si puede. Puede dejarlo en blanco y completarlo después.",
   "questions.answer.hint": "Lo que dijeron, y quién lo dijo",
   "questions.answer.save": "Guardar lo que tenga",
-  "questions.answer.none": "No hay nada anotado sobre lo que dijeron."
+  "questions.answer.none": "No hay nada anotado sobre lo que dijeron.",
+  "instructions.ack.title": "¿Cómo respondieron?",
+  "instructions.ack.lead": "A quién se lo dijo, qué respondieron, y si quedó por escrito. A esto es a lo que se remitirá después.",
+  "instructions.ack.hint": "Se lo dije a la enfermera jefa, se añadió al plan de cuidados, etc.",
+  "instructions.ack.none": "No hay nada anotado sobre cómo respondieron.",
+  "instructions.ack.on": "Respondieron el {date}"
 }

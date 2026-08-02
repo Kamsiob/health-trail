@@ -390,5 +390,10 @@
   "questions.answer.lead": "In their words if you can. You can leave it blank and fill it in later.",
   "questions.answer.hint": "What they said, and who said it",
   "questions.answer.save": "Save what you have",
-  "questions.answer.none": "Nothing written down about what they said."
+  "questions.answer.none": "Nothing written down about what they said.",
+  "instructions.ack.title": "How did they answer?",
+  "instructions.ack.lead": "Who you told, what they said, and whether it went in writing. This is what you point back to later.",
+  "instructions.ack.hint": "Told the charge nurse, added to the care plan, and so on",
+  "instructions.ack.none": "Nothing written down about how they answered.",
+  "instructions.ack.on": "Answered {date}"
 }

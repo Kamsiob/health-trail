@@ -55,6 +55,7 @@ fun StandingInstructionsScreen(
     instructions: List<Repository.StandingInstruction>,
     tags: Map<String, TemplateCatalog.InstructionTag>,
     onRemove: (Repository.StandingInstruction) -> Unit,
+    onAcknowledge: (Repository.StandingInstruction) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -81,6 +82,7 @@ fun StandingInstructionsScreen(
                     instruction = instruction,
                     tag = tags[instruction.tag],
                     onRemove = { onRemove(instruction) },
+                    onAcknowledge = { onAcknowledge(instruction) },
                 )
                 Spacer(Modifier.height(Space.cardGap))
             }
@@ -102,6 +104,7 @@ private fun InstructionRow(
     instruction: Repository.StandingInstruction,
     tag: TemplateCatalog.InstructionTag?,
     onRemove: () -> Unit,
+    onAcknowledge: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -111,7 +114,9 @@ private fun InstructionRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["remove.hint"], onRemove)
+            // A tap records how they answered, which is the half that gets
+            // pointed back to later.
+            .removableByLongPress(strings["edit.hint"], onRemove, onAcknowledge)
             .testTag(InstructionTags.row(instruction.id))
             .padding(Space.cardPadding),
     ) {
@@ -165,6 +170,32 @@ private fun InstructionRow(
                 )
             }
         }
+
+        // **How they answered, always said one way or the other.** A blank
+        // here would read as though nobody responded, and being told nothing
+        // and not having written it down yet are different things.
+        Spacer(Modifier.height(Space.sm))
+        if (instruction.isAcknowledged) {
+            Text(
+                text = strings(
+                    "instructions.ack.on",
+                    "date" to EventDateText.render(strings, instruction.acknowledgedEdtf),
+                ),
+                style = HealthTrail.type.mono,
+                color = colors.leafText,
+            )
+            Spacer(Modifier.height(Space.xs))
+        }
+        Text(
+            text = instruction.acknowledgedHow?.takeIf { it.isNotBlank() }
+                ?: strings["instructions.ack.none"],
+            style = HealthTrail.type.bodyM,
+            color = if (instruction.acknowledgedHow.isNullOrBlank()) {
+                colors.ink3Text
+            } else {
+                colors.ink2
+            },
+        )
 
         instruction.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             Spacer(Modifier.height(Space.sm))

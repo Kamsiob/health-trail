@@ -17,6 +17,7 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.AcknowledgeSheet
 import com.kamsiob.healthtrail.ui.screens.AnswerSheet
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.MoreScreen
@@ -428,6 +429,21 @@ class ScreenReaderTest {
     }
 
     @Test
+    fun acknowledgingLabelsEverything() {
+        compose.show {
+            AcknowledgeSheet(
+                instruction = Repository.StandingInstruction(
+                    "s1", "Call me about any fall", "Please call me right away.",
+                    "federal", "2026-08-02", null, null, null,
+                ),
+                onSave = {},
+                onDismiss = {},
+            )
+        }
+        assertEverythingIsLabeled("acknowledging an instruction")
+    }
+
+    @Test
     fun careThreadsLabelEverything() {
         compose.show {
             CareThreadsScreen(
@@ -512,6 +528,7 @@ class ScreenReaderTest {
                 ),
                 tags = catalog.tags,
                 onRemove = {},
+                onAcknowledge = {},
                 onAdd = {},
                 onBack = {},
             )

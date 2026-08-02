@@ -390,5 +390,10 @@
   "questions.answer.lead": "بكلماتهم إن أمكن. يمكنك تركه فارغًا وإكماله لاحقًا.",
   "questions.answer.hint": "ما قالوه، ومن قاله",
   "questions.answer.save": "احفظ ما لديك",
-  "questions.answer.none": "لا يوجد شيء مدوّن عما قالوه."
+  "questions.answer.none": "لا يوجد شيء مدوّن عما قالوه.",
+  "instructions.ack.title": "كيف كان ردهم؟",
+  "instructions.ack.lead": "من أبلغت، وماذا قالوا، وهل دُوّن كتابةً. هذا ما سترجع إليه لاحقًا.",
+  "instructions.ack.hint": "أبلغت الممرضة المسؤولة، أُضيف إلى خطة الرعاية، وما شابه",
+  "instructions.ack.none": "لا يوجد شيء مدوّن عن كيفية ردهم.",
+  "instructions.ack.on": "ردوا في {date}"
 }

@@ -1692,6 +1692,34 @@ class Repository private constructor(
         val isAcknowledged: Boolean get() = !acknowledgedEdtf.isNullOrBlank()
     }
 
+    /**
+     * Records how a facility answered a standing instruction.
+     *
+     * **This is the half that gets pointed back to.** `MASTER_SPEC.md` section
+     * 4.3 asks for what was asked, of whom, when, and how it was acknowledged,
+     * and only the first three could be held. "I asked, and the charge nurse
+     * put it in the care plan on the 4th" is the sentence that settles an
+     * argument months later.
+     *
+     * The date is stamped when the person records it rather than asked for, on
+     * the same reasoning as marking a question asked: they are writing it down
+     * because it just happened. It stays editable like every other date.
+     */
+    suspend fun setInstructionAcknowledged(
+        instructionId: String,
+        how: String?,
+        acknowledged: Edtf.Date,
+    ) = withContext(Dispatchers.IO) {
+        val columns = dateColumns("acknowledged", acknowledged) +
+            mapOf("acknowledged_how" to how?.ifBlank { null })
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+        db().database.execSQL(
+            "UPDATE standing_instruction SET $assignments, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), instructionId)).toTypedArray(),
+        )
+    }
+
     /** Everything asked for, most recently recorded first. */
     suspend fun standingInstructions(subjectId: String): List<StandingInstruction> =
         withContext(Dispatchers.IO) {

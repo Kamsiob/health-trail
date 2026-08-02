@@ -49,6 +49,7 @@ import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationDraft
 import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
+import com.kamsiob.healthtrail.ui.screens.AcknowledgeSheet
 import com.kamsiob.healthtrail.ui.screens.AnswerSheet
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
@@ -225,6 +226,8 @@ fun NotebookShell(
     // The question whose answer is being recorded, and the answer in flight.
     var answering by remember { mutableStateOf<Repository.Question?>(null) }
     var savingAnswer by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var acknowledging by remember { mutableStateOf<Repository.StandingInstruction?>(null) }
+    var savingAcknowledgment by remember { mutableStateOf<Pair<String, String>?>(null) }
     val context = LocalContext.current
 
     // Recounted whenever the tab changes, so returning to the notebook after
@@ -307,6 +310,7 @@ fun NotebookShell(
     BackHandler(enabled = openProject != null) { openProject = null }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
     BackHandler(enabled = answering != null) { answering = null }
+    BackHandler(enabled = acknowledging != null) { acknowledging = null }
     BackHandler(enabled = startingProject) { startingProject = false }
     BackHandler(enabled = trayOpen) { trayOpen = false }
     BackHandler(enabled = sheetOpen) { sheetOpen = false }
@@ -591,6 +595,7 @@ fun NotebookShell(
                         instruction.name,
                     )
                 },
+                onAcknowledge = { acknowledging = it },
                 onAdd = { addingInstruction = true },
                 onBack = { openSection = null },
             )
@@ -770,6 +775,31 @@ fun NotebookShell(
                 },
                 onCancel = { editingEmergencyCard = false },
             )
+        }
+
+        val toAcknowledge = acknowledging
+        if (toAcknowledge != null) {
+            AcknowledgeSheet(
+                instruction = toAcknowledge,
+                onSave = { how ->
+                    savingAcknowledgment = toAcknowledge.id to how
+                    acknowledging = null
+                },
+                onDismiss = { acknowledging = null },
+            )
+        }
+
+        val ackToSave = savingAcknowledgment
+        if (ackToSave != null) {
+            LaunchedEffect(ackToSave) {
+                repository.setInstructionAcknowledged(
+                    instructionId = ackToSave.first,
+                    how = ackToSave.second,
+                    acknowledged = Edtf.day(LocalDate.now()),
+                )
+                savingAcknowledgment = null
+                revision += 1
+            }
         }
 
         val toAnswer = answering
