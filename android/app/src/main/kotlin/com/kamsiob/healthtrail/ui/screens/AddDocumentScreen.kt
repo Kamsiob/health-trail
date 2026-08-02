@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -86,12 +87,22 @@ fun AddDocumentScreen(
     onSave: (DocumentDraft) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The record being corrected, or null when this one is new. */
+    existing: Repository.Document? = null,
     error: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var draft by remember { mutableStateOf(DocumentDraft()) }
+    var draft by remember(existing?.id) {
+        mutableStateOf(
+            DocumentDraft(
+                title = existing?.title.orEmpty(),
+                originalLocation = existing?.originalLocation.orEmpty(),
+                notes = existing?.notes.orEmpty(),
+            ),
+        )
+    }
 
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
@@ -113,7 +124,7 @@ fun AddDocumentScreen(
             ) {
                 Spacer(Modifier.height(Space.l))
                 Text(
-                    text = strings["docs.add"],
+                    text = if (existing == null) strings["docs.add"] else strings["docs.edit.title"],
                     style = HealthTrail.type.displayL,
                     color = colors.ink,
                     modifier = Modifier.semantics { heading() },

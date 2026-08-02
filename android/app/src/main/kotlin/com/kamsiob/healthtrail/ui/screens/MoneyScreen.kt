@@ -73,6 +73,7 @@ private val STATE_ORDER = listOf(
 fun MoneyScreen(
     bills: List<Repository.Bill>,
     onRemove: (Repository.Bill) -> Unit,
+    onEdit: (Repository.Bill) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -136,7 +137,11 @@ fun MoneyScreen(
             }
             for (bill in inState) {
                 item(key = bill.id) {
-                    BillRow(bill = bill, onRemove = { onRemove(bill) })
+                    BillRow(
+                        bill = bill,
+                        onRemove = { onRemove(bill) },
+                        onEdit = { onEdit(bill) },
+                    )
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
@@ -154,7 +159,11 @@ fun MoneyScreen(
 }
 
 @Composable
-private fun BillRow(bill: Repository.Bill, onRemove: () -> Unit) {
+private fun BillRow(
+    bill: Repository.Bill,
+    onRemove: () -> Unit,
+    onEdit: () -> Unit,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -163,7 +172,7 @@ private fun BillRow(bill: Repository.Bill, onRemove: () -> Unit) {
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["remove.hint"], onRemove)
+            .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
             .testTag(MoneyTags.row(bill.id))
             .padding(Space.cardPadding),
     ) {

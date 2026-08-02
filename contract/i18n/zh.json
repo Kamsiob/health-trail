@@ -349,5 +349,8 @@
   "remove.hint": "长按可移除",
   "careteam.edit.title": "修改已填写的内容",
   "meds.edit.title": "修改已填写的内容",
-  "edit.hint": "点按可修改，长按可移除"
+  "edit.hint": "点按可修改，长按可移除",
+  "money.edit.title": "修改已填写的内容",
+  "docs.edit.title": "修改已填写的内容",
+  "appts.edit.title": "修改已填写的内容"
 }

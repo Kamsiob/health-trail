@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
@@ -66,11 +67,22 @@ fun AddBillScreen(
     onSave: (BillDraft) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The record being corrected, or null when this one is new. */
+    existing: Repository.Bill? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var draft by remember { mutableStateOf(BillDraft()) }
+    var draft by remember(existing?.id) {
+        mutableStateOf(
+            BillDraft(
+                description = existing?.description.orEmpty(),
+                amount = existing?.amountMinor?.let { minorToPlain(it) }.orEmpty(),
+                state = existing?.state ?: "needs_attention",
+                notes = existing?.notes.orEmpty(),
+            ),
+        )
+    }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -88,7 +100,7 @@ fun AddBillScreen(
             ) {
                 Spacer(Modifier.height(Space.l))
                 Text(
-                    text = strings["money.add"],
+                    text = if (existing == null) strings["money.add"] else strings["money.edit.title"],
                     style = HealthTrail.type.displayL,
                     color = colors.ink,
                     modifier = Modifier.semantics { heading() },
@@ -205,3 +217,17 @@ internal fun parseAmountToMinor(raw: String, fractionDigits: Int = 2): Long? {
             .toLong()
     }.getOrNull()
 }
+
+/**
+ * Minor units back to something a person would type.
+ *
+ * **Only for seeding the form when correcting a bill**, so the field opens
+ * showing what was stored rather than blank. It is the inverse of
+ * [parseAmountToMinor] and it deliberately produces the plain form, with no
+ * currency symbol and no grouping, because that is what an editable field
+ * should hold.
+ */
+internal fun minorToPlain(minor: Long, fractionDigits: Int = 2): String =
+    java.math.BigDecimal(minor)
+        .movePointLeft(fractionDigits)
+        .toPlainString()

@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -150,6 +151,9 @@ fun NotebookShell(
     // open, is adding rather than editing.
     var editingPerson by remember { mutableStateOf<Repository.Person?>(null) }
     var editingMedication by remember { mutableStateOf<Repository.Medication?>(null) }
+    var editingAppointment by remember { mutableStateOf<Repository.Appointment?>(null) }
+    var editingBill by remember { mutableStateOf<Repository.Bill?>(null) }
+    var editingDocument by remember { mutableStateOf<Repository.Document?>(null) }
     // The emergency card, and whether it is being filled in.
     var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
     var editingEmergencyCard by remember { mutableStateOf(false) }
@@ -252,6 +256,44 @@ fun NotebookShell(
         }
     }
 
+    // **The system back button goes back, rather than out of the app.**
+    // Everything above the notebook is state in this composable rather than a
+    // navigation stack, so without this a person on any section screen, form,
+    // or sheet who pressed back left Health Trail entirely. On a phone that is
+    // the most used control there is, and losing a half typed form to it is
+    // exactly the failure this app exists not to have.
+    //
+    // **Declared outermost first, because the last enabled handler wins.**
+    // Compose gives priority to the most recently registered handler, so the
+    // innermost thing has to be declared last or back closes the screen
+    // underneath the one the person is looking at. That is what happened first
+    // time: back dismissed the section while the form stayed on screen.
+    //
+    // Each is enabled only when the thing it closes is actually showing, so
+    // back still leaves the app from the notebook itself, which is what a
+    // person expects there.
+    BackHandler(enabled = openSection != null) { openSection = null }
+    BackHandler(enabled = trayOpen) { trayOpen = false }
+    BackHandler(enabled = sheetOpen) { sheetOpen = false }
+    BackHandler(enabled = editingEmergencyCard) { editingEmergencyCard = false }
+    BackHandler(enabled = addingInstruction) { addingInstruction = false }
+    BackHandler(enabled = addingPerson) { addingPerson = false; editingPerson = null }
+    BackHandler(enabled = addingMedication) {
+        addingMedication = false
+        editingMedication = null
+    }
+    BackHandler(enabled = addingAppointment) {
+        addingAppointment = false
+        editingAppointment = null
+    }
+    BackHandler(enabled = addingBill) { addingBill = false; editingBill = null }
+    BackHandler(enabled = addingDocument) {
+        addingDocument = false
+        editingDocument = null
+        documentError = null
+    }
+    BackHandler(enabled = capturing != null) { capturing = null; documentError = null }
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -351,7 +393,16 @@ fun NotebookShell(
                         Repository.Section.DOCUMENTS, document.id, document.title,
                     )
                 },
-                onAdd = { documentError = null; addingDocument = true },
+                onEdit = { document ->
+                    editingDocument = document
+                    documentError = null
+                    addingDocument = true
+                },
+                onAdd = {
+                    editingDocument = null
+                    documentError = null
+                    addingDocument = true
+                },
                 onBack = { openSection = null },
             )
 
@@ -360,7 +411,8 @@ fun NotebookShell(
                 onRemove = { bill ->
                     removing = Removal(Repository.Section.MONEY, bill.id, bill.description)
                 },
-                onAdd = { addingBill = true },
+                onEdit = { bill -> editingBill = bill; addingBill = true },
+                onAdd = { editingBill = null; addingBill = true },
                 onBack = { openSection = null },
             )
 
@@ -392,7 +444,11 @@ fun NotebookShell(
                         Repository.Section.APPOINTMENTS, appointment.id, appointment.title,
                     )
                 },
-                onAdd = { addingAppointment = true },
+                onEdit = { appointment ->
+                    editingAppointment = appointment
+                    addingAppointment = true
+                },
+                onAdd = { editingAppointment = null; addingAppointment = true },
                 onBack = { openSection = null },
             )
 
@@ -561,11 +617,14 @@ fun NotebookShell(
 
         if (addingDocument) {
             AddDocumentScreen(
+                existing = editingDocument,
                 error = documentError,
-                onSave = { draft ->
-                    savingDocument = draft
+                onSave = { draft -> savingDocument = draft },
+                onCancel = {
+                    addingDocument = false
+                    editingDocument = null
+                    documentError = null
                 },
-                onCancel = { addingDocument = false; documentError = null },
             )
         }
 
@@ -574,7 +633,24 @@ fun NotebookShell(
             LaunchedEffect(documentDraft) {
                 val subject = repository.activeSubject()
                 val title = documentDraft.title.trim()
-                if (subject != null && title.isNotBlank()) {
+                val correctingDocument = editingDocument
+                if (correctingDocument != null && title.isNotBlank()) {
+                    // **Correcting the words never touches the photograph.**
+                    // Replacing an image is a different action with different
+                    // consequences, since the file may be shared with another
+                    // row by its hash, and conflating the two would make a text
+                    // correction quietly capable of losing an image.
+                    repository.updateDocument(
+                        documentId = correctingDocument.id,
+                        title = title,
+                        originalLocation = documentDraft.originalLocation,
+                        notes = documentDraft.notes,
+                    )
+                    addingDocument = false
+                    capturing = null
+                    editingDocument = null
+                    documentError = null
+                } else if (subject != null && title.isNotBlank()) {
                     // **The bytes go to disk before the rows exist**, so a
                     // document row can never point at a file that was never
                     // written. Attachments is content addressed, so the same
@@ -612,6 +688,7 @@ fun NotebookShell(
 
         if (addingBill) {
             AddBillScreen(
+                existing = editingBill,
                 onSave = { draft ->
                     addingBill = false
                     savingBill = draft
@@ -627,7 +704,16 @@ fun NotebookShell(
                 // A bill with no description is not a record of anything. The
                 // amount stays optional, because a bill that has not said one
                 // yet is the common case rather than the exception.
-                if (subject != null && billDraft.description.isNotBlank()) {
+                val correctingBill = editingBill
+                if (correctingBill != null && billDraft.description.isNotBlank()) {
+                    repository.updateBill(
+                        billId = correctingBill.id,
+                        description = billDraft.description.trim(),
+                        amountMinor = parseAmountToMinor(billDraft.amount),
+                        state = billDraft.state,
+                        notes = billDraft.notes,
+                    )
+                } else if (subject != null && billDraft.description.isNotBlank()) {
                     repository.createBill(
                         subjectId = subject.id,
                         description = billDraft.description.trim(),
@@ -637,6 +723,7 @@ fun NotebookShell(
                         notes = billDraft.notes,
                     )
                 }
+                editingBill = null
                 savingBill = null
                 revision += 1
             }
@@ -679,6 +766,7 @@ fun NotebookShell(
 
         if (addingAppointment) {
             AddAppointmentScreen(
+                existing = editingAppointment,
                 onSave = { draft ->
                     addingAppointment = false
                     savingAppointment = draft
@@ -694,7 +782,16 @@ fun NotebookShell(
                 // A date with no name is not an appointment. A name with no
                 // date is: "the care plan meeting, not scheduled yet" is worth
                 // writing down before it slips.
-                if (subject != null && appointmentDraft.title.isNotBlank()) {
+                val correctingAppointment = editingAppointment
+                if (correctingAppointment != null && appointmentDraft.title.isNotBlank()) {
+                    repository.updateAppointment(
+                        appointmentId = correctingAppointment.id,
+                        title = appointmentDraft.title.trim(),
+                        scheduled = appointmentDraft.scheduled ?: Edtf.unknown(),
+                        locationNote = appointmentDraft.where,
+                        notes = appointmentDraft.notes,
+                    )
+                } else if (subject != null && appointmentDraft.title.isNotBlank()) {
                     repository.createAppointment(
                         subjectId = subject.id,
                         title = appointmentDraft.title.trim(),
@@ -703,6 +800,7 @@ fun NotebookShell(
                         notes = appointmentDraft.notes,
                     )
                 }
+                editingAppointment = null
                 savingAppointment = null
                 revision += 1
             }

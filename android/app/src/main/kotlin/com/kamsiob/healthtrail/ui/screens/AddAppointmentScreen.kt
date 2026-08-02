@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
@@ -69,12 +70,23 @@ fun AddAppointmentScreen(
     onSave: (AppointmentDraft) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The record being corrected, or null when this one is new. */
+    existing: Repository.Appointment? = null,
     today: LocalDate = LocalDate.now(),
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var draft by remember { mutableStateOf(AppointmentDraft()) }
+    var draft by remember(existing?.id) {
+        mutableStateOf(
+            AppointmentDraft(
+                title = existing?.title.orEmpty(),
+                where = existing?.locationNote.orEmpty(),
+                notes = existing?.notes.orEmpty(),
+                scheduled = existing?.scheduledEdtf?.let { Edtf.parse(it) },
+            ),
+        )
+    }
     var picking by remember { mutableStateOf(false) }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
@@ -93,7 +105,7 @@ fun AddAppointmentScreen(
             ) {
                 Spacer(Modifier.height(Space.l))
                 Text(
-                    text = strings["appts.add"],
+                    text = if (existing == null) strings["appts.add"] else strings["appts.edit.title"],
                     style = HealthTrail.type.displayL,
                     color = colors.ink,
                     modifier = Modifier.semantics { heading() },

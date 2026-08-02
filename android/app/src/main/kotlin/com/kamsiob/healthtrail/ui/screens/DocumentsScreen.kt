@@ -62,6 +62,7 @@ object DocTags {
 fun DocumentsScreen(
     documents: List<Repository.Document>,
     onRemove: (Repository.Document) -> Unit,
+    onEdit: (Repository.Document) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -84,7 +85,11 @@ fun DocumentsScreen(
 
         for (document in documents) {
             item(key = document.id) {
-                DocumentRow(document = document, onRemove = { onRemove(document) })
+                DocumentRow(
+                    document = document,
+                    onRemove = { onRemove(document) },
+                    onEdit = { onEdit(document) },
+                )
                 Spacer(Modifier.height(Space.cardGap))
             }
         }
@@ -101,7 +106,11 @@ fun DocumentsScreen(
 }
 
 @Composable
-private fun DocumentRow(document: Repository.Document, onRemove: () -> Unit) {
+private fun DocumentRow(
+    document: Repository.Document,
+    onRemove: () -> Unit,
+    onEdit: () -> Unit,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -110,7 +119,7 @@ private fun DocumentRow(document: Repository.Document, onRemove: () -> Unit) {
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["remove.hint"], onRemove)
+            .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
             .testTag(DocTags.row(document.id))
             .padding(Space.cardPadding),
     ) {

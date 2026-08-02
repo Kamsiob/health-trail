@@ -349,5 +349,8 @@
   "remove.hint": "Press and hold to remove",
   "careteam.edit.title": "Change what you wrote",
   "meds.edit.title": "Change what you wrote",
-  "edit.hint": "Tap to change it, press and hold to remove it"
+  "edit.hint": "Tap to change it, press and hold to remove it",
+  "money.edit.title": "Change what you wrote",
+  "docs.edit.title": "Change what you wrote",
+  "appts.edit.title": "Change what you wrote"
 }

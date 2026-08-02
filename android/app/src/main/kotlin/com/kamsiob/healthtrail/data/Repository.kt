@@ -1412,6 +1412,75 @@ class Repository private constructor(
         ) + dateColumns("received", received),
     )
 
+    /** Changes what is recorded about a bill, including its state. */
+    suspend fun updateBill(
+        billId: String,
+        description: String,
+        amountMinor: Long?,
+        state: String,
+        notes: String?,
+    ) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE bill SET description = ?, amount_minor = ?, state = ?, notes = ?, " +
+                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(
+                description,
+                amountMinor,
+                state,
+                notes?.ifBlank { null },
+                System.currentTimeMillis(),
+                billId,
+            ),
+        )
+    }
+
+    /** Changes what is recorded about an appointment, including when it is. */
+    suspend fun updateAppointment(
+        appointmentId: String,
+        title: String,
+        scheduled: Edtf.Date,
+        locationNote: String?,
+        notes: String?,
+    ) = withContext(Dispatchers.IO) {
+        val columns = dateColumns("scheduled", scheduled) + mapOf(
+            "title" to title,
+            "location_note" to locationNote?.ifBlank { null },
+            "notes" to notes?.ifBlank { null },
+        )
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+        db().database.execSQL(
+            "UPDATE appointment SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), appointmentId)).toTypedArray(),
+        )
+    }
+
+    /**
+     * Changes what is recorded about a document.
+     *
+     * **The photograph is not touched.** Replacing it is a different action
+     * with different consequences, since the old file may be shared with
+     * another row by its hash, and conflating the two here would make a text
+     * correction quietly capable of losing an image.
+     */
+    suspend fun updateDocument(
+        documentId: String,
+        title: String,
+        originalLocation: String?,
+        notes: String?,
+    ) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE document SET title = ?, original_location = ?, notes = ?, " +
+                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(
+                title,
+                originalLocation?.ifBlank { null },
+                notes?.ifBlank { null },
+                System.currentTimeMillis(),
+                documentId,
+            ),
+        )
+    }
+
     /** Moves a bill to another state. Nothing else about it changes. */
     suspend fun setBillState(billId: String, state: String) = withContext(Dispatchers.IO) {
         db().database.execSQL(

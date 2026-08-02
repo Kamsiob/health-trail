@@ -464,6 +464,7 @@ class ScreenReaderTest {
                 ),
                 todayMillis = 1L,
                 onRemove = {},
+                onEdit = {},
                 onAdd = {},
                 onBack = {},
             )
@@ -507,6 +508,7 @@ class ScreenReaderTest {
                     Repository.Bill("b3", "Pharmacy", 31000, "USD", "paid", null, "2026-07-30", null),
                 ),
                 onRemove = {},
+                onEdit = {},
                 onAdd = {},
                 onBack = {},
             )
@@ -532,6 +534,7 @@ class ScreenReaderTest {
                     Repository.Document("d2", "Discharge summary", null, "With the ward clerk", null, null, null, null),
                 ),
                 onRemove = {},
+                onEdit = {},
                 onAdd = {},
                 onBack = {},
             )

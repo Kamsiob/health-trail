@@ -349,5 +349,8 @@
   "remove.hint": "Mantenga pulsado para quitar",
   "careteam.edit.title": "Cambiar lo que anotó",
   "meds.edit.title": "Cambiar lo que anotó",
-  "edit.hint": "Toque para cambiarlo, mantenga pulsado para quitarlo"
+  "edit.hint": "Toque para cambiarlo, mantenga pulsado para quitarlo",
+  "money.edit.title": "Cambiar lo que anotó",
+  "docs.edit.title": "Cambiar lo que anotó",
+  "appts.edit.title": "Cambiar lo que anotó"
 }

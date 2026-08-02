@@ -54,6 +54,7 @@ fun AppointmentsScreen(
     appointments: List<Repository.Appointment>,
     todayMillis: Long,
     onRemove: (Repository.Appointment) -> Unit,
+    onEdit: (Repository.Appointment) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -87,7 +88,11 @@ fun AppointmentsScreen(
             }
             for (appointment in upcoming) {
                 item(key = appointment.id) {
-                    AppointmentRow(appointment = appointment, onRemove = { onRemove(appointment) })
+                    AppointmentRow(
+                        appointment = appointment,
+                        onRemove = { onRemove(appointment) },
+                        onEdit = { onEdit(appointment) },
+                    )
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
@@ -106,6 +111,7 @@ fun AppointmentsScreen(
                     AppointmentRow(
                         appointment = appointment,
                         onRemove = { onRemove(appointment) },
+                        onEdit = { onEdit(appointment) },
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
@@ -127,6 +133,7 @@ fun AppointmentsScreen(
 private fun AppointmentRow(
     appointment: Repository.Appointment,
     onRemove: () -> Unit,
+    onEdit: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -136,7 +143,7 @@ private fun AppointmentRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["remove.hint"], onRemove)
+            .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
             .testTag(ApptTags.row(appointment.id))
             .padding(Space.cardPadding),
     ) {
