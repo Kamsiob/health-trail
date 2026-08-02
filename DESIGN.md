@@ -751,7 +751,23 @@ Composed from Display L, Display S, Body M, Body S, the Mono eyebrow, cards 5.3,
 
 **Filling it in retires Today's coaching**, because the coaching existed to get this done. Confirmed on the device: the coached list is gone the moment the card has anything on it.
 
+**What they take is assembled from the medications, never copied onto the card.** A medication carries the flag saying it belongs here, so the card is built from the ones that say so and neither has to be kept in step with the other. **A medication that is stopped drops off the card by itself**, which is the behavior somebody would expect and the one that is dangerous to get wrong. Rule 18, and the flag living on the medication is what makes the link work in both directions.
+
+**On the card the name is the value and the dose is the detail under it**, which is the reverse of the medications screen where the two are read together. Same principle both times: the thing being looked for carries the weight.
+
 Composed from Display L, Display S, Body M, the Mono eyebrow, cards 5.3 in `alert_soft`, the group header 5.13, the text field 5.9, and the filled, quiet, and text buttons of 5.4. Tracked on issue #113.
+
+**Medications.**
+
+**Record only, and the screen says so in its own subtitle.** `MASTER_SPEC.md` section 4.3 requires it to state plainly that the app does not remind or alert. Somebody arriving at a screen called Medications reasonably expects reminders, and the honest place to correct that is the moment they arrive rather than after they have relied on it.
+
+**A dose is never parsed into a number and a unit.** The schema says so and the screen shows the sentence the person was told, in the words they were told it in. The field says out loud that the app never reads it as a number, which is permission rather than a disclaimer: "half a white one, twice a day, with food" is what people are actually told, and without that line they try to convert it into something that looks official.
+
+**Nothing is checked against anything.** No drug database, no interaction check, no spelling correction. Each would be the app knowing something about medicine, which rule 2 forbids outright.
+
+**A stopped medication stays**, moves below the current ones, and says it stopped. It is quieter but never struck through: it is still true, it is simply no longer current. "She was on this until March" is the answer to a question somebody will eventually be asked.
+
+Composed from Display L, Display S, Body L, Body M, Body S, the Mono eyebrow, cards 5.3, the text field 5.9, choice chips 5.11, and the quiet and filled buttons of 5.4. Tracked on issue #114.
 
 ---
 

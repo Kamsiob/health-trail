@@ -44,6 +44,9 @@ import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
 import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
+import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
+import com.kamsiob.healthtrail.ui.screens.MedicationDraft
+import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyDraft
@@ -133,6 +136,9 @@ fun NotebookShell(
     }
     // Somebody being put on or taken off the card. Null means nothing in flight.
     var togglingContact by remember { mutableStateOf<Repository.Person?>(null) }
+    var medications by remember { mutableStateOf<List<Repository.Medication>>(emptyList()) }
+    var addingMedication by remember { mutableStateOf(false) }
+    var savingMedication by remember { mutableStateOf<MedicationDraft?>(null) }
     val context = LocalContext.current
 
     // Recounted whenever the tab changes, so returning to the notebook after
@@ -167,6 +173,7 @@ fun NotebookShell(
             trail = subject?.let { repository.trail(it.id) }.orEmpty()
             people = subject?.let { repository.people(it.id) }.orEmpty()
             emergencyCard = subject?.let { repository.emergencyCard(it.id) }
+            medications = subject?.let { repository.medications(it.id) }.orEmpty()
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
                 .orEmpty()
@@ -261,9 +268,22 @@ fun NotebookShell(
                 onBack = { openSection = null },
             )
 
+            Repository.Section.MEDICATIONS -> MedicationsScreen(
+                medications = medications,
+                onAdd = { addingMedication = true },
+                onBack = { openSection = null },
+            )
+
             Repository.Section.EMERGENCY_CARD -> EmergencyCardScreen(
                 card = emergencyCard,
                 contacts = emergencyContacts,
+                // **The other half of the link, per rule 18.** A medication
+                // knows it is on the card, and the card is assembled from the
+                // medications that say so, so neither has to be kept in step
+                // with the other. A stopped medication drops off the card by
+                // itself, which is the behavior somebody would expect and the
+                // one that is dangerous to get wrong.
+                medications = medications.filter { it.onEmergencyCard && !it.isStopped },
                 onCall = { contact -> dial(context, contact.phone) },
                 onEdit = { editingEmergencyCard = true },
                 onBack = { openSection = null },
@@ -329,6 +349,40 @@ fun NotebookShell(
                 },
                 onCancel = { editingEmergencyCard = false },
             )
+        }
+
+        if (addingMedication) {
+            AddMedicationScreen(
+                onSave = { draft ->
+                    addingMedication = false
+                    savingMedication = draft
+                },
+                onCancel = { addingMedication = false },
+            )
+        }
+
+        val medicationDraft = savingMedication
+        if (medicationDraft != null) {
+            LaunchedEffect(medicationDraft) {
+                val subject = repository.activeSubject()
+                // The name is the one thing a medication row cannot do without,
+                // since the schema requires it and a row with no name is not a
+                // record of anything. Everything else is optional. Saving with
+                // nothing typed writes nothing and says nothing about it, the
+                // same as the care team.
+                if (subject != null && medicationDraft.name.isNotBlank()) {
+                    repository.createMedication(
+                        subjectId = subject.id,
+                        name = medicationDraft.name.trim(),
+                        doseText = medicationDraft.dose,
+                        purposeText = medicationDraft.purpose,
+                        notes = medicationDraft.notes,
+                        onEmergencyCard = medicationDraft.onEmergencyCard,
+                    )
+                }
+                savingMedication = null
+                revision += 1
+            }
         }
 
         val toggling = togglingContact

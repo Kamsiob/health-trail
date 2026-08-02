@@ -1074,6 +1074,101 @@ class Repository private constructor(
             )
         }
 
+    // -- medications --------------------------------------------------------
+
+    /**
+     * One medication, as the record holds it.
+     *
+     * **The dose is text and is never parsed.** The schema says so and this
+     * follows it: what the person was told, in the words they were told it in.
+     * Misparsing a dose is worse than not parsing one, and there is nothing the
+     * app could do with a number that it cannot do with the sentence.
+     */
+    data class Medication(
+        val id: String,
+        val name: String,
+        val doseText: String?,
+        val purposeText: String?,
+        val notes: String?,
+        val onEmergencyCard: Boolean,
+        val stoppedEdtf: String?,
+    ) {
+        /**
+         * A medication that has been stopped is kept, not removed. Its whole
+         * history is the point, and "she was on this until March" is the answer
+         * to a question somebody will eventually be asked.
+         */
+        val isStopped: Boolean get() = !stoppedEdtf.isNullOrBlank()
+    }
+
+    /** Everything recorded for one subject, still being taken first. */
+    suspend fun medications(subjectId: String): List<Medication> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, name, dose_text, purpose_text, notes, on_emergency_card, " +
+                    "stopped_edtf FROM live_medication WHERE subject_id = ? " +
+                    "ORDER BY stopped_edtf IS NOT NULL, created_at",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            Medication(
+                                id = cursor.getString(0),
+                                name = cursor.getString(1),
+                                doseText = cursor.getString(2),
+                                purposeText = cursor.getString(3),
+                                notes = cursor.getString(4),
+                                onEmergencyCard = cursor.getInt(5) == 1,
+                                stoppedEdtf = cursor.getString(6),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /** Records a medication. Only the name is needed, and even it may be thin. */
+    suspend fun createMedication(
+        subjectId: String,
+        name: String,
+        doseText: String? = null,
+        purposeText: String? = null,
+        notes: String? = null,
+        onEmergencyCard: Boolean = false,
+    ): String = insert(
+        "medication",
+        mapOf(
+            "subject_id" to subjectId,
+            "name" to name,
+            "dose_text" to doseText?.ifBlank { null },
+            "purpose_text" to purposeText?.ifBlank { null },
+            "notes" to notes?.ifBlank { null },
+            "on_emergency_card" to if (onEmergencyCard) 1 else 0,
+        ),
+    )
+
+    /**
+     * Puts a medication on the emergency card, or takes it off.
+     *
+     * **The flag lives on the medication rather than on the card**, which is
+     * what the schema chose and what makes the link work both ways: the
+     * medication knows it is on the card, and the card is assembled from the
+     * medications that say so. Neither has to be kept in step with the other.
+     */
+    suspend fun setMedicationOnEmergencyCard(medicationId: String, onCard: Boolean) =
+        withContext(Dispatchers.IO) {
+            db().database.execSQL(
+                "UPDATE medication SET on_emergency_card = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(
+                    if (onCard) 1 else 0,
+                    System.currentTimeMillis(),
+                    medicationId,
+                ),
+            )
+        }
+
     // -- counting, for the table of contents ------------------------------
 
     /**

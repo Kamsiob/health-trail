@@ -56,6 +56,7 @@ object EmergencyTags {
 fun EmergencyCardScreen(
     card: Repository.EmergencyCard?,
     contacts: List<Repository.EmergencyContact>,
+    medications: List<Repository.Medication>,
     onCall: (Repository.EmergencyContact) -> Unit,
     onEdit: () -> Unit,
     onBack: () -> Unit,
@@ -89,7 +90,25 @@ fun EmergencyCardScreen(
             item { Spacer(Modifier.height(Space.s)) }
         }
 
-        if (card == null || (card.isEmpty && contacts.isEmpty())) {
+        // **Assembled from the medications that say they belong here**, rather
+        // than copied onto the card. A medication knows it is on the card, so
+        // one that gets stopped drops off by itself, which is the behavior
+        // somebody would expect and the one that is dangerous to get wrong.
+        if (medications.isNotEmpty()) {
+            item {
+                GroupHeader(labelKey = "emergency.group.meds")
+                Spacer(Modifier.height(Space.headerGap))
+            }
+            for (medication in medications) {
+                item(key = "med_${medication.id}") {
+                    MedicationCardRow(medication)
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            }
+            item { Spacer(Modifier.height(Space.s)) }
+        }
+
+        if (card == null || (card.isEmpty && contacts.isEmpty() && medications.isEmpty())) {
             item {
                 SectionEmpty(name = EmergencyTags.NAME, text = strings["emergency.empty"])
                 Spacer(Modifier.height(Space.l))
@@ -218,6 +237,41 @@ private fun ContactRow(
                 style = HealthTrail.type.bodyS,
                 color = colors.alertText,
             )
+        }
+    }
+}
+
+/**
+ * One medication, as the card shows it.
+ *
+ * **The name is the value here, not the label.** On this card a paramedic is
+ * reading names, and the dose is the detail under it. That is the reverse of
+ * the medications screen, where the two are read together, and it is the same
+ * principle both times: the thing being looked for carries the weight.
+ *
+ * A medication with no dose recorded is a complete row. Most people know what
+ * somebody takes long before they can quote the dose.
+ */
+@Composable
+private fun MedicationCardRow(medication: Repository.Medication) {
+    val colors = HealthTrail.colors
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(Radius.card)
+            .background(colors.alertSoft)
+            .testTag(EmergencyTags.field("med_${medication.id}"))
+            .padding(Space.cardPadding),
+    ) {
+        Text(
+            text = medication.name,
+            style = HealthTrail.type.displayS,
+            color = colors.ink,
+        )
+        medication.doseText?.takeIf { it.isNotBlank() }?.let { dose ->
+            Spacer(Modifier.height(Space.xs))
+            Text(text = dose, style = HealthTrail.type.bodyM, color = colors.ink2)
         }
     }
 }
