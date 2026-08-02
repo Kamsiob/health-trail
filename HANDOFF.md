@@ -115,13 +115,54 @@ The parts that change how you work, compressed:
 
 **The pull request is #112**, on branch `fix/guard-observable`, and every increment in it is a separate commit.
 
+### What happened on the morning of 2026-08-02, continuing the same run
+
+**Restore was built and the round trip closed on the phone.** Exported with a
+passphrase, added a care team row named SHOULD NOT SURVIVE afterward, restored,
+and the row was gone with the original two people back. Five honest states,
+including a wrong passphrase that leaves the field in place to try again.
+
+**Then the export turned out not to be portable, which was the serious find of
+the run.** `Backup.export` copied the SQLCipher file exactly as it sits on disk,
+and that file is keyed by 32 random bytes wrapped by this phone's Keystore,
+which cannot be exported and does not travel. **Every export written before this
+was unopenable on any other device.** D24 makes the export the only recovery
+path from key loss, so the one scenario it exists for, the phone being gone, was
+the exact scenario in which the file was unreadable. Every round trip test
+passed throughout, because all of them restore onto the same device where the
+key never changes. The bug lived in the gap between what the tests exercised and
+what the file is for.
+
+The archive now carries a plain SQLite database produced by `sqlcipher_export`
+inside a transaction, so the whole schema travels rather than being redeclared
+against D16, and restore keys the result with the receiving device's own
+passphrase. `PortabilityTest` checks the payload's first sixteen bytes for the
+SQLite magic, checks an encrypted export decrypts to one, and checks the live
+database is *not* one so the first check cannot pass by becoming vacuous.
+
+**The export passphrase was on screen in plain text**, found by walking the
+screen rather than reading it. `KeyboardType.Password` selects a keyboard and
+conceals nothing; masking is a visual transformation and has to be asked for
+separately. Both fields are concealed now with one control to reveal them,
+cleared the moment the file exists, and the result replaces the form instead of
+sitting under two still live buttons.
+
+**Today's digest is built, which closes the last thing the app admitted was
+unbuilt.** `Digest` is pure, takes change log rows and a timestamp, and has ten
+JVM vectors. The counting rules it settles are in its own documentation. Each
+row opens its section and each coached step opens what it names and disappears
+once taken. **`LastVisit` marks a visit once per process**, which it did not at
+first: it was once per composition, so a theme change or rotation advanced the
+mark mid-visit and the digest went blank. Found on the phone, with a freshly
+seeded notebook reporting nothing at all.
+
 ### Where to pick up
 
-1. **Merge #112** if it is still open and green.
-2. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
-3. **The biggest single gap is Today's digest**, which is the last thing the app admits is unbuilt. It needs the change log engine and golden vectors, #15.
-4. **#9's last two failure cases** are still the smallest remaining piece of the export. **Exporting now has an interface**, in More, and it was walked end to end: a real encrypted `.htx` written through the system file picker, opened afterward and checked to be a zip whose first entry is an unencrypted manifest carrying the Argon2id parameters and the real row counts. **Importing still has none**, which is the asymmetry to close next: a backup nobody can restore is not yet a backup.
-5. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? `MASTER_SPEC.md` calls Today the dashboard and the app opens on the Notebook.
+1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
+2. **#9's last two failure cases** are what remains of the export: a database with an unknown table or column, and an attachment referenced by the database but absent from the archive. Both need a deliberately malformed fixture rather than production code. Everything else in #9 is done and walked on the device, both directions.
+3. **#44, the TalkBack hand pass**, is still owed and is still the thing this run keeps not doing. `ScreenReaderTest` covers the labeling forever; what is missing is traversal order and phrasing with the reader actually on.
+4. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? Today is now worth opening on, which it was not when the question was asked.
+5. **The final translation good faith check** the owner asked for, at the very end, against reliable services. Not started, and deliberately last.
 
 ### What is owed on the screens built tonight
 

@@ -1021,6 +1021,118 @@ It is built now, unencrypted, and it is first in the work order for exactly this
 
 **Revisit if.** Encryption lands, at which point the same suite runs against an encrypted container and the assertions do not change.
 
+### D61. The export was never portable, and every test said it was
+
+**Decided 2026-08-02, on the phone, by checking the payload rather than the tests.**
+
+`Backup.export` copied the SQLCipher database file exactly as it sits on disk.
+That file is encrypted with 32 random bytes wrapped by the Android Keystore, and
+the wrapping key cannot be exported and does not travel, correctly and by
+design. **So every export ever written could only be opened by the phone that
+wrote it.**
+
+`DatabaseKey.kt` had said the opposite in its own documentation since it was
+written: "an export is a portable file that has to open on a different device,
+so it cannot depend on one device's keystore." The code beneath that sentence
+depended on one device's keystore.
+
+**Why nothing caught it.** Every round trip test restores onto the same device,
+where the key never changes, so the file opened every time. The nine assertions
+in `RoundTripTest` were all true and all irrelevant to the property that
+mattered. **A test that exercises the same device can never test portability**,
+and no amount of adding assertions to it would have found this.
+
+**What it cost, stated plainly.** D24 makes the export file the only recovery
+path from key loss. Key loss means the phone is gone, replaced, or reset. That
+is exactly when the file could not be opened. The recovery path did not exist,
+and the app said it did on the export screen: "This file is the only way back if
+this phone is lost."
+
+**The fix.** The archive carries a plain SQLite database produced by
+`sqlcipher_export` inside a transaction, so tables, indexes, views and the change
+log triggers all travel rather than being redeclared in Kotlin against D16.
+Restore does the reverse and keys the result with the receiving device's own
+passphrase. What protects the contents in transit is the container passphrase
+the person chose, which is what `contract/export-format.md` always specified.
+
+**The check that would have caught it, now permanent.** `PortabilityTest`
+inspects the first sixteen bytes of the payload for the SQLite magic. It also
+asserts that an encrypted export decrypts to one, and that the live database is
+*not* one, so the first assertion cannot pass by quietly becoming vacuous.
+
+**The general lesson, which is the reason this is a decision and not a commit
+message.** When a test and the thing being tested share a hidden dependency, the
+test proves the dependency is present rather than that the feature works. Ask
+what the artifact is *for* and construct the situation it is for, rather than
+the situation that is easy to construct.
+
+**Revisit if.** A second device ever exists to test against, at which point the
+real cross-device restore should be walked by hand once and recorded here.
+
+### D62. A password keyboard is not a mask
+
+**Decided 2026-08-02, found by walking the export screen on the phone.**
+
+The export passphrase field asked for `KeyboardType.Password` and nothing else.
+That selects a keyboard without autocorrect and conceals nothing, so the app's
+most consequential secret rendered in full, and stayed on screen after the file
+was written. Masking in Compose is a `VisualTransformation` and has to be asked
+for separately.
+
+**Masked by default, with one control to reveal.** Concealing it outright was
+rejected: this screen asks for the passphrase twice and tells somebody only that
+the two do not match, which is a trap for anybody tired, and this screen is used
+by people who are.
+
+**The passphrase is cleared the moment the file exists**, and the finished state
+replaces the form rather than sitting under it, because "Saved" in body text
+below two live buttons gave the one thing that had just happened the least
+weight on the screen.
+
+**Why this is recorded.** The parameter was already there and already wrong,
+which is the failure mode worth naming: a setting whose name suggests it does
+the thing, next to the thing it does not do. `PassphraseMaskingTest` therefore
+checks what the field renders rather than which parameters it is passed.
+
+### D63. What the digest is allowed to say, and what it is not
+
+**Decided 2026-08-02, building Today's digest for #15.**
+
+The digest counts change log rows and stops. The rules that needed deciding:
+
+**Ordered by where things live, never by how many.** Ranking sections by count
+would put whichever part of the week was busiest at the top and move the
+sections between visits, which breaks the notebook's one promise: the places
+never move.
+
+**A row written four times is one correction.** Somebody fussing with a phone
+keyboard is not four events.
+
+**A row created and then removed in the same span reports only as removed.** It
+never existed as far as the next visit is concerned, and announcing it as both
+new and gone describes the app's bookkeeping rather than the person's week,
+which rule 20 forbids.
+
+**Corrections and removals are totals, never per section.** They are usually the
+person tidying up after themselves, and giving that the same weight as new
+records would turn the screen into a report card on how tidy somebody is being.
+
+**A table with no section is left out rather than counted into something.**
+Bookkeeping tables, and anything a later schema adds, are not things the person
+put anywhere.
+
+**A quiet week says nothing rather than saying nothing happened**, and a first
+launch reports nothing rather than summarizing a notebook's whole history as
+though it happened this week.
+
+**A visit is a run of the app, not a composition.** This was wrong first:
+`LastVisit` advanced its mark inside `remember`, and a composition is rebuilt
+whenever the activity is, so a theme change or a rotation moved the mark into
+the middle of the visit and the digest went blank. Found on the phone with a
+freshly seeded notebook reporting nothing at all. It now advances once per
+process and commits rather than applies, so a run killed a moment after opening
+does not report the same span twice.
+
 ---
 
 ## BLOCKED
