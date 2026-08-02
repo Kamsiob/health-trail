@@ -4,16 +4,22 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.kamsiob.healthtrail.data.Digest
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.ui.screens.CoachStep
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.TodayTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import java.util.Locale
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -35,16 +41,34 @@ class TodayScreenTest {
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
+    /** The three steps a brand new notebook still owes. */
+    private fun allSteps(onOpen: (Repository.Section?) -> Unit = {}) = listOf(
+        CoachStep("today.empty.step.1", Repository.Section.EMERGENCY_CARD) {
+            onOpen(Repository.Section.EMERGENCY_CARD)
+        },
+        CoachStep("today.empty.step.2", Repository.Section.CARE_TEAM) {
+            onOpen(Repository.Section.CARE_TEAM)
+        },
+        CoachStep("today.empty.step.3", null) { onOpen(null) },
+    )
+
     private fun show(
-        showCoaching: Boolean = true,
         hasAnything: Boolean = false,
+        digest: Digest.Summary = Digest.nothing,
+        coaching: List<CoachStep> = allSteps(),
+        onOpenSection: (Repository.Section) -> Unit = {},
         locale: Locale = Locale.ENGLISH,
     ) {
         val strings = Strings.load(context, locale)
         compose.setContent {
             HealthTrailTheme {
                 CompositionLocalProvider(LocalStrings provides strings) {
-                    TodayScreen(showCoaching = showCoaching, hasAnything = hasAnything)
+                    TodayScreen(
+                        hasAnything = hasAnything,
+                        digest = digest,
+                        coaching = coaching,
+                        onOpenSection = onOpenSection,
+                    )
                 }
             }
         }
@@ -74,6 +98,41 @@ class TodayScreenTest {
     }
 
     @Test
+    fun everyStepGoesWhereItPoints() {
+        // Rule 18. Telling somebody to fill in the emergency card and leaving
+        // them to go and find it is a dead end wearing a suggestion.
+        var opened: Repository.Section? = null
+        show(coaching = allSteps { opened = it })
+
+        compose.onNodeWithTag(TodayTags.step(1)).performClick()
+        assertEquals(Repository.Section.EMERGENCY_CARD, opened)
+
+        compose.onNodeWithTag(TodayTags.step(2)).performClick()
+        assertEquals(Repository.Section.CARE_TEAM, opened)
+    }
+
+    @Test
+    fun aStepAlreadyTakenIsNotSuggested() {
+        // The defect: a notebook with two people on the care team and four
+        // logged calls was still being told to add people and log a call.
+        show(hasAnything = true, coaching = allSteps().take(1))
+
+        compose.onNodeWithTag(TodayTags.step(1)).assertIsDisplayed()
+        assertTrue(
+            "a step that has already been taken is still being suggested",
+            compose.onAllNodesWithTag(TodayTags.step(2)).fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
+    fun aNotebookWithNothingLeftToSuggestShowsNoCoachingAtAll() {
+        // An empty list is a finished state. Inventing a fourth suggestion to
+        // fill the space would be the app keeping score, which rule 13 forbids.
+        show(hasAnything = true, coaching = emptyList())
+        compose.onNodeWithTag(TodayTags.EMPTY).assertIsNotDisplayed()
+    }
+
+    @Test
     fun theEmptyStateReadsAsAnInvitationRatherThanAnAbsence() {
         // Section 5.10, and rule 13. It must never read as a list of things the
         // person has failed to do.
@@ -97,37 +156,46 @@ class TodayScreenTest {
     }
 
     @Test
-    fun aNotebookWithSomethingInItSaysTheDigestIsNotBuilt() {
-        // D44: an interface may offer something it has not built, and it may
-        // not go quiet about it. Faking a digest would be worse than either.
-        show(showCoaching = false, hasAnything = true)
-        compose.onNodeWithTag(TodayTags.INTERIM).assertIsDisplayed()
-        compose.onNodeWithTag(TodayTags.EMPTY).assertIsNotDisplayed()
+    fun whatChangedIsShownAndEachSectionCanBeOpened() {
+        var opened: Repository.Section? = null
+        show(
+            hasAnything = true,
+            digest = Digest.Summary(
+                added = listOf(Digest.Added(Repository.Section.TRAIL, 2)),
+                corrected = 1,
+                removed = 0,
+            ),
+            coaching = emptyList(),
+            onOpenSection = { opened = it },
+        )
+
+        compose.onNodeWithTag(TodayTags.DIGEST).assertIsDisplayed()
+        compose.onNodeWithTag(TodayTags.digestRow(Repository.Section.TRAIL)).performClick()
+        assertEquals(Repository.Section.TRAIL, opened)
     }
 
     @Test
-    fun theCoachingSurvivesTheFirstCall() {
-        // The defect this replaced: tying the coaching to "has anything been
-        // written" took the emergency card suggestion off the screen the
-        // moment somebody logged their first call, before they had done it.
-        // The most useful two minutes in the app disappeared for writing
-        // something down, which is the opposite of the intended reward.
-        show(showCoaching = true, hasAnything = true)
-
-        compose.onNodeWithTag(TodayTags.INTERIM).assertIsDisplayed()
-        compose.onNodeWithTag(TodayTags.EMPTY).assertIsDisplayed()
-        compose.onNodeWithTag(TodayTags.step(1)).assertIsDisplayed()
+    fun aQuietWeekSaysNothingRatherThanSayingNothingHappened() {
+        // A heading over "nothing changed" is a heading over nothing, and this
+        // screen is read at a glance.
+        show(hasAnything = true, digest = Digest.nothing, coaching = emptyList())
+        compose.onNodeWithTag(TodayTags.DIGEST).assertIsNotDisplayed()
     }
 
     @Test
-    fun theInterimLineSaysNothingIsWaitingOnIt() {
-        // The half that matters more. A person reading that a summary is being
-        // built needs to know in the same breath that their records are kept
-        // regardless, or the sentence reads as a reason to stop writing.
-        val strings = Strings.load(context)
-        val line = strings["today.digest.not_built"].lowercase()
-        assertTrue("it does not say records are still kept: $line", "kept" in line)
-        assertTrue("it does not say nothing waits on it: $line", "waiting on this" in line)
+    fun theEmergencyCardIsNotOfferedTwiceOnTheSameScreen() {
+        // While the coaching is still asking for it, the persistent button
+        // would be the same offer a second time, in fewer words.
+        show(coaching = allSteps())
+        compose.onNodeWithTag(TodayTags.EMERGENCY).assertIsNotDisplayed()
+    }
+
+    @Test
+    fun theEmergencyCardStaysOneTapAwayOnceItIsFilledIn() {
+        // MASTER_SPEC 4.1 keeps it one tap from this screen, because it is the
+        // one thing here useful to somebody else in a hurry.
+        show(hasAnything = true, coaching = emptyList())
+        compose.onNodeWithTag(TodayTags.EMERGENCY).assertIsDisplayed()
     }
 
     @Test

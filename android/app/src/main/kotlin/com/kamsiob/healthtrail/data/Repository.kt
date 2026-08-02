@@ -173,6 +173,43 @@ class Repository private constructor(
         }
     }
 
+    /**
+     * Everything written after [since], for the digest.
+     *
+     * **Read from the change log rather than by scanning the tables.** Every
+     * write appends to it in the same transaction, per rule 3, so it is the one
+     * place that knows a row was corrected or removed rather than merely what
+     * the row says now. Reconstructing that from the tables would mean
+     * inferring history from state, which is exactly what the log exists to
+     * make unnecessary.
+     *
+     * **Tombstones included**, because a removal is a change the person made
+     * and a summary that silently omitted it would be describing a notebook
+     * that never existed.
+     */
+    suspend fun changesSince(since: Long): List<Digest.Change> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            // allow-base-table: the change log is the log, not user data, and
+            // has no live_ view over it by design. It carries no tombstone.
+            "SELECT table_name, row_id, op, changed_at FROM change_log " +
+                "WHERE changed_at > ? ORDER BY seq",
+            arrayOf(since.toString()),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Digest.Change(
+                            table = cursor.getString(0),
+                            rowId = cursor.getString(1),
+                            op = cursor.getString(2),
+                            changedAt = cursor.getLong(3),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
     /** The active subject, or null when setup has not happened yet. */
     suspend fun activeSubject(): Subject? = withContext(Dispatchers.IO) {
         db().database.rawQuery(

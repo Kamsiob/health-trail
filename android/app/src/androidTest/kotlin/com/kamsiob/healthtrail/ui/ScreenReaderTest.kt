@@ -606,8 +606,21 @@ class ScreenReaderTest {
     fun todayLabelsEverything() {
         compose.show {
             TodayScreen(
-                showCoaching = true,
                 hasAnything = true,
+                digest = com.kamsiob.healthtrail.data.Digest.Summary(
+                    added = listOf(
+                        com.kamsiob.healthtrail.data.Digest.Added(
+                            Repository.Section.TRAIL, 2,
+                        ),
+                    ),
+                    corrected = 1,
+                    removed = 1,
+                ),
+                coaching = listOf(
+                    com.kamsiob.healthtrail.ui.screens.CoachStep(
+                        "today.empty.step.1", Repository.Section.EMERGENCY_CARD,
+                    ) {},
+                ),
                 openQuestions = 2,
                 waitingOnSomebody = 1,
                 unfiled = 3,

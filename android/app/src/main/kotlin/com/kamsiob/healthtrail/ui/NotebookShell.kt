@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import com.kamsiob.healthtrail.data.Digest
+import com.kamsiob.healthtrail.data.LastVisit
 import com.kamsiob.healthtrail.data.Repository
 import java.time.LocalDate
 import com.kamsiob.healthtrail.data.TemplateCatalog
@@ -93,6 +95,7 @@ import com.kamsiob.healthtrail.ui.screens.labelKey
 import com.kamsiob.healthtrail.ui.screens.kindLabelKey
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.ui.screens.CoachStep
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -126,6 +129,13 @@ fun NotebookShell(
     var destination by remember { mutableStateOf(Destination.NOTEBOOK) }
     var counts by remember { mutableStateOf<List<SectionCount>?>(null) }
     var sheetOpen by remember { mutableStateOf(false) }
+    // What changed since the previous launch.
+    //
+    // **The boundary is read once and held for the whole session**, so a digest
+    // does not empty itself out from under somebody who is still reading it,
+    // and so the things they write during this visit show up as what they are:
+    // changes since they were last here.
+    var digest by remember { mutableStateOf(Digest.nothing) }
     var capturing by remember { mutableStateOf<CaptureKind?>(null) }
     // Bumped after every write, which is what makes the counts refresh without
     // the screen having to know what changed.
@@ -254,6 +264,9 @@ fun NotebookShell(
     var acknowledging by remember { mutableStateOf<Repository.StandingInstruction?>(null) }
     var savingAcknowledgment by remember { mutableStateOf<Pair<String, String>?>(null) }
     val context = LocalContext.current
+    val lastVisit = remember(context) {
+        LastVisit(context).openAndAdvance(System.currentTimeMillis())
+    }
 
     // Recounted whenever the tab changes, so returning to the notebook after
     // writing something shows the new number rather than a stale one.
@@ -279,6 +292,13 @@ fun NotebookShell(
                     )
                 }
             } ?: SECTION_ORDER.map { SectionCount(it, 0, Emphasis.STANDING) }
+            // **Nothing to summarize on a first launch**, where there is no
+            // previous visit to be "since". Reporting a notebook's whole
+            // history as though it happened this week would be false on the one
+            // screen whose job is to be true about the last few days.
+            digest = lastVisit
+                ?.let { Digest.since(repository.changesSince(it), it) }
+                ?: Digest.nothing
             threads = subject?.let { repository.threads(it.id) }.orEmpty()
             unfiled = subject?.let { repository.unfiled(it.id) }.orEmpty()
             // Read alongside the counts rather than when a section opens, so
@@ -428,14 +448,26 @@ fun NotebookShell(
                             destination = Destination.NOTEBOOK
                             openSection = Repository.Section.EMERGENCY_CARD
                         },
-                        // The coaching stays until the emergency card exists,
-                        // because that is what it is coaching toward. Tying it
-                        // to "has anything been written" hid it the moment
-                        // somebody logged their first call.
-                        showCoaching = counts
-                            ?.firstOrNull { it.section == Repository.Section.EMERGENCY_CARD }
-                            ?.count == 0,
                         hasAnything = (counts?.sumOf { it.count } ?: 0) > 0,
+                        digest = digest,
+                        onOpenSection = { section ->
+                            destination = Destination.NOTEBOOK
+                            openSection = section
+                        },
+                        // **A step disappears once it has been taken**, so the
+                        // list is what is left rather than a fixed lecture. The
+                        // emergency card is first while it is empty, because it
+                        // is the highest value two minutes a new person can
+                        // spend and the one thing here useful to somebody else
+                        // in a hurry.
+                        coaching = coachingSteps(
+                            counts = counts,
+                            onOpenSection = { section ->
+                                destination = Destination.NOTEBOOK
+                                openSection = section
+                            },
+                            onCapture = { sheetOpen = true },
+                        ),
                     )
                     Destination.PROJECTS -> ProjectsScreen(
                         projects = projects,
@@ -1786,4 +1818,55 @@ private fun NotBuiltYet(
             TextAction(label = strings["common.close"], onClick = onClose)
         }
     }
+}
+
+/**
+ * The steps still worth suggesting on Today.
+ *
+ * **Built from what the notebook actually holds.** The list was three fixed
+ * sentences, which meant a notebook with two people on the care team and four
+ * logged calls was still being told to add people and log a call. Advice that
+ * ignores the screen behind it reads as an app that is not paying attention.
+ *
+ * **Order is fixed, and the emergency card is first.** It is the highest value
+ * two minutes a new person can spend and the one thing in this app that is
+ * useful to somebody else in a hurry. Ordering by anything else, or shuffling
+ * as things get done, would make the advice move around between visits.
+ *
+ * **An empty list is a finished state, not a gap.** Somebody who has done all
+ * three gets a Today with no coaching on it at all, which is correct: there is
+ * nothing left to suggest and inventing a fourth suggestion to fill the space
+ * would be the app keeping score of their diligence, which rule 13 forbids.
+ */
+private fun coachingSteps(
+    counts: List<SectionCount>?,
+    onOpenSection: (Repository.Section) -> Unit,
+    onCapture: () -> Unit,
+): List<CoachStep> {
+    // Null means the counts have not been read yet. Suggesting nothing is the
+    // honest answer for that moment, and it lasts one frame.
+    if (counts == null) return emptyList()
+    fun empty(section: Repository.Section) =
+        counts.firstOrNull { it.section == section }?.count == 0
+
+    return listOfNotNull(
+        CoachStep(
+            labelKey = "today.empty.step.1",
+            section = Repository.Section.EMERGENCY_CARD,
+            onOpen = { onOpenSection(Repository.Section.EMERGENCY_CARD) },
+        ).takeIf { empty(Repository.Section.EMERGENCY_CARD) },
+        CoachStep(
+            labelKey = "today.empty.step.2",
+            section = Repository.Section.CARE_TEAM,
+            onOpen = { onOpenSection(Repository.Section.CARE_TEAM) },
+        ).takeIf { empty(Repository.Section.CARE_TEAM) },
+        // Capture rather than a section, because logging a call is the gold
+        // button's job and sending somebody to the trail to read an empty list
+        // would be advice that leads away from the thing it is advising.
+        CoachStep(
+            labelKey = "today.empty.step.3",
+            section = null,
+            onOpen = onCapture,
+        ).takeIf { empty(Repository.Section.TRAIL) },
+    )
 }
