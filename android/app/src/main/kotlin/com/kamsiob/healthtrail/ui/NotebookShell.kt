@@ -51,6 +51,9 @@ import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
+import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
 import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentDraft
@@ -154,6 +157,19 @@ fun NotebookShell(
     var editingAppointment by remember { mutableStateOf<Repository.Appointment?>(null) }
     var editingBill by remember { mutableStateOf<Repository.Bill?>(null) }
     var editingDocument by remember { mutableStateOf<Repository.Document?>(null) }
+    var projects by remember { mutableStateOf<List<Repository.Project>>(emptyList()) }
+    var projectTemplates by remember {
+        mutableStateOf<List<TemplateCatalog.ProjectTemplate>>(emptyList())
+    }
+    var startingProject by remember { mutableStateOf(false) }
+    var chosenTemplate by remember {
+        mutableStateOf<TemplateCatalog.ProjectTemplate?>(null)
+    }
+    // The project being looked at, and its steps.
+    var openProject by remember { mutableStateOf<Repository.Project?>(null) }
+    var projectSteps by remember { mutableStateOf<List<Repository.ProjectStep>>(emptyList()) }
+    var togglingStep by remember { mutableStateOf<Repository.ProjectStep?>(null) }
+    var settingProjectStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     // The emergency card, and whether it is being filled in.
     var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
     var editingEmergencyCard by remember { mutableStateOf(false) }
@@ -245,6 +261,14 @@ fun NotebookShell(
             instructions = subject?.let { repository.standingInstructions(it.id) }.orEmpty()
             bills = subject?.let { repository.bills(it.id) }.orEmpty()
             documents = subject?.let { repository.documents(it.id) }.orEmpty()
+            projects = subject?.let { repository.projects(it.id) }.orEmpty()
+            projectTemplates = TemplateCatalog.projects(context)
+            // Kept in step with the list, so a step ticked on the detail screen
+            // and the count on the card behind it can never disagree.
+            openProject = openProject?.let { current ->
+                projects.firstOrNull { it.id == current.id }
+            }
+            projectSteps = openProject?.let { repository.projectSteps(it.id) }.orEmpty()
             instructionCatalog = TemplateCatalog.instructions(context)
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
@@ -273,6 +297,8 @@ fun NotebookShell(
     // back still leaves the app from the notebook itself, which is what a
     // person expects there.
     BackHandler(enabled = openSection != null) { openSection = null }
+    BackHandler(enabled = openProject != null) { openProject = null }
+    BackHandler(enabled = startingProject) { startingProject = false }
     BackHandler(enabled = trayOpen) { trayOpen = false }
     BackHandler(enabled = sheetOpen) { sheetOpen = false }
     BackHandler(enabled = editingEmergencyCard) { editingEmergencyCard = false }
@@ -332,7 +358,16 @@ fun NotebookShell(
                             ?.count == 0,
                         hasAnything = (counts?.sumOf { it.count } ?: 0) > 0,
                     )
-                    Destination.PROJECTS -> NotBuiltYet(strings["nav.projects"])
+                    Destination.PROJECTS -> ProjectsScreen(
+                        projects = projects,
+                        onOpen = { openProject = it; revision += 1 },
+                        onRemove = { project ->
+                            removing = Removal(
+                                Repository.Section.PROJECTS, project.id, project.name,
+                            )
+                        },
+                        onStart = { startingProject = true },
+                    )
                     // More is no longer entirely unbuilt. Appearance is
                     // real; everything else in it still says so plainly.
                     Destination.MORE -> MoreScreen(
@@ -356,6 +391,70 @@ fun NotebookShell(
                 },
                 captureDescription = strings["capture.button.description"],
             )
+        }
+
+        val currentProject = openProject
+        if (currentProject != null) {
+            ProjectDetailScreen(
+                project = currentProject,
+                steps = projectSteps,
+                onToggleStep = { togglingStep = it },
+                onSetStatus = { status -> settingProjectStatus = currentProject.id to status },
+                onBack = { openProject = null },
+            )
+        }
+
+        if (startingProject) {
+            StartProjectScreen(
+                templates = projectTemplates,
+                onChoose = { template ->
+                    startingProject = false
+                    chosenTemplate = template
+                },
+                onCancel = { startingProject = false },
+            )
+        }
+
+        val template = chosenTemplate
+        if (template != null) {
+            LaunchedEffect(template) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    repository.startProject(
+                        subjectId = subject.id,
+                        templateId = template.id,
+                        name = template.name,
+                        steps = template.steps,
+                    )
+                }
+                chosenTemplate = null
+                revision += 1
+            }
+        }
+
+        val step = togglingStep
+        if (step != null) {
+            LaunchedEffect(step) {
+                repository.setProjectStepDone(step.id, !step.isDone)
+                togglingStep = null
+                revision += 1
+            }
+        }
+
+        val statusChange = settingProjectStatus
+        if (statusChange != null) {
+            LaunchedEffect(statusChange) {
+                repository.setProjectStatus(
+                    projectId = statusChange.first,
+                    status = statusChange.second,
+                    // What it is waiting on is its own question and is not
+                    // invented here. Choosing "waiting" records the status and
+                    // the moment; naming who comes later.
+                    waitingOn = projects.firstOrNull { it.id == statusChange.first }?.waitingOn,
+                )
+                settingProjectStatus = null
+                revision += 1
+            }
         }
 
         // **A section, opened from the table of contents.**

@@ -244,7 +244,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 **Do not begin any of it until everything ahead of it is done.**
 
-**Something that must not survive to release.** The Projects and More destinations render an honest interim screen, and Today says plainly that its digest is still being built. **The document capture input no longer does**, because it is built, #57. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, and D44 says an interface may offer something it has not built but may not go quiet when someone takes it up. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
+**Something that must not survive to release.** The More destination renders an honest interim screen below Appearance, and Today says plainly that its digest is still being built. **Projects is built**, so only those two remain. **The document capture input no longer does**, because it is built, #57. That is deliberate rather than a stub: `DESIGN.md` section 5.5 fixes the four destinations and their order, and D44 says an interface may offer something it has not built but may not go quiet when someone takes it up. Each disappears as its destination lands. **If one is still there at release, that is a bug**, and `ShellTags.NOT_BUILT` makes them greppable.
 
 ---
 
@@ -355,6 +355,7 @@ Every screen built without one is composed from existing components under `DESIG
 | Standing instructions, and asking for one | 2026-08-02 | #120 | not yet |
 | Money, and adding a bill | 2026-08-02 | #121 | not yet |
 | Documents, and saving one | 2026-08-02 | #122 | not yet |
+| Projects, starting one, and a project's steps | 2026-08-02 | #123 | not yet |
 | Care team, read only | 2026-08-01 | #111 | not yet |
 | Disclaimer gate | 2026-07-31, rebuilt same day to the 10.6 bar | #28 | not yet |
 | Essentials first setup | 2026-07-31, rebuilt 2026-08-01 to the 10.6 bar | #30 | not yet |

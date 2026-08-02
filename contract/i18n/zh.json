@@ -352,5 +352,21 @@
   "edit.hint": "点按可修改，长按可移除",
   "money.edit.title": "修改已填写的内容",
   "docs.edit.title": "修改已填写的内容",
-  "appts.edit.title": "修改已填写的内容"
+  "appts.edit.title": "修改已填写的内容",
+  "projects.subtitle": "漫长的流程：申请、申诉、索取。每一项都是一份步骤清单，以及您在等谁的记录。",
+  "projects.empty": "尚未开始。这些事情往往要花几个月、打十几通电话，应用会替您串起来。",
+  "projects.start": "开始一项",
+  "projects.start.title": "您要处理哪一项？",
+  "projects.start.lead": "家属常需办理的十六项流程。每项都附带步骤，您可以修改或忽略。",
+  "projects.state_varies": "各州规定不同，因此步骤保持通用。",
+  "projects.steps_done": "已完成 {done} / {total} 步",
+  "projects.waiting_on": "正在等 {who}",
+  "projects.who_to_know": "您将要打交道的人",
+  "projects.status.active": "进行中",
+  "projects.status.waiting": "等待他人",
+  "projects.status.stalled": "停滞",
+  "projects.status.done": "已完成",
+  "projects.status.abandoned": "已放弃",
+  "projects.step_count": "{count, plural, other {# 个步骤}}",
+  "section.back.projects": "返回事项"
 }

@@ -27,6 +27,9 @@ import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
+import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.StandingInstructionsScreen
 import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
@@ -555,6 +558,58 @@ class ScreenReaderTest {
             AddDocumentScreen(onSave = {}, onCancel = {}, error = strings["docs.too_large"])
         }
         assertEverythingIsLabeled("save a document, file refused")
+    }
+
+    @Test
+    fun projectsLabelEverything() {
+        compose.show {
+            ProjectsScreen(
+                projects = listOf(
+                    Repository.Project("pr1", "Medicaid application", "medicaid_ltc", "waiting", "The caseworker", null, 14, 3),
+                    // No steps and no waiting on, which strips two lines off the
+                    // card and leaves the least to announce.
+                    Repository.Project("pr2", "Records request", null, "done", null, null, 0, 0),
+                ),
+                onOpen = {},
+                onRemove = {},
+                onStart = {},
+            )
+        }
+        assertEverythingIsLabeled("projects")
+    }
+
+    @Test
+    fun projectsLabelEverythingWhenEmpty() {
+        compose.show {
+            ProjectsScreen(projects = emptyList(), onOpen = {}, onRemove = {}, onStart = {})
+        }
+        assertEverythingIsLabeled("projects, nothing started")
+    }
+
+    @Test
+    fun startingAProjectLabelsEverything() {
+        val templates = runBlocking { TemplateCatalog.projects(context) }
+        compose.show {
+            StartProjectScreen(templates = templates, onChoose = {}, onCancel = {})
+        }
+        assertEverythingIsLabeled("start a project")
+    }
+
+    @Test
+    fun aProjectLabelsEverything() {
+        compose.show {
+            ProjectDetailScreen(
+                project = Repository.Project("pr1", "Medicaid application", "medicaid_ltc", "active", null, null, 3, 1),
+                steps = listOf(
+                    Repository.ProjectStep("s1", "Get the right form", "2026-08-01", null),
+                    Repository.ProjectStep("s2", "Gather proof of income", null, null),
+                ),
+                onToggleStep = {},
+                onSetStatus = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a project")
     }
 
     @Test

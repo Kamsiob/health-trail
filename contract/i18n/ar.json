@@ -352,5 +352,21 @@
   "edit.hint": "اضغط للتعديل، واضغط مطولًا للإزالة",
   "money.edit.title": "تعديل ما كتبته",
   "docs.edit.title": "تعديل ما كتبته",
-  "appts.edit.title": "تعديل ما كتبته"
+  "appts.edit.title": "تعديل ما كتبته",
+  "projects.subtitle": "العمليات الطويلة: الطلبات والاعتراضات والاستفسارات. كل واحدة قائمة خطوات وملاحظة عمن تنتظره.",
+  "projects.empty": "لم يبدأ شيء. هذه أمور تستغرق شهورًا وعشرات المكالمات، والتطبيق يحفظ خيطها.",
+  "projects.start": "ابدأ واحدة",
+  "projects.start.title": "ما الذي ستتولاه؟",
+  "projects.start.lead": "ست عشرة عملية تضطر العائلات للقيام بها عادة. كل واحدة تأتي بخطواتها، ويمكنك تغييرها أو تجاهلها.",
+  "projects.state_varies": "القواعد هنا تختلف من ولاية إلى أخرى، لذا تبقى الخطوات عامة.",
+  "projects.steps_done": "{done} من {total} خطوات منجزة",
+  "projects.waiting_on": "بانتظار {who}",
+  "projects.who_to_know": "من ستتعامل معهم",
+  "projects.status.active": "جارية",
+  "projects.status.waiting": "بانتظار شخص",
+  "projects.status.stalled": "متعثرة",
+  "projects.status.done": "منتهية",
+  "projects.status.abandoned": "متروكة",
+  "projects.step_count": "{count, plural, =0 {لا خطوات} one {خطوة واحدة} two {خطوتان} few {# خطوات} many {# خطوة} other {# خطوة}}",
+  "section.back.projects": "العودة إلى المهام"
 }

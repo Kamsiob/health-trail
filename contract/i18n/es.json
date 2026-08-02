@@ -352,5 +352,21 @@
   "edit.hint": "Toque para cambiarlo, mantenga pulsado para quitarlo",
   "money.edit.title": "Cambiar lo que anotó",
   "docs.edit.title": "Cambiar lo que anotó",
-  "appts.edit.title": "Cambiar lo que anotó"
+  "appts.edit.title": "Cambiar lo que anotó",
+  "projects.subtitle": "Los procesos largos: solicitudes, apelaciones, peticiones. Cada uno es una lista de pasos y una nota de a quién está esperando.",
+  "projects.empty": "Nada iniciado. Son las gestiones que llevan meses y una docena de llamadas, y la aplicación mantiene el hilo.",
+  "projects.start": "Empezar una",
+  "projects.start.title": "¿Qué va a emprender?",
+  "projects.start.lead": "Dieciséis gestiones que las familias suelen tener que hacer. Cada una trae sus pasos, que puede cambiar o ignorar.",
+  "projects.state_varies": "Las normas de esto varían según el estado, así que los pasos son generales.",
+  "projects.steps_done": "{done} de {total} pasos hechos",
+  "projects.waiting_on": "Esperando a {who}",
+  "projects.who_to_know": "Con quién va a tratar",
+  "projects.status.active": "En marcha",
+  "projects.status.waiting": "Esperando a alguien",
+  "projects.status.stalled": "Atascada",
+  "projects.status.done": "Terminada",
+  "projects.status.abandoned": "Abandonada",
+  "projects.step_count": "{count, plural, one {1 paso} other {# pasos}}",
+  "section.back.projects": "Volver a gestiones"
 }

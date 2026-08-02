@@ -1230,6 +1230,187 @@ class Repository private constructor(
             )
         }
 
+    // -- projects --------------------------------------------------------------
+
+    /**
+     * One long process the family is running.
+     *
+     * **What it is waiting on is a first class field, not a note.** The schema
+     * says so in its own comment: these processes stall on other people
+     * constantly, and "waiting on the caseworker since the 3rd" is the single
+     * most useful thing the app can hold about one.
+     */
+    data class Project(
+        val id: String,
+        val name: String,
+        val templateId: String?,
+        val status: String,
+        val waitingOn: String?,
+        val notes: String?,
+        val stepCount: Int,
+        val doneCount: Int,
+    ) {
+        val isFinished: Boolean get() = status == "done" || status == "abandoned"
+    }
+
+    /** One step of a project, in the order the template gave. */
+    data class ProjectStep(
+        val id: String,
+        val text: String,
+        val completedEdtf: String?,
+        val note: String?,
+    ) {
+        val isDone: Boolean get() = !completedEdtf.isNullOrBlank()
+    }
+
+    /** Every project, unfinished first, with how many steps each has. */
+    suspend fun projects(subjectId: String): List<Project> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT p.id, p.name, p.template_id, p.status, p.waiting_on, p.notes, " +
+                "COUNT(s.id), COUNT(s.completed_edtf) " +
+                "FROM live_project p " +
+                "LEFT JOIN live_project_step s ON s.project_id = p.id " +
+                "WHERE p.subject_id = ? " +
+                "GROUP BY p.id, p.name, p.template_id, p.status, p.waiting_on, " +
+                "p.notes, p.created_at " +
+                "ORDER BY p.status IN ('done', 'abandoned'), p.created_at DESC",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Project(
+                            id = cursor.getString(0),
+                            name = cursor.getString(1),
+                            templateId = cursor.getString(2),
+                            status = cursor.getString(3),
+                            waitingOn = cursor.getString(4),
+                            notes = cursor.getString(5),
+                            stepCount = cursor.getInt(6),
+                            doneCount = cursor.getInt(7),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /** The steps of one project, in order. */
+    suspend fun projectSteps(projectId: String): List<ProjectStep> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, text, completed_edtf, note FROM live_project_step " +
+                    "WHERE project_id = ? ORDER BY sort_index, created_at",
+                arrayOf(projectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            ProjectStep(
+                                id = cursor.getString(0),
+                                text = cursor.getString(1),
+                                completedEdtf = cursor.getString(2),
+                                note = cursor.getString(3),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /**
+     * Starts a project from a template, with all of its steps, in one
+     * transaction.
+     *
+     * **Both or neither.** A project with no steps is an empty shell of the one
+     * thing that made the template worth having, and steps with no project
+     * belong to nothing.
+     *
+     * The step text is copied rather than referenced, so editing the catalog
+     * later never rewrites a process somebody is halfway through.
+     */
+    suspend fun startProject(
+        subjectId: String,
+        templateId: String,
+        name: String,
+        steps: List<String>,
+    ): String = withContext(Dispatchers.IO) {
+        val database = db().database
+        database.beginTransaction()
+        try {
+            val projectId = insertRow(
+                "project",
+                mapOf(
+                    "subject_id" to subjectId,
+                    "name" to name,
+                    "template_id" to templateId,
+                    "status" to "active",
+                ) + dateColumns("started", Edtf.day(LocalDate.now())),
+            )
+            steps.forEachIndexed { index, text ->
+                insertRow(
+                    "project_step",
+                    mapOf(
+                        "project_id" to projectId,
+                        "text" to text,
+                        "sort_index" to index,
+                    ),
+                )
+            }
+            database.setTransactionSuccessful()
+            projectId
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    /**
+     * Marks a step done, or puts it back.
+     *
+     * **Putting it back is as ordinary as marking it done.** These processes go
+     * backward constantly: a form is returned, a document is rejected, a step
+     * turns out to have been done wrong. A checklist that only moves forward
+     * would make the person lie to it.
+     */
+    suspend fun setProjectStepDone(stepId: String, done: Boolean) =
+        withContext(Dispatchers.IO) {
+            val columns = if (done) {
+                dateColumns("completed", Edtf.day(LocalDate.now()))
+            } else {
+                mapOf<String, Any?>(
+                    "completed_edtf" to null,
+                    "completed_zone" to null,
+                    "completed_start" to null,
+                    "completed_end" to null,
+                )
+            }
+            val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+            db().database.execSQL(
+                "UPDATE project_step SET $assignments, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                (columns.values + listOf(System.currentTimeMillis(), stepId)).toTypedArray(),
+            )
+        }
+
+    /** Changes a project's status, and what it is waiting on. */
+    suspend fun setProjectStatus(
+        projectId: String,
+        status: String,
+        waitingOn: String?,
+    ) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE project SET status = ?, waiting_on = ?, waiting_since = ?, " +
+                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(
+                status,
+                waitingOn?.ifBlank { null },
+                if (status == "waiting") System.currentTimeMillis() else null,
+                System.currentTimeMillis(),
+                projectId,
+            ),
+        )
+    }
+
     // -- documents -------------------------------------------------------------
 
     /**

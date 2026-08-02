@@ -222,6 +222,48 @@ object TemplateCatalog {
         )
     }
 
+    /**
+     * A bureaucratic process the family has to run, as the catalog ships it.
+     *
+     * **These are the app's reason for existing at the sharp end.** A Medicaid
+     * application, an appeal against a discharge, a records request. Each is a
+     * long process that stalls on other people, and the value of the template
+     * is the ordered steps, which somebody would otherwise have to discover one
+     * phone call at a time.
+     *
+     * `stateVariance` marks a process whose rules differ by state. It is a
+     * build instruction rather than a label: the steps stay general and the app
+     * never states a rule for a particular state, because it does not know one.
+     */
+    data class ProjectTemplate(
+        val id: String,
+        val name: String,
+        val subtitle: String,
+        val stateVariance: Boolean,
+        val roles: List<String>,
+        val steps: List<String>,
+    )
+
+    suspend fun projects(context: Context): List<ProjectTemplate> =
+        withContext(Dispatchers.IO) {
+            val root = JSONObject(
+                context.assets.open("templates/projects.json")
+                    .bufferedReader().use { it.readText() }
+            )
+            val array = root.getJSONArray("templates")
+            (0 until array.length()).map { index ->
+                val item = array.getJSONObject(index)
+                ProjectTemplate(
+                    id = item.getString("id"),
+                    name = item.getString("name"),
+                    subtitle = item.optString("subtitle"),
+                    stateVariance = item.optBoolean("state_variance", false),
+                    roles = item.optJSONArray("roles").toLabels(),
+                    steps = item.optJSONArray("steps").toStrings(),
+                )
+            }
+        }
+
     private fun org.json.JSONArray?.toThreads(): List<Thread> {
         if (this == null) return emptyList()
         return (0 until length()).map {

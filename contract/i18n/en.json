@@ -352,5 +352,21 @@
   "edit.hint": "Tap to change it, press and hold to remove it",
   "money.edit.title": "Change what you wrote",
   "docs.edit.title": "Change what you wrote",
-  "appts.edit.title": "Change what you wrote"
+  "appts.edit.title": "Change what you wrote",
+  "projects.subtitle": "The long processes: applications, appeals, requests. Each one is a list of steps and a note of who you are waiting on.",
+  "projects.empty": "Nothing started. These are the things that take months and a dozen phone calls, and the app keeps the thread of them.",
+  "projects.start": "Start one",
+  "projects.start.title": "What are you taking on?",
+  "projects.start.lead": "Sixteen processes families commonly have to run. Each comes with its steps, which you can change or ignore.",
+  "projects.state_varies": "The rules for this differ by state, so the steps stay general.",
+  "projects.steps_done": "{done} of {total} steps done",
+  "projects.waiting_on": "Waiting on {who}",
+  "projects.who_to_know": "Who you will be dealing with",
+  "projects.status.active": "Under way",
+  "projects.status.waiting": "Waiting on somebody",
+  "projects.status.stalled": "Stalled",
+  "projects.status.done": "Done",
+  "projects.status.abandoned": "Left alone",
+  "projects.step_count": "{count, plural, one {1 step} other {# steps}}",
+  "section.back.projects": "Back to projects"
 }

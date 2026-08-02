@@ -50,6 +50,15 @@ fun SectionScaffold(
     subtitle: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * What the way back says.
+     *
+     * **It names where the person is actually going**, which is the notebook
+     * for the twelve sections and somewhere else for anything reached from
+     * another screen. A back action that names the wrong destination is a small
+     * lie the person only notices by being surprised.
+     */
+    backLabelKey: String = "section.back",
     content: LazyListScope.() -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -88,7 +97,7 @@ fun SectionScaffold(
             Spacer(Modifier.height(Space.m))
 
             TextAction(
-                label = strings["section.back"],
+                label = strings[backLabelKey],
                 onClick = onBack,
                 modifier = Modifier
                     .fillMaxWidth()
