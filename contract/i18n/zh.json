@@ -384,5 +384,6 @@
   "about.licenses.body": "代码采用 AGPL-3.0。模板内容采用 CC BY-SA 4.0，单独发布，以便从不安装任何应用的人也能用纸质活页夹或电子表格使用它。随附字体各有其许可。",
   "about.version": "版本 {version}",
   "more.about": "关于本应用",
-  "section.back.more": "返回更多"
+  "section.back.more": "返回更多",
+  "today.open.group": "仍未了结"
 }

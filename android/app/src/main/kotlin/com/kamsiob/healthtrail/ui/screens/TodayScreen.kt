@@ -1,6 +1,10 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,11 +21,22 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.Chevron
+import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.focusRingAlpha
+import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.ShellTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -31,6 +46,8 @@ object TodayTags {
     const val ROOT = "today_root"
     const val EMPTY = "today_empty"
     const val INTERIM = "today_interim"
+    const val EMERGENCY = "today_emergency"
+    const val NEXT_APPOINTMENT = "today_next_appointment"
     fun step(number: Int) = "today_step_$number"
 }
 
@@ -78,7 +95,25 @@ fun TodayScreen(
     showCoaching: Boolean,
     /** Whether there is anything at all yet, which decides if a digest is owed. */
     hasAnything: Boolean,
+    /**
+     * What is still open, and what is coming.
+     *
+     * **These are counts of things waiting on somebody, never a score.** Rule
+     * 13 forbids measuring the person's diligence, and the difference is who
+     * the number is about: a question waiting on the wound nurse and a project
+     * waiting on a caseworker are other people's inaction, which is precisely
+     * what a caregiver loses track of and precisely what this screen is for.
+     */
     modifier: Modifier = Modifier,
+    openQuestions: Int = 0,
+    waitingOnSomebody: Int = 0,
+    unfiled: Int = 0,
+    nextAppointment: Repository.Appointment? = null,
+    onOpenQuestions: () -> Unit = {},
+    onOpenProjects: () -> Unit = {},
+    onOpenUnfiled: () -> Unit = {},
+    onOpenAppointments: () -> Unit = {},
+    onOpenEmergencyCard: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -113,6 +148,49 @@ fun TodayScreen(
             if (showCoaching) {
                 CoachedStart(nothingWrittenYet = !hasAnything)
             }
+
+            // **What is still open, and it appears only when something is.**
+            // An empty "nothing waiting" block on a quiet day would be a
+            // heading over nothing, and this screen is read at a glance.
+            val open = listOfNotNull(
+                openQuestions.takeIf { it > 0 }?.let {
+                    OpenItem("today.open.questions", it, onOpenQuestions)
+                },
+                waitingOnSomebody.takeIf { it > 0 }?.let {
+                    OpenItem("today.open.waiting", it, onOpenProjects)
+                },
+                unfiled.takeIf { it > 0 }?.let {
+                    OpenItem("unfiled.waiting", it, onOpenUnfiled)
+                },
+            )
+
+            if (open.isNotEmpty() || nextAppointment != null) {
+                Spacer(Modifier.height(Space.sectionGap))
+                GroupHeader(labelKey = "today.open.group")
+                Spacer(Modifier.height(Space.headerGap))
+
+                open.forEach { item ->
+                    OpenRow(item)
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+
+                nextAppointment?.let { appointment ->
+                    NextAppointment(appointment, onOpenAppointments)
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            }
+
+            // **The emergency card is one tap from here, always.**
+            // MASTER_SPEC section 4.1 puts it on this screen for the reason the
+            // coaching gives: it is the one thing in the app that is useful to
+            // somebody else in a hurry, and in a hurry is exactly when nobody
+            // wants to go looking through a table of contents for it.
+            Spacer(Modifier.height(Space.sectionGap))
+            QuietButton(
+                label = strings["notebook.section.emergency_card"],
+                onClick = onOpenEmergencyCard,
+                modifier = Modifier.fillMaxWidth().testTag(TodayTags.EMERGENCY),
+            )
 
             // Clearance for the capture button, which overlaps the navigation
             // bar and would otherwise sit on the last line.
@@ -230,6 +308,95 @@ private fun InterimDigest() {
             text = strings["today.digest.not_built"],
             style = HealthTrail.type.bodyM,
             color = colors.ink2,
+        )
+    }
+}
+
+/** One thing still open, with the words that say how many and where it lives. */
+private data class OpenItem(val key: String, val count: Int, val onOpen: () -> Unit)
+
+/**
+ * One open count, as a row that goes where the thing actually is.
+ *
+ * Rule 18: a count that cannot be reached is a dead end wearing a number.
+ */
+@Composable
+private fun OpenRow(item: OpenItem) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.card)
+    val ring by focusRingAlpha(interaction)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = Space.touchTarget)
+            .clip(Radius.card)
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = item.onOpen,
+            )
+            .padding(Space.cardPadding),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = strings(item.key, "count" to item.count),
+            style = HealthTrail.type.bodyL,
+            color = colors.ink,
+            modifier = Modifier.weight(1f),
+        )
+        Spacer(Modifier.width(Space.sm))
+        Chevron()
+    }
+}
+
+/**
+ * The next appointment, which is the one piece of the future this screen holds.
+ *
+ * Its prep sheet is Phase 2 and is not built, so this says when and what and
+ * goes to the list rather than promising more than it has.
+ */
+@Composable
+private fun NextAppointment(
+    appointment: Repository.Appointment,
+    onOpen: () -> Unit,
+) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.card)
+    val ring by focusRingAlpha(interaction)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(Radius.card)
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onOpen,
+            )
+            .testTag(TodayTags.NEXT_APPOINTMENT)
+            .padding(Space.cardPadding),
+    ) {
+        Text(
+            text = EventDateText.render(strings, appointment.scheduledEdtf),
+            style = HealthTrail.type.mono,
+            color = colors.ink3Text,
+        )
+        Spacer(Modifier.height(Space.xs))
+        Text(
+            text = appointment.title,
+            style = HealthTrail.type.displayS,
+            color = colors.ink,
         )
     }
 }

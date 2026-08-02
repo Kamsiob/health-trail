@@ -353,6 +353,41 @@ fun NotebookShell(
                     // persona P1. What is not built is the digest, and the
                     // screen says so itself rather than standing in for it.
                     Destination.TODAY -> TodayScreen(
+                        openQuestions = questions.count { it.isOpen },
+                        // Projects sitting on somebody else. The status and the
+                        // named person are separate answers, so either counts.
+                        waitingOnSomebody = projects.count {
+                            !it.isFinished &&
+                                (it.status == "waiting" || !it.waitingOn.isNullOrBlank())
+                        },
+                        unfiled = unfiled.size,
+                        // The soonest one still ahead. An appointment with no
+                        // date is not "next", because nothing about it says
+                        // when, and putting it here would be the app inventing
+                        // an order the person never gave.
+                        nextAppointment = appointments
+                            .filter { it.scheduledStart != null }
+                            .minByOrNull { it.scheduledStart!! }
+                            ?.takeIf {
+                                it.scheduledStart!! >= LocalDate.now()
+                                    .atStartOfDay(java.time.ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli()
+                            },
+                        onOpenQuestions = {
+                            destination = Destination.NOTEBOOK
+                            openSection = Repository.Section.ASK_NEXT_TIME
+                        },
+                        onOpenProjects = { destination = Destination.PROJECTS },
+                        onOpenUnfiled = { trayOpen = true },
+                        onOpenAppointments = {
+                            destination = Destination.NOTEBOOK
+                            openSection = Repository.Section.APPOINTMENTS
+                        },
+                        onOpenEmergencyCard = {
+                            destination = Destination.NOTEBOOK
+                            openSection = Repository.Section.EMERGENCY_CARD
+                        },
                         // The coaching stays until the emergency card exists,
                         // because that is what it is coaching toward. Tying it
                         // to "has anything been written" hid it the moment

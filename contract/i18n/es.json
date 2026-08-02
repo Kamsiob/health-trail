@@ -384,5 +384,6 @@
   "about.licenses.body": "El código es AGPL-3.0. El contenido de las plantillas es CC BY-SA 4.0, publicado por separado para que sirva con una carpeta de papel o una hoja de cálculo, a personas que nunca instalan nada. Las tipografías incluidas tienen sus propias licencias.",
   "about.version": "Versión {version}",
   "more.about": "Acerca de esta aplicación",
-  "section.back.more": "Volver a Más"
+  "section.back.more": "Volver a Más",
+  "today.open.group": "Sigue abierto"
 }

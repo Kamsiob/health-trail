@@ -384,5 +384,6 @@
   "about.licenses.body": "The code is AGPL-3.0. The template content is CC BY-SA 4.0, published separately so it is useful with a paper binder or a spreadsheet, by people who never install anything. The bundled typefaces carry their own licenses.",
   "about.version": "Version {version}",
   "more.about": "About this app",
-  "section.back.more": "Back to More"
+  "section.back.more": "Back to More",
+  "today.open.group": "Still open"
 }
