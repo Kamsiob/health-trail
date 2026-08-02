@@ -19,6 +19,20 @@ import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
+/**
+ * What a section's way back says, when the section does not name it itself.
+ *
+ * **The twelve sections are opened from more than one place.** They are rows in
+ * the notebook and they are also rows in Today's digest and its coached steps.
+ * A screen reached from Today whose only way back says "Back to the notebook"
+ * is the small lie this scaffold's own documentation warns about: it names the
+ * wrong destination, and the person only finds out by being surprised.
+ *
+ * Provided once by the shell rather than threaded through twelve screens, so
+ * there is no way for one of them to be forgotten.
+ */
+val LocalSectionBackKey = androidx.compose.runtime.compositionLocalOf { "section.back" }
+
 object SectionTags {
     const val BACK = "section_back"
     fun root(name: String) = "section_root_$name"
@@ -58,7 +72,7 @@ fun SectionScaffold(
      * another screen. A back action that names the wrong destination is a small
      * lie the person only notices by being surprised.
      */
-    backLabelKey: String = "section.back",
+    backLabelKey: String = LocalSectionBackKey.current,
     content: LazyListScope.() -> Unit,
 ) {
     val strings = LocalStrings.current

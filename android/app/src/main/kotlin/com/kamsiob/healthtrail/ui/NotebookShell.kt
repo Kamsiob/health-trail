@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -96,6 +97,7 @@ import com.kamsiob.healthtrail.ui.screens.kindLabelKey
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.screens.CoachStep
+import com.kamsiob.healthtrail.ui.screens.LocalSectionBackKey
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -434,26 +436,19 @@ fun NotebookShell(
                                     .toInstant()
                                     .toEpochMilli()
                             },
-                        onOpenQuestions = {
-                            destination = Destination.NOTEBOOK
-                            openSection = Repository.Section.ASK_NEXT_TIME
-                        },
+                        // **Opened over Today, not by switching to the
+                        // notebook.** A section is an overlay, so changing the
+                        // destination underneath it only decided where "back"
+                        // would land, and it landed somewhere the person had
+                        // not been.
+                        onOpenQuestions = { openSection = Repository.Section.ASK_NEXT_TIME },
                         onOpenProjects = { destination = Destination.PROJECTS },
                         onOpenUnfiled = { trayOpen = true },
-                        onOpenAppointments = {
-                            destination = Destination.NOTEBOOK
-                            openSection = Repository.Section.APPOINTMENTS
-                        },
-                        onOpenEmergencyCard = {
-                            destination = Destination.NOTEBOOK
-                            openSection = Repository.Section.EMERGENCY_CARD
-                        },
+                        onOpenAppointments = { openSection = Repository.Section.APPOINTMENTS },
+                        onOpenEmergencyCard = { openSection = Repository.Section.EMERGENCY_CARD },
                         hasAnything = (counts?.sumOf { it.count } ?: 0) > 0,
                         digest = digest,
-                        onOpenSection = { section ->
-                            destination = Destination.NOTEBOOK
-                            openSection = section
-                        },
+                        onOpenSection = { section -> openSection = section },
                         // **A step disappears once it has been taken**, so the
                         // list is what is left rather than a fixed lecture. The
                         // emergency card is first while it is empty, because it
@@ -462,10 +457,17 @@ fun NotebookShell(
                         // in a hurry.
                         coaching = coachingSteps(
                             counts = counts,
-                            onOpenSection = { section ->
-                                destination = Destination.NOTEBOOK
-                                openSection = section
-                            },
+                            // **What the card screen itself calls filled in.**
+                            // The row count only knows whether a card row
+                            // exists, so Today went on advising somebody to
+                            // fill in a card that already listed a medication.
+                            // The two screens now answer the question the same
+                            // way, which is the only way they can agree.
+                            emergencyCardHasSomething =
+                                emergencyCard?.isEmpty == false ||
+                                emergencyContacts.isNotEmpty() ||
+                                medications.any { it.onEmergencyCard && !it.isStopped },
+                            onOpenSection = { section -> openSection = section },
                             onCapture = { sheetOpen = true },
                         ),
                     )
@@ -801,178 +803,189 @@ fun NotebookShell(
         //
         // Each of these disappears as its section lands, and ShellTags.NOT_BUILT
         // makes the remainder greppable so none can survive to release.
-        when (openSection) {
-            null -> Unit
+        // **One place decides what every section's way back says.** They are
+        // opened from the notebook and from Today, and a screen reached from
+        // Today whose only way back said "Back to the notebook" named a place
+        // the person had not come from.
+        CompositionLocalProvider(
+            LocalSectionBackKey provides when (destination) {
+                Destination.TODAY -> "section.back.today"
+                else -> "section.back"
+            },
+        ) {
+            when (openSection) {
+                null -> Unit
 
-            Repository.Section.TRAIL -> TrailScreen(
-                entries = trail,
-                onEditDate = { editingDate = it },
-                onRemove = { entry ->
-                    removing = Removal(
-                        section = Repository.Section.TRAIL,
-                        rowId = entry.id,
-                        what = entry.title?.takeIf { it.isNotBlank() }
-                            ?: strings[kindLabelKey(entry.kind)],
-                    )
-                },
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.DOCUMENTS -> DocumentsScreen(
-                documents = documents,
-                onRemove = { document ->
-                    removing = Removal(
-                        Repository.Section.DOCUMENTS, document.id, document.title,
-                    )
-                },
-                onEdit = { document ->
-                    editingDocument = document
-                    documentError = null
-                    addingDocument = true
-                },
-                onAdd = {
-                    editingDocument = null
-                    documentError = null
-                    addingDocument = true
-                },
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.MONEY -> MoneyScreen(
-                bills = bills,
-                onRemove = { bill ->
-                    removing = Removal(Repository.Section.MONEY, bill.id, bill.description)
-                },
-                onEdit = { bill -> editingBill = bill; addingBill = true },
-                onAdd = { editingBill = null; addingBill = true },
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.STANDING_INSTRUCTIONS -> StandingInstructionsScreen(
-                instructions = instructions,
-                tags = instructionCatalog?.tags.orEmpty(),
-                onRemove = { instruction ->
-                    removing = Removal(
-                        Repository.Section.STANDING_INSTRUCTIONS,
-                        instruction.id,
-                        instruction.name,
-                    )
-                },
-                onAcknowledge = { acknowledging = it },
-                onAdd = { addingInstruction = true },
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.APPOINTMENTS -> AppointmentsScreen(
-                appointments = appointments,
-                // Midnight this morning, so something scheduled earlier today
-                // still reads as coming up rather than dropping into the past
-                // the moment its hour passes.
-                todayMillis = LocalDate.now()
-                    .atStartOfDay(java.time.ZoneId.systemDefault())
-                    .toInstant()
-                    .toEpochMilli(),
-                onRemove = { appointment ->
-                    removing = Removal(
-                        Repository.Section.APPOINTMENTS, appointment.id, appointment.title,
-                    )
-                },
-                onEdit = { appointment ->
-                    editingAppointment = appointment
-                    addingAppointment = true
-                },
-                onAdd = { editingAppointment = null; addingAppointment = true },
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.CHAPTERS -> ChaptersScreen(
-                chapters = chapters,
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.PROGRESS -> ProgressScreen(
-                measures = measures,
-                readings = readings,
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.THREADS -> CareThreadsScreen(
-                threads = threadCounts,
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.ASK_NEXT_TIME -> QuestionsScreen(
-                questions = questions,
-                onRemove = { question ->
-                    removing = Removal(Repository.Section.ASK_NEXT_TIME, question.id, question.text)
-                },
-                // Marked asked as of today, which is the honest default: the
-                // person is tapping it because it just happened. The date is
-                // editable later like every other date, per rule 17.
-                onMarkAsked = { markingAsked = it },
-                onAnswer = { answering = it },
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.MEDICATIONS -> MedicationsScreen(
-                medications = medications,
-                onRemove = { medication ->
-                    removing = Removal(
-                        Repository.Section.MEDICATIONS, medication.id, medication.name,
-                    )
-                },
-                onEdit = { medication ->
-                    editingMedication = medication
-                    addingMedication = true
-                },
-                onAdd = { editingMedication = null; addingMedication = true },
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.EMERGENCY_CARD -> EmergencyCardScreen(
-                card = emergencyCard,
-                contacts = emergencyContacts,
-                // **The other half of the link, per rule 18.** A medication
-                // knows it is on the card, and the card is assembled from the
-                // medications that say so, so neither has to be kept in step
-                // with the other. A stopped medication drops off the card by
-                // itself, which is the behavior somebody would expect and the
-                // one that is dangerous to get wrong.
-                medications = medications.filter { it.onEmergencyCard && !it.isStopped },
-                onCall = { contact -> dial(context, contact.phone) },
-                onEdit = { editingEmergencyCard = true },
-                onBack = { openSection = null },
-            )
-
-            Repository.Section.CARE_TEAM -> CareTeamScreen(
-                people = people,
-                // ACTION_DIAL rather than ACTION_CALL, which would need the
-                // call permission. The dialer opens with the number filled in
-                // and the person presses the green button themselves. That is
-                // one extra tap and it is the right one: this app asks for no
-                // permission it does not need, and placing a call on somebody's
-                // behalf is not a thing it should be able to do silently.
-                onCall = { person -> dial(context, person.phone) },
-                onRemove = { person ->
-                    removing = Removal(
-                        section = Repository.Section.CARE_TEAM,
-                        rowId = person.id,
-                        what = person.displayName.ifBlank {
-                            person.phone.orEmpty().ifBlank { person.roleLabel.orEmpty() }
-                        },
-                    )
-                },
-                onEdit = { person -> editingPerson = person; addingPerson = true },
-                onAdd = { editingPerson = null; addingPerson = true },
-                onBack = { openSection = null },
-            )
-
-            else -> {
-                val section = openSection!!
-                NotBuiltYet(
-                    name = strings[labelKey(section)],
-                    onClose = { openSection = null },
+                Repository.Section.TRAIL -> TrailScreen(
+                    entries = trail,
+                    onEditDate = { editingDate = it },
+                    onRemove = { entry ->
+                        removing = Removal(
+                            section = Repository.Section.TRAIL,
+                            rowId = entry.id,
+                            what = entry.title?.takeIf { it.isNotBlank() }
+                                ?: strings[kindLabelKey(entry.kind)],
+                        )
+                    },
+                    onBack = { openSection = null },
                 )
+
+                Repository.Section.DOCUMENTS -> DocumentsScreen(
+                    documents = documents,
+                    onRemove = { document ->
+                        removing = Removal(
+                            Repository.Section.DOCUMENTS, document.id, document.title,
+                        )
+                    },
+                    onEdit = { document ->
+                        editingDocument = document
+                        documentError = null
+                        addingDocument = true
+                    },
+                    onAdd = {
+                        editingDocument = null
+                        documentError = null
+                        addingDocument = true
+                    },
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.MONEY -> MoneyScreen(
+                    bills = bills,
+                    onRemove = { bill ->
+                        removing = Removal(Repository.Section.MONEY, bill.id, bill.description)
+                    },
+                    onEdit = { bill -> editingBill = bill; addingBill = true },
+                    onAdd = { editingBill = null; addingBill = true },
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.STANDING_INSTRUCTIONS -> StandingInstructionsScreen(
+                    instructions = instructions,
+                    tags = instructionCatalog?.tags.orEmpty(),
+                    onRemove = { instruction ->
+                        removing = Removal(
+                            Repository.Section.STANDING_INSTRUCTIONS,
+                            instruction.id,
+                            instruction.name,
+                        )
+                    },
+                    onAcknowledge = { acknowledging = it },
+                    onAdd = { addingInstruction = true },
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.APPOINTMENTS -> AppointmentsScreen(
+                    appointments = appointments,
+                    // Midnight this morning, so something scheduled earlier today
+                    // still reads as coming up rather than dropping into the past
+                    // the moment its hour passes.
+                    todayMillis = LocalDate.now()
+                        .atStartOfDay(java.time.ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli(),
+                    onRemove = { appointment ->
+                        removing = Removal(
+                            Repository.Section.APPOINTMENTS, appointment.id, appointment.title,
+                        )
+                    },
+                    onEdit = { appointment ->
+                        editingAppointment = appointment
+                        addingAppointment = true
+                    },
+                    onAdd = { editingAppointment = null; addingAppointment = true },
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.CHAPTERS -> ChaptersScreen(
+                    chapters = chapters,
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.PROGRESS -> ProgressScreen(
+                    measures = measures,
+                    readings = readings,
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.THREADS -> CareThreadsScreen(
+                    threads = threadCounts,
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.ASK_NEXT_TIME -> QuestionsScreen(
+                    questions = questions,
+                    onRemove = { question ->
+                        removing = Removal(Repository.Section.ASK_NEXT_TIME, question.id, question.text)
+                    },
+                    // Marked asked as of today, which is the honest default: the
+                    // person is tapping it because it just happened. The date is
+                    // editable later like every other date, per rule 17.
+                    onMarkAsked = { markingAsked = it },
+                    onAnswer = { answering = it },
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.MEDICATIONS -> MedicationsScreen(
+                    medications = medications,
+                    onRemove = { medication ->
+                        removing = Removal(
+                            Repository.Section.MEDICATIONS, medication.id, medication.name,
+                        )
+                    },
+                    onEdit = { medication ->
+                        editingMedication = medication
+                        addingMedication = true
+                    },
+                    onAdd = { editingMedication = null; addingMedication = true },
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.EMERGENCY_CARD -> EmergencyCardScreen(
+                    card = emergencyCard,
+                    contacts = emergencyContacts,
+                    // **The other half of the link, per rule 18.** A medication
+                    // knows it is on the card, and the card is assembled from the
+                    // medications that say so, so neither has to be kept in step
+                    // with the other. A stopped medication drops off the card by
+                    // itself, which is the behavior somebody would expect and the
+                    // one that is dangerous to get wrong.
+                    medications = medications.filter { it.onEmergencyCard && !it.isStopped },
+                    onCall = { contact -> dial(context, contact.phone) },
+                    onEdit = { editingEmergencyCard = true },
+                    onBack = { openSection = null },
+                )
+
+                Repository.Section.CARE_TEAM -> CareTeamScreen(
+                    people = people,
+                    // ACTION_DIAL rather than ACTION_CALL, which would need the
+                    // call permission. The dialer opens with the number filled in
+                    // and the person presses the green button themselves. That is
+                    // one extra tap and it is the right one: this app asks for no
+                    // permission it does not need, and placing a call on somebody's
+                    // behalf is not a thing it should be able to do silently.
+                    onCall = { person -> dial(context, person.phone) },
+                    onRemove = { person ->
+                        removing = Removal(
+                            section = Repository.Section.CARE_TEAM,
+                            rowId = person.id,
+                            what = person.displayName.ifBlank {
+                                person.phone.orEmpty().ifBlank { person.roleLabel.orEmpty() }
+                            },
+                        )
+                    },
+                    onEdit = { person -> editingPerson = person; addingPerson = true },
+                    onAdd = { editingPerson = null; addingPerson = true },
+                    onBack = { openSection = null },
+                )
+
+                else -> {
+                    val section = openSection!!
+                    NotBuiltYet(
+                        name = strings[labelKey(section)],
+                        onClose = { openSection = null },
+                    )
+                }
             }
         }
 
@@ -1842,6 +1855,7 @@ private fun NotBuiltYet(
  */
 private fun coachingSteps(
     counts: List<SectionCount>?,
+    emergencyCardHasSomething: Boolean,
     onOpenSection: (Repository.Section) -> Unit,
     onCapture: () -> Unit,
 ): List<CoachStep> {
@@ -1856,7 +1870,7 @@ private fun coachingSteps(
             labelKey = "today.empty.step.1",
             section = Repository.Section.EMERGENCY_CARD,
             onOpen = { onOpenSection(Repository.Section.EMERGENCY_CARD) },
-        ).takeIf { empty(Repository.Section.EMERGENCY_CARD) },
+        ).takeIf { !emergencyCardHasSomething },
         CoachStep(
             labelKey = "today.empty.step.2",
             section = Repository.Section.CARE_TEAM,

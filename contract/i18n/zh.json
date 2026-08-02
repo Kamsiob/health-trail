@@ -217,6 +217,7 @@
   "careteam.call": "拨打",
   "careteam.no_phone": "暂无号码",
   "section.back": "返回笔记本",
+  "section.back.today": "返回今天",
   "trail.date.action": "{date}。更改日期。",
   "careteam.call.number": "拨打 {number}",
   "careteam.add": "添加成员",

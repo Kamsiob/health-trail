@@ -217,6 +217,7 @@
   "careteam.call": "اتصال",
   "careteam.no_phone": "لا يوجد رقم بعد",
   "section.back": "العودة إلى الدفتر",
+  "section.back.today": "العودة إلى اليوم",
   "trail.date.action": "{date}. تغيير التاريخ.",
   "careteam.call.number": "الاتصال بالرقم {number}",
   "careteam.add": "إضافة شخص",

@@ -217,6 +217,7 @@
   "careteam.call": "Call",
   "careteam.no_phone": "No number yet",
   "section.back": "Back to the notebook",
+  "section.back.today": "Back to Today",
   "trail.date.action": "{date}. Change the date.",
   "careteam.call.number": "Call {number}",
   "careteam.add": "Add someone",

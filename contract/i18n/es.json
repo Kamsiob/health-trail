@@ -217,6 +217,7 @@
   "careteam.call": "Llamar",
   "careteam.no_phone": "Sin número todavía",
   "section.back": "Volver al cuaderno",
+  "section.back.today": "Volver a Hoy",
   "trail.date.action": "{date}. Cambiar la fecha.",
   "careteam.call.number": "Llamar al {number}",
   "careteam.add": "Añadir a alguien",
