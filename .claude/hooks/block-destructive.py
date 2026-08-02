@@ -13,9 +13,18 @@ section of DECISIONS.md and the run continues on something else.
 Kamsiob, AGPL-3.0.
 """
 
+import datetime
 import json
+import os
 import re
 import sys
+
+# Every invocation is logged, whether it blocks or passes. This exists because
+# the guard was inert for a week and looked installed the whole time: a guard
+# that does not fire looks exactly like a guard with nothing to do. The log is
+# the difference. If this file has no line for a session, the hook did not run
+# in that session, and that is a wiring fault rather than a quiet clean run.
+LOG_PATH = os.path.expanduser("~/.claude/health-trail-guard.log")
 
 # Each rule is a compiled pattern plus the plain reason returned to the session.
 # Patterns are matched against the whole command string, which may contain
@@ -115,6 +124,18 @@ RULES = [
 COMPILED = [(re.compile(p, re.IGNORECASE), reason) for p, reason in RULES]
 
 
+def log(decision: str, command: str, cwd: str) -> None:
+    """Append one line per invocation. Never raises, because a log that cannot
+    be written must not stop the guard from guarding."""
+    try:
+        stamp = datetime.datetime.now().isoformat(timespec="seconds")
+        os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+        with open(LOG_PATH, "a", encoding="utf-8") as handle:
+            handle.write(f"{stamp}\t{decision}\tcwd={cwd}\t{command.strip()[:200]}\n")
+    except OSError:
+        pass
+
+
 def main() -> int:
     try:
         payload = json.load(sys.stdin)
@@ -126,11 +147,13 @@ def main() -> int:
         return 0
 
     command = (payload.get("tool_input") or {}).get("command") or ""
+    cwd = payload.get("cwd") or ""
     if not command:
         return 0
 
     for pattern, reason in COMPILED:
         if pattern.search(command):
+            log("BLOCKED", command, cwd)
             sys.stderr.write(
                 "Blocked by the Health Trail destructive command guard "
                 "(RUN-SAFETY.md section 1.1).\n\n"
@@ -143,6 +166,7 @@ def main() -> int:
             )
             return 2
 
+    log("pass", command, cwd)
     return 0
 
 
