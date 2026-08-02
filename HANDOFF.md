@@ -4,9 +4,11 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-08-02, during the long run that made the notebook's twelve sections open. Sections 0a, 2a, 3, and 9 are current to that run; the rest predates it and is still accurate.
+**Last rewritten:** 2026-08-02 at 06:25, at the end of an eight hour run. Sections 0a, 3, and 4 are current to the end of it.
 
-**There is one pull request in flight, #112**, on branch `fix/guard-observable`. It is large, every increment inside it is a separate commit, and it carries eight new sections plus the Arabic typography fix. Section 3 says where to pick up.
+**Nothing is in flight.** Everything is committed and pushed to `main`, the working tree is clean, and the phone holds a build matching the head of `main` with a seeded notebook. The last commit of the run is `878e1bc`.
+
+**The single most important thing this run found:** every export the app had ever written could only be opened by the phone that wrote it, which meant the only recovery path from key loss did not exist. It is fixed, and D61 explains why no test caught it.
 
 **The phone holds a current build with a seeded notebook**, per D56. If an instrumented run has just wiped it, reinstall and reseed before doing anything else.
 
@@ -33,6 +35,16 @@ The probe was run first thing, as instructed. **The guard did not fire.** D49 ca
 **If it has no line stamped inside your session, you have no guard**, whatever the configuration says. Run the two commands in section 0 anyway to confirm, and record the outcome in D49 either way.
 
 **What protected the phone through this run** was the auto mode classifier, not this project's guard.
+
+### Checked again at the end of the long run, 2026-08-02 06:23
+
+`cat ~/.claude/health-trail-guard.log` holds **two lines, both stamped 22:31 on 2026-08-01**, which are the two from the fix itself. **Nothing from the eight hours after it.** So the guard did not fire once during the whole run, and the absolute path plus logging did not change that within the session that made the change.
+
+**The most likely reason is mundane and should be tested rather than assumed:** `.claude/settings.json` is read when a session starts, so a session that edits its own hook configuration is the one session that cannot benefit from it. That predicts the guard works from the *next* session's first command. **Predicting is not testing.** The next session must run `cat ~/.claude/health-trail-guard.log` first, then a blocklisted command, then read the log again, and record the outcome in D49 either way.
+
+**Do not write "the guard is live" anywhere without a log line stamped inside your own session.** That error is D29 and it has now been made twice.
+
+**Nothing destructive was run in this session.** Rule 6 was followed by hand throughout, and the only device actions were installs, instrumented test runs, and removing two test export files this session created in Downloads.
 
 ---
 
@@ -222,12 +234,19 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The change log, through Kotlin | `ChangeLogTransactionTest` on the phone, through SQLCipher rather than plain SQLite. Insert, update, and tombstone each append exactly one entry, the entry names the table, the row, and the operation, and a write inside an abandoned outer transaction leaves no orphan |
 | The fixture generator | `check_fixtures.py` generates twice and compares bytes, checks a different seed differs, checks all six points grow, checks year five hits its stated scale, and checks the shapes a random generator can miss by chance: every bill state, every project state, both instruction tags, an incident that never resolves, and an attachment exactly at the size limit. Proven to catch drift and two of those gaps by breaking them on purpose |
 | **The export and import round trip** | `RoundTripTest` on the phone, **15 tests, run both plain and encrypted**. **This is the test B4's whole argument rested on and it did not exist until 2026-08-01.** Every row of every user table compared column by column across an export and a restore. The EDTF string survives byte for byte, a month never collapses to its first day, unknown survives as unknown rather than as null or today, the uncertainty qualifier is not stripped, tombstones travel so a deletion is not resurrected, and the derived range is proven recomputed on import by writing a deliberately wrong one into the file and watching the import correct it |
-| The export container | `ExportContainerTest` on the phone. What goes in comes out byte for byte, the manifest survives to the millisecond including tables with zero rows, the manifest is the first entry, and six of the eight files that must fail cleanly each name what was wrong |
+| The export container | `ExportContainerTest` on the phone. What goes in comes out byte for byte, the manifest survives to the millisecond including tables with zero rows, the manifest is the first entry, and **all eight** files that must fail cleanly each name what was wrong. The last two, an unknown table or column and an attachment the database names that the archive lacks, needed to read the payload and only became possible once the payload was portable |
+| **The export is openable somewhere other than the phone that wrote it** | `PortabilityTest` on the phone. **This was false until 2026-08-02 and every other export test passed throughout**, because they all restore onto the same device, where the Keystore key never changes. The archive carried the SQLCipher file as it sits on disk, so no other device could ever have read it, which made the only recovery path from key loss not exist. The check is on the payload's first sixteen bytes for the SQLite magic, plus an encrypted export decrypting to one, plus the live database *not* being one so the first check cannot pass by going vacuous. D61 |
+| The restore, end to end through the interface | Walked on the Pixel twice, once before the portability fix and once after. Exported with a passphrase, added a care team row named SHOULD NOT SURVIVE afterward, restored, and the row was gone with the original two people back. A wrong passphrase was tried first and reported honestly without saying which of the two things was wrong |
+| The export passphrase is concealed | `PassphraseMaskingTest` on the phone, checking what the field renders rather than which parameters it is passed. **It was rendering in the clear**, because a password keyboard is not a mask. D62 |
+| **Today's digest** | `DigestTest`, 10 JVM vectors with no database and no composition, which is the shape #15 asks for. Covers the strict boundary, one row written four times counting as one correction, a row created and removed in the same span counting only as removed, notebook order rather than order by volume, and bookkeeping tables being left out. Walked on the phone with a seeded notebook |
+| A visit is a run of the app | `LastVisitTest` on the phone. **It was once per composition**, so a theme change or rotation advanced the mark mid-visit and the digest went blank. Found on the phone with a freshly seeded notebook reporting nothing at all. D63 |
 | Attachment storage | `AttachmentsTest` on the phone. The same bytes are one file, the streaming and whole-file paths agree, a changed file fails verification, and a half written file is never visible under its hash |
 | The date picker | Walked on the Pixel: opened from the capture form, picked August 18 with a time, and the form read back "August 18, 2026 at 2:00 PM" through the same renderer every other date uses |
 | A deleted row is actually gone | `TombstoneTest` on the phone deletes through the repository and asserts it leaves every read the app has: the count, the Unfiled tray, the date lookup, the thread chips, and a link table join. It also asserts the row physically survives, because a removed row leaves nothing to tell a peer it was deleted |
 | Tombstones cannot leak | `check_live_views.py` fails any read of a base table outside a live view, in app and test sources alike. Proven by three deliberate breakages: a leak inside the repository, a leak on a screen, and an allowance with no reason |
 | Every screen built so far | Instrumented, plus built, installed, opened, and looked at on the Pixel |
+| Today, as the app's front page | Walked on the Pixel with a seeded notebook. It led with an apology for the unbuilt digest and three fixed suggestions that ignored the notebook behind them. Now it leads with what changed, each row opening its section, and suggests only what is still undone |
+| A section opened from Today comes back to Today | Walked on the Pixel. It used to say "Back to the notebook" to somebody who had come from Today, because opening a section also switched the destination underneath the overlay for no other reason |
 | **The eight sections the notebook opens onto** | Each walked on the Pixel with real data typed through the app's own forms, in both themes, at font scale 2.0, and in Arabic. `ScreenReaderTest` covers all of them for labeling, 16 cases. **The reader pass with TalkBack actually running is not done and is not claimed**, #44 |
 | The trail's route | Drawn to `DESIGN.md` 5.2 and checked on the device: the dashed gold line runs continuously through the month headings, the node lands on its date at both font scales, node color carries the entry kind, and the whole thing mirrors to the start edge in Arabic |
 | Links that go both ways | A medication flagged for the emergency card appears on it, and one that is not does not. Walked with two medications. Taking somebody off the emergency card leaves them on the care team, walked and confirmed |
@@ -255,31 +274,34 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 **Rebuilt from the tracker on 2026-08-01.** The previous version of this section had four rows spliced in from section 4's verification table, which put `MigrationTest` text under issue #9 and left three rows with no issue number at all. It also listed #39 as unbuilt while sections 4 and 9 recorded it as built and walked. It was patched too many times and is now derived from `gh issue list` rather than edited in place. **If this section and section 3 ever disagree, rebuild this one from the tracker and make section 3 follow it.**
 
-**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #14 the migration mechanism, #22 the end of life instruction tag, #36 the notebook, #37 setup, #38 the date model, **#39 the date interface**, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray, #58 the subject scoped counts, and #78 the empty Today. #21, the roadmap, is also closed, and **#12 the fonts**, closed once Chinese was verified rendering from the system face on the device.
+**Closed in the long run of 2026-08-01**, so a fresh session does not go looking for them: #14 the migration mechanism, #22 the end of life instruction tag, #36 the notebook, #37 setup, #38 the date model, **#39 the date interface**, #40 the press sweep, #41 the situation picker, #42 measurement, #48 the template, #53 the Unfiled tray, #58 the subject scoped counts, and #78 the empty Today. #21, the roadmap, is also closed, and **#12 the fonts**, closed once Chinese was verified rendering from the system face on the device. #25 About and #57 the document capture input closed in the same run. #102 and #109 closed on the language question and the translation disclaimer.
+
+**Changed on 2026-08-02**, in the run that continued through the morning. The rows below are current as of 06:25.
 
 **In order. The first is the one to take.**
 
 | Issue | What | Why here, and what it is actually waiting on |
 |---|---|---|
-| **#9** | **The export container** | ~~The round trip test.~~ ~~Encryption.~~ **Both done**, 15 tests run plain and encrypted. What remains is **the last two of the eight failure cases** |
+| **#9** | **The export container** | ~~Round trip.~~ ~~Encryption.~~ ~~The last two failure cases.~~ ~~Portability.~~ **All done and walked on the device in both directions.** What remains is only that the round trip runs on the phone rather than in continuous integration, which is what B4's argument rests on |
 | #62 | The template catalog is English only | Release blocking. The app currently shows an Arabic interface wrapped around English content, which any Arabic reader sees immediately. Found by running the device in Arabic, not by any check |
 | #43, #44 | The retroactive audit, and the accessibility gate | **Worked alongside new screens, never saved for a phase gate.** Both partly done with findings on the issues. **#44's reader criterion is met for three screens**, walked with TalkBack actually running on 2026-08-01, D54. What remains is the same pass over the screens not yet walked, which is now cheap and proven safe |
 | #57 | The document capture input | The last of the six ways in. **No longer blocked**: the attachment storage it needed landed with the export's first piece |
 | #8 | The repository layer | ~~Tombstones travel through the export.~~ **Proven by `RoundTripTest`.** Ready to close once somebody confirms the other criteria |
-| #7 | The change log | Proven through Kotlin. Open only for "the digest reads from the change log", which needs the digest engine |
+| #7 | The change log | Proven through Kotlin. **The digest now reads from it**, so the last criterion is met. Ready to close once somebody confirms |
 | #17 | The fixture generator | Everything but the four language variants, which wait on #62 |
-| #15 | Golden vectors | `dates.json` exists and runs on the phone in all four locales. The engine vectors need the engine |
+| #15 | Golden vectors | `dates.json` runs on the phone in all four locales, and **`DigestTest` adds 10 JVM vectors for the digest engine**. What remains is a second platform to run them against, which is #16 |
 | #10 | `SyncTransport` | Needs the export container, so it follows #9 |
-| #46 | No dead ends, links both ways | Needs screens that can link to each other, so it follows the trail |
-| #47 | Search | Needs Today, which needs the digest engine |
+| #46 | No dead ends, links both ways | **Partly done.** Today's digest rows and coached steps now open what they name, and a section opened from Today returns to Today. What remains is a deliberate sweep of the rest rather than the two found by walking |
+| #47 | Search | **Unblocked.** Today and the digest engine both exist now. This is the largest remaining feature and a reasonable next thing to take |
 | #45 | Capture from outside the app | Independent of everything above. Widget, quick settings tile, share sheet target |
 | #16 | The web scaffold | `npm` is absent on this machine. Nothing else blocks it |
 | #13 | The four locale scaffold | Arabic and Chinese are both verified on the device now, and choosing a language actually changes the language, which it did not before D52. What remains overlaps #62 |
 | #18 | Content checks in continuous integration | Ten run. Open for the ones not implementable yet, each named in `run_all.py` with what it waits on |
-| #25 | The About screen links the privacy policy | Needs an About screen, which does not exist |
 | #1 | Phase 0 parent | Closes when its children do |
 
-**In the review queue, waiting on the owner rather than on work.** Eight, and the list had fallen two behind: #28 the disclaimer gate, #30 setup, #32 the situation picker, #34 the capture sheet and form, #50 the notebook, #55 the Unfiled tray, **#68 the date picker**, and **#81 Today's empty state**. **Arabic screenshots are no longer blocked** for any of them.
+**In the review queue, waiting on the owner rather than on work.** Twenty two now, and none of them is waiting on anything this project can do: #28 the disclaimer gate, #30 setup, #32 the situation picker, #34 the capture sheet and form, #50 the notebook, #55 the Unfiled tray, #68 the date picker, #81 Today's empty state, #89 Appearance, #111 the trail and care team, #113 the emergency card, #114 medications, #115 Ask next time, #116 care threads, #117 Progress, #118 chapters, #119 appointments, #120 standing instructions, #121 money, #122 documents, #123 projects, and #124 About. Each carries a real device screenshot. **Arabic screenshots are no longer blocked** for any of them.
+
+**#125 is a question for the owner, not a task:** should the app open on Today rather than the Notebook? `MASTER_SPEC.md` calls Today the dashboard. Today is now worth opening on, which it was not when the question was first asked.
 
 **Phase 1 feature work still ahead:** Today with the digest engine, the trail itself, care team, medications, the emergency card, projects, and More.
 
@@ -397,6 +419,9 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| Exporting the notebook | 2026-08-02 | #126 | not yet |
+| Restoring from a file | 2026-08-02 | #127 | not yet |
+| Today, rebuilt around the digest | 2026-08-02 | #81 | not yet |
 | The trail | 2026-08-01 | #111 | not yet |
 | The emergency card, and filling it in | 2026-08-01 | #113 | not yet |
 | Medications, and adding one | 2026-08-01 | #114 | not yet |

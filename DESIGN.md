@@ -617,17 +617,39 @@ Composed from Display L, Body M, Display S, Label, the Mono count style, cards f
 
 **Built because persona P1 required it and was not getting it.** P1 is the person in a corridor on the day of an admission, and one of the five things that must be true for them is exactly this. It was the not-built screen, which is the wrong thing to hand somebody at the moment they are most likely to put the phone away.
 
-**The three steps are guidance, not controls.** Two of them lead to screens that do not exist yet, and offering those as buttons would be the dead end D44 removed from the capture sheet. The one thing a person can act on now, capture, is already the gold button on every screen, so the list reads as what to do next rather than three disabled offers.
+**The steps are controls, and only the ones still worth taking appear.** They were three fixed sentences that led nowhere, written when the screens they named did not exist. The screens exist, so a step that tells somebody to fill in the emergency card and leaves them to go and find it is a dead end wearing a suggestion. Each step now opens what it names, and disappears once it has been taken. **A notebook with nothing left to suggest shows no coaching at all**, because an empty list is a finished state and inventing a fourth suggestion to fill the space would be the app keeping score, which rule 13 forbids.
 
 **The numbering is allowed here**, and section 1 bans numbered markers only where the content is not genuinely a sequence. Filling in the emergency card first is the entire point of the list.
 
-**The coaching stays until the emergency card exists, not until something is written.** Tying it to whether anything had been written took the most useful two minutes in the app off the screen the moment somebody logged their first call, which is the opposite of the intended reward. Both the digest note and the coaching appear together when both apply, and the coached list changes its heading from "Nothing written down yet" to "Worth doing next", because a heading that contradicts the screen under it reads as a bug.
+**Whether the emergency card counts as filled in is decided the same way on both screens.** The coaching asked the row count, which only knows whether a card row exists, while the card itself counts its contacts and the medications marked for it. The result was Today advising somebody to fill in a card that already listed a medication. Two screens answering the same question differently is the app being wrong about itself, and this is the second time this seam produced a contradiction.
 
-**A notebook with something in it says the digest is still being built, and says nothing is waiting on it.** The second half matters more: a person reading that a summary is coming needs to know in the same breath that their records are kept regardless, or the sentence reads as a reason to stop writing things down. That branch carries `ShellTags.NOT_BUILT` so it cannot survive to release.
+**The digest leads, and it says only what the change log says.** Each section that gained something is a row drawn like the notebook's own, because it is the same idea: a place and how much is in it. Somebody reading "the trail, 2 new" is already asking which two, so the row opens the trail. **Ordered by where things live, never by how many**, since ranking by volume would move the sections between visits and the notebook's one promise is that the places never move. Corrections and removals are stated quietly, as totals with no destination: they are usually somebody tidying up after themselves, and giving that the weight of new records would turn the screen into a report card on how tidy they are being.
+
+**A quiet week says nothing rather than saying nothing happened.** A heading over "nothing changed" is a heading over nothing, and this screen is read at a glance. The same is true of a first launch, which has no previous visit to be "since" and does not summarize a notebook's whole history as though it happened this week.
+
+**The screen led with an apology for eleven days.** While the engine did not exist, the most prominent thing on the app's front door was a note that the summary was still being built. That was correct under D44 and it was still the front door leading with what the app could not do, which is the argument for building the engine rather than for wording the note better.
 
 `TodayScreenTest` asserts the empty state never scolds and never keeps score, which is rule 13 checked rather than remembered.
 
 Composed from Display L, Display S, Body L, Body M, the Mono style, and cards 5.3. Tracked on issue #78.
+
+**Exporting the notebook.** Undesigned, composed, and logged per section 10. Issue #126.
+
+**The sentence the format requires appears before the person commits**, in the words `contract/export-format.md` section 4 requires: if the passphrase is lost the file cannot be recovered, there is no server, no recovery code, and no backdoor.
+
+**The passphrase is typed twice**, which nothing else in this app asks of anybody. A typo here is not a typo, it is a file that looks like a backup and can never be opened, and that is the one failure worth an extra field.
+
+**It is concealed by default with one control to reveal it.** It rendered in the clear until 2026-08-02, because a password keyboard selects a keyboard and masks nothing. Concealing it outright was rejected: typing a passphrase blind, twice, and being told only that the two do not match is a trap for anybody tired, and this screen is used by people who are.
+
+**An unencrypted export is offered plainly rather than hidden**, with a warning rather than a scolding. It is their data and wanting to read it is reasonable.
+
+**The result replaces the form.** "Saved" sat in body text below two still live buttons, which gave the one thing that had just happened the least weight on the screen and invited a second file nobody asked for. It now says to open the file once, while the person is still here, rather than trusting it unopened.
+
+**Restoring from a file.** Undesigned, composed, and logged per section 10. Issue #127.
+
+**Five states, and the two that only appear when something has gone wrong are the ones that were designed hardest.** Choosing a file reads the manifest and nothing else. A wrong passphrase says the passphrase is wrong or the file was altered and there is no way to tell which from here, because GCM genuinely cannot distinguish them, and it leaves the field in place to try again, since the common case is a typo and making somebody start over punishes the likeliest mistake.
+
+**What is in the file is shown before anything is applied**, and the sentence saying a restore replaces everything sits above the button rather than after it.
 
 **Adding a measurement.** The fifth of the six capture inputs, and the one with the sharpest content rule attached to it.
 
