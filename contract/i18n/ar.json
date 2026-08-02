@@ -216,5 +216,14 @@
   "careteam.no_phone": "لا يوجد رقم بعد",
   "section.back": "العودة إلى الدفتر",
   "trail.date.action": "{date}. تغيير التاريخ.",
-  "careteam.call.number": "الاتصال بالرقم {number}"
+  "careteam.call.number": "الاتصال بالرقم {number}",
+  "careteam.add": "إضافة شخص",
+  "careteam.add.title": "إضافة شخص إلى فريق الرعاية",
+  "careteam.add.lead": "أجب بما تستطيع. الرقم بلا اسم يستحق الحفظ أيضًا.",
+  "careteam.add.name": "الاسم",
+  "careteam.add.name.hint": "اسم، أو ما تناديه به",
+  "careteam.add.role": "دوره",
+  "careteam.add.role.hint": "ممرضة، منسق الحالة، موظف القسم",
+  "careteam.add.phone": "رقم الهاتف",
+  "careteam.add.phone.hint": "الخط المباشر إن توفر"
 }

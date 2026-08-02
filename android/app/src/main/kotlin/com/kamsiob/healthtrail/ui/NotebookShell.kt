@@ -42,7 +42,9 @@ import com.kamsiob.healthtrail.ui.screens.emphasisFrom
 import com.kamsiob.healthtrail.ui.screens.MeasurementDraft
 import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
+import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
 import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
+import com.kamsiob.healthtrail.ui.screens.PersonDraft
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.TrailScreen
 import com.kamsiob.healthtrail.ui.screens.labelKey
@@ -116,6 +118,9 @@ fun NotebookShell(
     var editingDate by remember { mutableStateOf<Repository.TrailEntry?>(null) }
     // The correction in flight: which entry, and the date the person chose.
     var correcting by remember { mutableStateOf<Pair<String, Edtf.Date>?>(null) }
+    // Somebody being added to the care team, and the draft being written.
+    var addingPerson by remember { mutableStateOf(false) }
+    var savingPerson by remember { mutableStateOf<PersonDraft?>(null) }
     val context = LocalContext.current
 
     // Recounted whenever the tab changes, so returning to the notebook after
@@ -258,6 +263,7 @@ fun NotebookShell(
                         )
                     }
                 },
+                onAdd = { addingPerson = true },
                 onBack = { openSection = null },
             )
 
@@ -284,6 +290,40 @@ fun NotebookShell(
                 },
                 onDismiss = { editingDate = null },
             )
+        }
+
+        if (addingPerson) {
+            AddPersonScreen(
+                onSave = { draft ->
+                    addingPerson = false
+                    savingPerson = draft
+                },
+                onCancel = { addingPerson = false },
+            )
+        }
+
+        val person = savingPerson
+        if (person != null) {
+            LaunchedEffect(person) {
+                val subject = repository.activeSubject()
+                // **Nothing at all is not a partial answer, it is a stray tap.**
+                // Rule 13 makes an unfilled field a finished state, which is why
+                // any one of these alone writes a real row. All three empty is a
+                // different thing: there is nothing to keep, so nothing is
+                // written and nothing is said about it either.
+                val anything = listOf(person.name, person.role, person.phone)
+                    .any { it.isNotBlank() }
+                if (subject != null && anything) {
+                    repository.createPerson(
+                        subjectId = subject.id,
+                        displayName = person.name.trim(),
+                        phone = person.phone.trim(),
+                        roleLabel = person.role.trim().ifBlank { null },
+                    )
+                }
+                savingPerson = null
+                revision += 1
+            }
         }
 
         val correction = correcting

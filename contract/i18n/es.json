@@ -216,5 +216,14 @@
   "careteam.no_phone": "Sin número todavía",
   "section.back": "Volver al cuaderno",
   "trail.date.action": "{date}. Cambiar la fecha.",
-  "careteam.call.number": "Llamar al {number}"
+  "careteam.call.number": "Llamar al {number}",
+  "careteam.add": "Añadir a alguien",
+  "careteam.add.title": "Añadir a alguien al equipo de atención",
+  "careteam.add.lead": "Complete lo que pueda. Un número sin nombre también vale la pena guardarlo.",
+  "careteam.add.name": "Su nombre",
+  "careteam.add.name.hint": "Un nombre, o simplemente como le llama",
+  "careteam.add.role": "Qué función tiene",
+  "careteam.add.role.hint": "Enfermera, gestor de casos, el administrativo de la planta",
+  "careteam.add.phone": "Número de teléfono",
+  "careteam.add.phone.hint": "La línea directa si la tiene"
 }

@@ -83,6 +83,58 @@ fun FilledButton(
 }
 
 /**
+ * A quiet button, per DESIGN.md section 5.4: `card` surface, `ink` label, the
+ * same pill geometry and the same 48dp floor as the filled one.
+ *
+ * **It exists because the filled button was winning screens it should not.**
+ * On the care team, "Add someone" as a full width blue bar was the loudest
+ * thing on a screen whose whole subject is the people above it, which inverts
+ * rule 15: the accent belongs on reaching somebody, not on the way to add one.
+ * A quiet button keeps the presence and gives up the shout.
+ *
+ * It is the right choice for a real, common, structural action that is not the
+ * point of the screen it sits on. Where an action is the point, the filled
+ * button is still correct.
+ */
+@Composable
+fun QuietButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.card)
+    val ring by focusRingAlpha(interaction)
+
+    Box(
+        modifier = modifier
+            .sizeIn(minHeight = Space.touchTarget)
+            .clip(Radius.pill)
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.pill)
+            .clickable(
+                enabled = enabled,
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .padding(horizontal = Space.l, vertical = Space.sm),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = HealthTrail.type.label,
+            color = if (enabled) colors.ink else colors.ink3Text,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.defaultMinSize(minHeight = 0.dp),
+        )
+    }
+}
+
+/**
  * A text action, per DESIGN.md section 5.4: no container, `blue` label, and
  * still 48dp of touch area regardless of how small the words are.
  *

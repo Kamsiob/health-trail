@@ -216,5 +216,14 @@
   "careteam.no_phone": "No number yet",
   "section.back": "Back to the notebook",
   "trail.date.action": "{date}. Change the date.",
-  "careteam.call.number": "Call {number}"
+  "careteam.call.number": "Call {number}",
+  "careteam.add": "Add someone",
+  "careteam.add.title": "Add someone to the care team",
+  "careteam.add.lead": "Answer what you can. A number with no name is still worth keeping.",
+  "careteam.add.name": "Their name",
+  "careteam.add.name.hint": "A name, or just what you call them",
+  "careteam.add.role": "What they do",
+  "careteam.add.role.hint": "Nurse, case manager, the ward clerk",
+  "careteam.add.phone": "Phone number",
+  "careteam.add.phone.hint": "The direct line if you have it"
 }

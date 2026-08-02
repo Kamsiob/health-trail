@@ -216,5 +216,14 @@
   "careteam.no_phone": "暂无号码",
   "section.back": "返回笔记本",
   "trail.date.action": "{date}。更改日期。",
-  "careteam.call.number": "拨打 {number}"
+  "careteam.call.number": "拨打 {number}",
+  "careteam.add": "添加成员",
+  "careteam.add.title": "向照护团队添加成员",
+  "careteam.add.lead": "能填多少就填多少。只有号码没有名字也值得保存。",
+  "careteam.add.name": "姓名",
+  "careteam.add.name.hint": "姓名，或者您对他们的称呼",
+  "careteam.add.role": "职务",
+  "careteam.add.role.hint": "护士、个案管理员、病区文员",
+  "careteam.add.phone": "电话号码",
+  "careteam.add.phone.hint": "如果有，请填直线号码"
 }

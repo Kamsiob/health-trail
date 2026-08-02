@@ -691,6 +691,38 @@ Not in `reference/screen-grid.html`. Composed under section 10 and logged here a
 
 Composed from Display L, Body M, the Mono eyebrow with its hairline 5.13, cards 5.3, the press treatment 5.14, and the navigation's selected dot. Nothing new was introduced.
 
+**The trail.** The record read back, and the app's signature element.
+
+**It is drawn in section 5.2 rather than in the reference file, so it is specified without being mocked up.** That specification was followed exactly: the dashed route at 2dp, 6dp on and 6dp off, `blaze` at 65%, behind a 12dp node ringed 3dp in the current background so the node sits on the line rather than beside it. Node color carries the entry type, gold for a call, blue for a visit, alert for an incident.
+
+**Everything else takes the quiet non-text ink rather than borrowing one of the three.** Section 5.2 names three kinds and the app has nine. A measurement wearing the incident color would be the app saying something about it that is not true, which is rule 2 reached through a color rather than through a word.
+
+**It was built wrong first, and that is worth recording.** The first version was a plain list of cards. It compiled, ran, showed the right data in the right order, and was exactly the "functionally correct and visually plain" that section 10.5 says is not done. Nothing about the data changed in the rebuild. The screen went from a list to the thing the whole app is named after.
+
+**Months head their own runs** through the 5.13 group header. A month heading carries no hedge, unlike every other coarse date in the app: it is naming the run of entries beneath it rather than claiming something happened across the whole month, and each entry still states its own date at its own precision.
+
+**An unknown date gathers at the end under its own heading.** Not at zero, not at today. Both would place an entry on the timeline where the person never put it.
+
+**The date is the one tappable thing on a row**, per rule 17, and it opens the same picker every other date uses. The rest of the row does not respond, which is the honest way to keep rule 16: only the thing that responds is made to look touchable.
+
+**The route mirrors for free**, because it is drawn in the start edge rather than the left one, which is what section 8's right to left requirement asks of a timeline.
+
+**It draws itself in once per screen entry**, 400ms with nodes staggered 30ms behind, through the section 6 tokens rather than inline, so reduced motion reaches it. `Motion.trailDraw` and `trailNodeStaggerMillis` were written for this screen long before it existed and had never been called.
+
+Composed from Display S, Body M, Body S, the Mono metadata style, cards 5.3, the group header 5.13, the press treatment 5.14, and the trail tokens of 5.2. Tracked on issue #111.
+
+**The care team, and adding somebody to it.**
+
+**The number is the action, not a line of text.** The value of writing somebody down is that reaching them is one tap later rather than a search through a phone, an email, and a discharge folder. So the row carries a call action rather than a number to read out and dial by hand. It opens the dialer through `ACTION_DIAL` rather than placing the call, so no permission is asked for and the person presses the green button themselves.
+
+**Every field is optional, including the name.** Somebody in a corridor with a number on a scrap of paper should be able to keep it. A row therefore takes its heading from whatever was actually given, name first, then the number, then the role, and **never invents a placeholder**, which rule 11 forbids and which would also be the app characterizing somebody it knows nothing about. When the number is the heading, the action says "Call" rather than repeating it two lines below itself.
+
+**Nothing at all is a stray tap rather than a partial answer.** Any one field alone writes a real row. All three empty writes nothing and says nothing about it, because there is nothing to keep and an error message would be the app scolding somebody for a mis-tap.
+
+**"Add someone" is a quiet button, and that is what introduced one.** Section 5.4 has specified a quiet variant since the beginning and nothing had ever used it. As a filled button this was a full width blue bar and the loudest thing on a screen whose subject is the people above it, which inverts 10.8: the accent belongs on reaching somebody, not on the way to add one. Checked on the device before and after, which is the only reason it was caught.
+
+Composed from Display L, Display S, Body M, Body S, the Mono eyebrow, cards 5.3, the text field 5.9, the filled and quiet buttons 5.4, and one text action. Tracked on issue #111.
+
 ---
 
 ## 9. Accessibility floor
