@@ -17,6 +17,8 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.ExportScreen
+import com.kamsiob.healthtrail.ui.screens.ExportState
 import com.kamsiob.healthtrail.ui.screens.AcknowledgeSheet
 import com.kamsiob.healthtrail.ui.screens.AnswerSheet
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
@@ -615,6 +617,24 @@ class ScreenReaderTest {
     }
 
     @Test
+    fun exportLabelsEverything() {
+        compose.show {
+            ExportScreen(state = ExportState.READY, onExport = {}, onBack = {})
+        }
+        assertEverythingIsLabeled("export")
+    }
+
+    @Test
+    fun exportLabelsEverythingWhileWorking() {
+        // Every control is disabled in this state, which is exactly when a
+        // reader is most likely to meet something that announces nothing.
+        compose.show {
+            ExportScreen(state = ExportState.WORKING, onExport = {}, onBack = {})
+        }
+        assertEverythingIsLabeled("export, working")
+    }
+
+    @Test
     fun aboutLabelsEverything() {
         compose.show { AboutScreen(onBack = {}) }
         assertEverythingIsLabeled("about")
@@ -627,6 +647,7 @@ class ScreenReaderTest {
                 choice = com.kamsiob.healthtrail.ui.theme.ThemeChoice.DEFAULT,
                 onChoose = {},
                 onAbout = {},
+                onExport = {},
             )
         }
         assertEverythingIsLabeled("more")

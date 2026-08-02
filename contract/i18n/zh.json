@@ -395,5 +395,21 @@
   "instructions.ack.lead": "您告诉了谁、他们怎么说、是否有书面记录。日后就是靠这些说话。",
   "instructions.ack.hint": "已告知护士长、已写入照护计划，等等",
   "instructions.ack.none": "还没有记录他们如何回应。",
-  "instructions.ack.on": "回应于 {date}"
+  "instructions.ack.on": "回应于 {date}",
+  "export.title": "导出您的笔记本",
+  "export.lead": "一个包含全部内容的文件：每条记录、每个人、每张照片，以及您删除过的内容，这样恢复时能原样还原。",
+  "export.why": "如果这部手机丢失或应用的密钥丢失，这个文件是唯一的找回途径。请保存在您日后仍能取到的地方。",
+  "export.passphrase": "密码短语",
+  "export.passphrase.hint": "您能记住的，或者写在安全处的",
+  "export.passphrase.again": "再输入一次",
+  "export.warning": "密码短语一旦丢失，文件将无法恢复。没有服务器，没有恢复码，也没有后门。",
+  "export.mismatch": "两次输入不一致。",
+  "export.save": "选择保存位置",
+  "export.plain": "不设密码保存",
+  "export.plain.warning": "任何人打开该文件都能读到其中的全部内容。为自己的记录这样做是合理的，但值得事先知道。",
+  "export.working": "正在写入文件。笔记本较大时可能需要一点时间。",
+  "export.done": "已保存。在依赖它之前，请确认您能找到它。",
+  "export.failed": "操作未成功，未保存任何内容。您的笔记本未受影响。",
+  "more.export": "导出您的笔记本",
+  "section.back.more2": "返回更多"
 }

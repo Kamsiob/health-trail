@@ -1,6 +1,11 @@
 package com.kamsiob.healthtrail.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +32,9 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.ExportScreen
+import com.kamsiob.healthtrail.ui.screens.ExportState
+import com.kamsiob.healthtrail.data.Backup
 import com.kamsiob.healthtrail.ui.screens.MoreScreen
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 import androidx.compose.foundation.background
@@ -175,6 +183,12 @@ fun NotebookShell(
     var settingProjectStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     var settingWaitingOn by remember { mutableStateOf<Pair<String, String>?>(null) }
     var aboutOpen by remember { mutableStateOf(false) }
+    var exportOpen by remember { mutableStateOf(false) }
+    var exportState by remember { mutableStateOf(ExportState.READY) }
+    // Held between choosing a passphrase and choosing where the file goes,
+    // because the system picker is a round trip through another activity.
+    var pendingPassphrase by remember { mutableStateOf<String?>(null) }
+    var writeTo by remember { mutableStateOf<android.net.Uri?>(null) }
     // The emergency card, and whether it is being filled in.
     var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
     var editingEmergencyCard by remember { mutableStateOf(false) }
@@ -309,6 +323,7 @@ fun NotebookShell(
     BackHandler(enabled = openSection != null) { openSection = null }
     BackHandler(enabled = openProject != null) { openProject = null }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
+    BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = answering != null) { answering = null }
     BackHandler(enabled = acknowledging != null) { acknowledging = null }
     BackHandler(enabled = startingProject) { startingProject = false }
@@ -422,6 +437,7 @@ fun NotebookShell(
                         choice = themeChoice,
                         onChoose = onThemeChoice,
                         onAbout = { aboutOpen = true },
+                        onExport = { exportState = ExportState.READY; exportOpen = true },
                     )
                 }
             }
@@ -440,6 +456,79 @@ fun NotebookShell(
                 },
                 captureDescription = strings["capture.button.description"],
             )
+        }
+
+        // **The system file picker, so the file lands where the person says.**
+        // The app never writes to storage it chose itself: an export is theirs
+        // and belongs somewhere they will find it again, which is the whole
+        // point of D24 calling it the only way back.
+        val chooseDestination = rememberLauncherForActivityResult(
+            ActivityResultContracts.CreateDocument("application/octet-stream"),
+        ) { uri ->
+            if (uri == null) {
+                // Canceled. Nothing was written and nothing is said, because
+                // the person just decided not to.
+                exportState = ExportState.READY
+                pendingPassphrase = null
+            } else {
+                writeTo = uri
+            }
+        }
+
+        if (exportOpen) {
+            ExportScreen(
+                state = exportState,
+                onExport = { passphrase ->
+                    pendingPassphrase = passphrase
+                    exportState = ExportState.WORKING
+                    chooseDestination.launch(exportFileName())
+                },
+                onBack = {
+                    exportOpen = false
+                    exportState = ExportState.READY
+                    pendingPassphrase = null
+                },
+            )
+        }
+
+        // Named for what it is rather than "destination", which is already the
+        // navigation state in this composable and shadowed it.
+        val exportTarget = writeTo
+        if (exportTarget != null) {
+            LaunchedEffect(exportTarget) {
+                val passphrase = pendingPassphrase
+                exportState = withContext(Dispatchers.IO) {
+                    runCatching {
+                        // **Written to a cache file first, then copied out.**
+                        // Backup.export takes a File, and a partial write to
+                        // the person's chosen location would leave something
+                        // that looks like a backup and is not one.
+                        val staged = File(
+                            context.cacheDir,
+                            "export-${System.currentTimeMillis()}.htx",
+                        )
+                        try {
+                            Backup.export(
+                                context = context,
+                                target = staged,
+                                exportedAt = System.currentTimeMillis(),
+                                passphrase = passphrase?.takeIf { it.isNotEmpty() }
+                                    ?.toCharArray(),
+                            )
+                            context.contentResolver.openOutputStream(exportTarget)?.use { out ->
+                                staged.inputStream().use { it.copyTo(out) }
+                            } ?: error("no output stream")
+                        } finally {
+                            staged.delete()
+                        }
+                    }.fold(
+                        onSuccess = { ExportState.DONE },
+                        onFailure = { ExportState.FAILED },
+                    )
+                }
+                writeTo = null
+                pendingPassphrase = null
+            }
         }
 
         if (aboutOpen) {
@@ -1447,6 +1536,18 @@ private data class Removal(
     val rowId: String,
     val what: String,
 )
+
+/**
+ * The name the file picker opens with.
+ *
+ * The shape `contract/export-format.md` section 1 specifies, so a person with
+ * several of these can tell them apart by name alone.
+ */
+private fun exportFileName(): String {
+    val now = java.time.LocalDateTime.now()
+    val stamp = now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"))
+    return "healthtrail-export-$stamp.htx"
+}
 
 private val SECTION_ORDER = listOf(
     Repository.Section.CARE_TEAM,

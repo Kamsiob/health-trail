@@ -395,5 +395,21 @@
   "instructions.ack.lead": "A quién se lo dijo, qué respondieron, y si quedó por escrito. A esto es a lo que se remitirá después.",
   "instructions.ack.hint": "Se lo dije a la enfermera jefa, se añadió al plan de cuidados, etc.",
   "instructions.ack.none": "No hay nada anotado sobre cómo respondieron.",
-  "instructions.ack.on": "Respondieron el {date}"
+  "instructions.ack.on": "Respondieron el {date}",
+  "export.title": "Exportar su cuaderno",
+  "export.lead": "Un archivo con todo dentro: cada anotación, cada persona, cada foto, y todo lo que ha borrado, para que una restauración lo devuelva todo tal cual está.",
+  "export.why": "Este archivo es la única forma de recuperar todo si pierde este teléfono o se pierde la clave de la aplicación. Guárdelo donde vaya a seguir teniéndolo.",
+  "export.passphrase": "Una contraseña",
+  "export.passphrase.hint": "Algo que vaya a recordar, o que esté anotado en un lugar seguro",
+  "export.passphrase.again": "Escríbala otra vez",
+  "export.warning": "Si se pierde la contraseña, el archivo no se puede recuperar. No hay servidor, ni código de recuperación, ni puerta trasera.",
+  "export.mismatch": "Esas dos no coinciden.",
+  "export.save": "Elija dónde guardarlo",
+  "export.plain": "Guardarlo sin contraseña",
+  "export.plain.warning": "Cualquiera que abra el archivo podrá leerlo todo. Es razonable quererlo para sus propios registros, y conviene saberlo antes de hacerlo.",
+  "export.working": "Escribiendo el archivo. Puede tardar un momento en un cuaderno grande.",
+  "export.done": "Guardado. Compruebe que puede encontrarlo antes de confiar en él.",
+  "export.failed": "No funcionó y no se guardó nada. Su cuaderno está intacto.",
+  "more.export": "Exportar su cuaderno",
+  "section.back.more2": "Volver a Más"
 }

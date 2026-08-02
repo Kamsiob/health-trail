@@ -120,7 +120,7 @@ The parts that change how you work, compressed:
 1. **Merge #112** if it is still open and green.
 2. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
 3. **The biggest single gap is Today's digest**, which is the last thing the app admits is unbuilt. It needs the change log engine and golden vectors, #15.
-4. **#9's last two failure cases** are still the smallest remaining piece of the export, and **nothing in the interface exports anything yet**, which matters because D24 makes the export the only recovery path from key loss.
+4. **#9's last two failure cases** are still the smallest remaining piece of the export. **Exporting now has an interface**, in More, and it was walked end to end: a real encrypted `.htx` written through the system file picker, opened afterward and checked to be a zip whose first entry is an unencrypted manifest carrying the Argon2id parameters and the real row counts. **Importing still has none**, which is the asymmetry to close next: a backup nobody can restore is not yet a backup.
 5. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? `MASTER_SPEC.md` calls Today the dashboard and the app opens on the Notebook.
 
 ### What is owed on the screens built tonight

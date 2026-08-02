@@ -395,5 +395,21 @@
   "instructions.ack.lead": "Who you told, what they said, and whether it went in writing. This is what you point back to later.",
   "instructions.ack.hint": "Told the charge nurse, added to the care plan, and so on",
   "instructions.ack.none": "Nothing written down about how they answered.",
-  "instructions.ack.on": "Answered {date}"
+  "instructions.ack.on": "Answered {date}",
+  "export.title": "Export your notebook",
+  "export.lead": "One file with everything in it: every entry, every person, every photograph, and everything you have deleted, so a restore puts things back exactly as they are.",
+  "export.why": "This file is the only way back if this phone is lost or the app's key is gone. Keep it somewhere you will still have it.",
+  "export.passphrase": "A passphrase",
+  "export.passphrase.hint": "Something you will remember, or that is written down somewhere safe",
+  "export.passphrase.again": "Type it again",
+  "export.warning": "If the passphrase is lost the file cannot be recovered. There is no server, no recovery code, and no backdoor.",
+  "export.mismatch": "Those two do not match.",
+  "export.save": "Choose where to save it",
+  "export.plain": "Save it without a passphrase",
+  "export.plain.warning": "Anyone who opens the file can read everything in it. That is a reasonable thing to want for your own records, and it is worth knowing before you do it.",
+  "export.working": "Writing the file. This can take a moment on a large notebook.",
+  "export.done": "Saved. Check that you can find it before you rely on it.",
+  "export.failed": "That did not work and nothing was saved. Your notebook is untouched.",
+  "more.export": "Export your notebook",
+  "section.back.more2": "Back to More"
 }

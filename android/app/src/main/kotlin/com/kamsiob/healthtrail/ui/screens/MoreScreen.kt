@@ -19,6 +19,7 @@ import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 object MoreTags {
     const val COMING = "more_coming"
     const val ABOUT = "more_about"
+    const val EXPORT = "more_export"
 }
 
 /**
@@ -44,13 +45,14 @@ fun MoreScreen(
     choice: ThemeChoice,
     onChoose: (ThemeChoice) -> Unit,
     onAbout: () -> Unit,
+    onExport: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AppearanceScreen(
         choice = choice,
         onChoose = onChoose,
         modifier = modifier,
-        footer = { MoreBelowAppearance(onAbout = onAbout) },
+        footer = { MoreBelowAppearance(onAbout = onAbout, onExport = onExport) },
     )
 }
 
@@ -63,11 +65,17 @@ fun MoreScreen(
  * and it may not keep saying so once it has.
  */
 @Composable
-private fun MoreBelowAppearance(onAbout: () -> Unit) {
+private fun MoreBelowAppearance(onAbout: () -> Unit, onExport: () -> Unit) {
     val strings = LocalStrings.current
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(Modifier.height(Space.sectionGap))
+        QuietButton(
+            label = strings["more.export"],
+            onClick = onExport,
+            modifier = Modifier.fillMaxWidth().testTag(MoreTags.EXPORT),
+        )
+        Spacer(Modifier.height(Space.cardGap))
         QuietButton(
             label = strings["more.about"],
             onClick = onAbout,
