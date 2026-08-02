@@ -44,6 +44,9 @@ import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
 import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
+import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
+import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
+import com.kamsiob.healthtrail.ui.screens.EmergencyDraft
 import com.kamsiob.healthtrail.ui.screens.PersonDraft
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.TrailScreen
@@ -121,6 +124,10 @@ fun NotebookShell(
     // Somebody being added to the care team, and the draft being written.
     var addingPerson by remember { mutableStateOf(false) }
     var savingPerson by remember { mutableStateOf<PersonDraft?>(null) }
+    // The emergency card, and whether it is being filled in.
+    var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
+    var editingEmergencyCard by remember { mutableStateOf(false) }
+    var savingEmergencyCard by remember { mutableStateOf<EmergencyDraft?>(null) }
     val context = LocalContext.current
 
     // Recounted whenever the tab changes, so returning to the notebook after
@@ -154,6 +161,7 @@ fun NotebookShell(
             // the person is already looking at.
             trail = subject?.let { repository.trail(it.id) }.orEmpty()
             people = subject?.let { repository.people(it.id) }.orEmpty()
+            emergencyCard = subject?.let { repository.emergencyCard(it.id) }
             measures = subject?.let { repository.measures(it.id) }.orEmpty()
             presets = TemplateCatalog.presets(context)
         } catch (t: Throwable) {
@@ -245,6 +253,12 @@ fun NotebookShell(
                 onBack = { openSection = null },
             )
 
+            Repository.Section.EMERGENCY_CARD -> EmergencyCardScreen(
+                card = emergencyCard,
+                onEdit = { editingEmergencyCard = true },
+                onBack = { openSection = null },
+            )
+
             Repository.Section.CARE_TEAM -> CareTeamScreen(
                 people = people,
                 // ACTION_DIAL rather than ACTION_CALL, which would need the
@@ -300,6 +314,42 @@ fun NotebookShell(
                 },
                 onCancel = { addingPerson = false },
             )
+        }
+
+        if (editingEmergencyCard) {
+            EmergencyCardEditScreen(
+                card = emergencyCard,
+                onSave = { draft ->
+                    editingEmergencyCard = false
+                    savingEmergencyCard = draft
+                },
+                onCancel = { editingEmergencyCard = false },
+            )
+        }
+
+        val emergencyDraft = savingEmergencyCard
+        if (emergencyDraft != null) {
+            LaunchedEffect(emergencyDraft) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    // Every field goes through, including the blank ones, so
+                    // clearing something that turned out to be wrong actually
+                    // clears it. The repository stores blank as null.
+                    repository.saveEmergencyCard(
+                        subjectId = subject.id,
+                        allergies = emergencyDraft.allergies,
+                        bloodType = emergencyDraft.bloodType,
+                        conditions = emergencyDraft.conditions,
+                        resuscitationStatus = emergencyDraft.resuscitationStatus,
+                        resuscitationDocumentLocation = emergencyDraft.resuscitationWhere,
+                        decisionMakerDocumentLocation = emergencyDraft.decisionMakerWhere,
+                        insuranceNote = emergencyDraft.insurance,
+                        otherNotes = emergencyDraft.other,
+                    )
+                }
+                savingEmergencyCard = null
+                revision += 1
+            }
         }
 
         val person = savingPerson

@@ -874,6 +874,124 @@ class Repository private constructor(
         }
     }
 
+    // -- the emergency card ------------------------------------------------
+
+    /**
+     * What the card holds, as `MASTER_SPEC.md` section 4.6 lists it.
+     *
+     * **Every field is nullable and that is the point.** The card is useful
+     * with one line filled in and it is meant to be filled in over months, in
+     * whatever order the person learns things. A card with only an allergy on
+     * it is worth handing to a paramedic.
+     *
+     * The resuscitation status is stored as **what the signed paperwork says**,
+     * alongside where the original is kept, because the card is useless if the
+     * paper cannot be produced. The app records that sentence and never
+     * interprets it, per rule 2.
+     */
+    data class EmergencyCard(
+        val id: String,
+        val allergies: String?,
+        val bloodType: String?,
+        val conditions: String?,
+        val resuscitationStatus: String?,
+        val resuscitationDocumentLocation: String?,
+        val decisionMakerDocumentLocation: String?,
+        val insuranceNote: String?,
+        val otherNotes: String?,
+    ) {
+        /**
+         * True when nothing has been written yet. A card row can exist and hold
+         * nothing, because the row is created the first time somebody opens the
+         * editor rather than the first time they finish it.
+         */
+        val isEmpty: Boolean
+            get() = listOf(
+                allergies, bloodType, conditions, resuscitationStatus,
+                resuscitationDocumentLocation, decisionMakerDocumentLocation,
+                insuranceNote, otherNotes,
+            ).all { it.isNullOrBlank() }
+    }
+
+    /** The card for one subject, or null when none has ever been started. */
+    suspend fun emergencyCard(subjectId: String): EmergencyCard? =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, allergies, blood_type, conditions, resuscitation_status, " +
+                    "resuscitation_document_location, decision_maker_document_location, " +
+                    "insurance_note, other_notes FROM live_emergency_card " +
+                    "WHERE subject_id = ? ORDER BY created_at LIMIT 1",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                if (!cursor.moveToFirst()) return@use null
+                EmergencyCard(
+                    id = cursor.getString(0),
+                    allergies = cursor.getString(1),
+                    bloodType = cursor.getString(2),
+                    conditions = cursor.getString(3),
+                    resuscitationStatus = cursor.getString(4),
+                    resuscitationDocumentLocation = cursor.getString(5),
+                    decisionMakerDocumentLocation = cursor.getString(6),
+                    insuranceNote = cursor.getString(7),
+                    otherNotes = cursor.getString(8),
+                )
+            }
+        }
+
+    /**
+     * Writes the card, creating it if this is the first time.
+     *
+     * **One card per subject**, which the read enforces by taking the earliest
+     * and this enforces by updating the one that exists. The schema does not
+     * constrain it to one, because a second arriving from a peer during a sync
+     * is a conflict to resolve rather than a write to reject.
+     *
+     * Blank is a real answer and clears the field, so somebody who wrote down
+     * an allergy that turned out to be wrong can take it back out. Blanks are
+     * stored as null rather than as empty strings, so "never filled in" and
+     * "emptied on purpose" read the same way to everything downstream, which is
+     * what the card wants: both mean the app knows nothing.
+     */
+    suspend fun saveEmergencyCard(
+        subjectId: String,
+        allergies: String? = null,
+        bloodType: String? = null,
+        conditions: String? = null,
+        resuscitationStatus: String? = null,
+        resuscitationDocumentLocation: String? = null,
+        decisionMakerDocumentLocation: String? = null,
+        insuranceNote: String? = null,
+        otherNotes: String? = null,
+    ): String {
+        // Typed as Any? rather than String?, so the argument array below is
+        // Array<Any?> and not an inferred intersection of the value types.
+        val values: Map<String, Any?> = mapOf(
+            "allergies" to allergies?.ifBlank { null },
+            "blood_type" to bloodType?.ifBlank { null },
+            "conditions" to conditions?.ifBlank { null },
+            "resuscitation_status" to resuscitationStatus?.ifBlank { null },
+            "resuscitation_document_location" to
+                resuscitationDocumentLocation?.ifBlank { null },
+            "decision_maker_document_location" to
+                decisionMakerDocumentLocation?.ifBlank { null },
+            "insurance_note" to insuranceNote?.ifBlank { null },
+            "other_notes" to otherNotes?.ifBlank { null },
+        )
+
+        val existing = emergencyCard(subjectId)
+            ?: return insert("emergency_card", values + mapOf("subject_id" to subjectId))
+
+        withContext(Dispatchers.IO) {
+            val assignments = values.keys.joinToString(", ") { "$it = ?" }
+            db().database.execSQL(
+                "UPDATE emergency_card SET $assignments, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                (values.values + listOf(System.currentTimeMillis(), existing.id)).toTypedArray(),
+            )
+        }
+        return existing.id
+    }
+
     // -- counting, for the table of contents ------------------------------
 
     /**

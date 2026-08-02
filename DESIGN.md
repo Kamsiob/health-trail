@@ -727,6 +727,26 @@ Composed from Display S, Body M, Body S, the Mono metadata style, cards 5.3, the
 
 Composed from Display L, Display S, Body M, Body S, the Mono eyebrow, cards 5.3, the text field 5.9, the filled and quiet buttons 5.4, and one text action. Tracked on issue #111.
 
+**The emergency card, and filling it in.**
+
+**It is designed to be handed to a paramedic**, per `MASTER_SPEC.md` section 4.6, and that decides the whole screen. Somebody reading it is standing up, holding another person's phone, under time pressure, and wrote none of it.
+
+**So the value carries the weight and the label recedes**, which inverts the usual order on purpose. On a form the label is what you are looking for. Here you already know what you are looking for and you need the answer, so the answer is Display S and the label is the quiet mono eyebrow above it.
+
+**Only what has been filled in appears.** An empty field is not shown as an empty field, and a group header appears only when its group has something under it. Three lines that are all true beat nine where six say nothing, and under time pressure the blanks are noise somebody has to read past. This is rule 13 doing real work rather than being quoted: the card is complete at any size.
+
+**The whole card is `alert` toned**, which section 2.2 gives to this one section and nothing else.
+
+**The resuscitation line is the sharpest content rule in the app.** It is stored and shown as **what the signed paperwork says**, in the words on the form, beside where the original is kept. The app does not summarize it, does not shorten it to an abbreviation, and never says what it means. It is not a choice between options and it must never become one: that would be the app interpreting a legal document, which rule 2 forbids and which cannot be done correctly across fifty states. **A card that is wrong about this is worse than no card**, and the only safe thing the app can do is repeat the sentence and say where the paper is.
+
+**Blood type asks "only if you know it for certain."** A guessed blood type on a card handed to a paramedic is worse than a blank one, and the honest way to get that is to say so rather than to reject input, which would be validation the rest of the app does not do.
+
+**Every field can run long and none is held to a single line.** An allergy is usually a sentence and the resuscitation line is a quotation.
+
+**Filling it in retires Today's coaching**, because the coaching existed to get this done. Confirmed on the device: the coached list is gone the moment the card has anything on it.
+
+Composed from Display L, Display S, Body M, the Mono eyebrow, cards 5.3 in `alert_soft`, the group header 5.13, the text field 5.9, and the filled, quiet, and text buttons of 5.4. Tracked on issue #113.
+
 ---
 
 ## 9. Accessibility floor
