@@ -40,7 +40,8 @@ All values in `kamsiob-project-template.md` section A2 apply. Specific to this a
 
 - **Zero data collection.** No analytics, no telemetry, no crash reporting to any service, no network calls at all in v1 except the user-initiated template pack mechanism if and when it ships.
 - **No account, no login, no cloud, no server, ever.**
-- **Free. No paywall, no subscription, no ads, no in-app purchase.** Support is a single donate link, labeled "Support this work," at the bottom of Settings and on the About screen, following the canonical support copy.
+- **Free. No paywall, no subscription, no ads, no in-app purchase.** Support is a single donate link, labeled "Support this work," following the canonical support copy. It appears in three places: **the disclaimer gate**, the bottom of Settings, and the About screen. One destination and one label, in more than one place. D59.
+- **The interface says the app is free, and says it where the person can see it.** The disclaimer gate's third point states plainly that there are no ads, no subscription, nothing to unlock, and no tracking. This was true from the beginning and was written only here, where nobody using the app would ever read it.
 - **AGPLv3** for the code. Template content is CC BY-SA 4.0 and ships with its license and attribution.
 - **No model, no inference, no AI.** Every digest, summary, and count is deterministic. Section 5 covers this.
 - **Single point person.** One perspective, one owner of the notebook. The Emergency Card lists several emergency contacts, but the app is not built for co-decision-makers and no feature may creep toward shared editing.

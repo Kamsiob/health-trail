@@ -83,6 +83,73 @@ fun FilledButton(
 }
 
 /**
+ * The support button, and the only outlined button in the app.
+ *
+ * **It is a deliberate, recorded exception to section 2.2**, which reserves
+ * `blaze` for the trail metaphor and the capture button and says plainly that
+ * it never fills a button that is not the capture button. The owner asked for
+ * a gold outline here. Two things keep the exception narrow rather than making
+ * the rule meaningless:
+ *
+ * **It is an outline, not a fill.** The rule 2.2 is actually protecting is that
+ * gold means "the way in" and must not be spent twice. An outlined box reads as
+ * an offer rather than as an action of that weight.
+ *
+ * **The label is `ink`, not gold**, because 2.2 also says `blaze` never colors
+ * text, and that half of the rule is kept exactly.
+ *
+ * They are never on screen together: this appears on the disclaimer gate, which
+ * is the one screen with no capture button, and in More, which is a list.
+ *
+ * **It must never read as a request.** It sits after the sentence saying the
+ * app is free and asks for nothing, and the screen it lives on is fully
+ * passable without noticing it. A support button that reads as a nag undoes the
+ * sentence above it, which is worth more than the button.
+ */
+@Composable
+fun SupportButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, Color.Transparent)
+    val ring by focusRingAlpha(interaction)
+
+    Box(
+        modifier = modifier
+            .sizeIn(minHeight = Space.touchTarget)
+            .clip(Radius.tile)
+            .background(surface)
+            .border(
+                width = 2.dp,
+                // The focus ring takes the border over rather than drawing a
+                // second one outside it, which would be two rectangles around
+                // one control.
+                color = if (ring > 0f) colors.blue.copy(alpha = ring) else colors.blaze,
+                shape = Radius.tile,
+            )
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .padding(horizontal = Space.l, vertical = Space.sm),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = HealthTrail.type.label,
+            color = colors.ink,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.defaultMinSize(minHeight = 0.dp),
+        )
+    }
+}
+
+/**
  * A quiet button, per DESIGN.md section 5.4: `card` surface, `ink` label, the
  * same pill geometry and the same 48dp floor as the filled one.
  *

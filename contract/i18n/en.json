@@ -125,10 +125,10 @@
   "disclaimer.lead": "Health Trail is a notebook. It helps you keep track of someone's care: the calls, the visits, the questions, and the paperwork that piles up around all of it.",
   "disclaimer.block.1.title": "It is not a medical app",
   "disclaimer.block.1.body": "It gives no medical advice, and it is not a medical device. Nothing here replaces a doctor, a nurse, emergency services, or advice from a lawyer. If something is urgent, call emergency services.",
-  "disclaimer.block.2.title": "What you write stays on this phone",
-  "disclaimer.block.2.body": "There is no account and no cloud. Your notes live on this device and go nowhere else unless you send them somewhere yourself.",
-  "disclaimer.block.3.title": "The record is yours",
-  "disclaimer.block.3.body": "The app writes down what you tell it and keeps it organized. It never decides what any of it means. You choose what goes in, and it stays yours.",
+  "disclaimer.block.2.title": "It stays on this phone, and it stays yours",
+  "disclaimer.block.2.body": "There is no account and no cloud. Your notes live on this device and go nowhere else unless you send them somewhere yourself. The app keeps them organized and never decides what any of it means.",
+  "disclaimer.block.3.title": "Free, and nothing is tracked",
+  "disclaimer.block.3.body": "There are no ads, no subscription, and nothing to unlock. Nothing you do here is tracked or measured.",
   "capture.sub": "Answer what you can. Skip the rest. A half note beats no note.",
   "capture.when": "When was this?",
   "capture.when.hint": "Roughly is fine",
@@ -225,5 +225,7 @@
   "careteam.add.role": "What they do",
   "careteam.add.role.hint": "Nurse, case manager, the ward clerk",
   "careteam.add.phone": "Phone number",
-  "careteam.add.phone.hint": "The direct line if you have it"
+  "careteam.add.phone.hint": "The direct line if you have it",
+  "disclaimer.support": "Support this work",
+  "disclaimer.support.note": "Built and carried by one person. Either way, the app is yours."
 }

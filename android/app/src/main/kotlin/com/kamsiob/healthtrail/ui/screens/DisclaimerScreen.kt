@@ -1,5 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +22,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -31,6 +34,7 @@ import com.kamsiob.healthtrail.R
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.SupportButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -39,6 +43,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object DisclaimerTags {
     const val ROOT = "disclaimer_root"
     const val ACCEPT = "disclaimer_accept"
+    const val SUPPORT = "disclaimer_support"
     fun block(index: Int) = "disclaimer_block_$index"
 }
 
@@ -76,6 +81,7 @@ object DisclaimerTags {
  */
 @Composable
 fun DisclaimerScreen(onAccept: () -> Unit) {
+    val context = LocalContext.current
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -143,6 +149,37 @@ fun DisclaimerScreen(onAccept: () -> Unit) {
                     )
                     if (index != BLOCK_COUNT) Spacer(Modifier.height(Space.cardGap))
                 }
+
+                // **The offer sits after the sentence that says the app asks
+                // for nothing, and never before it.** Order is the whole
+                // difference between an offer and a pitch. The gate is fully
+                // passable without noticing this, and it is the last thing on
+                // the scroll rather than something between the person and the
+                // button they came for.
+                Spacer(Modifier.height(Space.l))
+
+                Text(
+                    text = strings["disclaimer.support.note"],
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
+
+                Spacer(Modifier.height(Space.sm))
+
+                SupportButton(
+                    label = strings["disclaimer.support"],
+                    onClick = {
+                        // Leaves the app, which makes this the first outbound
+                        // link in the product. Nothing is sent and nothing is
+                        // recorded about the tap.
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL)),
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(DisclaimerTags.SUPPORT),
+                )
             }
 
             Spacer(Modifier.height(Space.l))
@@ -167,6 +204,13 @@ fun DisclaimerScreen(onAccept: () -> Unit) {
  * than in another is the one failure mode this screen cannot have.
  */
 private const val BLOCK_COUNT = 3
+
+/**
+ * The canonical support link, the same one the README and the website carry.
+ * `MASTER_SPEC.md` section 4.1 names it, and this is the only place in the app
+ * that writes it down.
+ */
+private const val SUPPORT_URL = "https://buymeacoffee.com/kamsiob"
 
 @Composable
 private fun DisclaimerBlock(title: String, body: String, modifier: Modifier = Modifier) {

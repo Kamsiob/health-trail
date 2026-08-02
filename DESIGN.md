@@ -63,6 +63,7 @@ Care thread route colors, light theme: physical therapy `#2F6F8F`, occupational 
 
 - **One accent: `blue`.** Every action, every button, every link.
 - **`blaze` is reserved for the trail metaphor and the capture button.** It is not a second accent. It never fills a button that is not the capture button, never highlights a row, never colors text.
+- **One recorded exception: the support button's outline.** D59, at the owner's direction. It is an **outline and never a fill**, so gold still means "the way in" everywhere it is filled, and its **label is `ink`**, so the half of this rule about text is kept exactly. It never shares a screen with the capture button. This is the only exception, it is written down rather than assumed, and a second one is a decision rather than a precedent.
 - **`alert` belongs to the Emergency Card.** Its only other uses are the open-incident dot, the open-incident pill, and the disputed-bill pill. It never appears as a warning about a measurement, ever, because the app does not judge measurements.
 - **`leaf` means resolved or completed.** Nothing else.
 - **Color is never the only carrier of meaning.** Every state that has a color also has a word, a shape, or an icon. An incident is not "the red one," it is the one whose pill says OPEN.
@@ -235,9 +236,10 @@ The signature element, specified exactly:
 ### 5.4 Buttons
 
 Filled: `blue` fill, `on_blue` label, pill, 48dp minimum height, Label type.
-Quiet: `card` surface with elevation, `ink` label, same geometry.
+Quiet: `card` surface with elevation, `ink` label, same geometry. **Use it where a real, common, structural action is not the point of the screen it sits on**, which is what "Add someone" on the care team is. As a filled button that was a full width blue bar and the loudest thing on a screen whose subject is the people above it, which inverts 10.8.
 Text: no container, `blue` label, still 48dp of touch area.
 Destructive: `alert` fill, white label, and only ever inside a confirmation flow, never as a resting state on a screen.
+Support: the app's **only outlined button**. 2dp `blaze` outline, `ink` label, tile radius, same 48dp floor. One purpose and one destination, the canonical support link. It is the recorded exception in 2.2 and it must never read as a request: it sits after the sentence saying the app asks for nothing, and never before it. D59.
 
 An action keeps the same word through its whole flow. The button that says Export produces a result that says Exported.
 
@@ -246,6 +248,8 @@ An action keeps the same word through its whole flow. The button that says Expor
 Four destinations, always in this order: Today, Notebook, Projects, More. `card` container, 24dp radius, 8dp inset from the screen edges, elevated. Icon 20dp above an 11sp label. Active state is `blue_deep` on both icon and label, plus the label at weight 700, so color is not the only signal.
 
 The capture button sits in the center of the navigation container, overlapping its top edge by 16dp: 56dp circle, `blaze` fill, dark plus glyph in `onBlaze`, present on every screen in all four tabs. The glyph is deliberately not white, for the contrast reason given in 2.4. It is the only way data enters the app and it never moves, never hides on scroll, and never changes color.
+
+**The navigation leaves the center empty for it rather than sharing it.** Two destinations, a gap of the button plus 8dp of air on each side, then two destinations, with equal weights so each label centers in its own quarter. The four spread evenly across the whole width at first, which put the seam between Notebook and Projects exactly where the button sits and crowded both. **The gap is a column in the layout, not spacing**, so no label can grow into it: at the largest font scale the tabs narrow and the button keeps its clearance. D60, found by the owner looking at his phone.
 
 ### 5.6 Pills
 

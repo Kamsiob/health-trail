@@ -154,16 +154,19 @@ class Strings internal constructor(
                     "Nothing here replaces a doctor, a nurse, emergency services, or " +
                     "advice from a lawyer. If something is urgent, call emergency " +
                     "services.",
-                "disclaimer.block.2.title" to "What you write stays on this phone",
+                "disclaimer.block.2.title" to "It stays on this phone, and it stays yours",
                 "disclaimer.block.2.body" to
                     "There is no account and no cloud. Your notes live on this device " +
-                    "and go nowhere else unless you send them somewhere yourself.",
-                "disclaimer.block.3.title" to "The record is yours",
+                    "and go nowhere else unless you send them somewhere yourself. The " +
+                    "app keeps them organized and never decides what any of it means.",
+                "disclaimer.block.3.title" to "Free, and nothing is tracked",
                 "disclaimer.block.3.body" to
-                    "The app writes down what you tell it and keeps it organized. It " +
-                    "never decides what any of it means. You choose what goes in, and " +
-                    "it stays yours.",
+                    "There are no ads, no subscription, and nothing to unlock. Nothing " +
+                    "you do here is tracked or measured.",
                 "disclaimer.accept" to "I understand",
+                "disclaimer.support" to "Support this work",
+                "disclaimer.support.note" to
+                    "Built and carried by one person. Either way, the app is yours.",
                 "common.loading" to "Loading",
                 "common.error.generic" to "That did not work. Nothing was changed.",
                 "common.retry" to "Try again",

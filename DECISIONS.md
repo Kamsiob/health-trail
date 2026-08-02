@@ -847,6 +847,46 @@ Recorded because the discovery route is one any session repeats. **Enumerating a
 
 **Revisit if.** A native speaker reviews a language, which turns the flag true for that language and removes its disclaimer. That path stays open and is the better outcome. Nothing here closes it.
 
+### D59. The gate says the app is free, and asks for support in the same breath
+
+**Date:** 2026-08-01. **Decided by:** the owner, during the run. **Closes #110.**
+
+**The gate said the same thing twice.** Its second and third points were "What you write stays on this phone" and "The record is yours". Both land on ownership, and the person read the same reassurance twice at the exact moment they were deciding whether to trust the app at all. Repetition there reads as protesting too much rather than as emphasis.
+
+**The two are now one point**, keeping the two halves that genuinely differ: the notes never leave the phone, and the app never decides what any of it means. That second half is rule 2 stated to the person, and it is the one sentence on the screen that could not be dropped.
+
+**The freed third point says the app is free, has nothing to buy, and tracks nothing.** All three were true and none was said anywhere the person could see. `MASTER_SPEC.md` section 4.1 has always promised it; the interface never mentioned it.
+
+**A support button follows, outlined in gold**, linking to the canonical Buy Me a Coffee.
+
+**Two things in the repository conflicted with this and are now corrected rather than left to disagree with the app.**
+
+**One, `MASTER_SPEC.md` section 4.1 placed the donate link "at the bottom of Settings and on the About screen".** The gate is a third place, and the spec now says so. The constraint underneath it, one destination and one label, still holds: this is the same link with the same canonical words.
+
+**Two, `DESIGN.md` section 2.2 reserves `blaze` for the trail metaphor and the capture button** and says plainly that it never fills a button that is not the capture button and never colors text. A gold outlined support button is an exception, and it is recorded as one rather than quietly taken.
+
+**What keeps the exception narrow.** It is an outline rather than a fill, so gold still means "the way in" wherever it is filled. **The label is `ink`, not gold**, so the half of the rule about text is kept exactly. And the two are never on screen together: the gate is the one screen with no capture button.
+
+**The thing this must never become.** The point of the third card is that the app asks for nothing. **A support button that reads as a request undoes the sentence above it**, and that sentence is worth more than the button. So it sits after the reassurance and never before it, it is the last thing on the scroll rather than something between the person and the button they came for, and the gate is fully passable without noticing it. Checked on the device: "I understand" is still the only thing with a filled surface.
+
+**It is the first outbound link in the product.** Nothing is sent and nothing is recorded about the tap, which is what the card above it just promised.
+
+**Revisit if.** The About screen lands, #25, at which point the same button and the same canonical copy appear there and this becomes the second of three rather than a special case.
+
+### D60. The capture button was crowding two of the four destinations
+
+**Date:** 2026-08-01. **Found by:** the owner, looking at his phone.
+
+The four destinations spread evenly across the whole width of the navigation, and the capture button sits centered on top of it. That put the button exactly on the seam between **Notebook** and **Projects**, close enough to both labels to read as covering them.
+
+**The middle is now a real column in the layout** rather than space the button borrows: two tabs, a gap the width of the button plus 8dp of air each side, two tabs. Equal weights rather than even spacing, so each label centers in its own quarter and the halves stay symmetrical.
+
+**Why it matters beyond tidiness.** The gap being a layout column means no label can grow into it. At the largest font scale the tabs get narrower and the button keeps its clearance, which is the failure this would otherwise have had in the longest language at font scale 2.0, on a screen nobody would have thought to check.
+
+**Worth recording because of how it was found.** Not by a check, not by a test, and not in the code. The owner looked at his phone. That is rule 21 working exactly as intended, and it is the third defect this run that only looking found.
+
+**Revisit if.** A fifth destination is ever proposed, which section 5.5 forbids.
+
 ### D50. I ran a blocklisted command, and the reasoning felt sufficient at the time
 
 **Date:** 2026-08-01. **Recorded by:** the session, against itself.

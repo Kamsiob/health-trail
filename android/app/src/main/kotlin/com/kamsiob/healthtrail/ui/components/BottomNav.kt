@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -48,6 +49,17 @@ object NavTags {
  * something was must find it there next month.
  */
 enum class Destination { TODAY, NOTEBOOK, PROJECTS, MORE }
+
+/** The capture button itself, per section 5.5. */
+private val CaptureSize = 56.dp
+
+/**
+ * The column the navigation leaves empty for the capture button.
+ *
+ * The button plus 8dp of air on each side, so it never sits shoulder to
+ * shoulder with a label.
+ */
+private val CaptureClearance = CaptureSize + 16.dp
 
 /**
  * The bottom navigation, and the capture button that sits in it.
@@ -90,15 +102,36 @@ fun BottomNav(
                 .clip(Radius.navContainer)
                 .background(colors.card)
                 .padding(vertical = Space.s),
-            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Destination.entries.forEach { destination ->
+            // **The middle is reserved for the capture button rather than
+            // shared with it.** The four tabs used to spread evenly across the
+            // whole width, which put the seam between Notebook and Projects
+            // exactly where the button sits, so it crowded both of them. Two
+            // tabs, a gap the width of the button, two tabs. The gap is a real
+            // column in the layout, so no label can ever grow into it: at the
+            // largest font scale the tabs get narrower and the button keeps its
+            // clearance.
+            //
+            // Equal weights rather than SpaceEvenly, so each label centers in
+            // its own quarter and the two halves stay symmetrical.
+            Destination.entries.take(2).forEach { destination ->
                 NavTab(
                     label = labels(destination),
                     selected = destination == current,
                     onClick = { onSelect(destination) },
-                    modifier = Modifier.testTag(NavTags.tab(destination)),
+                    modifier = Modifier.weight(1f).testTag(NavTags.tab(destination)),
+                )
+            }
+
+            Spacer(Modifier.width(CaptureClearance))
+
+            Destination.entries.drop(2).forEach { destination ->
+                NavTab(
+                    label = labels(destination),
+                    selected = destination == current,
+                    onClick = { onSelect(destination) },
+                    modifier = Modifier.weight(1f).testTag(NavTags.tab(destination)),
                 )
             }
         }
@@ -115,7 +148,7 @@ fun BottomNav(
         Box(
             modifier = Modifier
                 .offset(y = (-16).dp)
-                .size(56.dp)
+                .size(CaptureSize)
                 .clip(CircleShape)
                 .background(captureSurface)
                 .clickable(

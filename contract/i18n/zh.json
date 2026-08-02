@@ -125,10 +125,10 @@
   "disclaimer.lead": "Health Trail 是一本笔记本。它帮您记下照顾一个人的过程：电话、探望、要问的问题，以及围绕这些堆积起来的文件。",
   "disclaimer.block.1.title": "它不是医疗应用",
   "disclaimer.block.1.body": "它不提供医疗建议，也不是医疗器械。这里的任何内容都不能代替医生、护士、急救服务或律师的意见。如果情况紧急，请拨打急救电话。",
-  "disclaimer.block.2.title": "您写下的内容留在这部手机上",
-  "disclaimer.block.2.body": "没有账户，也没有云端。您的记录存在这部设备里，除非您自己发送出去，否则不会去到别处。",
-  "disclaimer.block.3.title": "这份记录属于您",
-  "disclaimer.block.3.body": "这个应用记下您告诉它的内容，并把它整理好。它从不判断这些内容意味着什么。写什么由您决定，写下的一直属于您。",
+  "disclaimer.block.2.title": "留在这部手机上，也归您所有",
+  "disclaimer.block.2.body": "没有账户，也没有云端。您的笔记留在这台设备上，除非您自己发送出去，否则不会去往别处。应用只负责整理，从不判断这些内容的含义。",
+  "disclaimer.block.3.title": "免费，且不做任何追踪",
+  "disclaimer.block.3.body": "没有广告，没有订阅，也没有需要解锁的功能。您在这里所做的一切都不会被追踪或统计。",
   "capture.sub": "能答的就答，其余的跳过。记一半也比不记强。",
   "capture.when": "这是什么时候的事？",
   "capture.when.hint": "大概就行",
@@ -225,5 +225,7 @@
   "careteam.add.role": "职务",
   "careteam.add.role.hint": "护士、个案管理员、病区文员",
   "careteam.add.phone": "电话号码",
-  "careteam.add.phone.hint": "如果有，请填直线号码"
+  "careteam.add.phone.hint": "如果有，请填直线号码",
+  "disclaimer.support": "支持这项工作",
+  "disclaimer.support.note": "由一个人独立开发和维护。无论如何，这个应用都属于您。"
 }

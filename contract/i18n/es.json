@@ -125,10 +125,10 @@
   "disclaimer.lead": "Health Trail es un cuaderno. Le ayuda a llevar la cuenta del cuidado de alguien: las llamadas, las visitas, las preguntas y el papeleo que se acumula alrededor de todo eso.",
   "disclaimer.block.1.title": "No es una aplicación médica",
   "disclaimer.block.1.body": "No da consejo médico y no es un dispositivo médico. Nada de lo que hay aquí sustituye a un médico, a una enfermera, a los servicios de emergencia ni al consejo de un abogado. Si algo es urgente, llame a los servicios de emergencia.",
-  "disclaimer.block.2.title": "Lo que escriba se queda en este teléfono",
-  "disclaimer.block.2.body": "No hay cuenta ni nube. Sus notas viven en este dispositivo y no van a ningún otro sitio a menos que usted las envíe.",
-  "disclaimer.block.3.title": "El registro es suyo",
-  "disclaimer.block.3.body": "La aplicación anota lo que usted le dice y lo mantiene organizado. Nunca decide lo que significa. Usted elige lo que entra, y sigue siendo suyo.",
+  "disclaimer.block.2.title": "Se queda en este teléfono, y es suyo",
+  "disclaimer.block.2.body": "No hay cuenta ni nube. Sus notas viven en este dispositivo y no van a ninguna otra parte a menos que usted las envíe. La aplicación las mantiene organizadas y nunca decide lo que significan.",
+  "disclaimer.block.3.title": "Gratis, y nada se rastrea",
+  "disclaimer.block.3.body": "No hay anuncios, ni suscripción, ni nada que desbloquear. Nada de lo que hace aquí se rastrea ni se mide.",
   "capture.sub": "Conteste lo que pueda. Sáltese el resto. Media nota vale más que ninguna.",
   "capture.when": "¿Cuándo fue esto?",
   "capture.when.hint": "Con aproximar basta",
@@ -225,5 +225,7 @@
   "careteam.add.role": "Qué función tiene",
   "careteam.add.role.hint": "Enfermera, gestor de casos, el administrativo de la planta",
   "careteam.add.phone": "Número de teléfono",
-  "careteam.add.phone.hint": "La línea directa si la tiene"
+  "careteam.add.phone.hint": "La línea directa si la tiene",
+  "disclaimer.support": "Apoye este trabajo",
+  "disclaimer.support.note": "Creada y mantenida por una sola persona. En cualquier caso, la aplicación es suya."
 }
