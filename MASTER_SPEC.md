@@ -246,7 +246,22 @@ Consequences that must be handled from Phase 0 rather than retrofitted:
 - Spanish uses formal usted throughout, and elders are addressed as Señor or Señora.
 - Every template string must exist in all four locale catalogs or the build fails, rather than silently falling back to English.
 
-Translations should be reviewed by a native speaker who has dealt with the American care system. Where that review has not happened, say so in `DECISIONS.md` and in the store listing rather than implying a reviewed translation.
+### 7.0 What makes a translated language shippable
+
+**Decided by the owner on 2026-08-01, D58. This governs, and it replaces the rule that an unreviewed language is not shippable.**
+
+**The rule applies to translation, not to language.** English is authored rather than translated, so it is reviewed by definition and never carries a disclaimer. The rest of this section is about the translated catalogs.
+
+**A translated language ships**, provided both of these hold:
+
+1. **The language selection screen carries a friendly disclaimer** that translations may not be one hundred percent accurate. It reads from each catalog's `reviewed_by_native_speaker` flag rather than from a hard coded list, so a language that is reviewed stops disclaiming without anyone editing a screen.
+2. **The translation has actually been checked** as a good faith effort before release.
+
+**Friendly is a requirement rather than a tone note.** Not a warning, not a legal notice, not an apology. The app being straight with someone, in the same register as the rest of it. It never reads as a judgment on the person's language, and it never frames English as the real version with every other language a lesser copy.
+
+**Native speaker review remains the better outcome and the path stays open.** A native speaker who has dealt with the American care system reviewing a language turns its flag true and removes its disclaimer. Nothing here closes that door; it stops being a gate in front of shipping.
+
+**Why the bar was high to begin with, and why the disclaimer carries that weight now.** A machine translated explanation of what federal nursing home rules do and do not guarantee is the app claiming more than it knows, which is the one thing this app is built not to do. The obligation did not disappear when the gate did. It moved into the interface, where the person sees it before they rely on a word of it.
 
 ### 7.1 This is language access in the United States, not international expansion
 
@@ -286,7 +301,7 @@ By limited English proficiency population in the United States. Approximate, and
 
 **Cost, so the scale is not a surprise.** Roughly 1500 strings per language across the interface catalog and the 57 templates, plus plural rules, date and number formatting, and device verification. **Seven new languages is on the order of ten thousand strings**, each of which is care instructions, money, or somebody's rights.
 
-**None of it starts until everything ahead of it is done**, and it is not shippable without native speaker review. See section 7 above.
+**None of it starts until everything ahead of it is done.** What makes a translated language shippable is section 7.0, and it is the disclaimer plus a checked translation rather than native speaker review. D58.
 
 
 ---

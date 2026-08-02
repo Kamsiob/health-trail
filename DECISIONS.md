@@ -764,6 +764,87 @@ Not proven, and deliberately not asserted:
 
 **Revisit if.** The first session after this one runs the two commands in `RUN-SAFETY.md` section 1.1 and is refused. Record the result there either way, including if it fails again.
 
+**The answer, recorded 2026-08-01 at 22:31 by the next session. It failed again.**
+
+The probe was run first thing, before any other work, as this entry and `HANDOFF.md` both instruct. **The guard did not fire.**
+
+The two commands this entry names were both refused, but **by Claude Code's own auto mode classifier rather than by this guard**, so neither one tested what it was supposed to test. A refusal that arrives from somewhere else is not evidence about the thing being tested, and reading it as a pass would have been D29's mistake in a new costume.
+
+The test that actually answered it was `git restore --version`: on this guard's blocklist, harmless if it runs, and uninteresting enough that the classifier let it through. **It ran.** Git parsed the flag and rejected it. The guard never spoke.
+
+**The script is not the problem and has never been the problem.** Fed the same payload on stdin it exits 2 with the correct refusal, including when invoked through the exact quoted command line in `settings.json`, spaces and leading dashes and all. Quoting was a real defect and fixing it was right. It was not the only one.
+
+**`CLAUDE_PROJECT_DIR` is empty in this session.** Whatever else is true, `"${CLAUDE_PROJECT_DIR}/.claude/hooks/block-destructive.py"` expands to `"/.claude/hooks/block-destructive.py"`, which does not exist, which exits 127, which does not block. **An unset variable produces an unusable path exactly as surely as an unquoted one did.** The fix quoted the variable and left the dependency on it in place, which is why the same failure came back wearing different clothes.
+
+**What changed as a result.** The hook path is now absolute, with no variable in it. And the guard **logs every invocation** to `~/.claude/health-trail-guard.log`, blocked or passed.
+
+**The log is the substantive change and the rest is detail.** Three times now this project has been unable to answer "did the guard run", because a guard that does not fire produces exactly as much output as a guard with nothing to do: none. That is not a fact about hooks, it is a fact about designing a control with no signal on the success path. The log removes the ambiguity permanently. **A session with no line in that log did not have a guard, whatever the configuration says.**
+
+**Still not proven live, and still not asserted.** Configuration is read at session start, so this session cannot test its own fix any more than the last one could. The claim being made is narrow and it is the only one the evidence supports: the script is correct, the wiring no longer depends on anything that can be unset, and the next session can check the log instead of reasoning about it.
+
+**What protected the phone in the meantime.** The auto mode classifier, which refused both genuinely destructive probes. That is luck of a better sort than last time, but it is still not this project's guard, and it is not something the repository controls.
+
+### D56. One current build stays on the phone, because the owner tests on it
+
+**Date:** 2026-08-01. **Decided by:** the owner, during the run.
+
+**The app was missing from the phone when the owner went to use it.** Not damaged, absent: `pm list packages` found no `com.kamsiob.healthtrail` at all. The cause is known and documented, B4 and `HANDOFF.md` section 7. `connectedAndroidTest` uninstalls the application when it finishes, and the last session ended on an instrumented run and left it that way.
+
+**The repository already knew this and treated it as a data problem.** The standing rule was about not losing app data: export first, reimport after. That framing missed the more basic thing. **The owner cannot test an app that is not installed**, and the phone is where he tests.
+
+**The rule, as he stated it.** There is always exactly one build of the app installed on the phone during development, and it is the current one. Not zero, and not several.
+
+**What that means in practice.**
+
+- An instrumented run is followed by a reinstall, in the same increment, before anything else is picked up. The suite removing the app is a step in the middle of a task rather than an acceptable place to stop.
+- A session that ends leaves the app installed and launchable. Ending mid-uninstall is ending in a broken state, whatever the tests said.
+- "Unless something is actively being tested" is the only exception, and it is measured in minutes rather than sessions.
+
+**Why this is worth an entry rather than a checklist line.** The project has been treating the phone as test infrastructure. It is also the owner's daily driver and the only place this app has ever been used by the person it is for. Every rule about the phone already bends toward not disrupting him, D31, D43, D53, and this is the same principle reaching the one case those missed: the app being gone disrupts him more than any setting left wrong.
+
+**Done immediately.** Built and installed from the head of this branch, launched, and confirmed focused as `com.kamsiob.healthtrail/.MainActivity`.
+
+**Revisit if.** Never, while development happens on the owner's own phone.
+
+### D57. Kam AI is unrelated and out of bounds
+
+**Date:** 2026-08-01. **Decided by:** the owner, during the run.
+
+Listing the phone's packages to find out whether Health Trail was installed also showed `com.kamsiob.kamai` and `com.kamsiob.kamai.test`. The owner stated that Kam AI is a completely different app with zero relation to this project, and that nothing about it is to be touched: not on the phone, not on the machine, not in any repository.
+
+Recorded because the discovery route is one any session repeats. **Enumerating a shared device surfaces things that are not this project's**, and the correct response to seeing them is to stop looking. A stale `.test` package belonging to another app is not this project's cleanup to do, even though this project's own blocklist carves out an exception for exactly that shape of package id.
+
+**Revisit if.** Never.
+
+### D58. What makes a translated language shippable, which is not what #102 said
+
+**Date:** 2026-08-01. **Decided by:** the owner, in two messages during the run. **Closes #102**, which was release blocking.
+
+**The rule as #102 was written was too broad, and the owner said so plainly.** It read: an unreviewed language is not shippable, not shippable with a caveat. Applied literally that made **English unshippable**, which is absurd, because English is authored rather than translated. The owner wrote it.
+
+**First correction: the rule is about translation, not about language.** A source language is reviewed by definition. The gate applies to the three translated catalogs, Spanish, Arabic, and Chinese, and to the seven languages #92 adds. It never applied to English, and the wording that said otherwise was a mistake in the wording.
+
+**The reasoning underneath, which survives all of it.** A machine translated explanation of what federal nursing home rules do and do not guarantee is the app claiming more than it knows, and that is the one thing this app is built not to do. Roughly 1500 strings per language, and what they carry is care instructions, money, and somebody's rights. That is why the bar was set high in the first place, and the instinct was correct.
+
+**Second message, which supersedes the first where they conflict, and they do.** The owner granted permission to ship the languages, with two conditions in place of the review gate:
+
+1. **The language selection screen carries a friendly disclaimer** saying that translations may not be one hundred percent accurate.
+2. **At the very end, after the app is built**, the translations are checked using reliable services available to the session, to confirm they are a genuine good faith effort.
+
+**Recorded as a conflict resolved rather than as one coherent instruction**, because the two messages do not agree and a later reader will notice. The first sets a human native speaker gate. The second ships without one. **The second governs**, both because it is later and because it is the owner exercising a call that is his to make about his own product. The first is kept because it carries the reasoning, and that reasoning is why condition 2 exists at all.
+
+**Where the strictness went, rather than vanishing.** It moved from a gate before shipping to an obligation inside the interface. The app does not get to be quietly wrong about somebody's rights in a language it cannot check. It has to say so, on the screen where the person chooses that language, before they rely on a word of it.
+
+**What "friendly" rules out**, since the owner chose that word and it does real work. Not a warning, not a legal notice, not a wall of hedging, and not an apology. It reads as the app being straight with someone rather than protecting itself, which is the same register as the disclaimer gate and the rest of the app. It also cannot become a judgment on the person's language, and it cannot appear in a way that frames English as the real version and every other language as a lesser copy.
+
+**The honest status is already in the data.** Every catalog carries `reviewed_by_native_speaker: false` and `check_i18n.py` prints it, per open question 6 in `MASTER_SPEC.md` section 10. The disclaimer is the interface finally saying out loud what the catalogs have recorded all along, and **the flag is what it reads from**, so a language that does get reviewed stops disclaiming without anyone editing a screen.
+
+**What is now shippable.** English, on its own terms. Spanish, Arabic, and Chinese, with the disclaimer. The seven in #92, on the same terms, once built.
+
+**What is still not.** A language whose translation has not been checked at all. Condition 2 is not a formality, and it is the last thing this session does.
+
+**Revisit if.** A native speaker reviews a language, which turns the flag true for that language and removes its disclaimer. That path stays open and is the better outcome. Nothing here closes it.
+
 ### D50. I ran a blocklisted command, and the reasoning felt sufficient at the time
 
 **Date:** 2026-08-01. **Recorded by:** the session, against itself.
