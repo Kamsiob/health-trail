@@ -300,6 +300,12 @@ Reopening is offered plainly, because somebody whose answer turned out not to ho
 
 Walked on the Pixel: the sheet opened and the file on disk reads as a document, headed with the title, dated, with what happened in order and the footer under it.
 
+**`verify.sh` caught two things nothing else would have, again.** HANDOFF section 8 already said to run the verifier rather than the checks anybody happens to remember, and it earned that a second time tonight.
+
+**Dictation would have silently vanished on every modern phone.** Since Android 11 an app sees only the packages it declares an interest in, so the availability check returns nothing for a recognizer that is installed and working. `DictateAction` hides itself when nothing can handle speech, per rule 11, so the control would have disappeared everywhere while appearing to work perfectly on the one phone it was tested on. A `<queries>` declaration fixes it, and it names exactly one intent, because declaring a query is declaring what this app is allowed to notice about the phone.
+
+Two Compose lint errors about parameter order on screens written tonight, both fixed.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -396,7 +402,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 182 tests, 0 failures**, run on the connected Pixel 10 Pro XL, and the app was reinstalled immediately afterward per D56. **47 JVM unit tests, 0 failures**, which includes the 6 in `TypeTest`. The count previously written here was 30 and was stale. All 11 implemented compliance checks pass.
+**The whole instrumented suite: 264 tests across 29 classes, 0 failures**, run on the connected Pixel 10 Pro XL through `tools/verify.sh --device`, and the app was reinstalled immediately afterward per D56. **82 JVM unit tests, 0 failures.** All 11 implemented compliance checks pass, and **lint passes**, which is the step that keeps catching what the habitual checks do not.
 
 **A pattern worth carrying forward.** Almost every defect this run found came from putting the built thing in a hand and changing one condition: the font at maximum, the keyboard up, the language set to Arabic, or simply looking at a screen that had already passed its tests. None of them were visible in the code, and several had passed a review. The tests are what keep them fixed; they are not what found them.
 

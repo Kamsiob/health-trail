@@ -10,6 +10,31 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+      **Package visibility for the one intent this app resolves.**
+
+      Since Android 11 an app sees only the packages it declares an interest in,
+      so `resolveActivity` and `queryIntentActivities` return nothing for a
+      recognizer that is installed and working. `DictateAction` hides itself
+      when nothing can handle speech input, per rule 11, so without this the
+      dictation control would silently vanish on every modern phone while
+      appearing to work perfectly on whichever one it was tested on.
+
+      Caught by `lintDebug` through `tools/verify.sh`, which is the reason
+      HANDOFF section 8 says to run the verifier rather than the checks anybody
+      happens to remember.
+
+      **This is the whole list, and it stays that way.** Declaring a query is
+      declaring what this app is allowed to notice about the phone, and this app
+      is entitled to notice exactly one thing: whether anything can turn speech
+      into text.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH" />
+        </intent>
+    </queries>
+
     <application
         android:name=".HealthTrailApp"
         android:allowBackup="false"

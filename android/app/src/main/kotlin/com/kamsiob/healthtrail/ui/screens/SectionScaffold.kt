@@ -149,7 +149,6 @@ fun SectionEmpty(
      * section**, per 5.17: a section's empty state uses its own drawing, so the
      * empty screen is already teaching where you are.
      */
-    section: Repository.Section? = null,
     /**
      * Passed `Modifier.fillParentMaxHeight(...)` by every caller, so the block
      * centers in the space the list actually has.
@@ -160,6 +159,7 @@ fun SectionEmpty(
      * the phone rather than in the code.
      */
     modifier: Modifier = Modifier,
+    section: Repository.Section? = null,
 ) {
     Column(
         modifier = modifier

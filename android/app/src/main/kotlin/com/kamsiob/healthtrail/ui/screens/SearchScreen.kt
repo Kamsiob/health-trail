@@ -80,11 +80,11 @@ fun SearchScreen(
     query: String,
     onQueryChange: (String) -> Unit,
     results: List<Repository.SearchHit>,
-    /** True when the read itself failed, which is not the same as finding nothing. */
-    failed: Boolean = false,
     onOpen: (Repository.SearchHit) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** True when the read itself failed, which is not the same as finding nothing. */
+    failed: Boolean = false,
     /**
      * What the way back says, because search is opened from two places.
      *
