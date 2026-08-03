@@ -352,6 +352,18 @@ Both halves landed together. **The capture form offers the care team as chips**,
 
 **A care team row opens the person now** rather than the form for correcting them. Correcting a number is the rarer thing and moved onto the person's own page, which is the same rule the trail row learned earlier tonight: a tap opens the thing itself.
 
+**Journey 4's prep sheet is built**, which is `MASTER_SPEC.md` 4.5 and the thing P3 asks for: the questions waiting for that person plus a change summary composed from real entries, every line tapping through to its source.
+
+**It is entirely composition and nothing else.** The questions are the ones somebody wrote down and never asked. The changes are the entries themselves rather than a description of them. 4.11 requires that and rule 2 is why.
+
+**Since the last appointment, not since a window.** Somebody walking into a care plan meeting wants what has happened since the last time they sat in that room, and a fixed thirty days would either repeat what was covered or drop what was not. **The screen says which date it is counting from**, and says plainly when there is no previous appointment to count from.
+
+**The previous appointment's date travels as its EDTF**, not as a timestamp, so the window is stated at exactly the precision that appointment was given. Rendering a date from an instant would be a precision claim the record may not make.
+
+It shares as a document with the questions numbered, because that is the order they get asked in and a numbered list survives being read aloud from a phone while somebody else is talking. Writing it up afterward opens the ordinary capture form, so what comes out is an ordinary entry on the trail.
+
+**Appointments now open their prep sheet rather than the form for correcting them**, which is the third screen tonight to learn that a tap opens the thing itself.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -603,6 +615,7 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| An appointment's prep sheet | 2026-08-03 | #137 | not yet |
 | One person, and everything that involved them | 2026-08-03 | #136 | not yet |
 | One entry, read on its own | 2026-08-02 | #134 | not yet |
 | Incidents, and one incident's thread | 2026-08-02 | #133 | not yet |

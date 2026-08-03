@@ -54,7 +54,14 @@ fun AppointmentsScreen(
     appointments: List<Repository.Appointment>,
     todayMillis: Long,
     onRemove: (Repository.Appointment) -> Unit,
-    onEdit: (Repository.Appointment) -> Unit,
+    /**
+     * Opens the appointment's prep sheet.
+     *
+     * **A tap opens the thing itself**, which is the rule the trail row and the
+     * care team row both learned on 2026-08-03. Correcting the details is on
+     * the prep sheet, where the rest of the appointment is.
+     */
+    onOpen: (Repository.Appointment) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -91,7 +98,7 @@ fun AppointmentsScreen(
                     AppointmentRow(
                         appointment = appointment,
                         onRemove = { onRemove(appointment) },
-                        onEdit = { onEdit(appointment) },
+                        onOpen = { onOpen(appointment) },
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
@@ -111,7 +118,7 @@ fun AppointmentsScreen(
                     AppointmentRow(
                         appointment = appointment,
                         onRemove = { onRemove(appointment) },
-                        onEdit = { onEdit(appointment) },
+                        onOpen = { onOpen(appointment) },
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
@@ -133,7 +140,7 @@ fun AppointmentsScreen(
 private fun AppointmentRow(
     appointment: Repository.Appointment,
     onRemove: () -> Unit,
-    onEdit: () -> Unit,
+    onOpen: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -143,7 +150,7 @@ private fun AppointmentRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
+            .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
             .testTag(ApptTags.row(appointment.id))
             .padding(Space.cardPadding),
     ) {

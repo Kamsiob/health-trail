@@ -42,6 +42,7 @@ import com.kamsiob.healthtrail.data.Readable
 import com.kamsiob.healthtrail.ui.components.Share
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.PersonScreen
+import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
@@ -242,6 +243,8 @@ fun NotebookShell(
     var resolvingIncident by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     /** The incident waiting to be turned into a document and handed to the share sheet. */
     var sharingIncident by remember { mutableStateOf<Repository.Incident?>(null) }
+    /** The prep sheet waiting to become a document. */
+    var sharingPrep by remember { mutableStateOf<Repository.Prep?>(null) }
 
     /**
      * The entry being read on its own.
@@ -261,6 +264,10 @@ fun NotebookShell(
      * involving them.
      */
     var openPerson by remember { mutableStateOf<Repository.Person?>(null) }
+
+    /** The appointment whose prep sheet is open, and the sheet itself. */
+    var openPrepFor by remember { mutableStateOf<String?>(null) }
+    var prep by remember { mutableStateOf<Repository.Prep?>(null) }
     var personEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
 
     /**
@@ -461,6 +468,7 @@ fun NotebookShell(
     BackHandler(enabled = openIncident != null) { openIncident = null }
     BackHandler(enabled = openEntry != null) { openEntry = null }
     BackHandler(enabled = openPerson != null) { openPerson = null }
+    BackHandler(enabled = openPrepFor != null) { openPrepFor = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -872,6 +880,29 @@ fun NotebookShell(
             }
         }
 
+        // The prep sheet as a document, for a meeting or for a sibling.
+        sharingPrep?.let { sheet ->
+            LaunchedEffect(sheet.appointment.id) {
+                val text = Readable.prep(
+                    strings = strings,
+                    subjectName = repository.activeSubject()?.displayName,
+                    prep = sheet,
+                )
+                val intent = Share.documentIntent(
+                    context = context,
+                    fileName = Readable.fileName(
+                        title = sheet.appointment.title,
+                        isoDate = java.time.LocalDate.now().toString(),
+                        fallback = strings["readable.fallback"],
+                    ),
+                    text = text,
+                    chooserTitle = strings["readable.share.title"],
+                )
+                sharingPrep = null
+                if (intent != null) context.startActivity(intent) else failed = true
+            }
+        }
+
         // Settling an incident, or reopening one. Written here rather than in
         // the screen's click handler so the screen stays a screen and the write
         // happens once, off the main thread, like every other write in this file.
@@ -1146,10 +1177,7 @@ fun NotebookShell(
                             Repository.Section.APPOINTMENTS, appointment.id, appointment.title,
                         )
                     },
-                    onEdit = { appointment ->
-                        editingAppointment = appointment
-                        addingAppointment = true
-                    },
+                    onOpen = { appointment -> openPrepFor = appointment.id },
                     onAdd = { editingAppointment = null; addingAppointment = true },
                     onBack = { openSection = null },
                 )
@@ -1287,6 +1315,28 @@ fun NotebookShell(
         // row appeared to do nothing at all: the entry screen was there and
         // the trail was painted over it. These are overlays in one Box, so
         // order is z-order, and the thing opened last has to be declared last.
+        openPrepFor?.let { appointmentId ->
+            LaunchedEffect(appointmentId, revision) {
+                val subjectId = repository.activeSubject()?.id
+                prep = subjectId?.let { repository.prep(it, appointmentId) }
+                if (prep == null) openPrepFor = null
+            }
+            prep?.takeIf { it.appointment.id == appointmentId }?.let { sheet ->
+                PrepScreen(
+                    prep = sheet,
+                    onOpenEntry = { openPrepFor = null; openEntry = it.id },
+                    onShare = { sharingPrep = sheet },
+                    onWriteUp = {
+                        // The ordinary capture form, so what comes out is an
+                        // ordinary entry on the trail rather than a special
+                        // kind only this screen knows about.
+                        capturing = CaptureKind.VISIT
+                    },
+                    onBack = { openPrepFor = null },
+                )
+            }
+        }
+
         openPerson?.let { person ->
             LaunchedEffect(person.id, revision) {
                 personEntries = repository.entriesForPerson(person.id)

@@ -2799,6 +2799,79 @@ class Repository private constructor(
         }
     }
 
+    // ---- the prep sheet -------------------------------------------------
+
+    /**
+     * What to walk into an appointment carrying.
+     *
+     * `MASTER_SPEC.md` 4.5: the questions waiting for that person plus a change
+     * summary composed from real entries, every line tapping through to its
+     * source.
+     *
+     * **This is the app's most useful two minutes and it is entirely
+     * composition.** Nothing here is generated, inferred, or summarized: the
+     * questions are the ones somebody wrote down, and the changes are the
+     * entries themselves. Rule 2 and `MASTER_SPEC.md` 4.11, which says every
+     * prep sheet comes from a deterministic composition engine and never from a
+     * model.
+     */
+    data class Prep(
+        val appointment: Appointment,
+        /** Questions nobody has asked yet, most recently written first. */
+        val questions: List<Question>,
+        /**
+         * Everything written down since the last appointment.
+         *
+         * **Since the last one, not since some window.** A person walking into
+         * a review wants what has happened since the last time they sat in that
+         * room, and a fixed thirty days would either repeat what was already
+         * covered or drop what was not.
+         */
+        val changes: List<TrailEntry>,
+        /**
+         * When the window starts, as the previous appointment's own date
+         * string, so the screen says it exactly as that appointment says it.
+         *
+         * The EDTF rather than a timestamp, because a date rendered from an
+         * instant would be a precision claim the record may not make, which is
+         * rule 17 and `DESIGN.md` 10.9.
+         */
+        val sinceEdtf: String?,
+    )
+
+    suspend fun prep(subjectId: String, appointmentId: String): Prep? =
+        withContext(Dispatchers.IO) {
+            val all = appointments(subjectId)
+            val appointment = all.firstOrNull { it.id == appointmentId }
+                ?: return@withContext null
+
+            // The most recent appointment strictly before this one, which is
+            // what "since the last time" means. Null before the first.
+            val previous = all
+                .filter { it.id != appointmentId && it.scheduledStart != null }
+                .filter { other ->
+                    appointment.scheduledStart?.let { other.scheduledStart!! < it } ?: true
+                }
+                .maxByOrNull { it.scheduledStart!! }
+            val since = previous?.scheduledStart
+
+            val open = questions(subjectId).filter { it.isOpen }
+
+            val changes = trail(subjectId).filter { entry ->
+                val at = entry.occurredStart ?: entry.createdAt
+                val notAfter = appointment.scheduledStart?.let { at <= it } ?: true
+                val after = since?.let { at > it } ?: true
+                notAfter && after
+            }
+
+            Prep(
+                appointment = appointment,
+                questions = open,
+                changes = changes,
+                sinceEdtf = previous?.scheduledEdtf,
+            )
+        }
+
     companion object {
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"

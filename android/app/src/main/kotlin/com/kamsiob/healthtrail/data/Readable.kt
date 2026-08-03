@@ -96,6 +96,75 @@ object Readable {
     }
 
     /**
+     * A prep sheet, as something to hold in a meeting or hand to a sibling.
+     *
+     * **The one document here somebody reads while a professional is waiting.**
+     * So the questions come first, numbered, because that is the order they
+     * will be asked in and because a numbered list survives being read aloud
+     * from a phone in a room where somebody else is talking.
+     */
+    fun prep(
+        strings: Strings,
+        subjectName: String?,
+        prep: Repository.Prep,
+    ): String = buildString {
+        val title = prep.appointment.title.ifBlank { strings["prep.untitled"] }
+        appendLine(title)
+        appendLine("=".repeat(title.length))
+        appendLine()
+
+        subjectName?.takeIf { it.isNotBlank() }?.let {
+            appendLine(strings("readable.about", "name" to it))
+        }
+        prep.appointment.scheduledEdtf?.takeIf { it.isNotBlank() }?.let {
+            appendLine(strings("readable.when", "date" to EventDateText.render(strings, it)))
+        }
+        prep.appointment.locationNote?.takeIf { it.isNotBlank() }?.let {
+            appendLine(strings("readable.where", "place" to it))
+        }
+
+        appendLine()
+        appendLine(strings["prep.questions"])
+        appendLine("-".repeat(strings["prep.questions"].length))
+        if (prep.questions.isEmpty()) {
+            appendLine(strings["prep.questions.empty"])
+        } else {
+            prep.questions.forEachIndexed { index, question ->
+                val who = question.roleLabel?.takeIf { it.isNotBlank() }?.let { " ($it)" } ?: ""
+                appendLine("${index + 1}. ${question.text}$who")
+            }
+        }
+
+        appendLine()
+        appendLine(strings["prep.changes"])
+        appendLine("-".repeat(strings["prep.changes"].length))
+        appendLine(
+            prep.sinceEdtf?.takeIf { it.isNotBlank() }
+                ?.let {
+                    strings("prep.changes.since", "date" to EventDateText.render(strings, it))
+                }
+                ?: strings["prep.changes.all"],
+        )
+        if (prep.changes.isEmpty()) {
+            appendLine()
+            appendLine(strings["prep.changes.empty"])
+        } else {
+            prep.changes.forEach { entry ->
+                appendLine()
+                val date = entry.occurredEdtf?.takeIf { it.isNotBlank() }
+                    ?.let { EventDateText.render(strings, it) }
+                    ?: strings["date.unknown"]
+                appendLine(date)
+                entry.title?.takeIf { it.isNotBlank() }?.let { appendLine(it) }
+                entry.body?.takeIf { it.isNotBlank() }?.let { appendLine(it) }
+            }
+        }
+
+        appendLine()
+        appendLine(footer(strings))
+    }
+
+    /**
      * What every shared document ends with.
      *
      * **This is not boilerplate and it is not a disclaimer for the app's

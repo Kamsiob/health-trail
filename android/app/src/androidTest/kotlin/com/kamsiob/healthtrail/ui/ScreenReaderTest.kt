@@ -63,6 +63,7 @@ import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
+import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.SetupScreen
 import com.kamsiob.healthtrail.ui.screens.SituationPickerScreen
@@ -560,7 +561,7 @@ class ScreenReaderTest {
                 ),
                 todayMillis = 1L,
                 onRemove = {},
-                onEdit = {},
+                onOpen = {},
                 onAdd = {},
                 onBack = {},
             )
@@ -927,6 +928,53 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("incidents")
+    }
+
+    @Test
+    fun aPrepSheetLabelsEverything() {
+        compose.show {
+            PrepScreen(
+                prep = Repository.Prep(
+                    appointment = Repository.Appointment(
+                        id = "a1",
+                        title = "Care plan meeting",
+                        scheduledEdtf = "2026-08-20",
+                        scheduledStart = 1_787_000_000_000L,
+                        locationNote = "The day room",
+                        notes = null,
+                    ),
+                    questions = listOf(
+                        Repository.Question(
+                            id = "q1",
+                            text = "Why was the dressing schedule changed?",
+                            roleLabel = "Charge nurse",
+                            entryId = null,
+                            askedEdtf = null,
+                            answerText = null,
+                        ),
+                    ),
+                    changes = listOf(
+                        Repository.TrailEntry(
+                            id = "e1",
+                            kind = "call",
+                            title = "Called the ward",
+                            body = "They said the schedule had changed",
+                            occurredEdtf = "2026-08-02",
+                            occurredStart = 1_785_000_000_000L,
+                            createdAt = 1_785_000_000_000L,
+                            isUnfiled = false,
+                            threads = emptyList(),
+                        ),
+                    ),
+                    sinceEdtf = "2026-06-01",
+                ),
+                onOpenEntry = {},
+                onShare = {},
+                onWriteUp = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a prep sheet")
     }
 
     @Test
