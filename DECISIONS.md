@@ -1135,12 +1135,134 @@ does not report the same span twice.
 
 ---
 
+### D64. The guard has never once fired through Claude Code, and the session that could prove it is also the session that cannot fix it
+
+**2026-08-02, 20:46 to 20:52, first thing in a fresh session, as instructed.**
+
+**What was observed, exactly.** The one line test came first:
+
+    cat ~/.claude/health-trail-guard.log
+
+It held **two lines, both stamped 2026-08-01T22:31**. Five Bash tool calls were
+then made in this session, ordinary ones: `date`, `git log`, `git status`, a
+`cat` of the settings file. The guard logs **every** invocation, blocked or
+passed. The log gained **no line from any of them**. So the hook did not run,
+and this time that is a measurement rather than an inference, because a passing
+command now leaves a mark and there were five chances to leave one.
+
+**This kills the hypothesis HANDOFF section 0a was carrying.** That hypothesis
+was that `.claude/settings.json` is read at session start, so the session that
+edits its own hook configuration is the one session that cannot benefit from it,
+which predicted the guard would work from the next session's first command.
+**This is that next session and it did not.** The prediction was reasonable and
+it was wrong, and it was costing a probe every run.
+
+**Worse, and this reframes the whole entry.** The two lines from 22:31 were
+written by a direct invocation of the script during the fix, not by Claude Code
+invoking the hook. Section 0a says so itself: "the two from the fix itself." So
+the honest statement is not that the guard stopped working. It is that **this
+project's destructive command guard has never been observed to fire through
+Claude Code, on any day, in any session.** Every line the log has ever held was
+put there by a human or an agent running the script by hand.
+
+**The script itself is correct and that was verified again this session.** Piped
+the real hook payload shape into it:
+
+    echo '{"tool_name":"Bash","tool_input":{"command":"git reset --hard HEAD"},"cwd":"/tmp"}' \
+      | ".../.claude/hooks/block-destructive.py"
+
+It printed the refusal, exited **2**, and wrote a third line to the log. The
+blocklist matches, the exit code is the blocking one, the message is right, the
+logging works. **The defect is entirely in the wiring, not in the guard.**
+
+**What was ruled out in the fifteen minutes.** The hook file is present and
+executable, `-rwxr-xr-x`. The command string in `.claude/settings.json` is an
+absolute path in double quotes with no variable in it, which was D49's fix and
+it is still correct on disk. `hasTrustDialogAccepted` is true for this project.
+There is no hook approval or hook hash record anywhere in `~/.claude.json`, so
+there is nothing visible that is withholding consent. `~/.claude/settings.json`
+exists, is read, and its contents are demonstrably in effect: it sets the model
+and the theme this session is running with.
+
+**What was not ruled out**, and either would explain it: the project level
+settings file is not being read for hooks at all on this machine, or something
+about a project path that contains a space and two leading dashes still defeats
+the spawn even with the path quoted.
+
+**The fix that follows, and why this session could not make it.** The move is to
+install the same guard from `~/.claude/settings.json`, which is the only settings
+file on this machine proven to be read, pointing at a path with no space in it,
+with the script scoped to enforce only for this project so that the owner's other
+work is unaffected by rules like the refusal of `git rebase`.
+
+**Editing the hook script was refused by Claude Code's own classifier**, which
+declines to let a session modify the hooks that constrain it. **That refusal is
+correct and it was not worked around.** A guard an agent can rewrite when the
+guard is inconvenient is not a guard, and this project has spent three sessions
+learning what a decorative guard costs. The same protection means the fix has to
+come from the owner. It is **B5**.
+
+**What protected the phone through this run is the same thing that protected it
+through the last one:** Claude Code's auto mode classifier, plus rule 6 followed
+by hand. Neither is this project's guard.
+
+**Do not probe this again from a session that cannot install the fix.** The next
+session's probe is only worth running once B5 is done. Until then the answer is
+known and the fifteen minutes are better spent on the app.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
-**Nothing is blocked as of 2026-07-31.** All four entries that ever appeared here are resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. A fresh session reading this needs nothing from the owner in order to continue.
+**One thing is blocked as of 2026-08-02, and it is B5.** The four entries before it are all resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. **B5 does not stop the work.** A fresh session can build everything on the list without it, exactly as the last two sessions did, on rule 6 followed by hand.
 
+### B5. The destructive command guard needs to be installed from user settings, and only the owner can do it. Opened 2026-08-02
 
+**What is wrong, in one sentence.** This project's guard against destructive commands has never run, in any session, and the agent is not permitted to fix it because fixing it means editing the hook that constrains the agent.
+
+**How certain this is.** Certain. The guard writes a line to `~/.claude/health-trail-guard.log` for every command it inspects, whether it blocks it or lets it through. A fresh session ran five ordinary commands and the log gained nothing. The script itself was run by hand in the same minutes and worked correctly. D64 has the full account.
+
+**Why the agent cannot do it.** Claude Code refused the edit. It declines to let a session modify its own hooks, which is right, and it was not worked around. That protection is also what makes this an owner job.
+
+**What you need to do.** Two small steps, both in your own Claude Code configuration rather than in this repository.
+
+**One.** Make a link to the guard at a path with no space in it, because a space in the path is one of the two remaining explanations for why the project level hook never fires:
+
+    mkdir -p ~/.claude/hooks
+    ln -s "/var/home/Kamsiob/Kamiob Apps/-- Android/Health Trail/.claude/hooks/block-destructive.py" ~/.claude/hooks/health-trail-guard.py
+
+The link points back into the repository, so the guard stays version controlled here and there is still only one copy of it.
+
+**Two.** Add the hook to `~/.claude/settings.json`, which is the only settings file on this machine proven to be read, since it is what sets your model and theme. Keep everything already in that file and add the `hooks` block:
+
+    {
+      "model": "claude-opus-5",
+      "tui": "fullscreen",
+      "theme": "dark-ansi",
+      "agentPushNotifEnabled": true,
+      "inputNeededNotifEnabled": true,
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              { "type": "command", "command": "/home/Kamsiob/.claude/hooks/health-trail-guard.py", "timeout": 20 }
+            ]
+          }
+        ]
+      }
+    }
+
+**One thing to know before you do it.** A hook in your user settings runs in **every** project, not just this one. This guard's rules are right for this project and not for all of them: it refuses `git rebase` and `git commit --amend`, which are ordinary operations elsewhere. **So either accept that for now, or tell a session to scope the script to this project and approve that one edit when it asks.** Scoping it is about fifteen lines: the script can identify its own project from its own location and simply log and stand aside everywhere else. The agent knows how and is only missing your permission to touch that file.
+
+**How anyone will know it worked**, without having to trust that it looks right, which is the mistake D29 made and D49 repeated:
+
+    cat ~/.claude/health-trail-guard.log
+
+If it has a line stamped inside the session that is reading it, the guard is live. If it does not, it is not, whatever the configuration says. Nothing else counts as evidence.
+
+**What is protecting the work until then.** Rule 6 followed by hand, which has held through two long unattended runs, and Claude Code's own auto mode classifier, which is what actually refused the destructive commands both times.
 
 ### B1. Commit signing. Resolved 2026-07-31
 

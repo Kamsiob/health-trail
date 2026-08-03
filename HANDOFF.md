@@ -16,9 +16,31 @@ If you find yourself re-reading files you already read this session, compaction 
 
 ---
 
-## 0a. The guard was tested again on 2026-08-01 at 22:31, and it failed again
+## 0a. The guard question is answered, and it is now waiting on the owner. Do not probe it again
 
-**Read this before section 0, which describes the state before the test.**
+**Read this instead of section 0 and section 7's opening, both of which describe the state before the answer.**
+
+**Answered 2026-08-02 at 20:52, first thing in a fresh session.** The probe was run as instructed and the result is not what the last three sessions were expecting.
+
+**The guard did not fire, and this time that is a measurement.** The log gains a line for every command the guard inspects, passed or blocked. Five ordinary commands were run in this session and the log gained nothing from any of them.
+
+**The bigger finding.** The two lines the log has ever held were both written by running the script by hand during the fix, not by Claude Code invoking the hook. So the honest statement is not that the guard broke. **This project's destructive command guard has never been observed to fire through Claude Code, on any day, in any session.**
+
+**The hypothesis the last three sessions carried is dead.** It was that a session cannot benefit from a hook configuration it edits itself, which predicted the guard would work from the next session's first command. This was that session. It did not.
+
+**The script is fine and that was checked again.** Piped a real payload in, it printed the refusal, exited 2, and logged. The defect is entirely in the wiring.
+
+**The fix is known and the agent is not allowed to make it.** Claude Code refused the edit to the hook script, because it does not let a session modify the hooks that constrain it. That refusal is correct and was not worked around. **It is B5 in `DECISIONS.md`, written for the owner in steps he can act on**, and it is the only blocked item in the project. D64 has the full account.
+
+**So: do not spend fifteen minutes on this again.** The next session's probe is worth running only after B5 is done, and then it is one line, `cat ~/.claude/health-trail-guard.log`. Until then the answer is known.
+
+**What actually protects the work** is rule 6 followed by hand, which has held through three long unattended runs, and Claude Code's auto mode classifier, which is what refused the destructive commands each time. **Neither is this project's guard.** Nothing destructive was run in this session.
+
+---
+
+## 0a-old. The guard was tested on 2026-08-01 at 22:31, and it failed. Kept for the record
+
+**Superseded by 0a above.**
 
 The probe was run first thing, as instructed. **The guard did not fire.** D49 carries the full account and D56 and D57 carry two standing rules the owner set during the same run.
 
@@ -325,7 +347,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 ## 6. Blocked
 
-**Nothing is blocked.** All four entries that ever appeared in the BLOCKED section of `DECISIONS.md` are resolved and kept there with their outcomes. A fresh session needs nothing from the owner in order to continue.
+**One thing is blocked, B5, and it does not stop the work.** The destructive command guard needs installing from user settings and only the owner can do it, because Claude Code refuses to let a session edit its own hooks. Section 0a and D64 have the account, and B5 in `DECISIONS.md` is written as steps he can act on. **A fresh session continues on everything else exactly as the last three did**, on rule 6 followed by hand. The four older entries in BLOCKED are all resolved and kept there with their outcomes.
 
 **Arabic is no longer waiting.** The fonts landed on 2026-08-01 and Arabic renders correctly on the device, so the Arabic screenshots on the design review issues can be captured whenever someone works through them.
 
@@ -337,7 +359,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 ## 7. The phone
 
-**Before anything else, prove the guard, because nothing below is protected without it.** Run `git reset --hard HEAD` on a clean tree and `adb shell pm clear com.kamsiob.healthtrail`. Both must be refused with "Blocked by the Health Trail destructive command guard". **If either runs, stop and fix the wiring before any other work.** Full procedure and what to check first in `RUN-SAFETY.md` section 1.1. Record the result in D49 whichever way it goes.
+**Do not run the guard probe. It is answered.** Section 0a and D64 carry the result: the guard has never fired through Claude Code, the fix is B5, and it needs the owner. Rule 6 is followed by hand until B5 lands.
 
 **Guard 1 was inert from the day it was written until 2026-08-01**, and looked installed the whole time. Its hook command was unquoted and this project's path contains spaces, so the shell split it, the executable was never found, and the hook exited 127 instead of 2. Nothing blocked. D29 blamed session start timing, which was wrong; D49 has the real cause and the fix. **The fix is committed but was not live in the session that made it**, because configuration is read at session start, so that session ran to its end on rule 6 alone.
 

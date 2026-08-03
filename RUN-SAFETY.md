@@ -20,18 +20,25 @@ The hook refuses the command and returns a message saying it was blocked and why
 
 This exists because the most expensive documented accident in unattended runs is exactly this: an agent clearing a working tree or force pushing and destroying hours or weeks of work that no test would have caught.
 
-**Prove it before trusting it, every session, as the first action of the run.** This guard was inert for its entire first week and looked installed the whole time. There is no output when a guard does not fire, so the only evidence that counts is a command that must be refused, actually being refused.
+**The guard is not installed, and as of 2026-08-02 that is settled rather than suspected.** Do not run the probe below and do not spend a session's opening on it. **It has never fired through Claude Code, on any day, in any session**, which was established by running five ordinary commands in a fresh session and watching a log that records every inspected command gain nothing. D64 and issue #128 carry the account, and **B5 is what the owner needs to do**, which is to install the same guard from `~/.claude/settings.json` at a path with no space in it.
 
-Run both. The first is safe on a clean tree, the second targets an installation holding nothing but throwaway test rows:
+**The agent cannot fix this**, because Claude Code refuses to let a session edit the hooks that constrain it. That refusal is correct and is not to be worked around. **Until B5 lands, rule 6 in `CLAUDE.md` is followed by hand**, which is what has actually protected three long unattended runs, alongside Claude Code's own auto mode classifier.
 
-    git reset --hard HEAD
-    adb shell pm clear com.kamsiob.healthtrail
+**Once B5 lands, the probe is one line and it comes first:**
+
+    cat ~/.claude/health-trail-guard.log
+
+**A line stamped inside the session reading it is the only evidence that counts.** The guard logs every command it inspects, passed or blocked, so an absence of lines is an absence of guard. Then confirm the refusal itself with a blocklisted command that is harmless if it runs, since Claude Code's own classifier will refuse the frightening ones before this guard is ever consulted and that refusal is not evidence about this guard:
+
+    git restore --version
 
 **Refusal looks like this**, and nothing else counts:
 
 > Blocked by the Health Trail destructive command guard (RUN-SAFETY.md section 1.1).
 
-If either command runs, **the guard is not protecting this device and fixing it comes before any other work.** Check the quoting first, described below. Record the outcome in DECISIONS.md D49 either way, including a pass, because that entry is currently the only place where the result of this test is written down.
+Record the outcome in DECISIONS.md either way, including a pass.
+
+**Two things that look like evidence and are not.** A command refused by Claude Code's auto mode classifier says nothing about this guard, because the classifier answers first. And feeding the script a payload by hand proves the script rather than the wiring: every line this log has ever held was written that way, which is exactly how the guard looked installed for three sessions while never running once.
 
 **Every hook command that interpolates a path is quoted.** This project lives at a path containing spaces, `/var/home/Kamsiob/Kamiob Apps/-- Android/Health Trail`. An unquoted `${CLAUDE_PROJECT_DIR}/...` is split by the shell, the executable is never found, and the hook exits 127. A PreToolUse hook blocks on exit 2 and only on exit 2, so 127 passes the command straight through. That is D49, and it is the bug this section is warning about rather than a hypothetical.
 
