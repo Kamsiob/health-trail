@@ -64,7 +64,21 @@ FULL = {
     "documents": 40,
     "measures": 3,
     "milestones": 15,
+    "appointments": 22,
+    "questions": 90,
 }
+
+# **Two of these are not counts of events, they are the size of a roster**, and
+# scaling them by how long the history is was wrong in a way that only showed
+# up as thin screens. Somebody who is on seven medications is on seven
+# medications on her first day, and a family that has been at this a month
+# already knows the charge nurse, the social worker and the aide who calls back.
+# What grows with time is not the roster, it is how much of it has churned:
+# the people who left and the medications that were stopped.
+#
+# Everything above accumulates and is scaled. These two plateau.
+def roster(days, full, early):
+    return full if days >= POINTS["day30"] else early
 
 
 # What actually happens on an incident, in the order it happens. Administration
@@ -135,7 +149,14 @@ class Generator:
         subject_id = self.subject(db)
         chapters = self.chapters(db, subject_id)
         threads = self.threads(db, subject_id)
+        # The care team comes before the entries that name them and before the
+        # appointments, medications and questions that point at them.
+        people = self.care_team(db, subject_id, chapters)
         self.entries(db, subject_id, chapters, threads)
+        self.involve(db, people)
+        appointments = self.appointments(db, subject_id, chapters, people)
+        self.questions(db, subject_id, people, appointments)
+        self.medications(db, subject_id, chapters, people)
         self.measures(db, subject_id)
         self.milestones(db, subject_id)
         self.incidents(db, subject_id, chapters)
@@ -398,6 +419,252 @@ class Generator:
                 },
                 day=day,
             )
+
+    def care_team(self, db, subject_id, chapters):
+        """The people, which nothing generated until 2026-08-03.
+
+        **Every screen that depends on a care team has only ever been seen with
+        data typed in by hand.** The generator wrote exactly one person, "Dee",
+        and only as the one-name edge case in `awkward`. A month six fixture
+        opened on a care team of one, so the person screen built tonight, the
+        chips on the capture form that link an entry to somebody, and the whole
+        argument for a phone number one tap away were unreachable from a seed.
+
+        One of them has left, because a list that only ever grows is not a list
+        that has been used for five years, and an archived person is a state the
+        screen has to hold.
+        """
+        wanted = roster(self.days, len(PEOPLE), 3)
+        people = []
+        for name, role, phone, note in PEOPLE[:wanted]:
+            day = self.rng.randrange(0, max(1, self.days))
+            people.append(
+                self.row(
+                    db,
+                    "person",
+                    {
+                        "subject_id": subject_id,
+                        "display_name": name,
+                        "role_label": role,
+                        "phone": phone,
+                        "notes": note,
+                    },
+                    day=day,
+                )
+            )
+
+        # Only once there is enough history for somebody to have left.
+        if self.days >= POINTS["month6"]:
+            for name, role, phone, note in ARCHIVED_PEOPLE:
+                left = self.rng.randrange(self.days // 3, max(2, self.days - 1))
+                self.row(
+                    db,
+                    "person",
+                    {
+                        "subject_id": subject_id,
+                        "display_name": name,
+                        "role_label": role,
+                        "phone": phone,
+                        "notes": note,
+                        "archived_at": self.ms(left),
+                    },
+                    day=max(0, left - self.days // 3),
+                )
+        return people
+
+    def involve(self, db, people):
+        """Who was on the other end of a call or a visit.
+
+        `MASTER_SPEC.md` section 3 promises a person knows every call and visit
+        involving them, and `entry_person` has been in the schema since Phase 0
+        with nothing writing to it, in the app until tonight and here until now.
+
+        **Not every entry gets one, deliberately.** Plenty of what a family
+        writes down is "called the nursing station" with no name attached,
+        because nobody gave one, and a fixture where every entry names somebody
+        would hide how the screen reads when most do not.
+        """
+        if not people:
+            return
+        rows = db.execute(
+            "SELECT id, created_at FROM entry WHERE kind IN ('call', 'visit')"
+        ).fetchall()
+        for entry_id, at in rows:
+            if self.rng.random() > 0.45:
+                continue
+            db.execute(
+                "INSERT INTO entry_person (id, created_at, updated_at, origin_device, rev,"
+                " entry_id, person_id) VALUES (?, ?, ?, ?, 1, ?, ?)",
+                (self.new_id(), at, at, self.device, entry_id, self.rng.choice(people)),
+            )
+
+    def appointments(self, db, subject_id, chapters, people):
+        """Meetings, past and coming, which the prep sheet is built on.
+
+        **The prep sheet counts from the previous appointment**, so a fixture
+        with none at all cannot show it at any window, and one with a single
+        appointment can only ever show the "everything so far" case. These are
+        spread through the history with at least one still ahead, because the
+        sheet somebody actually opens is the one for a meeting that has not
+        happened yet.
+        """
+        wanted = max(2, self.scaled(FULL["appointments"]))
+        made = []
+        for index in range(wanted):
+            title, where = APPOINTMENTS[index % len(APPOINTMENTS)]
+            # Spread rather than clustered: meetings are the one thing in a
+            # care record that happen on a schedule.
+            day = int(self.days * (index + 0.5) / wanted)
+            values = {
+                "subject_id": subject_id,
+                "title": title,
+                "location_note": where,
+                "chapter_id": chapters[min(len(chapters) - 1, day // max(1, self.days // len(chapters)))],
+                "scheduled_edtf": (self.start + timedelta(days=day)).isoformat(),
+                "scheduled_zone": "America/New_York",
+                "scheduled_start": self.ms(day, 10, 0),
+                "scheduled_end": self.ms(day, 11, 0),
+            }
+            if people:
+                values["person_id"] = self.rng.choice(people)
+            # Everything but the last one already happened and was attended.
+            if index < wanted - 1:
+                values["attended_edtf"] = values["scheduled_edtf"]
+                values["attended_start"] = values["scheduled_start"]
+                values["outcome_note"] = "Went through the care plan. Asked for it in writing."
+            made.append((self.row(db, "appointment", values, day=day), day))
+        return made
+
+    def questions(self, db, subject_id, people, appointments):
+        """Things to ask, some asked and some still waiting.
+
+        **The open ones are what a prep sheet carries.** A fixture where every
+        question has been asked produces an empty sheet that looks like a bug,
+        and one where none has been asked never shows that an answered question
+        stops coming back, which is the behavior somebody notices only when it
+        fails.
+        """
+        wanted = max(3, self.scaled(FULL["questions"]))
+        asked_at = [a for a in appointments if a[1] < self.days - 1]
+        for index in range(wanted):
+            day = self.day_of_activity()
+            values = {
+                "subject_id": subject_id,
+                "text": QUESTIONS[index % len(QUESTIONS)],
+            }
+            if people and self.rng.random() < 0.6:
+                values["person_id"] = self.rng.choice(people)
+                values["role_label"] = self.rng.choice(
+                    ["Charge nurse", "Social worker", "The doctor", "Billing"]
+                )
+            # Two in three were asked. The rest are still waiting, which is what
+            # the next prep sheet picks up.
+            if self.rng.random() < 0.66 and asked_at:
+                appointment_id, on = self.rng.choice(asked_at)
+                if on >= day:
+                    values["asked_edtf"] = (self.start + timedelta(days=on)).isoformat()
+                    values["asked_start"] = self.ms(on, 10, 30)
+                    values["asked_at_appointment_id"] = appointment_id
+                    values["answer_text"] = self.rng.choice(
+                        [
+                            "They said they would look into it.",
+                            "She said it was a staffing decision.",
+                            "Nobody could tell me.",
+                            None,
+                        ]
+                    )
+            self.row(db, "question", values, day=day)
+
+    def medications(self, db, subject_id, chapters, people):
+        """What she is taking, what she was taking, and every change in between.
+
+        **The history is the point, not the list.** `MASTER_SPEC.md` treats a
+        medication as a thing with a course: it starts, the dose changes, it is
+        held for a week, it resumes, and sometimes it stops. A fixture holding
+        only current medications with no events behind them cannot show the one
+        screen that matters, which is the one somebody opens to answer "when did
+        that change, and who told me".
+
+        Nothing here says whether any of it was right. Rule 2.
+        """
+        wanted = roster(self.days, len(MEDICATIONS), 5)
+        for index in range(wanted):
+            name, dose, purpose = MEDICATIONS[index % len(MEDICATIONS)]
+            started = self.rng.randrange(0, max(2, self.days // 2))
+            values = {
+                "subject_id": subject_id,
+                "name": name,
+                "dose_text": dose,
+                "purpose_text": purpose,
+                "started_edtf": (self.start + timedelta(days=started)).isoformat(),
+                "started_zone": "America/New_York",
+                "started_start": self.ms(started, 0, 0),
+                # A few are on the emergency card, which is the state that
+                # screen reads and nothing has ever written.
+                "on_emergency_card": 1 if index < 3 else 0,
+            }
+            if people and self.rng.random() < 0.5:
+                values["prescriber_person_id"] = self.rng.choice(people)
+
+            # One in four was stopped, and the last one always is, so a fixture
+            # of any size holds at least one stopped medication.
+            stopped = None
+            if index == wanted - 1 or self.rng.random() < 0.25:
+                stopped = min(self.days - 1, started + self.rng.randrange(20, max(21, self.days // 2)))
+                values["stopped_edtf"] = (self.start + timedelta(days=stopped)).isoformat()
+                values["stopped_start"] = self.ms(stopped, 0, 0)
+                values["stop_reason"] = self.rng.choice(MED_STOP_REASONS)
+
+            medication_id = self.row(db, "medication", values, day=started)
+            self.medication_history(db, medication_id, chapters, started, stopped, dose)
+
+    def medication_history(self, db, medication_id, chapters, started, stopped, dose):
+        """The course of one medication, in the order it happened."""
+        last = stopped if stopped is not None else self.days - 1
+
+        def event(kind, day, note=None, dose_text=None):
+            day = max(0, min(self.days - 1, day))
+            self.row(
+                db,
+                "medication_event",
+                {
+                    "medication_id": medication_id,
+                    "kind": kind,
+                    "chapter_id": chapters[
+                        min(len(chapters) - 1, day // max(1, self.days // len(chapters)))
+                    ],
+                    "occurred_edtf": (self.start + timedelta(days=day)).isoformat(),
+                    "occurred_zone": "America/New_York",
+                    "occurred_start": self.ms(day, 0, 0),
+                    "dose_text": dose_text,
+                    "note": note,
+                },
+                day=day,
+            )
+
+        event("started", started, dose_text=dose)
+
+        # **How many changes depends on how long she has been on it**, which
+        # the first version of this missed: a fixed nought to three gave a
+        # medication running five years the same history as one running three
+        # weeks, so the year five screen was no fuller than the day thirty one.
+        # Roughly one change every four months, which is what a dose adjustment
+        # and a hold for a stomach bug actually come to.
+        span = max(1, last - started)
+        for _ in range(self.rng.randrange(0, 2 + span // 120)):
+            when = started + self.rng.randrange(1, span + 1)
+            kind = self.rng.choice(["dose_changed", "held", "resumed", "noted"])
+            if kind == "dose_changed":
+                event(kind, when, note="Told at the care plan meeting.", dose_text="Doubled")
+            elif kind == "held":
+                event(kind, when, note="Held while she had the stomach thing.")
+            elif kind == "resumed":
+                event(kind, when, note="Back on it.")
+            else:
+                event(kind, when, note="Pharmacy switched the manufacturer.")
+
+        if stopped is not None:
+            event("stopped", stopped, note="Nobody told me until I asked.")
 
     def bills(self, db, subject_id, chapters):
         """One bill in every state the schema allows.
@@ -808,6 +1075,68 @@ ORIGINALS = [
     "I do not know where the original is",
 ]
 
+PEOPLE = [
+    ("Angela Reyes", "Charge nurse, day shift", "555 0142", "Days, 7 to 3. Ask for her by name."),
+    ("Marcus Bell", "Social worker", "555 0187", None),
+    ("Dr. Priya Raman", "Attending physician", "555 0110", "Rounds Tuesdays."),
+    ("Tonya K.", "Aide, evenings", None, "The one who actually calls back."),
+    ("Wesley Obi", "Director of nursing", "555 0100", None),
+    ("Sharon Delacroix", "Billing office", "555 0166", None),
+    ("Ruth Ann Pierce", "Physical therapy", "555 0173", None),
+    ("Jerome Whitfield", "Ombudsman", "555 0199", "County office. Not facility staff."),
+]
+
+# Somebody who left. A care team that only ever grows is not a care team that
+# has been used for five years.
+ARCHIVED_PEOPLE = [
+    ("Nadine Cross", "Charge nurse, day shift", "555 0142", "Left in the spring."),
+]
+
+APPOINTMENTS = [
+    ("Care plan meeting", "Conference room, second floor"),
+    ("Quarterly review", "Conference room, second floor"),
+    ("Doctor, follow up", "Suite 210, the medical building"),
+    ("Dentist", "They come to the facility"),
+    ("Podiatry", "In her room"),
+    ("Annual assessment", "Conference room, second floor"),
+    ("Meeting about the level of care", None),
+]
+
+# **Administration, not clinical curiosity.** Rule 2. Every one of these is a
+# question about who did what and when, or about a decision somebody made. None
+# of them asks whether anything was medically right.
+QUESTIONS = [
+    "Why was the shower schedule changed?",
+    "Who authorized the room move?",
+    "Can I have the care plan in writing?",
+    "What is the aide to resident ratio on evenings?",
+    "Who do I call at night when the office is closed?",
+    "Why was I not told about the fall until the next day?",
+    "Can she have the window bed?",
+    "What is this line on the bill for?",
+    "When was the last time she was weighed?",
+    "Who is covering when Angela is off?",
+]
+
+# **Names and doses only, and never a purpose that reads as a judgment.** The
+# app records what somebody was told they are taking. Rule 2 forbids the rest.
+MEDICATIONS = [
+    ("Lisinopril", "10 mg, mornings", "Blood pressure"),
+    ("Metformin", "500 mg, twice a day", "Diabetes"),
+    ("Atorvastatin", "20 mg, evenings", "Cholesterol"),
+    ("Donepezil", "5 mg, evenings", "Memory"),
+    ("Levothyroxine", "50 mcg, mornings, empty stomach", "Thyroid"),
+    ("Vitamin D", "1000 units", None),
+    ("Trazodone", "25 mg, at night", "Sleep"),
+    ("Tylenol", "As needed", "Pain"),
+]
+
+MED_STOP_REASONS = [
+    "Stopped at the care plan meeting.",
+    "The doctor took her off it.",
+    "Pharmacy said it was a duplicate.",
+]
+
 MILESTONES = [
     "Walked the length of the hall",
     "Moved to the memory unit",
@@ -831,7 +1160,19 @@ def generate(seed, point, out):
     Generator(seed, POINTS[point]).build(db)
     counts = {
         table: db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-        for table in ("entry", "chapter", "care_thread", "measurement", "milestone")
+        for table in (
+            "entry",
+            "chapter",
+            "care_thread",
+            "measurement",
+            "milestone",
+            "person",
+            "entry_person",
+            "appointment",
+            "question",
+            "medication",
+            "medication_event",
+        )
     }
     db.close()
     return counts

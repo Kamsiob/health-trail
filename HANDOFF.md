@@ -295,7 +295,11 @@ The pass is running now and it is not only producing captures. Three things on s
 
 **Light theme captures, Arabic, and font scale 2.0** for the eight new screens. The gate was walked on a sample tonight, not on all of them: the notebook, the disclaimer, the incident thread, and Today were checked at 2.0 and in Arabic and all pass. **The nav label cap came out of that pass**, D68's sibling finding.
 
-**The fixture has no appointments and no medications**, so the prep sheet and the medication history cannot be reached from the month-six seed at all. Found trying to capture them. That is a fourth fixture defect and it also means those two screens have only ever been seen with data put there by hand.
+**The fixture had no appointments, no medications, no questions and one person**, so the prep sheet, the medication history, the questions section and the person screen could not be reached from a seed at all. Found trying to capture them, and **fixed**: `care_team`, `involve`, `appointments`, `questions`, `medications` and `medication_history` are written now, and a month six seed opens on ten people, eight medications with seventeen events behind them, nine questions and two care plan meetings.
+
+Seventeen tables still have no writer. The ones that matter next are `emergency_card` and `emergency_contact`, `custom_template`, `cost_sheet` and `cost_entry`, and `person_chapter`, which is one of the links-both-ways gaps.
+
+**A modeling error came out of it.** `scaled` was being applied to two things that are not events: the care team and the medication list are a roster, not a stream. Somebody on seven medications is on seven medications on her first day, and a family a month in already knows the charge nurse. Scaling them by history length gave a month six fixture two medications and made every medication screen look thin for a reason that had nothing to do with the screen. `roster()` holds them flat; what grows with time is the churn, the people who left and the medications that were stopped.
 
 **The reader pass with TalkBack running**, #44, for the same eight.
 
