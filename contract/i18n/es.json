@@ -23,6 +23,7 @@
   "setup.where.title": "¿Dónde está en este momento?",
   "setup.skip": "Omitir por ahora",
   "setup.continue": "Continuar",
+  "today.search": "Buscar en todo lo que ha anotado",
   "today.title": "Hoy",
   "today.digest.heading": "Desde la última vez que estuvo aquí",
   "today.digest.new": "{count, plural, one {1 nuevo} other {# nuevos}}",

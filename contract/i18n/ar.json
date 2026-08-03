@@ -23,6 +23,7 @@
   "setup.where.title": "أين هو الآن",
   "setup.skip": "تخطَّ الآن",
   "setup.continue": "متابعة",
+  "today.search": "ابحث في كل ما دوّنته",
   "today.title": "اليوم",
   "today.digest.heading": "منذ آخر مرة كنت هنا",
   "today.digest.new": "{count, plural, zero {لا جديد} one {جديد واحد} two {جديدان} few {# جديدة} many {# جديدًا} other {# جديد}}",

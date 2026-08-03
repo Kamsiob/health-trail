@@ -23,6 +23,7 @@
   "setup.where.title": "Where are they right now",
   "setup.skip": "Skip for now",
   "setup.continue": "Continue",
+  "today.search": "Search everything you have written down",
   "today.title": "Today",
   "today.digest.heading": "Since you were last here",
   "today.digest.new": "{count, plural, one {1 new} other {# new}}",

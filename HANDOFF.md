@@ -267,6 +267,19 @@ Ten sections searched at once, results grouped **in notebook order** rather than
 
 **The pattern worth carrying out of tonight.** Four separate tools reported on something other than what they were asked about: the guard that was never invoked, the suite that composed one screen at a time, the grep that skipped a binary file, and this dump. **Distrust a negative result from a tool that cannot tell you what it did not examine.**
 
+**Two of the eight journeys in Part Three are walked, and walking them found three things.**
+
+| Journey | Result |
+|---|---|
+| **A first call logged from a cold launch, one-handed, without typing** | **Six taps**, gate to saved: accept, skip setup, "Not sure yet", capture, "Log a call", save. Comfortably inside thirty seconds |
+| **Something logged months ago, found again in under fifteen seconds** | **Two taps and one word** from Today. It was three taps before search moved onto Today |
+
+**Search was two taps into More, and `MASTER_SPEC.md` 4.8 puts it at the top of Today.** Getting to it took longer than using it. It is a quiet row under the title now rather than a live field, because a text box there would compete with the digest for the first thing the eye lands on and this screen's job is to say what changed.
+
+**Search said "Back to More" to somebody who came from Today.** That is the identical defect fixed for the section screens on 2026-08-01, reintroduced the moment a second screen grew two ways in. The caller names the way back now; the screen does not guess.
+
+**The date picker has no way to move by year**, found while backdating an entry three months. Three months is three taps on a small arrow; last year would be twelve. Filed as #132.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.

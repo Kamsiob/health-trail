@@ -23,6 +23,7 @@
   "setup.where.title": "他现在在哪里",
   "setup.skip": "暂时跳过",
   "setup.continue": "继续",
+  "today.search": "搜索你记下的所有内容",
   "today.title": "今天",
   "today.digest.heading": "自您上次来过之后",
   "today.digest.new": "{count, plural, other {# 条新增}}",

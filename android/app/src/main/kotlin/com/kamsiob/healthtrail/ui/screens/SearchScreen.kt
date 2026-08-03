@@ -85,6 +85,16 @@ fun SearchScreen(
     onOpen: (Repository.SearchHit) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * What the way back says, because search is opened from two places.
+     *
+     * **Hardcoding "Back to More" named a place the person had not come from**
+     * when they reached it from Today, which is the same defect fixed for the
+     * section screens on 2026-08-01 and reintroduced the moment a second screen
+     * grew two ways in. The caller knows where they came from; this screen does
+     * not get to guess.
+     */
+    backLabelKey: String = "section.back.more",
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -98,7 +108,7 @@ fun SearchScreen(
         title = strings["search.title"],
         subtitle = strings["search.subtitle"],
         onBack = onBack,
-        backLabelKey = "section.back.more",
+        backLabelKey = backLabelKey,
         modifier = modifier.testTag(SearchTags.ROOT),
     ) {
         item {

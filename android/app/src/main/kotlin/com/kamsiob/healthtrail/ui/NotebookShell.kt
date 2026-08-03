@@ -544,6 +544,7 @@ fun NotebookShell(
                             onOpenSection = { section -> openSection = section },
                             onCapture = { sheetOpen = true },
                         ),
+                        onSearch = { searchOpen = true },
                     )
                     Destination.PROJECTS -> ProjectsScreen(
                         projects = projects,
@@ -825,6 +826,14 @@ fun NotebookShell(
                 }
             }
             SearchScreen(
+                // Named from where they actually are, per the same rule the
+                // section screens follow one block below.
+                backLabelKey = when (destination) {
+                    Destination.TODAY -> "section.back.today"
+                    Destination.MORE -> "section.back.more"
+                    Destination.PROJECTS -> "section.back.projects"
+                    Destination.NOTEBOOK -> "section.back"
+                },
                 query = searchQuery,
                 onQueryChange = { searchQuery = it },
                 results = searchResults,

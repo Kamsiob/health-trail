@@ -46,6 +46,7 @@ object TodayTags {
     const val ROOT = "today_root"
     const val EMPTY = "today_empty"
     const val DIGEST = "today_digest"
+    const val SEARCH = "today_search"
     const val EMERGENCY = "today_emergency"
     const val NEXT_APPOINTMENT = "today_next_appointment"
     fun step(number: Int) = "today_step_$number"
@@ -124,6 +125,15 @@ fun TodayScreen(
     onOpenUnfiled: () -> Unit = {},
     onOpenAppointments: () -> Unit = {},
     onOpenEmergencyCard: () -> Unit = {},
+    /**
+     * Opens search.
+     *
+     * **`MASTER_SPEC.md` 4.8 puts universal search at the top of Today**, and
+     * it was two taps into More. Walking the "find something from three months
+     * ago" journey is what surfaced it: the search itself takes one word, and
+     * getting to it took longer than using it.
+     */
+    onSearch: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -143,6 +153,18 @@ fun TodayScreen(
                 text = strings["today.title"],
                 style = HealthTrail.type.displayL,
                 color = colors.ink,
+            )
+            Spacer(Modifier.height(Space.m))
+
+            // **At the top, under the title**, where 4.8 puts it. It is one
+            // quiet row rather than a live field: a text box here would compete
+            // with the digest for the first thing the eye lands on, and this
+            // screen's job is to say what changed. Section 10.8, hierarchy
+            // before decoration.
+            QuietButton(
+                label = strings["today.search"],
+                onClick = onSearch,
+                modifier = Modifier.fillMaxWidth().testTag(TodayTags.SEARCH),
             )
             Spacer(Modifier.height(Space.l))
 
