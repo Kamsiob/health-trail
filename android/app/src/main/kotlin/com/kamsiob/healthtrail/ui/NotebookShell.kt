@@ -36,6 +36,8 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.IncidentScreen
+import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
@@ -223,6 +225,16 @@ fun NotebookShell(
     var settingWaitingOn by remember { mutableStateOf<Pair<String, String>?>(null) }
     var aboutOpen by remember { mutableStateOf(false) }
 
+    /** Incidents, which `MASTER_SPEC.md` 4.7 makes threads rather than events. */
+    var incidents by remember { mutableStateOf<List<Repository.Incident>>(emptyList()) }
+    var incidentsOpen by remember { mutableStateOf(false) }
+    var openIncident by remember { mutableStateOf<Repository.Incident?>(null) }
+    var incidentEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
+    /** Set while a capture is going to hang off an incident rather than stand alone. */
+    var addingToIncident by remember { mutableStateOf<String?>(null) }
+    /** The incident to settle or reopen, and which of the two. */
+    var resolvingIncident by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+
     /**
      * Search, and what has been typed into it.
      *
@@ -343,6 +355,7 @@ fun NotebookShell(
             // opening one is instant and never shows a spinner over a number
             // the person is already looking at.
             trail = subject?.let { repository.trail(it.id) }.orEmpty()
+            incidents = subject?.let { repository.incidents(it.id) }.orEmpty()
             people = subject?.let { repository.people(it.id) }.orEmpty()
             emergencyCard = subject?.let { repository.emergencyCard(it.id) }
             medications = subject?.let { repository.medications(it.id) }.orEmpty()
@@ -412,6 +425,8 @@ fun NotebookShell(
     BackHandler(enabled = openProject != null) { openProject = null }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
     BackHandler(enabled = searchOpen) { searchOpen = false }
+    BackHandler(enabled = incidentsOpen && openIncident == null) { incidentsOpen = false }
+    BackHandler(enabled = openIncident != null) { openIncident = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -545,6 +560,8 @@ fun NotebookShell(
                             onCapture = { sheetOpen = true },
                         ),
                         onSearch = { searchOpen = true },
+                        openIncidents = incidents.count { it.isOpen },
+                        onOpenIncidents = { incidentsOpen = true },
                     )
                     Destination.PROJECTS -> ProjectsScreen(
                         projects = projects,
@@ -788,6 +805,56 @@ fun NotebookShell(
                 // notebook that no longer exists.
                 revision += 1
                 applyNow = false
+            }
+        }
+
+        // Settling an incident, or reopening one. Written here rather than in
+        // the screen's click handler so the screen stays a screen and the write
+        // happens once, off the main thread, like every other write in this file.
+        resolvingIncident?.let { (id, settle) ->
+            LaunchedEffect(id, settle) {
+                repository.resolveIncident(
+                    incidentId = id,
+                    resolvedAt = if (settle) System.currentTimeMillis() else null,
+                )
+                resolvingIncident = null
+                revision += 1
+                // The open copy is stale the moment it is written, so it is
+                // re-read rather than patched in place.
+                openIncident = repository.activeSubject()?.id
+                    ?.let { subjectId -> repository.incidents(subjectId) }
+                    ?.firstOrNull { incident -> incident.id == id }
+            }
+        }
+
+        if (incidentsOpen) {
+            val current = openIncident
+            if (current == null) {
+                IncidentsScreen(
+                    incidents = incidents,
+                    onOpen = { openIncident = it },
+                    onBack = { incidentsOpen = false },
+                )
+            } else {
+                LaunchedEffect(current.id, revision) {
+                    incidentEntries = repository.incidentTrail(current.id)
+                }
+                IncidentScreen(
+                    incident = current,
+                    entries = incidentEntries,
+                    onAdd = {
+                        // **Carries the incident forward rather than asking
+                        // again.** Part Two: a prefill is a default the person
+                        // can change, and making somebody re-say which incident
+                        // they are already looking at is the app not paying
+                        // attention.
+                        addingToIncident = current.id
+                        capturing = CaptureKind.CALL
+                    },
+                    onResolve = { resolvingIncident = current.id to true },
+                    onReopen = { resolvingIncident = current.id to false },
+                    onBack = { openIncident = null },
+                )
             }
         }
 
@@ -1753,6 +1820,20 @@ fun NotebookShell(
                         threadId = draft.threadId,
                         isUnfiled = threads.isNotEmpty() && draft.threadId == null,
                     )
+                } else if (subject != null && draft.kind == CaptureKind.INCIDENT) {
+                    // **An incident is two rows for the same reason a question
+                    // is.** `MASTER_SPEC.md` 4.7 makes it a thread from first
+                    // report to resolution, and one written only as an entry
+                    // can never be escalated, resolved, or exported as a
+                    // thread. It was an entry with a scary kind until now.
+                    repository.reportIncident(
+                        subjectId = subject.id,
+                        title = draft.who,
+                        description = draft.note,
+                        occurred = draft.occurred,
+                        threadId = draft.threadId,
+                        isUnfiled = threads.isNotEmpty() && draft.threadId == null,
+                    )
                 } else if (subject != null) {
                     val entryId = repository.createEntry(
                         subjectId = subject.id,
@@ -1767,6 +1848,10 @@ fun NotebookShell(
                         isUnfiled = threads.isNotEmpty() && draft.threadId == null,
                     )
                     draft.threadId?.let { repository.linkEntryToThread(entryId, it) }
+                    // **The incident it was opened from, carried forward.** The
+                    // person is looking at the thread; asking which one would
+                    // be the app not paying attention. Part Two.
+                    addingToIncident?.let { repository.attachEntryToIncident(entryId, it) }
                     // A call carries an extra row for whether anyone picked up.
                     // The other three are fully described by the entry itself.
                     if (draft.kind == CaptureKind.CALL) {
@@ -1774,8 +1859,13 @@ fun NotebookShell(
                     }
                 }
                 saving = null
+                addingToIncident = null
                 revision += 1
-                destination = Destination.NOTEBOOK
+                // **Stays where they were when the capture belonged to an
+                // incident.** Being thrown back to the notebook after adding a
+                // call to a thread is losing the person's place in the one
+                // screen they were reading.
+                if (!incidentsOpen) destination = Destination.NOTEBOOK
             }
         }
     }

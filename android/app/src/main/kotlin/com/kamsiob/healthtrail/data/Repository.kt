@@ -2394,6 +2394,239 @@ class Repository private constructor(
         hits
     }
 
+    // ---- incidents -----------------------------------------------------
+
+    /**
+     * An incident, which is a thread rather than an event.
+     *
+     * `MASTER_SPEC.md` 4.7: from first report to resolution, with each call and
+     * escalation as a node on it. **That is the whole point and it is why an
+     * incident is not just an entry with a scary kind.** A fall, a missed
+     * medication, or a wound that was not dressed is followed by calls, by
+     * somebody promising to look into it, and eventually by an answer, and the
+     * thing a caregiver needs six months later is the sequence rather than the
+     * first line of it.
+     */
+    data class Incident(
+        val id: String,
+        val title: String,
+        val description: String?,
+        val reportedEdtf: String?,
+        val reportedStart: Long?,
+        /** Null while it is still open, which is the state that matters most. */
+        val resolvedAt: Long?,
+        val resolutionNote: String?,
+        val chapterName: String?,
+        /** How many entries hang off it, the first report included. */
+        val entryCount: Int,
+    ) {
+        val isOpen: Boolean get() = resolvedAt == null
+    }
+
+    /**
+     * Reports an incident, writing the incident and its first entry together.
+     *
+     * **Two rows in one transaction**, the same shape `createQuestionWithEntry`
+     * uses and for the same reason: writing only the entry put a question in
+     * the trail and left its own section counting zero forever, which is the
+     * app being wrong about itself. An incident that exists only as an entry
+     * can never be escalated, resolved, or exported as a thread.
+     *
+     * Returns the incident id and the entry id.
+     */
+    suspend fun reportIncident(
+        subjectId: String,
+        title: String,
+        description: String?,
+        occurred: Edtf.Date,
+        threadId: String?,
+        isUnfiled: Boolean,
+    ): Pair<String, String> = withContext(Dispatchers.IO) {
+        val database = db().database
+        database.beginTransaction()
+        try {
+            val incidentId = insertRow(
+                "incident",
+                mapOf(
+                    "subject_id" to subjectId,
+                    // The schema requires a title. An incident with no words is
+                    // still an incident somebody wanted recorded, so it gets
+                    // the description or a placeholder rather than being
+                    // refused at the moment they are least able to argue.
+                    "title" to title.ifBlank { description?.take(80) ?: "" },
+                    "description" to description?.ifBlank { null },
+                ) + dateColumns("reported", occurred),
+            )
+            val entryId = insertRow(
+                "entry",
+                mapOf(
+                    "subject_id" to subjectId,
+                    "kind" to "incident",
+                    "title" to title.ifBlank { null },
+                    "body" to description?.ifBlank { null },
+                    "incident_id" to incidentId,
+                    "is_unfiled" to if (isUnfiled) 1 else 0,
+                ) + dateColumns("occurred", occurred),
+            )
+            if (threadId != null) {
+                insertRow("entry_thread", mapOf("entry_id" to entryId, "thread_id" to threadId))
+            }
+            database.setTransactionSuccessful()
+            incidentId to entryId
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    /** Every incident for this subject, open ones first, then most recent. */
+    suspend fun incidents(subjectId: String): List<Incident> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT i.id, i.title, i.description, i.reported_edtf, i.reported_start, " +
+                "i.resolved_at, i.resolution_note, c.name, " +
+                "(SELECT COUNT(*) FROM live_entry e WHERE e.incident_id = i.id) " +
+                "FROM live_incident i " +
+                "LEFT JOIN live_chapter c ON c.id = i.chapter_id " +
+                "WHERE i.subject_id = ? " +
+                // **Open first.** An incident nobody has answered is the thing
+                // a caregiver is carrying around, and a list that buries it
+                // under resolved ones by date is a list that forgot what it is
+                // for. Never a judgment about how long it has been open.
+                "ORDER BY (i.resolved_at IS NOT NULL), " +
+                "coalesce(i.reported_start, i.created_at) DESC",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Incident(
+                            id = cursor.getString(0),
+                            title = cursor.getString(1) ?: "",
+                            description = cursor.getString(2),
+                            reportedEdtf = cursor.getString(3),
+                            reportedStart = if (cursor.isNull(4)) null else cursor.getLong(4),
+                            resolvedAt = if (cursor.isNull(5)) null else cursor.getLong(5),
+                            resolutionNote = cursor.getString(6),
+                            chapterName = cursor.getString(7),
+                            entryCount = cursor.getInt(8),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /** The entries on one incident, oldest first, which is the order it happened. */
+    suspend fun incidentTrail(incidentId: String): List<TrailEntry> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, " +
+                    "is_unfiled FROM live_entry WHERE incident_id = ? " +
+                    // **Oldest first, which is the opposite of the trail.** The
+                    // trail answers "what has been happening lately" and reads
+                    // newest first. A thread answers "how did this go", and a
+                    // story told backward is not the same story.
+                    "ORDER BY coalesce(occurred_start, created_at) ASC",
+                arrayOf(incidentId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            TrailEntry(
+                                id = cursor.getString(0),
+                                kind = cursor.getString(1),
+                                title = cursor.getString(2),
+                                body = cursor.getString(3),
+                                occurredEdtf = cursor.getString(4),
+                                occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                                createdAt = cursor.getLong(6),
+                                isUnfiled = cursor.getInt(7) == 1,
+                                threads = emptyList(),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /**
+     * Adds something that happened on an incident: a call, an escalation, a note.
+     *
+     * The node on the thread that `MASTER_SPEC.md` 4.7 asks for. It is an
+     * ordinary entry, so it appears on the trail in its own right, and it
+     * carries the incident so the thread can be read as one thing.
+     */
+    suspend fun addToIncident(
+        subjectId: String,
+        incidentId: String,
+        kind: String,
+        title: String?,
+        body: String?,
+        occurred: Edtf.Date,
+    ): String = insert(
+        "entry",
+        mapOf(
+            "subject_id" to subjectId,
+            "kind" to kind,
+            "title" to title?.ifBlank { null },
+            "body" to body?.ifBlank { null },
+            "incident_id" to incidentId,
+        ) + dateColumns("occurred", occurred),
+    )
+
+    /**
+     * Marks an incident resolved, with what the answer actually was.
+     *
+     * **Never removed and never hidden.** A resolved incident is the half of
+     * the record that shows something was chased and answered, and "we raised
+     * it in March and they changed the dressing schedule" is exactly what
+     * somebody needs at the next care plan meeting.
+     *
+     * Passing null reopens it, because somebody who resolved the wrong one, or
+     * whose answer turned out not to hold, must be able to say so.
+     */
+    suspend fun resolveIncident(
+        incidentId: String,
+        resolvedAt: Long?,
+        resolutionNote: String? = null,
+    ) = withContext(Dispatchers.IO) {
+        // The same shape `markQuestionAsked` uses, so the change log trigger
+        // sees an ordinary update and `rev` moves the way every other write
+        // moves it.
+        db().database.execSQL(
+            "UPDATE incident SET resolved_at = ?, resolution_note = ?, " +
+                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(
+                resolvedAt,
+                resolutionNote?.ifBlank { null },
+                System.currentTimeMillis(),
+                incidentId,
+            ),
+        )
+    }
+
+    /**
+     * Hangs an entry that already exists onto an incident.
+     *
+     * Used when a capture was opened from a thread: the entry is written the
+     * ordinary way, so it appears on the trail in its own right, and then it is
+     * told which thread it belongs to. Rule 18, links go both ways.
+     */
+    suspend fun attachEntryToIncident(entryId: String, incidentId: String) =
+        withContext(Dispatchers.IO) {
+            db().database.execSQL(
+                "UPDATE entry SET incident_id = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(incidentId, System.currentTimeMillis(), entryId),
+            )
+        }
+
+    /** How many incidents are still open. Today shows this, and only counts it. */
+    suspend fun openIncidentCount(subjectId: String): Int = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT COUNT(*) FROM live_incident WHERE subject_id = ? AND resolved_at IS NULL",
+            arrayOf(subjectId),
+        ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+    }
+
     companion object {
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"

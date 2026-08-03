@@ -280,6 +280,18 @@ Ten sections searched at once, results grouped **in notebook order** rather than
 
 **The date picker has no way to move by year**, found while backdating an entry three months. Three months is three taps on a small arrow; last year would be twelve. Filed as #132.
 
+**Journey 3 works: an incident from first report through escalation to resolved.** `MASTER_SPEC.md` 4.7 makes an incident a thread rather than an event, and **it was an entry with a scary kind**: reported once, never followed, never resolved. The `incident` table has been in the schema since Phase 0 and nothing had ever written to it.
+
+Reporting one now writes the incident and its first entry in one transaction, the same two-row shape a question uses and for the same reason. Each escalation is a node on the thread. Today counts what is still open and opens the list. The thread reads **oldest first, which is the opposite of the trail**: the trail answers what has been happening lately, a thread answers how this went, and a story told backward is not the same story.
+
+**The visual system did the work it was built for.** The thread is a continuous alert-colored spine, the first report is a ringed milestone, each escalation is a filled waypoint, and an unanswered incident ends in a hollow one with "Nothing since. This one is still open." beside it. Shape carries the state, color carries the kind, and the words say the same thing so nothing depends on seeing red.
+
+**Two friction decisions, both from Part Two.** Adding to a thread carries the incident forward rather than asking which one, and saving from a thread leaves the person on the thread rather than throwing them back to the notebook.
+
+Reopening is offered plainly, because somebody whose answer turned out not to hold has to be able to say so without the app treating it as a confession.
+
+**What remains of journey 3 is the export**, "then exported as one document", which is the assembly view in #131.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -531,6 +543,7 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| Incidents, and one incident's thread | 2026-08-02 | #133 | not yet |
 | Search | 2026-08-02 | #130 | not yet |
 | Exporting the notebook | 2026-08-02 | #126 | not yet |
 | Restoring from a file | 2026-08-02 | #127 | not yet |

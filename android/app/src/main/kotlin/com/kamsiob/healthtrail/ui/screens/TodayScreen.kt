@@ -116,10 +116,12 @@ fun TodayScreen(
      * attention, on the one screen whose job is to be paying attention.
      */
     coaching: List<CoachStep> = emptyList(),
+    openIncidents: Int = 0,
     openQuestions: Int = 0,
     waitingOnSomebody: Int = 0,
     unfiled: Int = 0,
     nextAppointment: Repository.Appointment? = null,
+    onOpenIncidents: () -> Unit = {},
     onOpenQuestions: () -> Unit = {},
     onOpenProjects: () -> Unit = {},
     onOpenUnfiled: () -> Unit = {},
@@ -184,6 +186,13 @@ fun TodayScreen(
             // An empty "nothing waiting" block on a quiet day would be a
             // heading over nothing, and this screen is read at a glance.
             val open = listOfNotNull(
+                // **Incidents come first**, because an incident nobody has
+                // answered is the thing the person is carrying around. The
+                // catalog has carried this string since before there was
+                // anything to count. Never a judgment about how long, per rule 2.
+                openIncidents.takeIf { it > 0 }?.let {
+                    OpenItem(strings("today.open.incidents", "count" to it), onOpenIncidents)
+                },
                 openQuestions.takeIf { it > 0 }?.let {
                     OpenItem(strings("today.open.questions", "count" to it), onOpenQuestions)
                 },
