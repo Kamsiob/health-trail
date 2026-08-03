@@ -481,17 +481,40 @@ class Generator:
                 },
                 day=day,
             )
-            for step in range(self.rng.randrange(2, 7)):
-                self.row(
-                    db,
-                    "project_step",
-                    {
-                        "project_id": project_id,
-                        "text": PROJECT_STEPS[step % len(PROJECT_STEPS)],
-                        "sort_index": step,
-                    },
-                    day=day,
-                )
+            # **How far through it actually is, which the state implies.**
+            #
+            # Every project came out reading "0 of N steps done", including the
+            # ones marked done, because no step was ever completed. A finished
+            # project with nothing ticked is a contradiction on screen, and a
+            # column of zeroes reads as a scorecard rather than as the state of
+            # four separate processes. Seen with a month six fixture on the
+            # projects screen.
+            #
+            # A stalled project is deliberately part way: that is what stalled
+            # means, and it is the state a family actually sits in.
+            total = self.rng.randrange(2, 7)
+            done_through = {
+                "done": total,
+                "active": self.rng.randrange(1, max(2, total)),
+                "waiting": self.rng.randrange(1, max(2, total)),
+                "stalled": self.rng.randrange(1, max(2, total)),
+                "abandoned": self.rng.randrange(0, max(1, total)),
+            }.get(state, 0)
+
+            for step in range(total):
+                values = {
+                    "project_id": project_id,
+                    "text": PROJECT_STEPS[step % len(PROJECT_STEPS)],
+                    "sort_index": step,
+                }
+                if step < done_through:
+                    # Steps are completed in order and spread through the days
+                    # since the project began, which is how one actually moves.
+                    at = min(self.days - 1, day + (step + 1) * 3)
+                    values["completed_edtf"] = (self.start + timedelta(days=at)).isoformat()
+                    values["completed_start"] = self.ms(at, 0, 0)
+                    values["completed_end"] = self.ms(at, 23, 59)
+                self.row(db, "project_step", values, day=day)
 
     def documents(self, db, subject_id, chapters):
         """Documents, each with an attachment and a note on where the paper is.
