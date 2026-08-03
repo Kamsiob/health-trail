@@ -87,7 +87,14 @@ fun MedicationScreen(
                 } else {
                     null
                 },
-                if (medication.onEmergencyCard) strings["medication.on.card"] else null,
+                // Same as the list: the flag is stored, but a stopped
+                // medication is not on the card, so saying it is would be the
+                // record lying about itself.
+                if (medication.showsOnEmergencyCard) {
+                    strings["medication.on.card"]
+                } else {
+                    null
+                },
             )
             facts.forEach {
                 Text(text = it, style = HealthTrail.type.mono, color = colors.ink3Text)
@@ -194,4 +201,26 @@ fun MedicationScreen(
  * The schema's own vocabulary, translated rather than shown raw, because
  * "dose_changed" is a column name and not something anybody says.
  */
-private fun medicationEventKey(kind: String): String = "medication.event.$kind"
+/**
+ * The catalog key for a kind of change.
+ *
+ * **Built by interpolation, which meant the database could crash the screen.**
+ * `Strings.resolve` throws on a key no catalog defines, deliberately, so a
+ * translation gap is loud rather than silent. That is right for a key the code
+ * writes and wrong for one assembled out of a column: `medication.event.noted`
+ * was a real value in the schema's CHECK constraint that no catalog had, and
+ * opening any medication whose history contained one took the whole app down.
+ *
+ * A `when` over the six kinds the schema names, so what reaches the catalog is
+ * chosen here rather than by whatever is in the row. Anything else falls back
+ * to the neutral one instead of throwing, which is what an imported notebook
+ * from a later version of the app will eventually need.
+ */
+internal fun medicationEventKey(kind: String): String = when (kind) {
+    "started" -> "medication.event.started"
+    "stopped" -> "medication.event.stopped"
+    "dose_changed" -> "medication.event.dose_changed"
+    "held" -> "medication.event.held"
+    "resumed" -> "medication.event.resumed"
+    else -> "medication.event.noted"
+}

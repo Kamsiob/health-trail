@@ -1274,7 +1274,7 @@ fun NotebookShell(
                     // with the other. A stopped medication drops off the card by
                     // itself, which is the behavior somebody would expect and the
                     // one that is dangerous to get wrong.
-                    medications = medications.filter { it.onEmergencyCard && !it.isStopped },
+                    medications = medications.filter { it.showsOnEmergencyCard },
                     onCall = { contact -> dial(context, contact.phone) },
                     onEdit = { editingEmergencyCard = true },
                     onBack = { openSection = null },

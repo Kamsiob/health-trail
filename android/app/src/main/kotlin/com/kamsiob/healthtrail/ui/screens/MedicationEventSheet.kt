@@ -40,12 +40,31 @@ object MedEventTags {
  * the record understands and a sixth invented one would be a row nothing could
  * read back. The words the person sees are the catalog's, per `MedicationScreen`.
  */
+/**
+ * The kinds of change, in the schema's own words.
+ *
+ * **Every one of these is checked by the database, and one of them was not a
+ * word the database knows.** `medication_event.kind` carries a CHECK constraint
+ * naming exactly six values, and this enum was written from memory rather than
+ * from the constraint: it offered `restarted`, which the schema calls `resumed`,
+ * so choosing "Started again" wrote a value the table rejects. That path had
+ * never been exercised, because nothing had ever produced a medication with a
+ * history until the generator learned to tonight.
+ *
+ * `noted` was missing from both this list and all four catalogs, so an event of
+ * that kind crashed the medication screen outright rather than degrading:
+ * `Strings.resolve` throws on a key no catalog defines, and this asked for one.
+ *
+ * **The order is the order somebody would look for them in**, not the order the
+ * constraint happens to list them.
+ */
 enum class MedicationChange(val stored: String) {
     STARTED("started"),
     DOSE_CHANGED("dose_changed"),
     HELD("held"),
-    RESTARTED("restarted"),
+    RESUMED("resumed"),
     STOPPED("stopped"),
+    NOTED("noted"),
 }
 
 /** What the person filled in, ready to be written. */

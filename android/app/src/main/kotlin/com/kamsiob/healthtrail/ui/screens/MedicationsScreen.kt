@@ -157,7 +157,14 @@ private fun MedicationRow(
             Text(text = notes, style = HealthTrail.type.bodyS, color = colors.ink3Text)
         }
 
-        if (medication.onEmergencyCard) {
+        // **Only while it is true.** The card itself already drops a stopped
+        // medication, deliberately and for the obvious reason, but this row
+        // rendered the stored flag rather than the effect of it, so a stopped
+        // medication sat here in alert orange claiming to be on a card it is
+        // not on. The list contradicted the card, and the card is the one
+        // somebody hands to a paramedic. Found the moment the fixture had a
+        // stopped medication in it, which was tonight.
+        if (medication.showsOnEmergencyCard) {
             Spacer(Modifier.height(Space.sm))
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Text(

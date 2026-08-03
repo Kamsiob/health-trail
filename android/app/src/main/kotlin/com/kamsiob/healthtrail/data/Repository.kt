@@ -1197,6 +1197,24 @@ class Repository private constructor(
          * to a question somebody will eventually be asked.
          */
         val isStopped: Boolean get() = !stoppedEdtf.isNullOrBlank()
+
+        /**
+         * Whether it is actually on the card a paramedic would be handed.
+         *
+         * **The flag alone is not the answer, and this exists because three
+         * places were each deciding that for themselves.** The card assembles
+         * itself from medications that say they belong on it and drops the
+         * stopped ones, which is right: a card listing something she stopped
+         * taking in March is worse than a card that omits it. But the
+         * medications list and the medication screen rendered the stored flag,
+         * so a stopped medication sat there in alert orange claiming to be on a
+         * card it had already fallen off.
+         *
+         * One rule in one place. A safety claim copied into three screens is a
+         * safety claim that will disagree with itself the first time one of
+         * them is edited, and this one had already started to.
+         */
+        val showsOnEmergencyCard: Boolean get() = onEmergencyCard && !isStopped
     }
 
     /** Everything recorded for one subject, still being taken first. */
