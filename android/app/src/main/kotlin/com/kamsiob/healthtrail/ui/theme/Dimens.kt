@@ -100,11 +100,21 @@ object Trail {
     val lineCenter: Dp = 9.dp
 
     /**
-     * Where the node sits down the row.
+     * Where the node sits down the row, at most.
      *
      * It lands on the row's first line of text rather than in its vertical
      * middle, so a long entry does not push its own waypoint away from the date
-     * it belongs to.
+     * it belongs to. **Measured against a trail card, which carries a date line
+     * above its title**, and that is the assumption that failed: a card with
+     * one line of text and no eyebrow is shorter than this, so a fixed offset
+     * put the node below the text it marks, near the card's bottom edge. Seen
+     * on the prep sheet, where questions with a role label and questions
+     * without one sit next to each other and their waypoints visibly drift
+     * apart.
+     *
+     * [com.kamsiob.healthtrail.ui.components.SpineRow] clamps it to half the
+     * row's own height, so a short row centers and a tall one still anchors at
+     * its first line.
      */
     val nodeCenterY: Dp = 40.dp
 }

@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.ui.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
@@ -136,39 +138,64 @@ fun WaypointDot(
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.size(box)) {
-            val center = Offset(this.size.width / 2, this.size.height / 2)
-            val radius = size.toPx() / 2
-
-            // The ring in the surface color, drawn first, so whatever the node
-            // sits on does not touch it.
-            drawCircle(
-                color = surface.copy(alpha = alpha),
-                radius = radius + ring.toPx(),
-                center = center,
+            drawWaypoint(
+                center = Offset(this.size.width / 2, this.size.height / 2),
+                color = color,
+                state = state,
+                surface = surface,
+                alpha = alpha,
             )
+        }
+    }
+}
 
-            when (state) {
-                Waypoint.HAPPENED -> drawCircle(color.copy(alpha = alpha), radius, center)
+/**
+ * One waypoint, drawn at a point.
+ *
+ * **Shared so the two places that draw a node cannot drift.** [WaypointDot]
+ * places one as a composable, wherever a row wants to carry the mark; a
+ * [SpineRow] draws its own into the gutter canvas, because it needs the row's
+ * measured height to place it and asking a composable for that inside a Row
+ * measured with `IntrinsicSize.Min` is not something Compose will do:
+ * `BoxWithConstraints` is a `SubcomposeLayout` and throws outright.
+ */
+private fun DrawScope.drawWaypoint(
+    center: Offset,
+    color: Color,
+    state: Waypoint,
+    surface: Color,
+    alpha: Float,
+) {
+    val radius = Trail.nodeSize.toPx() / 2
 
-                // Hollow, and the stroke sits inside the same 12dp so an
-                // upcoming thing does not read as a larger thing.
-                Waypoint.UPCOMING -> drawCircle(
-                    color = color.copy(alpha = alpha),
-                    radius = radius - Trail.hollowStroke.toPx() / 2,
-                    center = center,
-                    style = Stroke(width = Trail.hollowStroke.toPx()),
-                )
+    // The ring in the surface color, drawn first, so whatever the node sits on
+    // does not touch it.
+    drawCircle(
+        color = surface.copy(alpha = alpha),
+        radius = radius + Trail.nodeRing.toPx(),
+        center = center,
+    )
 
-                Waypoint.MILESTONE -> {
-                    drawCircle(color.copy(alpha = alpha), radius, center)
-                    drawCircle(
-                        color = color.copy(alpha = alpha),
-                        radius = radius + Trail.milestoneGap.toPx(),
-                        center = center,
-                        style = Stroke(width = Trail.milestoneRing.toPx()),
-                    )
-                }
-            }
+    when (state) {
+        Waypoint.HAPPENED -> drawCircle(color.copy(alpha = alpha), radius, center)
+
+        // Hollow, and the stroke sits inside the same 12dp so an upcoming thing
+        // does not read as a larger thing.
+        Waypoint.UPCOMING -> drawCircle(
+            color = color.copy(alpha = alpha),
+            radius = radius - Trail.hollowStroke.toPx() / 2,
+            center = center,
+            style = Stroke(width = Trail.hollowStroke.toPx()),
+        )
+
+        Waypoint.MILESTONE -> {
+            drawCircle(color.copy(alpha = alpha), radius, center)
+            drawCircle(
+                color = color.copy(alpha = alpha),
+                radius = radius + Trail.milestoneGap.toPx(),
+                center = center,
+                style = Stroke(width = Trail.milestoneRing.toPx()),
+            )
         }
     }
 }
@@ -250,55 +277,52 @@ fun SpineRow(
     val colors = HealthTrail.colors
 
     Row(modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
-        Box(modifier = Modifier.width(Trail.gutterWidth).fillMaxHeight()) {
-            Canvas(modifier = Modifier.fillMaxHeight().width(Trail.gutterWidth)) {
-                val x = Trail.lineCenter.toPx()
-                val nodeY = Trail.nodeCenterY.toPx()
-                val top = if (continuesAbove) 0f else nodeY
-                val bottom = if (continuesBelow) size.height else nodeY
-                // Strokes in from the top, which is the direction the person
-                // reads and the direction the trail travels.
-                val end = top + (bottom - top) * progress
-                if (end > top) {
-                    drawLine(
-                        color = routeColor.copy(alpha = routeAlpha),
-                        start = Offset(x, top),
-                        end = Offset(x, end),
-                        strokeWidth = Trail.strokeWidth.toPx(),
-                        cap = dash?.cap ?: StrokeCap.Round,
-                        pathEffect = dash?.let {
-                            PathEffect.dashPathEffect(
-                                floatArrayOf(it.on.toPx(), it.off.toPx()),
-                            )
-                        },
-                    )
-                }
+        Canvas(modifier = Modifier.width(Trail.gutterWidth).fillMaxHeight()) {
+            val x = Trail.lineCenter.toPx()
+
+            // **Never below the row's own middle.** `nodeCenterY` was measured
+            // against a trail card, which carries a date line above its title.
+            // A card with one line and no eyebrow is shorter than that, so a
+            // fixed offset put the waypoint below the text it marks, near the
+            // card's bottom edge. Rows of both shapes sit next to each other on
+            // the prep sheet, where the questions carrying a role label and the
+            // ones without it visibly drifted apart, and a spine whose nodes do
+            // not line up with their rows reads as a rendering fault rather
+            // than as a trail.
+            //
+            // Clamping keeps a tall row anchored at its first line, which is
+            // the whole reason this is an offset and not simply a center.
+            val nodeY = minOf(Trail.nodeCenterY.toPx(), size.height / 2)
+
+            val top = if (continuesAbove) 0f else nodeY
+            val bottom = if (continuesBelow) size.height else nodeY
+            // Strokes in from the top, which is the direction the person reads
+            // and the direction the trail travels.
+            val end = top + (bottom - top) * progress
+            if (end > top) {
+                drawLine(
+                    color = routeColor.copy(alpha = routeAlpha),
+                    start = Offset(x, top),
+                    end = Offset(x, end),
+                    strokeWidth = Trail.strokeWidth.toPx(),
+                    cap = dash?.cap ?: StrokeCap.Round,
+                    pathEffect = dash?.let {
+                        PathEffect.dashPathEffect(floatArrayOf(it.on.toPx(), it.off.toPx()))
+                    },
+                )
             }
 
+            // **Drawn here rather than placed as a composable**, so it can use
+            // the row's measured height. The gutter is decorative and the row
+            // beside it always names the thing in words, so nothing is lost to
+            // the reader by this not being a node in the semantics tree.
             if (node != null) {
-                WaypointDot(
+                drawWaypoint(
+                    center = Offset(x, nodeY),
                     color = node,
                     state = state,
                     surface = colors.paper,
                     alpha = progress,
-                    // **Offset rather than padding.** A milestone's box is
-                    // wider than the others, and the line sits 9dp from the
-                    // start edge, so centering one on the line is a negative
-                    // start of 4dp. Padding refuses a negative value at runtime
-                    // with "Padding must be non-negative", which is a crash
-                    // rather than a layout artifact, and `ScreenReaderTest`
-                    // caught it on the chapters screen within a minute of the
-                    // milestone existing.
-                    //
-                    // `offset` is layout direction aware, so a positive x still
-                    // travels toward the end edge in Arabic and the whole spine
-                    // mirrors, which `absoluteOffset` would break.
-                    modifier = Modifier.offset(
-                        x = Trail.lineCenter - Trail.nodeSize / 2 - Trail.nodeRing -
-                            if (state == Waypoint.MILESTONE) Trail.milestoneGap else 0.dp,
-                        y = Trail.nodeCenterY - Trail.nodeSize / 2 - Trail.nodeRing -
-                            if (state == Waypoint.MILESTONE) Trail.milestoneGap else 0.dp,
-                    ),
                 )
             }
         }
