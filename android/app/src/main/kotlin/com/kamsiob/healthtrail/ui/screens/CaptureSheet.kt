@@ -1,9 +1,5 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -14,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,20 +17,13 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.IconTile
-import com.kamsiob.healthtrail.ui.components.focusRingAlpha
-import com.kamsiob.healthtrail.ui.components.pressedSurface
+import com.kamsiob.healthtrail.ui.components.Tile
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -176,20 +164,23 @@ fun CaptureSheet(
 /**
  * One choice, as a tile.
  *
- * **`sand` rather than `card`**, which is the one departure from 11.2's "a tile
- * is a card surface". The sheet itself is `card`, so a card tile on it would be
- * a shape with no edges. The recessed surface is what 2.1 sets aside for
- * exactly this, and it is what the six rows already used before they became
- * tiles.
+ * **The shared tile from 11.2**, not a second one. This screen had its own copy
+ * for a few hours, written before the notebook needed the same shape, and two
+ * copies of one component is what section 10.2 calls a defect outright: the fix
+ * is to correct the earlier one rather than leave both standing.
  *
- * **The icon carries no fill of its own**, per 5.12's standing weight, because a
- * `sand` icon tile inside a `sand` tile is a shape nobody can see. The drawing
- * is `ink` rather than `ink2`: here the icon is the content rather than a marker
- * beside a row, which is the difference 11.2 draws between a tile and a row.
+ * **`sand` rather than `card`**, which is the one departure 11.2 names. The
+ * sheet itself is `card`, so a card tile on it would be a shape with no edges.
+ * The recessed surface is what 2.1 sets aside for exactly this.
  *
- * **There is no count slot.** 11.2 puts the count under the name, and a capture
- * kind has nothing to count: it is a thing to do, not a place with things in it.
- * An empty count line would be an empty area, per rule 11.
+ * **The drawing carries no fill of its own**, per 5.12's standing weight,
+ * because a `sand` icon tile inside a `sand` tile is a shape nobody can see. It
+ * is `ink` rather than `ink2`: on a tile the drawing is the content rather than
+ * a marker beside a row.
+ *
+ * **There is no count.** 11.2 puts one under the name, and a capture kind has
+ * nothing to count: it is a thing to do, not a place with things in it. An
+ * empty count line would be an empty area, per rule 11.
  */
 @Composable
 private fun CaptureTile(
@@ -199,49 +190,22 @@ private fun CaptureTile(
     modifier: Modifier = Modifier,
 ) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.sand)
-    val ring by focusRingAlpha(interaction)
-
-    Column(
-        modifier = modifier
-            // One stop for the reader, asked for rather than relied on, which
-            // is D54's finding. A tile is a drawing and a label and it is one
-            // thing: "Log a call, button", not a silent node followed by words.
-            .semantics(mergeDescendants = true) { }
-            .sizeIn(minHeight = TILE_MIN_HEIGHT)
-            .clip(Radius.card)
-            .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
-            .clickable(
-                interactionSource = interaction,
-                // The tile's own surface is the press feedback, per 5.14.
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
+    Tile(
+        label = label,
+        onClick = onClick,
+        modifier = modifier,
+        container = colors.sand,
+        icon = { tileSize, drawingSize ->
+            IconTile(
+                kind = kind,
+                tint = colors.ink,
+                background = Color.Transparent,
+                tileSize = tileSize,
+                iconSize = drawingSize,
             )
-            .padding(Space.cardPadding),
-    ) {
-        IconTile(
-            kind = kind,
-            tint = colors.ink,
-            background = Color.Transparent,
-            tileSize = ICON_TILE,
-            iconSize = ICON_DRAWING,
-        )
-        Spacer(Modifier.height(Space.sm))
-        Text(
-            text = label,
-            style = HealthTrail.type.displayS,
-            color = colors.ink,
-        )
-    }
+        },
+    )
 }
-
-/** The standard tile from `DESIGN.md` 11.2. */
-private val TILE_MIN_HEIGHT = 132.dp
-private val ICON_TILE = 40.dp
-private val ICON_DRAWING = 24.dp
 
 private fun labelKey(kind: CaptureKind): String = when (kind) {
     CaptureKind.CALL -> "capture.call"
