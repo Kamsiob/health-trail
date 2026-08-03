@@ -102,7 +102,23 @@ fun AppRoot(
                         Repository.KEY_DISCLAIMER_ACCEPTED,
                         System.currentTimeMillis(),
                     )
-                    state = RootState.Setup(current.repository)
+                    // **Asked again rather than assumed.** This used to go
+                    // straight to setup, which is right on a fresh install and
+                    // wrong after a restore: restoring replaces everything
+                    // including the acceptance, so somebody who has just put
+                    // six months of their own notebook back on a new phone was
+                    // shown "Who are you looking after" and, if they answered,
+                    // would have created a second subject alongside the one
+                    // they had just recovered.
+                    //
+                    // Found walking journey six, a notebook exported, moved to
+                    // another device, and restored intact, with a fixture
+                    // packed by `tools/fixtures/pack.py`.
+                    state = if (current.repository.activeSubject() == null) {
+                        RootState.Setup(current.repository)
+                    } else {
+                        RootState.Ready(current.repository)
+                    }
                 }
             }
 

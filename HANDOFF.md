@@ -316,6 +316,16 @@ The entry names where it sits and each of them opens. A thread is named by **its
 
 **Overlays are declared in one `Box`, so declaration order is z-order.** The entry screen was drawn before the section screens and the trail painted over it, so opening an entry looked like doing nothing at all. The same was true of the incident screen opened from an entry. Both are declared after the sections now, with a comment saying why.
 
+**The personas are walkable on the real device now**, which is the thing that has blocked ten of the thirteen since Phase 0.
+
+`tools/fixtures/generate.py` writes a plain SQLite file and the app's database is SQLCipher keyed by the phone's Keystore, so there has never been a way to put a five year notebook on the phone short of tapping it in. **`tools/fixtures/pack.py` wraps a fixture in a real export container**, Argon2id and AES-256-GCM matching `ExportCrypto` exactly, and it goes in through the app's own restore screen. Nothing reaches into the app's storage and no debug hook exists to be left behind, so seeding a persona also exercises the import path every time.
+
+**D61 is what made this possible and it is worth noticing.** Before the payload became plain SQLite, no machine that is not this phone could have written a file this app would open. The portability fix is being used in the other direction.
+
+**It found a real defect on its first use, and a serious one.** Restoring replaces everything, including the record that the disclaimer was accepted, so the gate appears again. **After accepting it, the app went straight to setup** and asked "Who are you looking after" of somebody who had just restored six months of their own notebook. Answering would have created a second subject beside the one they had recovered. That is journey six, exported, moved to another device, restored intact, and it was broken at the last step. The gate checks for an existing notebook now.
+
+**A month six fixture restores faithfully**: 164 trail entries, 2 chapters, 2 care threads, 2 incidents, 6 bills, 5 projects, 3 standing instructions, 4 documents, and 6 entries waiting in the tray, every count matching the source database exactly.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
