@@ -344,6 +344,14 @@ The entry names where it sits and each of them opens. A thread is named by **its
 
 **One operational note worth keeping.** `tools/verify.sh --device` runs the instrumented suite, which uninstalls the app and takes the fixture with it. A seeded notebook does not survive a verification run, so seed after verifying rather than before.
 
+**"A person knows every call and visit involving them" is true now.** `MASTER_SPEC.md` section 3 has promised it since Phase 0 and **it had no data behind it**: `entry_person` was in the schema with nothing writing to it, because capture kept who was spoken to as the entry's title, which is a string.
+
+Both halves landed together. **The capture form offers the care team as chips**, which is Part Two's first rule and names people first in its list: somebody in a hallway who already added the charge nurse should not type her name again, and retyping is also how a person ends up with four spellings of one nurse over six months. Choosing a chip writes the link. **The person's page reads it back**, on a dashed spine because it is a filter over the record rather than their own path.
+
+**The link is dropped if the name is edited after a chip was tapped**, because the edited name is what the person meant, and quietly attaching an entry to somebody the words no longer name would be worse than no link.
+
+**A care team row opens the person now** rather than the form for correcting them. Correcting a number is the rarer thing and moved onto the person's own page, which is the same rule the trail row learned earlier tonight: a tap opens the thing itself.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -595,6 +603,7 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| One person, and everything that involved them | 2026-08-03 | #136 | not yet |
 | One entry, read on its own | 2026-08-02 | #134 | not yet |
 | Incidents, and one incident's thread | 2026-08-02 | #133 | not yet |
 | Search | 2026-08-02 | #130 | not yet |

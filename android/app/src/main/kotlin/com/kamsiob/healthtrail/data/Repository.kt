@@ -2658,6 +2658,8 @@ class Repository private constructor(
      */
     data class EntryDetail(
         val entry: TrailEntry,
+        /** Who this involved, when they are on the care team. Rule 18. */
+        val people: List<Person>,
         val chapterId: String?,
         val chapterName: String?,
         val incidentId: String?,
@@ -2692,6 +2694,7 @@ class Repository private constructor(
         ).use { cursor ->
             if (!cursor.moveToFirst()) return@withContext null
             EntryDetail(
+                people = peopleOnEntryBlocking(database, entryId),
                 entry = TrailEntry(
                     id = cursor.getString(0),
                     kind = cursor.getString(1),
@@ -2709,6 +2712,90 @@ class Repository private constructor(
                 incidentTitle = cursor.getString(11),
                 incidentIsOpen = cursor.isNull(12),
             )
+        }
+    }
+
+    /**
+     * Links an entry to the person it involved.
+     *
+     * **`entry_person` has been in the schema since Phase 0 and nothing wrote
+     * to it.** `MASTER_SPEC.md` section 3 promises that a person knows every
+     * call and visit involving them, and that promise had no data behind it:
+     * capture kept who was spoken to as the entry's title, which is a string,
+     * so a person's page could never list their own calls.
+     */
+    suspend fun linkEntryToPerson(entryId: String, personId: String) =
+        withContext(Dispatchers.IO) {
+            insert("entry_person", mapOf("entry_id" to entryId, "person_id" to personId))
+        }
+
+    /**
+     * Everything written down that involved this person, most recent first.
+     *
+     * The other half of the link, per rule 18. An entry names the people on it
+     * and each of them opens; a person names their entries and each of those
+     * opens.
+     */
+    suspend fun entriesForPerson(personId: String): List<TrailEntry> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT e.id, e.kind, e.title, e.body, e.occurred_edtf, e.occurred_start, " +
+                    "e.created_at, e.is_unfiled FROM live_entry e " +
+                    "JOIN live_entry_person ep ON ep.entry_id = e.id " +
+                    "WHERE ep.person_id = ? " +
+                    "ORDER BY coalesce(e.occurred_start, e.created_at) DESC",
+                arrayOf(personId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            TrailEntry(
+                                id = cursor.getString(0),
+                                kind = cursor.getString(1),
+                                title = cursor.getString(2),
+                                body = cursor.getString(3),
+                                occurredEdtf = cursor.getString(4),
+                                occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                                createdAt = cursor.getLong(6),
+                                isUnfiled = cursor.getInt(7) == 1,
+                                threads = emptyList(),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /** The people named on one entry, so the entry can offer them back. */
+    suspend fun peopleOnEntry(entryId: String): List<Person> = withContext(Dispatchers.IO) {
+        peopleOnEntryBlocking(db().database, entryId)
+    }
+
+    /** The same read, for a caller that already has the database open. */
+    private fun peopleOnEntryBlocking(
+        database: net.zetetic.database.sqlcipher.SQLiteDatabase,
+        entryId: String,
+    ): List<Person> {
+        return database.rawQuery(
+            "SELECT p.id, p.display_name, p.role_label, p.phone, p.email, p.notes " +
+                "FROM live_entry_person ep JOIN live_person p ON p.id = ep.person_id " +
+                "WHERE ep.entry_id = ? ORDER BY p.created_at",
+            arrayOf(entryId),
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Person(
+                            id = cursor.getString(0),
+                            displayName = cursor.getString(1),
+                            roleLabel = cursor.getString(2),
+                            phone = cursor.getString(3),
+                            email = cursor.getString(4),
+                            notes = cursor.getString(5),
+                        ),
+                    )
+                }
+            }
         }
     }
 

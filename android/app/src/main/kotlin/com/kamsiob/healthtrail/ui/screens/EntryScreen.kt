@@ -43,6 +43,7 @@ object EntryTags {
     const val DATE = "entry_date"
     const val REMOVE = "entry_remove"
     fun thread(id: String) = "entry_thread_$id"
+    fun person(id: String) = "entry_person_$id"
     const val CHAPTER = "entry_chapter"
     const val INCIDENT = "entry_incident"
 }
@@ -72,6 +73,7 @@ fun EntryScreen(
     detail: Repository.EntryDetail,
     onEditDate: () -> Unit,
     onOpenThread: (Repository.CareThread) -> Unit,
+    onOpenPerson: (Repository.Person) -> Unit,
     onOpenChapter: () -> Unit,
     onOpenIncident: () -> Unit,
     onRemove: () -> Unit,
@@ -115,7 +117,8 @@ fun EntryScreen(
         // **Where this sits in the record**, which is the half that was missing.
         val hasLinks = detail.chapterName != null ||
             detail.incidentTitle != null ||
-            entry.threads.isNotEmpty()
+            entry.threads.isNotEmpty() ||
+            detail.people.isNotEmpty()
 
         if (hasLinks) {
             item {
@@ -144,6 +147,23 @@ fun EntryScreen(
                         } else {
                             strings["readable.state.answered"]
                         },
+                    )
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            }
+
+            // **Who it involved, first**, because a call is a call with
+            // somebody and that is the first thing a person looks for when
+            // they open one months later.
+            detail.people.forEach { person ->
+                item(key = "person_${person.id}") {
+                    LinkRow(
+                        testTag = EntryTags.person(person.id),
+                        onClick = { onOpenPerson(person) },
+                        leading = { WaypointDot(color = colors.blue) },
+                        label = person.displayName,
+                        note = person.roleLabel?.takeIf { it.isNotBlank() }
+                            ?: strings["entry.person"],
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }

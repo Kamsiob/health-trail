@@ -51,7 +51,7 @@ fun CareTeamScreen(
     people: List<Repository.Person>,
     onCall: (Repository.Person) -> Unit,
     onRemove: (Repository.Person) -> Unit,
-    onEdit: (Repository.Person) -> Unit,
+    onOpen: (Repository.Person) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -76,7 +76,7 @@ fun CareTeamScreen(
                     person = person,
                     onCall = { onCall(person) },
                     onRemove = { onRemove(person) },
-                    onEdit = { onEdit(person) },
+                    onOpen = { onOpen(person) },
                 )
                 Spacer(Modifier.height(Space.cardGap))
             }
@@ -109,7 +109,7 @@ private fun PersonRow(
     person: Repository.Person,
     onCall: () -> Unit,
     onRemove: () -> Unit,
-    onEdit: () -> Unit,
+    onOpen: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -131,7 +131,12 @@ private fun PersonRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
+            // **A tap opens the person now, rather than the form for
+            // correcting them.** Correcting a number is the rarer thing, and
+            // it moved onto the person's own page beside everything else about
+            // them. What a tap should open is the thing itself, which is the
+            // same rule the trail row learned tonight.
+            .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
             .testTag(CareTeamTags.person(person.id))
             .padding(Space.cardPadding),
     ) {

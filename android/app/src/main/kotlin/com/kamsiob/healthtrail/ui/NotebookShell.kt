@@ -41,6 +41,7 @@ import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
 import com.kamsiob.healthtrail.data.Readable
 import com.kamsiob.healthtrail.ui.components.Share
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
+import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
@@ -253,6 +254,16 @@ fun NotebookShell(
     var entryDetail by remember { mutableStateOf<Repository.EntryDetail?>(null) }
 
     /**
+     * The person being read on their own, and everything that involved them.
+     *
+     * The other half of the link `entry_person` finally has a writer for.
+     * `MASTER_SPEC.md` section 3: a person knows every call and visit
+     * involving them.
+     */
+    var openPerson by remember { mutableStateOf<Repository.Person?>(null) }
+    var personEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
+
+    /**
      * Search, and what has been typed into it.
      *
      * **The query is saved rather than remembered**, so somebody who searched,
@@ -449,6 +460,7 @@ fun NotebookShell(
     BackHandler(enabled = incidentsOpen && openIncident == null) { incidentsOpen = false }
     BackHandler(enabled = openIncident != null) { openIncident = null }
     BackHandler(enabled = openEntry != null) { openEntry = null }
+    BackHandler(enabled = openPerson != null) { openPerson = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -1219,7 +1231,7 @@ fun NotebookShell(
                             },
                         )
                     },
-                    onEdit = { person -> editingPerson = person; addingPerson = true },
+                    onOpen = { person -> openPerson = person },
                     onAdd = { editingPerson = null; addingPerson = true },
                     onBack = { openSection = null },
                 )
@@ -1275,6 +1287,21 @@ fun NotebookShell(
         // row appeared to do nothing at all: the entry screen was there and
         // the trail was painted over it. These are overlays in one Box, so
         // order is z-order, and the thing opened last has to be declared last.
+        openPerson?.let { person ->
+            LaunchedEffect(person.id, revision) {
+                personEntries = repository.entriesForPerson(person.id)
+            }
+            PersonScreen(
+                person = person,
+                entries = personEntries,
+                onCall = { number -> dial(context, number) },
+                onEdit = { editingPerson = person; addingPerson = true; openPerson = null },
+                onOpenEntry = { openPerson = null; openEntry = it.id },
+                onBack = { openPerson = null },
+                backLabelKey = "section.back.careteam",
+            )
+        }
+
         openEntry?.let { entryId ->
             LaunchedEffect(entryId, revision) {
                 entryDetail = repository.entry(entryId)
@@ -1287,6 +1314,7 @@ fun NotebookShell(
                     detail = detail,
                     backLabelKey = if (openSection != null) "section.back.trail" else "section.back",
                     onEditDate = { editingDate = detail.entry },
+                    onOpenPerson = { openEntry = null; openPerson = it },
                     onOpenThread = {
                         // Both ways: the entry names its thread, and the thread
                         // opens. Rule 18.
@@ -1829,6 +1857,7 @@ fun NotebookShell(
             CaptureFormScreen(
                 kind = kind,
                 threads = threads,
+                people = people,
                 state = captureDraft,
                 onStateChange = { captureDraft = it },
                 onSave = { draft ->
@@ -1966,6 +1995,11 @@ fun NotebookShell(
                         isUnfiled = threads.isNotEmpty() && draft.threadId == null,
                     )
                     draft.threadId?.let { repository.linkEntryToThread(entryId, it) }
+                    // **The person, when they were chosen rather than typed.**
+                    // This is what makes "a person knows every call and visit
+                    // involving them" true rather than a promise, and
+                    // `entry_person` had no writer at all until now.
+                    draft.personId?.let { repository.linkEntryToPerson(entryId, it) }
                     // **The incident it was opened from, carried forward.** The
                     // person is looking at the thread; asking which one would
                     // be the app not paying attention. Part Two.

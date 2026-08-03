@@ -1,5 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +42,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object CaptureFormTags {
     const val ROOT = "capture_form_root"
     const val WHO = "capture_form_who"
+    fun person(id: String) = "capture_form_person_$id"
     const val NOTE = "capture_form_note"
     const val SAVE = "capture_form_save"
     const val CANCEL = "capture_form_cancel"
@@ -86,6 +89,11 @@ data class CaptureFormState(
     /** The EDTF string of a date chosen from the calendar, or null. */
     val pickedEdtf: String? = null,
     val threadId: String? = null,
+    /**
+     * The person this involved, when they are somebody already on the care
+     * team. Null when the person typed a name instead, which is ordinary.
+     */
+    val personId: String? = null,
 ) {
     /** True when there is something in here worth keeping. */
     val isEmpty: Boolean
@@ -103,7 +111,16 @@ data class CaptureFormState(
          */
         val Saver: androidx.compose.runtime.saveable.Saver<CaptureFormState, Any> =
             androidx.compose.runtime.saveable.listSaver(
-                save = { listOf(it.who, it.note, it.rough?.name ?: "", it.pickedEdtf ?: "", it.threadId ?: "") },
+                save = {
+                    listOf(
+                        it.who,
+                        it.note,
+                        it.rough?.name ?: "",
+                        it.pickedEdtf ?: "",
+                        it.threadId ?: "",
+                        it.personId ?: "",
+                    )
+                },
                 restore = {
                     CaptureFormState(
                         who = it[0] as String,
@@ -112,6 +129,7 @@ data class CaptureFormState(
                             ?.let { name -> RoughWhen.valueOf(name) },
                         pickedEdtf = (it[3] as String).takeIf { text -> text.isNotEmpty() },
                         threadId = (it[4] as String).takeIf { text -> text.isNotEmpty() },
+                        personId = (it[5] as String).takeIf { text -> text.isNotEmpty() },
                     )
                 },
             )
@@ -130,6 +148,8 @@ data class CaptureDraft(
     val occurred: Edtf.Date,
     /** Null means the person did not say, which sends the entry to the Unfiled tray. */
     val threadId: String?,
+    /** Set when who was chosen from the care team rather than typed. */
+    val personId: String? = null,
 )
 
 /**
@@ -168,6 +188,11 @@ data class CaptureDraft(
 fun CaptureFormScreen(
     kind: CaptureKind,
     threads: List<Repository.CareThread>,
+    /**
+     * The care team, offered as chips so a name already recorded is not typed
+     * again. Empty in the first days, which is the normal beginning.
+     */
+    people: List<Repository.Person> = emptyList(),
     onSave: (CaptureDraft) -> Unit,
     onCancel: () -> Unit,
     /**
@@ -244,6 +269,60 @@ fun CaptureFormScreen(
                     hint = strings[key(kind, "who.hint")],
                     fieldTestTag = CaptureFormTags.WHO,
                 )
+
+                // **The care team, offered rather than retyped.**
+                //
+                // Part Two's first rule: anywhere the set of possible answers
+                // is knowable, offer chips rather than a text field, and people
+                // are named first in that list. Somebody in a hallway who has
+                // already added the charge nurse should not type her name
+                // again, and typing it again is also how a person ends up with
+                // four spellings of one nurse across six months.
+                //
+                // **It also gives the app the link it never had.** Choosing a
+                // chip writes `entry_person`, which has been in the schema
+                // since Phase 0 with nothing writing to it, and which is what
+                // `MASTER_SPEC.md` section 3 means by a person knowing every
+                // call and visit involving them.
+                //
+                // **The field stays and is still the answer.** Somebody who
+                // spoke to a person nobody has added yet types their name, and
+                // that is the common case in the first weeks. A chip fills the
+                // field and can be cleared by tapping again.
+                if (people.isNotEmpty()) {
+                    Spacer(Modifier.height(Space.m))
+                    ChoiceChipGroup(
+                        label = strings["capture.who.known"],
+                        aside = strings["capture.who.known.aside"],
+                    ) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(Space.s),
+                            verticalArrangement = Arrangement.spacedBy(Space.s),
+                        ) {
+                            people.forEach { person ->
+                                ChoiceChip(
+                                    label = person.displayName,
+                                    selected = state.personId == person.id,
+                                    onClick = {
+                                        onStateChange(
+                                            if (state.personId == person.id) {
+                                                state.copy(personId = null, who = "")
+                                            } else {
+                                                state.copy(
+                                                    personId = person.id,
+                                                    who = person.displayName,
+                                                )
+                                            },
+                                        )
+                                    },
+                                    modifier = Modifier.testTag(
+                                        CaptureFormTags.person(person.id),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Spacer(Modifier.height(Space.sectionGap))
 
@@ -368,6 +447,15 @@ fun CaptureFormScreen(
                                 ?: rough?.edtf(LocalDate.now())
                                 ?: Edtf.unknown(),
                             threadId = threadId,
+                            // **Only when the name still matches the chip.** A
+                            // person who tapped a chip and then edited the name
+                            // meant the edited name, so the link goes rather
+                            // than quietly attaching the entry to somebody the
+                            // words no longer say.
+                            personId = state.personId?.takeIf { chosen ->
+                                people.firstOrNull { it.id == chosen }
+                                    ?.displayName == who.trim()
+                            },
                         ),
                     )
                 },
