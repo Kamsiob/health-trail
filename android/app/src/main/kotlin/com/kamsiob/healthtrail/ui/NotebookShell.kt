@@ -44,6 +44,7 @@ import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
+import com.kamsiob.healthtrail.ui.screens.MedicationScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
@@ -275,6 +276,12 @@ fun NotebookShell(
 
     /** The chapter being read, and what happened while they were there. */
     var openChapter by remember { mutableStateOf<Repository.Chapter?>(null) }
+
+    /** The medication being read, and how it changed. */
+    var openMedication by remember { mutableStateOf<Repository.Medication?>(null) }
+    var medicationHistory by remember {
+        mutableStateOf<List<Repository.MedicationEvent>>(emptyList())
+    }
     var chapterDetail by remember { mutableStateOf<Repository.ChapterDetail?>(null) }
     var threadEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
     var prep by remember { mutableStateOf<Repository.Prep?>(null) }
@@ -481,6 +488,7 @@ fun NotebookShell(
     BackHandler(enabled = openPrepFor != null) { openPrepFor = null }
     BackHandler(enabled = openThread != null) { openThread = null }
     BackHandler(enabled = openChapter != null) { openChapter = null }
+    BackHandler(enabled = openMedication != null) { openMedication = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -1232,10 +1240,7 @@ fun NotebookShell(
                             Repository.Section.MEDICATIONS, medication.id, medication.name,
                         )
                     },
-                    onEdit = { medication ->
-                        editingMedication = medication
-                        addingMedication = true
-                    },
+                    onOpen = { medication -> openMedication = medication },
                     onAdd = { editingMedication = null; addingMedication = true },
                     onBack = { openSection = null },
                 )
@@ -1329,6 +1334,22 @@ fun NotebookShell(
         // row appeared to do nothing at all: the entry screen was there and
         // the trail was painted over it. These are overlays in one Box, so
         // order is z-order, and the thing opened last has to be declared last.
+        openMedication?.let { medication ->
+            LaunchedEffect(medication.id, revision) {
+                medicationHistory = repository.medicationHistory(medication.id)
+            }
+            MedicationScreen(
+                medication = medication,
+                history = medicationHistory,
+                onEdit = {
+                    editingMedication = medication
+                    addingMedication = true
+                    openMedication = null
+                },
+                onBack = { openMedication = null },
+            )
+        }
+
         openChapter?.let { chapter ->
             LaunchedEffect(chapter.id, revision) {
                 val subjectId = repository.activeSubject()?.id

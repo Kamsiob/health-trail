@@ -2997,6 +2997,55 @@ class Repository private constructor(
             )
         }
 
+    /**
+     * A medication's own history: what changed, when, and where.
+     *
+     * `MASTER_SPEC.md` 4.6: a medication's journey crosses chapters and keeps
+     * its concern flags attached forever. **That journey is what makes this a
+     * record rather than a list**, and "she was on this until March, and it was
+     * changed at the rehab" is the answer to a question somebody will
+     * eventually be asked in a room where nobody has the notes.
+     */
+    data class MedicationEvent(
+        val id: String,
+        /** started, stopped, dose changed, held, restarted. The schema's own words. */
+        val kind: String,
+        val occurredEdtf: String?,
+        val doseText: String?,
+        val note: String?,
+        val chapterName: String?,
+    )
+
+    suspend fun medicationHistory(medicationId: String): List<MedicationEvent> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT e.id, e.kind, e.occurred_edtf, e.dose_text, e.note, c.name " +
+                    "FROM live_medication_event e " +
+                    "LEFT JOIN live_chapter c ON c.id = e.chapter_id " +
+                    "WHERE e.medication_id = ? " +
+                    // Oldest first, because a medication's history is a story
+                    // about how it changed, and a story told backward is not
+                    // the same story. Same reasoning as an incident thread.
+                    "ORDER BY coalesce(e.occurred_start, e.created_at) ASC",
+                arrayOf(medicationId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            MedicationEvent(
+                                id = cursor.getString(0),
+                                kind = cursor.getString(1),
+                                occurredEdtf = cursor.getString(2),
+                                doseText = cursor.getString(3),
+                                note = cursor.getString(4),
+                                chapterName = cursor.getString(5),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
     companion object {
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"

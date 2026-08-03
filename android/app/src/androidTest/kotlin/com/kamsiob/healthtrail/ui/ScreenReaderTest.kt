@@ -438,7 +438,7 @@ class ScreenReaderTest {
                     Repository.Medication("m2", "Metformin", null, null, null, false, "2026-03"),
                 ),
                 onRemove = {},
-                onEdit = {},
+                onOpen = {},
                 onAdd = {},
                 onBack = {},
             )

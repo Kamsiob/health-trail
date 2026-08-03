@@ -378,6 +378,12 @@ Incidents come first, because a stay with something unresolved in it is a stay d
 
 **Five screens have now learned that a tap opens the thing itself**: the trail row, the care team row, the appointment row, the thread row, and the chapter row. Each previously opened either nothing or the form for correcting itself.
 
+**A medication can be opened, and it shows how it changed.** `MASTER_SPEC.md` 4.6: a medication's journey crosses chapters and keeps its concern flags attached forever. **That journey is what makes it a record rather than a list**, and "she was on this until March, and it was changed at the rehab" is the answer to a question somebody is eventually asked in a room where nobody has the notes.
+
+`medication_event` is read now. **Nothing writes to it yet**, so the history is honestly empty rather than absent: the screen says "Nothing written down about changes to this yet" instead of hiding the section. Writing a change is the next piece and is on #140.
+
+**Six lists have now learned that a tap opens the thing itself.** The trail, the care team, appointments, threads, chapters, and medications.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -629,6 +635,7 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| One medication, and how it changed | 2026-08-03 | #140 | not yet |
 | One chapter, and what happened there | 2026-08-03 | #139 | not yet |
 | One care thread, and everything on it | 2026-08-03 | #138 | not yet |
 | An appointment's prep sheet | 2026-08-03 | #137 | not yet |

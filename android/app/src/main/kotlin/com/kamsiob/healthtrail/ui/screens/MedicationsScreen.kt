@@ -51,7 +51,7 @@ object MedsTags {
 fun MedicationsScreen(
     medications: List<Repository.Medication>,
     onRemove: (Repository.Medication) -> Unit,
-    onEdit: (Repository.Medication) -> Unit,
+    onOpen: (Repository.Medication) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -77,7 +77,7 @@ fun MedicationsScreen(
                 MedicationRow(
                     medication = medication,
                     onRemove = { onRemove(medication) },
-                    onEdit = { onEdit(medication) },
+                    onOpen = { onOpen(medication) },
                 )
                 Spacer(Modifier.height(Space.cardGap))
             }
@@ -107,7 +107,7 @@ fun MedicationsScreen(
 private fun MedicationRow(
     medication: Repository.Medication,
     onRemove: () -> Unit,
-    onEdit: () -> Unit,
+    onOpen: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -117,7 +117,9 @@ private fun MedicationRow(
             .fillMaxWidth()
             .clip(Radius.card)
             .background(colors.card)
-            .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
+            // A tap opens the medication, per the rule five other
+            // lists learned tonight. Correcting it lives on its page.
+            .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
             .testTag(MedsTags.row(medication.id))
             .padding(Space.cardPadding),
     ) {
