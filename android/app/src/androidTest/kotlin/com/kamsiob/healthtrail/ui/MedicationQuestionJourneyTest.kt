@@ -16,6 +16,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.components.NavTags
 import com.kamsiob.healthtrail.ui.screens.AddMedTags
+import com.kamsiob.healthtrail.ui.components.ChipPickerTags
 import com.kamsiob.healthtrail.ui.screens.CaptureFormTags
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.screens.CaptureTags
@@ -136,9 +137,29 @@ class MedicationQuestionJourneyTest {
         // `performScrollTo` on the node itself rather than `performScrollToNode`
         // on a container: the form scrolls through a plain `verticalScroll`
         // rather than a lazy list, which has no scroll action of its own to ask.
-        compose.onNodeWithTag(CaptureFormTags.medication(medicationId()))
-            .performScrollTo()
-            .performClick()
+        // **"Add more" first**, because the medication question moved behind the
+        // disclosure on 2026-08-03. Walking in from the front door is the whole
+        // point of this test, so it opens the control rather than reaching past
+        // it.
+        compose.onNodeWithTag(CaptureFormTags.MORE).performScrollTo().performClick()
+
+        // **And the full set when the chip is not among the five**, which is
+        // the other half of 5.11.1 and is the ordinary case for somebody on
+        // eight medications. This test passed alone and failed in the suite
+        // for exactly this reason: the suite shares one active subject, so by
+        // the time it runs there are more medications than fit in a capped row
+        // and the one it just added is the newest. Reaching past the cap with a
+        // test tag would have hidden that the person cannot.
+        val chip = CaptureFormTags.medication(medicationId())
+        if (compose.onAllNodesWithTag(chip).fetchSemanticsNodes().isEmpty()) {
+            compose.onNodeWithTag(CaptureFormTags.MORE_MEDICATIONS)
+                .performScrollTo()
+                .performClick()
+            compose.onNodeWithTag(ChipPickerTags.SEARCH).performTextInput(drug)
+            compose.onNodeWithTag(ChipPickerTags.option(medicationId())).performClick()
+        } else {
+            compose.onNodeWithTag(chip).performScrollTo().performClick()
+        }
         // Save is outside the scrolling region and always on screen, which is
         // deliberate on that form and is why it must not be scrolled to.
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()

@@ -163,7 +163,7 @@ val HealthTrailType = HealthTrailTypography(
  * **This app is full of numbers sitting in lists**: counts beside twelve
  * section names, dates down the trail, doses, amounts, and durations. With
  * proportional figures a column of them jitters, and a column that jitters has
- * to be read rather than scanned. `DESIGN.md` section 5.18.
+ * to be read rather than scanned. `DESIGN.md` section 5.19.
  *
  * It rides on the Mono style, which 4.3 already assigns to counts, timestamps,
  * and metadata, so nothing has to be restyled to get it.

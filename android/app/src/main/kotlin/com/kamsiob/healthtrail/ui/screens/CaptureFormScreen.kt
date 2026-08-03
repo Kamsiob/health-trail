@@ -30,9 +30,14 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import java.time.LocalDate
+import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.MoreChip
+import com.kamsiob.healthtrail.ui.components.PickerOption
+import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -50,6 +55,10 @@ object CaptureFormTags {
     const val UNFILED_NOTE = "capture_form_unfiled_note"
     const val THREAD_UNSURE = "capture_thread_unsure"
     const val EXACT = "capture_when_exact"
+    const val MORE = "capture_form_more"
+    const val MORE_PEOPLE = "capture_form_more_people"
+    const val MORE_THREADS = "capture_form_more_threads"
+    const val MORE_MEDICATIONS = "capture_form_more_medications"
     const val PICKED = "capture_when_picked"
     fun whenChip(rough: RoughWhen) = "capture_when_${rough.name.lowercase()}"
     fun threadChip(id: String) = "capture_thread_$id"
@@ -103,6 +112,24 @@ data class CaptureFormState(
      */
     val medicationId: String? = null,
 ) {
+    /**
+     * Choosing a person, or clearing the one already chosen.
+     *
+     * Lives here rather than in the screen because the chip and the picker sheet
+     * both do it, and two copies of "tapping the chosen one again clears it"
+     * is how they come to disagree.
+     */
+    fun togglePerson(person: Repository.Person): CaptureFormState =
+        if (personId == person.id) {
+            copy(personId = null, who = "")
+        } else {
+            copy(personId = person.id, who = person.displayName)
+        }
+
+    /** The same, for the medication a question is about. */
+    fun toggleMedication(medication: Repository.Medication): CaptureFormState =
+        copy(medicationId = if (medicationId == medication.id) null else medication.id)
+
     /** True when there is something in here worth keeping. */
     val isEmpty: Boolean
         get() = who.isBlank() && note.isBlank() && pickedEdtf == null && threadId == null
@@ -248,6 +275,10 @@ fun CaptureFormScreen(
     // answer, and the two can never both be the answer at once.
     val picked = state.pickedEdtf?.let { Edtf.parse(it) }
     var pickerOpen by remember { mutableStateOf(false) }
+    // Which full set is open, if any. Not saveable: a sheet the person left is
+    // one they closed, and reopening it under them after a rotation would be
+    // the form deciding what they were doing.
+    var openPicker by remember { mutableStateOf<OpenPicker?>(null) }
 
     Surface(
         modifier = Modifier.fillMaxSize().testTag(CaptureFormTags.ROOT),
@@ -284,115 +315,30 @@ fun CaptureFormScreen(
 
                 Spacer(Modifier.height(Space.l))
 
-                HealthTrailTextField(
-                    label = strings[key(kind, "who")],
-                    value = who,
-                    onValueChange = { onStateChange(state.copy(who = it)) },
-                    hint = strings[key(kind, "who.hint")],
-                    fieldTestTag = CaptureFormTags.WHO,
+                // **What happened comes first, and until 2026-08-03 it came
+                // last.** The person taps this having just put a phone down,
+                // and the thing in their head is what was said. It sat below
+                // the who field, the care team chips, the date chips and the
+                // thread chips: on a year five notebook that is twenty three
+                // controls between somebody and the one sentence they came to
+                // write. Rule 15 says the thing that matters most gets the
+                // most weight and the best position, and this form had it
+                // backwards in the same way the entry screen did.
+                //
+                // **The fastest path through this screen is now type and
+                // save**, which is what somebody in a corridor actually does.
+                DictatableField(
+                    label = strings[key(kind, "note")],
+                    value = note,
+                    onValueChange = { onStateChange(state.copy(note = it)) },
+                    hint = strings[key(kind, "note.hint")],
+                    fieldTestTag = CaptureFormTags.NOTE,
+                    // Grows with what is typed rather than sitting at a fixed
+                    // height, because a fixed height silently teaches people to
+                    // write less.
+                    singleLine = false,
+                    imeAction = ImeAction.Default,
                 )
-
-                // **The care team, offered rather than retyped.**
-                //
-                // Part Two's first rule: anywhere the set of possible answers
-                // is knowable, offer chips rather than a text field, and people
-                // are named first in that list. Somebody in a hallway who has
-                // already added the charge nurse should not type her name
-                // again, and typing it again is also how a person ends up with
-                // four spellings of one nurse across six months.
-                //
-                // **It also gives the app the link it never had.** Choosing a
-                // chip writes `entry_person`, which has been in the schema
-                // since Phase 0 with nothing writing to it, and which is what
-                // `MASTER_SPEC.md` section 3 means by a person knowing every
-                // call and visit involving them.
-                //
-                // **The field stays and is still the answer.** Somebody who
-                // spoke to a person nobody has added yet types their name, and
-                // that is the common case in the first weeks. A chip fills the
-                // field and can be cleared by tapping again.
-                if (people.isNotEmpty()) {
-                    Spacer(Modifier.height(Space.m))
-                    ChoiceChipGroup(
-                        label = strings["capture.who.known"],
-                        aside = strings["capture.who.known.aside"],
-                    ) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(Space.s),
-                            verticalArrangement = Arrangement.spacedBy(Space.s),
-                        ) {
-                            people.forEach { person ->
-                                ChoiceChip(
-                                    label = person.displayName,
-                                    selected = state.personId == person.id,
-                                    onClick = {
-                                        onStateChange(
-                                            if (state.personId == person.id) {
-                                                state.copy(personId = null, who = "")
-                                            } else {
-                                                state.copy(
-                                                    personId = person.id,
-                                                    who = person.displayName,
-                                                )
-                                            },
-                                        )
-                                    },
-                                    modifier = Modifier.testTag(
-                                        CaptureFormTags.person(person.id),
-                                    ),
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // **What it is about**, on a question only.
-                //
-                // `MASTER_SPEC.md` section 3 promises a medication knows its
-                // pending questions, and `question.medication_id` had no writer,
-                // so the only way to ask something about a medication was to
-                // type its name into the text. That question then lived
-                // nowhere: not on the medication, not on a prep sheet for the
-                // person who prescribed it, findable only by searching for a
-                // drug name somebody may have spelled differently.
-                //
-                // **Optional, like everything else on this form.** Plenty of
-                // questions are about nothing in particular, and rule 13 says an
-                // unfilled slot reads as "not yet".
-                if (kind == CaptureKind.QUESTION && medications.isNotEmpty()) {
-                    Spacer(Modifier.height(Space.m))
-                    ChoiceChipGroup(
-                        label = strings["capture.about.medication"],
-                        aside = strings["capture.about.medication.aside"],
-                    ) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(Space.s),
-                            verticalArrangement = Arrangement.spacedBy(Space.s),
-                        ) {
-                            medications.forEach { medication ->
-                                ChoiceChip(
-                                    label = medication.name,
-                                    selected = state.medicationId == medication.id,
-                                    onClick = {
-                                        onStateChange(
-                                            state.copy(
-                                                medicationId =
-                                                    if (state.medicationId == medication.id) {
-                                                        null
-                                                    } else {
-                                                        medication.id
-                                                    },
-                                            ),
-                                        )
-                                    },
-                                    modifier = Modifier.testTag(
-                                        CaptureFormTags.medication(medication.id),
-                                    ),
-                                )
-                            }
-                        }
-                    }
-                }
 
                 Spacer(Modifier.height(Space.sectionGap))
 
@@ -433,56 +379,191 @@ fun CaptureFormScreen(
                     )
                 }
 
-                // Only asked where there is something to answer with. A notebook
-                // with no situation template has no threads, and a question with
-                // one possible answer is not a question.
-                if (threads.isNotEmpty()) {
-                    Spacer(Modifier.height(Space.sectionGap))
+                Spacer(Modifier.height(Space.sectionGap))
 
+                HealthTrailTextField(
+                    label = strings[key(kind, "who")],
+                    value = who,
+                    onValueChange = { onStateChange(state.copy(who = it)) },
+                    hint = strings[key(kind, "who.hint")],
+                    fieldTestTag = CaptureFormTags.WHO,
+                )
+
+                // **The care team, offered rather than retyped, and capped at
+                // five.**
+                //
+                // Part Two's first rule: anywhere the set of possible answers
+                // is knowable, offer chips rather than a text field, and people
+                // are named first in that list. Somebody in a hallway who has
+                // already added the charge nurse should not type her name
+                // again, and typing it again is also how a person ends up with
+                // four spellings of one nurse across six months.
+                //
+                // **The cap is 5.11.1 and the ordering is the query's.**
+                // `peopleByRecentUse` puts whoever the person has been dealing
+                // with lately in front, so the five are the likely five rather
+                // than the first five ever added. The rest are one tap away
+                // with search, and the chosen one is always among the five even
+                // when it would fall outside, because a set that hides the
+                // answer already given is lying about the state of the form.
+                //
+                // **It also gives the app the link it never had.** Choosing a
+                // chip writes `entry_person`, which has been in the schema
+                // since Phase 0 with nothing writing to it, and which is what
+                // `MASTER_SPEC.md` section 3 means by a person knowing every
+                // call and visit involving them.
+                //
+                // **The field stays and is still the answer.** Somebody who
+                // spoke to a person nobody has added yet types their name, and
+                // that is the common case in the first weeks. A chip fills the
+                // field and can be cleared by tapping again.
+                if (people.isNotEmpty()) {
+                    val chosenPerson = people.firstOrNull { it.id == state.personId }
+                    val shownPeople = cappedChips(people, chosenPerson)
+                    Spacer(Modifier.height(Space.m))
                     ChoiceChipGroup(
-                        label = strings["capture.thread"],
-                        aside = strings["capture.thread.hint"],
+                        label = strings["capture.who.known"],
+                        aside = strings["capture.who.known.aside"],
                     ) {
-                        threads.forEach { thread ->
+                        shownPeople.forEach { person ->
                             ChoiceChip(
-                                label = thread.label,
-                                selected = threadId == thread.id,
-                                onClick = { onStateChange(state.copy(threadId = thread.id)) },
-                                dotColor = colors.threadRoutes[
-                                    thread.colorIndex.mod(colors.threadRoutes.size),
-                                ],
-                                modifier = Modifier
-                                    .testTag(CaptureFormTags.threadChip(thread.id)),
+                                label = person.displayName,
+                                selected = state.personId == person.id,
+                                onClick = { onStateChange(state.togglePerson(person)) },
+                                modifier = Modifier.testTag(
+                                    CaptureFormTags.person(person.id),
+                                ),
                             )
                         }
-                        ChoiceChip(
-                            label = strings["capture.thread.not_sure"],
-                            selected = threadId == null,
-                            onClick = { onStateChange(state.copy(threadId = null)) },
-                            modifier = Modifier.testTag(CaptureFormTags.THREAD_UNSURE),
-                        )
+                        if (people.size > shownPeople.size) {
+                            MoreChip(
+                                label = strings("chips.all", "count" to people.size),
+                                onClick = { openPicker = OpenPicker.PEOPLE },
+                                modifier = Modifier.testTag(CaptureFormTags.MORE_PEOPLE),
+                            )
+                        }
                     }
                 }
 
                 Spacer(Modifier.height(Space.sectionGap))
 
-                DictatableField(
-                    label = strings[key(kind, "note")],
-                    value = note,
-                    onValueChange = { onStateChange(state.copy(note = it)) },
-                    hint = strings[key(kind, "note.hint")],
-                    fieldTestTag = CaptureFormTags.NOTE,
-                    // Grows with what is typed rather than sitting at a fixed
-                    // height, because a fixed height silently teaches people to
-                    // write less.
-                    singleLine = false,
-                    imeAction = ImeAction.Default,
-                )
+                // **Everything below here is behind one control nobody has to
+                // touch**, per 10.8 and the disclosure in `Disclosure.kt`.
+                // What is left out here is what the app can work out or live
+                // without: an entry with no thread lands in the Unfiled tray,
+                // which is a built screen that suggests a home and asks for one
+                // tap, and a question about nothing in particular is an
+                // ordinary question.
+                val hasThreads = threads.isNotEmpty()
+                val hasMedications =
+                    kind == CaptureKind.QUESTION && medications.isNotEmpty()
+
+                if (hasThreads || hasMedications) {
+                    Disclosure(testTag = CaptureFormTags.MORE) {
+                        Column {
+                            if (hasThreads) {
+                                val chosenThread = threads.firstOrNull { it.id == threadId }
+                                val shownThreads = cappedChips(threads, chosenThread)
+                                ChoiceChipGroup(
+                                    label = strings["capture.thread"],
+                                    aside = strings["capture.thread.hint"],
+                                ) {
+                                    shownThreads.forEach { thread ->
+                                        ChoiceChip(
+                                            label = thread.label,
+                                            selected = threadId == thread.id,
+                                            onClick = {
+                                                onStateChange(state.copy(threadId = thread.id))
+                                            },
+                                            dotColor = colors.threadRoutes[
+                                                thread.colorIndex.mod(colors.threadRoutes.size),
+                                            ],
+                                            modifier = Modifier
+                                                .testTag(CaptureFormTags.threadChip(thread.id)),
+                                        )
+                                    }
+                                    ChoiceChip(
+                                        label = strings["capture.thread.not_sure"],
+                                        selected = threadId == null,
+                                        onClick = { onStateChange(state.copy(threadId = null)) },
+                                        modifier = Modifier.testTag(CaptureFormTags.THREAD_UNSURE),
+                                    )
+                                    if (threads.size > shownThreads.size) {
+                                        MoreChip(
+                                            label = strings("chips.all", "count" to threads.size),
+                                            onClick = { openPicker = OpenPicker.THREADS },
+                                            modifier = Modifier
+                                                .testTag(CaptureFormTags.MORE_THREADS),
+                                        )
+                                    }
+                                }
+                            }
+
+                            // **What it is about**, on a question only.
+                            //
+                            // `MASTER_SPEC.md` section 3 promises a medication
+                            // knows its pending questions, and
+                            // `question.medication_id` had no writer, so the
+                            // only way to ask something about a medication was
+                            // to type its name into the text. That question
+                            // then lived nowhere: not on the medication, not on
+                            // a prep sheet for the person who prescribed it,
+                            // findable only by searching for a drug name
+                            // somebody may have spelled differently.
+                            //
+                            // **Optional, like everything else on this form.**
+                            // Plenty of questions are about nothing in
+                            // particular, and rule 13 says an unfilled slot
+                            // reads as "not yet".
+                            if (hasMedications) {
+                                if (hasThreads) Spacer(Modifier.height(Space.sectionGap))
+                                val chosenMedication =
+                                    medications.firstOrNull { it.id == state.medicationId }
+                                val shownMedications =
+                                    cappedChips(medications, chosenMedication)
+                                ChoiceChipGroup(
+                                    label = strings["capture.about.medication"],
+                                    aside = strings["capture.about.medication.aside"],
+                                ) {
+                                    shownMedications.forEach { medication ->
+                                        ChoiceChip(
+                                            label = medication.name,
+                                            selected = state.medicationId == medication.id,
+                                            onClick = {
+                                                onStateChange(state.toggleMedication(medication))
+                                            },
+                                            modifier = Modifier.testTag(
+                                                CaptureFormTags.medication(medication.id),
+                                            ),
+                                        )
+                                    }
+                                    if (medications.size > shownMedications.size) {
+                                        MoreChip(
+                                            label = strings(
+                                                "chips.all",
+                                                "count" to medications.size,
+                                            ),
+                                            onClick = { openPicker = OpenPicker.MEDICATIONS },
+                                            modifier = Modifier
+                                                .testTag(CaptureFormTags.MORE_MEDICATIONS),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 // Said on the screen rather than discovered afterward. An entry
                 // that quietly went somewhere the person did not choose is the
                 // thing this app promises never to do, so the screen says where
                 // it is going while they can still change it.
+                //
+                // **It stays outside the disclosure deliberately.** The thread
+                // question is now folded away, so this sentence is the only
+                // thing telling somebody who never opens it where their entry
+                // is going, and it sits directly under the control that would
+                // let them change it.
                 if (threads.isNotEmpty() && threadId == null) {
                     Spacer(Modifier.height(Space.m))
                     Text(
@@ -565,7 +646,64 @@ fun CaptureFormScreen(
             onDismiss = { pickerOpen = false },
         )
     }
+
+    // **The full set, when the person asks for it**, per 5.11.1. One sheet
+    // reused three times rather than three sheets, because it is the same
+    // question every time: which one of these, out of more than fit in a row.
+    when (openPicker) {
+        OpenPicker.PEOPLE -> ChipPickerSheet(
+            title = strings["capture.who.known"],
+            options = people.map { PickerOption(id = it.id, label = it.displayName, detail = it.roleLabel) },
+            selectedId = state.personId,
+            onPick = { option ->
+                openPicker = null
+                people.firstOrNull { it.id == option.id }
+                    ?.let { onStateChange(state.togglePerson(it)) }
+            },
+            onDismiss = { openPicker = null },
+        )
+        OpenPicker.THREADS -> ChipPickerSheet(
+            title = strings["capture.thread"],
+            options = threads.map { thread ->
+                PickerOption(
+                    id = thread.id,
+                    label = thread.label,
+                    routeColor = colors.threadRoutes[
+                        thread.colorIndex.mod(colors.threadRoutes.size),
+                    ],
+                    routeIndex = thread.colorIndex,
+                )
+            },
+            selectedId = threadId,
+            onPick = { option ->
+                openPicker = null
+                onStateChange(state.copy(threadId = option.id))
+            },
+            onDismiss = { openPicker = null },
+        )
+        OpenPicker.MEDICATIONS -> ChipPickerSheet(
+            title = strings["capture.about.medication"],
+            options = medications.map { PickerOption(id = it.id, label = it.name) },
+            selectedId = state.medicationId,
+            onPick = { option ->
+                openPicker = null
+                medications.firstOrNull { it.id == option.id }
+                    ?.let { onStateChange(state.toggleMedication(it)) }
+            },
+            onDismiss = { openPicker = null },
+        )
+        null -> Unit
+    }
 }
+
+/**
+ * Which full set the person opened, if any.
+ *
+ * Three named cases rather than a boolean per group, so a fourth capped group
+ * cannot be added without deciding what happens when two are open at once. The
+ * answer is that they never are.
+ */
+private enum class OpenPicker { PEOPLE, THREADS, MEDICATIONS }
 
 /** The catalog key for a rough date answer. */
 /**

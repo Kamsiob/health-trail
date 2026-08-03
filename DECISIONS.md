@@ -1516,6 +1516,36 @@ D53 made `tools/screenshot.sh` switch heads-up notifications off for the duratio
 
 ---
 
+### D73. Three tests had been failing on `main` for a day and the record said the suite was green
+
+**Date:** 2026-08-03. **Found by:** running `tools/verify.sh --device` for the first time in this session.
+
+`HANDOFF.md` said **275 tests across 30 classes, 0 failures**. The suite has 277 tests and three of them fail, and they have failed since commit `5ca7368` the previous night.
+
+**What happened.** `5ca7368` gave the emergency card its own count string, correctly: every other section holds a list somebody adds to, so "9 items" is a fact about the notebook, and a card is a single thing where "1 item" is the shape of the table showing through onto the front door. The commit changed `NotebookScreen.kt` and added `notebook.count.emergency_card` to four catalogs. **It did not touch `NotebookScreenTest.kt`, which asserts the generic string for all twelve rows**, or `ReaderStopsTest.kt`, which counts rows by matching "Nothing yet".
+
+**So the number in `HANDOFF.md` was taken before that commit and written after it.** That is the whole mechanism, and it is a variant of D29: a state recorded from a measurement that no longer describes the thing measured.
+
+**The rule this sets.** A change to a user-facing string is a change to whatever asserts it. **Run `tools/verify.sh --device` at the end of the increment that changes one**, not at the end of the night, because the further the run drifts from the change the more likely the number in the record describes a different tree.
+
+**And the smaller lesson, which is D68 again.** The failure text named the emergency card row and quoted exactly what it says. Two of the three took under a minute to fix once looked at. **What cost the time was believing the "0 failures" line in `HANDOFF.md` enough not to run the suite for three increments.**
+
+---
+
+### D74. A journey test that shares the suite's subject accumulates state, and the cap is what exposed it
+
+**Date:** 2026-08-03.
+
+`MedicationQuestionJourneyTest` passed alone and failed inside the full suite, on the same commit, twice.
+
+**The cause is not flakiness.** The suite shares one active subject, so by the time this class runs there are more medications on it than the capped chip row shows, per 5.11.1, and the one the test just added is the newest. The chip it reached for by test tag was correctly not on screen.
+
+**The fix is the test walking the path a person walks**, which is what `TESTING-PERSONAS.md` section 7 asks of a journey test in the first place: if the chip is not among the five, open the full set and search for it. Reaching past the cap with a test tag would have hidden that a person cannot.
+
+**The finding worth keeping is the shape.** A journey test is the only kind that notices this, and it noticed by failing in the suite and passing alone, which is the signature usually read as flaky and dismissed. **It was a real difference in what the screen shows**, and the alone run was the misleading one.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 

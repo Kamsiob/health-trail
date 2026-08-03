@@ -412,6 +412,24 @@ Every list has one, written as an invitation rather than an absence. The Today s
 
 **Every chip set includes an answer that means "I do not know".** "Not sure" for a date, "Not sure yet" for a thread. It is a real answer that saves and files, never a way of postponing the question, and it is the reason this pattern exists rather than a required picker.
 
+#### 5.11.1 The cap, and the full set behind it
+
+**A chip set exists so the person can see every answer at once, and that promise breaks the moment there are twenty of them.** A year five notebook offers ten people, eight medications, and seven threads on one capture form, and what the person met was a wall of pills. **The pattern was right and it had no upper bound.**
+
+**Five chips, then one more control.** The cap is five, and the sixth position is a `MoreChip` reading "Show all 9" that opens the full set with search. Chips wrap as before and nothing else about the group changes.
+
+**The `MoreChip` is chip shaped and deliberately not a chip.** Its label is `blue`, which is what every action in this app is, and it is announced as a button rather than a radio button, because it is not one of the answers: it opens the rest rather than saying anything about what happened. Nothing else differs, because a second shape in the same wrapping row would read as a second kind of question.
+
+**Which five, and why the reasoning lives in the query.** The set arrives in whatever order its query set, and the cap takes the head of that order without reordering it. For people that order is **most recently involved first**, computed from `entry_person`, so the five are whoever the person has been dealing with lately rather than the five added first. For medications it is the ones she is still on. **Putting the cap in the layer that has the data is what keeps it from being a guess dressed as a rule.**
+
+**The chosen answer is always among the five**, even when it would fall outside, and it displaces the last of the head rather than being appended, so the row never grows past the cap. **A chip set that hides the answer the person already gave is lying about the state of the form.**
+
+**The full set is a dense list, per 11.3**, in a sheet with a search field above it. The person opening it is scanning for one name they already have in mind, which is the exact case 11.3 exists for, and cards there would be the same wall with more space between its bricks. Selection is `blue_soft` plus the title at weight 700, which is this section's own language rather than a second one.
+
+**Search narrows and never filters anything away permanently**, matching on plain contains-ignoring-case and never fuzzily: somebody typing three letters of a nurse's name and being shown a different nurse is worse than being shown nothing, because this list writes a link into the record. Nothing matching says so in a sentence.
+
+**Below the cap nothing appears.** A set of four chips shows four chips and no control, because "show all 4" is a control that does nothing, which 5.14 and D42 both rule out.
+
 ### 5.12 The icon tile
 
 A rounded tile carrying one line drawing, which is how the reference file draws every row of the table of contents. Radius 12dp, already named in section 4.2 before anything was built against it.
@@ -553,7 +571,27 @@ Measured on the device in dark theme: a card row goes from (26,36,43) to (43,50,
 
 **The same drawing means the same thing everywhere**, exactly as waypoints do. A section's empty state uses the drawing for that section, never a generic one, so the empty screen is already teaching where you are.
 
-### 5.18 Numerals
+### 5.18 The disclosure
+
+**The rest of a form, behind one control nobody is required to touch.**
+
+**Progressive disclosure is part of hierarchy rather than a separate feature**, per 10.8, and everything visible at once is the most common structural tell on the ban list in section 1. The capture form put roughly twenty three controls in front of somebody standing in a corridor, which is the opposite of forgiving.
+
+**Geometry.** A text action reading "Add more", per 5.4, with one line of Body S beneath it saying that none of it is needed. It expands with the standard spring from section 6 taken through `LocalMotion`, so reduced motion turns it into an immediate state change rather than nothing.
+
+**It opens and stays open.** There is no close control, because a person who opened it wanted what is inside and taking it away again would be the form arguing with them. Leaving the screen resets it, which is right: the next capture starts from the short form. It survives a rotation and a theme change, so nobody part way through filling it in gets folded back up.
+
+**It never carries a count and never says how much is left.** "Add more" is an offer. "3 more fields" would be a measure of how incomplete the entry is, which rule 13 rules out.
+
+**Nothing inside is ever required, and the aside says so once.** A disclosure hiding something the person has to fill in is not disclosure, it is a trap.
+
+**What goes behind it** is what the app can work out or live without. On capture that is the care thread, because an entry with no thread lands in the Unfiled tray where the app suggests a home and asks for one tap, and the medication a question is about, because most questions are about nothing in particular.
+
+**What must never go behind it** is anything telling the person what will happen to what they wrote. The capture form's line about the Unfiled tray stays outside and sits directly under the control that would let them change it, because for somebody who never opens the disclosure it is the only thing saying where their entry is going.
+
+**A disclosure with nothing in it is not shown at all.** An empty room to walk into is the same defect as an empty section.
+
+### 5.19 Numerals
 
 **Every count, date, dose, amount, and duration is set in tabular figures.**
 
@@ -728,6 +766,14 @@ Composed from Display L, Body M, Body S, the card from section 5.3, the group he
 **The tiles are `sand` rather than `card`, which is the one departure from 11.2**, because the sheet itself is `card` and a card tile on it would be a shape with no edges. The recessed surface is what 2.1 sets aside for exactly this, and it is what the six rows already used. **The icon inside carries no fill**, per 5.12's standing weight, since a `sand` icon tile inside a `sand` tile is invisible, and its drawing is `ink` rather than `ink2` because here the icon is the content rather than a marker beside a row. **There is no count slot**, because a capture kind is a thing to do rather than a place with things in it, and an empty count line would be an empty area.
 
 **The sheet's title had no top padding and the 28dp corners cut into it.** "What happened" sat on the content's first pixel with its ascenders running into the sheet edge, and it read as a sheet that had failed to finish opening. It is the first thing anybody sees after tapping the one control the whole app is for. Found by opening it and looking, not in review.
+
+**The capture form, reordered and capped on 2026-08-03.** Three changes, all from using it against a year five notebook.
+
+**What happened comes first, and it used to come last.** The person taps this having just put a phone down, and the thing in their head is the sentence they came to write. It sat below the who field, the care team chips, the date chips and the thread chips: twenty three controls between somebody and one sentence. Rule 15 says the thing that matters most gets the most weight and the best position, and this form had it backwards in exactly the way the entry screen did. **The fastest path through the screen is now type and save.**
+
+**Every long chip set is capped at five with the full set behind one control**, per 5.11.1. The people offered are the five most recently involved, computed from `entry_person`, rather than the five added first.
+
+**The care thread and the medication question are behind a disclosure**, per 5.18. What stays outside it is the line saying an entry with no thread goes to the Unfiled tray, because that is the only thing telling somebody who never opens it where their entry is going.
 
 **The capture form.** One form for four of the six capture inputs: a call, a visit, an incident, and a question. They record the same four things and differ only in wording, so the shape is defined once and the words come from the catalog per kind. Which four is declared in one place, exhaustively, so a seventh capture kind cannot be added without deciding whether it belongs here. Measurement and document are genuinely different shapes and get their own screens.
 

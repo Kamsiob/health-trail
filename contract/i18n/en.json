@@ -562,5 +562,11 @@
   "restore.confirm": "Replace everything with this",
   "restore.working": "Restoring. Do not close the app.",
   "restore.done": "Restored. Your notebook is what was in the file.",
-  "more.restore": "Restore from a file"
+  "more.restore": "Restore from a file",
+  "picker.search": "Search",
+  "picker.search.hint": "A few letters is enough",
+  "picker.empty": "Nothing here matches that. Clear the box to see all of them again.",
+  "chips.all": "{count, plural, one {Show the other one} other {Show all #}}",
+  "capture.more": "Add more",
+  "capture.more.aside": "None of this is needed to save."
 }

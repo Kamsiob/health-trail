@@ -562,5 +562,11 @@
   "restore.confirm": "استبدل كل شيء بهذا",
   "restore.working": "جارٍ الاستعادة. لا تغلق التطبيق.",
   "restore.done": "تمت الاستعادة. دفترك الآن هو ما كان في الملف.",
-  "more.restore": "الاستعادة من ملف"
+  "more.restore": "الاستعادة من ملف",
+  "picker.search": "بحث",
+  "picker.search.hint": "بضعة أحرف تكفي",
+  "picker.empty": "لا يوجد هنا ما يطابق ذلك. امسح المربع لرؤيتها كلها من جديد.",
+  "chips.all": "{count, plural, zero {عرض الكل} one {عرض الآخر} two {عرض الاثنين} few {عرض الـ #} many {عرض الـ #} other {عرض الـ #}}",
+  "capture.more": "إضافة المزيد",
+  "capture.more.aside": "لا شيء من هذا مطلوب للحفظ."
 }

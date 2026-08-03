@@ -972,6 +972,57 @@ class Repository private constructor(
         }
     }
 
+    /**
+     * The care team, most recently involved first.
+     *
+     * **This is what the capture form's five chips are picked from**, per
+     * `DESIGN.md` 5.11.1. A year five notebook has ten people on it and showing
+     * all ten as chips is the wall the owner named; showing the first five by
+     * creation date would have been a cap with no reasoning behind it, and it
+     * would have put whoever was added on day one in front of the nurse from
+     * this morning.
+     *
+     * **Recency is measured by the entries they are actually linked to**, using
+     * `entry_person`, which capture has been writing since the chips existed.
+     * Somebody never linked to an entry sorts after everybody who has been,
+     * and among those the creation order is kept, so a fresh notebook where
+     * nothing has been linked yet behaves exactly as [people] does.
+     *
+     * The date used is the entry's own `occurred_start` where it has one and
+     * its `created_at` otherwise, so backdating a call from three months ago
+     * does not push that person to the front of a list meant to answer "who
+     * have you been dealing with lately".
+     */
+    suspend fun peopleByRecentUse(subjectId: String): List<Person> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT p.id, p.display_name, p.role_label, p.phone, p.email, p.notes, " +
+                    "(SELECT MAX(coalesce(e.occurred_start, e.created_at)) " +
+                    "   FROM live_entry_person ep " +
+                    "   JOIN live_entry e ON e.id = ep.entry_id " +
+                    "  WHERE ep.person_id = p.id) AS last_used " +
+                    "FROM live_person p " +
+                    "WHERE p.subject_id = ? AND p.archived_at IS NULL " +
+                    "ORDER BY last_used IS NULL, last_used DESC, p.created_at",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            Person(
+                                id = cursor.getString(0),
+                                displayName = cursor.getString(1),
+                                roleLabel = cursor.getString(2),
+                                phone = cursor.getString(3),
+                                email = cursor.getString(4),
+                                notes = cursor.getString(5),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
     // -- the emergency card ------------------------------------------------
 
     /**
@@ -2260,10 +2311,20 @@ class Repository private constructor(
      * two it makes every number on the table of contents quietly wrong, and
      * quietly wrong counts in a care record are worse than missing ones,
      * because nobody thinks to check them. Issue #58.
+     *
+     * **A section's count is the number of rows its own screen shows**, which
+     * is why [Section.hiddenWhen] exists. The care team said ten and opened
+     * onto nine: `people` excludes archived rows and this counted them, so a
+     * person somebody had marked as no longer involved went on being counted
+     * by the table of contents forever. Found on 2026-08-03 by counting the
+     * rows on the screen the number opens, which is the only way it can be
+     * found. **A count that disagrees with its own screen is the app being
+     * wrong about itself**, which is worse than not counting.
      */
     suspend fun count(section: Section, subjectId: String): Int = withContext(Dispatchers.IO) {
         db().database.rawQuery(
-            "SELECT COUNT(*) FROM ${section.view} WHERE subject_id = ?",
+            "SELECT COUNT(*) FROM ${section.view} WHERE subject_id = ?" +
+                section.hiddenWhen.orEmpty(),
             arrayOf(subjectId),
         ).use {
             if (it.moveToFirst()) it.getInt(0) else 0
@@ -2276,8 +2337,20 @@ class Repository private constructor(
      * An enum rather than free text on purpose: it is the boundary that stops a
      * table name reaching SQL from anywhere else in the app.
      */
-    enum class Section(internal val view: String) {
-        CARE_TEAM("live_person"),
+    enum class Section(
+        internal val view: String,
+        /**
+         * A predicate the section's own screen applies and the count has to
+         * apply with it, appended to the `WHERE` clause.
+         *
+         * **Only for rows the screen genuinely does not show.** A stopped
+         * medication is still on the medications screen and is still counted; an
+         * archived person is on neither. The test is what the screen lists, not
+         * what the row means.
+         */
+        internal val hiddenWhen: String? = null,
+    ) {
+        CARE_TEAM("live_person", hiddenWhen = " AND archived_at IS NULL"),
         MEDICATIONS("live_medication"),
         APPOINTMENTS("live_appointment"),
         CHAPTERS("live_chapter"),

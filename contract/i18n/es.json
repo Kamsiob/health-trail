@@ -562,5 +562,11 @@
   "restore.confirm": "Reemplazar todo con esto",
   "restore.working": "Restaurando. No cierre la aplicación.",
   "restore.done": "Restaurado. Su cuaderno es lo que contenía el archivo.",
-  "more.restore": "Restaurar desde un archivo"
+  "more.restore": "Restaurar desde un archivo",
+  "picker.search": "Buscar",
+  "picker.search.hint": "Con unas pocas letras basta",
+  "picker.empty": "Aquí no hay nada que coincida. Borre el cuadro para verlos todos otra vez.",
+  "chips.all": "{count, plural, one {Ver el otro} other {Ver los #}}",
+  "capture.more": "Agregar más",
+  "capture.more.aside": "Nada de esto hace falta para guardar."
 }

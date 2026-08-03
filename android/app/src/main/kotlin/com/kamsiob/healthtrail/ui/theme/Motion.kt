@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.theme
 
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
@@ -21,8 +22,15 @@ import androidx.compose.ui.platform.LocalContext
  * spec built inline is one the reduced motion setting cannot reach.
  */
 interface Motion {
+    // **Every spec here is finite, and the type says so.** `AnimatedVisibility`
+    // and the other enter and exit transitions ask for `FiniteAnimationSpec`,
+    // and an interface promising only `AnimationSpec` sends the next screen
+    // that needs one off to build a spec inline, which is the one thing section
+    // 6 forbids because an inline spec is one reduced motion cannot reach.
+    // Every implementation below already returned a spring, a tween, or a snap,
+    // all of which are finite.
     /** Everything by default: screen transitions, sheets, list entry, expansion. */
-    fun <T> standard(): AnimationSpec<T>
+    fun <T> standard(): FiniteAnimationSpec<T>
 
     /**
      * Slight overshoot. Reserved for exactly three moments and nothing else:
@@ -30,16 +38,16 @@ interface Motion {
      * incident being marked resolved. Three, because each one is a small piece
      * of relief in an app used during hard times.
      */
-    fun <T> expressive(): AnimationSpec<T>
+    fun <T> expressive(): FiniteAnimationSpec<T>
 
     /** Press feedback and chip selection. */
-    fun <T> quick(): AnimationSpec<T>
+    fun <T> quick(): FiniteAnimationSpec<T>
 
     /** Sheets and navigation. */
-    fun <T> deliberateStandard(): AnimationSpec<T>
+    fun <T> deliberateStandard(): FiniteAnimationSpec<T>
 
     /** The trail drawing itself in on first view of a timeline. */
-    fun <T> trailDraw(): AnimationSpec<T>
+    fun <T> trailDraw(): FiniteAnimationSpec<T>
 
     /** Stagger between trail nodes fading in. Zero when motion is reduced. */
     val trailNodeStaggerMillis: Int
@@ -53,17 +61,17 @@ private const val DELIBERATE_MILLIS = 400
 private const val REDUCED_FADE_MILLIS = 100
 
 object FullMotion : Motion {
-    override fun <T> standard(): AnimationSpec<T> =
+    override fun <T> standard(): FiniteAnimationSpec<T> =
         spring(dampingRatio = 0.9f, stiffness = 380f)
 
-    override fun <T> expressive(): AnimationSpec<T> =
+    override fun <T> expressive(): FiniteAnimationSpec<T> =
         spring(dampingRatio = 0.68f, stiffness = 300f)
 
-    override fun <T> quick(): AnimationSpec<T> = tween(QUICK_MILLIS)
+    override fun <T> quick(): FiniteAnimationSpec<T> = tween(QUICK_MILLIS)
 
-    override fun <T> deliberateStandard(): AnimationSpec<T> = tween(STANDARD_MILLIS)
+    override fun <T> deliberateStandard(): FiniteAnimationSpec<T> = tween(STANDARD_MILLIS)
 
-    override fun <T> trailDraw(): AnimationSpec<T> = tween(DELIBERATE_MILLIS)
+    override fun <T> trailDraw(): FiniteAnimationSpec<T> = tween(DELIBERATE_MILLIS)
 
     override val trailNodeStaggerMillis: Int = 30
 
@@ -76,11 +84,11 @@ object FullMotion : Motion {
  * acknowledges itself.
  */
 object ReducedMotion : Motion {
-    override fun <T> standard(): AnimationSpec<T> = snap()
-    override fun <T> expressive(): AnimationSpec<T> = snap()
-    override fun <T> quick(): AnimationSpec<T> = tween(REDUCED_FADE_MILLIS)
-    override fun <T> deliberateStandard(): AnimationSpec<T> = tween(REDUCED_FADE_MILLIS)
-    override fun <T> trailDraw(): AnimationSpec<T> = snap()
+    override fun <T> standard(): FiniteAnimationSpec<T> = snap()
+    override fun <T> expressive(): FiniteAnimationSpec<T> = snap()
+    override fun <T> quick(): FiniteAnimationSpec<T> = tween(REDUCED_FADE_MILLIS)
+    override fun <T> deliberateStandard(): FiniteAnimationSpec<T> = tween(REDUCED_FADE_MILLIS)
+    override fun <T> trailDraw(): FiniteAnimationSpec<T> = snap()
     override val trailNodeStaggerMillis: Int = 0
     override val isReduced: Boolean = true
 }

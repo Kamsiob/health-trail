@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -241,7 +242,13 @@ class CaptureTest {
         var draft: CaptureDraft? = null
         showForm(onSave = { draft = it })
 
-        compose.onNodeWithTag(CaptureFormTags.threadChip("t-discharge")).performClick()
+        // **The thread question is behind "Add more" as of 2026-08-03**, per
+        // `DESIGN.md` 5.11.1 and the disclosure, so the test opens it the way a
+        // person does rather than reaching past the control.
+        compose.onNodeWithTag(CaptureFormTags.MORE).performScrollTo().performClick()
+        compose.onNodeWithTag(CaptureFormTags.threadChip("t-discharge"))
+            .performScrollTo()
+            .performClick()
         assertTrue(
             "the unfiled note stayed after a thread was chosen",
             compose.onAllNodesWithTag(CaptureFormTags.UNFILED_NOTE)
@@ -263,6 +270,14 @@ class CaptureTest {
         assertTrue(
             "the thread question was asked with nothing to answer it",
             compose.onAllNodesWithTag(CaptureFormTags.THREAD_UNSURE)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+        // And the control that would have opened it is not there either. A
+        // disclosure offering nothing is an empty room to walk into, which is
+        // the same defect as an empty section, per rule 11.
+        assertTrue(
+            "an empty disclosure was offered on a notebook with nothing in it",
+            compose.onAllNodesWithTag(CaptureFormTags.MORE)
                 .fetchSemanticsNodes().isEmpty(),
         )
         assertTrue(

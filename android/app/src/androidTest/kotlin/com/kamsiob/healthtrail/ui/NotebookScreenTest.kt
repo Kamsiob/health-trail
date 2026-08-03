@@ -133,9 +133,21 @@ class NotebookScreenTest {
         // the list is longer than the screen and a lazy list only composes what
         // it has scrolled to: counting matches would quietly assert less than
         // it looks like it does.
+        // **The emergency card says something else, and it is supposed to.**
+        // Every other section holds a list somebody adds to, so "9 items" is a
+        // fact about their notebook. A card is a single thing, and "1 item" was
+        // the shape of the table showing through onto the front door. It says
+        // whether there is anything on it instead. This test asserted the
+        // generic string for all twelve and went red the moment that landed.
         order.forEach { section ->
             scrollTo(section)
-            compose.onNodeWithTag(NotebookTags.count(section), useUnmergedTree = true).assertTextEquals(empty)
+            val expected = if (section == Repository.Section.EMERGENCY_CARD) {
+                strings("notebook.count.emergency_card", "count" to 0)
+            } else {
+                empty
+            }
+            compose.onNodeWithTag(NotebookTags.count(section), useUnmergedTree = true)
+                .assertTextEquals(expected)
         }
     }
 
@@ -319,7 +331,13 @@ class NotebookScreenTest {
 
         order.forEach { section ->
             scrollTo(section)
-            compose.onNodeWithTag(NotebookTags.count(section), useUnmergedTree = true).assertTextEquals(many)
+            val expected = if (section == Repository.Section.EMERGENCY_CARD) {
+                strings("notebook.count.emergency_card", "count" to 1247)
+            } else {
+                many
+            }
+            compose.onNodeWithTag(NotebookTags.count(section), useUnmergedTree = true)
+                .assertTextEquals(expected)
         }
     }
 }

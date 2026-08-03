@@ -562,5 +562,11 @@
   "restore.confirm": "用它替换全部内容",
   "restore.working": "正在恢复。请不要关闭应用。",
   "restore.done": "已恢复。您的笔记本现在就是文件中的内容。",
-  "more.restore": "从文件恢复"
+  "more.restore": "从文件恢复",
+  "picker.search": "搜索",
+  "picker.search.hint": "输入几个字就够了",
+  "picker.empty": "这里没有匹配的内容。清空输入框可以重新看到全部。",
+  "chips.all": "{count, plural, other {查看全部 # 项}}",
+  "capture.more": "添加更多",
+  "capture.more.aside": "这些都不是保存所必需的。"
 }

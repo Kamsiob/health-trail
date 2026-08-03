@@ -140,7 +140,13 @@ class ReaderStopsTest {
             NotebookScreen(sections = sections, onOpen = {})
         }
 
-        val rowStops = stops().count { it.contains("Nothing yet") }
+        // **"Nothing yet" plus the one row that says something else.** The
+        // emergency card is a single thing rather than a list, so its count
+        // reads "Nothing on it yet", and counting only the generic phrase
+        // silently asserted eleven while claiming to assert twelve.
+        val rowStops = stops().count {
+            it.contains("Nothing yet") || it.contains("Nothing on it yet")
+        }
 
         // **Twelve, not thirteen, and the difference is deliberate.**
         // `Repository.Section` has thirteen values because Projects is a

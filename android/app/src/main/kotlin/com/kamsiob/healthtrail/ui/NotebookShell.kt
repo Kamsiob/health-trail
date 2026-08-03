@@ -207,6 +207,15 @@ fun NotebookShell(
     var openSection by remember { mutableStateOf<Repository.Section?>(null) }
     var trail by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
     var people by remember { mutableStateOf<List<Repository.Person>>(emptyList()) }
+    // **The same people in a different order, and it needs to be a second
+    // list.** The care team screen shows them in the order they were added,
+    // which is what somebody scanning a roster expects and what that screen
+    // documents. The capture form shows five of them as chips, and the five
+    // worth offering are whoever the person has been dealing with lately.
+    // Reordering the one list would have quietly reordered the roster too.
+    var peopleForCapture by remember {
+        mutableStateOf<List<Repository.Person>>(emptyList())
+    }
     // The entry whose date is being corrected, per rule 17. Null means nothing
     // is being edited.
     var editingDate by remember { mutableStateOf<Repository.TrailEntry?>(null) }
@@ -432,6 +441,8 @@ fun NotebookShell(
             trail = subject?.let { repository.trail(it.id) }.orEmpty()
             incidents = subject?.let { repository.incidents(it.id) }.orEmpty()
             people = subject?.let { repository.people(it.id) }.orEmpty()
+            peopleForCapture =
+                subject?.let { repository.peopleByRecentUse(it.id) }.orEmpty()
             emergencyCard = subject?.let { repository.emergencyCard(it.id) }
             medications = subject?.let { repository.medications(it.id) }.orEmpty()
             questions = subject?.let { repository.questions(it.id) }.orEmpty()
@@ -2099,7 +2110,7 @@ fun NotebookShell(
             CaptureFormScreen(
                 kind = kind,
                 threads = threads,
-                people = people,
+                people = peopleForCapture,
                 medications = medications,
                 state = captureDraft,
                 onStateChange = { captureDraft = it },

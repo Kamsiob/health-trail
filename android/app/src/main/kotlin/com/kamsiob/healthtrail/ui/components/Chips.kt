@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -125,6 +126,83 @@ fun ChoiceChip(
         )
     }
 }
+
+/**
+ * The way to the rest of the set, per `DESIGN.md` 5.11.1.
+ *
+ * **Chip shaped and deliberately not a chip.** It is announced as a button
+ * rather than a radio button, because it is not one of the answers: choosing it
+ * opens the full set rather than saying anything about what happened. Its label
+ * is `blue`, which is what every action in this app is, so a person can tell at
+ * a glance which of the six things in front of them is a way in rather than an
+ * answer. Nothing else about it differs, because it lives in the same wrapping
+ * row and a second shape there would read as a second kind of question.
+ */
+@Composable
+fun MoreChip(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HealthTrail.colors
+    val type = HealthTrail.type
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.sand)
+    val ring by focusRingAlpha(interaction)
+
+    Row(
+        modifier = modifier
+            .minimumInteractiveComponentSize()
+            .defaultMinSize(minHeight = ChipHeight)
+            .clip(Radius.pill)
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.pill)
+            .clickable(
+                interactionSource = interaction,
+                // The chip's own surface is the press feedback, per 5.14.
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .padding(horizontal = Space.m),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = type.label,
+            color = colors.blue,
+        )
+    }
+}
+
+/**
+ * Which of a long set of answers to put in front of the person.
+ *
+ * **The cap is five and the selected answer is always among them**, even when it
+ * would otherwise fall outside, because a chip set that hides the answer the
+ * person already chose is lying about the state of the form.
+ *
+ * Pure, and separate from the screen, because this is the rule that has to be
+ * right rather than the pixels: a cap that quietly dropped the chosen answer
+ * would be a form that forgets what it was told.
+ *
+ * [all] arrives in whatever order its query set, which for people is most
+ * recently involved first and for medications is the ones she is still on
+ * first. **The cap takes the head of that order and does not reorder it**, so
+ * the reasoning about what is likely lives in the query where the data is,
+ * rather than here where it would be a guess.
+ */
+fun <T> cappedChips(all: List<T>, selected: T?, limit: Int = CHIP_CAP): List<T> {
+    if (all.size <= limit) return all
+    val head = all.take(limit)
+    if (selected == null || selected in head) return head
+    // The chosen one displaces the last of the head rather than being appended,
+    // so the row never grows past the cap and never moves the other four.
+    return head.dropLast(1) + selected
+}
+
+/** Five, per `DESIGN.md` 5.11.1. */
+const val CHIP_CAP = 5
 
 private val ChipHeight = 40.dp
 private val ChipDotSize = 8.dp
