@@ -568,5 +568,6 @@
   "picker.empty": "لا يوجد هنا ما يطابق ذلك. امسح المربع لرؤيتها كلها من جديد.",
   "chips.all": "{count, plural, zero {عرض الكل} one {عرض الآخر} two {عرض الاثنين} few {عرض الـ #} many {عرض الـ #} other {عرض الـ #}}",
   "capture.more": "إضافة المزيد",
-  "capture.more.aside": "لا شيء من هذا مطلوب للحفظ."
+  "capture.more.aside": "لا شيء من هذا مطلوب للحفظ.",
+  "notebook.attention": "بحاجة إليك"
 }

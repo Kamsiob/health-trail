@@ -595,7 +595,9 @@ fun NotebookShell(
                                 sections = loaded,
                                 onOpen = { openSection = it },
                                 waiting = unfiled.size,
+                                openIncidents = incidents.count { it.isOpen },
                                 onOpenUnfiled = { trayOpen = true },
+                                onOpenIncidents = { incidentsOpen = true },
                             )
                         }
                     }

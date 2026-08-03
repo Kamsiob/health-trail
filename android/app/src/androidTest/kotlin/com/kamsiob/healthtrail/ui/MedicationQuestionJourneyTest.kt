@@ -8,7 +8,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kamsiob.healthtrail.MainActivity
@@ -96,7 +95,10 @@ class MedicationQuestionJourneyTest {
     private fun openSection(section: Repository.Section) {
         compose.onNodeWithTag(NavTags.tab(Destination.NOTEBOOK)).performClick()
         compose.waitUntil(timeoutMillis = 10_000) { showing(NotebookTags.ROOT) }
-        compose.onNodeWithTag(NotebookTags.ROOT).performScrollToKey(section.name)
+        // **Scrolls to the tile rather than asking a list for a key.** The
+        // notebook became a plain scrolling column of tiles on 2026-08-03, so
+        // there is no lazy list to ask, and every tile is in the tree.
+        compose.onNodeWithTag(NotebookTags.section(section)).performScrollTo()
         compose.onNodeWithTag(NotebookTags.section(section)).performClick()
         compose.waitUntil(timeoutMillis = 10_000) { showing(SectionTags.BACK) }
     }

@@ -568,5 +568,6 @@
   "picker.empty": "这里没有匹配的内容。清空输入框可以重新看到全部。",
   "chips.all": "{count, plural, other {查看全部 # 项}}",
   "capture.more": "添加更多",
-  "capture.more.aside": "这些都不是保存所必需的。"
+  "capture.more.aside": "这些都不是保存所必需的。",
+  "notebook.attention": "需要你处理"
 }

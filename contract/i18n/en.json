@@ -568,5 +568,6 @@
   "picker.empty": "Nothing here matches that. Clear the box to see all of them again.",
   "chips.all": "{count, plural, one {Show the other one} other {Show all #}}",
   "capture.more": "Add more",
-  "capture.more.aside": "None of this is needed to save."
+  "capture.more.aside": "None of this is needed to save.",
+  "notebook.attention": "Needs you"
 }

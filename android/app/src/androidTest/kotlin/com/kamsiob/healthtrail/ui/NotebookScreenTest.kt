@@ -9,7 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToKey
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -100,12 +100,17 @@ class NotebookScreenTest {
      * the list where the item is and goes there, so a test failure after this
      * means the row is genuinely missing rather than merely out of view.
      */
+    /**
+     * **Scrolls to the node itself rather than asking a list for a key.**
+     *
+     * The screen became a plain scrolling column of tiles on 2026-08-03. Twelve
+     * tiles and a hero is a fixed, small screen where laziness buys nothing and
+     * costs the thing that matters: every tile exists in the tree, so a test and
+     * a screen reader both reach it without a scroll dance. `performScrollToKey`
+     * needs a lazy list to ask, and there is no longer one here.
+     */
     private fun scrollTo(section: Repository.Section) {
-        compose.onNodeWithTag(NotebookTags.ROOT).performScrollToKey(section.name)
-    }
-
-    private fun scrollTo(group: NotebookGroup) {
-        compose.onNodeWithTag(NotebookTags.ROOT).performScrollToKey("group_${group.name}")
+        compose.onNodeWithTag(NotebookTags.section(section)).performScrollTo()
     }
 
     @Test
@@ -277,24 +282,33 @@ class NotebookScreenTest {
     // -- the states the screen has to hold in ------------------------------
 
     @Test
-    fun everyGroupIsHeaded() {
+    fun theSectionsKeepTheirOrderWithoutTheGroupHeaders() {
+        // **The four group headers went on 2026-08-03 and the order did not.**
+        // They were a fix for twelve rows at uniform weight, which a grid is
+        // not: a tile is told apart by shape and position, and four headers
+        // chopping twelve tiles into groups of three, four, three and two left
+        // a half empty row in three of the four and cost most of what the grid
+        // was worth. What 10.8 protects is that nothing moved, and this is the
+        // assertion for that: the sections still read in `NotebookGroup` order,
+        // which is `MASTER_SPEC.md` section 4.4's order, unchanged.
         show()
-        NotebookGroup.entries.forEach { group ->
-            scrollTo(group)
-            compose.onNodeWithTag(NotebookTags.group(group)).assertIsDisplayed()
+        NotebookGroup.entries.flatMap { it.sections }.forEach { section ->
+            scrollTo(section)
+            compose.onNodeWithTag(NotebookTags.section(section)).assertIsDisplayed()
         }
+        assertEquals(
+            "the order the grid reads in is no longer the order the app promises",
+            order,
+            NotebookGroup.entries.flatMap { it.sections },
+        )
     }
 
     @Test
     fun itHoldsUpInTheLongestLanguage() {
-        // Spanish is where this app's wrapping breaks first. Every section and
-        // every group header still renders, which is the assertion that catches
-        // a header running off the end edge or a row collapsing to nothing.
+        // Spanish is where this app's wrapping breaks first. Every tile still
+        // renders, which is the assertion that catches a name running off the
+        // end edge of its tile or a row collapsing to nothing.
         show(locale = Locale("es"))
-        NotebookGroup.entries.forEach { group ->
-            scrollTo(group)
-            compose.onNodeWithTag(NotebookTags.group(group)).assertIsDisplayed()
-        }
         order.forEach { section ->
             scrollTo(section)
             compose.onNodeWithTag(NotebookTags.section(section)).assertIsDisplayed()

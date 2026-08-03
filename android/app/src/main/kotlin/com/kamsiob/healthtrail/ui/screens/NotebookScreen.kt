@@ -1,55 +1,40 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.Chevron
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.Hero
+import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.IconTile
-import com.kamsiob.healthtrail.ui.components.focusRingAlpha
-import com.kamsiob.healthtrail.ui.components.pressedSurface
+import com.kamsiob.healthtrail.ui.components.Tile
+import com.kamsiob.healthtrail.ui.components.tileColumns
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object NotebookTags {
     const val ROOT = "notebook_root"
     fun section(section: Repository.Section) = "notebook_section_${section.name.lowercase()}"
     fun count(section: Repository.Section) = "notebook_count_${section.name.lowercase()}"
-    fun group(group: NotebookGroup) = "notebook_group_${group.name.lowercase()}"
     const val WAITING = "notebook_waiting"
+    const val OPEN_INCIDENTS = "notebook_open_incidents"
 }
 
 /**
@@ -189,7 +174,10 @@ fun NotebookScreen(
     modifier: Modifier = Modifier,
     /** How many entries are waiting in the Unfiled tray. Zero shows nothing. */
     waiting: Int = 0,
+    /** How many incidents are still open. Zero shows nothing. */
+    openIncidents: Int = 0,
     onOpenUnfiled: () -> Unit = {},
+    onOpenIncidents: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -199,133 +187,170 @@ fun NotebookScreen(
         modifier = modifier.fillMaxSize(),
         color = colors.paper,
     ) {
-        LazyColumn(
-            // The tag sits on the list rather than on the surface around it, so
-            // that a caller can ask the list where one of its keyed items is.
-            // On the surface the scroll action still merged upward and looked
-            // like it worked, while the item index did not, which is how a test
-            // came to report the last two rows as missing when they were only
-            // further down.
+        Column(
+            // **A plain scrolling column rather than a lazy list**, which is
+            // not a regression. Twelve tiles and a hero is a fixed, small
+            // screen: laziness buys nothing here and costs the one thing that
+            // matters, which is that every tile exists in the tree so a test
+            // and a screen reader both reach it without a scroll dance. The
+            // trail, which is sixteen hundred rows, is still lazy.
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .testTag(NotebookTags.ROOT)
                 .padding(horizontal = Space.screenHorizontal),
         ) {
-            item {
-                Spacer(Modifier.height(Space.l))
-                Text(
-                    text = strings["notebook.title"],
-                    style = HealthTrail.type.displayL,
-                    color = colors.ink,
-                )
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["notebook.subtitle"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
-                )
-            }
+            Spacer(Modifier.height(Space.l))
+            Text(
+                text = strings["notebook.title"],
+                style = HealthTrail.type.displayL,
+                color = colors.ink,
+            )
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = strings["notebook.subtitle"],
+                style = HealthTrail.type.bodyM,
+                color = colors.ink2,
+            )
 
-            // **Present only when something is actually waiting.** It is not a
-            // thirteenth section and it never becomes one: the twelve are fixed
-            // and this is a thing waiting for the person rather than a place
-            // they filed something. When the tray is empty there is nothing to
-            // find, so there is nothing here and no empty room to walk into.
-            if (waiting > 0) {
-                item(key = "waiting") {
-                    Spacer(Modifier.height(Space.l))
-                    WaitingCard(count = waiting, onClick = onOpenUnfiled)
-                }
-            }
-
-            NotebookGroup.entries.forEach { group ->
-                val rows = group.sections.mapNotNull { bySection[it] }
-                if (rows.isEmpty()) return@forEach
-
-                item(key = "group_${group.name}") {
-                    Spacer(Modifier.height(Space.sectionGap))
-                    GroupHeader(
-                        labelKey = group.labelKey,
-                        modifier = Modifier.testTag(NotebookTags.group(group)),
-                    )
-                    Spacer(Modifier.height(Space.headerGap))
-                }
-
-                rows.forEach { row ->
-                    item(key = row.section.name) {
-                        SectionRow(row = row, onClick = { onOpen(row.section) })
-                        Spacer(Modifier.height(Space.cardGap))
+            // **The hero, and it is absent more often than it is present**, per
+            // 11.5. A notebook with nothing waiting and no open incident has
+            // nothing that needs the person right now, and saying so at display
+            // size would be an announcement about the absence of a problem.
+            // The grid simply starts higher.
+            //
+            // **Two lines at most and never three.** Two things needing
+            // attention is a fact about a notebook; three at display size is a
+            // screen shouting, and the rest are in their own sections where
+            // they already live.
+            if (waiting > 0 || openIncidents > 0) {
+                Hero(eyebrowKey = "notebook.attention") {
+                    if (waiting > 0) {
+                        HeroLine(
+                            text = strings("unfiled.waiting", "count" to waiting),
+                            onClick = onOpenUnfiled,
+                            modifier = Modifier.testTag(NotebookTags.WAITING),
+                        )
+                    }
+                    if (openIncidents > 0) {
+                        HeroLine(
+                            text = strings("today.open.incidents", "count" to openIncidents),
+                            onClick = onOpenIncidents,
+                            modifier = Modifier.testTag(NotebookTags.OPEN_INCIDENTS),
+                        )
                     }
                 }
+            } else {
+                Spacer(Modifier.height(Space.l))
             }
+
+            // **One grid, and the four group headers are gone.**
+            //
+            // **Nothing moved.** The order is still `NotebookGroup`'s, which is
+            // still `MASTER_SPEC.md` section 4.4's, so a person who learned
+            // where documents were finds them in the same place. That is what
+            // 10.8 actually protects and it is untouched.
+            //
+            // **What went is the headers, and they were a fix for a list.**
+            // Twelve rows at uniform weight read as a list of everything, so
+            // #36 grouped them, correctly. A grid is told apart by shape and
+            // position instead, which is the job the headers were doing, and
+            // four headers chopping twelve tiles into groups of three, four,
+            // three and two left a half empty row in three of the four and cost
+            // most of what the grid was worth: seven rows and four headers
+            // instead of six rows, which is barely shorter than the list it
+            // replaced. Measured on the phone against the year five fixture
+            // rather than reasoned about.
+            //
+            // **Two grids, because the template's three weights are two tile
+            // sizes plus one fill rule**, per 11.2. Forward and standing are
+            // the same size and differ by the fill on their drawing; folded is
+            // compact and sits after them, still in its own place in the order,
+            // still one tap away. Folded means quieter, never gone.
+            val ordered = NotebookGroup.entries.flatMap { group ->
+                group.sections.mapNotNull { bySection[it] }
+            }
+            val full = ordered.filter { it.emphasis != Emphasis.FOLDED }
+            val folded = ordered.filter { it.emphasis == Emphasis.FOLDED }
+
+            TileGrid(rows = full, compact = false, onOpen = onOpen)
+            if (full.isNotEmpty() && folded.isNotEmpty()) {
+                Spacer(Modifier.height(Space.s))
+            }
+            TileGrid(rows = folded, compact = true, onOpen = onOpen)
 
             // Clearance for the capture button, which overlaps the navigation
             // bar's top edge by 16dp and would otherwise sit on top of the last
-            // card. 56dp button, 16dp overhang, plus a gap so the last row is
+            // tile. 56dp button, 16dp overhang, plus a gap so the last row is
             // readable rather than merely uncovered.
-            item { Spacer(Modifier.height(Space.xxl + Space.l)) }
+            Spacer(Modifier.height(Space.xxl + Space.l))
         }
     }
 }
 
 /**
- * Something is waiting to be filed.
+ * A run of sections, as a grid.
  *
- * Uses `blaze_soft`, which section 2.2 allows as a gold tonal background for a
- * waiting-on card and which is not the accent: `blue` still owns every action
- * and the trail still owns the gold line. It carries a word as well as a color,
- * so it is never "the gold one".
+ * The row is measured to its tallest tile, so a two line name never leaves its
+ * neighbor short, and a row that is not full keeps its columns rather than
+ * letting the last tile stretch to the width of two, which would read as one
+ * section being the important one.
  */
 @Composable
-private fun WaitingCard(count: Int, onClick: () -> Unit) {
-    val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.blazeSoft)
-    val ring by focusRingAlpha(interaction)
+private fun TileGrid(
+    rows: List<SectionCount>,
+    compact: Boolean,
+    onOpen: (Repository.Section) -> Unit,
+) {
+    if (rows.isEmpty()) return
+    val columns = tileColumns(compact)
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.card)
-            .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .testTag(NotebookTags.WAITING)
-            .padding(Space.cardPadding),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = strings("unfiled.waiting", "count" to count),
-            style = HealthTrail.type.label,
-            color = colors.blazeText,
-            modifier = Modifier.weight(1f),
-        )
-        Spacer(Modifier.width(Space.sm))
-        Chevron()
+    rows.chunked(columns).forEach { row ->
+        Row(
+            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(Space.cardGap),
+        ) {
+            row.forEach { entry ->
+                SectionTile(
+                    row = entry,
+                    compact = compact,
+                    onClick = { onOpen(entry.section) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .testTag(NotebookTags.section(entry.section)),
+                )
+            }
+            // **A short last row shares the full width rather than leaving a
+            // hole.** Holding the column left a half tile of empty paper beside
+            // the last section of a group, which reads as a missing tile rather
+            // than as the end of a row. A wider tile is the same tile: same
+            // height, same drawing, same fill, and the width is the grid's to
+            // set. This is why there is no spacer here.
+        }
+        Spacer(Modifier.height(Space.cardGap))
     }
 }
 
 /**
- * One section, at one of three weights.
+ * One section, as a tile at one of three weights.
  *
- * A forward row and a standing row are the same shape at different densities. A
- * folded row is the same row collapsed: the count comes up onto the title's
- * line, the tile loses its fill, and the height drops. It is still a card, still
- * the full width, still tappable, and still exactly where it always was, because
- * folded means quieter rather than gone.
+ * **The filled drawing is what carries the hierarchy**, per D33 and 5.12, and
+ * it was tried first as a difference in ink alone: at a glance twelve rows
+ * still read as twelve identical rows, which is the defect this screen keeps
+ * being rebuilt to fix. A filled tile against an unfilled one is visible
+ * without reading anything, it costs the app no second accent, and it survives
+ * a grayscale screenshot.
  */
 @Composable
-private fun SectionRow(row: SectionCount, onClick: () -> Unit) {
+private fun SectionTile(
+    row: SectionCount,
+    compact: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val folded = row.emphasis == Emphasis.FOLDED
 
     // The emergency card keeps the alert tone at every weight. Section 2.2
     // gives `alert` to this one section, and the reference file draws its row
@@ -334,115 +359,46 @@ private fun SectionRow(row: SectionCount, onClick: () -> Unit) {
     val tint = when {
         emergency -> colors.alertText
         row.emphasis == Emphasis.FORWARD -> colors.ink
-        folded -> colors.ink3NonText
+        row.emphasis == Emphasis.FOLDED -> colors.ink3NonText
         else -> colors.ink2
     }
-    // **The filled tile is what carries the hierarchy.** It was tried first as a
-    // difference in icon ink alone and that failed on the device: at a glance
-    // twelve rows still read as twelve identical rows, which is exactly the
-    // defect this rebuild exists to fix. A filled tile against an unfilled one
-    // is visible without reading anything, and it is a fill rather than a hue,
-    // so it costs the app no second accent and survives a grayscale screenshot.
-    val tile = when {
-        folded -> Color.Transparent
+    val fill = when {
+        row.emphasis == Emphasis.FOLDED -> Color.Transparent
         emergency -> colors.alertSoft
         row.emphasis == Emphasis.FORWARD -> colors.sand
         else -> Color.Transparent
     }
-    val verticalPadding = when (row.emphasis) {
-        Emphasis.FORWARD -> Space.m
-        Emphasis.STANDING -> Space.sm
-        Emphasis.FOLDED -> Space.s
-    }
 
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-    val ring by focusRingAlpha(interaction)
+    // Composed from a message template so the plural is the catalog's problem
+    // rather than a branch in this code, and so zero reads as words rather than
+    // as a digit. One style, one color, at all three weights, so a tile's
+    // emphasis is never mistaken for a judgment about how full it is.
+    //
+    // **The emergency card is one row and counting it says nothing.** Every
+    // other section holds a list somebody adds to, so "9 items" is a fact about
+    // their notebook. A card is a single thing, and "1 item" was the shape of
+    // the table showing through onto the app's front door, which is rule 20
+    // exactly. It says whether there is anything on it instead, and it does not
+    // grade how much, per rule 13.
+    val countKey = if (emergency) "notebook.count.emergency_card" else "notebook.count"
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            // **One stop for the reader, asked for rather than relied on.**
-            //
-            // A row is a name and a count, and to somebody using a screen
-            // reader it should be one thing: "Care team, nothing yet". Without
-            // this it is two separate nodes, and whether a reader announces
-            // them as one stop or two is fallback behavior that varies by
-            // reader and by version. D54 recorded one stop, which was true of
-            // the reader it was walked with and was never asked for in code.
-            //
-            // Twelve sections at two stops each is twenty four swipes across a
-            // table of contents whose whole promise is that the places never
-            // move. #44.
-            .semantics(mergeDescendants = true) { }
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.card)
-            .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
-            .clickable(
-                interactionSource = interaction,
-                // The row's own surface is the press feedback, per section
-                // 5.14. A ripple on top of it would be a second, louder answer
-                // to the same touch.
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
+    Tile(
+        label = strings[labelKey(row.section)],
+        count = strings(countKey, "count" to row.count),
+        countTestTag = NotebookTags.count(row.section),
+        compact = compact,
+        onClick = onClick,
+        modifier = modifier,
+        icon = { tileSize, drawingSize ->
+            IconTile(
+                section = row.section,
+                tint = tint,
+                background = fill,
+                tileSize = tileSize,
+                iconSize = drawingSize,
             )
-            .testTag(NotebookTags.section(row.section))
-            .padding(horizontal = Space.cardPadding, vertical = verticalPadding),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconTile(section = row.section, tint = tint, background = tile)
-        Spacer(Modifier.width(Space.sm))
-
-        // Composed from a message template so the plural is the catalog's
-        // problem rather than a branch in this code, and so zero reads as words
-        // rather than as a digit. One style, one color, at all three weights.
-        //
-        // **The emergency card is one row and counting it says nothing.** Every
-        // other section holds a list somebody adds to, so "9 items" is a fact
-        // about their notebook. A card is a single thing, and "1 item" was the
-        // shape of the table showing through onto the app's front door, which
-        // is rule 20 exactly. It says whether there is anything on it instead,
-        // and it does not grade how much, per rule 13.
-        val countKey = if (row.section == Repository.Section.EMERGENCY_CARD) {
-            "notebook.count.emergency_card"
-        } else {
-            "notebook.count"
-        }
-        val count = @Composable {
-            Text(
-                text = strings(countKey, "count" to row.count),
-                style = HealthTrail.type.mono,
-                color = colors.ink3Text,
-                modifier = Modifier.testTag(NotebookTags.count(row.section)),
-            )
-        }
-
-        if (folded) {
-            Text(
-                text = strings[labelKey(row.section)],
-                style = HealthTrail.type.label,
-                color = colors.ink,
-                modifier = Modifier.weight(1f),
-            )
-            Spacer(Modifier.width(Space.s))
-            count()
-        } else {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = strings[labelKey(row.section)],
-                    style = HealthTrail.type.displayS,
-                    color = colors.ink,
-                )
-                Spacer(Modifier.height(Space.xs))
-                count()
-            }
-        }
-
-        Spacer(Modifier.width(Space.sm))
-        Chevron()
-    }
+        },
+    )
 }
 
 internal fun labelKey(section: Repository.Section): String = when (section) {
