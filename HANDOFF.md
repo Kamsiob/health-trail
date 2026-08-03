@@ -275,6 +275,12 @@ seeded notebook reporting nothing at all.
 
 8. **The final translation good faith check**, deliberately last, and **language access after everything above**, per section 5.
 
+### `main` is current again, and there is now a rule for the end of an increment
+
+Tonight ran as a chain of branches, each cut from the last, and none of them was ever merged. `main` sat at `d2ad004` thirty six commits back: the commit this session started from. Everything was pushed and nothing was at risk, which is why it went unnoticed for a whole night. A fresh session clones `main`, reads `HANDOFF.md`, and would have found a file describing a night that had not happened.
+
+`origin/main` is fast forwarded and **D69 adds the missing half of D48**: an increment ends when `main` contains it, and `git rev-list --count origin/main..HEAD` reading zero is the check, the same way `git branch --show-current` is the check at the other end.
+
 ### What the light theme pass has found so far
 
 The pass is running now and it is not only producing captures. Three things on screens that had already been walked in dark:

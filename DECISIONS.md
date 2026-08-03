@@ -1439,6 +1439,20 @@ It reported the notebook's twelve rows as **twenty four stops**, "Care team" the
 
 **The phone was restored exactly**, per rule 19: the KDE Connect string back in `enabled_accessibility_services`, `accessibility_enabled` at 1, `touch_exploration_enabled` at 0, `font_scale` at 1.0, `animator_duration_scale` deleted rather than set. A restore script was written to `/tmp` **before** TalkBack was switched on, so the phone would come back even if this session ended unexpectedly, which is the failure D43 was right to worry about.
 
+### D69. D48 said where to start an increment and never said where to finish one, so `main` sat thirty six commits behind
+
+**Date:** 2026-08-03. **Decided by:** the session.
+
+Every increment tonight branched first, exactly as D48 requires, and every one was committed and pushed. **Nothing was ever merged.** The night ran as a chain of branches, each cut from the last, and `main` stayed at `d2ad004`, the commit this session started from. Thirty six commits, twelve screens, and every decision in this file were on a branch pointer nobody had been told the name of.
+
+**The work was never at risk and that is precisely why it went unnoticed.** Rule 7 says commit and push after every increment because git is the recovery mechanism if a session loses its memory, and by that letter the rule was kept: everything was on the remote. But a fresh session does not know which of the eleven branches to look at. It clones, it reads `HANDOFF.md`, and on `main` that file described a night that had not happened. **"The repository is the record" is only true of the branch a reader lands on.**
+
+**The gap is in the rule, not in the discipline.** D48 was written after work reached `main` by accident, and its fix was mechanical and correct: branch as the first action, before a file is touched. It made the start of an increment impossible to get wrong and said nothing at all about the end of one. A rule that only guards one edge leaves the other unguarded, and the failure it produces is the quiet kind, because nothing goes red.
+
+**What was done:** `origin/main` fast forwarded to `9f39d54`. Verified as a fast forward first, `git merge-base --is-ancestor origin/main HEAD` and zero commits on `main` not already in `HEAD`, so no history was rewritten and nothing rule 6 forbids was needed.
+
+**The rule this adds to D48:** an increment ends when `main` contains it. Push the branch, then push it to `main`, then check `git rev-list --count origin/main..HEAD` reads zero before starting the next item. **That count is the honest question**, in the same way `git branch --show-current` is the honest question at the other end, and it costs one command.
+
 
 ---
 
