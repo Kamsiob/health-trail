@@ -2911,6 +2911,92 @@ class Repository private constructor(
             }
         }
 
+    /**
+     * What happened while they were in one place.
+     *
+     * `MASTER_SPEC.md` 4.6: inside a chapter, its dates, why the stay began,
+     * its incidents, its documents, and any project that began there.
+     *
+     * **A chapter is the app's unit of "where", and it could not be opened.**
+     * The chapters screen drew the journey and every stop on it was a dead end,
+     * which is the shape #46 exists to remove.
+     */
+    data class ChapterDetail(
+        val chapter: Chapter,
+        val entries: List<TrailEntry>,
+        val incidents: List<Incident>,
+        val documents: List<Document>,
+    )
+
+    /**
+     * The documents filed against one chapter.
+     *
+     * A query rather than a filter over every document, because `Document`
+     * carries no chapter of its own and adding one to the model to make a
+     * filter possible would be shaping the read model around one screen.
+     */
+    private fun documentsInChapter(
+        database: net.zetetic.database.sqlcipher.SQLiteDatabase,
+        chapterId: String,
+    ): List<Document> = database.rawQuery(
+        "SELECT id, title, category, original_location, notes, received_edtf " +
+            "FROM live_document WHERE chapter_id = ? ORDER BY created_at DESC",
+        arrayOf(chapterId),
+    ).use { cursor ->
+        buildList {
+            while (cursor.moveToNext()) {
+                add(
+                    Document(
+                        id = cursor.getString(0),
+                        title = cursor.getString(1) ?: "",
+                        category = cursor.getString(2),
+                        originalLocation = cursor.getString(3),
+                        notes = cursor.getString(4),
+                        receivedEdtf = cursor.getString(5),
+                        sha256 = null,
+                        byteSize = null,
+                    ),
+                )
+            }
+        }
+    }
+
+    suspend fun chapterDetail(subjectId: String, chapterId: String): ChapterDetail? =
+        withContext(Dispatchers.IO) {
+            val chapter = chapters(subjectId).firstOrNull { it.id == chapterId }
+                ?: return@withContext null
+            val database = db().database
+
+            val entries = mutableListOf<TrailEntry>()
+            database.rawQuery(
+                "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, " +
+                    "is_unfiled FROM live_entry WHERE chapter_id = ? " +
+                    "ORDER BY coalesce(occurred_start, created_at) DESC",
+                arrayOf(chapterId),
+            ).use { cursor ->
+                while (cursor.moveToNext()) {
+                    entries += TrailEntry(
+                        id = cursor.getString(0),
+                        kind = cursor.getString(1),
+                        title = cursor.getString(2),
+                        body = cursor.getString(3),
+                        occurredEdtf = cursor.getString(4),
+                        occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                        createdAt = cursor.getLong(6),
+                        isUnfiled = cursor.getInt(7) == 1,
+                        threads = emptyList(),
+                    )
+                }
+            }
+
+            ChapterDetail(
+                chapter = chapter,
+                entries = entries,
+                incidents = incidents(subjectId).filter { it.chapterName == chapter.name },
+                documents = documentsInChapter(database, chapterId),
+            )
+        }
+
     companion object {
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"

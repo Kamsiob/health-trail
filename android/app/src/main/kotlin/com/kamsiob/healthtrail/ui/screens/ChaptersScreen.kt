@@ -15,6 +15,12 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.semantics.semantics
+import com.kamsiob.healthtrail.ui.components.pressedSurface
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -50,6 +56,8 @@ object ChapterTags {
  */
 @Composable
 fun ChaptersScreen(
+    /** Opens the chapter itself. Every stop on the journey was a dead end. */
+    onOpen: (Repository.Chapter) -> Unit,
     chapters: List<Repository.Chapter>,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -82,6 +90,7 @@ fun ChaptersScreen(
                     // none of them would be. `DESIGN.md` section 5.2.1.
                     ChapterSpineRow(
                         chapter = chapter,
+                        onOpen = { onOpen(chapter) },
                         state = Waypoint.MILESTONE,
                         continuesAbove = index > 0,
                         continuesBelow = index < current.lastIndex || earlier.isNotEmpty(),
@@ -114,6 +123,7 @@ fun ChaptersScreen(
                 item(key = chapter.id) {
                     ChapterSpineRow(
                         chapter = chapter,
+                        onOpen = { onOpen(chapter) },
                         state = Waypoint.HAPPENED,
                         continuesAbove = true,
                         continuesBelow = index < earlier.lastIndex,
@@ -139,6 +149,7 @@ fun ChaptersScreen(
 @Composable
 private fun ChapterSpineRow(
     chapter: Repository.Chapter,
+    onOpen: () -> Unit,
     state: Waypoint,
     continuesAbove: Boolean,
     continuesBelow: Boolean,
@@ -153,22 +164,31 @@ private fun ChapterSpineRow(
         dash = null,
     ) {
         Column {
-            ChapterRow(chapter)
+            ChapterRow(chapter, onOpen)
             Spacer(Modifier.height(Space.cardGap))
         }
     }
 }
 
 @Composable
-private fun ChapterRow(chapter: Repository.Chapter) {
+private fun ChapterRow(chapter: Repository.Chapter, onOpen: () -> Unit) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.card)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .semantics(mergeDescendants = true) { }
             .clip(Radius.card)
-            .background(colors.card)
+            .background(surface)
+            .removableByLongPress(
+                label = strings["remove.hint"],
+                onLongPress = {},
+                onTap = onOpen,
+                interactionSource = interaction,
+            )
             .testTag(ChapterTags.row(chapter.id))
             .padding(Space.cardPadding),
     ) {

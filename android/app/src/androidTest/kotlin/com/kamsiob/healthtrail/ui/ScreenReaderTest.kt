@@ -511,6 +511,7 @@ class ScreenReaderTest {
                     // day one and the row most likely to announce a bare zero.
                     Repository.ThreadWithCount(Repository.CareThread("t2", "Discharge planning", 1), 0),
                 ),
+                onOpen = {},
                 onBack = {},
             )
         }
@@ -543,6 +544,7 @@ class ScreenReaderTest {
                     // No dates at all, which is what setup creates.
                     Repository.Chapter("c2", "Home", null, null, null, "2026-07-01"),
                 ),
+                onOpen = {},
                 onBack = {},
             )
         }

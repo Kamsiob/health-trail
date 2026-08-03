@@ -370,6 +370,14 @@ It shares as a document with the questions numbered, because that is the order t
 
 **An entry's thread link now opens the thread rather than the section it is in**, which is the difference between a link and a signpost.
 
+**A chapter can be opened.** `MASTER_SPEC.md` 4.6: inside a chapter, its dates, why the stay began, its incidents, its documents. **A chapter is this app's unit of "where", and the chapters screen drew the journey with every stop on it a dead end.**
+
+Incidents come first, because a stay with something unresolved in it is a stay defined by that. The line is continuous, per 5.2.3, because a chapter is the person's actual path rather than a filter over the record.
+
+**An entry's chapter link opens the chapter itself** rather than the list of chapters, which is the same correction the thread link got.
+
+**Five screens have now learned that a tap opens the thing itself**: the trail row, the care team row, the appointment row, the thread row, and the chapter row. Each previously opened either nothing or the form for correcting itself.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -621,6 +629,7 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| One chapter, and what happened there | 2026-08-03 | #139 | not yet |
 | One care thread, and everything on it | 2026-08-03 | #138 | not yet |
 | An appointment's prep sheet | 2026-08-03 | #137 | not yet |
 | One person, and everything that involved them | 2026-08-03 | #136 | not yet |

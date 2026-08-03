@@ -43,6 +43,7 @@ import com.kamsiob.healthtrail.ui.components.Share
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
+import com.kamsiob.healthtrail.ui.screens.ChapterScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
@@ -271,6 +272,10 @@ fun NotebookShell(
 
     /** The care thread being read, and what is on it. */
     var openThread by remember { mutableStateOf<Repository.CareThread?>(null) }
+
+    /** The chapter being read, and what happened while they were there. */
+    var openChapter by remember { mutableStateOf<Repository.Chapter?>(null) }
+    var chapterDetail by remember { mutableStateOf<Repository.ChapterDetail?>(null) }
     var threadEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
     var prep by remember { mutableStateOf<Repository.Prep?>(null) }
     var personEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
@@ -475,6 +480,7 @@ fun NotebookShell(
     BackHandler(enabled = openPerson != null) { openPerson = null }
     BackHandler(enabled = openPrepFor != null) { openPrepFor = null }
     BackHandler(enabled = openThread != null) { openThread = null }
+    BackHandler(enabled = openChapter != null) { openChapter = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -1189,6 +1195,7 @@ fun NotebookShell(
                 )
 
                 Repository.Section.CHAPTERS -> ChaptersScreen(
+                    onOpen = { openChapter = it },
                     chapters = chapters,
                     onBack = { openSection = null },
                 )
@@ -1322,6 +1329,26 @@ fun NotebookShell(
         // row appeared to do nothing at all: the entry screen was there and
         // the trail was painted over it. These are overlays in one Box, so
         // order is z-order, and the thing opened last has to be declared last.
+        openChapter?.let { chapter ->
+            LaunchedEffect(chapter.id, revision) {
+                val subjectId = repository.activeSubject()?.id
+                chapterDetail = subjectId?.let { repository.chapterDetail(it, chapter.id) }
+                if (chapterDetail == null) openChapter = null
+            }
+            chapterDetail?.takeIf { it.chapter.id == chapter.id }?.let { detail ->
+                ChapterScreen(
+                    detail = detail,
+                    onOpenEntry = { openChapter = null; openEntry = it.id },
+                    onOpenIncident = {
+                        openChapter = null
+                        openIncident = it
+                        incidentsOpen = true
+                    },
+                    onBack = { openChapter = null },
+                )
+            }
+        }
+
         openThread?.let { thread ->
             LaunchedEffect(thread.id, revision) {
                 threadEntries = repository.entriesForThread(thread.id)
@@ -1392,8 +1419,14 @@ fun NotebookShell(
                         openThread = thread
                     },
                     onOpenChapter = {
+                        // The chapter itself rather than the list of them,
+                        // which is the difference between a link and a
+                        // signpost. Rule 18.
                         openEntry = null
-                        openSection = Repository.Section.CHAPTERS
+                        openChapter = chapters.firstOrNull {
+                            it.id == detail.chapterId
+                        }
+                        if (openChapter == null) openSection = Repository.Section.CHAPTERS
                     },
                     onOpenIncident = {
                         openEntry = null
