@@ -127,6 +127,31 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
+### Start here. Written 2026-08-03 at 04:20, at the end of the overnight run, for a session with no memory of it
+
+**Read this section and "Where to pick up" below, then start. Everything else in this file is context you can reach for when you need it.**
+
+`main` is current and green. Continuous integration passes on it. Nothing is uncommitted and no branch is ahead of `main`: the last commit is the navigation bar icons. **D69 is the rule that made that true and it is new: an increment ends when `main` contains it, and `git rev-list --count origin/main..HEAD` reading zero is the check.** The whole of the previous night sat on unmerged branches because D48 only guarded the start of an increment.
+
+**What this run was about, in one sentence:** the fixture generator learned to write the tables the app had grown into, and almost everything below was found by looking at a screen with real data on it for the first time.
+
+**The eight defects that came out of that**, all fixed, all on `main`:
+
+1. **The app crashed** opening any medication whose history held a `noted` event. No catalog defined the key and it was built by interpolating a database column.
+2. **The medication picker wrote a word the database rejects**, `restarted` where the schema says `resumed`. Three layers agreed with each other and disagreed with the CHECK constraint.
+3. **A stopped medication claimed to be on the emergency card**, which is the one claim in this app whose cost is outside it.
+4. **An untitled entry led with a stock phrase** at display size while the sentence the person wrote sat below it in body text. Most entries are untitled.
+5. **Removing an untitled entry asked "remove what?" with a blank.**
+6. **Records were named with the button that made them**: "Log a visit" appeared wherever an untitled visit was listed, an imperative sitting where a description belongs.
+7. **Waypoints drifted out of line with their rows** on any card shorter than the trail's.
+8. **The spine stopped mirroring in Arabic** the moment its node moved into a canvas, and it looked correct.
+
+**The phone is clean.** `font_scale` 1.0, `animator_duration_scale` deleted, app locale back to `en-US`, the app installed and holding a year-five fixture, which is generated data and not the owner's. `/tmp/restore-a11y.sh` exists if a setting is ever left changed.
+
+**One thing needs the owner and only the owner: B5**, the destructive command guard, in the BLOCKED section of `DECISIONS.md`. It has never fired. Rule 6 is being kept by hand.
+
+---
+
 **Rewritten 2026-08-02 after the long run that opened the notebook.** What is below the horizontal rule is the older export work and it is still accurate; what is here is what changed.
 
 ### What happened on the night of 2026-08-01 into 08-02
@@ -257,23 +282,29 @@ seeded notebook reporting nothing at all.
 
 ### Where to pick up
 
-**Rewritten 2026-08-03. Everything above this line describes what is true; this is what is next.**
+**Rewritten 2026-08-03 at the end of the overnight run.** In order, and each one is a whole increment.
 
-1. **The design review queue is the biggest thing waiting, and it waits on the owner rather than on work.** Thirty two `needs-design-review` issues now, ten of them opened tonight for screens that did not exist yesterday: search **#130**, incidents **#133**, one entry **#134**, one person **#136**, the prep sheet **#137**, one care thread **#138**, one chapter **#139**, one medication **#140**. Each carries a device screenshot and each names what it still owes.
+1. **The design review queue is still the biggest thing waiting, and it waits on the owner rather than on work.** Thirty two `needs-design-review` issues. Ten were opened for screens that did not exist two days ago, and **#134, #136, #137 and #140 were each updated tonight** with what real data changed about them. Nothing here is blocked on code.
 
-2. **#131, the other half of search.** Scoped search inside each section with a chip saying what is being searched and one tap to widen, the assembly view that gathers everything connected to a result into one exportable document, date range search against imprecise dates, and reconstructing a single day. The universal half is built and walked.
+2. **The three connections the spec promises and the schema cannot hold: #141.** An incident knows its project, a bill knows the call where it was disputed, a bill knows the standing instruction it broke. All three are additive nullable columns; what needs deciding is whether each is a column or a link table, and getting that wrong costs a second migration. **This is a decision, not a task.**
 
-3. **#135, a situation template applies its threads and nothing else.** The ten item first-days checklist and the six document slots are parsed and unread, and the checklist is the highest value content in the catalog. Found walking P2.
+3. **P7's two unwalked targets**, which are the interesting half: the export of a full year-five notebook completing, showing progress, being cancellable and surviving being backgrounded; and memory across twenty minutes of navigation. The fixture and the passphrase are in section 8. **Everything needed to walk them is on the phone already.**
 
-4. **#44's remaining half, which needs ears.** How a label sounds, where pauses land, whether a row is bearable at higher verbosity, and Arabic with the reader on. The countable half is closed by `ReaderStopsTest`.
+4. **A benchmark that can actually see a 400ms target.** P7 asks for search under 400ms and the answer tonight was "faster than adb can observe", because `uiautomator dump` costs 2,770ms on this notebook and `screencap` costs 985ms. An instrumented test timing `Repository.search` with `System.nanoTime` would give a number that holds in continuous integration. Until it exists, that target has no evidence behind it either way.
 
-5. **The personas, now that they are walkable.** P1, P2, and part of P4 are recorded in section 10 with what they found. P3 and P5 through P13 are not, and `tools/fixtures/pack.py` means every horizon can be put on the phone in about a minute.
+5. **#131, the other half of search**: scoped search per section, the assembly view, date range search against imprecise dates, reconstructing a day. **The assembly view is also P7's untestable target**, so this closes two things.
 
-6. **The remaining "links both ways" gaps**, each named on its own issue: `person_chapter` and a project's `chapter_id` have no writer, so a chapter cannot show its archived care team or the projects that began there. `medication_flag` has no reader or writer.
+6. **#135, a situation template applies its threads and nothing else.** The ten item first-days checklist and the six document slots are parsed and unread, and the checklist is the highest value content in the catalog.
 
-7. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? Today has search at the top and a real digest now, which it did not when the question was asked.
+7. **The personas still unwalked: P3, P5, P6, P8 through P13.** All of them are reachable now that the generator writes people, appointments, questions, medications and an emergency card. **P9 is the cheapest and the most revealing**: it needs no device at all, only reading an export as somebody who has never seen the app.
 
-8. **The final translation good faith check**, deliberately last, and **language access after everything above**, per section 5.
+8. **#44's remaining half, which needs ears.** How a label sounds, where pauses land, whether a row is bearable at higher verbosity, and Arabic with the reader running.
+
+9. **The fourteen tables that still have no writer**, of which `person_chapter`, `custom_template`, `cost_sheet` and `cost_entry` matter most. Each is a screen that has never met generated data, which is exactly the condition that produced tonight's eight defects.
+
+10. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? P7 measured cold launch to the notebook because that is where the app opens.
+
+11. **The final translation good faith check**, deliberately last, and **language access after everything above**, per section 5.
 
 ### `main` is current again, and there is now a rule for the end of an increment
 
@@ -644,6 +675,24 @@ That is Part Two's rule almost word for word: anywhere the set of possible answe
 **Not walked yet:** P3, and P5 through P13. P10 through P12 need #62, since the template catalog is English only and a language persona against English content tests nothing.
 
 ---
+
+### P7, year five, the long record. Walked 2026-08-03 on the Pixel, fixture: `year5` seed 5, restored through the app's own restore screen
+
+**The fixture is finally the one P7 describes**, which it was not before tonight: 1,630 entries, 9 chapters, 7 care threads, 23 appointments, 90 questions, 8 medications with 75 events, 40 documents with attachments, 15 milestones, 10 people and 562 entry-person links.
+
+| Target | Result |
+|---|---|
+| Cold launch to interactive, under 1.5s | **Pass, about 0.9s.** Still loading at 0.8s, drawn at 1.0s, measured by capturing the screen at fixed delays. Note this is **the notebook, not Today**: the app opens on the notebook, which is what #125 asks the owner about |
+| Universal search, first results under 400ms | **Pass, though not measured to the millisecond.** Results were already rendered by the time a capture could be issued, which is about 1.1s after typing began and mostly the tools' own latency. The honest statement is "faster than adb can observe", and a real number needs a benchmark rather than a stopwatch |
+| Trail scroll from now back to year one: no dropped frames, no placeholders, no jumps | **Pass.** 3,026 frames over the full scroll to the end of the record, **0.23% janky, 99th percentile 14ms**. An earlier shorter run measured 0.48% at p99 16ms. No loading placeholder was ever visible and the position never jumped. The scroll ends on the undated group, which is where the ordering puts entries whose date nobody knows |
+| Year scrubber jump to any year, under 300ms | **Not testable. There is no year scrubber**, which is the finding rather than a pass or a fail |
+| Assembled collection for an item with 30 related records, under 1s | **Not testable. The assembly view is #131** and is not built |
+| Export: completes, shows progress, cancellable, survives backgrounding | **Not walked.** Ran out of session |
+| Memory: no growth across 20 minutes of navigation | **Not walked.** Ran out of session |
+
+**What P7 says to watch for, and what was seen.** Nothing loads the whole trail to show ten rows: the scroll is flat across 1,630 entries and the frame numbers say so. Chapter and thread filters are in the query rather than in application code, which the live-view check already enforces. The PDF export and attachment scanning were not reached.
+
+**The tooling lesson, which is the same one as four times earlier tonight.** `uiautomator dump` costs about 2,770ms on this notebook, so the first attempt to time the launch measured the dump and reported 2,770ms. `screencap` costs about 985ms, also too slow. And a pixel detector written to spot the drawn screen sampled a band that is empty even when the screen is drawn, so it reported "still loading" at five seconds against a screenshot that plainly showed the notebook. **Three instruments in a row reported on something other than what they were asked about**, which is D68's rule arriving for the fifth time in one night: distrust a negative result from a tool that cannot tell you what it did not examine.
 
 ## 11. Open questions
 
