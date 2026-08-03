@@ -93,6 +93,20 @@ fun ChaptersScreen(
         if (earlier.isNotEmpty()) {
             item {
                 Spacer(Modifier.height(Space.s))
+                // **"Other places" rather than "Before that."**
+                //
+                // A chapter is current when it has no end date, so a stay that
+                // began in December and is still running sits above an
+                // overnight trip to the emergency department in June, and
+                // calling that trip "before that" is the app stating an order
+                // the record contradicts. Seen with a month six fixture, where
+                // exactly that pair occurs.
+                //
+                // A person leaves a place and comes back, goes to hospital for
+                // a night and returns, or moves between a facility and home
+                // repeatedly. The heading has to be true in all of those, so it
+                // names the group rather than sequencing it, and the dates on
+                // each row carry the sequence.
                 GroupHeader(labelKey = "chapters.earlier")
                 Spacer(Modifier.height(Space.headerGap))
             }
