@@ -539,6 +539,10 @@ The same shape as the hook defect in D49: configuration read once at startup, ed
 - **`adb` is not on the PATH.** It is at `/home/Kamsiob/Android/Sdk/platform-tools/adb`. `tools/screenshot.sh` resolves it itself.
 - **The working directory contains a space and two leading dashes.** Quote every path.
 
+**Walking the app.** `tools/walk.sh see` prints every piece of text on screen, in order, by asking the semantics tree, which is what a screen reader walks. `tools/walk.sh tap "Medications"` taps the first node matching text or content description and prints what it tapped, so a walk that goes wrong says so. `tools/walk.sh fields` lists the editable fields with tap coordinates. **These lived in a session scratchpad for two nights and were rebuilt from scratch each time**; they are in the repository now. A dump costs about 2.7 seconds on a five year notebook, which is fine for walking and useless for timing, per #142.
+
+**Seeding a notebook.** `tools/seed.sh month6 6 walk-month-six` generates, packs, pushes, clears the app and walks the restore screen. `tools/seed.sh year5 5 walk-year-five` for the long record. It goes in through the app's own restore path deliberately, per D61: a fixture that arrives any other way has never been through the importer.
+
 **Screenshots.** `tools/screenshot.sh <name>` writes `docs/screenshots/<name>-<theme>.png`. It refuses to capture unless the app is the focused window, checked before and after, because this is the owner's daily driver phone. It reads the theme from the device and refuses an argument that disagrees, per D31. Do not pass a theme. **It also switches heads-up notifications off for the duration and restores them through a trap**, because focus is not enough: a heads-up notification never takes focus, and one put the owner's phone number and a contact photo into a capture on 2026-08-01. D53. **Look at every image before committing it.** The script is a control and it is not the last one.
 
 **Driving the app by hand over adb.** `adb shell uiautomator dump /sdcard/w.xml`, then tap the center of a node's bounds. Matching on visible text is the simplest selector and it works.

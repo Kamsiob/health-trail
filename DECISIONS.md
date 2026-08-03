@@ -1454,6 +1454,30 @@ Every increment tonight branched first, exactly as D48 requires, and every one w
 **The rule this adds to D48:** an increment ends when `main` contains it. Push the branch, then push it to `main`, then check `git rev-list --count origin/main..HEAD` reads zero before starting the next item. **That count is the honest question**, in the same way `git branch --show-current` is the honest question at the other end, and it costs one command.
 
 
+### D70. A screen that has never met generated data is a screen with an undiscovered defect in it
+
+**Date:** 2026-08-03. **Decided by:** the session, from eight defects in one night.
+
+The fixture generator was written when the app had four working sections and it kept writing those four. It wrote entries, chapters, threads, measurements, milestones, incidents, bills, instructions, projects and documents. It never wrote people beyond a single one-name edge case, and never wrote appointments, questions, medications, medication events, entry-person links, or the emergency card.
+
+So three of the twelve notebook sections opened empty from a seed, and **every screen behind them had only ever been seen with data typed in by hand, five or six rows at a time, by the person who had just written the screen.**
+
+**Teaching the generator those tables took about an hour and immediately produced six defects**, on screens that were already built, already reviewed, and already had passing tests:
+
+- The app **crashed** on a medication event kind no catalog defined, because the key was interpolated from a database column and `Strings.resolve` throws.
+- The medication picker offered `restarted` where the schema's CHECK constraint says `resumed`, so that path would have failed on write. **Three layers agreed with each other and disagreed with the database.**
+- A stopped medication claimed to be on the emergency card, which the card itself had always handled correctly.
+- Waypoints drifted out of line with their rows, visible only where a card with an eyebrow and a card without one sit next to each other.
+- An untitled entry led with a stock phrase, which is the ordinary case rather than the edge case.
+- A record was named with the imperative on the button that made it.
+
+**None of them was visible in the code and none needed new code to find.** They needed a hundred rows that somebody else's hand had written.
+
+**The rule this sets.** Before a screen is called done, it must have been opened against generated data at a horizon where its section is full. **A section with no fixture writer is not verified**, whatever its tests say, and saying so is more honest than a green suite implying otherwise. `#143` lists the fourteen tables still unwritten, ordered by how much screen each one unlocks.
+
+**The corollary, which cost its own time tonight.** A fixture is a claim about what real data looks like, and a wrong claim makes a working screen look broken. A role chosen at random for each question put the billing office in charge of the window bed. Every appointment landed inside the history, so the "coming up" half of a screen was empty at every horizon and the prep sheet somebody actually opens could not be reached at all. `scaled()` was applied to a care team and a medication list, which are a roster rather than a stream: somebody on seven medications is on seven medications on her first day. **Getting the shape wrong wastes the run twice**, once looking for a bug that is not there and once fixing the fixture.
+
+
 ---
 
 ## BLOCKED
