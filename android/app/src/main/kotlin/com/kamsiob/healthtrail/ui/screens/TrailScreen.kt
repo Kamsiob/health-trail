@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -46,6 +47,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.RouteDash
+import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
@@ -383,7 +385,26 @@ private fun TrailRow(
 
         entry.body?.takeIf { it.isNotBlank() }?.let { body ->
             Spacer(Modifier.height(Space.xs))
-            Text(text = body, style = HealthTrail.type.bodyM, color = colors.ink2)
+            // **Clamped, and it could not be until tonight.**
+            //
+            // A note has no length limit and should not have one: somebody
+            // writing down what a nurse said at 2am writes as much as they
+            // need. Rendered whole in the list, one such note made a single
+            // row taller than several screens, and the trail stopped being a
+            // list of what happened. Seen with a month six fixture, where the
+            // generator writes a deliberately enormous entry for exactly this.
+            //
+            // This was the right answer only once a row could be opened. Until
+            // the entry screen landed, clamping here would have hidden text
+            // with nowhere to read it, which is the truncation rule 11 forbids.
+            // Now the full note is one tap away and the list can be a list.
+            Text(
+                text = body,
+                style = HealthTrail.type.bodyM,
+                color = colors.ink2,
+                maxLines = TRAIL_BODY_LINES,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
 
         if (entry.threads.isNotEmpty()) {
@@ -468,13 +489,13 @@ private fun ThreadTrace(threads: List<Repository.CareThread>) {
     Column {
         for (thread in threads) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(Space.s)
-                        .clip(CircleShape)
-                        .background(
-                            colors.threadRoutes[thread.colorIndex % colors.threadRoutes.size],
-                        ),
+                // The thread's route rather than a dot, per 5.2.2, so it is
+                // recognizably the same thread wherever it appears.
+                RouteSwatch(
+                    color = colors.threadRoutes[
+                        thread.colorIndex % colors.threadRoutes.size
+                    ],
+                    index = thread.colorIndex,
                 )
                 Spacer(Modifier.width(Space.s))
                 Text(text = thread.label, style = HealthTrail.type.bodyS, color = colors.ink2)
@@ -498,3 +519,11 @@ internal fun kindLabelKey(kind: String): String = when (kind) {
     "document" -> "capture.document"
     else -> "capture.title"
 }
+
+/**
+ * How much of a note the trail shows before the row is opened.
+ *
+ * Three, matching a search result, so a person who has learned one row has
+ * learned the other. `DESIGN.md` 10.8 on typographic rhythm.
+ */
+private const val TRAIL_BODY_LINES = 3

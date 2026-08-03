@@ -174,6 +174,47 @@ fun WaypointDot(
 }
 
 /**
+ * A short piece of a thread's route, as the thread's own identity.
+ *
+ * **The color and the dash together**, per section 5.2.2, never the color
+ * alone. A plain dot is what the care threads screen, the trail, and the entry
+ * screen each carried independently, and it is the reason two threads that
+ * landed on similar colors were indistinguishable in grayscale, to a colorblind
+ * reader, and on a phone in sunlight.
+ *
+ * Decorative: the thread's name always sits beside it, so this carries no
+ * content description.
+ */
+@Composable
+fun RouteSwatch(
+    color: Color,
+    /** The thread's creation order, which is what picks its dash. */
+    index: Int,
+    modifier: Modifier = Modifier,
+) {
+    val dash = RouteDash.forIndex(index)
+    Canvas(
+        modifier = modifier
+            // **Wide enough to read as a pattern rather than as a mark.** At
+            // the node's own width only two dashes fit, and two dashes is a
+            // dash pair, not a route: the whole point is that the rhythm is
+            // recognizable at a glance beside a name.
+            .width(Trail.swatchWidth)
+            .height(Trail.nodeSize)
+            .clearAndSetSemantics { },
+    ) {
+        drawLine(
+            color = color,
+            start = Offset(0f, size.height / 2),
+            end = Offset(size.width, size.height / 2),
+            strokeWidth = Trail.strokeWidth.toPx(),
+            cap = dash.cap,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash.on.toPx(), dash.off.toPx())),
+        )
+    }
+}
+
+/**
  * A row on a spine: the line, a waypoint on it, and content to the inline end.
  *
  * **A chapter list, an incident thread, a milestone arc, and a medication's

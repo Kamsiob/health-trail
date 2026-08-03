@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.RouteDash
+import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -135,12 +136,9 @@ private fun ThreadRow(row: Repository.ThreadWithCount) {
             .padding(Space.cardPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .size(Space.sm)
-                .clip(CircleShape)
-                .background(route),
-        )
+        // The thread's route rather than a dot, per 5.2.2, so the same thread
+        // looks the same here, on the trail, and on an entry.
+        RouteSwatch(color = route, index = row.thread.colorIndex)
         Spacer(Modifier.width(Space.sm))
         Column(modifier = Modifier.weight(1f)) {
             Text(

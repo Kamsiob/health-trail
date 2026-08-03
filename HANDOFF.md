@@ -326,6 +326,14 @@ The entry names where it sits and each of them opens. A thread is named by **its
 
 **A month six fixture restores faithfully**: 164 trail entries, 2 chapters, 2 care threads, 2 incidents, 6 bills, 5 projects, 3 standing instructions, 4 documents, and 6 entries waiting in the tray, every count matching the source database exactly.
 
+**Six months of real data found three things in twenty minutes**, which is the argument for the fixture work above.
+
+**One note made a trail row taller than several screens.** A note has no length limit and should not have one, and rendered whole in a list it stops the list being a list. **The clamp was only correct once a row could be opened**, which happened earlier the same night: before that, clamping would have hidden text with nowhere to read it, which is the truncation rule 11 forbids. Three lines now, matching a search result, with the whole note one tap away.
+
+**A thread was still a dot in three places.** The care threads screen, the trail row, and the entry screen each drew their own, and a dot is the color alone, which is exactly what 5.2.2 forbids. One `RouteSwatch` now, 28dp so four dashes of the widest pattern fit, and two threads that land on similar colors are told apart at a glance.
+
+**An incident with no thread read as "0 things written down"**, which is true and reads as broken, since the incident is itself a thing written down.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.

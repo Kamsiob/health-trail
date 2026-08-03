@@ -75,6 +75,14 @@ object Trail {
     /** Ring in the current background color, so the node sits on the line rather than beside it. */
     val nodeRing: Dp = 3.dp
 
+    /**
+     * How much route a swatch shows beside a thread's name.
+     *
+     * Enough for four dashes of the widest pattern, so the rhythm is
+     * recognizable rather than reading as a mark. Section 5.2.2.
+     */
+    val swatchWidth: Dp = 28.dp
+
     /** An upcoming waypoint is hollow at the same 12dp, so it is not a larger thing. */
     val hollowStroke: Dp = 2.dp
 

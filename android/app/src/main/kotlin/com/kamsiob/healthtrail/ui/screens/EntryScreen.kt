@@ -28,7 +28,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.RouteDash
+import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
@@ -188,34 +188,6 @@ fun EntryScreen(
             )
             Spacer(Modifier.height(Space.l))
         }
-    }
-}
-
-/**
- * A short piece of a thread's route, drawn as the thread's own identity.
- *
- * **The color and the dash together**, per 5.2.2, never the color alone. A dot
- * would be the same defect the care threads screen carried until tonight: two
- * threads on similar colors indistinguishable in grayscale.
- */
-@Composable
-private fun RouteSwatch(color: androidx.compose.ui.graphics.Color, index: Int) {
-    val dash = RouteDash.forIndex(index)
-    androidx.compose.foundation.Canvas(
-        modifier = Modifier
-            .width(Trail.nodeSize + Trail.nodeRing * 2)
-            .height(Trail.nodeSize + Trail.nodeRing * 2),
-    ) {
-        drawLine(
-            color = color,
-            start = androidx.compose.ui.geometry.Offset(0f, size.height / 2),
-            end = androidx.compose.ui.geometry.Offset(size.width, size.height / 2),
-            strokeWidth = Trail.strokeWidth.toPx(),
-            cap = dash.cap,
-            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
-                floatArrayOf(dash.on.toPx(), dash.off.toPx()),
-            ),
-        )
     }
 }
 

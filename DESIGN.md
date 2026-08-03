@@ -258,6 +258,8 @@ The signature element, specified exactly:
 
 **A route is 2dp, and it never becomes a colored bar or a colored left border on a card**, which section 1 bans twice over and which already slipped into one draft.
 
+**Beside a thread's name it appears as a swatch**, 28dp of the route itself. Not a dot. A dot is the color alone, which is exactly what 5.2.2 forbids, and it is what the care threads screen, the trail row, and the entry screen each carried independently until 2026-08-03. 28dp because four dashes of the widest pattern have to fit: two dashes is a dash pair, not a rhythm.
+
 #### 5.2.3 Spines
 
 **A chapter list, an incident thread, a milestone arc, and a medication's history across chapters are all the same shape:** a line with events on it. They looked like four unrelated lists, and they are one thing seen four times.
