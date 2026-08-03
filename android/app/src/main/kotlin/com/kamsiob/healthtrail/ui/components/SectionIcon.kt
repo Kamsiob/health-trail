@@ -87,6 +87,40 @@ fun IconTile(
     }
 }
 
+/**
+ * One icon on its own, with no tile behind it.
+ *
+ * The navigation bar has no room for a tile and does not want one: a tile
+ * behind four glyphs at the bottom of every screen is four more boxes competing
+ * with the content above them. Same paths, same grid, same stroke.
+ */
+@Composable
+fun NavIcon(
+    destination: Destination,
+    tint: Color,
+    modifier: Modifier = Modifier,
+    iconSize: Dp = 22.dp,
+) {
+    val drawing = remember(destination) {
+        Path().apply {
+            SectionIconPaths.of(destination).forEach { data ->
+                addPath(PathParser().parsePathString(data).toPath())
+            }
+        }
+    }
+
+    Canvas(modifier = modifier.size(iconSize)) {
+        val factor = size.minDimension / VIEWPORT
+        scale(factor, pivot = Offset.Zero) {
+            drawPath(
+                path = drawing,
+                color = tint,
+                style = Stroke(width = STROKE, cap = StrokeCap.Round, join = StrokeJoin.Round),
+            )
+        }
+    }
+}
+
 private const val VIEWPORT = 24f
 private const val STROKE = 1.7f
 
@@ -193,6 +227,52 @@ internal object SectionIconPaths {
         // wherever it appears.
         Repository.Section.PROJECTS -> listOf(
             "M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z",
+        )
+    }
+
+    /**
+     * The four navigation destinations, on the same grid as the twelve
+     * sections.
+     *
+     * **One icon set, per `DESIGN.md` 5.17.** These are drawn to the same rules
+     * as everything above: one 24 unit grid, a 1.7 stroke, round caps and
+     * joins, no fill, and no more than three strokes of detail. A person should
+     * not be able to tell which drawings came from the reference file and which
+     * were composed.
+     *
+     * **Projects reuses its own section drawing**, because Projects is both a
+     * destination and a section and drawing it twice is how two drawings for
+     * one thing start to drift.
+     *
+     * The other three are composed, and each takes its shape from what the
+     * destination actually is rather than from a stock metaphor:
+     *
+     * **Today** is a waypoint, the same ringed node the trail marks a milestone
+     * with. Today is where the person is standing on the trail, and this app
+     * already has a shape that means exactly that. A sun or a clock would have
+     * been a stock icon that says nothing this app means.
+     *
+     * **Notebook** is a bound book seen from the spine edge, which is the one
+     * object the whole screen is named after.
+     *
+     * **More** is three dots, because it is the one destination that is not a
+     * thing but a drawer, and every convention for that is the same convention.
+     */
+    fun of(destination: Destination): List<String> = when (destination) {
+        Destination.TODAY -> listOf(
+            circle(12f, 12f, 3f),
+            circle(12f, 12f, 8f),
+        )
+        Destination.NOTEBOOK -> listOf(
+            "M6 4h11a2 2 0 012 2v14a2 2 0 01-2 2H6z",
+            "M6 4a2 2 0 00-2 2v14a2 2 0 002 2",
+            "M10 9h5",
+        )
+        Destination.PROJECTS -> of(Repository.Section.PROJECTS)
+        Destination.MORE -> listOf(
+            circle(5f, 12f, 1.2f),
+            circle(12f, 12f, 1.2f),
+            circle(19f, 12f, 1.2f),
         )
     }
 

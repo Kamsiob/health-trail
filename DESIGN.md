@@ -320,6 +320,12 @@ An action keeps the same word through its whole flow. The button that says Expor
 
 ### 5.5 Bottom navigation and the capture button
 
+**The four destinations carry icons**, drawn to the same rules as the twelve section icons: one 24 unit grid, a 1.7 stroke, round caps and joins, no fill, no more than three strokes. The slot had held a placeholder dot since the bar was built.
+
+**Projects reuses its own section drawing**, because it is both a destination and a section, and two drawings for one thing is how two drawings start to drift. The other three are composed. **Today is a waypoint**, the ringed node the trail already uses, because today is where the person is standing on their own trail and this app owns a shape that means that; a sun or a clock would have been a stock icon saying nothing this app means. **Notebook is a bound book seen from the spine edge**, the object the screen is named after. **More is three dots**, because it is the one destination that is a drawer rather than a thing.
+
+**Selection is carried three ways at once**, per 2.2: the icon's tint, the label's weight, and a 4dp dot beneath the icon. The dot is what the slot held before the icons existed, and it stays, so somebody who cannot separate the two blues still has two other signals. Checked at font scale 2.0, where the bar still holds one line per label and nothing meets the capture button.
+
 Four destinations, always in this order: Today, Notebook, Projects, More. `card` container, 24dp radius, 8dp inset from the screen edges, elevated. Icon 20dp above an 11sp label. Active state is `blue_deep` on both icon and label, plus the label at weight 700, so color is not the only signal.
 
 The capture button sits in the center of the navigation container, overlapping its top edge by 16dp: 56dp circle, `blaze` fill, dark plus glyph in `onBlaze`, present on every screen in all four tabs. The glyph is deliberately not white, for the contrast reason given in 2.4. It is the only way data enters the app and it never moves, never hides on scroll, and never changes color.

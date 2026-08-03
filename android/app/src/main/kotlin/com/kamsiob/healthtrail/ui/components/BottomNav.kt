@@ -128,6 +128,7 @@ fun BottomNav(
             // its own quarter and the two halves stay symmetrical.
             Destination.entries.take(2).forEach { destination ->
                 NavTab(
+                    destination = destination,
                     label = labels(destination),
                     selected = destination == current,
                     onClick = { onSelect(destination) },
@@ -139,6 +140,7 @@ fun BottomNav(
 
             Destination.entries.drop(2).forEach { destination ->
                 NavTab(
+                    destination = destination,
                     label = labels(destination),
                     selected = destination == current,
                     onClick = { onSelect(destination) },
@@ -192,6 +194,7 @@ fun BottomNav(
 
 @Composable
 private fun NavTab(
+    destination: Destination,
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
@@ -217,16 +220,28 @@ private fun NavTab(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        // The icon slot. Icons arrive with the icon set; until then the dot
-        // carries the active state as a shape, so color is not the only signal.
+        // **The icon, which was a placeholder dot until 2026-08-03.** The slot
+        // was always here and the dot stood in it, carrying the selected state
+        // as a shape so that color was never the only signal.
+        //
+        // The icon does not replace that job, it shares it: selection is
+        // carried by the icon's tint, the label's weight, and the dot beneath
+        // it together, so somebody who cannot separate the two blues still has
+        // two other signals. Section 2.2.
+        NavIcon(
+            destination = destination,
+            tint = if (selected) colors.blueDeep else colors.ink2,
+        )
+        Spacer(Modifier.height(3.dp))
+        // The selected dot, now under the icon rather than instead of it. Four
+        // dp, because it is a mark and not a control.
         Box(
             modifier = Modifier
-                .size(20.dp)
-                .padding(4.dp)
+                .size(4.dp)
                 .clip(CircleShape)
                 .background(if (selected) colors.blueDeep else Color.Transparent),
         )
-        Spacer(Modifier.height(2.dp))
+        Spacer(Modifier.height(3.dp))
         // **The one place in the app where type stops growing, and it is
         // stated rather than quiet.**
         //
