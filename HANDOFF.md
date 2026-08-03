@@ -139,6 +139,18 @@ The parts that change how you work, compressed:
 
 **Read section 11 before touching any screen.** Everything below is built from it, and **#144** is the retroactive sweep of everything already built.
 
+#### Where the run got to, at 2026-08-03 17:20
+
+**Everything is on `origin/main` and the phone holds a matching build with the year five fixture.** The suite is green: 277 instrumented, 102 unit, lint, and the eleven content checks.
+
+**Done tonight, in the owner's order:** section 11 itself, the icon set, the capture sheet and the form behind it, the unfiled tray, the notebook, Today, projects and the template library, and documents as a gallery.
+
+**Six components exist now and are used rather than described:** the tile 11.2, the dense row 11.3, the hero 11.5, the thumbnail 11.7, the capped chip group 5.11.1, and the disclosure 5.18. **Three from section 11 are still only written down**: the stat display 11.6, the avatar 11.8, and the segmented control 11.9.
+
+**The next thing is the care team with avatars**, which is item 10 and the last of the three named screens, then bills, then `#144`'s sweep of everything else. `#146`, `#147` and `#148` are tonight's new design reviews.
+
+**Four new decisions:** D71 the component library, D72 the status bar crop, D73 the suite that had been red for a day, D74 the journey test that passed alone, D75 the screen that said nothing when nothing changed.
+
 `main` is current and green. Continuous integration passes on it. Nothing is uncommitted and no branch is ahead of `main`: the last commit is the navigation bar icons. **D69 is the rule that made that true and it is new: an increment ends when `main` contains it, and `git rev-list --count origin/main..HEAD` reading zero is the check.** The whole of the previous night sat on unmerged branches because D48 only guarded the start of an increment.
 
 **What this run was about, in one sentence:** the fixture generator learned to write the tables the app had grown into, and almost everything below was found by looking at a screen with real data on it for the first time.
