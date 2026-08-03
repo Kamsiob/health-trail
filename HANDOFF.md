@@ -290,7 +290,7 @@ seeded notebook reporting nothing at all.
 
 3. **P7's two unwalked targets**, which are the interesting half: the export of a full year-five notebook completing, showing progress, being cancellable and surviving being backgrounded; and memory across twenty minutes of navigation. The fixture and the passphrase are in section 8. **Everything needed to walk them is on the phone already.**
 
-4. **A benchmark that can actually see a 400ms target.** P7 asks for search under 400ms and the answer tonight was "faster than adb can observe", because `uiautomator dump` costs 2,770ms on this notebook and `screencap` costs 985ms. An instrumented test timing `Repository.search` with `System.nanoTime` would give a number that holds in continuous integration. Until it exists, that target has no evidence behind it either way.
+4. **#142, a benchmark that can actually see a 400ms target.** P7 asks for search under 400ms and the answer tonight was "faster than adb can observe", because `uiautomator dump` costs 2,770ms on this notebook and `screencap` costs 985ms. An instrumented test timing `Repository.search` with `System.nanoTime` would give a number that holds in continuous integration. Until it exists, that target has no evidence behind it either way.
 
 5. **#131, the other half of search**: scoped search per section, the assembly view, date range search against imprecise dates, reconstructing a day. **The assembly view is also P7's untestable target**, so this closes two things.
 
@@ -300,7 +300,7 @@ seeded notebook reporting nothing at all.
 
 8. **#44's remaining half, which needs ears.** How a label sounds, where pauses land, whether a row is bearable at higher verbosity, and Arabic with the reader running.
 
-9. **The fourteen tables that still have no writer**, of which `person_chapter`, `custom_template`, `cost_sheet` and `cost_entry` matter most. Each is a screen that has never met generated data, which is exactly the condition that produced tonight's eight defects.
+9. **#143, the fourteen tables that still have no fixture writer.** Each is a screen that has never met generated data, which is exactly the condition that produced six of tonight's eight defects. The issue orders them by how much screen each unlocks.
 
 10. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? P7 measured cold launch to the notebook because that is where the app opens.
 
