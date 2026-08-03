@@ -384,6 +384,14 @@ Incidents come first, because a stay with something unresolved in it is a stay d
 
 **Six lists have now learned that a tap opens the thing itself.** The trail, the care team, appointments, threads, chapters, and medications.
 
+**A medication's history can be written now**, which closes the loop the previous increment opened honestly. `medication_event` has been in the schema since Phase 0 with no writer at all, so every medication's history was empty forever.
+
+Five changes the record understands: started, dose changed, held, started again, stopped. **Chips rather than a text field**, because the set is knowable and short, and a sixth invented word would be a row nothing could read back. **The dose stays words**: "half a tablet in the morning only" is what somebody is told, and the app never reads it as a quantity.
+
+**The chapter is stamped from wherever the person is now**, which is what makes a medication's journey cross chapters at all, per `MASTER_SPEC.md` 4.6.
+
+**The z-order trap bit a third time** and is now written into the code where it happens. Anything opened from an overlay must be declared after it, because these are overlays in one `Box` and declaration order is z-order. It caught the entry screen, an incident opened from an entry, and this.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.

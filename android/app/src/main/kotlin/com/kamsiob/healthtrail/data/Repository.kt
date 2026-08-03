@@ -3046,6 +3046,46 @@ class Repository private constructor(
             }
         }
 
+    /**
+     * Records something that happened to a medication.
+     *
+     * **The writer `medication_event` never had.** The table has been in the
+     * schema since Phase 0 and the app could read a history it had no way to
+     * write, so every medication's history was empty forever.
+     *
+     * The chapter is stamped at the moment of writing, from wherever the person
+     * currently is, because that is what makes a medication's journey cross
+     * chapters at all. `MASTER_SPEC.md` 4.6.
+     */
+    suspend fun recordMedicationEvent(
+        medicationId: String,
+        kind: String,
+        occurred: Edtf.Date,
+        doseText: String?,
+        note: String?,
+        chapterId: String?,
+    ): String = insert(
+        "medication_event",
+        mapOf(
+            "medication_id" to medicationId,
+            "kind" to kind,
+            "dose_text" to doseText?.ifBlank { null },
+            "note" to note?.ifBlank { null },
+            "chapter_id" to chapterId,
+        ) + dateColumns("occurred", occurred),
+    )
+
+    /**
+     * The chapter the person is in now, which is the one with no end date.
+     *
+     * Null for a notebook where nobody has said where they are, which is a real
+     * state: setup lets that question be skipped.
+     */
+    suspend fun currentChapterId(subjectId: String): String? =
+        withContext(Dispatchers.IO) {
+            chapters(subjectId).firstOrNull { it.isCurrent }?.id
+        }
+
     companion object {
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"

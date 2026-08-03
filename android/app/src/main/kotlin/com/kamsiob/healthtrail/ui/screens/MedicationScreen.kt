@@ -26,6 +26,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object MedicationTags {
     const val NAME = "medication"
     const val EDIT = "medication_edit"
+    const val RECORD = "medication_record"
     fun event(id: String) = "medication_event_$id"
 }
 
@@ -53,6 +54,7 @@ fun MedicationScreen(
     medication: Repository.Medication,
     history: List<Repository.MedicationEvent>,
     onEdit: () -> Unit,
+    onRecordChange: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     backLabelKey: String = "section.back.medications",
@@ -98,6 +100,15 @@ fun MedicationScreen(
             }
 
             Spacer(Modifier.height(Space.sectionGap))
+            // **Writing down a change comes before correcting the record**,
+            // because a dose changing is the ordinary event and a typo is the
+            // rare one.
+            QuietButton(
+                label = strings["medication.record"],
+                onClick = onRecordChange,
+                modifier = Modifier.fillMaxWidth().testTag(MedicationTags.RECORD),
+            )
+            Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["medication.edit"],
                 onClick = onEdit,

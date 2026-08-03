@@ -44,6 +44,8 @@ import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
+import com.kamsiob.healthtrail.ui.screens.MedicationEventDraft
+import com.kamsiob.healthtrail.ui.screens.MedicationEventScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ThreadScreen
@@ -279,6 +281,9 @@ fun NotebookShell(
 
     /** The medication being read, and how it changed. */
     var openMedication by remember { mutableStateOf<Repository.Medication?>(null) }
+    /** The medication a change is being written down for. */
+    var recordingChangeTo by remember { mutableStateOf<Repository.Medication?>(null) }
+    var savingMedicationEvent by remember { mutableStateOf<MedicationEventDraft?>(null) }
     var medicationHistory by remember {
         mutableStateOf<List<Repository.MedicationEvent>>(emptyList())
     }
@@ -489,6 +494,7 @@ fun NotebookShell(
     BackHandler(enabled = openThread != null) { openThread = null }
     BackHandler(enabled = openChapter != null) { openChapter = null }
     BackHandler(enabled = openMedication != null) { openMedication = null }
+    BackHandler(enabled = recordingChangeTo != null) { recordingChangeTo = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -1334,6 +1340,25 @@ fun NotebookShell(
         // row appeared to do nothing at all: the entry screen was there and
         // the trail was painted over it. These are overlays in one Box, so
         // order is z-order, and the thing opened last has to be declared last.
+        savingMedicationEvent?.let { draft ->
+            LaunchedEffect(draft) {
+                val subjectId = repository.activeSubject()?.id
+                repository.recordMedicationEvent(
+                    medicationId = draft.medicationId,
+                    kind = draft.kind,
+                    occurred = draft.occurred,
+                    doseText = draft.doseText,
+                    note = draft.note,
+                    // **Stamped from where they are now**, which is what makes
+                    // a medication's journey cross chapters at all.
+                    chapterId = subjectId?.let { repository.currentChapterId(it) },
+                )
+                savingMedicationEvent = null
+                revision += 1
+            }
+        }
+
+
         openMedication?.let { medication ->
             LaunchedEffect(medication.id, revision) {
                 medicationHistory = repository.medicationHistory(medication.id)
@@ -1346,7 +1371,25 @@ fun NotebookShell(
                     addingMedication = true
                     openMedication = null
                 },
+                onRecordChange = { recordingChangeTo = medication },
                 onBack = { openMedication = null },
+            )
+        }
+
+        // **After the medication screen it opens from, because order is
+        // z-order.** Declared before it, this drew underneath and the button
+        // read as doing nothing, which is the third time that trap has been
+        // hit tonight: the entry screen, an incident opened from an entry,
+        // and now this. Anything opened from an overlay is declared after it.
+        recordingChangeTo?.let { medication ->
+            MedicationEventScreen(
+                medicationId = medication.id,
+                medicationName = medication.name,
+                onSave = { draft ->
+                    savingMedicationEvent = draft
+                    recordingChangeTo = null
+                },
+                onCancel = { recordingChangeTo = null },
             )
         }
 
