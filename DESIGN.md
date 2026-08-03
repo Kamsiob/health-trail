@@ -170,6 +170,9 @@ Card 20dp. Inset tile, icon tile, chip container 12dp. Thumbnail 8dp. Bottom she
 | Label | Atkinson Hyperlegible | 14sp / 18 | 700 | Buttons, chips, emphasis inside body text |
 | Nav label | Atkinson Hyperlegible | 11sp / 14 | 700 | Bottom navigation only. Exempt from the 13sp floor, see below |
 | Mono | JetBrains Mono | 11sp / 16 | 400, tracking 0.12em, uppercase | Eyebrow labels, timestamps, counts, metadata. Exempt from the 13sp floor, see below |
+| Mono L | JetBrains Mono | 28sp / 34 | 500, tracking 0, tabular | A number at display size, in the stat display 11.6 and nowhere else |
+
+**Mono L carries no tracking, and that is deliberate rather than an oversight.** The 0.12em on the Mono style exists to raise letter distinction at 11sp, where the label is small and short. At 28sp the same tracking pulls the digits of a single number apart until it reads as several numbers, which is the opposite of what a stat display is for. Tabular figures do the alignment work instead, per 5.18.
 
 **The two exemptions from the 13sp floor, and why they are the only two.** Section 3 item 4 sets a 13sp minimum. The nav label and the Mono metadata style sit below it, and both are deliberate.
 
@@ -209,6 +212,8 @@ Arabic ships in v1, so every screen is built direction-aware from the first scre
 ---
 
 ## 5. Components
+
+**Section 11 is the other half of this section and it is not optional reading.** Section 5 specifies how each component is drawn. **Section 11 specifies which one to reach for**, which is what was missing for the app's first three weeks and is why every screen converged on 5.3. A component here that section 11 also names is governed by both: 5 for its geometry and states, 11 for when it is the right answer.
 
 ### 5.1 The mark
 
@@ -964,6 +969,8 @@ Build the screen. Then log it. Both parts are required and neither substitutes f
 
 `DESIGN.md` and the screen grid together already define a finished design language: a card, a section header, a list row with its optional subtitle and chevron, an eyebrow label, a pill, an empty state, the spacing scale, the type scale, and the motion vocabulary. An undesigned screen is **assembled from those pieces**.
 
+**Section 11 is the library this rule assumes, and until 2026-08-03 it did not exist.** For a week "compose, do not design" meant composing from a card, because that was the only piece with a stated purpose, and the result was twenty screens made of one shape. **Read section 11 before composing anything**, and pick the component from the shape of the content per 11.1 rather than from what the last screen happened to use.
+
 It is not an opportunity to introduce a new component, a new layout idiom, a new interaction pattern, or a new way of presenting a kind of information the app already presents somewhere else.
 
 **The test:** if you find yourself designing, you have already gone wrong. You should be composing.
@@ -1082,10 +1089,268 @@ Someone doing this in a hallway will abandon a flow that takes four taps when it
 
 ---
 
-## 11. Keeping this document true
+## 11. The component library, and the layout patterns built from it
+
+**The diagnosis, written down once so it never has to be found again.** Section 1 bans every cheap way to make a screen look interesting, and it was right to. Section 10.2 says compose rather than design, and it was right to. Together they left exactly one thing standing: **a full width rounded card containing text.** Every screen in this app was assembled from that one piece. Grouping twelve of them under headers is organization, not hierarchy, and a notebook, a search result, a bill, a person, and a project all arriving as the same rectangle is why the app reads as uninspired to anybody holding it.
+
+**Composing from a library of one produces exactly this.** The instruction was right and the library was never built. This section is the library.
+
+**The bans stay, all of them.** Nothing below relaxes section 1, and every component here is monochrome, unornamented, and made from shapes the app already owns. But understand the other failure mode as clearly as the first: **avoiding generated-looking design does not mean avoiding design.** Plain is not a virtue here. Crude is not authenticity. The target is a considered, warm, confident interface with real visual variety, not a stripped one.
+
+**A component is not defined until this section says when to use it and when not to.** That is the half section 5 kept leaving out, and it is the direct cause of the card spreading everywhere: nothing ever said what a card was for, so it became what everything was made of.
+
+### 11.1 The choosing rule
+
+**Pick the component from the shape of the content, never from the screen it lands on.** One question decides it: what is the person doing with this thing?
+
+| What the person is doing | Component | Why that one |
+|---|---|---|
+| Choosing among a known, fixed set of places | Tile, 11.2 | Recognized by icon and position, not read |
+| Scanning a long list for one item they already have in mind | Dense row, 11.3 | Twice the rows per screen, and a fixed shape to scan down |
+| Reading something with real substance | Card, 11.4 | Three or more lines, read rather than scanned |
+| Taking in the single thing they opened the screen for | Hero block, 11.5 | One per screen at most, and often none |
+| Reading a number that matters on its own | Stat display, 11.6 | Tabular mono at display size, never interpreted |
+| Finding a photograph, a bill, or a document | Thumbnail, 11.7 | Their own paper beats its filename every time |
+| Finding a person | Avatar, 11.8 | Initials are scannable, twelve names in a column are a wall |
+| Switching between two views of the same content | Segmented control, 11.9 | Two or three, and it never navigates |
+| Following something that happened in order | Spine, 5.2.3 and 11.11 | A line with events on it, which the app already owns |
+| Following a link to something with a face | Inline preview, 11.10 | A link that shows what it points at costs one tap less |
+
+**When two components would both work, take the quieter one.** A card where a dense row would do is the specific defect this section exists to correct, and it is far more common than the reverse.
+
+**Every component below responds to a press**, per 5.14, using the one treatment. **Every one has a resting, pressed, and focused state**, and none of them invents a second selection language: selection is surface plus weight plus a ring, as 5.11 already sets it.
+
+### 11.2 The tile
+
+**Roughly square, in a grid: an icon tile above a name above a count.** This is the single largest change available to this app. Twelve notebook sections as a grid is a third of the scroll length, it is scannable by shape and position rather than by reading, and it immediately stops looking like a settings screen.
+
+**Two sizes, and only two.**
+
+| | Standard | Compact |
+|---|---|---|
+| Grid | Two columns | Three columns |
+| Width at 393dp | 170dp | 112dp |
+| Icon tile, per 5.12 | 40dp, drawing 24dp | 32dp, drawing 18dp |
+| Name | Display S, up to two lines | Label, up to three lines |
+| Count | Mono | Mono |
+| Padding | 16dp | 12dp |
+| Minimum height | 132dp | 108dp |
+
+**Both use the card radius, 20dp, and the `card` surface.** A tile is a card in a different proportion, not a new surface, and a third radius would be a token invented for nothing.
+
+**Content is start aligned, not centered.** Centered icons over centered labels is the launcher grid every phone already has, and it reads as an app drawer rather than as a table of contents. Start alignment also survives a three line name without the block drifting, and it mirrors correctly in Arabic without further thought.
+
+**Order inside the tile, top to bottom:** the icon tile, 12dp, the name, 4dp, the count. The count sits under the name rather than beside it so that the tile has one column of content and one reading direction.
+
+**Weight is carried by the icon tile's fill, exactly as D33 and 5.12 already set it**, and never by the tile's own surface, its size, or a hue. A section the situation template puts forward gets a `sand` filled icon tile at standard size. A standing section gets an unfilled tile at standard size. A folded section gets an unfilled tile at compact size in the quiet ink. **Three weights, two sizes, one fill rule, and no new vocabulary.**
+
+**Columns drop as the font grows, and the tile never shrinks its text.**
+
+| Font scale | Standard grid | Compact grid |
+|---|---|---|
+| Up to 1.3 | Two columns | Three columns |
+| 1.3 to 1.8 | Two columns | Two columns |
+| Above 1.8 | One column | One column |
+
+A one column tile grid is a column of short wide tiles, which is a legitimate layout and not a fallback. **A tile whose name wraps to five lines is a card wearing a tile's clothes**, and shrinking the text to avoid that would break the 13sp floor in section 3 item 4. So the grid gives way, not the type.
+
+**States.**
+
+| State | Treatment |
+|---|---|
+| Resting | `card` surface, fill per its weight |
+| Pressed | The tile's surface steps 8% toward `ink` over 120ms, per 5.14 |
+| Focused | 2dp `blue` ring at the card radius, per 5.14 |
+| Nothing in it | The count reads as words. "Nothing yet", never `0` |
+| Longest language | The tile grows and its whole row grows with it, so a row of tiles is always one height |
+
+**When not to use a tile.** Never for an action, which is a button. Never for a list that grows, because a grid of unknown length is a wall of squares nobody can hold in their head. Never where the person is looking for one specific named item, which is a dense row. **Never more than twelve in one grid**, and if a screen has more than twelve destinations the screen has a structure problem that a grid will only hide.
+
+### 11.3 The dense row
+
+**One or two lines, 52dp to 56dp, no card, separated by a hairline rather than by a shadow and a gap.** For a long list the person is scanning for something they already have in mind.
+
+**Not everything deserves to be a card, and making everything a card is the reason nothing stands out.** A card row plus its 12dp gap costs 88dp. A dense row costs 52dp and carries the same two lines. On a five year notebook that is the difference between a list you scroll and a list you scan.
+
+**Geometry.** Full bleed to the screen's own 20dp padding. 52dp for one line of content, 56dp for two, both clearing the 48dp touch floor without invisible padding. 12dp between the leading element and the text. The hairline is 1dp of `ink3` non-text at 40%, **inset to the start of the text** so it runs under the words rather than cutting across the leading element, and there is no hairline after the last row of a group.
+
+**The shape is fixed everywhere in the app, and that is the whole point:** the leading element, then what it is, then when, then state. Same slots, same order, same positions, on every screen. A person who learns to read one dense row can read every list in the app.
+
+- **Leading**, optional, exactly one of: an avatar 11.8, a thumbnail 11.7, a waypoint 5.2.1, a thread swatch 5.2.2, or nothing. Never an icon tile, which belongs to tiles and to the table of contents.
+- **Line one:** what it is, Body L in `ink`. The thing's own words where it has them, per the entry heading rule.
+- **Line two**, optional: Body M in `ink2`, one line, and it says something true about this row rather than repeating its category.
+- **Trailing:** at most one of a Mono date, a Mono count, or a pill 5.6, and then the chevron where the row opens something. Two trailing elements plus a chevron is where a dense list starts to look busy, and there is always one that can be moved to line two.
+
+**Groups use the group header 5.13**, which is the existing pattern and needs nothing new.
+
+**States.** Pressed steps the row's own surface 8% toward `ink` across the full bleed width, per 5.14. Focused draws the 2dp `blue` ring at the tile radius inset to the screen padding, because a full bleed ring against the screen edge reads as a border on the window. Long press removes, per 5.4, and the row exposes the explicit long click action so a reader user can reach it.
+
+**When not to use a dense row.** When the person will read rather than scan. When the content genuinely needs three or more lines. **And when there are fewer than five of them**, because four dense rows on an otherwise empty screen read as the top of a longer list that failed to load, where four cards read as four things.
+
+### 11.4 The card, kept and demoted
+
+Section 5.3 keeps its geometry unchanged. What changes is what it is for, which was never written down.
+
+**A card is for content with real substance that the person reads rather than scans:** three or more lines, or mixed content, or one thing that is the subject of its own region. An entry with a paragraph in it, a bill with its state and its amount and what it was for, a standing instruction with its tag and its wording.
+
+**A card is not for:** a list of destinations, which is a tile grid. A list scanned for one item, which is dense rows. Anything one line long. **A card whose entire content is one line and a chevron is a dense row that was given a shadow**, and that describes most of the cards in this app as of 2026-08-03.
+
+**No more than six cards in one scroll region.** Past six, a card is no longer emphasis, it is the background, which is exactly how the app arrived here. Six is a real ceiling and a screen that wants eight is a screen whose rows are not all cards.
+
+### 11.5 The hero block
+
+**Exactly one per screen, at most, and no hero at all is a valid screen.** It is the single thing the person came for, given the most weight through size, position, and space, per 10.8 step 2.
+
+**It is not a card and it must not be one.** It sits directly on `paper`, with no surface, no shadow, and no border. That is what makes it read as the top of the page rather than as the first item in a list, and it is hierarchy achieved without decoration, which is what rule 15 asks for.
+
+**Structure, in order:** a mono eyebrow saying what this is, per 5.13's label style without its rule; then the thing itself in Display M, or Display L where it is very short or is a number; then at most one line of Body M supporting it; then at most one action, in the quiet button style from 5.4 or as a text action.
+
+**Space is the component.** 24dp above and 32dp below, and the 32dp is the part that gets sacrificed first when a screen is built to be merely correct. Without it the hero is just a larger row.
+
+**An optional leading element**, one of a waypoint, an avatar, or a thumbnail at 56dp, aligned to the first line of the heading rather than centered on the block.
+
+**A hero is the answer to 10.8 step 1, rendered.** Decide what matters most on the screen, name it out loud, and the hero is that thing. **If you cannot name it, the screen does not have one**, and inventing a hero to fill the slot is worse than leaving it out: a banner carrying nothing is the decorative header this document bans.
+
+**When not to use one.** On a screen that is a list of genuine peers, such as search results or the trail, where promoting one item would be the app making a judgment. Never two on one screen. **Never as a count of the person's own diligence**, per rule 13, which rules out "4 of 7 steps done" as a hero forever.
+
+### 11.6 The stat display
+
+**A number at display size in tabular mono, with a small mono label beneath it.** For a count that matters on its own.
+
+**Geometry.** The number in Mono L, 28sp, tabular, from 4.3. The label under it in Mono, 11sp, uppercase, tracked, `ink3` text-safe. 4dp between them. **The label goes below the number, not above**, because the number is the point and the label is what it is a number of.
+
+**Never with an arrow, never colored by value, never interpreted.** Section 1 bans the small colored arrow beside a number twice over, and rule 2 bans the interpretation underneath it. No delta, no comparison to last month, no target, no sparkline beside it, no color that changes with the value. **The number is a fact the person recorded, and the app counts it and stops.**
+
+**At most two on a screen, side by side.** Three across is the three-cards-in-a-row shape from section 1 wearing numbers.
+
+**Zero.** Where the number counts things the person made, zero renders as words, per the notebook's own rule, and the stat display is not used at all. Where it counts something that happened, such as the times a standing instruction was not followed, **zero says nothing and the display is absent**, because a count of nothing is not a finding and printing it turns every instruction into a scoreboard with most of the scores at zero.
+
+**Where a count needs a sentence saying what it is not**, per `MASTER_SPEC.md` 4.11, that sentence is Body M directly beneath the label and the two are one block. A bare number there would be the app implying a conclusion it is not entitled to.
+
+### 11.7 The thumbnail
+
+**The app stores photographs of documents and bills and shows none of them.** A documents screen carrying actual images of the person's own paper is transformed by one change, and it is real content rather than decoration.
+
+**Geometry.** Square, 8dp radius, already a token in 4.2. Three sizes: 40dp inside a dense row, 64dp inside a card, and the gallery cell, which is one third of the content width, 112dp at 393dp.
+
+**Content.** The stored attachment, center cropped. **An attachment that is not an image renders its own kind drawing from the 5.12 set at 24dp on a `sand` field**, which keeps the whole grid in one idiom rather than dropping a generic file glyph into it.
+
+**States.**
+
+| State | Treatment |
+|---|---|
+| Loading | The `sand` field alone, no spinner. Twelve spinners is noise where twelve quiet squares is a grid still filling in |
+| Present | The image, center cropped |
+| Not an image | The kind drawing on `sand` |
+| Unreadable | The kind drawing on `sand`, and the caption says what could not be read. Never a broken image glyph |
+
+**A thumbnail is never the only thing naming its item**, which is 5.12's rule applied here. The caption sits below in Body M, two lines at most, with a Mono date under it. **The image does not mirror in Arabic**, because a photograph of a page is not directional. The grid order and the caption do.
+
+**A thumbnail is generated from the stored attachment and never leaves the device**, and nothing is written outside the app's own storage. This is a local-first app and its thumbnails are held to the same rule as its data.
+
+### 11.8 The avatar
+
+**Initials in a tonal circle, for every person in the care team.** Twelve names in a list is a wall. Twelve names with initial marks is scannable in one pass.
+
+**Geometry.** Circle, per 4.2. Three sizes: 32dp in a dense row, 40dp in a card, 56dp on a detail header. Initials in Label weight 700, one or two characters.
+
+**Initials are taken by grapheme cluster, never by character index.** A name in Arabic, a name with a combining mark, and a name whose first character is an emoji all have to survive being cut to two, and cutting by code unit produces a broken glyph rather than a letter. Uppercased against the catalog's own locale, per 5.13's rule about the same mistake.
+
+**The circle is tonal and the tone is not identity.** `sand` background with `ink2` initials. **It is never colored per person**, because a per-person color would be a second accent system and would imply a categorization this app does not have and would not be entitled to.
+
+**One exception, recorded here rather than assumed:** the person the notebook is about carries `blue_soft` with `blue_deep` initials. There is exactly one of them, the app already spends blue on the subject at hand, and it is what tells a roster of twelve who the notebook belongs to without a label saying so.
+
+**There are no photographs of people anywhere in this app**, and it never asks for one. It stores photographs of paper. That is a product decision as much as a visual one and it is why the avatar is initials rather than a placeholder waiting for an image.
+
+**A person whose name was never recorded** shows the care team drawing from the 5.12 set rather than a question mark, because a question mark reads as the app asking them something.
+
+**The avatar is decorative for a screen reader and marked so**, because the name is always beside it. An avatar announced as "avatar, K B" before every name is noise, not access.
+
+### 11.9 The segmented control
+
+**Two or three segments, for switching between views of the same content.** Never four.
+
+**It switches a view. It never navigates and it never changes the subject.** If tapping it would take the person somewhere else, it is a destination and belongs in a list or a grid. That distinction is what keeps this from becoming a second, quieter navigation bar.
+
+**Geometry.** Full width, 44dp tall inside a 48dp touch region, `sand` container at the 12dp tile radius with 4dp of inner padding. The selected segment is a `card` surface at 8dp radius carrying the label in Label weight 700 in `ink`. Unselected labels are Body M in `ink2`.
+
+**Selection is surface plus weight, never color alone**, per 2.2, and it is the same language as the choice chip in 5.11 rather than a second one.
+
+**Motion** is the quick 120ms from section 6, the same as chip selection, and under reduced motion it is a cut.
+
+**It never scrolls and never wraps.** **At a font scale where the labels no longer fit, it becomes a stacked pair or trio of full width choices** rather than shrinking its text below the floor. That is the complete state for this control and it is not a fallback, it is the same control laid out for the space it has.
+
+**When not to use it.** More than three options, which is chips 5.11. Anything that navigates. A single on or off, which is a setting and belongs in the pattern the Appearance screen already uses.
+
+### 11.10 The inline preview
+
+**A link that renders what it points at, rather than naming it.** One tap cheaper, and it reads as substance rather than as a cross reference.
+
+**Four forms, and no others.** A document or a photograph, as a thumbnail 11.7 with its caption. An entry, as its own first line in Body M with its waypoint and its date, which is exactly one dense row. A person, as an avatar and a name, which is also one dense row.
+
+**It sits in a `sand` inset at the 12dp tile radius with 12dp of padding**, so it reads as something quoted from elsewhere rather than as a peer of the content around it.
+
+**An inset is not a card, and that is what keeps this legal.** Section 1 bans cards nested inside cards. An inset has no shadow, no elevation, and no card radius: it is the recessed surface 2.1 already defines for exactly this. A preview never carries its own shadow and never appears inside another preview.
+
+**Tapping it opens the thing.** Long press does nothing here, because removing a link is done from the thing itself, where the person can see what they are removing.
+
+**A preview implies the return trip**, per rule 18. If A previews B, then B carries at least a dense row for A. A one-way preview is a dead end with a picture on it.
+
+**When not to use it.** More than three in one region, which is a list and should be built as one. Anything the person cannot actually open.
+
+### 11.11 The trail vocabulary belongs on every screen with a sequence
+
+Section 5.2 built waypoints, routes, spines, and distance markers, and 5.2's own diagnosis is that they sat on one screen for a week. **This is the positive instruction that follows from it.**
+
+**Anything the person moves through in order gets a spine**: chapters, one incident's thread, a milestone arc, a medication's history, **a project's steps**, an appointment's prep sheet, the readable record, and the trail itself. They are not seven layouts. They are one shape seen seven times, and a person who learns it on the trail can read all seven.
+
+**Anything with a distance between its events gets markers**, per 5.2.4, under the same fourteen day threshold and the same reading-direction rule.
+
+**Anything belonging to a care thread carries that thread's route**, per 5.2.2, everywhere it appears, as a swatch beside its name.
+
+**And the negative, which matters as much.** A set of peers with no order does not get a spine. The care team, a document gallery, a tile grid, and a list of bills are not sequences, and drawing a line down them would be decoration pretending to be a system. **A shape means the same thing everywhere it appears**, and putting a spine where there is no sequence is how that stops being true.
+
+### 11.12 Layout patterns
+
+**Screens must differ in structure, not only in content.** Five patterns, and every screen in this app is one of them.
+
+**Hero plus grid.** One important thing at full size, then the rest as a tile grid under a quiet mono eyebrow, with a second compact grid below it where there is a folded set. For the notebook, Today, and More.
+
+**Dense list.** An optional segmented control, then group headers with dense rows under them, full bleed and hairline separated. For search results, the trail, the care team, appointments, questions, standing instructions, and any long history.
+
+**Spine.** A short header, then a spine of rows with waypoints and distance markers. For chapters, one thread, one incident, a project, a medication's history, the prep sheet, and the readable record.
+
+**Detail with header.** Identity first: an avatar or a thumbnail at 56dp, the name in Display M, and one Mono line of the facts that identify it. Then its own facts as dense rows or one card. Then its connections as inline previews and rows. For one person, one medication, one document, one bill, one appointment, and one entry.
+
+**Gallery.** A three column thumbnail grid with captions, grouped by month under 5.13 headers. For documents and bills.
+
+**A screen using the same pattern as the screen it was reached from is a deliberate choice, not the default.** Opening a person from a dense list into another dense list is fine when the person's page really is a list. Opening five screens in a row that are all dense lists is the failure this section exists to end, and the question gets asked at build time rather than at review.
+
+**Every pattern still passes 10.6 in full.** A layout pattern is where a screen starts, never what it ships as.
+
+### 11.13 Retroactive, per rule 14
+
+**This section applies to every screen already built, not only to new ones.** A codebase where the standard changed halfway through is a codebase with two standards, and the whole reason this document is being written before any screen is touched is so that the sweep has something definite to sweep against.
+
+**Added to the 10.6 checklist, and checked on the device rather than in the code:**
+
+1. No card carrying one line and a chevron. That is a dense row.
+2. No list of fixed destinations rendered as rows. That is a tile grid.
+3. No more than six cards in one scroll region.
+4. No screen with two heroes, and no screen whose most important thing is not its largest thing.
+5. No text link where the target has a thumbnail, an avatar, or a first line worth showing.
+6. No number that matters rendered in body type.
+7. No sequence rendered without a spine, and no spine drawn over a set of peers.
+8. No screen using the same layout pattern as the screen it was reached from without a reason somebody could state.
+
+**A screenshot that looks fine is not proof of any of this**, because it does not tell you what the screen does at another font size, in the other direction, with the year five fixture loaded, or with the keyboard up. Every screen rebuilt against this section is looked at with generated data on it, per D70.
+
+---
+
+## 12. Keeping this document true
 
 With every commit, ask whether the change made anything here wrong, and fix it in the same commit. Specifically:
 
-Any token added or changed during implementation is written back into section 2 or 4 with its measured contrast ratio. Any new component is specified in section 5 before it is built twice. Any screen that departs from the reference file gets its departure and reason added to section 3, or gets corrected to match. Any new user-facing string follows section 7, and the AI-slop ban list in section 1 gets re-checked against current research before any significant new design work.
+Any token added or changed during implementation is written back into section 2 or 4 with its measured contrast ratio. Any new component is specified in section 5 or section 11 before it is built twice, **and it is not specified until it says when to use it and when not to**, which is the omission section 11 exists to correct. Any screen that departs from the reference file gets its departure and reason added to section 3, or gets corrected to match. Any new user-facing string follows section 7, and the AI-slop ban list in section 1 gets re-checked against current research before any significant new design work.
 
 A design document that no longer matches the software is worse than no design document, because the next session will build against it and inherit the drift.

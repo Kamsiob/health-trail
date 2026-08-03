@@ -127,9 +127,17 @@ The parts that change how you work, compressed:
 
 ## 3. The precise next action
 
-### Start here. Written 2026-08-03 at 04:20, at the end of the overnight run, for a session with no memory of it
+### Start here. Rewritten 2026-08-03 at 13:52, at the start of the run that builds the component library
 
 **Read this section and "Where to pick up" below, then start. Everything else in this file is context you can reach for when you need it.**
+
+#### What this run is about, and it changes what every screen is built from
+
+**The owner used the app and named the problem: it is uninspired, everything on every screen is the same shape, and the cause is that this app has exactly one component.** A full width rounded card containing text. Grouping twelve of them under headers is organization, not hierarchy. **D71** carries the diagnosis and **`DESIGN.md` section 11** is the answer: ten components and five layout patterns, each with its geometry, its states, and the clause section 5 always omitted, **when to use it and when not to.** The old section 11 became section 12. **`CLAUDE.md` rule 22** carries the short form, and it was added mid-run, so it is one a compaction can lose, per section 8 of this file.
+
+**The bans in section 1 all stay.** The other failure mode is the one to watch now: avoiding generated-looking design does not mean avoiding design. Plain is not a virtue here and crude is not authenticity.
+
+**Read section 11 before touching any screen.** Everything below is built from it, and **#144** is the retroactive sweep of everything already built.
 
 `main` is current and green. Continuous integration passes on it. Nothing is uncommitted and no branch is ahead of `main`: the last commit is the navigation bar icons. **D69 is the rule that made that true and it is new: an increment ends when `main` contains it, and `git rev-list --count origin/main..HEAD` reading zero is the check.** The whole of the previous night sat on unmerged branches because D48 only guarded the start of an increment.
 
@@ -282,29 +290,46 @@ seeded notebook reporting nothing at all.
 
 ### Where to pick up
 
-**Rewritten 2026-08-03 at the end of the overnight run.** In order, and each one is a whole increment.
+**Rewritten 2026-08-03 at 13:52, and this is the owner's order for the run rather than the previous night's.** Each one is a whole increment.
 
-1. **The design review queue is still the biggest thing waiting, and it waits on the owner rather than on work.** Thirty two `needs-design-review` issues. Ten were opened for screens that did not exist two days ago, and **#134, #136, #137 and #140 were each updated tonight** with what real data changed about them. Nothing here is blocked on code.
+1. **`DESIGN.md` section 11, the component library. Done**, and it came before any screen was touched deliberately.
+2. **The icon set.** One coherent set, one stroke weight, drawn for the twelve sections and the six capture types. **Everything after this depends on it**, because without distinct memorable icons a tile grid is only a shorter list.
+3. **The capture sheet.** Three defects: the sheet is clipped at the top and "what happened" is cut off, which is a peek height and inset bug to be verified with the keyboard up and at font scale 2.0; six choices as a vertical list should be a two by three tile grid; and after choosing, the person meets roughly twenty pills at once. At most five chips, most recently used and most contextually likely, plus one control opening the full set with search.
+4. **The unfiled tray, inverted to suggestion first.** One card per unfiled item showing the item's own words, the matcher's single best suggestion as the primary action, two alternates, one control for anything else.
+5. **The notebook: a hero plus a tile grid.** The one or two things that need attention now at real size, then the sections as tiles, forward at standard size and folded compact.
+6. **Today: a hero plus dense rows.** The single most important thing since the last visit at display size, supporting items as dense rows rather than cards, then a quiet footer.
+7. **Projects, which are templates and neither look nor behave like it.** The largest single gap and it is functional as much as visual. A project must say which template it came from and that its steps are a starting point. Everything editable, per `MASTER_SPEC.md` 4.10: add, remove, reorder, rename, edit, attach notes, dates, documents, people, and calls to any step, create a project with no template, save a modified project as the person's own template. Editing a shipped template creates the person's own copy with lineage preserved. Visually it is a spine, not a checklist. No percentage, no progress bar, no streaks: position, not score. The library in More shows which templates are in use, when they were applied, and what each created, with links.
+8. **#144, the retroactive sweep** of every other existing screen against section 11.
+9. **Documents and bills as galleries with real thumbnails.** The app stores photographs of the person's own paper and shows none of them.
+10. **Care team with avatars.**
+11. **#62, the template catalog in four languages.**
+12. **Remaining Phase 1:** the emergency card, More, and anything still saying it is unbuilt.
+13. **#43 and #44**, the audit and the accessibility gate, alongside all of the above rather than after them.
+14. **The eight journeys walked end to end, then personas P2 through P13.**
 
-2. **The three connections the spec promises and the schema cannot hold: #141.** An incident knows its project, a bill knows the call where it was disputed, a bill knows the standing instruction it broke. All three are additive nullable columns; what needs deciding is whether each is a column or a link table, and getting that wrong costs a second migration. **This is a decision, not a task.**
+**Still true and still waiting, from the previous night.** These are not superseded, they sit behind the list above.
 
-3. **P7's two unwalked targets**, which are the interesting half: the export of a full year-five notebook completing, showing progress, being cancellable and surviving being backgrounded; and memory across twenty minutes of navigation. The fixture and the passphrase are in section 8. **Everything needed to walk them is on the phone already.**
+- **The design review queue waits on the owner rather than on work.** Thirty three `needs-design-review` issues. Nothing there is blocked on code.
 
-4. **#142, a benchmark that can actually see a 400ms target.** P7 asks for search under 400ms and the answer tonight was "faster than adb can observe", because `uiautomator dump` costs 2,770ms on this notebook and `screencap` costs 985ms. An instrumented test timing `Repository.search` with `System.nanoTime` would give a number that holds in continuous integration. Until it exists, that target has no evidence behind it either way.
+- **The three connections the spec promises and the schema cannot hold: #141.** An incident knows its project, a bill knows the call where it was disputed, a bill knows the standing instruction it broke. All three are additive nullable columns; what needs deciding is whether each is a column or a link table, and getting that wrong costs a second migration. **This is a decision, not a task.**
 
-5. **#131, the other half of search**: scoped search per section, the assembly view, date range search against imprecise dates, reconstructing a day. **The assembly view is also P7's untestable target**, so this closes two things.
+- **P7's two unwalked targets**, which are the interesting half: the export of a full year-five notebook completing, showing progress, being cancellable and surviving being backgrounded; and memory across twenty minutes of navigation. The fixture and the passphrase are in section 8. **Everything needed to walk them is on the phone already.**
 
-6. **#135, a situation template applies its threads and nothing else.** The ten item first-days checklist and the six document slots are parsed and unread, and the checklist is the highest value content in the catalog.
+- **#142, a benchmark that can actually see a 400ms target.** P7 asks for search under 400ms and the answer tonight was "faster than adb can observe", because `uiautomator dump` costs 2,770ms on this notebook and `screencap` costs 985ms. An instrumented test timing `Repository.search` with `System.nanoTime` would give a number that holds in continuous integration. Until it exists, that target has no evidence behind it either way.
 
-7. **The personas still unwalked: P3, P5, P6, P8 through P13.** All of them are reachable now that the generator writes people, appointments, questions, medications and an emergency card. **P9 is the cheapest and the most revealing**: it needs no device at all, only reading an export as somebody who has never seen the app.
+- **#131, the other half of search**: scoped search per section, the assembly view, date range search against imprecise dates, reconstructing a day. **The assembly view is also P7's untestable target**, so this closes two things.
 
-8. **#44's remaining half, which needs ears.** How a label sounds, where pauses land, whether a row is bearable at higher verbosity, and Arabic with the reader running.
+- **#135, a situation template applies its threads and nothing else.** The ten item first-days checklist and the six document slots are parsed and unread, and the checklist is the highest value content in the catalog.
 
-9. **#143, the fourteen tables that still have no fixture writer.** Each is a screen that has never met generated data, which is exactly the condition that produced six of tonight's eight defects. The issue orders them by how much screen each unlocks.
+- **The personas still unwalked: P3, P5, P6, P8 through P13.** All of them are reachable now that the generator writes people, appointments, questions, medications and an emergency card. **P9 is the cheapest and the most revealing**: it needs no device at all, only reading an export as somebody who has never seen the app.
 
-10. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? P7 measured cold launch to the notebook because that is where the app opens.
+- **#44's remaining half, which needs ears.** How a label sounds, where pauses land, whether a row is bearable at higher verbosity, and Arabic with the reader running.
 
-11. **The final translation good faith check**, deliberately last, and **language access after everything above**, per section 5.
+- **#143, the fourteen tables that still have no fixture writer.** Each is a screen that has never met generated data, which is exactly the condition that produced six of tonight's eight defects. The issue orders them by how much screen each unlocks.
+
+- **#125 asks the owner a question**: should the app open on Today rather than the Notebook? P7 measured cold launch to the notebook because that is where the app opens.
+
+- **The final translation good faith check**, deliberately last, and **language access after everything above**, per section 5.
 
 ### `main` is current again, and there is now a rule for the end of an increment
 

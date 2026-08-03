@@ -1480,6 +1480,24 @@ So three of the twelve notebook sections opened empty from a seed, and **every s
 
 ---
 
+### D71. The app has one component, and that is why every screen looks the same
+
+**Date:** 2026-08-03. **Decided by:** the owner, from using the built app, with the cause diagnosed in the same message.
+
+**The assessment.** The app is uninspired. Everything on every screen is the same shape. The notebook is a long list with no visible hierarchy. Today is lines of text in rowed boxes. Capture is a list of seven choices followed by twenty overwhelming pills. The unfiled tray is an endless scroll of pills. Projects look like a boring checklist that gives no sign of being templates and cannot be edited.
+
+**The cause is specific and it is this project's own doing.** `DESIGN.md` section 1 is a list of prohibitions with no positive system behind it, and section 10.2 says compose rather than design. Both were right. Together they left exactly one component standing: a full width rounded card containing text. **Composing from a library of one produces exactly this.** Grouping twelve cards under four headers is organization, not hierarchy, and it is what #36 shipped believing it had fixed the problem.
+
+**The decision: build the library, keep every ban.** `DESIGN.md` section 11 now defines ten components and five layout patterns, each with its geometry, its states, **and, which is the part section 5 kept omitting, when to use it and when not to.** The existing section 11 became section 12.
+
+**A component is not defined until it says when not to use it.** That omission is the whole mechanism: nothing ever said what a card was for, so a card became what everything was made of. Every entry in section 11 carries its negative clause, and 11.1 chooses between them from the shape of the content rather than from the screen.
+
+**The second failure mode, stated so it is not traded for the first.** Avoiding generated-looking design does not mean avoiding design. Plain is not a virtue here and crude is not authenticity. The bans in section 1 exist to stop the app looking anonymous, and a stripped interface is anonymous by a different route.
+
+**What this costs.** Every screen already built comes up to section 11, per rule 14. That is a sweep of roughly thirty screens and it is `#144`, not a phase gate.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
