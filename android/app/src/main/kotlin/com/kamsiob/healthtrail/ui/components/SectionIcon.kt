@@ -333,8 +333,9 @@ internal object SectionIconPaths {
             "M12 7.6l4.4 4.4-4.4 4.4-4.4-4.4z",
         )
         CaptureKind.MEASUREMENT -> listOf(
-            "M4 17.5a8 8 0 0116 0",
-            "M12 17.5l4.2-4.6",
+            "M3 18a9 9 0 0118 0",
+            "M12 18l5.2-5.6",
+            circle(12f, 18f, 1.2f),
         )
         CaptureKind.QUESTION -> of(Repository.Section.ASK_NEXT_TIME)
         CaptureKind.DOCUMENT -> of(Repository.Section.DOCUMENTS)

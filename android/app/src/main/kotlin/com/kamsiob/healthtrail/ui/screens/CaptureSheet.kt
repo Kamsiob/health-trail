@@ -4,14 +4,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -19,14 +24,16 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.IconTile
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -105,8 +112,16 @@ fun CaptureSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = Space.screenHorizontal)
-                .padding(bottom = Space.l),
+                // **The top padding is the defect this line fixes.** The sheet
+                // has 28dp rounded top corners, per 4.2, and the title was
+                // placed at the content's first pixel, so the corners cut into
+                // the word and the ascenders ran into the sheet's edge. It read
+                // as a sheet that had failed to finish opening. Nothing about
+                // it was visible in the code, and it is the first thing anyone
+                // sees when they tap the one control the whole app is for.
+                .padding(top = Space.l, bottom = Space.l),
         ) {
             Text(
                 text = strings["capture.title"],
@@ -116,28 +131,69 @@ fun CaptureSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            CaptureKind.entries.forEach { kind ->
-                CaptureOption(
-                    label = strings[labelKey(kind)],
-                    onClick = { onChoose(kind) },
-                    modifier = Modifier.testTag(CaptureTags.option(kind)),
-                )
-                Spacer(Modifier.height(Space.s))
+            // **A two by three grid rather than six rows**, per `DESIGN.md`
+            // 11.2. Six choices in a column is six things to read; six tiles is
+            // one glance and one tap, which is what somebody standing in a
+            // corridor with a nurse still talking actually has.
+            //
+            // **One column above font scale 1.3**, per 11.2's table, because a
+            // 170dp tile cannot hold "Report an incident" at that size without
+            // either wrapping to five lines or dropping below the 13sp floor,
+            // and the grid gives way rather than the type.
+            val columns = if (LocalDensity.current.fontScale > 1.3f) 1 else 2
+
+            CaptureKind.entries.chunked(columns).forEach { row ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        // The tiles in a row are one height, so a two line
+                        // label never leaves its neighbor short.
+                        .height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                ) {
+                    row.forEach { kind ->
+                        CaptureTile(
+                            kind = kind,
+                            label = strings[labelKey(kind)],
+                            onClick = { onChoose(kind) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .testTag(CaptureTags.option(kind)),
+                        )
+                    }
+                    // A row that is not full keeps its columns rather than
+                    // letting the last tile stretch to the width of two, which
+                    // would read as one choice being the important one.
+                    repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+                }
+                Spacer(Modifier.height(Space.sm))
             }
         }
     }
 }
 
 /**
- * One choice.
+ * One choice, as a tile.
  *
- * A `sand` inset row rather than a card, because these are actions inside a
- * sheet rather than records. No icons: six icons would be six small pictures of
- * what a call or an incident looks like, and the words are already the shortest
- * unambiguous form.
+ * **`sand` rather than `card`**, which is the one departure from 11.2's "a tile
+ * is a card surface". The sheet itself is `card`, so a card tile on it would be
+ * a shape with no edges. The recessed surface is what 2.1 sets aside for
+ * exactly this, and it is what the six rows already used before they became
+ * tiles.
+ *
+ * **The icon carries no fill of its own**, per 5.12's standing weight, because a
+ * `sand` icon tile inside a `sand` tile is a shape nobody can see. The drawing
+ * is `ink` rather than `ink2`: here the icon is the content rather than a marker
+ * beside a row, which is the difference 11.2 draws between a tile and a row.
+ *
+ * **There is no count slot.** 11.2 puts the count under the name, and a capture
+ * kind has nothing to count: it is a thing to do, not a place with things in it.
+ * An empty count line would be an empty area, per rule 11.
  */
 @Composable
-private fun CaptureOption(
+private fun CaptureTile(
+    kind: CaptureKind,
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -147,30 +203,45 @@ private fun CaptureOption(
     val surface by pressedSurface(interaction, colors.sand)
     val ring by focusRingAlpha(interaction)
 
-    Row(
+    Column(
         modifier = modifier
-            .fillMaxWidth()
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.tile)
+            // One stop for the reader, asked for rather than relied on, which
+            // is D54's finding. A tile is a drawing and a label and it is one
+            // thing: "Log a call, button", not a silent node followed by words.
+            .semantics(mergeDescendants = true) { }
+            .sizeIn(minHeight = TILE_MIN_HEIGHT)
+            .clip(Radius.card)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
             .clickable(
                 interactionSource = interaction,
-                // The row's own surface is the press feedback, per 5.14.
+                // The tile's own surface is the press feedback, per 5.14.
                 indication = null,
                 role = Role.Button,
                 onClick = onClick,
             )
-            .padding(horizontal = Space.m, vertical = Space.sm),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(Space.cardPadding),
     ) {
+        IconTile(
+            kind = kind,
+            tint = colors.ink,
+            background = Color.Transparent,
+            tileSize = ICON_TILE,
+            iconSize = ICON_DRAWING,
+        )
+        Spacer(Modifier.height(Space.sm))
         Text(
             text = label,
-            style = HealthTrail.type.bodyL,
+            style = HealthTrail.type.displayS,
             color = colors.ink,
         )
     }
 }
+
+/** The standard tile from `DESIGN.md` 11.2. */
+private val TILE_MIN_HEIGHT = 132.dp
+private val ICON_TILE = 40.dp
+private val ICON_DRAWING = 24.dp
 
 private fun labelKey(kind: CaptureKind): String = when (kind) {
     CaptureKind.CALL -> "capture.call"
