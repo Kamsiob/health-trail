@@ -220,7 +220,7 @@ First, this section previously said the upper bar was slightly narrower than the
 
 Second, the reference draws the bars at 22 by 9 with a 3 gap, and built at icon scale that weight reads as a hamburger menu control. Thinned to 22 by 6 with a 5 gap and capsule rather than cut ends, which reads as brushed on rather than drawn. Listed in section 3 as item 9, because it is a genuine departure from the reference rather than a correction to it.
 
-### 5.2 The trail
+### 5.2 The trail, which is a system rather than a screen
 
 The signature element, specified exactly:
 
@@ -228,6 +228,65 @@ The signature element, specified exactly:
 - Node: 12dp circle with a 3dp ring in the current background color, so it reads as sitting on the line rather than beside it. Node color carries the entry type: `blaze` for a call, `blue` for a visit, `alert` for an incident, thread color when filtered to a thread.
 - Care thread routes use the thread's own color at the same dash pattern. An ended thread drops to 35% opacity and keeps its color, so it reads as finished rather than deleted.
 - In the milestone arc and chapter journey views the line is continuous rather than dashed, with larger 12dp ring nodes, because those are the person's actual path rather than a filter over entries.
+
+**This was built once, on the timeline, and used nowhere else for a week.** That is the diagnosis behind everything in 5.2.1 through 5.2.5. Section 1 bans every cheap way to make a screen interesting, which was correct and which left nothing in their place, so every screen converged on the one pattern that survives the bans: a card with text in it. Twelve of those in a column is disciplined and it is also indistinguishable from every other utility app.
+
+**The answer is not to relax the bans.** It is to use the vocabulary this app already owns. A trail map is native here rather than borrowed from a trend, and it is sitting on one screen doing nothing for the other twenty.
+
+**The rule that makes it a system rather than a motif: a shape means the same thing everywhere it appears.** A person who learns the vocabulary on the trail can read a chapter list, a thread, or a search result without being taught again. A shape that means one thing here and another thing there is decoration wearing a system's clothes.
+
+#### 5.2.1 Waypoints
+
+**One node family, four states, and the state is the meaning.**
+
+| State | Drawing | Means |
+|---|---|---|
+| Filled | 12dp disc, 3dp ring in the surface behind it | Something that happened. The default |
+| Hollow | 12dp ring, 2dp stroke, no fill | Something upcoming, or expected and not yet here |
+| Ringed | 12dp disc with a second 1.5dp ring 4dp outside it | A milestone. Rare by design: if everything is ringed nothing is |
+| Gold | `blaze` filled, at 16dp | The capture button, and nothing else |
+
+**Color carries the kind, the shape carries the state**, and the two are read separately. A hollow `alert` node is an incident that has not happened yet; a filled one is an incident that has. That is one drawing rule producing eight meanings, which is what makes it learnable.
+
+**Every waypoint state survives grayscale**, because the shape does the work. Section 2.2's rule that every color carries a word alongside it is unchanged and applies here.
+
+#### 5.2.2 Routes
+
+**A thread's route identifies it everywhere the thread appears**, not only on the care threads screen. On the trail, on an entry that belongs to it, on the thread's own page, in a search result, and on Today.
+
+**A route is a color and a dash pattern together, never a color alone.** The color is the thread's; the dash is assigned from a fixed list of four in the order threads are created: 6 on 6 off, 2 on 5 off, 10 on 4 off, and 1 on 4 off with round caps. Two threads that land on similar colors are still told apart in grayscale, by a colorblind reader, and on a phone in sunlight.
+
+**A route is 2dp, and it never becomes a colored bar or a colored left border on a card**, which section 1 bans twice over and which already slipped into one draft.
+
+#### 5.2.3 Spines
+
+**A chapter list, an incident thread, a milestone arc, and a medication's history across chapters are all the same shape:** a line with events on it. They looked like four unrelated lists, and they are one thing seen four times.
+
+A spine is a vertical route with waypoints on it and content to its inline end. The gutter is 28dp with the line centered 9dp from the start edge, which is the geometry the trail was built and accepted at, and the node lands 40dp down the row so it sits on the row's first line of text rather than in its vertical middle. A long entry does not push its own waypoint away from the date it belongs to. The line is continuous rather than dashed when it is the person's actual path, which is a chapter journey or a milestone arc, and dashed when it is a filter over entries, which is a thread or a search result. That distinction is already in the last bullet of 5.2 and it now applies everywhere rather than in two named views.
+
+**A spine mirrors in right to left**, per 4.4, and the whole geometry flips rather than the line staying put.
+
+#### 5.2.4 Markers, which are distance
+
+**A trail map tells you how far apart things are, and a list does not.**
+
+Between two adjacent entries more than fourteen days apart, the gap itself carries a mono line at the spine. One line, `ink3` text-safe, in the Mono style from 4.3.
+
+**The word follows the reading direction of the list, and this matters.** The trail runs newest first, so reading downward is travelling backward, and the marker says "Three weeks earlier". A list that runs oldest first says "later". A marker whose direction disagrees with its list is worse than no marker, because the person is now doing arithmetic against the app instead of with it.
+
+**Calendar units, never divided days.** A month is not thirty days and a year is not 365. Eleven months is months and twelve is a year, never "twelve months earlier", which reads as an app counting rather than reading a calendar. Held by `DistanceTest`, including both sides of every unit boundary and a gap spanning a daylight saving change.
+
+**It costs one line and it turns a list into a story.** Two calls a week apart read as a week of calls; the same two rows with four months between them read as somebody who was left alone and then something happened. The list shows the same rows either way.
+
+**It is never a judgment and never a warning.** "Three weeks later" is arithmetic on two dates the person recorded. Nothing anywhere says a gap was too long, and no gap is colored, per rule 2 and section 2.2.
+
+**Fourteen days is the threshold** because below it the line appears constantly and stops being information. An unknown or coarse date never produces a marker at all, because the distance is not known and 10.9 forbids inventing precision.
+
+#### 5.2.5 Texture, used once
+
+**A very low opacity contour motif belongs in exactly one place: empty states.** Not behind content, not on cards, not as a hero. It gives an empty screen character without decorating a working one.
+
+See 5.17 for the drawings themselves.
 
 ### 5.3 Cards
 
@@ -298,6 +357,17 @@ Line for continuous measures, plotted in `blue` at 2.5dp with a 3.5dp end point.
 ### 5.10 Empty states
 
 Every list has one, written as an invitation rather than an absence. The Today screen's empty state is a coached three-step list, per the reference file, and its first item is always filling in the Emergency Card, because that is the highest value two minutes a new user can spend.
+
+**An empty state is the biggest character opportunity in this app and was the thinnest thing in it.** It is the screen a new person sees most, it has no content competing for attention, and it was a line of gray text. Every one now carries a line-art drawing from the set in 5.17.
+
+**The shape of one, in order**, which is 10.8 applied to a screen with nothing on it:
+
+1. The drawing, 96dp, centered, at the opacity 5.17 sets.
+2. The invitation, in Display S. What this place is for, in the person's terms.
+3. One line of Body M saying what turns up here and how it gets here.
+4. The action, when there is one worth offering. Never a second one.
+
+**No progress meter, no completion count, and no prompt to finish setting up**, per rule 13. An unfilled section reads as "not yet", never as a deficiency.
 
 ### 5.11 Choice chips
 
@@ -426,6 +496,30 @@ Measured on the device in dark theme: a card row goes from (26,36,43) to (43,50,
 **It never shows EDTF, a precision name, or a format.** Section 10.9. What it shows is a calendar, twelve month names, and a year.
 
 ---
+
+### 5.17 The empty state drawings
+
+**One set, drawn once, so they are recognizably siblings.** A path, a waypoint, a contour. Line art in `ink` at 12% opacity, on the 24 unit grid with the 1.7 stroke from 5.12, round caps and joins, no fill.
+
+**A drawing is the section's own icon, large, standing on a trail map ground.** The ground is the sibling half and is identical everywhere: two contour lines and a route running between them with one waypoint on it. The icon is the identifying half, and it is the same path already drawn in the table of contents at 20dp, scaled up rather than redrawn.
+
+**This is why there are thirteen of them and none of them was invented.** A set of thirteen freshly drawn illustrations would drift in weight and character no matter how carefully it was made, and the app already owns thirteen drawings that do not. Reusing them also means the empty screen is teaching the icon a person will navigate by for the next two years, at the moment they have nothing else to look at. Composing inside an existing idiom rather than inventing one, per 10.2.
+
+**Banned here specifically**, restating section 1 because this is where illustration usually goes wrong: no 3D, no blobs, no plastic, no stock imagery, no mascot, no character, no scene with a person in it, and no color. A drawing that could carry a brand's mascot is not this set.
+
+**They are decorative in the sense 2.3 defines**: remove every one and nothing becomes unreadable, because the words carry the screen alone. So they are exempt from the 3:1 contrast ratio, and they carry no content description, because a reader announcing "line drawing of a path" on every empty screen is noise rather than access. They are marked as decorative for the reader and skipped.
+
+**The same drawing means the same thing everywhere**, exactly as waypoints do. A section's empty state uses the drawing for that section, never a generic one, so the empty screen is already teaching where you are.
+
+### 5.18 Numerals
+
+**Every count, date, dose, amount, and duration is set in tabular figures.**
+
+Columns of numbers that align can be scanned; numbers that jitter cannot, and this app is full of numbers sitting in lists. It costs one font feature.
+
+`tnum` on the Mono style, which already carries counts, timestamps, and metadata per 4.3. Where a number appears inside body text, as in a dose or an amount, the number takes the Mono style and the words around it do not, which is the same treatment the trail already gives a date.
+
+**This is legibility rather than style**, so it applies retroactively to every screen already built, per rule 14.
 
 ## 6. Motion
 

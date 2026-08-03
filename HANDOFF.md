@@ -214,6 +214,23 @@ The button, its copy, its test tag, and its four catalog strings are gone. `Back
 
 **Walking it on the phone found something no test would have.** A space at either end of a passphrase is invisible behind the mask, soft keyboards add one, and both fields then look identical while differing. Months later on another phone that means a correct passphrase reported as wrong on the only file that is the way back. The screen names it now and does not trim, because trimming quietly changes somebody's secret.
 
+**The trail became a system instead of one screen's drawing.** `DESIGN.md` section 5.2 now has five parts and they are built, not just written.
+
+The diagnosis first, because the fix follows from it: **section 1 bans every cheap way to make a screen interesting, which is right, and nothing replaced them.** So every screen converged on the one pattern that survives the bans, a card with text in it, and the app came out disciplined and anonymous. The trail was a complete visual vocabulary sitting on the timeline doing nothing for the other twenty screens.
+
+| What landed | Where it is |
+|---|---|
+| **Waypoints**, one node family, filled, hollow, ringed | `Spine.kt`. Color carries the kind, shape carries the state, and both survive grayscale |
+| **Routes**, a color and a dash together, never a color alone | Four patterns by creation order. Two threads on similar colors are now told apart in grayscale and by a colorblind reader |
+| **Spines**, one shape for a line with events on it | The trail, chapters, and care threads are the same component now rather than three lists that happened to be about sequences |
+| **Distance markers** | `Distance.kt`, pure, 12 JVM vectors. "Four weeks earlier" between rows more than fourteen days apart. Calendar units rather than divided days, and never on a date the person gave coarsely |
+| **Empty state drawings** | `EmptyDrawing.kt`. Each section's own icon standing on one shared trail map ground |
+| **Tabular figures** | One font feature on the Mono style, which already carries every count, date, and timestamp |
+
+**The empty states were the biggest character opportunity in the app and were one line of gray text.** Each is now a drawing, an invitation, and room, centered in the space the list actually has. **Nothing was invented for them:** the mark is the section's own icon from the table of contents, so thirteen drawings that already share a grid do the work instead of thirteen new ones that would drift.
+
+**Two defects found the same night, one by a test and one by looking.** `ScreenReaderTest` caught a hard crash within a minute of milestones existing, because a milestone's box is wider than the line's 9dp inset and `padding` refuses a negative value at runtime. And the empty state sat jammed under the subtitle with the whole screen blank beneath it, which reads as a screen that failed to load rather than a place waiting for something. That one was only visible on the phone.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.

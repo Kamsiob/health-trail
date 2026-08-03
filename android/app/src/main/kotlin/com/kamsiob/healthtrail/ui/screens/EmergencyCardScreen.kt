@@ -120,7 +120,7 @@ fun EmergencyCardScreen(
 
         if (!hasSomething) {
             item {
-                SectionEmpty(name = EmergencyTags.NAME, text = strings["emergency.empty"])
+                SectionEmpty(name = EmergencyTags.NAME, text = strings["emergency.empty"], section = Repository.Section.EMERGENCY_CARD, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
                 Spacer(Modifier.height(Space.l))
             }
         } else {

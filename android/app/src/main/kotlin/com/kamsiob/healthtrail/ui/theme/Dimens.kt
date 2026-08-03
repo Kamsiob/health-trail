@@ -74,6 +74,31 @@ object Trail {
     val nodeSize: Dp = 12.dp
     /** Ring in the current background color, so the node sits on the line rather than beside it. */
     val nodeRing: Dp = 3.dp
+
+    /** An upcoming waypoint is hollow at the same 12dp, so it is not a larger thing. */
+    val hollowStroke: Dp = 2.dp
+
+    /** A milestone's outer ring, and the air between it and the disc. Section 5.2.1. */
+    val milestoneRing: Dp = 1.5.dp
+    val milestoneGap: Dp = 4.dp
+
+    /**
+     * The spine's geometry, shared by every screen that draws one.
+     *
+     * These lived as private constants on the trail screen, which is exactly
+     * how the vocabulary stayed on one screen. Section 5.2.3.
+     */
+    val gutterWidth: Dp = 28.dp
+    val lineCenter: Dp = 9.dp
+
+    /**
+     * Where the node sits down the row.
+     *
+     * It lands on the row's first line of text rather than in its vertical
+     * middle, so a long entry does not push its own waypoint away from the date
+     * it belongs to.
+     */
+    val nodeCenterY: Dp = 40.dp
 }
 
 /**

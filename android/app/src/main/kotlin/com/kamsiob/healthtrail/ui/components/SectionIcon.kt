@@ -53,7 +53,7 @@ fun IconTile(
 ) {
     val drawing = remember(section) {
         Path().apply {
-            SectionIcons.pathsFor(section).forEach { data ->
+            SectionIconPaths.of(section).forEach { data ->
                 addPath(PathParser().parsePathString(data).toPath())
             }
         }
@@ -105,9 +105,17 @@ private const val STROKE = 1.7f
  * cannot tell which four were added. That is composing inside an existing
  * idiom rather than inventing one, per `DESIGN.md` section 10.2.
  */
-private object SectionIcons {
+internal object SectionIconPaths {
 
-    fun pathsFor(section: Repository.Section): List<String> = when (section) {
+    /**
+     * The drawing for a section, as path data.
+     *
+     * Internal rather than private because the empty state drawings compose
+     * their mark from exactly these paths, per `DESIGN.md` 5.17. **One drawing
+     * per section, in one place**, so the icon a person learns in the table of
+     * contents is the same drawing they met on the empty screen.
+     */
+    fun of(section: Repository.Section): List<String> = when (section) {
         // People, with a second figure behind the first.
         Repository.Section.CARE_TEAM -> listOf(
             "M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2",

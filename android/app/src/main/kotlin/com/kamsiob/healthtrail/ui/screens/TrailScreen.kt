@@ -40,8 +40,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.time.Distance
+import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.DistanceMarker
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
+import com.kamsiob.healthtrail.ui.components.RouteDash
+import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -147,7 +152,7 @@ fun TrailScreen(
         modifier = modifier,
     ) {
         if (entries.isEmpty()) {
-            item { SectionEmpty(name = TrailTags.NAME, text = strings["trail.empty"]) }
+            item { SectionEmpty(name = TrailTags.NAME, text = strings["trail.empty"], section = Repository.Section.TRAIL, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }
         }
 
         var index = 0
@@ -167,9 +172,12 @@ fun TrailScreen(
                 }
             }
 
-            for (entry in inMonth) {
+            for ((withinMonth, entry) in inMonth.withIndex()) {
                 val position = index
                 index += 1
+                // The row above this one on screen, which is the newer entry,
+                // and null at the top of a month run.
+                val previous = inMonth.getOrNull(withinMonth - 1)
                 item(key = entry.id) {
                     RouteRow(
                         draw = draw,
@@ -179,6 +187,20 @@ fun TrailScreen(
                         nodeDelayMillis = position * motion.trailNodeStaggerMillis,
                     ) {
                         Column {
+                            // **The gap to the entry above, when there is one
+                            // worth saying.** Section 5.2.4. A list of the same
+                            // rows reads as a week of calls or as somebody left
+                            // alone for four months, and only the dates say
+                            // which, where nobody does the arithmetic.
+                            //
+                            // The word is "earlier" rather than "later" because
+                            // this list runs newest first, so reading downward
+                            // is travelling backward. A marker whose direction
+                            // disagrees with the list is worse than none.
+                            gapAbove(entry, previous, zone)?.let { gap ->
+                                DistanceMarker(strings(gap.key, "count" to gap.count))
+                                Spacer(Modifier.height(Space.s))
+                            }
                             TrailRow(
                             entry = entry,
                             onEditDate = { onEditDate(entry) },
@@ -191,6 +213,43 @@ fun TrailScreen(
             }
         }
     }
+}
+
+/**
+ * The distance from the row above to this one, or null when there is nothing
+ * worth saying.
+ *
+ * **An entry whose date is not a day never produces a marker.** A month, a
+ * year, or an unknown date carries a real range rather than a point, and the
+ * distance between two ranges is not a number the person gave. Rule 17 and
+ * `DESIGN.md` 10.9 both say the app never invents precision, and a confident
+ * "Three weeks earlier" derived from two vague months would be exactly that.
+ */
+private fun gapAbove(
+    entry: Repository.TrailEntry,
+    previous: Repository.TrailEntry?,
+    zone: ZoneId,
+): Distance.Gap? {
+    if (previous == null) return null
+    if (!isDayPrecise(entry.occurredEdtf) || !isDayPrecise(previous.occurredEdtf)) return null
+    return Distance.between(
+        olderMillis = entry.occurredStart,
+        newerMillis = previous.occurredStart,
+        zone = zone,
+    )
+}
+
+/**
+ * True when this date names a single day or a moment within one.
+ *
+ * A month, a season, a year, or an unknown date carries a range rather than a
+ * point, and the distance between two ranges is not a number the person gave.
+ * Read through `Edtf.parse` rather than by inspecting the string here, so there
+ * is one parser and one answer.
+ */
+private fun isDayPrecise(edtf: String?): Boolean {
+    val parsed = edtf?.takeIf { it.isNotBlank() }?.let { Edtf.parse(it) } ?: return false
+    return parsed.precision == Edtf.Precision.DAY || parsed.precision == Edtf.Precision.MOMENT
 }
 
 /**
@@ -219,70 +278,21 @@ private fun RouteRow(
     val colors = HealthTrail.colors
     val motion = LocalMotion.current
 
-    var nodeShown by remember { mutableStateOf(motion.isReduced) }
-    LaunchedEffect(Unit) {
-        if (!motion.isReduced && nodeDelayMillis > 0) {
-            kotlinx.coroutines.delay(nodeDelayMillis.toLong())
-        }
-        nodeShown = true
-    }
-    val nodeAlpha by animateFloatAsState(
-        targetValue = if (nodeShown) 1f else 0f,
-        animationSpec = motion.quick(),
-        label = "trailNode",
+    // **Drawn by the shared spine rather than here.** This was the only place
+    // the trail vocabulary existed for a week, which is how a whole visual
+    // system ended up sitting on one screen doing nothing for the other
+    // twenty. The drawing moved to `SpineRow` unchanged, at the same geometry,
+    // and the chapter list and the care threads now read as the same shape
+    // rather than as unrelated lists. `DESIGN.md` section 5.2.3.
+    SpineRow(
+        continuesAbove = continuesAbove,
+        continuesBelow = continuesBelow,
+        node = node,
+        routeColor = colors.blaze,
+        dash = RouteDash.TRAIL,
+        progress = draw,
+        content = content,
     )
-
-    Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
-        Box(modifier = Modifier.width(GutterWidth).fillMaxHeight()) {
-            Canvas(modifier = Modifier.fillMaxHeight().width(GutterWidth)) {
-                val x = LineCenter.toPx()
-                val nodeY = NodeCenterY.toPx()
-                val top = if (continuesAbove) 0f else nodeY
-                val bottom = if (continuesBelow) size.height else nodeY
-                // The line strokes in from the top, which is the direction the
-                // person reads and the direction the trail travels.
-                val end = top + (bottom - top) * draw
-                if (end > top) {
-                    drawLine(
-                        color = colors.blaze.copy(alpha = Trail.ROUTE_ALPHA),
-                        start = Offset(x, top),
-                        end = Offset(x, end),
-                        strokeWidth = Trail.strokeWidth.toPx(),
-                        cap = StrokeCap.Round,
-                        pathEffect = PathEffect.dashPathEffect(
-                            floatArrayOf(Trail.dashOn.toPx(), Trail.dashOff.toPx()),
-                        ),
-                    )
-                }
-            }
-
-            if (node != null) {
-                // The ring is the current background rather than a border
-                // color, which is what makes the node read as sitting on the
-                // line rather than beside it.
-                Box(
-                    modifier = Modifier
-                        .padding(
-                            start = LineCenter - (Trail.nodeSize / 2) - Trail.nodeRing,
-                            top = NodeCenterY - (Trail.nodeSize / 2) - Trail.nodeRing,
-                        )
-                        .size(Trail.nodeSize + Trail.nodeRing * 2)
-                        .clip(CircleShape)
-                        .background(colors.paper.copy(alpha = nodeAlpha)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(Trail.nodeSize)
-                            .clip(CircleShape)
-                            .background(node.copy(alpha = nodeAlpha)),
-                    )
-                }
-            }
-        }
-
-        Box(modifier = Modifier.weight(1f)) { content() }
-    }
 }
 
 /**

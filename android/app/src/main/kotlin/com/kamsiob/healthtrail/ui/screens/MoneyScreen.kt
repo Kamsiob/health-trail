@@ -93,7 +93,7 @@ fun MoneyScreen(
     ) {
         if (bills.isEmpty()) {
             item {
-                SectionEmpty(name = MoneyTags.NAME, text = strings["money.empty"])
+                SectionEmpty(name = MoneyTags.NAME, text = strings["money.empty"], section = Repository.Section.MONEY, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
                 Spacer(Modifier.height(Space.l))
             }
         }

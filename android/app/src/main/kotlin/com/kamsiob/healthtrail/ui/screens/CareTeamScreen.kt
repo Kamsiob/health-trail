@@ -66,7 +66,7 @@ fun CareTeamScreen(
         modifier = modifier,
     ) {
         if (people.isEmpty()) {
-            item { SectionEmpty(name = CareTeamTags.NAME, text = strings["careteam.empty"]) }
+            item { SectionEmpty(name = CareTeamTags.NAME, text = strings["careteam.empty"], section = Repository.Section.CARE_TEAM, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }
             item { Spacer(Modifier.height(Space.l)) }
         }
 

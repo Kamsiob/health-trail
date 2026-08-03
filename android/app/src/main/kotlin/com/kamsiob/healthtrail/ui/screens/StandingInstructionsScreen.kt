@@ -71,7 +71,7 @@ fun StandingInstructionsScreen(
     ) {
         if (instructions.isEmpty()) {
             item {
-                SectionEmpty(name = InstructionTags.NAME, text = strings["instructions.empty"])
+                SectionEmpty(name = InstructionTags.NAME, text = strings["instructions.empty"], section = Repository.Section.STANDING_INSTRUCTIONS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
                 Spacer(Modifier.height(Space.l))
             }
         }

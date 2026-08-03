@@ -67,7 +67,7 @@ fun MedicationsScreen(
     ) {
         if (medications.isEmpty()) {
             item {
-                SectionEmpty(name = MedsTags.NAME, text = strings["meds.empty"])
+                SectionEmpty(name = MedsTags.NAME, text = strings["meds.empty"], section = Repository.Section.MEDICATIONS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
                 Spacer(Modifier.height(Space.l))
             }
         }

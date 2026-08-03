@@ -153,8 +153,30 @@ val HealthTrailType = HealthTrailTypography(
         lineHeight = 16.sp,
         fontWeight = FontWeight.Normal,
         letterSpacing = 0.12.em,
+        fontFeatureSettings = TABULAR_FIGURES,
     ),
 )
+
+/**
+ * Tabular figures, so every digit occupies the same width.
+ *
+ * **This app is full of numbers sitting in lists**: counts beside twelve
+ * section names, dates down the trail, doses, amounts, and durations. With
+ * proportional figures a column of them jitters, and a column that jitters has
+ * to be read rather than scanned. `DESIGN.md` section 5.18.
+ *
+ * It rides on the Mono style, which 4.3 already assigns to counts, timestamps,
+ * and metadata, so nothing has to be restyled to get it.
+ *
+ * **`lnum` is here as well as `tnum`** because a face that defaults to old
+ * style figures would otherwise drop the 3 and the 9 below the baseline in a
+ * column of dates. JetBrains Mono does not, and asking costs nothing and
+ * survives a change of face.
+ *
+ * A face that has neither feature ignores both, which is why this is safe on
+ * the system CJK face that serves the mono style in Chinese, per 4.3.
+ */
+private const val TABULAR_FIGURES = "tnum 1, lnum 1"
 
 /**
  * Languages whose script joins its letters, where tracking is not a stylistic

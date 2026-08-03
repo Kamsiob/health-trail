@@ -67,7 +67,7 @@ fun QuestionsScreen(
         modifier = modifier,
     ) {
         if (questions.isEmpty()) {
-            item { SectionEmpty(name = QuestionTags.NAME, text = strings["questions.empty"]) }
+            item { SectionEmpty(name = QuestionTags.NAME, text = strings["questions.empty"], section = Repository.Section.ASK_NEXT_TIME, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }
         }
 
         // A group header only appears when its group has something under it, so

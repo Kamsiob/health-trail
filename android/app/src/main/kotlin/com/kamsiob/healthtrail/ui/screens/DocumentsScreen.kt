@@ -78,7 +78,7 @@ fun DocumentsScreen(
     ) {
         if (documents.isEmpty()) {
             item {
-                SectionEmpty(name = DocTags.NAME, text = strings["docs.empty"])
+                SectionEmpty(name = DocTags.NAME, text = strings["docs.empty"], section = Repository.Section.DOCUMENTS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
                 Spacer(Modifier.height(Space.l))
             }
         }

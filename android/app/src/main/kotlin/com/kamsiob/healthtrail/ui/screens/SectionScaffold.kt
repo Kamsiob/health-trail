@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.TextAction
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
+import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.ui.components.EmptyDrawing
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -133,11 +138,52 @@ fun SectionScaffold(
  * wondering.
  */
 @Composable
-fun SectionEmpty(name: String, text: String) {
-    Text(
-        text = text,
-        style = HealthTrail.type.bodyL,
-        color = HealthTrail.colors.ink2,
-        modifier = Modifier.testTag(SectionTags.empty(name)),
-    )
+fun SectionEmpty(
+    name: String,
+    text: String,
+    /**
+     * Which drawing to stand on the trail map ground.
+     *
+     * Null draws the ground alone, which is right for a place that is not one
+     * of the twelve sections. **It is never a substitute for passing the
+     * section**, per 5.17: a section's empty state uses its own drawing, so the
+     * empty screen is already teaching where you are.
+     */
+    section: Repository.Section? = null,
+    /**
+     * Passed `Modifier.fillParentMaxHeight(...)` by every caller, so the block
+     * centers in the space the list actually has.
+     *
+     * **Without it the empty state sat jammed under the subtitle with the whole
+     * screen empty beneath it**, which reads as a screen that failed to load
+     * rather than as a place waiting for something. Found by looking at it on
+     * the phone rather than in the code.
+     */
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag(SectionTags.empty(name))
+            .padding(vertical = Space.l),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        EmptyDrawing(section = section)
+        Spacer(Modifier.height(Space.l))
+        Text(
+            text = text,
+            style = HealthTrail.type.bodyL,
+            color = HealthTrail.colors.ink2,
+            textAlign = TextAlign.Center,
+        )
+    }
 }
+
+/**
+ * How much of the list's height an empty state is given to center itself in.
+ *
+ * Not all of it, because the title and subtitle above are already using some
+ * and a block centered in the full height would sit visibly low. Section 5.10.
+ */
+const val EMPTY_HEIGHT_FRACTION = 0.62f

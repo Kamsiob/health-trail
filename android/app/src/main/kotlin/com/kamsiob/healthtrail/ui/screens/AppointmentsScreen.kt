@@ -76,7 +76,7 @@ fun AppointmentsScreen(
     ) {
         if (appointments.isEmpty()) {
             item {
-                SectionEmpty(name = ApptTags.NAME, text = strings["appts.empty"])
+                SectionEmpty(name = ApptTags.NAME, text = strings["appts.empty"], section = Repository.Section.APPOINTMENTS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
                 Spacer(Modifier.height(Space.l))
             }
         }

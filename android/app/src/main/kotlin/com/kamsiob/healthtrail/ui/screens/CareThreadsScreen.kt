@@ -19,6 +19,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.RouteDash
+import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -62,14 +64,58 @@ fun CareThreadsScreen(
         modifier = modifier,
     ) {
         if (threads.isEmpty()) {
-            item { SectionEmpty(name = ThreadTags.NAME, text = strings["threads.empty"]) }
+            item { SectionEmpty(name = ThreadTags.NAME, text = strings["threads.empty"], section = Repository.Section.THREADS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }
         }
 
-        for (row in threads) {
+        threads.forEachIndexed { index, row ->
             item(key = row.thread.id) {
-                ThreadRow(row)
-                Spacer(Modifier.height(Space.cardGap))
+                ThreadSpineRow(
+                    row = row,
+                    continuesAbove = index > 0,
+                    continuesBelow = index < threads.lastIndex,
+                )
             }
+        }
+    }
+}
+
+/**
+ * A thread on its own route.
+ *
+ * **A route is a color and a dash pattern together, never a color alone**, per
+ * `DESIGN.md` section 5.2.2. This screen carried the color as a plain dot, so
+ * two threads that landed on similar colors were indistinguishable in
+ * grayscale, to a colorblind reader, and on a phone in sunlight. The dash is
+ * assigned by creation order and travels with the thread everywhere it appears.
+ *
+ * **Dashed rather than continuous**, because a thread is a filter over entries
+ * rather than the person's actual path. A chapter journey gets the continuous
+ * line. That distinction is the last bullet of 5.2.
+ */
+@Composable
+private fun ThreadSpineRow(
+    row: Repository.ThreadWithCount,
+    continuesAbove: Boolean,
+    continuesBelow: Boolean,
+) {
+    val colors = HealthTrail.colors
+    val route = colors.threadRoutes[row.thread.colorIndex % colors.threadRoutes.size]
+
+    // **An ended thread should keep its color and drop to ENDED_THREAD_ALPHA**,
+    // per section 5.2, so it reads as finished rather than deleted. That is not
+    // wired here because `CareThread` does not carry an ended timestamp yet, and
+    // inventing one in the view would be the interface guessing at data the app
+    // does not have. The token is defined and waiting.
+    SpineRow(
+        continuesAbove = continuesAbove,
+        continuesBelow = continuesBelow,
+        node = route,
+        routeColor = route,
+        dash = RouteDash.forIndex(row.thread.colorIndex),
+    ) {
+        Column {
+            ThreadRow(row)
+            Spacer(Modifier.height(Space.cardGap))
         }
     }
 }

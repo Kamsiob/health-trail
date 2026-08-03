@@ -15,6 +15,8 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.SpineRow
+import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -64,7 +66,7 @@ fun ChaptersScreen(
         modifier = modifier,
     ) {
         if (chapters.isEmpty()) {
-            item { SectionEmpty(name = ChapterTags.NAME, text = strings["chapters.empty"]) }
+            item { SectionEmpty(name = ChapterTags.NAME, text = strings["chapters.empty"], section = Repository.Section.CHAPTERS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }
         }
 
         if (current.isNotEmpty()) {
@@ -72,10 +74,18 @@ fun ChaptersScreen(
                 GroupHeader(labelKey = "chapters.current")
                 Spacer(Modifier.height(Space.headerGap))
             }
-            for (chapter in current) {
+            current.forEachIndexed { index, chapter ->
                 item(key = chapter.id) {
-                    ChapterRow(chapter)
-                    Spacer(Modifier.height(Space.cardGap))
+                    // **A current chapter is a milestone waypoint**, because it
+                    // is where the person actually is, and it is the only place
+                    // on this screen that gets one. If every chapter were ringed
+                    // none of them would be. `DESIGN.md` section 5.2.1.
+                    ChapterSpineRow(
+                        chapter = chapter,
+                        state = Waypoint.MILESTONE,
+                        continuesAbove = index > 0,
+                        continuesBelow = index < current.lastIndex || earlier.isNotEmpty(),
+                    )
                 }
             }
         }
@@ -86,12 +96,51 @@ fun ChaptersScreen(
                 GroupHeader(labelKey = "chapters.earlier")
                 Spacer(Modifier.height(Space.headerGap))
             }
-            for (chapter in earlier) {
+            earlier.forEachIndexed { index, chapter ->
                 item(key = chapter.id) {
-                    ChapterRow(chapter)
-                    Spacer(Modifier.height(Space.cardGap))
+                    ChapterSpineRow(
+                        chapter = chapter,
+                        state = Waypoint.HAPPENED,
+                        continuesAbove = true,
+                        continuesBelow = index < earlier.lastIndex,
+                    )
                 }
             }
+        }
+    }
+}
+
+/**
+ * A chapter on the spine.
+ *
+ * **Chapters are a journey through places, which is a trail by definition**, and
+ * this screen was a column of cards that happened to be about places. It is the
+ * same shape as the timeline, the same shape as a thread, and now it looks like
+ * it. `DESIGN.md` section 5.2.3.
+ *
+ * **The line is continuous rather than dashed**, because this is the person's
+ * actual path rather than a filter over entries. That is the distinction 5.2
+ * always drew and only two views ever honored.
+ */
+@Composable
+private fun ChapterSpineRow(
+    chapter: Repository.Chapter,
+    state: Waypoint,
+    continuesAbove: Boolean,
+    continuesBelow: Boolean,
+) {
+    val colors = HealthTrail.colors
+    SpineRow(
+        continuesAbove = continuesAbove,
+        continuesBelow = continuesBelow,
+        node = if (chapter.isCurrent) colors.blaze else colors.ink3NonText,
+        state = state,
+        routeColor = colors.blaze,
+        dash = null,
+    ) {
+        Column {
+            ChapterRow(chapter)
+            Spacer(Modifier.height(Space.cardGap))
         }
     }
 }
