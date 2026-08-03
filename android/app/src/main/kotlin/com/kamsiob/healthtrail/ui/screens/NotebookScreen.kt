@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
@@ -361,6 +362,19 @@ private fun SectionRow(row: SectionCount, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            // **One stop for the reader, asked for rather than relied on.**
+            //
+            // A row is a name and a count, and to somebody using a screen
+            // reader it should be one thing: "Care team, nothing yet". Without
+            // this it is two separate nodes, and whether a reader announces
+            // them as one stop or two is fallback behavior that varies by
+            // reader and by version. D54 recorded one stop, which was true of
+            // the reader it was walked with and was never asked for in code.
+            //
+            // Twelve sections at two stops each is twenty four swipes across a
+            // table of contents whose whole promise is that the places never
+            // move. #44.
+            .semantics(mergeDescendants = true) { }
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.card)
             .background(surface)

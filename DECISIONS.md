@@ -1412,6 +1412,34 @@ walked on the phone in both the matching and mismatched states, with the file
 picker reached only when a matching pair exists.
 
 
+### D68. The reader pass, and the fourth tool that reported on something it was not looking at
+
+**2026-08-02.** #44 has been owed for three sessions and HANDOFF has called it "the one thing this run consistently owes" each time. It is now half closed, and the half that is closed is closed properly.
+
+**The obvious method does not work, and it looks exactly like it does.** Turn TalkBack on, `adb shell uiautomator dump`, read the node list, and you appear to have the reader's traversal. **You do not.** That prints the view tree, and for a Compose app the view tree is the raw node list rather than the merged semantics tree a reader consumes.
+
+It reported the notebook's twelve rows as **twenty four stops**, "Care team" then "Nothing yet" as separate announcements, which read as a straight regression against D54's recorded finding that a row is one stop. **It was a measurement artifact.** What gave it away was adding explicit merging to the row, reinstalling, and seeing the dump not change by a single line. `--compressed` makes no difference: it strips layout-only Android views and knows nothing about Compose semantics.
+
+**Compose hands over the authoritative tree directly.** `useUnmergedTree = false` is the tree a reader walks, and `ReaderStopsTest` walks it: how many stops, in what order, and what text each carries. Four cases, on the notebook and on search.
+
+**This is the fourth tool in one night that reported on something other than what it was asked about**, and the pattern is now the most valuable thing this project knows about itself:
+
+| The tool | What it said | What it was actually looking at |
+|---|---|---|
+| The destructive command guard | Nothing, which read as a clean run | It was never invoked at all. D64 |
+| The interface suite, 130 tests | Every screen passes | One screen at a time, with no shell and no back button. D65 |
+| `grep` and `git grep` | No matches for a call that exists | Not the file, which two NUL bytes had made binary. D66 |
+| `uiautomator dump` | Twenty four reader stops | The view tree, not the semantics tree |
+
+**The rule that falls out of it: distrust a negative result from a tool that cannot tell you what it did not examine.** All four were silent about their own blind spot, which is what made each of them expensive.
+
+**What the merged tree found, which is a real improvement rather than a fix.** The notebook row was relying on a reader's fallback merging rather than asking for it. It asks now, `semantics(mergeDescendants = true)`, so "Care team, nothing yet" is one stop by contract instead of by the good behavior of the reader it happened to be walked with. D54's observation was correct; it just had nothing holding it.
+
+**What is still owed, and #44 stays open for it.** **Nothing was heard.** TalkBack's speech cannot be captured over adb, and how a label sounds, where a pause lands, and whether a row is unbearable at the reader's own verbosity settings are questions for ears. What is closed is the countable half: the number of stops, their order, and their text. **That is worth saying precisely rather than letting a green suite imply the rest.**
+
+**The phone was restored exactly**, per rule 19: the KDE Connect string back in `enabled_accessibility_services`, `accessibility_enabled` at 1, `touch_exploration_enabled` at 0, `font_scale` at 1.0, `animator_duration_scale` deleted rather than set. A restore script was written to `/tmp` **before** TalkBack was switched on, so the phone would come back even if this session ended unexpectedly, which is the failure D43 was right to worry about.
+
+
 ---
 
 ## BLOCKED

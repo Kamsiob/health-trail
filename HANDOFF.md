@@ -255,6 +255,18 @@ Ten sections searched at once, results grouped **in notebook order** rather than
 
 **What remains of #47**, and it is open as #131: scoped search inside each section with a chip saying what is being searched and one tap to widen, and the assembly view that gathers everything connected to a result into one exportable document.
 
+**#44 is half closed, properly, and the other half is named.** D68.
+
+**The obvious method does not work and looks exactly like it does.** Turning TalkBack on and dumping the node tree over adb prints the *view* tree, and for a Compose app that is not the merged semantics tree a reader consumes. It reported the notebook's twelve rows as twenty four stops, which read as a regression against D54. **It was a measurement artifact**, caught by adding explicit merging, reinstalling, and watching the dump not change by a line.
+
+**`ReaderStopsTest` asks Compose instead**, through the merged tree, which is the one a reader walks: how many stops, in what order, and what text each carries. It also found that the notebook row was relying on a reader's fallback merging rather than asking for it. It asks now, so "Care team, nothing yet" is one stop by contract rather than by the good behavior of whichever reader it was walked with.
+
+**Nothing was heard, and that is why #44 stays open.** TalkBack's speech cannot be captured over adb. How a label sounds, where a pause lands, and whether a row is unbearable at the reader's own verbosity are questions for ears.
+
+**The phone was restored exactly**, and a restore script was written to `/tmp` *before* TalkBack went on, so it would come back even if the session ended mid-pass.
+
+**The pattern worth carrying out of tonight.** Four separate tools reported on something other than what they were asked about: the guard that was never invoked, the suite that composed one screen at a time, the grep that skipped a binary file, and this dump. **Distrust a negative result from a tool that cannot tell you what it did not examine.**
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
