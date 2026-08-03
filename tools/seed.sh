@@ -82,5 +82,31 @@ walk "The one you chose when you saved this file" 1
 "$ADB" shell input text "$PASSPHRASE"
 sleep 2
 "$ADB" shell input keyevent 111
-sleep 8
-echo "Restored. Walk it with tools/walk.sh see"
+sleep 2
+
+# **Everything from here down is new on 2026-08-03, and until then this script
+# printed "Restored" having never tapped a restore button.** It typed the
+# passphrase, dismissed the keyboard, slept, and said it was done. The notebook
+# it claimed to have loaded was whatever was there before, which for a cleared
+# install is nothing at all, and every screen looked at afterward was looked at
+# against an empty notebook while the log said year five. That is D68 for the
+# sixth time: a tool reporting on something other than what it did.
+walk "Open it" 4
+
+# **The phone's password manager offers to save the passphrase and takes the
+# focus**, which is what actually stopped the taps below from ever being
+# written. It is not part of this app and it is dismissed rather than answered.
+walk "No thanks" 2
+
+walk "Replace everything with this" 10
+
+# **It says what happened rather than assuming it.** A seed script that cannot
+# tell a loaded notebook from an empty one is worse than no seed script,
+# because every screenshot taken afterward inherits the lie.
+if "$ROOT/tools/walk.sh" see 2>/dev/null | grep -q "Restored."; then
+  echo "Restored. Walk it with tools/walk.sh see"
+else
+  echo "The restore did not finish. What is on screen now:" >&2
+  "$ROOT/tools/walk.sh" see >&2 || true
+  exit 1
+fi
