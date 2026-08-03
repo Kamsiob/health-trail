@@ -77,6 +77,9 @@ data class PersonDraft(
  */
 @Composable
 fun AddPersonScreen(
+    onSave: (PersonDraft) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
     /**
      * Roles the active situation template names, offered as chips.
      *
@@ -84,9 +87,6 @@ fun AddPersonScreen(
      * yet" is a valid answer to the picker and produces a working notebook.
      */
     roleSuggestions: List<String> = emptyList(),
-    onSave: (PersonDraft) -> Unit,
-    onCancel: () -> Unit,
-    modifier: Modifier = Modifier,
     /**
      * The person being corrected, or null when this is somebody new.
      *
