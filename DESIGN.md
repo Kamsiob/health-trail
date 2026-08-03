@@ -175,7 +175,9 @@ Card 20dp. Inset tile, icon tile, chip container 12dp. Thumbnail 8dp. Bottom she
 
 Neither ever carries information on its own. A nav label is always paired with an icon and a content description. A Mono eyebrow, timestamp, or count is always directly above or beside the content it labels, and it labels rather than states: removing it would cost context, not meaning. Both are short, and Mono is uppercase and tracked, which raises its cap height and letter distinction well above what 11sp lowercase body text would give.
 
-Both scale with dynamic type like everything else, so a person who has raised their system font size gets them larger, which is the case the floor exists to protect.
+Both scale with dynamic type, so a person who has raised their system font size gets them larger, which is the case the floor exists to protect.
+
+**The nav label is capped at 1.4, and it is the only capped type in the app.** At font scale 2.0 "Notebook" broke mid-word into two lines and collided with the capture button. A single word cannot wrap, so the only choices are to break it, clip it, or stop it growing, and a word broken across two lines is less legible than the same word slightly smaller. Four labels and a fixed clearance for the capture button share one row, which is a width budget nothing else in the app has. Above the cap the label holds and the icon, the position, and the content description carry it, which is the set of things a person navigates by after two weeks anyway. Found on the phone with the system font at maximum, which is why section 9 requires that pass rather than a reading of the code.
 
 Nothing else may be added to this list. If a third candidate appears, that is a sign the layout is too dense, and the layout gets fixed rather than the floor lowered.
 

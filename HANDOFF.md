@@ -334,6 +334,16 @@ The entry names where it sits and each of them opens. A thread is named by **its
 
 **An incident with no thread read as "0 things written down"**, which is true and reads as broken, since the incident is itself a thing written down.
 
+**The accessibility gate was walked on the screens built tonight, and it found one thing.**
+
+**At font scale 2.0 the "Notebook" nav label broke mid-word into "Notebo" and "k" and collided with the capture button.** A single word cannot wrap, so the choices were to break it, clip it, or stop it growing, and a broken word is less legible than a slightly smaller one. **The nav label is now capped at 1.4 and is the only capped type in the app**, because four labels plus a fixed clearance for the capture button share a row nothing else shares. `DESIGN.md` 4.3 records it.
+
+**Everything else passed.** The disclaimer gate, the notebook, and the incident thread all render at 2.0 with nothing clipped and every control reachable. In Arabic the whole layout mirrors, including the spine: the route and both waypoints sit on the start edge, the content flows from them, and the milestone ring and the open hollow end both draw. That came free from using layout direction aware modifiers, which is why `SpineRow` uses `offset` rather than `absoluteOffset`.
+
+**The phone was restored exactly**, verified after: font scale 1.0, animator duration unset, the KDE Connect string in place, and the per-app locale cleared.
+
+**One operational note worth keeping.** `tools/verify.sh --device` runs the instrumented suite, which uninstalls the app and takes the fixture with it. A seeded notebook does not survive a verification run, so seed after verifying rather than before.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.

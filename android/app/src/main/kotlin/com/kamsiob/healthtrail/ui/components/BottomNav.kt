@@ -30,6 +30,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalDensity
+import kotlin.math.min
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -52,6 +54,15 @@ enum class Destination { TODAY, NOTEBOOK, PROJECTS, MORE }
 
 /** The capture button itself, per section 5.5. */
 private val CaptureSize = 56.dp
+
+/**
+ * How far the navigation label is allowed to grow with the system font.
+ *
+ * 1.4 rather than unbounded. Everything else in the app scales without limit;
+ * this bar cannot, because four labels and a fixed clearance for the capture
+ * button share one row.
+ */
+private const val NavLabelMaxScale = 1.4f
 
 /**
  * The column the navigation leaves empty for the capture button.
@@ -216,13 +227,40 @@ private fun NavTab(
                 .background(if (selected) colors.blueDeep else Color.Transparent),
         )
         Spacer(Modifier.height(2.dp))
+        // **The one place in the app where type stops growing, and it is
+        // stated rather than quiet.**
+        //
+        // At font scale 2.0 "Notebook" broke mid-word into "Notebo" and "k" and
+        // collided with the capture button. A single word cannot wrap, so the
+        // only choices are to break it, to clip it, or to stop it growing, and
+        // a word broken across two lines is less legible than the same word
+        // slightly smaller. Found by looking at the phone with the system font
+        // at maximum, which is the pass `DESIGN.md` section 9 requires.
+        //
+        // **Capped, not fixed.** It still grows with the person's setting, up
+        // to [NavLabelMaxScale], so somebody who has raised their font still
+        // gets a larger label. Beyond that the label holds and the icon, the
+        // position, and the content description carry it, which is the same
+        // set of things a person navigates by after two weeks.
+        //
+        // Nothing else in the app is capped. A four item bar with a fixed
+        // clearance for the capture button has a width budget nothing else has.
+        val density = LocalDensity.current
+        val capped = min(density.fontScale, NavLabelMaxScale) / density.fontScale
         Text(
             text = label,
             style = HealthTrail.type.navLabel.copy(
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                fontSize = HealthTrail.type.navLabel.fontSize * capped,
+                lineHeight = HealthTrail.type.navLabel.lineHeight * capped,
             ),
             color = if (selected) colors.blueDeep else colors.ink2,
             textAlign = TextAlign.Center,
+            // Two lines rather than one, because the longest word in the
+            // longest language will not fit on one at any size, and a second
+            // line is better than an ellipsis on a word somebody is navigating
+            // by.
+            maxLines = 2,
         )
     }
 }
