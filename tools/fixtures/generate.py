@@ -67,6 +67,18 @@ FULL = {
 }
 
 
+# What actually happens on an incident, in the order it happens. Administration
+# rather than advice, per rule 2 and `templates/SCHEMA.md`: these are records of
+# who was told and when, and none of them says whether anything was reasonable.
+INCIDENT_STEPS = [
+    "Reported it to the charge nurse",
+    "Called the unit to ask what had been done",
+    "Asked the director of nursing for it in writing",
+    "Called back, was told it had gone to the care plan meeting",
+    "Told what they decided",
+]
+
+
 class Generator:
     """Everything that writes, in one place, so the seed reaches all of it."""
 
@@ -339,11 +351,53 @@ class Generator:
                 "reported_end": self.ms(day, 23, 59),
             }
             # The last one stays open, always, whatever the seed.
+            closed = None
             if index < wanted - 1:
                 closed = min(self.days - 1, day + self.rng.randrange(2, 60))
                 values["resolved_at"] = self.ms(closed)
                 values["resolution_note"] = "They changed the schedule. It held for a while."
-            self.row(db, "incident", values, day=day)
+            incident_id = self.row(db, "incident", values, day=day)
+
+            # **An incident is a thread, so it carries the calls that chased
+            # it.** `MASTER_SPEC.md` 4.7 makes it a sequence from first report
+            # to resolution, and until 2026-08-02 the generator wrote the
+            # incident and never linked a single entry to it. A month six
+            # fixture therefore showed every incident reading "nothing written
+            # down", which is not what a family living through one has, and it
+            # made P4 untestable against generated data: P4's first requirement
+            # is that the thread records every call with names and dates and
+            # reads start to finish.
+            self.incident_thread(db, subject_id, incident_id, day, closed)
+
+    def incident_thread(self, db, subject_id, incident_id, reported_day, closed_day):
+        """The calls and escalations that hang off one incident.
+
+        Between two and five of them, the first on the day it was reported,
+        the rest spread through to the answer if there was one. Every entry is
+        an ordinary entry, so it appears on the trail in its own right as well
+        as on the thread.
+        """
+        last = closed_day if closed_day is not None else min(self.days - 1, reported_day + 45)
+        span = max(1, last - reported_day)
+        howmany = self.rng.randrange(2, 6)
+        for step in range(howmany):
+            day = min(self.days - 1, reported_day + (span * step) // howmany)
+            self.row(
+                db,
+                "entry",
+                {
+                    "subject_id": subject_id,
+                    "kind": "call" if step else "incident",
+                    "title": INCIDENT_STEPS[step % len(INCIDENT_STEPS)],
+                    "body": None,
+                    "incident_id": incident_id,
+                    "occurred_edtf": (self.start + timedelta(days=day)).isoformat(),
+                    "occurred_start": self.ms(day, 0, 0),
+                    "occurred_end": self.ms(day, 23, 59),
+                    "is_unfiled": 0,
+                },
+                day=day,
+            )
 
     def bills(self, db, subject_id, chapters):
         """One bill in every state the schema allows.

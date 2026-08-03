@@ -661,7 +661,25 @@ That is Part Two's rule almost word for word: anywhere the set of possible answe
 - *A checklist that cannot be edited.* There is no checklist, which is #135 rather than a pass.
 - *Roles that cannot be renamed.* They are suggestions filling an ordinary text field, so renaming is typing.
 
-**Not walked yet:** P3 through P13. P10 through P12 need #62, since the template catalog is English only and a language persona against English content tests nothing.
+### P4, month six, the first fight. Partly walked 2026-08-03 on the Pixel, fixture: month6 seed 1, restored through the app
+
+**The first persona walked against generated data rather than data typed by hand**, which is what `tools/fixtures/pack.py` unlocked.
+
+| Must be true | Result |
+|---|---|
+| **The incident thread records every call with names and dates and reads start to finish** | **Yes.** Five weeks of chasing on one screen: reported to the charge nurse on April 11, called the unit on the 20th, asked the director of nursing in writing on the 29th, told on May 8 it had gone to the care plan meeting, told what they decided on May 17, and then a hollow waypoint and "Nothing since. This one is still open." |
+| Open incidents are visible from Today | Yes, "1 open incident", opening the list |
+| **Each of these exports as its own document, legible to somebody who has never seen the app** | **Yes for an incident.** Not yet for a standing instruction or a bill |
+| The standing instruction shows its violation count, each violation linking to its bill or incident | **Not built.** `instruction_violation` is in the schema and nothing reads it |
+| The disputed bill carries its state and its link to the instruction it broke | **Partly.** Bills carry state; the link to an instruction is not built |
+
+**Two fixture defects found by looking at real data, both fixed.**
+
+**The generator wrote incidents with nothing on them.** Every incident read "0 things written down", because no entry ever carried an `incident_id`. P4's first requirement is precisely that the thread records every call, so the persona was untestable against generated data. The generator now writes two to five steps per incident, spread from the report to the answer.
+
+**"0 things written down" read as broken** even when it was true. An incident is itself a thing written down, so the zero case now says "Nothing written down since" and "Answered and nothing else written down".
+
+**Not walked yet:** P3, and P5 through P13. P10 through P12 need #62, since the template catalog is English only and a language persona against English content tests nothing.
 
 ---
 
