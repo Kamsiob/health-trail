@@ -1212,6 +1212,96 @@ known and the fifteen minutes are better spent on the app.
 
 ---
 
+### D65. Back from a capture form returns to the sheet, and the third instance of the shortcut defect was caught before it shipped
+
+**The audit D39 asked for was run on 2026-08-02**, against the question the
+prompt sets: for each test, what does it hand the code that the person never
+could? `TESTING-PERSONAS.md` section 7 is the rule that came out of it.
+
+**The third instance was already in the codebase and nothing was going to find
+it.** The first two are known: the locale tests passed the locale straight into
+`Strings.load` while a person who chose Chinese got English, and every round
+trip test restored onto the device that wrote the export while no export was
+readable anywhere else. Both are D52 and D61.
+
+**The third is the interface suite.** 130 of the 137 interface tests use
+`createComposeRule`, which mounts one screen inside a bare test activity. Every
+`BackHandler` in this app, eighteen of them, lives in `NotebookShell`, above the
+screens. **So the entire suite was structurally incapable of seeing back**, and
+that is exactly the defect that shipped: back left the app from every screen
+above the notebook, and it was found by a hand holding the phone rather than by
+185 passing tests.
+
+**`BackJourneyTest` is the answer and it goes through the front door.** It
+launches `MainActivity`, walks in through the gate and setup using only what a
+person can touch, and presses the real system back button through Espresso.
+Espresso raises `NoActivityResumedException` when a back press finishes the last
+activity, so the defect is an assertion rather than a hazard.
+
+**It found a real one on its first run**, which is the argument for the whole
+rule. Choosing a kind on the capture sheet sets `sheetOpen = false` and opens
+the form, so the sheet is gone. Back from the form closed the form and landed on
+the notebook, and the next back left the app. **Someone reaching for "Log a
+call" who hit "Log a visit" pressed back, arrived at the notebook, and had to
+tap the capture button and then the right kind again: three taps to undo one
+mistap**, on the screen most likely to be used one-handed in a hallway with a
+nurse still talking. It is one tap now.
+
+**Back is a step up, and the sheet is the step it came from.** The form's own
+Cancel button is left alone and still closes everything, because cancel means
+abandoning the entry rather than going up one level. Two controls, two meanings,
+both reachable.
+
+**The standing rule, in `TESTING-PERSONAS.md` section 7.** Screen tests and
+journey tests are different tests and this project needs both. A screen test
+proves a screen renders every state; only a journey test can see navigation,
+back, the shell, or anything that depends on how the person arrived. **Every
+screen owes at least one journey that reaches it**, and a screen reachable only
+by composing it directly is a screen no test has actually visited.
+
+### D66. Two bytes made a core file invisible to every search, and it produced a wrong conclusion within minutes
+
+**Found while running the audit in D65, by being wrong in public.**
+
+`git grep -n "Migrations.run"` returned hits only in `MigrationTest.kt`. The
+reading was obvious and it was completely wrong: that the migration mechanism
+was built, thoroughly tested, and never called by the app, which would have been
+a serious defect and was about to be filed as one. **The call is on line 114 of
+`HealthTrailDatabase.kt`.** It was found by opening the file and reading it,
+after the grep result made no sense.
+
+**The cause is two NUL bytes.** Three files carried the SQLite header magic as a
+literal `"SQLite format 3\u0000"` with a raw NUL rather than the escape, written
+during the portability fix. **A single NUL byte makes a file binary to `grep`
+and to `git grep`, and neither says so.** No warning, no listing, no error.
+The file simply returns no match, forever, while compiling and passing its tests
+exactly as before.
+
+**The general form is worse than the instance.** A file that cannot be searched
+is a file exempt from every check that searches, and nothing anywhere reports
+the exemption. That covers a compliance sweep, a rename, a check for a forbidden
+call, or a review of everything that touches the Keystore. Two of the three
+affected files were `PortabilityTest.kt` and `ExportContainerTest.kt`, so the
+tests guarding the only recovery path from key loss were themselves unsearchable.
+
+**The fix in the source is one character**: write `\u0000`. The compiled bytes
+are identical and the file on disk stays text.
+
+**`check_text_sources.py` fails on any NUL byte or any non UTF-8 source file**,
+runs in `run_all.py` and therefore in continuous integration, and names the exact
+lines because the whole point is that grep will not. **Proven by breaking it on
+purpose**: a probe file with one NUL, the check failing and naming it, the probe
+removed, the check passing again.
+
+**Why this belongs next to D65 rather than filed as trivia.** Both are the same
+failure: a tool reported success while never having looked at the thing. The
+guard that logged nothing because it never ran, the suite that passed because it
+never composed the shell, and the grep that found nothing because it silently
+skipped the file are three faces of one problem. **The lesson is to distrust a
+negative result from a tool that cannot tell you what it did not examine.**
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 

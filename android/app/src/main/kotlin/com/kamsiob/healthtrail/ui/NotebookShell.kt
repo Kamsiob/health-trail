@@ -384,7 +384,25 @@ fun NotebookShell(
         editingDocument = null
         documentError = null
     }
-    BackHandler(enabled = capturing != null) { capturing = null; documentError = null }
+    // Back from a capture form reopens the sheet it came from, rather than
+    // dropping the person on the notebook.
+    //
+    // **Found by `BackJourneyTest` on its first run.** Choosing a kind closes
+    // the sheet and opens the form, so before this the sheet was simply gone:
+    // somebody who reached for "Log a call" and hit "Log a visit" pressed back,
+    // landed on the notebook, and had to tap the capture button and then the
+    // right kind again. Three taps to undo one mistap, on the screen most
+    // likely to be used one-handed in a hallway. It is one now.
+    //
+    // Back is a step up, and the sheet is the step it came from. **The form's
+    // own Cancel button is a different question and still closes everything**,
+    // because cancel means abandoning the entry rather than going back one
+    // level. Both are reachable and they mean different things. D65.
+    BackHandler(enabled = capturing != null) {
+        capturing = null
+        documentError = null
+        sheetOpen = true
+    }
 
     Surface(
         modifier = Modifier

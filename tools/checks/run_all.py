@@ -31,6 +31,7 @@ CHECKS = [
     ("check_live_views.py", "no base table read outside a live view, so tombstones cannot leak"),
     ("check_fixtures.py", "the fixture generator is deterministic and hits its stated scale"),
     ("check_hook_quoting.py", "hook commands are quoted, so a guard cannot be a silent no-op"),
+    ("check_text_sources.py", "every source file is searchable text, so grep sees the whole repository"),
 ]
 
 # TESTING-PERSONAS.md section 5 checks that are not implemented yet, each named

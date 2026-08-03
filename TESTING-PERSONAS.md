@@ -181,7 +181,45 @@ Per `AGENTS.md`, the test runner subagent executes the suites and persona script
 
 If delegation fails or is unavailable, the main session runs them directly and logs it. A persona that was not walked is never recorded as walked.
 
-## 7. The gate
+## 7. The shortcut rule, which exists because the same defect shipped three times
+
+**A test that reaches the code by a path the person cannot take proves something the person does not get.**
+
+That is not a general caution. It is the shape of the three most expensive defects this project has shipped, all three of which had a full green suite standing over them at the time.
+
+| What shipped broken | What the suite handed the code that a person never could | Why every test passed |
+|---|---|---|
+| **Chinese did not work at all.** A person who set the app to Chinese got English, silently | The `Locale`, passed straight into `Strings.load` | The catalogs were fine. The resolution path to them was not, and no test used it. Spanish and Arabic happened to work, so a general bug looked like a Chinese one |
+| **No export could be opened anywhere but the phone that wrote it**, which meant the only recovery path from key loss did not exist | The device. Every round trip restored onto the machine that exported, where the Keystore key never changes | The bytes did survive the round trip, exactly as asserted. The file was still unreadable everywhere else |
+| **The system back button left the app** from every screen above the notebook | The screen, composed alone in a bare test activity with no shell around it and no activity to leave | 130 of 137 interface tests use `createComposeRule`. Every `BackHandler` lives in `NotebookShell`, above them. They could not have caught it |
+
+D39 says a defect found twice is a defect and three times is a missing specification. This is the specification.
+
+### The question to ask of every test
+
+**What does this test hand the code that the person never could?**
+
+Look for a locale, a theme, a device id, a passphrase, a key, a timestamp, a file path, a database handle, a composed screen, or a row inserted by SQL. Then look for the second form, which is quieter: **setup that performs a step the app performs differently at runtime.** Seeding a notebook with `INSERT` is not the same act as filling in a form, and the difference is where the bugs are.
+
+Then ask the sharper version: **is this test asserting on a value it also supplied?** A test that passes in Spanish and asserts it got Spanish has proven a lookup, not a language.
+
+### What to do about it, in order
+
+1. **Rewrite it to go through the person's path** wherever that is possible. It usually is, and it is usually cheap. `AppLanguageTest` sets the app's language through `LocaleManager`, the same API Android's own picker uses, and it is thirty lines. `BackJourneyTest` launches the real activity and presses the real back button, and it found a defect on its first run.
+2. **Where it genuinely cannot**, say so in the test, in the test, not in a document. Name the shortcut and name what covers the difference. A pure function tested with injected timestamps is correct and honest; what is not honest is leaving a reader to discover that nothing checks where those timestamps come from.
+3. **Where nothing covers the difference, that is a gap and it gets an issue**, whether or not anything is currently known to be broken in it. The three above were all invisible until someone held the phone.
+
+### The standing shape of the interface suite
+
+**Screen tests and journey tests are different tests and the project needs both.**
+
+A screen test composes one screen and proves it renders every state, at every font scale, in every language. That is what `createComposeRule` is for and it stays.
+
+**A journey test launches `MainActivity` and walks in from the front door**, through the gate, through setup, into the thing being tested, using only what a person can touch. It is the only kind that can see navigation, back, the shell, state that survives rotation, and anything that depends on how the person arrived. **Every screen owes at least one journey that reaches it**, and a screen reachable only by composing it directly is a screen no test has actually visited.
+
+**The reader pass belongs on journeys too.** `ScreenReaderTest` composes each screen alone, so it proves labeling and cannot prove traversal order as a person meets it. That is why #44 is a hand pass and not a suite.
+
+## 8. The gate
 
 No phase is complete until its own tests pass, the regression sweep of all previous phases passes, and every persona touching that phase's features has been walked on a device or emulator with the result recorded.
 

@@ -4,9 +4,9 @@
 
 If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
 
-**Last rewritten:** 2026-08-02 at 06:25, at the end of an eight hour run. Sections 0a, 3, and 4 are current to the end of it.
+**Last rewritten:** 2026-08-02, and updated continuously through the run that began that evening. Sections 0a, 3, 4, and 6 are current to the last commit.
 
-**Nothing is in flight.** Everything is committed and pushed to `main`, the working tree is clean, and the phone holds a build matching the head of `main` with a seeded notebook. The last commit of the run is `878e1bc`.
+**Work in progress is on a branch and pushed.** Every increment is committed and pushed as it lands, per rule 7, so nothing is only on this machine. The phone holds a build matching the work.
 
 **The single most important thing this run found:** every export the app had ever written could only be opened by the phone that wrote it, which meant the only recovery path from key loss did not exist. It is fixed, and D61 explains why no test caught it.
 
@@ -190,6 +190,24 @@ first: it was once per composition, so a theme change or rotation advanced the
 mark mid-visit and the digest went blank. Found on the phone, with a freshly
 seeded notebook reporting nothing at all.
 
+### What happened on the night of 2026-08-02, this run
+
+**The guard question is closed and handed to the owner.** Section 0a. It has never fired through Claude Code on any day, the fix needs the owner, and it is B5.
+
+**The test shortcut audit D39 asked for was run, and it found the third instance before it shipped.** `TESTING-PERSONAS.md` section 7 is the rule. The question is: what does this test hand the code that the person never could?
+
+| The three instances | The shortcut |
+|---|---|
+| Chinese did not work at all | The `Locale`, passed straight into `Strings.load` |
+| No export was readable off the phone that wrote it | The device. Every round trip restored where the key never changes |
+| **The system back button left the app** | **The screen, composed alone with no shell around it** |
+
+**130 of the 137 interface tests use `createComposeRule`**, which mounts one screen in a bare test activity. All eighteen `BackHandler`s live in `NotebookShell`, above them, so **the suite was structurally unable to see back**, which is exactly the defect that shipped and was found by hand.
+
+**`BackJourneyTest` goes through the front door**: launches `MainActivity`, walks in through the gate and setup using only what a person can touch, and presses the real system back button. **It found a real defect on its first run.** Choosing a kind closed the capture sheet, so back from the form landed on the notebook, and correcting a mistap cost three taps. It is one now, D65. Four tests, all passing on the Pixel.
+
+**Two bytes had made a core file invisible to every search.** `git grep "Migrations.run"` returned only the test file, which read as the migration mechanism never being called by the app. **That conclusion was wrong**, and it came from three files carrying a literal NUL inside the SQLite header magic: one NUL makes a file binary to `grep` and `git grep`, and neither says so. `HealthTrailDatabase.kt`, `PortabilityTest.kt`, and `ExportContainerTest.kt` were all exempt from every search based check, silently. Fixed with the escape, and **`check_text_sources.py` fails on it now**, proven by breaking it on purpose. It then immediately caught a NUL in `DECISIONS.md` written while documenting the fix. D66.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -286,7 +304,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 178 tests, 0 failures**, run on the connected Pixel 10 Pro XL, and the app was reinstalled immediately afterward per D56. **47 JVM unit tests, 0 failures**, which includes the 6 in `TypeTest`. The count previously written here was 30 and was stale. All nine implemented compliance checks pass.
+**The whole instrumented suite: 182 tests, 0 failures**, run on the connected Pixel 10 Pro XL, and the app was reinstalled immediately afterward per D56. **47 JVM unit tests, 0 failures**, which includes the 6 in `TypeTest`. The count previously written here was 30 and was stale. All 11 implemented compliance checks pass.
 
 **A pattern worth carrying forward.** Almost every defect this run found came from putting the built thing in a hand and changing one condition: the font at maximum, the keyboard up, the language set to Arabic, or simply looking at a screen that had already passed its tests. None of them were visible in the code, and several had passed a review. The tests are what keep them fixed; they are not what found them.
 
@@ -431,7 +449,7 @@ The same shape as the hook defect in D49: configuration read once at startup, ed
 
 **Run `tools/verify.sh`, not the checks you happen to remember.** Continuous integration failed on 2026-08-02 for a lint error, `Uri.parse` where the KTX `String.toUri` was wanted, in code that had been walked on the device and had passed all ten content checks and 185 instrumented tests. **`verify.sh` runs `lintDebug` and would have caught it.** Running `run_all.py` plus the instrumented suite by hand feels like verifying and skips whatever is not in that habit.
 
-**Verification.** `tools/verify.sh` is the honest runner: it captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. `python3 tools/checks/run_all.py` runs the nine content and contract checks alone. **Never chain a commit on a grep of output.**
+**Verification.** `tools/verify.sh` is the honest runner: it captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. `python3 tools/checks/run_all.py` runs the 11 content and contract checks alone. **Never chain a commit on a grep of output.**
 
 ---
 

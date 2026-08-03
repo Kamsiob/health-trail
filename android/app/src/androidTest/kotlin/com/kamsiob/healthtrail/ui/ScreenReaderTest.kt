@@ -83,6 +83,32 @@ import org.junit.runner.RunWith
  * The rule it enforces: **every node carrying a click, a long click, or a
  * selection action has text or a content description**. Nothing else about it
  * matters here.
+ *
+ * ## The shortcut this test takes, named per `TESTING-PERSONAS.md` section 7
+ *
+ * **Every screen here is composed directly, with arguments handed to it, rather
+ * than reached the way a person reaches it.** That is deliberate and it is the
+ * only way to cover thirty-odd screens in seconds, including states that are
+ * awkward to reach on demand, like an error or an empty section in a notebook
+ * that has data.
+ *
+ * **What it therefore cannot see**, so that nobody reads a passing run as more
+ * than it is:
+ *
+ * - **Traversal order.** Nodes are checked as a set, not as a sequence, so a
+ *   reader meeting them in the wrong order passes here. That is the hand pass,
+ *   issue #44, and it is why #44 is not closed by this file.
+ * - **How a label actually sounds.** "Care team, nothing yet" and "Care team"
+ *   followed by "nothing yet" are one stop and two stops to a reader, and both
+ *   satisfy the rule this test enforces.
+ * - **Anything above an individual screen.** The shell, navigation, and back
+ *   are not composed here at all. `BackJourneyTest` covers that, and D65 is why
+ *   it exists.
+ * - **Whether the screen is reachable.** A screen only ever composed by this
+ *   test is a screen no test has actually visited.
+ *
+ * **What covers the difference:** the hand pass with TalkBack running, #44, and
+ * the journey tests. Neither is optional and neither is replaced by this file.
  */
 @RunWith(AndroidJUnit4::class)
 class ScreenReaderTest {

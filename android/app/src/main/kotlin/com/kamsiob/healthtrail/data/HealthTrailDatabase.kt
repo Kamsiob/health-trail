@@ -225,7 +225,7 @@ class HealthTrailDatabase private constructor(
         if (!file.isFile || file.length() < 16) return false
         val header = ByteArray(16)
         file.inputStream().use { it.read(header) }
-        // A plaintext SQLite file starts with "SQLite format 3 ".
-        return String(header, Charsets.ISO_8859_1) != "SQLite format 3 "
+        // A plaintext SQLite file starts with "SQLite format 3\u0000".
+        return String(header, Charsets.ISO_8859_1) != "SQLite format 3\u0000"
     }
 }

@@ -1,0 +1,211 @@
+package com.kamsiob.healthtrail.ui
+
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToKey
+import androidx.lifecycle.Lifecycle
+import androidx.test.espresso.Espresso
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.kamsiob.healthtrail.MainActivity
+import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.components.NavTags
+import com.kamsiob.healthtrail.ui.screens.CaptureKind
+import com.kamsiob.healthtrail.ui.screens.CaptureTags
+import com.kamsiob.healthtrail.ui.screens.DisclaimerTags
+import com.kamsiob.healthtrail.ui.screens.NotebookTags
+import com.kamsiob.healthtrail.ui.screens.SectionTags
+import com.kamsiob.healthtrail.ui.screens.SetupTags
+import com.kamsiob.healthtrail.ui.screens.SituationPickerTags
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+/**
+ * The system back button, walked through the real activity.
+ *
+ * **This is the test that did not exist, and its absence cost the back button
+ * on every screen above the notebook.** Opening a section, a project, About,
+ * the export screen, the capture sheet, or any of the eighteen overlays and
+ * pressing back **left the app entirely**, dropping someone standing in a
+ * hospital corridor onto their home screen with a half read section behind
+ * them. It shipped, and it was found by a hand holding the phone.
+ *
+ * **Why 130 of the 137 interface tests could not have caught it.** They use
+ * `createComposeRule`, which composes one screen inside a bare test activity.
+ * That is a fine way to prove a screen renders, and it is structurally unable
+ * to prove anything about back, because there is no navigation state to return
+ * to and no activity to leave. Every `BackHandler` in this app lives in
+ * `NotebookShell`, above the individual screens, so composing a screen on its
+ * own composes the one part of the app that has no opinion about back.
+ *
+ * **The shortcut those tests take is the shape D61 names**: a test that reaches
+ * past the person's path proves something the person does not get. There the
+ * shortcut was restoring an export onto the device that wrote it. Here it is
+ * mounting a screen without the shell that owns its back behavior.
+ *
+ * So this one launches `MainActivity`, walks in from wherever the install
+ * happens to be, and presses the real system back button through Espresso.
+ * `pressBack` throws `NoActivityResumedException` when the press leaves the
+ * app, which is the failure being tested for, so it is an assertion rather
+ * than a hazard.
+ *
+ * `TESTING-PERSONAS.md` section 9 carries the rule this test is the first
+ * instance of.
+ */
+@RunWith(AndroidJUnit4::class)
+class BackJourneyTest {
+
+    @get:Rule
+    val compose = createAndroidComposeRule<MainActivity>()
+
+    /**
+     * Walks in from whatever state the install is in.
+     *
+     * The suite uninstalls the app when it finishes, so a run may start at the
+     * disclaimer gate, and a second test in the same run starts past it. Both
+     * are legitimate and neither is the thing under test, so each step is taken
+     * only if it is actually on screen.
+     */
+    private fun reachTheNotebook() {
+        compose.waitUntil(timeoutMillis = 20_000) {
+            compose.onAllNodesWithTag(AppRootTags.LOADING).fetchSemanticsNodes().isEmpty()
+        }
+
+        if (showing(DisclaimerTags.ROOT)) {
+            compose.onNodeWithTag(DisclaimerTags.ACCEPT).performClick()
+            settle()
+        }
+        if (showing(SetupTags.ROOT)) {
+            // Skipping is a real answer, and it is the fastest way to a
+            // notebook. P1 walks the same path.
+            compose.onNodeWithTag(SetupTags.SKIP).performClick()
+            settle()
+        }
+        if (showing(SituationPickerTags.ROOT)) {
+            compose.onNodeWithTag(SituationPickerTags.SKIP).performClick()
+            settle()
+        }
+
+        compose.waitUntil(timeoutMillis = 20_000) { showing(ShellTags.ROOT) }
+    }
+
+    private fun showing(tag: String): Boolean =
+        compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+
+    /** Waits for whatever the last action started, including database work. */
+    private fun settle() {
+        compose.waitUntil(timeoutMillis = 20_000) {
+            compose.onAllNodesWithTag(AppRootTags.LOADING).fetchSemanticsNodes().isEmpty()
+        }
+        compose.waitForIdle()
+    }
+
+    private fun openTheNotebook() {
+        compose.onNodeWithTag(NavTags.tab(Destination.NOTEBOOK)).performClick()
+        compose.waitUntil(timeoutMillis = 10_000) { showing(NotebookTags.ROOT) }
+    }
+
+    /**
+     * Presses the system back button and fails with a readable message if that
+     * left the app.
+     *
+     * Espresso raises `NoActivityResumedException` when a back press finishes
+     * the last activity. That exception is precisely the defect, so it is
+     * caught and rewritten into a sentence naming what a person would have
+     * experienced.
+     */
+    private fun backWithoutLeavingTheApp(from: String) {
+        try {
+            Espresso.pressBack()
+        } catch (_: androidx.test.espresso.NoActivityResumedException) {
+            throw AssertionError(
+                "pressing back from $from left the app entirely. " +
+                    "Back should return to where the person came from. " +
+                    "Add a BackHandler in NotebookShell for this state.",
+            )
+        }
+        compose.waitForIdle()
+    }
+
+    @Test
+    fun backFromAnOpenSectionReturnsToTheNotebookRatherThanLeavingTheApp() {
+        reachTheNotebook()
+        openTheNotebook()
+
+        // The trail, because it is the section every notebook has and it is the
+        // app's namesake. Scrolled to by key, never by viewport, per the trap
+        // recorded in HANDOFF section 8.
+        val section = Repository.Section.TRAIL
+        compose.onNodeWithTag(NotebookTags.ROOT).performScrollToKey(section.name)
+        compose.onNodeWithTag(NotebookTags.section(section)).performClick()
+        compose.waitUntil(timeoutMillis = 10_000) { showing(SectionTags.BACK) }
+
+        backWithoutLeavingTheApp("an open section")
+
+        compose.onNodeWithTag(NotebookTags.ROOT).assertIsDisplayed()
+        assertTrue(
+            "back from a section left the section open",
+            compose.onAllNodesWithTag(SectionTags.BACK).fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
+    fun backFromTheCaptureSheetClosesTheSheetRatherThanLeavingTheApp() {
+        reachTheNotebook()
+
+        compose.onNodeWithTag(NavTags.CAPTURE).performClick()
+        compose.waitUntil(timeoutMillis = 10_000) { showing(CaptureTags.SHEET) }
+
+        backWithoutLeavingTheApp("the capture sheet")
+
+        assertTrue(
+            "back left the capture sheet open",
+            compose.onAllNodesWithTag(CaptureTags.SHEET).fetchSemanticsNodes().isEmpty(),
+        )
+        compose.onNodeWithTag(ShellTags.ROOT).assertIsDisplayed()
+    }
+
+    @Test
+    fun backFromACaptureFormReturnsToTheSheetRatherThanLeavingTheApp() {
+        reachTheNotebook()
+
+        compose.onNodeWithTag(NavTags.CAPTURE).performClick()
+        compose.waitUntil(timeoutMillis = 10_000) { showing(CaptureTags.SHEET) }
+        compose.onNodeWithTag(CaptureTags.option(CaptureKind.CALL)).performClick()
+        compose.waitForIdle()
+
+        // Two presses, because a form opened from the sheet is two states deep.
+        // The person's expectation is that each press undoes one thing, which
+        // is the whole reason the shell holds them as separate handlers.
+        backWithoutLeavingTheApp("a capture form")
+        backWithoutLeavingTheApp("the capture sheet under a form")
+
+        compose.onNodeWithTag(ShellTags.ROOT).assertIsDisplayed()
+    }
+
+    @Test
+    fun backFromTheNotebookItselfDoesLeaveTheApp() {
+        // The other half of the contract, and the reason this is not fixed by
+        // swallowing every back press. At the notebook there is nowhere further
+        // back to go, so back does what it does everywhere else on Android.
+        reachTheNotebook()
+        openTheNotebook()
+
+        // Unconditionally, because the ordinary `pressBack` raises when the app
+        // exits and here the exit is the expected result.
+        Espresso.pressBackUnconditionally()
+
+        // Asked of the scenario rather than of the activity. `compose.activity`
+        // reaches into a destroyed activity and throws a null pointer, which
+        // reads as a broken test rather than as the pass it is.
+        assertTrue(
+            "back at the notebook did not leave the app, so it is trapping the person",
+            compose.activityRule.scenario.state == Lifecycle.State.DESTROYED,
+        )
+    }
+}
