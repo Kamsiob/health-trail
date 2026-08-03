@@ -433,6 +433,27 @@ A rounded tile carrying one line drawing, which is how the reference file draws 
 
 **An icon is never the only thing naming what it sits beside.** Every row carrying a tile also carries the name in words, so the tile is recognition rather than information, and the stroke is held to the 3:1 non-text ratio rather than a text ratio.
 
+#### 5.12.1 The set, and the rule that makes a tile grid work
+
+**Twenty three drawings: thirteen sections, four destinations, and six capture kinds.** Two of the six are not drawings of their own and must never become drawings of their own: a captured question uses the Ask next time icon and a captured document uses the Documents icon, because those are the sections they land in and **a shape means the same thing everywhere it appears**, per 5.2.
+
+**The rule the set is held to, which is stricter than "one grid, one stroke":** no two drawings share a silhouette. In a list, an icon is a decoration beside a word somebody is going to read anyway. **In a tile grid the icon is how the person finds the tile**, and a grid of shapes that need reading to be told apart is only a shorter list, which is the one thing 11.2 says a tile grid must not be.
+
+**Four section drawings were changed on 2026-08-03 for exactly that reason**, and none of them looked wrong on its own:
+
+| Section | Was | Is | Why |
+|---|---|---|---|
+| Medications | A blister pack, a tall rounded rectangle with a band | A capsule, split across the middle | It was the fourth rectangle in a set of thirteen. The capsule is the only fully rounded shape |
+| Money | A receipt torn along the bottom | A note seen wide, with a mark in it | A tall narrow shape with a notched bottom is a bookmark, which is Chapters. It is now the only short wide shape |
+| The trail | A curve, a bar, and three nodes stacked at the end edge | One winding route with three waypoints on it | At tile size it read as Care threads: dots on one side with lines running off them. A route carries its own nodes everywhere else in the app |
+| Projects | A folder | A marker flag on a post | A folder is a stock drawing meaning "some files", and it shared a silhouette with the calendar and the clipboard. A project is a sequence with a destination, per 11.12, and a trail already has a shape for the end of a route |
+
+**The trail is allowed a fourth stroke**, against the three stroke rule the rest of the set keeps. It is the app's signature rather than a section marker, and a route with no waypoints on it is a squiggle.
+
+**Two of the four capture drawings are deliberately conventional and two are deliberately not.** A call is a handset and a visit is a pin, because those are the symbols every person already reads and inventing a novel shape there would cost the person a beat for nothing. **An incident is a route with a break in it and a marker standing in the gap**, which is this app's own vocabulary rather than the warning triangle every other app reaches for: a triangle would be the interface sounding an alarm about something the person calmly wrote down, and rule 2 rules that out. **A measurement is a dial with a needle and no markings of any kind on its face**, per 5.8, because a face with zones drawn on it would be the app judging a value.
+
+**The whole set is rendered on one sheet by `tools/icons/sheet.py`**, at 44dp, 32dp, and 20dp, because an icon is judged at the size it is used rather than at the size it is drawn. **The tool reads the paths out of `SectionIcon.kt` rather than holding a copy**, so a sheet that agrees with itself cannot disagree with the app, which is D66 and D68 applied to a preview. **Both collisions above were invisible in the source and obvious on the sheet.** Run it before adding or changing a drawing, and look at the whole set rather than the one being changed.
+
 ### 5.13 The group header
 
 A mono eyebrow with a hairline running out to the end edge, which is how the reference file heads a month in the trail. Used wherever a long list needs to become a few groups.

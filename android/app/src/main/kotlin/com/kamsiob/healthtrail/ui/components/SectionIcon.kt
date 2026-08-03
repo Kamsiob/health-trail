@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.theme.Radius
 
 /**
@@ -50,10 +51,43 @@ fun IconTile(
     modifier: Modifier = Modifier,
     tileSize: Dp = 36.dp,
     iconSize: Dp = 20.dp,
+) = IconTile(SectionIconPaths.of(section), tint, background, modifier, tileSize, iconSize)
+
+/**
+ * The same tile, carrying one of the six capture drawings.
+ *
+ * The capture sheet is a two by three grid of tiles per `DESIGN.md` 11.2, and a
+ * capture kind is a destination in exactly the sense 11.1 means: a fixed set the
+ * person chooses from by position and shape rather than by reading.
+ */
+@Composable
+fun IconTile(
+    kind: CaptureKind,
+    tint: Color,
+    background: Color,
+    modifier: Modifier = Modifier,
+    tileSize: Dp = 36.dp,
+    iconSize: Dp = 20.dp,
+) = IconTile(SectionIconPaths.of(kind), tint, background, modifier, tileSize, iconSize)
+
+/**
+ * The tile itself, given its drawing.
+ *
+ * Private, so that a caller reaches it through one of the typed overloads above
+ * and cannot pass a path this app did not author.
+ */
+@Composable
+private fun IconTile(
+    paths: List<String>,
+    tint: Color,
+    background: Color,
+    modifier: Modifier = Modifier,
+    tileSize: Dp = 36.dp,
+    iconSize: Dp = 20.dp,
 ) {
-    val drawing = remember(section) {
+    val drawing = remember(paths) {
         Path().apply {
-            SectionIconPaths.of(section).forEach { data ->
+            paths.forEach { data ->
                 addPath(PathParser().parsePathString(data).toPath())
             }
         }
@@ -156,10 +190,18 @@ internal object SectionIconPaths {
             circle(10f, 7f, 4f),
             "M21 21v-2a4 4 0 00-3-3.9",
         )
-        // A blister pack, banded across the top.
+        // A capsule, split across the middle.
+        //
+        // It was a blister pack, a tall rounded rectangle with a band across
+        // it, and in a tile grid that read as the same shape as the calendar,
+        // the clipboard, and the page. **Four rectangles out of thirteen is how
+        // a tile grid becomes a shorter list**, which is the one thing 11.2
+        // says a tile grid must not be. A capsule is fully rounded and is the
+        // only shape in the set that is, so it is told apart by silhouette
+        // before anything is read.
         Repository.Section.MEDICATIONS -> listOf(
-            rect(5f, 3f, 14f, 18f, 3f),
-            "M5 10h14",
+            rect(4f, 9f, 16f, 6f, 3f),
+            "M12 9v6",
         )
         // A calendar.
         Repository.Section.APPOINTMENTS -> listOf(
@@ -180,13 +222,20 @@ internal object SectionIconPaths {
             circle(5f, 12f, 1.5f), "M9 12h11",
             circle(5f, 18f, 1.5f), "M9 18h11",
         )
-        // The trail: one winding route, with its nodes.
+        // The trail: one winding route with three waypoints on it.
+        //
+        // **This one is allowed a fourth stroke**, because it is the app's
+        // signature rather than a section marker, and a route with no waypoints
+        // on it is a squiggle. It previously carried a horizontal bar and three
+        // circles stacked at the end edge, which at tile size read as the same
+        // drawing as care threads: dots on one side with lines running off
+        // them. The route now carries its own nodes, which is what 5.2 says a
+        // route does everywhere else in the app.
         Repository.Section.TRAIL -> listOf(
-            "M4 19c4-1 5-4 5-7 0-3 1-6 5-7",
-            "M9 12h10",
-            circle(19f, 5f, 1.6f),
-            circle(19f, 12f, 1.6f),
-            circle(19f, 19f, 1.6f),
+            "M5 20 C 9 19 10 15 10 12 C 10 9 12 6 19 5",
+            circle(5f, 20f, 1.5f),
+            circle(10f, 12f, 1.5f),
+            circle(19f, 5f, 1.5f),
         )
         // Axes and a plotted line. No judgment is drawn into it, per 5.8.
         Repository.Section.PROGRESS -> listOf(
@@ -198,11 +247,16 @@ internal object SectionIconPaths {
             "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z",
             "M14 2v6h6",
         )
-        // Composed: a bill, torn along the bottom, with two written lines.
+        // Composed: a note, seen wide, with a mark in the middle of it.
+        //
+        // **This is the only short wide shape in the whole set**, which is what
+        // it is for. It was a torn receipt, and a torn receipt is a tall narrow
+        // shape with a notched bottom, which is a bookmark, which is chapters.
+        // Rendering the set on one sheet is what showed that, and nothing about
+        // either drawing looked wrong on its own.
         Repository.Section.MONEY -> listOf(
-            "M6 2h12a1 1 0 011 1v18l-3-2-3 2-3-2-3 2V3a1 1 0 011-1z",
-            "M9 8h6",
-            "M9 12h6",
+            rect(3f, 7f, 18f, 10f, 2f),
+            circle(12f, 12f, 2.5f),
         )
         // Composed: a clipboard, which is what was asked and of whom.
         Repository.Section.STANDING_INSTRUCTIONS -> listOf(
@@ -223,11 +277,67 @@ internal object SectionIconPaths {
             "M12 8v4",
             "M12 14.9v.2",
         )
-        // A folder, from the bottom navigation, so Projects looks the same
-        // wherever it appears.
+        // Composed: a marker flag on a post.
+        //
+        // It was a folder, which is a stock drawing meaning "some files" and
+        // which shared a silhouette with the calendar and the clipboard. **A
+        // project in this app is a sequence with a destination**, which is why
+        // 11.12 gives it the spine pattern, and a trail already has a shape for
+        // the end of a route. The post is the only vertical line in the set and
+        // the pennant's notch is the only concave edge, so it survives being
+        // 18dp tall.
         Repository.Section.PROJECTS -> listOf(
-            "M3 7h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z",
+            "M6 3v18",
+            "M6 4h11l-2.6 3.6L17 11H6z",
         )
+    }
+
+    /**
+     * The six things a person can write down, on the same grid.
+     *
+     * **Two of them are not new drawings and must never become new drawings.** A
+     * question captured here becomes a row in Ask next time, and a document
+     * captured here becomes a row in Documents, so each uses that section's own
+     * icon. 5.2's rule is that a shape means the same thing everywhere it
+     * appears, and drawing a second question mark for the capture sheet is
+     * exactly how one thing acquires two drawings that then drift apart.
+     *
+     * **The other four are composed to the same rules as the thirteen above**:
+     * one 24 unit grid, a 1.7 stroke, round caps and joins, no fill, and no
+     * more than three strokes.
+     *
+     * A call is a handset, drawn on the diagonal, which is the only diagonal in
+     * the whole set. A visit is a pin, because a visit is somewhere the person
+     * went. **An incident is a route with a break in it and a marker standing in
+     * the gap**, which is this app's own vocabulary rather than the warning
+     * triangle every other app reaches for: a triangle would be the interface
+     * sounding an alarm about something the person calmly wrote down, and rule
+     * 2 rules that out. A measurement is a dial with a needle **and no markings
+     * of any kind on its face**, per 5.8, because a scale with zones drawn on it
+     * would be the app judging a value.
+     */
+    fun of(kind: CaptureKind): List<String> = when (kind) {
+        CaptureKind.CALL -> listOf(
+            "M8 3.5a1.5 1.5 0 011.4 1l1 2.6a1.5 1.5 0 01-.6 1.8l-1.3.8" +
+                "a12 12 0 005.8 5.8l.8-1.3a1.5 1.5 0 011.8-.6l2.6 1" +
+                "a1.5 1.5 0 011 1.4v2.3a1.5 1.5 0 01-1.7 1.5" +
+                "C10.4 18.9 5.1 13.6 4.2 5.2A1.5 1.5 0 015.7 3.5z",
+        )
+        CaptureKind.VISIT -> listOf(
+            "M12 21c4.7-4.6 7-7.9 7-10.6a7 7 0 10-14 0C5 13.1 7.3 16.4 12 21z",
+            circle(12f, 10.4f, 2.3f),
+        )
+        CaptureKind.INCIDENT -> listOf(
+            "M3 12h5.2",
+            "M15.8 12h5.2",
+            "M12 7.6l4.4 4.4-4.4 4.4-4.4-4.4z",
+        )
+        CaptureKind.MEASUREMENT -> listOf(
+            "M4 17.5a8 8 0 0116 0",
+            "M12 17.5l4.2-4.6",
+        )
+        CaptureKind.QUESTION -> of(Repository.Section.ASK_NEXT_TIME)
+        CaptureKind.DOCUMENT -> of(Repository.Section.DOCUMENTS)
     }
 
     /**

@@ -169,5 +169,54 @@ if ! echo "$focused_after" | grep -q "$PACKAGE"; then
   exit 1
 fi
 
+# **The status bar is cropped off, and this control fails closed.**
+#
+# Suppressing heads-up notifications was not enough. A heads-up banner is the
+# loud way a private thing reaches a capture; the status bar is the quiet way,
+# and it is always there. On this phone it carries the icons of whatever has
+# unread messages, and one of them is drawn as the sender's own contact photo.
+# **This repository is public.** D53 was written after a phone number and a
+# contact photo reached a committed image, and the fix it produced covered only
+# the loud half.
+#
+# SystemUI demo mode was tried first and does not cover it: `notifications
+# -e visible false` left every notification icon in place on this Android
+# version, so it produced a tidy clock over the same private icons. Cropping is
+# the only version of this that cannot be half true.
+#
+# **The height is read off the device rather than assumed.** A guessed inset is
+# wrong on the next phone and wrong after a display size change, and being
+# wrong here means either cutting into the app or leaving the icons in.
+# If it cannot be read, or the image cannot be cropped, the file is deleted
+# rather than kept, because a control that quietly degrades to nothing is
+# exactly what D49 and D64 are about.
+bar="$("$ADB" shell dumpsys window 2>/dev/null \
+  | grep -oE 'type=statusBars frame=\[0,0\]\[[0-9]+,[0-9]+\]' \
+  | head -1 | sed -E 's/.*,([0-9]+)\]$/\1/' || true)"
+
+if ! echo "$bar" | grep -qE '^[0-9]+$' || [ "$bar" -le 0 ]; then
+  rm -f "$target"
+  echo "Could not read the status bar height from the device, so the capture" >&2
+  echo "cannot be cropped and was discarded. This repository is public and the" >&2
+  echo "status bar carries notification icons, including contact photos." >&2
+  exit 1
+fi
+
+if ! command -v magick >/dev/null 2>&1; then
+  rm -f "$target"
+  echo "ImageMagick is not installed, so the status bar cannot be cropped" >&2
+  echo "off and the capture was discarded. Install it, or crop by hand and" >&2
+  echo "place the file yourself after looking at it." >&2
+  exit 1
+fi
+
+height="$(magick identify -format '%h' "$target")"
+width="$(magick identify -format '%w' "$target")"
+if ! magick "$target" -crop "${width}x$((height - bar))+0+${bar}" +repage "$target"; then
+  rm -f "$target"
+  echo "Cropping the status bar failed. Capture discarded." >&2
+  exit 1
+fi
+
 size="$(wc -c < "$target")"
-echo "Captured $target ($size bytes)"
+echo "Captured $target ($size bytes), status bar of ${bar}px cropped off"

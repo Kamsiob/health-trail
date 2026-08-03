@@ -1498,6 +1498,24 @@ So three of the twelve notebook sections opened empty from a seed, and **every s
 
 ---
 
+### D72. The status bar is cropped off every capture, because D53 only fixed the loud half
+
+**Date:** 2026-08-03. **Decided by:** the session, from looking at a capture before staging it.
+
+D53 made `tools/screenshot.sh` switch heads-up notifications off for the duration of a capture, after a heads-up banner put the owner's phone number and a contact photo into a committed image. **That covered the loud way a private thing reaches a screenshot and not the quiet one.**
+
+**The status bar is always there.** On this phone it carries the icons of whatever has unread messages, and one of them is drawn as the sender's own contact photo, at about eleven pixels across. It was in the first capture taken tonight. **This repository is public.**
+
+**SystemUI demo mode was tried first and does not do it.** `sysui_demo_allowed`, then `enter`, then `notifications -e visible false`, gives a fixed clock and a full battery and **leaves every notification icon exactly where it was** on this Android version. That is the worst possible outcome for a control: a capture that looks deliberately sanitized and is not. The setting was put back to `0` afterward.
+
+**So the bar is cropped off, and the height is read off the device** out of `dumpsys window`, `type=statusBars frame=[0,0][1080,161]`. A guessed inset is wrong on the next phone and wrong after a display size change, and being wrong here means either cutting into the app or leaving the icons in.
+
+**It fails closed.** If the height cannot be read, or ImageMagick is absent, or the crop fails, the file is deleted rather than kept. A privacy control that quietly degrades to doing nothing is D49 and D64 in another costume, and this project has now been caught by that shape four times.
+
+**The remaining hole, stated rather than hidden.** The crop protects the top edge. It does nothing about anything else that could appear inside the app's own window, and `tools/screenshot.sh`'s own docstring already says the script is a control and not the last one. **Look at every image before committing it.**
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
