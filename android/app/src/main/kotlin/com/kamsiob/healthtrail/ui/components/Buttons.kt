@@ -6,6 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Text
@@ -215,6 +218,15 @@ fun TextAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    /**
+     * An optional drawing before the words.
+     *
+     * **Never instead of the words.** Section 5.12: an icon is never the only
+     * thing naming what it sits beside, so this slot adds recognition to a
+     * label rather than replacing one. The glyph is decorative and clears its
+     * own semantics, and the label carries the meaning to a reader.
+     */
+    leading: (@Composable () -> Unit)? = null,
 ) {
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
@@ -241,11 +253,17 @@ fun TextAction(
             .padding(horizontal = Space.m, vertical = Space.sm),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = label,
-            style = HealthTrail.type.label,
-            color = if (enabled) colors.blue else colors.ink3Text,
-            textAlign = TextAlign.Center,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (leading != null) {
+                leading()
+                Spacer(Modifier.width(Space.s))
+            }
+            Text(
+                text = label,
+                style = HealthTrail.type.label,
+                color = if (enabled) colors.blue else colors.ink3Text,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }

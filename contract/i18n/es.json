@@ -84,6 +84,8 @@
   "common.back": "Atrás",
   "common.close": "Cerrar",
   "common.retry": "Intentarlo de nuevo",
+  "dictate.speak": "Dictarlo",
+  "dictate.prompt": "Diga lo que pasó",
   "common.loading": "Cargando",
   "common.error.generic": "Eso no ha funcionado. No se ha cambiado nada.",
   "subject.unnamed": "La persona a la que cuida",

@@ -84,6 +84,8 @@
   "common.back": "返回",
   "common.close": "关闭",
   "common.retry": "再试一次",
+  "dictate.speak": "用说的",
+  "dictate.prompt": "说说发生了什么",
   "common.loading": "载入中",
   "common.error.generic": "这次没有成功，没有改动任何内容。",
   "subject.unnamed": "您照顾的人",

@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -210,7 +211,7 @@ fun AddDocumentScreen(
                 )
                 Spacer(Modifier.height(Space.m))
 
-                HealthTrailTextField(
+                DictatableField(
                     label = strings["appts.notes"],
                     value = draft.notes,
                     onValueChange = { draft = draft.copy(notes = it) },

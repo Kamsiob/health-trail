@@ -28,6 +28,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -277,7 +278,7 @@ private fun Field(
     onChange: (String) -> Unit,
     imeAction: ImeAction = ImeAction.Next,
 ) {
-    HealthTrailTextField(
+    DictatableField(
         label = label,
         value = value,
         onValueChange = onChange,

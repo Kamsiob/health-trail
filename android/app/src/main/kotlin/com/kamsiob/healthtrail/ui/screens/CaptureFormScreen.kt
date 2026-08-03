@@ -31,6 +31,7 @@ import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -316,7 +317,7 @@ fun CaptureFormScreen(
 
                 Spacer(Modifier.height(Space.sectionGap))
 
-                HealthTrailTextField(
+                DictatableField(
                     label = strings[key(kind, "note")],
                     value = note,
                     onValueChange = { onStateChange(state.copy(note = it)) },

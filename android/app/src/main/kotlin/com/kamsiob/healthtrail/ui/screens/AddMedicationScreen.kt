@@ -27,6 +27,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -134,7 +135,7 @@ fun AddMedicationScreen(
                 )
                 Spacer(Modifier.height(Space.m))
 
-                HealthTrailTextField(
+                DictatableField(
                     label = strings["meds.dose"],
                     value = draft.dose,
                     onValueChange = { draft = draft.copy(dose = it) },
@@ -144,7 +145,7 @@ fun AddMedicationScreen(
                 )
                 Spacer(Modifier.height(Space.m))
 
-                HealthTrailTextField(
+                DictatableField(
                     label = strings["meds.purpose"],
                     value = draft.purpose,
                     onValueChange = { draft = draft.copy(purpose = it) },
@@ -154,7 +155,7 @@ fun AddMedicationScreen(
                 )
                 Spacer(Modifier.height(Space.m))
 
-                HealthTrailTextField(
+                DictatableField(
                     label = strings["meds.notes"],
                     value = draft.notes,
                     onValueChange = { draft = draft.copy(notes = it) },

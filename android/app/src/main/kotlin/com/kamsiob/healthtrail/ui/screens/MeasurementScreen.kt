@@ -41,6 +41,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
@@ -393,7 +394,7 @@ private fun RecordValue(
 
                 Spacer(Modifier.height(Space.sectionGap))
 
-                HealthTrailTextField(
+                DictatableField(
                     label = strings["measurement.note"],
                     hint = strings["measurement.note.hint"],
                     value = note,

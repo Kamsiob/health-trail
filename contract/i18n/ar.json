@@ -84,6 +84,8 @@
   "common.back": "رجوع",
   "common.close": "إغلاق",
   "common.retry": "حاول مرة أخرى",
+  "dictate.speak": "قلها بصوتك",
+  "dictate.prompt": "قل ما الذي حدث",
   "common.loading": "جارٍ التحميل",
   "common.error.generic": "لم ينجح ذلك. لم يتغير شيء.",
   "subject.unnamed": "الشخص الذي ترعاه",

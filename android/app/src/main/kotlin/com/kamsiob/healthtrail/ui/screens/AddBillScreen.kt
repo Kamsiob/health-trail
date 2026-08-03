@@ -28,6 +28,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -150,7 +151,7 @@ fun AddBillScreen(
 
                 Spacer(Modifier.height(Space.m))
 
-                HealthTrailTextField(
+                DictatableField(
                     label = strings["appts.notes"],
                     value = draft.notes,
                     onValueChange = { draft = draft.copy(notes = it) },

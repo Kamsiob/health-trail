@@ -235,6 +235,12 @@ The diagnosis first, because the fix follows from it: **section 1 bans every che
 
 **Making the form controlled found a second thing.** With every field driven by the hoisted state, a caller that did not hoist got a form nothing could be typed into, and it looked completely normal. `CaptureTest` caught it within a minute. The parameters are required with no default now: a component that does nothing when used with its defaults is worse than one that will not compile. Both test files hoist exactly as the shell does rather than stubbing it, per `TESTING-PERSONAS.md` section 7.
 
+**Every text area in the app offers dictation.** Eleven fields, one control, `DictateAction`. Android provides speech input free and the app was not offering it, and for somebody in a hallway who wants to record what the nurse just said, it is the difference between a note and no note.
+
+It is a first class control rather than the keyboard's microphone key, which some keyboards hide and nobody finds under stress. It says "Speak it" in words beside the glyph, it **appends rather than replaces** so half typed and half spoken is one sentence, and what comes back is ordinary editable text, which matters because recognition gets names and drug names wrong and this app is full of both. It is handed the language the app is running in rather than the phone's, which is D52's mistake in the other direction. **It hides entirely when no recognition service exists**, rather than being a control that opens nothing.
+
+**Verified on the phone end to end**, and the verification is worth recording: the recognizer opened, picked up ambient speech from the room, and wrote it into the note field, which is the whole path working. **The screenshot of that was deleted rather than committed**, because it held words spoken in the owner's home and this repository is public. The form was cancelled so nothing was saved. That is the D53 rule doing its job on a new surface: the screenshot script guards focus and notifications, and it cannot guard against what the app itself just recorded.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.

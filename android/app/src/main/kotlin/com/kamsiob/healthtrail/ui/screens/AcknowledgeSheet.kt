@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -108,7 +109,7 @@ fun AcknowledgeSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            HealthTrailTextField(
+            DictatableField(
                 label = strings["instructions.ack.title"],
                 value = how,
                 onValueChange = { how = it },

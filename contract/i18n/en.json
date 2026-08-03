@@ -84,6 +84,8 @@
   "common.back": "Back",
   "common.close": "Close",
   "common.retry": "Try again",
+  "dictate.speak": "Speak it",
+  "dictate.prompt": "Say what happened",
   "common.loading": "Loading",
   "common.error.generic": "That did not work. Nothing was changed.",
   "subject.unnamed": "The person you are looking after",
