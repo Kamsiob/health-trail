@@ -93,4 +93,58 @@ class SuggestTest {
         // the right answer either way.
         assertNull(Suggest.threadFor("Spoke to a nurse", threads))
     }
+
+    // -- ranked, which is where the tray's two alternates come from ---------
+
+    @Test
+    fun rankedPutsTheBestMatchFirstAndKeepsEverybody() {
+        val order = Suggest.ranked("Called the nursing station", threads).map { it.id }
+
+        assertEquals("t1", order.first())
+        assertEquals(
+            "a thread matching nothing was dropped rather than sorted last",
+            threads.size,
+            order.size,
+        )
+    }
+
+    @Test
+    fun rankedAgreesWithTheSuggestionItSitsUnder() {
+        // The tray leads with `threadFor` and offers the next two from
+        // `ranked`. If they disagreed, the second option would sometimes be a
+        // better match than the one presented as the suggestion.
+        val text = "Asked about her meals and the dietary notes"
+        assertEquals(
+            Suggest.threadFor(text, threads)?.id,
+            Suggest.ranked(text, threads).first().id,
+        )
+    }
+
+    @Test
+    fun rankedKeepsTheGivenOrderWhenNothingMatches() {
+        // Which is the ordinary case on this tray, because the matcher works on
+        // whole words and never stems. The caller passes threads in the order
+        // worth offering, most recently filed into first, and `ranked` must not
+        // shuffle that into something arbitrary.
+        assertEquals(
+            threads.map { it.id },
+            Suggest.ranked("She was sitting up and knew who I was", threads).map { it.id },
+        )
+    }
+
+    @Test
+    fun rankedKeepsTheGivenOrderAmongTies() {
+        // `threadFor` returns nothing on a tie, because a confident wrong guess
+        // is worse than a blank. Here the tie only means the app has nothing to
+        // say about which comes first, and the caller's order is a better
+        // answer than a coin toss.
+        val text = "nursing and social matters"
+        assertNull("a tie produced a suggestion", Suggest.threadFor(text, threads))
+        val order = Suggest.ranked(text, threads).map { it.id }
+        assertEquals(
+            "the tie was broken by something other than the given order",
+            listOf("t1", "t4"),
+            order.take(2),
+        )
+    }
 }

@@ -48,6 +48,35 @@ object Suggest {
     }
 
     /**
+     * Every thread, best match first, keeping their own order among ties.
+     *
+     * **This is where the two alternates on the Unfiled tray come from**, and
+     * it is deliberately the same scoring as [threadFor] rather than a second
+     * matcher: the tray leads with one answer and offers two more, and the
+     * three have to agree about what "next best" means or the second option
+     * would sometimes be a better match than the first.
+     *
+     * **Ties keep the thread order rather than being broken.** [threadFor]
+     * returns nothing on a tie, because a confident wrong guess is worse than
+     * an honest blank; here the tie simply means the app has nothing to say
+     * about which of the two comes first, and the template's own order is a
+     * better answer than a coin toss.
+     *
+     * A thread matching nothing still appears, at the end. The list is what to
+     * offer, not what the app believes.
+     */
+    fun ranked(
+        entryText: String,
+        threads: List<Repository.CareThread>,
+    ): List<Repository.CareThread> {
+        val words = words(entryText)
+        if (words.isEmpty()) return threads
+        return threads.sortedByDescending { thread ->
+            words(thread.label).count { word -> word in words }
+        }
+    }
+
+    /**
      * Words worth matching on.
      *
      * **Four characters is the floor, and it was three until a test caught it.**

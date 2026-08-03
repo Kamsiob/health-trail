@@ -819,6 +819,54 @@ class Repository private constructor(
     }
 
     /**
+     * The care threads, most recently filed into first.
+     *
+     * **What this answers is "which three would you like offered", not "what
+     * are the threads".** The Unfiled tray leads with the matcher's suggestion
+     * and offers two alternates beside it, and the capture form caps its chips
+     * at five: in both places the ones the person actually uses beat the ones
+     * the situation template happened to list first. On a notebook where the
+     * matcher finds nothing, which is common because it matches whole words
+     * and never stems, the offered set is otherwise the same three on all
+     * eighty six cards.
+     *
+     * **The care threads screen keeps `sort_index`**, which is the template's
+     * own order and what somebody scanning a roster expects. Two orders,
+     * because they answer two different questions, exactly as [people] and
+     * [peopleByRecentUse] do.
+     *
+     * A thread nothing has ever been filed under sorts last and keeps its own
+     * order among its peers, so a fresh notebook behaves exactly as [threads]
+     * does.
+     */
+    suspend fun threadsByRecentUse(subjectId: String): List<CareThread> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT t.id, t.label, t.color_index, " +
+                    "(SELECT MAX(coalesce(e.occurred_start, e.created_at)) " +
+                    "   FROM live_entry_thread et " +
+                    "   JOIN live_entry e ON e.id = et.entry_id " +
+                    "  WHERE et.thread_id = t.id) AS last_used " +
+                    "FROM live_care_thread t WHERE t.subject_id = ? " +
+                    "ORDER BY last_used IS NULL, last_used DESC, " +
+                    "t.sort_index, t.created_at",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            CareThread(
+                                id = cursor.getString(0),
+                                label = cursor.getString(1),
+                                colorIndex = cursor.getInt(2),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /**
      * Files an entry under a thread.
      *
      * A join row rather than a column on the entry, because an entry can belong

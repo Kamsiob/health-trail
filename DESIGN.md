@@ -877,13 +877,25 @@ Specified in full at 5.16. Tracked on issue #39.
 
 **It is not a thirteenth notebook section and never becomes one.** The twelve are fixed. This is a thing waiting for the person rather than a place they filed something, so it is reached from a card at the top of the notebook that **appears only when something is actually waiting.** When the tray is empty there is nothing to find, so there is nothing to show and no empty room to walk into. The card uses `blaze_soft`, which 2.2 allows as a gold tonal waiting-on background and which is not the accent, and it carries a word as well as a color.
 
-**The app suggests and the person confirms.** A home is suggested by plain word matching, per `MASTER_SPEC.md` section 4.2, and it arrives already selected, which is what makes confirming it one tap. Changing it is one more. **Nothing is written until the person taps the action**, and the app never files anything on its own.
+**Inverted to suggestion first on 2026-08-03, and the old shape is worth naming.** Every card offered every care thread as a chip, plus "None of these". On a notebook with seven threads and eighty six waiting entries that is six hundred and eighty eight pills in one scroll, which is the app handing its own problem back to somebody who came here because they already could not answer it once.
+
+**The matcher already produces a suggestion, so the card leads with it.** One tap files it. Two alternates sit under it at lower weight, and everything else, including "None of these", is behind one control that opens the full set with search, per 5.11.1. Three visible answers rather than eight, and filing went from two taps to one.
+
+**Tapping files. It does not select.** Every control in the block does the same thing to a different destination, which is why none of them is a choice chip: 5.11 chips choose an answer and something else commits it, and reusing that shape for a control that commits immediately would teach two meanings for one shape. The suggestion is emphasized by surface and weight, per 2.2, never by being the only thing colored.
+
+**The two alternates are the threads this person actually uses**, most recently filed into first, from `Repository.threadsByRecentUse`. The matcher works on whole words and never stems, so it finds nothing more often than not, and without this every card on the tray offered the same first three threads from the template.
+
+**The card leads with the entry's own words**, through the same `headingFor` the entry screen uses rather than a second copy of the rule. The tray is the likeliest place in the app to hold an untitled entry, since somebody who could not say where something belonged often did not stop to title it either.
+
+**At font scale 2.0 the three alternates stack.** Side by side, a third of the width holds about four characters, and "Speech therapy" rendered as "Speec / h / therapy". Breaking a word across lines is what section 3 item 4 and rule 11 both rule out, and the layout gives way rather than the type. Found by looking at the screen at 2.0.
+
+**The app suggests and the person confirms.** A home is suggested by plain word matching, per `MASTER_SPEC.md` section 4.2. **Nothing is written until the person taps**, and the app never files anything on its own.
 
 **The suggestion is allowed to find nothing, and often will.** An entry reached this tray because it was hard to place, and a wrong guess presented confidently is worse than an honest blank. Two equally good guesses also produce nothing, because that is what the app knowing means here.
 
 **"None of these" is a real answer**, not a way out of the question. It clears the entry without a thread, because the tray holds things nobody has looked at yet rather than things without a thread.
 
-**It asks the same question the capture form asks, in the same words and the same control.** The person is here because they did not answer it there. Asking it differently would make it a second question rather than the same one, still open.
+**It asks the same question the capture form asks and offers the same destinations.** The person is here because they did not answer it there. What differs is the shape of the answer, and deliberately: on the form the thread is one optional question among several and a chip is right, here it is the only question on the card and the answer is the action.
 
 **The empty state is the common one**, since most notebooks will have an empty tray most of the time, and it reads as nothing waiting rather than as an absence.
 

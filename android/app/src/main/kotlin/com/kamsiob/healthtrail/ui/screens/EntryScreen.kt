@@ -266,10 +266,22 @@ private const val HEADING_CAP = 90
  * the eye reaches. The stock phrase survives for an entry with no words at all,
  * a photograph or a recording, which is the case it was actually written for.
  */
-fun headingFor(entry: Repository.TrailEntry, untitled: String): EntryHeading {
-    entry.title?.takeIf { it.isNotBlank() }?.let { return EntryHeading(it.trim(), true) }
+fun headingFor(entry: Repository.TrailEntry, untitled: String): EntryHeading =
+    headingFor(entry.title, entry.body, untitled)
 
-    val body = entry.body?.trim()?.takeIf { it.isNotBlank() }
+/**
+ * The same rule, given the two fields rather than a trail entry.
+ *
+ * **The Unfiled tray needs it and holds a different type**, and copying the
+ * rule there would be a pattern appearing twice in two forms, which section
+ * 10.2 calls a defect outright. The tray is also the likeliest place in the app
+ * to hold an untitled entry, since somebody who could not say where something
+ * belonged often did not stop to title it either.
+ */
+fun headingFor(title: String?, body: String?, untitled: String): EntryHeading {
+    title?.takeIf { it.isNotBlank() }?.let { return EntryHeading(it.trim(), true) }
+
+    val body = body?.trim()?.takeIf { it.isNotBlank() }
         ?: return EntryHeading(untitled, false)
 
     val firstLine = body.lineSequence().first().trim()

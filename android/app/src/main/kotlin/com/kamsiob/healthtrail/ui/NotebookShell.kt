@@ -216,6 +216,11 @@ fun NotebookShell(
     var peopleForCapture by remember {
         mutableStateOf<List<Repository.Person>>(emptyList())
     }
+    // The same threads in the order worth offering rather than the order worth
+    // scanning. See `Repository.threadsByRecentUse`.
+    var threadsForFiling by remember {
+        mutableStateOf<List<Repository.CareThread>>(emptyList())
+    }
     // The entry whose date is being corrected, per rule 17. Null means nothing
     // is being edited.
     var editingDate by remember { mutableStateOf<Repository.TrailEntry?>(null) }
@@ -443,6 +448,8 @@ fun NotebookShell(
             people = subject?.let { repository.people(it.id) }.orEmpty()
             peopleForCapture =
                 subject?.let { repository.peopleByRecentUse(it.id) }.orEmpty()
+            threadsForFiling =
+                subject?.let { repository.threadsByRecentUse(it.id) }.orEmpty()
             emergencyCard = subject?.let { repository.emergencyCard(it.id) }
             medications = subject?.let { repository.medications(it.id) }.orEmpty()
             questions = subject?.let { repository.questions(it.id) }.orEmpty()
@@ -2069,7 +2076,7 @@ fun NotebookShell(
         if (trayOpen) {
             UnfiledTrayScreen(
                 entries = unfiled,
-                threads = threads,
+                threads = threadsForFiling,
                 onFile = { entryId, threadId ->
                     filing = entryId to threadId
                 },
@@ -2109,7 +2116,7 @@ fun NotebookShell(
         if (kind != null && kind.usesTheSharedForm) {
             CaptureFormScreen(
                 kind = kind,
-                threads = threads,
+                threads = threadsForFiling,
                 people = peopleForCapture,
                 medications = medications,
                 state = captureDraft,

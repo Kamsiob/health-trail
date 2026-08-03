@@ -1,13 +1,22 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -16,16 +25,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.Suggest
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.ChoiceChip
-import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
+import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.PickerOption
+import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.TextAction
+import com.kamsiob.healthtrail.ui.components.focusRingAlpha
+import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -35,7 +53,10 @@ object UnfiledTags {
     const val EMPTY = "unfiled_empty"
     const val CLOSE = "unfiled_close"
     fun entry(id: String) = "unfiled_entry_$id"
+    /** The suggestion, which is the primary action on a card that has one. */
     fun file(id: String) = "unfiled_file_$id"
+    fun alternate(entryId: String, threadId: String) = "unfiled_alt_${entryId}_$threadId"
+    fun elsewhere(id: String) = "unfiled_elsewhere_$id"
 }
 
 /**
@@ -164,12 +185,33 @@ fun UnfiledTrayScreen(
 }
 
 /**
- * One waiting entry, with its answer.
+ * One waiting entry, led by what the app thinks rather than by every answer.
+ *
+ * **This was inverted on 2026-08-03 and the old shape is worth naming.** Every
+ * card offered every care thread as a chip, plus "None of these". On a notebook
+ * with seven threads and eighty six waiting entries that is six hundred and
+ * eighty eight pills in one scroll, which is the app handing its own problem to
+ * a person who came here because they already could not answer it once.
+ *
+ * **The matcher already produces a suggestion, so the card leads with it.** One
+ * tap files it. Two alternates sit under it at lower weight, and everything
+ * else, including "None of these", is behind one control. Three visible answers
+ * rather than eight, and the first one is usually right.
+ *
+ * **Tapping files. It does not select.** Every control in the block does the
+ * same thing to a different destination, which is why none of them is a choice
+ * chip: 5.11 chips choose an answer and something else commits it, and reusing
+ * that shape for a control that commits immediately would teach two meanings
+ * for one thing. The suggestion is emphasized by surface and weight, per 2.2,
+ * never by being the only thing colored.
+ *
+ * **When the matcher finds nothing there is no suggestion and no eyebrow.** The
+ * three quiet options are the threads in their own order, offered rather than
+ * recommended. An entry reached this tray because it was hard to place, and a
+ * confident wrong guess is worse than an honest blank.
  *
  * The date renders through [EventDateText], so an entry saved with "Not sure"
- * says the date is not known rather than showing the day it was typed. This
- * tray is the likeliest place in the app to hold one, since a person who could
- * not say where something belonged often could not say when either.
+ * says the date is not known rather than showing the day it was typed.
  */
 @Composable
 private fun UnfiledRow(
@@ -180,14 +222,18 @@ private fun UnfiledRow(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    // The suggestion is the starting selection, which is what makes confirming
-    // it one tap. It is computed once per entry rather than on every
-    // recomposition, and it is allowed to be null.
-    val suggested = remember(entry.id, threads) {
-        Suggest.threadFor(listOfNotNull(entry.title, entry.body).joinToString(" "), threads)
+    val text = listOfNotNull(entry.title, entry.body).joinToString(" ")
+    // Computed once per entry rather than on every recomposition. Both come
+    // from the same scoring, so the alternates can never be better matches
+    // than the thing above them.
+    val suggested = remember(entry.id, threads) { Suggest.threadFor(text, threads) }
+    val ranked = remember(entry.id, threads) { Suggest.ranked(text, threads) }
+    val alternates = remember(entry.id, threads) {
+        ranked.filter { it.id != suggested?.id }.take(if (suggested == null) 3 else 2)
     }
-    var chosen by remember(entry.id) { mutableStateOf(suggested?.id) }
-    var noneChosen by remember(entry.id) { mutableStateOf(false) }
+    var pickerOpen by remember(entry.id) { mutableStateOf(false) }
+
+    val heading = headingFor(entry.title, entry.body, strings[kindKey(entry.kind)])
 
     Column(
         modifier = Modifier
@@ -204,54 +250,185 @@ private fun UnfiledRow(
         )
         Spacer(Modifier.height(Space.xs))
 
-        // A blank title is normal here. The kind is what the app knows for
-        // certain, and it is never left as an empty line.
+        // The entry's own words, per the entry screen's rule. An untitled entry
+        // is the ordinary case here and it leads with what the person wrote
+        // rather than with a stock phrase at the largest size on the card.
         Text(
-            text = entry.title?.takeIf { it.isNotBlank() } ?: strings[kindKey(entry.kind)],
+            text = heading.text,
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
 
-        entry.body?.takeIf { it.isNotBlank() }?.let { body ->
-            Spacer(Modifier.height(Space.xs))
-            Text(text = body, style = HealthTrail.type.bodyM, color = colors.ink2)
+        if (heading.repeatBody) {
+            entry.body?.takeIf { it.isNotBlank() }?.let { body ->
+                Spacer(Modifier.height(Space.xs))
+                Text(text = body, style = HealthTrail.type.bodyM, color = colors.ink2)
+            }
         }
 
         if (threads.isNotEmpty()) {
             Spacer(Modifier.height(Space.sm))
-            // The same question the capture form asks, in the same words and
-            // the same control. This screen exists because the person did not
-            // answer it there, so asking it differently here would make it a
-            // second question rather than the same one, still open.
-            ChoiceChipGroup(label = strings["capture.thread"]) {
-                threads.forEach { thread ->
-                    ChoiceChip(
-                        label = thread.label,
-                        selected = !noneChosen && chosen == thread.id,
-                        onClick = { chosen = thread.id; noneChosen = false },
-                        dotColor = colors.threadRoutes[thread.colorIndex % colors.threadRoutes.size],
-                    )
-                }
-                ChoiceChip(
-                    label = strings["unfiled.none"],
-                    selected = noneChosen,
-                    onClick = { noneChosen = true; chosen = null },
+
+            if (suggested != null) {
+                GroupHeader(labelKey = "unfiled.suggested")
+                Spacer(Modifier.height(Space.s))
+                FileHere(
+                    thread = suggested,
+                    emphasized = true,
+                    onClick = { onFile(suggested.id) },
+                    modifier = Modifier.testTag(UnfiledTags.file(entry.id)),
                 )
+                Spacer(Modifier.height(Space.s))
             }
+
+            // Side by side, so two alternates cost one row rather than two.
+            // Eighty six cards is a queue somebody works through, and every row
+            // saved is a scroll they do not make.
+            //
+            // **Stacked above font scale 1.3, and that is a fix rather than a
+            // preference.** At 2.0 a third of the width holds about four
+            // characters, and "Speech therapy" rendered as "Speec / h /
+            // therapy" and "Activities" as "Activiti / es". Breaking a word
+            // across lines is what section 3 item 4 and rule 11 both rule out,
+            // and it is the same failure as the Arabic display headings: the
+            // layout has to give way, never the type. Found by looking at this
+            // screen at 2.0, not in the code.
+            if (LocalDensity.current.fontScale > STACK_ABOVE) {
+                alternates.forEach { thread ->
+                    FileHere(
+                        thread = thread,
+                        emphasized = false,
+                        onClick = { onFile(thread.id) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(UnfiledTags.alternate(entry.id, thread.id)),
+                    )
+                    Spacer(Modifier.height(Space.s))
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(Space.s),
+                ) {
+                    alternates.forEach { thread ->
+                        FileHere(
+                            thread = thread,
+                            emphasized = false,
+                            onClick = { onFile(thread.id) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .testTag(UnfiledTags.alternate(entry.id, thread.id)),
+                        )
+                    }
+                    // A row that is not full keeps its columns, so one
+                    // alternate does not stretch to the width of two and read
+                    // as a second suggestion.
+                    repeat((if (suggested == null) 3 else 2) - alternates.size) {
+                        Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(Space.xs))
+
+            // Everything else, including "None of these", which is a real
+            // answer rather than a way out of the question: it clears the entry
+            // from the tray without a thread, because the tray is for things
+            // nobody has looked at yet rather than for things without a thread.
+            TextAction(
+                label = strings["unfiled.choose"],
+                onClick = { pickerOpen = true },
+                modifier = Modifier.testTag(UnfiledTags.elsewhere(entry.id)),
+            )
         }
+    }
 
-        Spacer(Modifier.height(Space.sm))
-
-        // A text action rather than a filled button. There is one of these per
-        // card, and a column of filled buttons would turn a quiet list into a
-        // wall of blue, which is section 2.2's accent spent on repetition.
-        TextAction(
-            label = strings["unfiled.file"],
-            onClick = { onFile(if (noneChosen) null else chosen) },
-            modifier = Modifier.testTag(UnfiledTags.file(entry.id)),
+    if (pickerOpen) {
+        ChipPickerSheet(
+            title = strings["capture.thread"],
+            options = threads.map { thread ->
+                PickerOption(
+                    id = thread.id,
+                    label = thread.label,
+                    routeColor = colors.threadRoutes[
+                        thread.colorIndex.mod(colors.threadRoutes.size),
+                    ],
+                    routeIndex = thread.colorIndex,
+                )
+            } + PickerOption(id = NONE_OF_THESE, label = strings["unfiled.none"]),
+            selectedId = null,
+            onPick = { option ->
+                pickerOpen = false
+                onFile(option.id.takeIf { it != NONE_OF_THESE })
+            },
+            onDismiss = { pickerOpen = false },
         )
     }
 }
+
+/**
+ * One destination, as a control that puts the entry there.
+ *
+ * `blue_soft` with a `blue_deep` label when it is the suggestion and `sand`
+ * with an `ink` label when it is an alternate, which is the same surface plus
+ * weight language 5.11 uses for a chosen chip rather than a second one. The
+ * route swatch is how a thread identifies itself everywhere, per 5.2.2, and it
+ * is never the only difference between two of these, because each carries the
+ * thread's name.
+ */
+@Composable
+private fun FileHere(
+    thread: Repository.CareThread,
+    emphasized: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val resting = if (emphasized) colors.blueSoft else colors.sand
+    val surface by pressedSurface(interaction, resting)
+    val ring by focusRingAlpha(interaction)
+
+    Row(
+        modifier = modifier
+            .semantics(mergeDescendants = true) { }
+            .sizeIn(minHeight = Space.touchTarget)
+            .clip(Radius.tile)
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .padding(horizontal = Space.sm, vertical = Space.s),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RouteSwatch(
+            color = colors.threadRoutes[thread.colorIndex.mod(colors.threadRoutes.size)],
+            index = thread.colorIndex,
+        )
+        Spacer(Modifier.width(Space.s))
+        Text(
+            text = thread.label,
+            style = if (emphasized) HealthTrail.type.label else HealthTrail.type.bodyM,
+            color = if (emphasized) colors.blueDeep else colors.ink,
+        )
+    }
+}
+
+/** The id the picker uses for "None of these", which is not a thread. */
+private const val NONE_OF_THESE = "unfiled_none_of_these"
+
+/**
+ * Where the side by side row gives way to a stack.
+ *
+ * The same 1.3 the tile grid uses in 11.2, and for the same reason: past it a
+ * fraction of the width cannot hold a word.
+ */
+private const val STACK_ABOVE = 1.3f
 
 private fun kindKey(kind: String): String = when (kind) {
     "call" -> "capture.call"
