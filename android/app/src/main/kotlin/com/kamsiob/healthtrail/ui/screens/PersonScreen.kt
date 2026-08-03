@@ -15,6 +15,7 @@ import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -76,9 +77,27 @@ fun PersonScreen(
         backLabelKey = backLabelKey,
         modifier = modifier,
     ) {
+        // **What you need to know before you dial, above the thing that
+        // dials.** "Days, 7 to 3, ask for her by name" and "the one who
+        // actually calls back" are the reason somebody opened this screen at
+        // all, and they were sitting underneath both buttons where the eye
+        // reaches them after the decision has been made.
+        person.notes?.takeIf { it.isNotBlank() }?.let {
+            item {
+                Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
+                Spacer(Modifier.height(Space.l))
+            }
+        }
+
         item {
+            // **The number carries the weight, because it is the whole point.**
+            // Somebody standing in a corridor who needs the charge nurse needs
+            // the number, not a form, and this screen gave the two the same
+            // treatment: one quiet button above another quiet button, which
+            // makes the reader sort them. Rule 15. Correcting a spelling is the
+            // rare errand and stays quiet.
             person.phone?.takeIf { it.isNotBlank() }?.let { number ->
-                QuietButton(
+                FilledButton(
                     label = strings("person.call", "number" to number),
                     onClick = { onCall(number) },
                     modifier = Modifier.fillMaxWidth().testTag(PersonTags.CALL),
@@ -91,13 +110,6 @@ fun PersonScreen(
                 modifier = Modifier.fillMaxWidth().testTag(PersonTags.EDIT),
             )
             Spacer(Modifier.height(Space.sectionGap))
-        }
-
-        person.notes?.takeIf { it.isNotBlank() }?.let {
-            item {
-                Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
-                Spacer(Modifier.height(Space.sectionGap))
-            }
         }
 
         item {
