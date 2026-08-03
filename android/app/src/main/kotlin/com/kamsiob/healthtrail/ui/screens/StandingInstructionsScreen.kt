@@ -17,11 +17,13 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object InstructionTags {
+    fun violation(id: String) = "instruction_violation_$id"
     const val NAME = "standing_instructions"
     const val ADD = "standing_instructions_add"
     fun row(id: String) = "standing_instruction_$id"
@@ -59,6 +61,16 @@ fun StandingInstructionsScreen(
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * How many times each instruction was not followed.
+     *
+     * **A count and never a judgment**, per rule 2 and `MASTER_SPEC.md` 4.11.
+     * Nothing here says a facility is bad, nothing is colored by how many, and
+     * no threshold turns a number into an opinion. What it means is the
+     * person's to judge, and the row says so in those words.
+     */
+    violations: Map<String, Int> = emptyMap(),
+    onRecordViolation: (Repository.StandingInstruction) -> Unit = {},
 ) {
     val strings = LocalStrings.current
 
@@ -79,6 +91,8 @@ fun StandingInstructionsScreen(
         for (instruction in instructions) {
             item(key = instruction.id) {
                 InstructionRow(
+                    violationCount = violations[instruction.id] ?: 0,
+                    onRecordViolation = { onRecordViolation(instruction) },
                     instruction = instruction,
                     tag = tags[instruction.tag],
                     onRemove = { onRemove(instruction) },
@@ -101,6 +115,8 @@ fun StandingInstructionsScreen(
 
 @Composable
 private fun InstructionRow(
+    violationCount: Int,
+    onRecordViolation: () -> Unit,
     instruction: Repository.StandingInstruction,
     tag: TemplateCatalog.InstructionTag?,
     onRemove: () -> Unit,
@@ -201,5 +217,35 @@ private fun InstructionRow(
             Spacer(Modifier.height(Space.sm))
             Text(text = notes, style = HealthTrail.type.bodyM, color = colors.ink2)
         }
+
+        // **The count, and immediately after it the sentence that says what it
+        // is not.** `MASTER_SPEC.md` 4.11 requires that line every time a count
+        // like this is shown, and the two are one thought: a bare number here
+        // would be the app implying a conclusion it is not entitled to.
+        //
+        // Zero says nothing at all rather than "0 times", because a count of
+        // nothing is not a finding and printing it would turn every instruction
+        // into a scoreboard with most of the scores at zero.
+        if (violationCount > 0) {
+            Spacer(Modifier.height(Space.sm))
+            Text(
+                text = strings("instruction.violations.count", "count" to violationCount),
+                style = HealthTrail.type.mono,
+                color = colors.ink3Text,
+            )
+            Spacer(Modifier.height(Space.xs))
+            Text(
+                text = strings["instruction.violations.meaning"],
+                style = HealthTrail.type.bodyS,
+                color = colors.ink2,
+            )
+        }
+
+        Spacer(Modifier.height(Space.sm))
+        TextAction(
+            label = strings["instruction.violations.add"],
+            onClick = onRecordViolation,
+            modifier = Modifier.testTag(InstructionTags.violation(instruction.id)),
+        )
     }
 }

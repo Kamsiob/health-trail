@@ -247,6 +247,14 @@ seeded notebook reporting nothing at all.
 **`tools/fixtures/pack.py`** wraps a generated fixture in a real export container and it goes in through the app's own restore screen. **D61's portability fix is what made that possible**, used in the other direction. It found journey six broken at the last step within minutes, and three fixture defects that were invisible in a database file and obvious on a screen.
 
 
+**A standing instruction can record the times it was not followed**, which is P4's stated gap and the part of the record a family actually needs in a room. `instruction_violation` sat in the schema from Phase 0 with no reader and no writer.
+
+**"We asked in writing in March, and it happened again in May and again in June" is a different conversation from "we asked in March."**
+
+**A count, and immediately under it the sentence saying what it is not.** `MASTER_SPEC.md` 4.11 requires that line every time a count like this is shown, and the two are one thought: a bare number would be the app implying a conclusion it is not entitled to. **Zero says nothing at all**, because a count of nothing is not a finding and printing it would turn every instruction into a scoreboard with most of the scores at zero.
+
+**The link to the bill or incident it broke is optional and stays that way.** Somebody writing this down in a corridor knows it happened; working out what it belongs to is a later, calmer job, and asking now is how the thing never gets written down.
+
 ### Where to pick up
 
 **Rewritten 2026-08-03. Everything above this line describes what is true; this is what is next.**

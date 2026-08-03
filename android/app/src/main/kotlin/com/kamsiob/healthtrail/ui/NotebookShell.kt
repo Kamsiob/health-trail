@@ -47,6 +47,8 @@ import com.kamsiob.healthtrail.ui.screens.ChapterScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationEventDraft
 import com.kamsiob.healthtrail.ui.screens.MedicationEventScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationScreen
+import com.kamsiob.healthtrail.ui.screens.ViolationDraft
+import com.kamsiob.healthtrail.ui.screens.ViolationScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
@@ -283,6 +285,12 @@ fun NotebookShell(
     var openMedication by remember { mutableStateOf<Repository.Medication?>(null) }
     /** The medication a change is being written down for. */
     var recordingChangeTo by remember { mutableStateOf<Repository.Medication?>(null) }
+    /** How many times each standing instruction was not followed, and the one being written down. */
+    var violationCounts by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
+    var recordingViolationFor by remember {
+        mutableStateOf<Repository.StandingInstruction?>(null)
+    }
+    var savingViolation by remember { mutableStateOf<ViolationDraft?>(null) }
     var savingMedicationEvent by remember { mutableStateOf<MedicationEventDraft?>(null) }
     var medicationHistory by remember {
         mutableStateOf<List<Repository.MedicationEvent>>(emptyList())
@@ -426,6 +434,7 @@ fun NotebookShell(
             chapters = subject?.let { repository.chapters(it.id) }.orEmpty()
             appointments = subject?.let { repository.appointments(it.id) }.orEmpty()
             instructions = subject?.let { repository.standingInstructions(it.id) }.orEmpty()
+            violationCounts = subject?.let { repository.violationCounts(it.id) }.orEmpty()
             bills = subject?.let { repository.bills(it.id) }.orEmpty()
             documents = subject?.let { repository.documents(it.id) }.orEmpty()
             projects = subject?.let { repository.projects(it.id) }.orEmpty()
@@ -495,6 +504,7 @@ fun NotebookShell(
     BackHandler(enabled = openChapter != null) { openChapter = null }
     BackHandler(enabled = openMedication != null) { openMedication = null }
     BackHandler(enabled = recordingChangeTo != null) { recordingChangeTo = null }
+    BackHandler(enabled = recordingViolationFor != null) { recordingViolationFor = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -1187,6 +1197,8 @@ fun NotebookShell(
                     onAcknowledge = { acknowledging = it },
                     onAdd = { addingInstruction = true },
                     onBack = { openSection = null },
+                    violations = violationCounts,
+                    onRecordViolation = { recordingViolationFor = it },
                 )
 
                 Repository.Section.APPOINTMENTS -> AppointmentsScreen(
@@ -1358,6 +1370,26 @@ fun NotebookShell(
             }
         }
 
+
+        savingViolation?.let { draft ->
+            LaunchedEffect(draft) {
+                repository.recordViolation(
+                    instructionId = draft.instructionId,
+                    occurred = draft.occurred,
+                    note = draft.note,
+                )
+                savingViolation = null
+                revision += 1
+            }
+        }
+
+        recordingViolationFor?.let { instruction ->
+            ViolationScreen(
+                instruction = instruction,
+                onSave = { draft -> savingViolation = draft; recordingViolationFor = null },
+                onCancel = { recordingViolationFor = null },
+            )
+        }
 
         openMedication?.let { medication ->
             LaunchedEffect(medication.id, revision) {

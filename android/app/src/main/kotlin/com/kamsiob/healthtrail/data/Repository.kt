@@ -3086,6 +3086,104 @@ class Repository private constructor(
             chapters(subjectId).firstOrNull { it.isCurrent }?.id
         }
 
+    // ---- standing instructions that were not followed ---------------------
+
+    /**
+     * A time an instruction was not followed.
+     *
+     * **This is the part of the record a family actually needs in a room.**
+     * "We asked in writing in March, and it happened again in May and again in
+     * June" is a different conversation from "we asked in March", and
+     * `instruction_violation` has been in the schema since Phase 0 with no
+     * reader and no writer.
+     *
+     * **A count and never a judgment.** `MASTER_SPEC.md` 4.11 and rule 2: the
+     * app counts and says plainly that what the count means is the person's to
+     * judge. Nothing here says a facility is bad, nothing is colored by how
+     * many, and no threshold turns a number into an opinion.
+     */
+    data class Violation(
+        val id: String,
+        val occurredEdtf: String?,
+        val note: String?,
+        /** What it broke against, when the person linked one. */
+        val incidentId: String?,
+        val incidentTitle: String?,
+        val billId: String?,
+        val billDescription: String?,
+    )
+
+    suspend fun violations(instructionId: String): List<Violation> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT v.id, v.occurred_edtf, v.note, " +
+                    "v.incident_id, i.title, v.bill_id, b.description " +
+                    "FROM live_instruction_violation v " +
+                    "LEFT JOIN live_incident i ON i.id = v.incident_id " +
+                    "LEFT JOIN live_bill b ON b.id = v.bill_id " +
+                    "WHERE v.instruction_id = ? " +
+                    "ORDER BY coalesce(v.occurred_start, v.created_at) DESC",
+                arrayOf(instructionId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            Violation(
+                                id = cursor.getString(0),
+                                occurredEdtf = cursor.getString(1),
+                                note = cursor.getString(2),
+                                incidentId = cursor.getString(3),
+                                incidentTitle = cursor.getString(4),
+                                billId = cursor.getString(5),
+                                billDescription = cursor.getString(6),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /** How many times each instruction was not followed, by instruction id. */
+    suspend fun violationCounts(subjectId: String): Map<String, Int> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT v.instruction_id, COUNT(*) FROM live_instruction_violation v " +
+                    "JOIN live_standing_instruction s ON s.id = v.instruction_id " +
+                    "WHERE s.subject_id = ? GROUP BY v.instruction_id",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildMap {
+                    while (cursor.moveToNext()) {
+                        put(cursor.getString(0), cursor.getInt(1))
+                    }
+                }
+            }
+        }
+
+    /**
+     * Records that an instruction was not followed.
+     *
+     * The link to what it broke against is optional and stays that way.
+     * Somebody writing this down in a corridor knows it happened; working out
+     * which bill or which incident it belongs to is a later, calmer job, and
+     * requiring it now would mean the thing never gets written down at all.
+     */
+    suspend fun recordViolation(
+        instructionId: String,
+        occurred: Edtf.Date,
+        note: String?,
+        incidentId: String? = null,
+        billId: String? = null,
+    ): String = insert(
+        "instruction_violation",
+        mapOf(
+            "instruction_id" to instructionId,
+            "note" to note?.ifBlank { null },
+            "incident_id" to incidentId,
+            "bill_id" to billId,
+        ) + dateColumns("occurred", occurred),
+    )
+
     companion object {
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"
