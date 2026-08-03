@@ -190,253 +190,89 @@ first: it was once per composition, so a theme change or rotation advanced the
 mark mid-visit and the digest went blank. Found on the phone, with a freshly
 seeded notebook reporting nothing at all.
 
-### What happened on the night of 2026-08-02, this run
+### What happened on the night of 2026-08-02 into 08-03
 
-**The guard question is closed and handed to the owner.** Section 0a. It has never fired through Claude Code on any day, the fix needs the owner, and it is B5.
+**Rewritten to current truth at the end of the run rather than appended to**, per this file's own rule. The order below is what a fresh session needs to know, not the order it happened in.
 
-**The test shortcut audit D39 asked for was run, and it found the third instance before it shipped.** `TESTING-PERSONAS.md` section 7 is the rule. The question is: what does this test hand the code that the person never could?
+#### The guard is answered and handed over
 
-| The three instances | The shortcut |
+**It has never fired through Claude Code, on any day, in any session.** Section 0a has the whole account. The fix needs the owner because Claude Code refuses to let a session edit its own hooks, which is correct. **B5** in `DECISIONS.md` and **#128**. Rule 6 followed by hand throughout, as it has been for three runs.
+
+#### The pattern the whole night turned on
+
+**Four separate tools reported on something other than what they were asked about**, and each was silent about its own blind spot:
+
+| The tool | What it said | What it was looking at |
+|---|---|---|
+| The destructive command guard | Nothing, which reads as a clean run | It was never invoked. D64 |
+| The interface suite, 130 tests | Every screen passes | One screen at a time, no shell, no back button. D65 |
+| `grep` and `git grep` | No match for a call that exists | Not the file, which two NUL bytes made binary. D66 |
+| `uiautomator dump` | Twenty four reader stops | The view tree, not the semantics tree. D68 |
+
+**Distrust a negative result from a tool that cannot tell you what it did not examine.** That sentence is the most valuable thing this project learned tonight.
+
+#### What that produced
+
+**`TESTING-PERSONAS.md` section 7 is the shortcut rule**, written from the audit D39 asked for. Screen tests and journey tests are different tests and this project needs both; every screen owes at least one journey that reaches it. **`BackJourneyTest` found a real defect on its first run.**
+
+**`check_text_sources.py`** fails any source file that grep cannot read. It caught its own author twice within the hour.
+
+**`ReaderStopsTest`** asks Compose for the merged semantics tree rather than asking the window manager, which closes the countable half of #44.
+
+#### The export
+
+**There is no unencrypted export, as of format version 2.** D67. Making the payload portable is what made a plain one dangerous, so the decision that was right at version 1 is wrong at version 2. The importer refuses by what a file is rather than by which version wrote it, and names what it refused.
+
+#### The visual system
+
+**`DESIGN.md` 5.2 is a system in five parts now and it is built**: waypoints with states, routes that are a color and a dash together, spines, distance markers, and the empty state drawings. Plus tabular figures everywhere. **The diagnosis is in 5.2 itself**: section 1's bans were right and nothing replaced them, so every screen converged on a card with text in it.
+
+#### The app became usable end to end
+
+| What landed | Why it mattered |
 |---|---|
-| Chinese did not work at all | The `Locale`, passed straight into `Strings.load` |
-| No export was readable off the phone that wrote it | The device. Every round trip restored where the key never changes |
-| **The system back button left the app** | **The screen, composed alone with no shell around it** |
+| **Search**, ten sections, grouped in notebook order | A years long notebook is unusable without it. #47's universal half |
+| **Incidents as threads** | `MASTER_SPEC.md` 4.7. It was an entry with a scary kind: reported once, never followed, never resolved |
+| **One entry, read on its own** | Nothing could open one. A trail row's only tappable part was its date |
+| **A person, and every call involving them** | Section 3 promised it since Phase 0 and `entry_person` had no writer |
+| **A care thread, a chapter, a medication** | Each is a place the route led nowhere |
+| **The prep sheet** | 4.5, and the app's most useful two minutes |
+| **A shareable document** | 4.9. Generated locally, handed to the share sheet, legible to somebody who has never seen the app |
+| **Draft preservation and dictation** | The two friction fixes that matter most on the capture form |
 
-**130 of the 137 interface tests use `createComposeRule`**, which mounts one screen in a bare test activity. All eighteen `BackHandler`s live in `NotebookShell`, above them, so **the suite was structurally unable to see back**, which is exactly the defect that shipped and was found by hand.
+**Six lists learned the same rule: a tap opens the thing itself.** Each previously opened either nothing or the form for correcting itself.
 
-**`BackJourneyTest` goes through the front door**: launches `MainActivity`, walks in through the gate and setup using only what a person can touch, and presses the real system back button. **It found a real defect on its first run.** Choosing a kind closed the capture sheet, so back from the form landed on the notebook, and correcting a mistap cost three taps. It is one now, D65. Four tests, all passing on the Pixel.
+#### The fixtures unlock the personas
 
-**Two bytes had made a core file invisible to every search.** `git grep "Migrations.run"` returned only the test file, which read as the migration mechanism never being called by the app. **That conclusion was wrong**, and it came from three files carrying a literal NUL inside the SQLite header magic: one NUL makes a file binary to `grep` and `git grep`, and neither says so. `HealthTrailDatabase.kt`, `PortabilityTest.kt`, and `ExportContainerTest.kt` were all exempt from every search based check, silently. Fixed with the escape, and **`check_text_sources.py` fails on it now**, proven by breaking it on purpose. It then immediately caught a NUL in `DECISIONS.md` written while documenting the fix. D66.
+**`tools/fixtures/pack.py`** wraps a generated fixture in a real export container and it goes in through the app's own restore screen. **D61's portability fix is what made that possible**, used in the other direction. It found journey six broken at the last step within minutes, and three fixture defects that were invisible in a database file and obvious on a screen.
 
-**The export has no unencrypted form, as of format version 2.** D67. Version 1 offered one and the reasoning was right for what version 1 wrote: the payload was the device keyed SQLCipher file, so a plain container still held bytes nothing else could read. **Making the export portable changed what a plain one is.** It is now a complete readable copy of the whole care record, in a folder a backup agent or a cloud sync may copy anywhere. The property that fixed the recovery path is the one that makes the plain file dangerous.
-
-The button, its copy, its test tag, and its four catalog strings are gone. `Backup.export` takes a non-null passphrase. **The importer refuses by what a file is rather than by which version wrote it**, so a version 1 file carrying a passphrase is still read, because refusing somebody's real backup to make a point about a number is not a trade this project makes. Two new refusals name what the file is: an unencrypted export, and a pre-portability export that decrypts to something that is not a database, which used to fail later as "damaged" and send somebody hunting a corruption that is not there.
-
-**Walking it on the phone found something no test would have.** A space at either end of a passphrase is invisible behind the mask, soft keyboards add one, and both fields then look identical while differing. Months later on another phone that means a correct passphrase reported as wrong on the only file that is the way back. The screen names it now and does not trim, because trimming quietly changes somebody's secret.
-
-**The trail became a system instead of one screen's drawing.** `DESIGN.md` section 5.2 now has five parts and they are built, not just written.
-
-The diagnosis first, because the fix follows from it: **section 1 bans every cheap way to make a screen interesting, which is right, and nothing replaced them.** So every screen converged on the one pattern that survives the bans, a card with text in it, and the app came out disciplined and anonymous. The trail was a complete visual vocabulary sitting on the timeline doing nothing for the other twenty screens.
-
-| What landed | Where it is |
-|---|---|
-| **Waypoints**, one node family, filled, hollow, ringed | `Spine.kt`. Color carries the kind, shape carries the state, and both survive grayscale |
-| **Routes**, a color and a dash together, never a color alone | Four patterns by creation order. Two threads on similar colors are now told apart in grayscale and by a colorblind reader |
-| **Spines**, one shape for a line with events on it | The trail, chapters, and care threads are the same component now rather than three lists that happened to be about sequences |
-| **Distance markers** | `Distance.kt`, pure, 12 JVM vectors. "Four weeks earlier" between rows more than fourteen days apart. Calendar units rather than divided days, and never on a date the person gave coarsely |
-| **Empty state drawings** | `EmptyDrawing.kt`. Each section's own icon standing on one shared trail map ground |
-| **Tabular figures** | One font feature on the Mono style, which already carries every count, date, and timestamp |
-
-**The empty states were the biggest character opportunity in the app and were one line of gray text.** Each is now a drawing, an invitation, and room, centered in the space the list actually has. **Nothing was invented for them:** the mark is the section's own icon from the table of contents, so thirteen drawings that already share a grid do the work instead of thirteen new ones that would drift.
-
-**Two defects found the same night, one by a test and one by looking.** `ScreenReaderTest` caught a hard crash within a minute of milestones existing, because a milestone's box is wider than the line's 9dp inset and `padding` refuses a negative value at runtime. And the empty state sat jammed under the subtitle with the whole screen blank beneath it, which reads as a screen that failed to load rather than a place waiting for something. That one was only visible on the phone.
-
-**A half written note now survives leaving the capture form.** The form held everything in a local `remember`, so a back press, a rotation, a theme change, or the system reclaiming memory threw it away. Somebody in a corridor writing down what the nurse just said is exactly who that loses. The draft is hoisted into `NotebookShell` in a `rememberSaveable`, so it survives all four including process death. **Cancel still discards it**, because cancel means abandoning the entry, and back does not, which is the same distinction D65 draws for where back goes. Walked on the phone both ways and held by `BackJourneyTest`.
-
-**Making the form controlled found a second thing.** With every field driven by the hoisted state, a caller that did not hoist got a form nothing could be typed into, and it looked completely normal. `CaptureTest` caught it within a minute. The parameters are required with no default now: a component that does nothing when used with its defaults is worse than one that will not compile. Both test files hoist exactly as the shell does rather than stubbing it, per `TESTING-PERSONAS.md` section 7.
-
-**Every text area in the app offers dictation.** Eleven fields, one control, `DictateAction`. Android provides speech input free and the app was not offering it, and for somebody in a hallway who wants to record what the nurse just said, it is the difference between a note and no note.
-
-It is a first class control rather than the keyboard's microphone key, which some keyboards hide and nobody finds under stress. It says "Speak it" in words beside the glyph, it **appends rather than replaces** so half typed and half spoken is one sentence, and what comes back is ordinary editable text, which matters because recognition gets names and drug names wrong and this app is full of both. It is handed the language the app is running in rather than the phone's, which is D52's mistake in the other direction. **It hides entirely when no recognition service exists**, rather than being a control that opens nothing.
-
-**Verified on the phone end to end**, and the verification is worth recording: the recognizer opened, picked up ambient speech from the room, and wrote it into the note field, which is the whole path working. **The screenshot of that was deleted rather than committed**, because it held words spoken in the owner's home and this repository is public. The form was canceled so nothing was saved. That is the D53 rule doing its job on a new surface: the screenshot script guards focus and notifications, and it cannot guard against what the app itself just recorded.
-
-**Search is built, which is #47's universal half.** It is the feature a years long notebook is unusable without: by year two there are hundreds of entries and "the call where they said the wound was healing" is somewhere in them.
-
-Ten sections searched at once, results grouped **in notebook order** rather than by match count, because a list whose order changes with the query is one nobody can build a habit against. Every result carries its chapter, and one with no chapter says nothing rather than saying "Unfiled", which would be a claim the record does not make. Drawn on the spine, dashed, because a result is a filter over the record rather than the person's own path. Reached from More. **`SearchTest` covers it with 11 cases written through the repository's own create methods**, per section 7 of `TESTING-PERSONAS.md`, and it found a defect on its first run.
-
-**Three defects the walk found, and the first two are the interesting ones.**
-
-**A failed search was reported as an empty one.** The `runCatching` I wrote swallowed the throwable and the screen said "nothing matches", which tells somebody their record does not contain what they are certain they wrote down. That is the most alarming lie this screen could tell. It has a real failure state now, and building it is what surfaced the actual bug within a minute: `person`, `medication`, and `question` carry no `chapter_id`, because somebody on the care team spans several stays and a medication crosses chapters by design. The blanket join threw and took **every** section down with it, on every query.
-
-**A cancellation was reported as a failure.** Every keystroke cancels the previous read, so the error state flashed between letters on a search that was working. `CancellationException` is rethrown now.
-
-**Back from any destination left the app**, from four taps deep with no chance to glance at anything else first. Android walks up to the start destination before exiting and every other app on this phone does. Back now returns to the notebook first, and the handler is registered before the overlays so an open section still wins its own press.
-
-**What remains of #47**, and it is open as #131: scoped search inside each section with a chip saying what is being searched and one tap to widen, and the assembly view that gathers everything connected to a result into one exportable document.
-
-**#44 is half closed, properly, and the other half is named.** D68.
-
-**The obvious method does not work and looks exactly like it does.** Turning TalkBack on and dumping the node tree over adb prints the *view* tree, and for a Compose app that is not the merged semantics tree a reader consumes. It reported the notebook's twelve rows as twenty four stops, which read as a regression against D54. **It was a measurement artifact**, caught by adding explicit merging, reinstalling, and watching the dump not change by a line.
-
-**`ReaderStopsTest` asks Compose instead**, through the merged tree, which is the one a reader walks: how many stops, in what order, and what text each carries. It also found that the notebook row was relying on a reader's fallback merging rather than asking for it. It asks now, so "Care team, nothing yet" is one stop by contract rather than by the good behavior of whichever reader it was walked with.
-
-**Nothing was heard, and that is why #44 stays open.** TalkBack's speech cannot be captured over adb. How a label sounds, where a pause lands, and whether a row is unbearable at the reader's own verbosity are questions for ears.
-
-**The phone was restored exactly**, and a restore script was written to `/tmp` *before* TalkBack went on, so it would come back even if the session ended mid-pass.
-
-**The pattern worth carrying out of tonight.** Four separate tools reported on something other than what they were asked about: the guard that was never invoked, the suite that composed one screen at a time, the grep that skipped a binary file, and this dump. **Distrust a negative result from a tool that cannot tell you what it did not examine.**
-
-**Two of the eight journeys in Part Three are walked, and walking them found three things.**
-
-| Journey | Result |
-|---|---|
-| **A first call logged from a cold launch, one-handed, without typing** | **Six taps**, gate to saved: accept, skip setup, "Not sure yet", capture, "Log a call", save. Comfortably inside thirty seconds |
-| **Something logged months ago, found again in under fifteen seconds** | **Two taps and one word** from Today. It was three taps before search moved onto Today |
-
-**Search was two taps into More, and `MASTER_SPEC.md` 4.8 puts it at the top of Today.** Getting to it took longer than using it. It is a quiet row under the title now rather than a live field, because a text box there would compete with the digest for the first thing the eye lands on and this screen's job is to say what changed.
-
-**Search said "Back to More" to somebody who came from Today.** That is the identical defect fixed for the section screens on 2026-08-01, reintroduced the moment a second screen grew two ways in. The caller names the way back now; the screen does not guess.
-
-**The date picker has no way to move by year**, found while backdating an entry three months. Three months is three taps on a small arrow; last year would be twelve. Filed as #132.
-
-**Journey 3 works: an incident from first report through escalation to resolved.** `MASTER_SPEC.md` 4.7 makes an incident a thread rather than an event, and **it was an entry with a scary kind**: reported once, never followed, never resolved. The `incident` table has been in the schema since Phase 0 and nothing had ever written to it.
-
-Reporting one now writes the incident and its first entry in one transaction, the same two-row shape a question uses and for the same reason. Each escalation is a node on the thread. Today counts what is still open and opens the list. The thread reads **oldest first, which is the opposite of the trail**: the trail answers what has been happening lately, a thread answers how this went, and a story told backward is not the same story.
-
-**The visual system did the work it was built for.** The thread is a continuous alert-colored spine, the first report is a ringed milestone, each escalation is a filled waypoint, and an unanswered incident ends in a hollow one with "Nothing since. This one is still open." beside it. Shape carries the state, color carries the kind, and the words say the same thing so nothing depends on seeing red.
-
-**Two friction decisions, both from Part Two.** Adding to a thread carries the incident forward rather than asking which one, and saving from a thread leaves the person on the thread rather than throwing them back to the notebook.
-
-Reopening is offered plainly, because somebody whose answer turned out not to hold has to be able to say so without the app treating it as a confession.
-
-**What remains of journey 3 is the export**, "then exported as one document", which is the assembly view in #131.
-
-**A thread can be handed to somebody as a document they can read.** `MASTER_SPEC.md` 4.9, and the last criterion of the incident journey. Generated locally, handed to the system share sheet, no account and no link.
-
-**The governing sentence is 4.9's last one:** legible standalone to a reader who has never seen the app. That reader is usually a sibling in another state, and they will not be told what a thread is. So `Readable` writes sentences and dates rather than a data dump, and it ends by saying these are one person's own notes and not a medical record, because a tidy dated document is assumed official unless it says otherwise.
-
-**Written to a scoped cache directory, not to Downloads.** `cache/shared`, cleared before each new one, shared through a content URI that grants read to exactly the app the person picked. A file in Downloads would outlive the share and sit in a folder something else may sync, which is the whole of D67's argument about unencrypted exports applied to a smaller file.
-
-Walked on the Pixel: the sheet opened and the file on disk reads as a document, headed with the title, dated, with what happened in order and the footer under it.
-
-**`verify.sh` caught two things nothing else would have, again.** HANDOFF section 8 already said to run the verifier rather than the checks anybody happens to remember, and it earned that a second time tonight.
-
-**Dictation would have silently vanished on every modern phone.** Since Android 11 an app sees only the packages it declares an interest in, so the availability check returns nothing for a recognizer that is installed and working. `DictateAction` hides itself when nothing can handle speech, per rule 11, so the control would have disappeared everywhere while appearing to work perfectly on the one phone it was tested on. A `<queries>` declaration fixes it, and it names exactly one intent, because declaring a query is declaring what this app is allowed to notice about the phone.
-
-Two Compose lint errors about parameter order on screens written tonight, both fixed.
-
-**An entry can be opened, which nothing could do before.** A trail row's only tappable part was its date, and a search result opened the section and left the person to find the row again. **There was no way to get from a thing that happened to the thread it belonged to, the chapter it happened in, or the incident it was part of.** That is journey five's requirement and it is the dead end #46 exists to remove.
-
-The entry names where it sits and each of them opens. A thread is named by **its route**, the color and the dash together per 5.2.2, so it is recognizably the same thread seen on the care threads screen. The date stays a control, per rule 17.
-
-**Two defects found while wiring it, both invisible in the code.**
-
-**The row ignored being tapped.** `removableByLongPress` uses `detectTapGestures`, which consumes the tap, so a `Modifier.clickable` added beside it never fired. The modifier already had an `onTap` slot; it now also emits press interactions, so a card carrying it answers a finger, which rule 16 requires and which it never did.
-
-**Overlays are declared in one `Box`, so declaration order is z-order.** The entry screen was drawn before the section screens and the trail painted over it, so opening an entry looked like doing nothing at all. The same was true of the incident screen opened from an entry. Both are declared after the sections now, with a comment saying why.
-
-**The personas are walkable on the real device now**, which is the thing that has blocked ten of the thirteen since Phase 0.
-
-`tools/fixtures/generate.py` writes a plain SQLite file and the app's database is SQLCipher keyed by the phone's Keystore, so there has never been a way to put a five year notebook on the phone short of tapping it in. **`tools/fixtures/pack.py` wraps a fixture in a real export container**, Argon2id and AES-256-GCM matching `ExportCrypto` exactly, and it goes in through the app's own restore screen. Nothing reaches into the app's storage and no debug hook exists to be left behind, so seeding a persona also exercises the import path every time.
-
-**D61 is what made this possible and it is worth noticing.** Before the payload became plain SQLite, no machine that is not this phone could have written a file this app would open. The portability fix is being used in the other direction.
-
-**It found a real defect on its first use, and a serious one.** Restoring replaces everything, including the record that the disclaimer was accepted, so the gate appears again. **After accepting it, the app went straight to setup** and asked "Who are you looking after" of somebody who had just restored six months of their own notebook. Answering would have created a second subject beside the one they had recovered. That is journey six, exported, moved to another device, restored intact, and it was broken at the last step. The gate checks for an existing notebook now.
-
-**A month six fixture restores faithfully**: 164 trail entries, 2 chapters, 2 care threads, 2 incidents, 6 bills, 5 projects, 3 standing instructions, 4 documents, and 6 entries waiting in the tray, every count matching the source database exactly.
-
-**Six months of real data found three things in twenty minutes**, which is the argument for the fixture work above.
-
-**One note made a trail row taller than several screens.** A note has no length limit and should not have one, and rendered whole in a list it stops the list being a list. **The clamp was only correct once a row could be opened**, which happened earlier the same night: before that, clamping would have hidden text with nowhere to read it, which is the truncation rule 11 forbids. Three lines now, matching a search result, with the whole note one tap away.
-
-**A thread was still a dot in three places.** The care threads screen, the trail row, and the entry screen each drew their own, and a dot is the color alone, which is exactly what 5.2.2 forbids. One `RouteSwatch` now, 28dp so four dashes of the widest pattern fit, and two threads that land on similar colors are told apart at a glance.
-
-**An incident with no thread read as "0 things written down"**, which is true and reads as broken, since the incident is itself a thing written down.
-
-**The accessibility gate was walked on the screens built tonight, and it found one thing.**
-
-**At font scale 2.0 the "Notebook" nav label broke mid-word into "Notebo" and "k" and collided with the capture button.** A single word cannot wrap, so the choices were to break it, clip it, or stop it growing, and a broken word is less legible than a slightly smaller one. **The nav label is now capped at 1.4 and is the only capped type in the app**, because four labels plus a fixed clearance for the capture button share a row nothing else shares. `DESIGN.md` 4.3 records it.
-
-**Everything else passed.** The disclaimer gate, the notebook, and the incident thread all render at 2.0 with nothing clipped and every control reachable. In Arabic the whole layout mirrors, including the spine: the route and both waypoints sit on the start edge, the content flows from them, and the milestone ring and the open hollow end both draw. That came free from using layout direction aware modifiers, which is why `SpineRow` uses `offset` rather than `absoluteOffset`.
-
-**The phone was restored exactly**, verified after: font scale 1.0, animator duration unset, the KDE Connect string in place, and the per-app locale cleared.
-
-**One operational note worth keeping.** `tools/verify.sh --device` runs the instrumented suite, which uninstalls the app and takes the fixture with it. A seeded notebook does not survive a verification run, so seed after verifying rather than before.
-
-**"A person knows every call and visit involving them" is true now.** `MASTER_SPEC.md` section 3 has promised it since Phase 0 and **it had no data behind it**: `entry_person` was in the schema with nothing writing to it, because capture kept who was spoken to as the entry's title, which is a string.
-
-Both halves landed together. **The capture form offers the care team as chips**, which is Part Two's first rule and names people first in its list: somebody in a hallway who already added the charge nurse should not type her name again, and retyping is also how a person ends up with four spellings of one nurse over six months. Choosing a chip writes the link. **The person's page reads it back**, on a dashed spine because it is a filter over the record rather than their own path.
-
-**The link is dropped if the name is edited after a chip was tapped**, because the edited name is what the person meant, and quietly attaching an entry to somebody the words no longer name would be worse than no link.
-
-**A care team row opens the person now** rather than the form for correcting them. Correcting a number is the rarer thing and moved onto the person's own page, which is the same rule the trail row learned earlier tonight: a tap opens the thing itself.
-
-**Journey 4's prep sheet is built**, which is `MASTER_SPEC.md` 4.5 and the thing P3 asks for: the questions waiting for that person plus a change summary composed from real entries, every line tapping through to its source.
-
-**It is entirely composition and nothing else.** The questions are the ones somebody wrote down and never asked. The changes are the entries themselves rather than a description of them. 4.11 requires that and rule 2 is why.
-
-**Since the last appointment, not since a window.** Somebody walking into a care plan meeting wants what has happened since the last time they sat in that room, and a fixed thirty days would either repeat what was covered or drop what was not. **The screen says which date it is counting from**, and says plainly when there is no previous appointment to count from.
-
-**The previous appointment's date travels as its EDTF**, not as a timestamp, so the window is stated at exactly the precision that appointment was given. Rendering a date from an instant would be a precision claim the record may not make.
-
-It shares as a document with the questions numbered, because that is the order they get asked in and a numbered list survives being read aloud from a phone while somebody else is talking. Writing it up afterward opens the ordinary capture form, so what comes out is an ordinary entry on the trail.
-
-**Appointments now open their prep sheet rather than the form for correcting them**, which is the third screen tonight to learn that a tap opens the thing itself.
-
-**A care thread can be opened, which is the last place the route led nowhere.** A thread is this app's own metaphor: its route identifies it on the trail, on an entry, and on the threads screen, and tapping the thread itself did nothing at all.
-
-**The spine runs in the thread's own color and dash**, so opening "Nursing" from the trail and opening it from the threads screen land somewhere recognizably the same. That is what 5.2.2 asked for and this was the last screen missing it.
-
-**An entry's thread link now opens the thread rather than the section it is in**, which is the difference between a link and a signpost.
-
-**A chapter can be opened.** `MASTER_SPEC.md` 4.6: inside a chapter, its dates, why the stay began, its incidents, its documents. **A chapter is this app's unit of "where", and the chapters screen drew the journey with every stop on it a dead end.**
-
-Incidents come first, because a stay with something unresolved in it is a stay defined by that. The line is continuous, per 5.2.3, because a chapter is the person's actual path rather than a filter over the record.
-
-**An entry's chapter link opens the chapter itself** rather than the list of chapters, which is the same correction the thread link got.
-
-**Five screens have now learned that a tap opens the thing itself**: the trail row, the care team row, the appointment row, the thread row, and the chapter row. Each previously opened either nothing or the form for correcting itself.
-
-**A medication can be opened, and it shows how it changed.** `MASTER_SPEC.md` 4.6: a medication's journey crosses chapters and keeps its concern flags attached forever. **That journey is what makes it a record rather than a list**, and "she was on this until March, and it was changed at the rehab" is the answer to a question somebody is eventually asked in a room where nobody has the notes.
-
-`medication_event` is read now. **Nothing writes to it yet**, so the history is honestly empty rather than absent: the screen says "Nothing written down about changes to this yet" instead of hiding the section. Writing a change is the next piece and is on #140.
-
-**Six lists have now learned that a tap opens the thing itself.** The trail, the care team, appointments, threads, chapters, and medications.
-
-**A medication's history can be written now**, which closes the loop the previous increment opened honestly. `medication_event` has been in the schema since Phase 0 with no writer at all, so every medication's history was empty forever.
-
-Five changes the record understands: started, dose changed, held, started again, stopped. **Chips rather than a text field**, because the set is knowable and short, and a sixth invented word would be a row nothing could read back. **The dose stays words**: "half a tablet in the morning only" is what somebody is told, and the app never reads it as a quantity.
-
-**The chapter is stamped from wherever the person is now**, which is what makes a medication's journey cross chapters at all, per `MASTER_SPEC.md` 4.6.
-
-**The z-order trap bit a third time** and is now written into the code where it happens. Anything opened from an overlay must be declared after it, because these are overlays in one `Box` and declaration order is z-order. It caught the entry screen, an incident opened from an entry, and this.
 
 ### Where to pick up
 
-1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
-2. **#9's last two failure cases** are what remains of the export: a database with an unknown table or column, and an attachment referenced by the database but absent from the archive. Both need a deliberately malformed fixture rather than production code. Everything else in #9 is done and walked on the device, both directions.
-3. **#44, the TalkBack hand pass**, is still owed and is still the thing this run keeps not doing. `ScreenReaderTest` covers the labeling forever; what is missing is traversal order and phrasing with the reader actually on.
-4. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? Today is now worth opening on, which it was not when the question was asked.
-5. **The final translation good faith check** the owner asked for, at the very end, against reliable services. Not started, and deliberately last.
+**Rewritten 2026-08-03. Everything above this line describes what is true; this is what is next.**
 
-### What is owed on the screens built tonight
+1. **The design review queue is the biggest thing waiting, and it waits on the owner rather than on work.** Thirty two `needs-design-review` issues now, ten of them opened tonight for screens that did not exist yesterday: search **#130**, incidents **#133**, one entry **#134**, one person **#136**, the prep sheet **#137**, one care thread **#138**, one chapter **#139**, one medication **#140**. Each carries a device screenshot and each names what it still owes.
 
-**The reader pass with TalkBack actually running.** Font scale 2.0 and Arabic were both walked on the device and both pass. **`ScreenReaderTest` covers 30 screens now, up from 10**, so the labeling check runs forever and every screen built this run went in at the moment it was built. **What has not been done is a hand pass with TalkBack on**, for traversal order and phrasing, and that is #44. It is the one thing this run consistently owes and did not do.
+2. **#131, the other half of search.** Scoped search inside each section with a chip saying what is being searched and one tap to widen, the assembly view that gathers everything connected to a result into one exportable document, date range search against imprecise dates, and reconstructing a single day. The universal half is built and walked.
 
----
+3. **#135, a situation template applies its threads and nothing else.** The ten item first-days checklist and the six document slots are parsed and unread, and the checklist is the highest value content in the catalog. Found walking P2.
 
-**Six of the eight failure cases in `contract/export-format.md` section 7 are covered.** The two that are not:
+4. **#44's remaining half, which needs ears.** How a label sounds, where pauses land, whether a row is bearable at higher verbosity, and Arabic with the reader on. The countable half is closed by `ReaderStopsTest`.
 
-- a database with an unknown table or column
-- an attachment referenced by the database but absent from the archive
+5. **The personas, now that they are walkable.** P1, P2, and part of P4 are recorded in section 10 with what they found. P3 and P5 through P13 are not, and `tools/fixtures/pack.py` means every horizon can be put on the phone in about a minute.
 
-Both need a deliberately malformed fixture rather than new production code, which is why they are a small piece of work rather than the reason #9 is still open.
+6. **The remaining "links both ways" gaps**, each named on its own issue: `person_chapter` and a project's `chapter_id` have no writer, so a chapter cannot show its archived care team or the projects that began there. `medication_flag` has no reader or writer.
 
-**Then #62**, the template catalog being English only, which is release blocking.
+7. **#125 asks the owner a question**: should the app open on Today rather than the Notebook? Today has search at the top and a real digest now, which it did not when the question was asked.
 
-**The round trip test is built and passing**, 9 tests, unencrypted. D55. The argument B4 rested on is no longer resting on something unbuilt: a notebook demonstrably survives an export and a restore, column by column, tombstones included, with the EDTF string byte identical and the derived ranges recomputed rather than trusted.
+8. **The final translation good faith check**, deliberately last, and **language access after everything above**, per section 5.
 
-**#9**, where it stands:
+### What is owed on every screen built tonight
 
-1. ~~Content addressed attachment storage.~~ **Done.** `Attachments`, with the row side already in the schema.
-2. ~~The container.~~ **Done, unencrypted.** `ExportContainer` writes and reads it, and six of the eight section 7 failure cases are covered.
-3. ~~The round trip test.~~ **Done.** `RoundTripTest`, 9 tests on the phone, with `Backup` for the export and restore either side of it. D55.
-4. ~~Encryption.~~ **Done and wired.** Argon2id through Bouncy Castle, AES-256-GCM through the platform, parameters recorded in the manifest and read back from it on import. **The whole round trip suite runs encrypted as well as plain**, so the byte-for-byte guarantees hold through encryption rather than only beside it. Roughly one to one and a half seconds on the Pixel, so the cost stays. D51. **The dependency question is answered:** the owner decided on 2026-08-01 to keep the format exactly as written, take AES-256-GCM from the platform JCE, and add **Bouncy Castle** `Argon2BytesGenerator` for Argon2id, which is pure Java and needs no NDK. **Do not substitute PBKDF2.** Per D24 the export file is the only recovery path from key loss, which makes it the most security sensitive artifact in the project. Record the Argon2id parameters in the export manifest so older files stay readable and the cost can be raised later. Start from the OWASP baseline and tune only if it measures unusably slow on the phone.
-5. **The last two failure cases** of the eight in section 7. **This is what remains of #9.**
-6. ~~Tombstones travel, and a test says so.~~ **Done**, and it closed the last unmet criterion on #8.
+**Light theme captures, Arabic, and font scale 2.0** for the eight new screens. The gate was walked on a sample tonight, not on all of them: the notebook, the disclaimer, the incident thread, and Today were checked at 2.0 and in Arabic and all pass. **The nav label cap came out of that pass**, D68's sibling finding.
 
-`contract/export-format.md` specifies all of it and is current, including the line added this run about event dates travelling as their EDTF string and the derived range being recomputed on import rather than trusted.
+**The reader pass with TalkBack running**, #44, for the same eight.
 
-**Then #62**, the template catalog being English only, which is release blocking and which the app currently shows plainly to any Arabic reader.
-
-**Then #43 and #44 worked alongside new screens** rather than saved for a phase gate.
-
-**Then the rest of Phase 1:** Today with the digest engine, the trail, care team, medications, the emergency card, projects, and More.
-
-**Language access is last**, after everything above. Section 5 says why.
-
-**Persona runs happen as their supporting screens land**, not in a block at the end. `TESTING-PERSONAS.md` has thirteen and one has been walked. Section 10 records each with its seed and date.
 
 ## 4. What is done, and how each piece was verified
 
@@ -506,7 +342,8 @@ Verified means checked through the mechanism, not inferred from the code being w
 
 | Issue | What | Why here, and what it is actually waiting on |
 |---|---|---|
-| **#9** | **The export container** | ~~Round trip.~~ ~~Encryption.~~ ~~The last two failure cases.~~ ~~Portability.~~ **All done and walked on the device in both directions.** What remains is only that the round trip runs on the phone rather than in continuous integration, which is what B4's argument rests on |
+| **#9** | **The export container** | **Done.** Round trip, encryption, all eight failure cases, portability, and as of 2026-08-03 a passphrase is required and there is no unencrypted export, D67. Format version 2 |
+| **#47** | **Search** | **The universal half is done and walked.** #131 carries the rest |
 | #62 | The template catalog is English only | Release blocking. The app currently shows an Arabic interface wrapped around English content, which any Arabic reader sees immediately. Found by running the device in Arabic, not by any check |
 | #43, #44 | The retroactive audit, and the accessibility gate | **Worked alongside new screens, never saved for a phase gate.** Both partly done with findings on the issues. **#44's reader criterion is met for three screens**, walked with TalkBack actually running on 2026-08-01, D54. What remains is the same pass over the screens not yet walked, which is now cheap and proven safe |
 | #57 | The document capture input | The last of the six ways in. **No longer blocked**: the attachment storage it needed landed with the export's first piece |
