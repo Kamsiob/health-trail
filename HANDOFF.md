@@ -291,6 +291,14 @@ The pass is running now and it is not only producing captures. Three things on s
 
 **A record was named with the button that made it.** `kindLabelKey` mapped to the `capture.*` catalog keys, so a visit already written down appeared on the trail, on a person, in a chapter, on a thread, on a prep sheet and in search results as "Log a visit". An imperative sitting where the description belongs, reading as an instruction to somebody looking back over six months. The `entry.kind.*` nouns already existed in all four catalogs for the entry screen's subtitle. Renamed `kindNameKey` and repointed; all nine callers name something that has happened.
 
+### The accessibility gate, walked on tonight's screens
+
+**Font scale 2.0**: the medications list, one medication with its history, and the prep sheet with both its spines all hold. Nothing truncated, nothing overlapping, everything reachable by scrolling. The waypoints stay anchored to the first line of each card, which is what the clamp is for.
+
+**Arabic**, set through the app's own per-app locale rather than by changing the phone's language, so nothing outside this app was touched. The layout mirrors, the gutter moves to the correct side, and **the spine itself did not mirror**, which is the finding. `Modifier.offset` is layout direction aware; the canvas that replaced it is not, so the line sat nineteen dp from the start edge instead of nine. It looked right in isolation and was caught by measuring the same screen in both directions: fifty nine pixels from the start edge in English, eighty one in Arabic, sixty one after the fix.
+
+**The phone was restored exactly**, per rule 19. `font_scale` back to 1.0, `animator_duration_scale` deleted rather than set, the app's locale back to en-US, and the restore script was written to `/tmp` before anything was changed.
+
 ### What is owed on every screen built tonight
 
 **Light theme captures, Arabic, and font scale 2.0** for the eight new screens. The gate was walked on a sample tonight, not on all of them: the notebook, the disclaimer, the incident thread, and Today were checked at 2.0 and in Arabic and all pass. **The nav label cap came out of that pass**, D68's sibling finding.

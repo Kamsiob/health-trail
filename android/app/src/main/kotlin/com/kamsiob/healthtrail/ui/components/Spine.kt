@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -278,7 +279,21 @@ fun SpineRow(
 
     Row(modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
         Canvas(modifier = Modifier.width(Trail.gutterWidth).fillMaxHeight()) {
-            val x = Trail.lineCenter.toPx()
+            // **Mirrored by hand, because a canvas is not.** `Modifier.offset`
+            // is layout direction aware and the node used to be placed with
+            // one; moving the drawing in here to get the row's height traded
+            // that away without saying so, and in Arabic the whole spine sat
+            // nineteen dp from the start edge instead of nine. It is the exact
+            // trap `absoluteOffset` sets, arrived at from the other side.
+            //
+            // Found by measuring the same screen in both directions, not by
+            // looking: the layout mirrors, the gutter moves to the right, the
+            // line is inside it, and it reads as correct until the two
+            // screenshots are put side by side.
+            val x = when (layoutDirection) {
+                LayoutDirection.Rtl -> size.width - Trail.lineCenter.toPx()
+                else -> Trail.lineCenter.toPx()
+            }
 
             // **Never below the row's own middle.** `nodeCenterY` was measured
             // against a trail card, which carries a date line above its title.
