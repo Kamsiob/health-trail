@@ -20,6 +20,7 @@ object MoreTags {
     const val COMING = "more_coming"
     const val ABOUT = "more_about"
     const val SEARCH = "more_search"
+    const val LIBRARY = "more_library"
     const val EXPORT = "more_export"
     const val RESTORE = "more_restore"
 }
@@ -51,6 +52,7 @@ fun MoreScreen(
     onRestore: () -> Unit,
     onSearch: () -> Unit,
     modifier: Modifier = Modifier,
+    onLibrary: () -> Unit = {},
 ) {
     AppearanceScreen(
         choice = choice,
@@ -62,6 +64,7 @@ fun MoreScreen(
                 onExport = onExport,
                 onRestore = onRestore,
                 onSearch = onSearch,
+                onLibrary = onLibrary,
             )
         },
     )
@@ -81,6 +84,7 @@ private fun MoreBelowAppearance(
     onExport: () -> Unit,
     onRestore: () -> Unit,
     onSearch: () -> Unit,
+    onLibrary: () -> Unit,
 ) {
     val strings = LocalStrings.current
 
@@ -93,6 +97,15 @@ private fun MoreBelowAppearance(
             label = strings["more.search"],
             onClick = onSearch,
             modifier = Modifier.fillMaxWidth().testTag(MoreTags.SEARCH),
+        )
+        Spacer(Modifier.height(Space.cardGap))
+        // **The templates, and what each one has produced.** The owner's word
+        // for what this had to become is state: a menu of sixteen processes
+        // says nothing about a person's notebook.
+        QuietButton(
+            label = strings["more.library"],
+            onClick = onLibrary,
+            modifier = Modifier.fillMaxWidth().testTag(MoreTags.LIBRARY),
         )
         Spacer(Modifier.height(Space.cardGap))
         QuietButton(

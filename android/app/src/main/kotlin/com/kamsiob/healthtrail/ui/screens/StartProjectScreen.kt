@@ -24,9 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -36,6 +38,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 
 object StartProjectTags {
     const val OWN = "start_project_own"
+    fun ownTemplate(id: String) = "start_project_template_$id"
     const val OWN_NAME = "start_project_own_name"
     const val OWN_START = "start_project_own_start"
     const val ROOT = "start_project_root"
@@ -64,6 +67,16 @@ fun StartProjectScreen(
     modifier: Modifier = Modifier,
     /** Starts a project with no template behind it, given what to call it. */
     onStartOwn: (String) -> Unit = {},
+    /**
+     * The person's own templates, offered above the sixteen.
+     *
+     * **A saved template nothing can start from is a saved template that does
+     * not exist.** The library showed them and the start screen did not offer
+     * them for the first hour, which is a feature with a hole through the
+     * middle of it.
+     */
+    own: List<Repository.OwnTemplate> = emptyList(),
+    onChooseOwn: (Repository.OwnTemplate) -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -97,6 +110,30 @@ fun StartProjectScreen(
                         color = colors.ink2,
                     )
                     Spacer(Modifier.height(Space.l))
+                }
+
+                // **Theirs first.** Somebody who has made one has learned
+                // something the catalog did not know, and putting the sixteen
+                // shipped ones above it would say the opposite.
+                if (own.isNotEmpty()) {
+                    item {
+                        GroupHeader(labelKey = "library.own")
+                        Spacer(Modifier.height(Space.headerGap))
+                    }
+                    for (template in own) {
+                        item(key = template.id) {
+                            OwnTemplateCard(
+                                template = template,
+                                onChoose = { onChooseOwn(template) },
+                            )
+                            Spacer(Modifier.height(Space.cardGap))
+                        }
+                    }
+                    item {
+                        Spacer(Modifier.height(Space.s))
+                        GroupHeader(labelKey = "library.shipped")
+                        Spacer(Modifier.height(Space.headerGap))
+                    }
                 }
 
                 for (template in templates) {
@@ -247,5 +284,56 @@ private fun OwnProject(onStart: (String) -> Unit) {
                 modifier = Modifier.fillMaxWidth().testTag(StartProjectTags.OWN_START),
             )
         }
+    }
+}
+
+/**
+ * One of the person's own templates, on the start screen.
+ *
+ * The same card shape as a shipped one, because it is the same choice. What
+ * differs is the line under the name, which says where it came from rather than
+ * what the process is: they wrote it, so they already know what it is for.
+ */
+@Composable
+private fun OwnTemplateCard(
+    template: Repository.OwnTemplate,
+    onChoose: () -> Unit,
+) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.card)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(Radius.card)
+            .background(surface)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onChoose,
+            )
+            .testTag(StartProjectTags.ownTemplate(template.id))
+            .padding(Space.cardPadding),
+    ) {
+        Text(
+            text = strings("projects.step_count", "count" to template.steps.size),
+            style = HealthTrail.type.mono,
+            color = colors.ink3Text,
+        )
+        Spacer(Modifier.height(Space.xs))
+        Text(text = template.name, style = HealthTrail.type.displayS, color = colors.ink)
+        Spacer(Modifier.height(Space.xs))
+        Text(
+            text = if (template.derivedFromId != null) {
+                strings["library.derived"]
+            } else {
+                strings["library.scratch"]
+            },
+            style = HealthTrail.type.bodyM,
+            color = colors.ink2,
+        )
     }
 }

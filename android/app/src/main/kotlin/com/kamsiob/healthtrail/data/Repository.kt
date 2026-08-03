@@ -5,6 +5,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * The only way the rest of the app reaches the database.
@@ -1685,6 +1687,118 @@ class Repository private constructor(
             ),
         )
     }
+
+    /**
+     * One of the person's own templates.
+     *
+     * **The body is the same shape as the bundled JSON**, which is what the
+     * schema's own comment on `custom_template.body_json` already asks for, so
+     * one loader reads both and the start screen does not have to know which
+     * kind of template it is offering.
+     */
+    data class OwnTemplate(
+        val id: String,
+        val name: String,
+        /**
+         * The shipped template this was derived from, or null for one built
+         * from nothing.
+         *
+         * **This is the lineage, and it is the whole reason the column
+         * exists.** Editing a shipped template makes the person's own copy
+         * rather than changing the shipped one, so a catalog update in a later
+         * version cannot overwrite what they wrote, and the copy still knows
+         * what it grew out of.
+         */
+        val derivedFromId: String?,
+        val steps: List<String>,
+        val createdAt: Long,
+    )
+
+    /**
+     * Saves a project's current steps as the person's own template.
+     *
+     * **The steps are copied at the moment of saving**, exactly as
+     * [startProject] copies them in the other direction. A template that
+     * referred back to a live project would change under somebody every time
+     * they ticked a step off, which is the opposite of what a template is.
+     *
+     * **Lineage travels.** A project started from a shipped template keeps that
+     * template's id in `derived_from_id`, so the library can say what this grew
+     * out of and a later catalog update can never overwrite it.
+     */
+    suspend fun saveProjectAsTemplate(projectId: String, name: String): String =
+        withContext(Dispatchers.IO) {
+            val derivedFrom = db().database.rawQuery(
+                "SELECT template_id FROM live_project WHERE id = ?",
+                arrayOf(projectId),
+            ).use { if (it.moveToFirst()) it.getString(0) else null }
+
+            val steps = projectSteps(projectId).map { it.text }
+            val body = JSONObject()
+                .put("name", name)
+                .put("steps", JSONArray(steps))
+
+            insert(
+                "custom_template",
+                mapOf(
+                    "kind" to "project",
+                    "derived_from_id" to derivedFrom,
+                    "name" to name,
+                    "body_json" to body.toString(),
+                ),
+            )
+        }
+
+    /**
+     * The person's own templates of one kind, newest first.
+     *
+     * **A body that will not parse is skipped rather than crashing the screen.**
+     * This column holds JSON written by whatever version of the app the person
+     * was running, and an export from a later one can carry a shape this build
+     * has never seen. The library says how many it holds by counting what it
+     * could read, which is honest, rather than by counting rows it cannot show.
+     */
+    suspend fun ownTemplates(kind: String): List<OwnTemplate> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, name, derived_from_id, body_json, created_at " +
+                    "FROM live_custom_template WHERE kind = ? ORDER BY created_at DESC",
+                arrayOf(kind),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        val steps = runCatching {
+                            val array = JSONObject(cursor.getString(3)).optJSONArray("steps")
+                            (0 until (array?.length() ?: 0)).map { array!!.getString(it) }
+                        }.getOrNull() ?: continue
+                        add(
+                            OwnTemplate(
+                                id = cursor.getString(0),
+                                name = cursor.getString(1),
+                                derivedFromId = cursor.getString(2),
+                                steps = steps,
+                                createdAt = cursor.getLong(4),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /**
+     * Every project a template has produced, newest first.
+     *
+     * **This is what makes the library show state rather than a menu.** A list
+     * of sixteen processes says nothing about a person's notebook; "you started
+     * this in March and it is still waiting on the caseworker" is the thing
+     * they came to the library to find out.
+     *
+     * Matches on the shipped template's id and on any of the person's own
+     * templates derived from it, so a process the person adjusted once still
+     * counts as the same process.
+     */
+    suspend fun projectsFromTemplate(subjectId: String, templateId: String): List<Project> =
+        projects(subjectId).filter { it.templateId == templateId }
 
     /**
      * Marks a step done, or puts it back.

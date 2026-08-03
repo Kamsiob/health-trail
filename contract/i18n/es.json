@@ -592,5 +592,18 @@
   "projects.name": "Cómo llamarlo",
   "projects.name.hint": "Como lo diría en voz alta",
   "projects.from_a_template": "Empezado desde una plantilla. Los pasos son un punto de partida, y este es suyo para cambiarlo.",
-  "projects.no_steps": "Todavía no hay pasos. Agregue el primero cuando sepa cuál es, y el resto a medida que se entere."
+  "projects.no_steps": "Todavía no hay pasos. Agregue el primero cuando sepa cuál es, y el resto a medida que se entere.",
+  "projects.save_as_template": "Guardar estos pasos como su propia plantilla",
+  "projects.save_as_template.aside": "Para que el próximo caso parecido empiece por lo que usted aprendió y no por el catálogo.",
+  "projects.saved_as_template": "Guardado. Está en sus plantillas, en Más.",
+  "library.title": "Plantillas",
+  "library.subtitle": "Los procesos que trae la aplicación, los que usted ha hecho suyos, y lo que cada uno ha producido en este cuaderno.",
+  "library.shipped": "Viene con la aplicación",
+  "library.own": "Suya",
+  "library.derived": "Su copia de una plantilla que trae la aplicación",
+  "library.scratch": "Hecha desde cero",
+  "library.in_use": "{count, plural, one {1 empezado desde esta} other {# empezados desde esta}}",
+  "library.never_used": "Todavía no ha empezado nada desde esta",
+  "library.empty": "Todavía no ha hecho ninguna suya. Cambie los pasos de un proyecto y guárdelos, y aparecerá aquí.",
+  "more.library": "Plantillas"
 }

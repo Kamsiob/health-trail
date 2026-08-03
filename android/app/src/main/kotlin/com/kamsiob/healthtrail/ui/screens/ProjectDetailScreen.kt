@@ -72,6 +72,8 @@ object ProjectDetailTags {
     const val STEP_SAVE = "project_step_save"
     const val STEP_REMOVE = "project_step_remove"
     const val NO_STEPS = "project_no_steps"
+    const val SAVE_TEMPLATE = "project_save_template"
+    const val SAVED_TEMPLATE = "project_saved_template"
 }
 
 private val STATUSES = listOf("active", "waiting", "stalled", "done", "abandoned")
@@ -111,6 +113,9 @@ fun ProjectDetailScreen(
     onEditStep: (stepId: String, text: String, note: String?) -> Unit = { _, _, _ -> },
     onMoveStep: (stepId: String, earlier: Boolean) -> Unit = { _, _ -> },
     onRemoveStep: (Repository.ProjectStep) -> Unit = {},
+    onSaveAsTemplate: () -> Unit = {},
+    /** True once this project's steps have been saved as a template. */
+    savedAsTemplate: Boolean = false,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -273,6 +278,39 @@ fun ProjectDetailScreen(
                 onClick = { editing = Editing.New },
                 modifier = Modifier.testTag(ProjectDetailTags.ADD_STEP),
             )
+
+            // **Saving these steps as the person's own template**, which is
+            // what makes editing a shipped one their copy rather than a change
+            // to the catalog: `custom_template.derived_from_id` keeps the
+            // lineage, so a catalog update in a later version can never
+            // overwrite what they wrote.
+            //
+            // **Only when there is something to save.** A template of no steps
+            // is a name with nothing in it, and the control would be one that
+            // does nothing, which D42 rules out.
+            if (steps.isNotEmpty()) {
+                Spacer(Modifier.height(Space.sectionGap))
+                if (savedAsTemplate) {
+                    Text(
+                        text = strings["projects.saved_as_template"],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
+                        modifier = Modifier.testTag(ProjectDetailTags.SAVED_TEMPLATE),
+                    )
+                } else {
+                    TextAction(
+                        label = strings["projects.save_as_template"],
+                        onClick = onSaveAsTemplate,
+                        modifier = Modifier.testTag(ProjectDetailTags.SAVE_TEMPLATE),
+                    )
+                    Text(
+                        text = strings["projects.save_as_template.aside"],
+                        style = HealthTrail.type.bodyS,
+                        color = colors.ink3Text,
+                    )
+                }
+            }
+
             Spacer(Modifier.height(Space.l))
         }
     }

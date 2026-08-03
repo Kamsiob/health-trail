@@ -116,6 +116,7 @@ import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.screens.CoachStep
 import com.kamsiob.healthtrail.ui.screens.LocalSectionBackKey
+import com.kamsiob.healthtrail.ui.screens.TemplateLibraryScreen
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -259,6 +260,15 @@ fun NotebookShell(
     var movingStep by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     var removingStep by remember { mutableStateOf<String?>(null) }
     var creatingOwnProject by remember { mutableStateOf<String?>(null) }
+    var ownTemplates by remember {
+        mutableStateOf<List<Repository.OwnTemplate>>(emptyList())
+    }
+    var libraryOpen by remember { mutableStateOf(false) }
+    var savingTemplate by remember { mutableStateOf<Repository.Project?>(null) }
+    // Which projects have had their steps saved, so the control says so once
+    // rather than inviting the same save again.
+    var savedTemplates by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var startingFromOwn by remember { mutableStateOf<Repository.OwnTemplate?>(null) }
     var aboutOpen by remember { mutableStateOf(false) }
 
     /** Incidents, which `MASTER_SPEC.md` 4.7 makes threads rather than events. */
@@ -470,6 +480,7 @@ fun NotebookShell(
             documents = subject?.let { repository.documents(it.id) }.orEmpty()
             projects = subject?.let { repository.projects(it.id) }.orEmpty()
             projectTemplates = TemplateCatalog.projects(context)
+            ownTemplates = repository.ownTemplates("project")
             // Kept in step with the list, so a step ticked on the detail screen
             // and the count on the card behind it can never disagree.
             openProject = openProject?.let { current ->
@@ -527,6 +538,11 @@ fun NotebookShell(
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
     BackHandler(enabled = searchOpen) { searchOpen = false }
     BackHandler(enabled = incidentsOpen && openIncident == null) { incidentsOpen = false }
+    // **The library is above More and below a project**, so back from a project
+    // opened out of the library returns to the library rather than leaving the
+    // app. `BackJourneyTest` exists because that exact thing was wrong on every
+    // screen above the notebook once.
+    BackHandler(enabled = libraryOpen && openProject == null) { libraryOpen = false }
     BackHandler(enabled = openIncident != null) { openIncident = null }
     BackHandler(enabled = openEntry != null) { openEntry = null }
     BackHandler(enabled = openPerson != null) { openPerson = null }
@@ -692,6 +708,7 @@ fun NotebookShell(
                         onChoose = onThemeChoice,
                         onAbout = { aboutOpen = true },
                         onSearch = { searchOpen = true },
+                        onLibrary = { libraryOpen = true },
                         onExport = { exportState = ExportState.READY; exportOpen = true },
                         onRestore = {
                             restoreState = RestoreState.Empty
@@ -1087,6 +1104,8 @@ fun NotebookShell(
                 onEditStep = { id, text, note -> editingStep = Triple(id, text, note) },
                 onMoveStep = { id, earlier -> movingStep = id to earlier },
                 onRemoveStep = { step -> removingStep = step.id },
+                onSaveAsTemplate = { savingTemplate = currentProject },
+                savedAsTemplate = currentProject.id in savedTemplates,
             )
         }
 
@@ -1101,6 +1120,11 @@ fun NotebookShell(
                 onStartOwn = { name ->
                     startingProject = false
                     creatingOwnProject = name
+                },
+                own = ownTemplates,
+                onChooseOwn = { template ->
+                    startingProject = false
+                    startingFromOwn = template
                 },
             )
         }
@@ -1118,6 +1142,46 @@ fun NotebookShell(
                     openProject = repository.projects(subject.id).firstOrNull { it.id == id }
                 }
                 creatingOwnProject = null
+                revision += 1
+            }
+        }
+
+        savingTemplate?.let { project ->
+            LaunchedEffect(project.id) {
+                repository.saveProjectAsTemplate(project.id, project.name)
+                savedTemplates = savedTemplates + project.id
+                savingTemplate = null
+                revision += 1
+            }
+        }
+
+        if (libraryOpen) {
+            TemplateLibraryScreen(
+                shipped = projectTemplates,
+                own = ownTemplates,
+                projects = projects,
+                onOpenProject = { project ->
+                    libraryOpen = false
+                    openProject = project
+                },
+                onBack = { libraryOpen = false },
+            )
+        }
+
+        startingFromOwn?.let { template ->
+            LaunchedEffect(template.id) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    // **The template's own id**, so the library can say what it
+                    // produced and the project can say where it came from.
+                    repository.startProject(
+                        subjectId = subject.id,
+                        templateId = template.id,
+                        name = template.name,
+                        steps = template.steps,
+                    )
+                }
+                startingFromOwn = null
                 revision += 1
             }
         }

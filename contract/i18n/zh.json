@@ -592,5 +592,18 @@
   "projects.name": "叫它什么",
   "projects.name.hint": "你平时怎么称呼它就怎么写",
   "projects.from_a_template": "从一个模板开始。这些步骤只是一个起点，这条记录归你，随你更改。",
-  "projects.no_steps": "还没有步骤。等你知道第一步是什么就加上，其余的边弄清楚边加。"
+  "projects.no_steps": "还没有步骤。等你知道第一步是什么就加上，其余的边弄清楚边加。",
+  "projects.save_as_template": "把这些步骤存成你自己的模板",
+  "projects.save_as_template.aside": "这样下次遇到类似的事，就从你学到的开始，而不是从目录开始。",
+  "projects.saved_as_template": "已保存。可以在「更多」里的模板中找到。",
+  "library.title": "模板",
+  "library.subtitle": "应用自带的流程、你改成自己的那些，以及每一个在这本笔记里产生了什么。",
+  "library.shipped": "应用自带",
+  "library.own": "你的",
+  "library.derived": "你对应用自带模板的副本",
+  "library.scratch": "从零建立",
+  "library.in_use": "{count, plural, other {已从这里开始 # 项}}",
+  "library.never_used": "还没有从这里开始过",
+  "library.empty": "你还没有做过自己的模板。改一个流程的步骤并保存，它就会出现在这里。",
+  "more.library": "模板"
 }

@@ -897,6 +897,18 @@ Specified in full at 5.16. Tracked on issue #39.
 
 **A project with no template**, per 4.10, named on the start screen and opened straight away, with its own empty state. Sixteen catalog processes is a good starting set and it is not the world.
 
+**The template library.** What a template is, and what it has actually produced. Built 2026-08-03, reached from More, and tracked on `#147`.
+
+**A menu of sixteen processes says nothing about a person's notebook.** The owner's word for what this had to become is state: which templates are in use, when they were applied, and what each one created, with links. A list that only offers is a catalog; a list that also reports is a library.
+
+**Their own templates come first.** Somebody who has made one has learned something the catalog did not know, and putting the sixteen shipped ones above it would say the opposite.
+
+**Lineage in words.** A template saved from a project that came from a shipped one reads as the person's copy of it; one saved from a project built from nothing says so. `custom_template.derived_from_id` had no writer until this landed. **A shipped template is never edited in place**, so a catalog update in a later version cannot overwrite what somebody wrote.
+
+**A template nothing has been started from says so** rather than leaving a blank, which is D75 applied to a card.
+
+Composed from Display L, Body M, the group header 5.13, cards 5.3, the dense row 11.3 for the projects inside each card, and the Mono style. Nothing new.
+
 **The Unfiled tray.** Everything the person saved without saying where it belonged.
 
 **Built because the capture form already promised it.** The form tells the person their entry is going to the Unfiled tray, and until 2026-08-01 there was nowhere to see it. A promise the app makes and does not keep costs more than a feature it never mentioned, which is why this outranked the rest of the queue.

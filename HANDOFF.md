@@ -314,7 +314,9 @@ seeded notebook reporting nothing at all.
    Walked at 1.0, at 2.0 where the whole screen still fits without a word breaking, and in Arabic.
 7. **Projects. Half done, and the half that is done is the functional half.** A project is a **spine** now, with a filled waypoint for a step that is done and a hollow one for a step nobody has started, so a step not started reads as "not yet" and nothing is struck through. The subtitle says **where it came from** rather than "2 of 5 steps done", in three cases because two would lie. The list row says **what is next** rather than how far behind. **Every step is editable**: long press opens a sheet with its words, its note, move earlier, move later, and remove, and `project_step.note` finally has a writer and a reader. **A project with no template** can be started and opens straight away with its own empty state. `#146` is the design review with what I was unsure about.
 
-   **What is left of the owner's brief on projects:** saving a modified project as the person's own template, editing a shipped template into their own copy with lineage preserved, and the library in More showing which templates are in use, when they were applied, and what each one created. `custom_template` is in the schema with `derived_from_id` and `body_json` and has no writer.
+   **The rest of the brief landed too.** A project's steps can be **saved as the person's own template**, which is what makes editing a shipped one their copy rather than a change to the catalog: `custom_template.derived_from_id` keeps the lineage and had no writer until now. **The library in More** shows their own templates first, then the sixteen shipped ones, each saying how many steps it has, where it came from, and what it has produced, with the projects themselves as rows that open. `#147` is its design review. **The start screen offers their own templates above the sixteen**, which it did not for the first hour and which made a saved template a saved template that does not exist.
+
+   **Walked end to end on the phone:** saved a project's five steps, found the template in the library, started a project from it, and watched the library go from "Nothing started from this yet" to "1 started from this" with the project linked. At font scale 2.0 and in Arabic as well.
 
 8. **#144, the retroactive sweep** of every other existing screen against section 11.
 9. **Documents and bills as galleries with real thumbnails.** The app stores photographs of the person's own paper and shows none of them.
@@ -611,6 +613,8 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| The template library | 2026-08-03 | #147 | not yet |
+| A project, rebuilt as a spine with editable steps | 2026-08-03 | #146 | not yet |
 | One medication, and how it changed | 2026-08-03 | #140 | not yet |
 | One chapter, and what happened there | 2026-08-03 | #139 | not yet |
 | One care thread, and everything on it | 2026-08-03 | #138 | not yet |

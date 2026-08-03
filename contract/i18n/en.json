@@ -592,5 +592,18 @@
   "projects.name": "What to call it",
   "projects.name.hint": "Whatever you would call it out loud",
   "projects.from_a_template": "Started from a template. The steps are a starting point, and this one is yours to change.",
-  "projects.no_steps": "No steps yet. Add the first one when you know what it is, and the rest as you find out."
+  "projects.no_steps": "No steps yet. Add the first one when you know what it is, and the rest as you find out.",
+  "projects.save_as_template": "Save these steps as your own template",
+  "projects.save_as_template.aside": "So the next one like this starts from what you learned rather than from the catalog.",
+  "projects.saved_as_template": "Saved. It is in your templates, under More.",
+  "library.title": "Templates",
+  "library.subtitle": "The processes the app comes with, the ones you have made your own, and what each has produced in this notebook.",
+  "library.shipped": "Comes with the app",
+  "library.own": "Yours",
+  "library.derived": "Your copy of a template that comes with the app",
+  "library.scratch": "Built from nothing",
+  "library.in_use": "{count, plural, one {1 started from this} other {# started from this}}",
+  "library.never_used": "Nothing started from this yet",
+  "library.empty": "You have not made any of your own yet. Change a project's steps and save them, and it turns up here.",
+  "more.library": "Templates"
 }
