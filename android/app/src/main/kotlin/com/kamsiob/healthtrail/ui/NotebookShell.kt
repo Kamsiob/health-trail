@@ -36,6 +36,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreState
@@ -221,6 +222,18 @@ fun NotebookShell(
     var settingProjectStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     var settingWaitingOn by remember { mutableStateOf<Pair<String, String>?>(null) }
     var aboutOpen by remember { mutableStateOf(false) }
+
+    /**
+     * Search, and what has been typed into it.
+     *
+     * **The query is saved rather than remembered**, so somebody who searched,
+     * opened a result, and came back is not made to type it again. A search a
+     * person had to repeat is one they stop using. Rule 18 counts taps.
+     */
+    var searchOpen by remember { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var searchResults by remember { mutableStateOf<List<Repository.SearchHit>>(emptyList()) }
+    var searchFailed by remember { mutableStateOf(false) }
     var exportOpen by remember { mutableStateOf(false) }
     var exportState by remember { mutableStateOf(ExportState.READY) }
     // Held between choosing a passphrase and choosing where the file goes,
@@ -376,9 +389,29 @@ fun NotebookShell(
     // Each is enabled only when the thing it closes is actually showing, so
     // back still leaves the app from the notebook itself, which is what a
     // person expects there.
+    // **Back from a secondary destination returns to the notebook**, and only
+    // the notebook lets go of the app.
+    //
+    // Found by walking search on the phone: back from More left the app
+    // outright, from four taps deep, with no way to glance at anything else
+    // first. Android's own model is that back walks up to the start
+    // destination before it exits, and every other app on this person's phone
+    // behaves that way, so leaving from any tab reads as the app dropping them.
+    //
+    // **Registered first, which gives it the lowest priority.** Compose hands
+    // a back press to the most recently registered enabled handler, so this has
+    // to come before every overlay below it. Put after them it won a press that
+    // belonged to an open section, switching tabs out from under somebody who
+    // was reading one. That is the same ordering trap the overlay block already
+    // carries a comment about.
+    BackHandler(enabled = destination != Destination.NOTEBOOK) {
+        destination = Destination.NOTEBOOK
+    }
+
     BackHandler(enabled = openSection != null) { openSection = null }
     BackHandler(enabled = openProject != null) { openProject = null }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
+    BackHandler(enabled = searchOpen) { searchOpen = false }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -528,6 +561,7 @@ fun NotebookShell(
                         choice = themeChoice,
                         onChoose = onThemeChoice,
                         onAbout = { aboutOpen = true },
+                        onSearch = { searchOpen = true },
                         onExport = { exportState = ExportState.READY; exportOpen = true },
                         onRestore = {
                             restoreState = RestoreState.Empty
@@ -754,6 +788,57 @@ fun NotebookShell(
                 revision += 1
                 applyNow = false
             }
+        }
+
+        if (searchOpen) {
+            // Re-run whenever the words change, and whenever the notebook does,
+            // so a result the person just corrected is not stale behind them.
+            LaunchedEffect(searchQuery, revision) {
+                // The subject is read here rather than held in state, because
+                // it is read the same way everywhere else in this file and one
+                // more piece of shell state is one more thing to keep true.
+                val id = repository.activeSubject()?.id
+                if (id == null) {
+                    searchResults = emptyList()
+                    searchFailed = false
+                } else {
+                    // **A failed search is not an empty search.** Swallowing the
+                    // throwable here told the person their record does not
+                    // contain what they are certain they wrote down, which is
+                    // the single most alarming lie this screen could tell. It
+                    // says the read failed and offers it again instead.
+                    repository.runCatching { search(id, searchQuery) }
+                        .onSuccess { searchResults = it; searchFailed = false }
+                        .onFailure {
+                            // **A cancellation is not a failure.** Every
+                            // keystroke cancels the previous read, so treating
+                            // the cancellation as an error flashed "the search
+                            // could not run" between letters on a search that
+                            // was working perfectly. Rethrown so the coroutine
+                            // machinery sees it, which is also what keeps the
+                            // effect cancellable at all.
+                            if (it is kotlinx.coroutines.CancellationException) throw it
+                            android.util.Log.w("HealthTrail", "search failed", it)
+                            searchResults = emptyList()
+                            searchFailed = true
+                        }
+                }
+            }
+            SearchScreen(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                results = searchResults,
+                failed = searchFailed,
+                onOpen = { hit ->
+                    // **A result opens the section it lives in**, which is the
+                    // one place in the app that already knows how to show it.
+                    // Rule 18: links go both ways, and a result that opened
+                    // nothing would be the dead end #46 exists to remove.
+                    searchOpen = false
+                    openSection = hit.section
+                },
+                onBack = { searchOpen = false },
+            )
         }
 
         if (aboutOpen) {

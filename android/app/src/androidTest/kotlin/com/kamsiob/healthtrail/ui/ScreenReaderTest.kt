@@ -61,6 +61,7 @@ import com.kamsiob.healthtrail.ui.screens.Emphasis
 import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
+import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.SetupScreen
 import com.kamsiob.healthtrail.ui.screens.SituationPickerScreen
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
@@ -750,6 +751,73 @@ class ScreenReaderTest {
     }
 
     @Test
+    fun searchLabelsEverything() {
+        compose.show {
+            SearchScreen(
+                query = "ward",
+                onQueryChange = {},
+                results = listOf(
+                    Repository.SearchHit(
+                        id = "h1",
+                        section = Repository.Section.TRAIL,
+                        title = "Nurse Okonkwo, ward 4",
+                        detail = "Said the dressing looks better",
+                        chapterName = "Riverbend Rehab",
+                        occurredEdtf = "2026-08-02",
+                        occurredStart = 1_785_000_000_000L,
+                    ),
+                ),
+                onOpen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("search, with results")
+    }
+
+    @Test
+    fun searchWithNothingTypedLabelsEverything() {
+        compose.show {
+            SearchScreen(
+                query = "",
+                onQueryChange = {},
+                results = emptyList(),
+                onOpen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("search, resting")
+    }
+
+    @Test
+    fun searchWithNoMatchLabelsEverything() {
+        compose.show {
+            SearchScreen(
+                query = "zzzz",
+                onQueryChange = {},
+                results = emptyList(),
+                onOpen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("search, no match")
+    }
+
+    @Test
+    fun searchThatFailedLabelsEverything() {
+        compose.show {
+            SearchScreen(
+                query = "ward",
+                onQueryChange = {},
+                results = emptyList(),
+                failed = true,
+                onOpen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("search, failed")
+    }
+
+    @Test
     fun moreLabelsEverything() {
         compose.show {
             MoreScreen(
@@ -758,6 +826,7 @@ class ScreenReaderTest {
                 onAbout = {},
                 onExport = {},
                 onRestore = {},
+                onSearch = {},
             )
         }
         assertEverythingIsLabeled("more")

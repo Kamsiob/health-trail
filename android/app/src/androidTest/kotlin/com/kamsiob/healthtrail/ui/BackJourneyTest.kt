@@ -239,6 +239,23 @@ class BackJourneyTest {
     }
 
     @Test
+    fun backFromAnotherDestinationReturnsToTheNotebookBeforeLeaving() {
+        // **Found by walking search on the phone.** Back from More left the app
+        // outright, from four taps deep, with no chance to glance at anything
+        // else first. Android walks up to the start destination before it
+        // exits, and every other app on this person's phone behaves that way,
+        // so leaving from any tab reads as being dropped.
+        reachTheNotebook()
+
+        compose.onNodeWithTag(NavTags.tab(Destination.MORE)).performClick()
+        compose.waitForIdle()
+
+        backWithoutLeavingTheApp("the More destination")
+
+        compose.onNodeWithTag(NotebookTags.ROOT).assertIsDisplayed()
+    }
+
+    @Test
     fun backFromTheNotebookItselfDoesLeaveTheApp() {
         // The other half of the contract, and the reason this is not fixed by
         // swallowing every back press. At the notebook there is nowhere further

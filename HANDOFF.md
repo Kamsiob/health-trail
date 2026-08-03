@@ -241,6 +241,20 @@ It is a first class control rather than the keyboard's microphone key, which som
 
 **Verified on the phone end to end**, and the verification is worth recording: the recognizer opened, picked up ambient speech from the room, and wrote it into the note field, which is the whole path working. **The screenshot of that was deleted rather than committed**, because it held words spoken in the owner's home and this repository is public. The form was canceled so nothing was saved. That is the D53 rule doing its job on a new surface: the screenshot script guards focus and notifications, and it cannot guard against what the app itself just recorded.
 
+**Search is built, which is #47's universal half.** It is the feature a years long notebook is unusable without: by year two there are hundreds of entries and "the call where they said the wound was healing" is somewhere in them.
+
+Ten sections searched at once, results grouped **in notebook order** rather than by match count, because a list whose order changes with the query is one nobody can build a habit against. Every result carries its chapter, and one with no chapter says nothing rather than saying "Unfiled", which would be a claim the record does not make. Drawn on the spine, dashed, because a result is a filter over the record rather than the person's own path. Reached from More. **`SearchTest` covers it with 11 cases written through the repository's own create methods**, per section 7 of `TESTING-PERSONAS.md`, and it found a defect on its first run.
+
+**Three defects the walk found, and the first two are the interesting ones.**
+
+**A failed search was reported as an empty one.** The `runCatching` I wrote swallowed the throwable and the screen said "nothing matches", which tells somebody their record does not contain what they are certain they wrote down. That is the most alarming lie this screen could tell. It has a real failure state now, and building it is what surfaced the actual bug within a minute: `person`, `medication`, and `question` carry no `chapter_id`, because somebody on the care team spans several stays and a medication crosses chapters by design. The blanket join threw and took **every** section down with it, on every query.
+
+**A cancellation was reported as a failure.** Every keystroke cancels the previous read, so the error state flashed between letters on a search that was working. `CancellationException` is rethrown now.
+
+**Back from any destination left the app**, from four taps deep with no chance to glance at anything else first. Android walks up to the start destination before exiting and every other app on this phone does. Back now returns to the notebook first, and the handler is registered before the overlays so an open section still wins its own press.
+
+**What remains of #47**, and it is open as #131: scoped search inside each section with a chip saying what is being searched and one tap to widen, and the assembly view that gathers everything connected to a result into one exportable document.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -492,6 +506,7 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| Search | 2026-08-02 | #130 | not yet |
 | Exporting the notebook | 2026-08-02 | #126 | not yet |
 | Restoring from a file | 2026-08-02 | #127 | not yet |
 | Today, rebuilt around the digest | 2026-08-02 | #81 | not yet |

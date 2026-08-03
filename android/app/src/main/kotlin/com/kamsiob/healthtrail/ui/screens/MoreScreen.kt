@@ -19,6 +19,7 @@ import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 object MoreTags {
     const val COMING = "more_coming"
     const val ABOUT = "more_about"
+    const val SEARCH = "more_search"
     const val EXPORT = "more_export"
     const val RESTORE = "more_restore"
 }
@@ -48,6 +49,7 @@ fun MoreScreen(
     onAbout: () -> Unit,
     onExport: () -> Unit,
     onRestore: () -> Unit,
+    onSearch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AppearanceScreen(
@@ -59,6 +61,7 @@ fun MoreScreen(
                 onAbout = onAbout,
                 onExport = onExport,
                 onRestore = onRestore,
+                onSearch = onSearch,
             )
         },
     )
@@ -77,11 +80,21 @@ private fun MoreBelowAppearance(
     onAbout: () -> Unit,
     onExport: () -> Unit,
     onRestore: () -> Unit,
+    onSearch: () -> Unit,
 ) {
     val strings = LocalStrings.current
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(Modifier.height(Space.sectionGap))
+        // **First, above export and restore.** `MASTER_SPEC.md` 4.8 puts search
+        // in More and also at the top of Today, and of the three things here it
+        // is the one somebody reaches for weekly rather than once.
+        QuietButton(
+            label = strings["more.search"],
+            onClick = onSearch,
+            modifier = Modifier.fillMaxWidth().testTag(MoreTags.SEARCH),
+        )
+        Spacer(Modifier.height(Space.cardGap))
         QuietButton(
             label = strings["more.export"],
             onClick = onExport,

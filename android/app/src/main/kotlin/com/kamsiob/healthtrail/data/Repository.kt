@@ -2240,6 +2240,160 @@ class Repository private constructor(
         internal val table: String get() = view.removePrefix("live_")
     }
 
+    // ---- search --------------------------------------------------------
+
+    /**
+     * One thing the search found.
+     *
+     * **Every result carries its chapter**, per `MASTER_SPEC.md` 4.8, so the
+     * person always knows where in the journey it happened. A result with no
+     * chapter says so by leaving it null rather than by inventing one: plenty
+     * of things are recorded before anybody has said where they belong, and
+     * "Unfiled" would be a claim the record does not make.
+     */
+    data class SearchHit(
+        val id: String,
+        /** Which notebook section this lives in, so results group where the person expects. */
+        val section: Section,
+        val title: String,
+        /** The line under the title, which is usually where the match was found. */
+        val detail: String?,
+        val chapterName: String?,
+        /** The EDTF string of when it happened, for the ones that happened. */
+        val occurredEdtf: String?,
+        /** Sorts most recent first within a section. Null sorts last. */
+        val occurredStart: Long?,
+    )
+
+    /**
+     * Everything matching what the person typed, grouped by section.
+     *
+     * **The search a years long notebook is unusable without.** By year two
+     * there are hundreds of entries, and "the call where they said the wound
+     * was healing" is somewhere in them. `MASTER_SPEC.md` 4.8.
+     *
+     * **Plain substring matching, case folded, and nothing cleverer.** No
+     * stemming, no fuzzy distance, no ranking by relevance. A caregiver
+     * searching for "Dr Okonkwo" wants the rows containing those letters, and a
+     * clever matcher that helpfully returns something else has hidden the row
+     * they were looking for. The one accommodation is case, because nobody
+     * types a facility's capitalization from memory.
+     *
+     * **Read through the live views**, so anything deleted is already gone
+     * rather than filtered here, which is what `check_live_views.py` enforces.
+     *
+     * Returns at most [limit] per section. A person with four hundred matching
+     * entries is not helped by four hundred rows, and the sections that
+     * overflow say so on screen rather than truncating quietly.
+     */
+    suspend fun search(
+        subjectId: String,
+        query: String,
+        limit: Int = 50,
+    ): List<SearchHit> = withContext(Dispatchers.IO) {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return@withContext emptyList()
+
+        // LIKE with the pattern's own characters escaped, so a person searching
+        // for a literal percent sign or underscore, which appear in doses and
+        // in file names, gets what they asked for rather than a wildcard.
+        val pattern = "%" + trimmed.lowercase()
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_") + "%"
+
+        val hits = mutableListOf<SearchHit>()
+        // Resolved once, outside the local function, because opening the
+        // database is a suspending call and this runs ten queries.
+        val database = db().database
+
+        fun run(
+            section: Section,
+            table: String,
+            titleColumn: String,
+            detailColumn: String?,
+            dateColumn: String?,
+            searched: List<String>,
+            /**
+             * Whether this table has a `chapter_id` of its own.
+             *
+             * Stated per table rather than assumed, because three of the ten do
+             * not: a person belongs to chapters through `person_chapter`, a
+             * medication deliberately crosses them, and a question hangs off an
+             * entry rather than a place.
+             */
+            hasChapter: Boolean = true,
+        ) {
+            val where = searched.joinToString(" OR ") {
+                "lower(coalesce(x.$it, '')) LIKE ? ESCAPE '\\'"
+            }
+            val date = dateColumn?.let { "x.${it}_edtf, x.${it}_start" } ?: "NULL, NULL"
+            val detail = detailColumn?.let { "x.$it" } ?: "NULL"
+            // **Not every table carries a chapter, and the ones that do not
+            // are not an oversight.** A person belongs to chapters through
+            // `person_chapter`, because somebody can be on the care team across
+            // several stays, and a medication crosses chapters by design, which
+            // `MASTER_SPEC.md` 4.8 calls a medication's journey. Joining
+            // `x.chapter_id` blindly threw "no such column" for those three and
+            // took the whole search down with them.
+            val chapter = when {
+                table == "live_chapter" -> "x.name"
+                hasChapter -> "c.name"
+                else -> "NULL"
+            }
+            val join = if (hasChapter) "LEFT JOIN live_chapter c ON c.id = x.chapter_id " else ""
+            database.rawQuery(
+                "SELECT x.id, x.$titleColumn, $detail, $chapter, $date " +
+                    "FROM $table x $join" +
+                    "WHERE x.subject_id = ? AND ($where) " +
+                    "ORDER BY x.created_at DESC LIMIT ?",
+                arrayOf(subjectId) + Array(searched.size) { pattern } + arrayOf(limit.toString()),
+            ).use { cursor ->
+                while (cursor.moveToNext()) {
+                    hits += SearchHit(
+                        id = cursor.getString(0),
+                        section = section,
+                        title = cursor.getString(1) ?: "",
+                        detail = cursor.getString(2),
+                        chapterName = cursor.getString(3),
+                        occurredEdtf = cursor.getString(4),
+                        occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                    )
+                }
+            }
+        }
+
+        // **In notebook order**, which is the order the person already learned,
+        // rather than by how many matches each section produced. A list whose
+        // order changes with the query is one nobody can build a habit against.
+        run(Section.CARE_TEAM, "live_person", "display_name", "role_label", null,
+            listOf("display_name", "role_label", "notes", "shift_note", "phone", "email"),
+            hasChapter = false)
+        run(Section.MEDICATIONS, "live_medication", "name", "dose_text", "started",
+            listOf("name", "dose_text", "purpose_text", "notes", "stop_reason"),
+            hasChapter = false)
+        run(Section.APPOINTMENTS, "live_appointment", "title", "location_note", "scheduled",
+            listOf("title", "location_note", "notes", "outcome_note"))
+        run(Section.CHAPTERS, "live_chapter", "name", "reason", "started",
+            listOf("name", "reason", "notes", "transfer_note"),
+            hasChapter = false)
+        run(Section.TRAIL, "live_entry", "title", "body", "occurred",
+            listOf("title", "body", "suggested_home"))
+        run(Section.DOCUMENTS, "live_document", "title", "original_location", "received",
+            listOf("title", "original_location", "notes", "category"))
+        run(Section.MONEY, "live_bill", "description", "state_note", "received",
+            listOf("description", "state_note", "notes"))
+        run(Section.STANDING_INSTRUCTIONS, "live_standing_instruction", "name", "wording", "given",
+            listOf("name", "wording", "notes", "acknowledged_how"))
+        run(Section.ASK_NEXT_TIME, "live_question", "text", "answer_text", "asked",
+            listOf("text", "answer_text", "role_label"),
+            hasChapter = false)
+        run(Section.PROJECTS, "live_project", "name", "waiting_on", "started",
+            listOf("name", "waiting_on", "notes"))
+
+        hits
+    }
+
     companion object {
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"
