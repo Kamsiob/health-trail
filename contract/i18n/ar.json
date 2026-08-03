@@ -429,6 +429,7 @@
   "restore.lead": "افتح نسخة صدّرتها سابقًا. لا شيء يتغير حتى ترى ما في الملف وتؤكد.",
   "restore.choose": "اختر ملفًا",
   "restore.passphrase": "هذا الملف مقفل. ما عبارة المرور الخاصة به؟",
+  "restore.passphrase.hint": "العبارة التي اخترتها عند حفظ هذا الملف",
   "restore.unlock": "افتحه",
   "restore.found": "ما في هذا الملف",
   "restore.made": "أُنشئ في {date}",

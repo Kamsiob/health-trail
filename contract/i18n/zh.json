@@ -429,6 +429,7 @@
   "restore.lead": "打开您此前导出的文件。在您看过文件内容并确认之前，不会有任何改变。",
   "restore.choose": "选择文件",
   "restore.passphrase": "该文件已加密。它的密码短语是什么？",
+  "restore.passphrase.hint": "你保存这个文件时设置的那一个",
   "restore.unlock": "打开",
   "restore.found": "文件内容",
   "restore.made": "创建于 {date}",

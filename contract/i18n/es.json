@@ -429,6 +429,7 @@
   "restore.lead": "Abra una exportación que hizo antes. Nada cambia hasta que haya visto lo que contiene y lo confirme.",
   "restore.choose": "Elegir un archivo",
   "restore.passphrase": "Este archivo está protegido. ¿Cuál es su contraseña?",
+  "restore.passphrase.hint": "La que eligió cuando guardó este archivo",
   "restore.unlock": "Abrirlo",
   "restore.found": "Qué contiene este archivo",
   "restore.made": "Creado el {date}",

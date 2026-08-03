@@ -429,6 +429,7 @@
   "restore.lead": "Open an export you made earlier. Nothing changes until you have seen what is in the file and said so.",
   "restore.choose": "Choose a file",
   "restore.passphrase": "This file is locked. What is its passphrase?",
+  "restore.passphrase.hint": "The one you chose when you saved this file",
   "restore.unlock": "Open it",
   "restore.found": "What is in this file",
   "restore.made": "Made {date}",

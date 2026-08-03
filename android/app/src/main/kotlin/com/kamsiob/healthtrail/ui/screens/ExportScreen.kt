@@ -177,6 +177,11 @@ fun ExportScreen(
             )
             Spacer(Modifier.height(Space.m))
 
+            // **No hint inside this one, deliberately.** D37 puts the
+            // microcopy in the empty box because a bare label over a blank
+            // field is an interrogation. Here the label is already the
+            // instruction, and "Type it again" repeated inside the box would
+            // be the same words in two slots, which section 1 bans by name.
             HealthTrailTextField(
                 label = strings["export.passphrase.again"],
                 value = again,

@@ -136,6 +136,11 @@ fun RestoreScreen(
                     Spacer(Modifier.height(Space.m))
                     HealthTrailTextField(
                         label = strings["export.passphrase"],
+                        // **Inside the empty box rather than only above it**,
+                        // D37. Somebody restoring is often doing it months
+                        // later on a new phone, and the useful thing to say is
+                        // which passphrase, not that one is wanted.
+                        hint = strings["restore.passphrase.hint"],
                         value = passphrase,
                         onValueChange = { passphrase = it },
                         keyboardType = KeyboardType.Password,
