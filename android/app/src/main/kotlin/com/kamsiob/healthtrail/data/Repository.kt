@@ -2599,6 +2599,88 @@ class Repository private constructor(
     }
 
     /** The entries on one incident, oldest first, which is the order it happened. */
+    /**
+     * Everybody named on an incident, gathered from its own thread.
+     *
+     * `MASTER_SPEC.md` section 3: "an incident knows its project, its
+     * documents, and its people." **The people half needed no new column and no
+     * new writer**, because every call chasing an incident is an ordinary entry
+     * and entries learned to name who they involved. It is a join nobody had
+     * written rather than data nobody had.
+     *
+     * **Distinct, and in the order they first appear on the thread**, which is
+     * the order somebody would recount it: who I reported it to, then who I was
+     * escalated to. A name repeated across four calls is one person.
+     */
+    suspend fun peopleOnIncident(incidentId: String): List<Person> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT DISTINCT p.id, p.display_name, p.role_label, p.phone, " +
+                    "p.email, p.notes " +
+                    "FROM live_entry e " +
+                    "JOIN live_entry_person ep ON ep.entry_id = e.id " +
+                    "JOIN live_person p ON p.id = ep.person_id " +
+                    "WHERE e.incident_id = ? " +
+                    "ORDER BY e.occurred_start IS NULL, e.occurred_start, e.created_at",
+                arrayOf(incidentId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            Person(
+                                id = cursor.getString(0),
+                                displayName = cursor.getString(1),
+                                roleLabel = cursor.getString(2),
+                                phone = cursor.getString(3),
+                                email = cursor.getString(4),
+                                notes = cursor.getString(5),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /**
+     * The paperwork that came out of an incident.
+     *
+     * The other half that needed nothing new: a document already points at the
+     * entry it was saved against, and an entry already knows its incident. The
+     * grievance somebody filed and the letter they were sent are the documents
+     * that matter most six months later, and they were reachable only by
+     * scrolling the documents section.
+     */
+    suspend fun documentsOnIncident(incidentId: String): List<Document> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT d.id, d.title, d.category, d.original_location, d.notes, " +
+                    "d.received_edtf, a.sha256, a.byte_size " +
+                    "FROM live_document d " +
+                    "JOIN live_entry e ON e.id = d.entry_id " +
+                    "LEFT JOIN live_attachment a ON a.document_id = d.id " +
+                    "WHERE e.incident_id = ? " +
+                    "ORDER BY d.received_start IS NULL, d.received_start, d.created_at",
+                arrayOf(incidentId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            Document(
+                                id = cursor.getString(0),
+                                title = cursor.getString(1),
+                                category = cursor.getString(2),
+                                originalLocation = cursor.getString(3),
+                                notes = cursor.getString(4),
+                                receivedEdtf = cursor.getString(5),
+                                sha256 = cursor.getString(6),
+                                byteSize = if (cursor.isNull(7)) null else cursor.getLong(7),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
     suspend fun incidentTrail(incidentId: String): List<TrailEntry> =
         withContext(Dispatchers.IO) {
             db().database.rawQuery(

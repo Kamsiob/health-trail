@@ -91,11 +91,11 @@ def roster(days, full, early):
 # rather than advice, per rule 2 and `templates/SCHEMA.md`: these are records of
 # who was told and when, and none of them says whether anything was reasonable.
 INCIDENT_STEPS = [
-    "Reported it to the charge nurse",
-    "Called the unit to ask what had been done",
-    "Asked the director of nursing for it in writing",
-    "Called back, was told it had gone to the care plan meeting",
-    "Told what they decided",
+    ("Reported it to the charge nurse", "Charge nurse, day shift"),
+    ("Called the unit to ask what had been done", "Charge nurse, day shift"),
+    ("Asked the director of nursing for it in writing", "Director of nursing"),
+    ("Called back, was told it had gone to the care plan meeting", "Director of nursing"),
+    ("Told what they decided", "Director of nursing"),
 ]
 
 
@@ -159,19 +159,25 @@ class Generator:
         # appointments, medications and questions that point at them.
         people = self.care_team(db, subject_id, chapters)
         self.entries(db, subject_id, chapters, threads)
-        self.involve(db, people)
         appointments = self.appointments(db, subject_id, chapters, people)
         self.questions(db, subject_id, people, appointments)
         self.medications(db, subject_id, chapters, people)
         self.emergency_card(db, subject_id, people)
         self.measures(db, subject_id)
         self.milestones(db, subject_id)
-        self.incidents(db, subject_id, chapters)
+        self.incidents(db, subject_id, chapters, people)
         self.bills(db, subject_id, chapters)
         self.instructions(db, subject_id, chapters)
         self.projects(db, subject_id)
         self.documents(db, subject_id, chapters)
         self.awkward(db, subject_id, chapters, threads)
+        # **Last, because it works over every entry that exists.** It ran
+        # immediately after `entries` at first, which meant the calls hanging
+        # off an incident had not been written yet and none of them named
+        # anybody. An incident could then never show who was involved, and the
+        # screen that reads it looked broken when it was the fixture that was
+        # ordered wrong.
+        self.involve(db, people)
         db.commit()
 
     def row(self, db, table, values, day=0):
@@ -359,7 +365,7 @@ class Generator:
                 day=day,
             )
 
-    def incidents(self, db, subject_id, chapters):
+    def incidents(self, db, subject_id, chapters, people):
         """Incidents that resolve, and one that never does.
 
         The one that never resolves is the point. An app that only ever holds
@@ -395,9 +401,9 @@ class Generator:
             # made P4 untestable against generated data: P4's first requirement
             # is that the thread records every call with names and dates and
             # reads start to finish.
-            self.incident_thread(db, subject_id, incident_id, day, closed)
+            self.incident_thread(db, subject_id, incident_id, day, closed, people)
 
-    def incident_thread(self, db, subject_id, incident_id, reported_day, closed_day):
+    def incident_thread(self, db, subject_id, incident_id, reported_day, closed_day, people):
         """The calls and escalations that hang off one incident.
 
         Between two and five of them, the first on the day it was reported,
@@ -410,13 +416,14 @@ class Generator:
         howmany = self.rng.randrange(2, 6)
         for step in range(howmany):
             day = min(self.days - 1, reported_day + (span * step) // howmany)
-            self.row(
+            title, role = INCIDENT_STEPS[step % len(INCIDENT_STEPS)]
+            entry_id = self.row(
                 db,
                 "entry",
                 {
                     "subject_id": subject_id,
                     "kind": "call" if step else "incident",
-                    "title": INCIDENT_STEPS[step % len(INCIDENT_STEPS)],
+                    "title": title,
                     "body": None,
                     "incident_id": incident_id,
                     "occurred_edtf": (self.start + timedelta(days=day)).isoformat(),
@@ -426,6 +433,31 @@ class Generator:
                 },
                 day=day,
             )
+
+            # **An incident thread always names somebody**, which is what makes
+            # it an escalation rather than a list of calls. The random sampling
+            # in `involve` is right for an ordinary entry, because plenty of
+            # what a family writes down is "called the nursing station" with no
+            # name attached. It is wrong here: the point of chasing something is
+            # that you know who you chased it with and who you were passed to
+            # next, and each step above says whose job it was.
+            named = self.person_with_role(db, role)
+            if named:
+                at = self.ms(day)
+                db.execute(
+                    "INSERT INTO entry_person (id, created_at, updated_at, origin_device,"
+                    " rev, entry_id, person_id) VALUES (?, ?, ?, ?, 1, ?, ?)",
+                    (self.new_id(), at, at, self.device, entry_id, named),
+                )
+
+    def person_with_role(self, db, role):
+        """Whoever holds a role, or nobody at a fixture too small to have them."""
+        row = db.execute(
+            "SELECT id FROM person WHERE role_label = ? AND archived_at IS NULL"
+            " ORDER BY created_at LIMIT 1",
+            (role,),
+        ).fetchone()
+        return row[0] if row else None
 
     def care_team(self, db, subject_id, chapters):
         """The people, which nothing generated until 2026-08-03.

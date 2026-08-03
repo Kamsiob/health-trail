@@ -299,6 +299,8 @@ fun NotebookShell(
     var medicationQuestions by remember {
         mutableStateOf<List<Repository.Question>>(emptyList())
     }
+    var incidentPeople by remember { mutableStateOf<List<Repository.Person>>(emptyList()) }
+    var incidentDocuments by remember { mutableStateOf<List<Repository.Document>>(emptyList()) }
     var chapterDetail by remember { mutableStateOf<Repository.ChapterDetail?>(null) }
     var threadEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
     var prep by remember { mutableStateOf<Repository.Prep?>(null) }
@@ -1331,10 +1333,19 @@ fun NotebookShell(
             } else {
                 LaunchedEffect(current.id, revision) {
                     incidentEntries = repository.incidentTrail(current.id)
+                    incidentPeople = repository.peopleOnIncident(current.id)
+                    incidentDocuments = repository.documentsOnIncident(current.id)
                 }
                 IncidentScreen(
                     incident = current,
                     entries = incidentEntries,
+                    people = incidentPeople,
+                    documents = incidentDocuments,
+                    onOpenPerson = { person ->
+                        openIncident = null
+                        incidentsOpen = false
+                        openPerson = person
+                    },
                     onAdd = {
                         // **Carries the incident forward rather than asking
                         // again.** Part Two: a prefill is a default the person

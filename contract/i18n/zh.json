@@ -81,6 +81,8 @@
   "incident.open.lead": "关于这件事记下的所有内容，从最早开始。",
   "incident.settled.lead": "关于这件事记下的所有内容，从最早开始，直到得到答复。",
   "incident.thread": "经过",
+  "incident.people": "涉及的人",
+  "incident.documents": "由此产生的文件",
   "incident.still.open": "之后没有别的了。这件事还没有解决。",
   "incident.resolution": "是怎么答复的",
   "incident.add": "添加后来发生的事",

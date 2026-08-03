@@ -81,6 +81,8 @@
   "incident.open.lead": "كل ما دُوّن عن هذا، من الأقدم إلى الأحدث.",
   "incident.settled.lead": "كل ما دُوّن عن هذا، من الأقدم إلى الأحدث، حتى الإجابة.",
   "incident.thread": "ما الذي حدث",
+  "incident.people": "من كان معنيًا",
+  "incident.documents": "ما نتج عنه",
   "incident.still.open": "لا شيء بعد ذلك. هذا الأمر ما زال مفتوحًا.",
   "incident.resolution": "كيف تمت الإجابة",
   "incident.add": "أضف ما حدث بعد ذلك",

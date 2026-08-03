@@ -81,6 +81,8 @@
   "incident.open.lead": "Everything written down about this, oldest first.",
   "incident.settled.lead": "Everything written down about this, oldest first, up to the answer.",
   "incident.thread": "What happened",
+  "incident.people": "Who was involved",
+  "incident.documents": "What it produced",
   "incident.still.open": "Nothing since. This one is still open.",
   "incident.resolution": "How it was answered",
   "incident.add": "Add what happened next",

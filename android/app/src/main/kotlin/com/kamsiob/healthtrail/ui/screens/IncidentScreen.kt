@@ -26,6 +26,7 @@ import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.SpineRow
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -42,6 +43,8 @@ object IncidentTags {
     const val ADD = "incident_add"
     const val SHARE = "incident_share"
     fun node(id: String) = "incident_node_$id"
+    fun person(id: String) = "incident_person_$id"
+    fun document(id: String) = "incident_document_$id"
 }
 
 /**
@@ -217,6 +220,23 @@ private fun IncidentSpineRow(
 fun IncidentScreen(
     incident: Repository.Incident,
     entries: List<Repository.TrailEntry>,
+    /**
+     * Everybody named on the thread, and the paperwork that came out of it.
+     *
+     * `MASTER_SPEC.md` section 3: "an incident knows its project, its
+     * documents, and its people." **Two of the three needed no new column and
+     * no new writer**, only a join nobody had written: every call chasing an
+     * incident is an ordinary entry, entries know who they involved, and a
+     * document already points at the entry it was saved against.
+     *
+     * The project is the third and it has nowhere to live. `incident` has no
+     * `project_id`, so that clause cannot be built without a schema change,
+     * which is the owner's decision under rule 3 and is written up rather than
+     * quietly skipped.
+     */
+    people: List<Repository.Person>,
+    documents: List<Repository.Document>,
+    onOpenPerson: (Repository.Person) -> Unit,
     onAdd: () -> Unit,
     /**
      * Hands this thread to the system share sheet as a readable document.
@@ -251,6 +271,81 @@ fun IncidentScreen(
                 Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
                 Spacer(Modifier.height(Space.sectionGap))
             }
+        }
+
+        // **Who it involved, before the thread.** Somebody opening a six month
+        // old incident is usually trying to remember who they dealt with, and
+        // the answer was buried in four call titles they would have to read.
+        if (people.isNotEmpty()) {
+            item {
+                GroupHeader(labelKey = "incident.people")
+                Spacer(Modifier.height(Space.headerGap))
+            }
+            people.forEach { person ->
+                item(key = "p_${person.id}") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics(mergeDescendants = true) { }
+                            .clip(Radius.card)
+                            .background(colors.card)
+                            .removableByLongPress(
+                                label = strings["remove.hint"],
+                                onLongPress = {},
+                                onTap = { onOpenPerson(person) },
+                            )
+                            .testTag(IncidentTags.person(person.id))
+                            .padding(Space.cardPadding),
+                    ) {
+                        person.roleLabel?.takeIf { it.isNotBlank() }?.let {
+                            Text(it, style = HealthTrail.type.mono, color = colors.ink3Text)
+                            Spacer(Modifier.height(Space.xs))
+                        }
+                        Text(
+                            person.displayName,
+                            style = HealthTrail.type.displayS,
+                            color = colors.ink,
+                        )
+                    }
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            }
+            item { Spacer(Modifier.height(Space.s)) }
+        }
+
+        // **The paperwork it produced.** The grievance somebody filed and the
+        // letter they were sent are what matters most six months later, and
+        // they were reachable only by scrolling the documents section.
+        if (documents.isNotEmpty()) {
+            item {
+                GroupHeader(labelKey = "incident.documents")
+                Spacer(Modifier.height(Space.headerGap))
+            }
+            documents.forEach { document ->
+                item(key = "d_${document.id}") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics(mergeDescendants = true) { }
+                            .clip(Radius.card)
+                            .background(colors.card)
+                            .testTag(IncidentTags.document(document.id))
+                            .padding(Space.cardPadding),
+                    ) {
+                        Text(
+                            document.title,
+                            style = HealthTrail.type.displayS,
+                            color = colors.ink,
+                        )
+                        document.originalLocation?.takeIf { it.isNotBlank() }?.let {
+                            Spacer(Modifier.height(Space.xs))
+                            Text(it, style = HealthTrail.type.bodyM, color = colors.ink2)
+                        }
+                    }
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            }
+            item { Spacer(Modifier.height(Space.s)) }
         }
 
         item {
