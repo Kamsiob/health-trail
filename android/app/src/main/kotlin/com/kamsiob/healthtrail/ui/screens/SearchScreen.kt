@@ -286,7 +286,7 @@ private fun ResultRow(hit: Repository.SearchHit, onOpen: () -> Unit) {
         // two places.
         Text(
             text = hit.title.ifBlank {
-                hit.kind?.let { strings[kindLabelKey(it)] } ?: strings["search.untitled"]
+                hit.kind?.let { strings[kindNameKey(it)] } ?: strings["search.untitled"]
             },
             style = HealthTrail.type.displayS,
             color = colors.ink,

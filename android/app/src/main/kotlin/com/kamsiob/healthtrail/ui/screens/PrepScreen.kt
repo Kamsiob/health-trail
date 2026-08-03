@@ -209,7 +209,7 @@ fun PrepScreen(
                                 }
                                 Text(
                                     text = entry.title?.takeIf { it.isNotBlank() }
-                                        ?: strings[kindLabelKey(entry.kind)],
+                                        ?: strings[kindNameKey(entry.kind)],
                                     style = HealthTrail.type.displayS,
                                     color = colors.ink,
                                 )

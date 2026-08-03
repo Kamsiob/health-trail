@@ -36,6 +36,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.headingFor
 import com.kamsiob.healthtrail.ui.screens.IncidentScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
 import com.kamsiob.healthtrail.data.Readable
@@ -110,7 +111,7 @@ import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.TrailScreen
 import com.kamsiob.healthtrail.ui.components.ConfirmRemoveSheet
 import com.kamsiob.healthtrail.ui.screens.labelKey
-import com.kamsiob.healthtrail.ui.screens.kindLabelKey
+import com.kamsiob.healthtrail.ui.screens.kindNameKey
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.screens.CoachStep
@@ -1149,7 +1150,7 @@ fun NotebookShell(
                             section = Repository.Section.TRAIL,
                             rowId = entry.id,
                             what = entry.title?.takeIf { it.isNotBlank() }
-                                ?: strings[kindLabelKey(entry.kind)],
+                                ?: strings[kindNameKey(entry.kind)],
                         )
                     },
                     onBack = { openSection = null },
@@ -1534,7 +1535,11 @@ fun NotebookShell(
                         removing = Removal(
                             section = Repository.Section.TRAIL,
                             rowId = detail.entry.id,
-                            what = detail.entry.title.orEmpty(),
+                            // **The words the person is looking at.** Most
+                            // entries have no title, and naming the row by its
+                            // title alone asked "remove what?" with a blank
+                            // where the answer goes.
+                            what = headingFor(detail.entry, strings["entry.untitled"]).text,
                         )
                         openEntry = null
                     },

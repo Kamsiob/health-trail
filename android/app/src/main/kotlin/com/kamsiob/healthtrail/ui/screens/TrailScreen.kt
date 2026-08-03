@@ -378,7 +378,7 @@ private fun TrailRow(
         // requires nothing. The kind is what the app knows for certain, so the
         // row never shows an empty line where the subject should be.
         Text(
-            text = entry.title?.takeIf { it.isNotBlank() } ?: strings[kindLabelKey(entry.kind)],
+            text = entry.title?.takeIf { it.isNotBlank() } ?: strings[kindNameKey(entry.kind)],
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
@@ -509,15 +509,26 @@ private fun ThreadTrace(threads: List<Repository.CareThread>) {
  *
  * An entry always has a kind and may have nothing else, which is what the
  * capture form promises when it says a half note beats no note.
+ *
+ * **A record is named with a noun, not with the button that made it.** This
+ * pointed at the `capture.*` keys, so a visit already written down appeared on
+ * the trail as "Log a visit": the imperative on the button the person had
+ * already pressed, sitting where the description of the thing belongs. It reads
+ * as an instruction rather than a record, which is the wrong thing entirely to
+ * put in front of somebody looking back over six months.
+ *
+ * The `entry.kind.*` nouns already existed in all four catalogs for the entry
+ * screen's subtitle. Every caller of this names something that has happened, so
+ * every caller wanted those.
  */
-internal fun kindLabelKey(kind: String): String = when (kind) {
-    "call" -> "capture.call"
-    "visit" -> "capture.visit"
-    "incident" -> "capture.incident"
-    "measurement" -> "capture.measurement"
-    "question" -> "capture.question"
-    "document" -> "capture.document"
-    else -> "capture.title"
+internal fun kindNameKey(kind: String): String = when (kind) {
+    "call" -> "entry.kind.call"
+    "visit" -> "entry.kind.visit"
+    "incident" -> "entry.kind.incident"
+    "measurement" -> "entry.kind.measurement"
+    "question" -> "entry.kind.question"
+    "document" -> "entry.kind.document"
+    else -> "entry.kind.note"
 }
 
 /**

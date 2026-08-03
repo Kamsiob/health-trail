@@ -275,9 +275,21 @@ seeded notebook reporting nothing at all.
 
 8. **The final translation good faith check**, deliberately last, and **language access after everything above**, per section 5.
 
+### What the light theme pass has found so far
+
+The pass is running now and it is not only producing captures. Three things on screens that had already been walked in dark:
+
+**An untitled entry led with a stock phrase.** Most entries have no title, because capture asks what happened rather than for a name, which is right. The entry screen rendered "Something you wrote down" at display size with the sentence the person actually wrote in body text underneath it: the largest words on the screen carrying the least information, rule 15 backwards. The body is now the heading, cut at a word boundary past ninety characters and then repeated in full below. `headingFor` in `EntryScreen.kt`, six cases in `EntryHeadingTest`.
+
+**Removing an untitled entry asked "remove what?" with a blank.** The entry screen passed `entry.title.orEmpty()` into the confirmation, so an entry with no title named nothing. It now names the same words the heading shows. The trail's own remove already had an honest fallback; the two are deliberately different because they name what is on the screen the person is looking at.
+
+**A record was named with the button that made it.** `kindLabelKey` mapped to the `capture.*` catalog keys, so a visit already written down appeared on the trail, on a person, in a chapter, on a thread, on a prep sheet and in search results as "Log a visit". An imperative sitting where the description belongs, reading as an instruction to somebody looking back over six months. The `entry.kind.*` nouns already existed in all four catalogs for the entry screen's subtitle. Renamed `kindNameKey` and repointed; all nine callers name something that has happened.
+
 ### What is owed on every screen built tonight
 
 **Light theme captures, Arabic, and font scale 2.0** for the eight new screens. The gate was walked on a sample tonight, not on all of them: the notebook, the disclaimer, the incident thread, and Today were checked at 2.0 and in Arabic and all pass. **The nav label cap came out of that pass**, D68's sibling finding.
+
+**The fixture has no appointments and no medications**, so the prep sheet and the medication history cannot be reached from the month-six seed at all. Found trying to capture them. That is a fourth fixture defect and it also means those two screens have only ever been seen with data put there by hand.
 
 **The reader pass with TalkBack running**, #44, for the same eight.
 

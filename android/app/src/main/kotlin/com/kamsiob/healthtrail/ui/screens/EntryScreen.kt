@@ -84,11 +84,11 @@ fun EntryScreen(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val entry = detail.entry
+    val heading = headingFor(entry, strings["entry.untitled"])
 
     SectionScaffold(
         name = EntryTags.NAME,
-        title = entry.title?.takeIf { it.isNotBlank() }
-            ?: strings["entry.untitled"],
+        title = heading.text,
         subtitle = strings[kindKey(entry.kind)],
         onBack = onBack,
         backLabelKey = backLabelKey,
@@ -107,11 +107,18 @@ fun EntryScreen(
             Spacer(Modifier.height(Space.l))
         }
 
-        entry.body?.takeIf { it.isNotBlank() }?.let {
-            item {
-                Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
-                Spacer(Modifier.height(Space.sectionGap))
+        // **Not repeated when the heading is already the whole of it.** Saying
+        // the same sentence twice, once large and once small, reads as a
+        // rendering fault rather than emphasis.
+        if (heading.repeatBody) {
+            entry.body?.takeIf { it.isNotBlank() }?.let {
+                item {
+                    Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
+                    Spacer(Modifier.height(Space.sectionGap))
+                }
             }
+        } else {
+            item { Spacer(Modifier.height(Space.s)) }
         }
 
         // **Where this sits in the record**, which is the half that was missing.
@@ -209,6 +216,53 @@ fun EntryScreen(
             Spacer(Modifier.height(Space.l))
         }
     }
+}
+
+/**
+ * What the heading says, and whether the body still needs saying underneath.
+ *
+ * @property text what goes at the top, at display weight.
+ * @property repeatBody whether the body is still shown below in full.
+ */
+data class EntryHeading(val text: String, val repeatBody: Boolean)
+
+/** Longest heading promoted from a body before it is cut at a word boundary. */
+private const val HEADING_CAP = 90
+
+/**
+ * The heading for an entry that may never have been given a title.
+ *
+ * **Most entries have no title.** Capture asks for what happened, not for a
+ * name, which is right: somebody standing in a corridor types the sentence and
+ * leaves. So the untitled case is the ordinary case, and it was being rendered
+ * as "Something you wrote down" at the largest size on the screen while the
+ * sentence the person actually wrote sat below it in body text.
+ *
+ * That is rule 15 backwards. The biggest thing on the screen carried the least
+ * information, and every untitled entry looked like every other untitled entry
+ * from across the room. Found on the phone in light, not in the code.
+ *
+ * So the sentence becomes the heading. A long one is cut at a word boundary for
+ * the heading only and then shown again in full below, which is not the
+ * truncation rule 11 bans: nothing is lost, and the full text is the next thing
+ * the eye reaches. The stock phrase survives for an entry with no words at all,
+ * a photograph or a recording, which is the case it was actually written for.
+ */
+fun headingFor(entry: Repository.TrailEntry, untitled: String): EntryHeading {
+    entry.title?.takeIf { it.isNotBlank() }?.let { return EntryHeading(it.trim(), true) }
+
+    val body = entry.body?.trim()?.takeIf { it.isNotBlank() }
+        ?: return EntryHeading(untitled, false)
+
+    val firstLine = body.lineSequence().first().trim()
+    val isWholeBody = firstLine.length == body.length
+    if (firstLine.length <= HEADING_CAP) {
+        return EntryHeading(firstLine, repeatBody = !isWholeBody)
+    }
+
+    val cut = firstLine.take(HEADING_CAP).substringBeforeLast(' ', "").trim()
+    val shortened = cut.ifBlank { firstLine.take(HEADING_CAP).trim() }
+    return EntryHeading(shortened + "…", repeatBody = true)
 }
 
 /** A row that opens something else. One stop for the reader, per D68. */
