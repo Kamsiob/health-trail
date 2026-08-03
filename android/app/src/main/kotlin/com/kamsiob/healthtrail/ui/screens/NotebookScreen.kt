@@ -398,9 +398,21 @@ private fun SectionRow(row: SectionCount, onClick: () -> Unit) {
         // Composed from a message template so the plural is the catalog's
         // problem rather than a branch in this code, and so zero reads as words
         // rather than as a digit. One style, one color, at all three weights.
+        //
+        // **The emergency card is one row and counting it says nothing.** Every
+        // other section holds a list somebody adds to, so "9 items" is a fact
+        // about their notebook. A card is a single thing, and "1 item" was the
+        // shape of the table showing through onto the app's front door, which
+        // is rule 20 exactly. It says whether there is anything on it instead,
+        // and it does not grade how much, per rule 13.
+        val countKey = if (row.section == Repository.Section.EMERGENCY_CARD) {
+            "notebook.count.emergency_card"
+        } else {
+            "notebook.count"
+        }
         val count = @Composable {
             Text(
-                text = strings("notebook.count", "count" to row.count),
+                text = strings(countKey, "count" to row.count),
                 style = HealthTrail.type.mono,
                 color = colors.ink3Text,
                 modifier = Modifier.testTag(NotebookTags.count(row.section)),

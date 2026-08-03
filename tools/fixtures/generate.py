@@ -163,6 +163,7 @@ class Generator:
         appointments = self.appointments(db, subject_id, chapters, people)
         self.questions(db, subject_id, people, appointments)
         self.medications(db, subject_id, chapters, people)
+        self.emergency_card(db, subject_id, people)
         self.measures(db, subject_id)
         self.milestones(db, subject_id)
         self.incidents(db, subject_id, chapters)
@@ -687,6 +688,77 @@ class Generator:
         if stopped is not None:
             event("stopped", stopped, note="Nobody told me until I asked.")
 
+    def emergency_card(self, db, subject_id, people):
+        """The card somebody would be handed, and who to call first.
+
+        **Written in the words a family would use, not a clinician's.** The
+        schema calls one column `resuscitation_status` and the screen asks for
+        "what the signed paperwork says", which is the honest question: the app
+        records what the document says and never what it means. Rule 2.
+
+        **Where the original is kept is half of every answer here.** A card
+        saying there is a signed directive is no use to anybody who cannot
+        produce the paper, which is why the schema carries a location beside
+        each one and why the fixture fills them in.
+        """
+        card_id = self.row(
+            db,
+            "emergency_card",
+            {
+                "subject_id": subject_id,
+                "allergies": "Penicillin, comes up in a rash. Latex.",
+                "blood_type": "O positive",
+                "conditions": "Dementia. She will say she is fine. Deaf in the left ear.",
+                "resuscitation_status": "Do not resuscitate, signed 2024",
+                "resuscitation_document_location": "In the blue folder at home, and the facility has a copy in her chart",
+                "decision_maker_person_id": None,
+                "decision_maker_document_location": "Power of attorney, filed with the county, copy in the blue folder",
+                "insurance_note": "Medicare plus the supplement. Cards are in her purse and photographed in Documents.",
+                "other_notes": (
+                    "She gets frightened in the ambulance if nobody is holding her hand. "
+                    "Her glasses and hearing aid are in the drawer by the bed."
+                ),
+            },
+            day=max(0, self.days // 4),
+        )
+
+        # **Family first, then the facility.** The order is the order somebody
+        # would work down it, and `sort_index` is what holds it.
+        contacts = [
+            ("Me", "555 0121", "Daughter, has the power of attorney"),
+            ("Danny", "555 0134", "Son, lives out of state"),
+        ]
+        for index, (name, phone, relationship) in enumerate(contacts):
+            self.row(
+                db,
+                "emergency_contact",
+                {
+                    "emergency_card_id": card_id,
+                    "display_name": name,
+                    "phone": phone,
+                    "relationship": relationship,
+                    "sort_index": index,
+                },
+                day=max(0, self.days // 4),
+            )
+
+        # Somebody from the care team, carried by their person row rather than
+        # retyped, which is the link `person_id` exists for and nothing wrote.
+        if people:
+            self.row(
+                db,
+                "emergency_contact",
+                {
+                    "emergency_card_id": card_id,
+                    "person_id": people[0],
+                    "display_name": PEOPLE[0][0],
+                    "phone": PEOPLE[0][2],
+                    "relationship": PEOPLE[0][1],
+                    "sort_index": len(contacts),
+                },
+                day=max(0, self.days // 4),
+            )
+
     def bills(self, db, subject_id, chapters):
         """One bill in every state the schema allows.
 
@@ -1201,6 +1273,8 @@ def generate(seed, point, out):
             "question",
             "medication",
             "medication_event",
+            "emergency_card",
+            "emergency_contact",
         )
     }
     db.close()
