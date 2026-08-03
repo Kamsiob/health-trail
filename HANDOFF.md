@@ -319,7 +319,9 @@ seeded notebook reporting nothing at all.
    **Walked end to end on the phone:** saved a project's five steps, found the template in the library, started a project from it, and watched the library go from "Nothing started from this yet" to "1 started from this" with the project linked. At font scale 2.0 and in Arabic as well.
 
 8. **#144, the retroactive sweep** of every other existing screen against section 11.
-9. **Documents and bills as galleries with real thumbnails.** The app stores photographs of the person's own paper and shows none of them.
+9. **Documents as a gallery with real thumbnails. Done. Bills are not.** Documents was a column of cards each carrying a 180dp photograph; it is three across, grouped by year, with the title, date and where the original physically is under each. **The screen had never rendered an image**: the fixture's attachments were random filler bytes, so every thumbnail fell back to its kind drawing and the code looked finished. The fixture writes page images now. `#148` is the design review.
+
+   **Bills are the remaining half.** `attachment.bill_id` is in the schema with no fixture writer and no join in `bills()`. A bill's primary content is an amount and a state, so the right answer there is probably a thumbnail in the leading slot of a dense row rather than a gallery, and that is a guess rather than a decision.
 10. **Care team with avatars.**
 11. **#62, the template catalog in four languages.**
 12. **Remaining Phase 1:** the emergency card, More, and anything still saying it is unbuilt.
@@ -613,6 +615,7 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| Documents, as a gallery | 2026-08-03 | #148 | not yet |
 | The template library | 2026-08-03 | #147 | not yet |
 | A project, rebuilt as a spine with editable steps | 2026-08-03 | #146 | not yet |
 | One medication, and how it changed | 2026-08-03 | #140 | not yet |

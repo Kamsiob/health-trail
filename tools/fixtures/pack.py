@@ -124,6 +124,63 @@ def nonce_for(name: str, length: int) -> bytes:
     return hashlib.sha256(name.encode("utf-8")).digest()[:length]
 
 
+def filler(row_id: str, size: int) -> bytes:
+    """Deterministic bytes for an attachment that cannot be an image."""
+    seed = hashlib.sha256(row_id.encode("utf-8")).digest()
+    return (seed * ((size // len(seed)) + 1))[:size]
+
+
+def page_image(row_id: str) -> bytes | None:
+    """A picture of a page, deterministic from the row id.
+
+    **The attachments were filler bytes and the documents screen had never met
+    an image.** This app stores photographs of paper, and a gallery of
+    thumbnails is the whole point of the documents screen, per `DESIGN.md`
+    11.7. A fixture whose attachments cannot be decoded meant every thumbnail
+    fell back to its kind drawing, so the screen looked finished and had never
+    rendered the thing it exists to render. That is D70 pointed at bytes rather
+    than at rows.
+
+    **It is a stand in and it says so.** A real attachment is a phone
+    photograph of a letter, taken at an angle, in bad light. This is a clean
+    gray page with lines on it, which exercises decoding, aspect ratio,
+    cropping and memory, and does not exercise a photograph's noise or
+    orientation metadata.
+
+    Returns None where Pillow is not installed, and the caller falls back to
+    filler bytes, so this never becomes a reason a fixture cannot be packed.
+    """
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        return None
+
+    import io
+    import random
+
+    rng = random.Random(row_id)
+    width, height = 900, 1200
+    image = Image.new("RGB", (width, height), (250, 248, 243))
+    draw = ImageDraw.Draw(image)
+
+    # A heading block, then lines of "text" at varying lengths, then a gap and
+    # a signature line. Enough that a thumbnail reads as a page rather than as
+    # a gray rectangle.
+    draw.rectangle((90, 110, 90 + rng.randint(320, 520), 150), fill=(60, 70, 80))
+    y = 230
+    while y < height - 260:
+        run = rng.randint(380, 720)
+        draw.rectangle((90, y, 90 + run, y + 14), fill=(150, 158, 166))
+        y += 40
+        if rng.random() < 0.12:
+            y += 40
+    draw.rectangle((90, height - 180, 400, height - 172), fill=(90, 100, 110))
+
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG", optimize=True)
+    return buffer.getvalue()
+
+
 def materialize_attachments(database: Path) -> list:
     """Give every attachment row bytes that actually hash to its name.
 
@@ -153,9 +210,7 @@ def materialize_attachments(database: Path) -> list:
         rows = list(db.execute("SELECT id, byte_size FROM attachment"))
         for row_id, byte_size in rows:
             size = min(byte_size or 1, cap)
-            # Deterministic filler, derived from the row id.
-            seed = hashlib.sha256(row_id.encode("utf-8")).digest()
-            body = (seed * ((size // len(seed)) + 1))[:size]
+            body = page_image(row_id) or filler(row_id, size)
             digest = hashlib.sha256(body).hexdigest()
             db.execute(
                 "UPDATE attachment SET sha256 = ?, byte_size = ? WHERE id = ?",

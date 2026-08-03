@@ -909,6 +909,16 @@ Specified in full at 5.16. Tracked on issue #39.
 
 Composed from Display L, Body M, the group header 5.13, cards 5.3, the dense row 11.3 for the projects inside each card, and the Mono style. Nothing new.
 
+**Documents, rebuilt as a gallery on 2026-08-03.** Tracked on `#148`.
+
+**It was a column of cards each carrying a 180dp photograph**, so one document filled a screenful and the person scrolled past forty of them to find a letter. It is a gallery now, per 11.12: three across, grouped by year, each cell a square thumbnail of the person's own paper with its title, its date, and where the original physically is.
+
+**Grouped by year rather than by month**, which is the coarsest thing every date in this app is guaranteed to have. Plenty of these are known only to the year, so grouping by month would either invent precision or scatter half the documents into headings of their own.
+
+**The screen had never rendered an image.** The fixture's attachments were random filler bytes, so every thumbnail fell back to its kind drawing and the code looked finished. The fixture writes page images now, deterministic from the row id, and they are a stand in that says so: a real attachment is a phone photograph taken at an angle in bad light.
+
+**Two things found at font scale 2.0 and nowhere else.** Every caption was silently clipped, because `maxLines` with no overflow treatment truncates and rule 11 rules truncation out; the caps are gone and a long title makes its own cell taller. And **one column is not a very wide gallery**: above 1.8 the grid drops to one column per 11.2's table, and a square thumbnail across the full width is one document per screenful, so at one column the cell becomes the dense row shape 11.3 and 11.7 already describe.
+
 **The Unfiled tray.** Everything the person saved without saying where it belonged.
 
 **Built because the capture form already promised it.** The form tells the person their entry is going to the Unfiled tray, and until 2026-08-01 there was nowhere to see it. A promise the app makes and does not keep costs more than a feature it never mentioned, which is why this outranked the rest of the queue.
