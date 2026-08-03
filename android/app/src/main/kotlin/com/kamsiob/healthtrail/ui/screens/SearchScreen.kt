@@ -279,8 +279,15 @@ private fun ResultRow(hit: Repository.SearchHit, onOpen: () -> Unit) {
             Spacer(Modifier.height(Space.xs))
         }
 
+        // **The kind, not "No title".** An entry with no title is ordinary,
+        // because the capture form requires nothing, and the kind is what the
+        // app knows for certain. The trail row has always fallen back this way
+        // and a search result did not, so the same entry read differently in
+        // two places.
         Text(
-            text = hit.title.ifBlank { strings["search.untitled"] },
+            text = hit.title.ifBlank {
+                hit.kind?.let { strings[kindLabelKey(it)] } ?: strings["search.untitled"]
+            },
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )

@@ -2256,6 +2256,16 @@ class Repository private constructor(
         /** Which notebook section this lives in, so results group where the person expects. */
         val section: Section,
         val title: String,
+        /**
+         * What kind of entry this is, for the trail's results only.
+         *
+         * A trail row with no title falls back to its kind, "A call" or "A
+         * visit", because the kind is what the app knows for certain and it
+         * tells the person something. A search result was falling back to "No
+         * title", which tells them nothing and disagreed with the same row on
+         * the trail.
+         */
+        val kind: String?,
         /** The line under the title, which is usually where the match was found. */
         val detail: String?,
         val chapterName: String?,
@@ -2323,11 +2333,20 @@ class Repository private constructor(
              * entry rather than a place.
              */
             hasChapter: Boolean = true,
+            /**
+             * The column naming what kind of thing it is, where there is one.
+             *
+             * Last, and named at every call site, because the parameters before
+             * it are positional and inserting one in the middle silently
+             * reassigns every argument after it.
+             */
+            kindColumn: String? = null,
         ) {
             val where = searched.joinToString(" OR ") {
                 "lower(coalesce(x.$it, '')) LIKE ? ESCAPE '\\'"
             }
             val date = dateColumn?.let { "x.${it}_edtf, x.${it}_start" } ?: "NULL, NULL"
+            val kind = kindColumn?.let { "x.$it" } ?: "NULL"
             val detail = detailColumn?.let { "x.$it" } ?: "NULL"
             // **Not every table carries a chapter, and the ones that do not
             // are not an oversight.** A person belongs to chapters through
@@ -2343,7 +2362,7 @@ class Repository private constructor(
             }
             val join = if (hasChapter) "LEFT JOIN live_chapter c ON c.id = x.chapter_id " else ""
             database.rawQuery(
-                "SELECT x.id, x.$titleColumn, $detail, $chapter, $date " +
+                "SELECT x.id, x.$titleColumn, $detail, $chapter, $date, $kind " +
                     "FROM $table x $join" +
                     "WHERE x.subject_id = ? AND ($where) " +
                     "ORDER BY x.created_at DESC LIMIT ?",
@@ -2358,6 +2377,7 @@ class Repository private constructor(
                         chapterName = cursor.getString(3),
                         occurredEdtf = cursor.getString(4),
                         occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                        kind = cursor.getString(6),
                     )
                 }
             }
@@ -2378,7 +2398,7 @@ class Repository private constructor(
             listOf("name", "reason", "notes", "transfer_note"),
             hasChapter = false)
         run(Section.TRAIL, "live_entry", "title", "body", "occurred",
-            listOf("title", "body", "suggested_home"))
+            listOf("title", "body", "suggested_home"), kindColumn = "kind")
         run(Section.DOCUMENTS, "live_document", "title", "original_location", "received",
             listOf("title", "original_location", "notes", "category"))
         run(Section.MONEY, "live_bill", "description", "state_note", "received",

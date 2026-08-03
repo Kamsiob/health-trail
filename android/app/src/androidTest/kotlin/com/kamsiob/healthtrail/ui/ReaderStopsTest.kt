@@ -187,6 +187,7 @@ class ReaderStopsTest {
                         id = "h1",
                         section = Repository.Section.TRAIL,
                         title = "Nurse Okonkwo, ward 4",
+                        kind = "call",
                         detail = "Said the dressing looks better",
                         chapterName = "Riverbend Rehab",
                         occurredEdtf = "2026-08-02",
