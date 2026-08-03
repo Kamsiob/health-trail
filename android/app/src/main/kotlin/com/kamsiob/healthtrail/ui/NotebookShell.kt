@@ -296,6 +296,9 @@ fun NotebookShell(
     var medicationHistory by remember {
         mutableStateOf<List<Repository.MedicationEvent>>(emptyList())
     }
+    var medicationQuestions by remember {
+        mutableStateOf<List<Repository.Question>>(emptyList())
+    }
     var chapterDetail by remember { mutableStateOf<Repository.ChapterDetail?>(null) }
     var threadEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
     var prep by remember { mutableStateOf<Repository.Prep?>(null) }
@@ -1396,10 +1399,22 @@ fun NotebookShell(
         openMedication?.let { medication ->
             LaunchedEffect(medication.id, revision) {
                 medicationHistory = repository.medicationHistory(medication.id)
+                medicationQuestions = repository.openQuestionsAbout(medication.id)
             }
             MedicationScreen(
                 medication = medication,
                 history = medicationHistory,
+                questions = medicationQuestions,
+                // **The other half of the link, per rule 18.** A question opens
+                // its own entry, which is where it can be dated, read, and
+                // followed back to whatever else it belongs to.
+                onOpenQuestion = { question ->
+                    openMedication = null
+                    openEntry = question.entryId
+                    if (question.entryId == null) {
+                        openSection = Repository.Section.ASK_NEXT_TIME
+                    }
+                },
                 onEdit = {
                     editingMedication = medication
                     addingMedication = true
@@ -1530,6 +1545,17 @@ fun NotebookShell(
                         openEntry = null
                         openIncident = incidents.firstOrNull { it.id == detail.incidentId }
                         incidentsOpen = openIncident != null
+                    },
+                    // Back to what the question is about, which closes the loop
+                    // the medication screen opened.
+                    onOpenMedication = {
+                        openEntry = null
+                        openMedication = medications.firstOrNull {
+                            it.id == detail.medicationId
+                        }
+                        if (openMedication == null) {
+                            openSection = Repository.Section.MEDICATIONS
+                        }
                     },
                     onRemove = {
                         removing = Removal(
@@ -2063,6 +2089,7 @@ fun NotebookShell(
                 kind = kind,
                 threads = threads,
                 people = people,
+                medications = medications,
                 state = captureDraft,
                 onStateChange = { captureDraft = it },
                 onSave = { draft ->
@@ -2159,7 +2186,7 @@ fun NotebookShell(
                     // only the entry put it in the trail and left the Ask next
                     // time section counting zero forever, which is the app
                     // being wrong about itself. Both, in one transaction.
-                    repository.createQuestionWithEntry(
+                    val (questionEntryId, _) = repository.createQuestionWithEntry(
                         subjectId = subject.id,
                         // The form's two fields map straight across: what you
                         // want to ask is the question, and who it is for is who
@@ -2171,7 +2198,16 @@ fun NotebookShell(
                         occurred = draft.occurred,
                         threadId = draft.threadId,
                         isUnfiled = threads.isNotEmpty() && draft.threadId == null,
+                        medicationId = draft.medicationId,
                     )
+                    // **The same link every other kind writes.** Choosing the
+                    // charge nurse from the chips on a question recorded her
+                    // name in `role_label` and stopped there, so the question
+                    // named her and she did not know about it, and her page
+                    // could not show what was waiting to be asked of her. Only
+                    // the five other kinds wrote `entry_person`, which made this
+                    // one an exception nobody had decided on.
+                    draft.personId?.let { repository.linkEntryToPerson(questionEntryId, it) }
                 } else if (subject != null && draft.kind == CaptureKind.INCIDENT) {
                     // **An incident is two rows for the same reason a question
                     // is.** `MASTER_SPEC.md` 4.7 makes it a thread from first

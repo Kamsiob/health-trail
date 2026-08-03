@@ -43,6 +43,7 @@ object CaptureFormTags {
     const val ROOT = "capture_form_root"
     const val WHO = "capture_form_who"
     fun person(id: String) = "capture_form_person_$id"
+    fun medication(id: String) = "capture_form_medication_$id"
     const val NOTE = "capture_form_note"
     const val SAVE = "capture_form_save"
     const val CANCEL = "capture_form_cancel"
@@ -94,6 +95,13 @@ data class CaptureFormState(
      * team. Null when the person typed a name instead, which is ordinary.
      */
     val personId: String? = null,
+    /**
+     * The medication a question is about, when it is about one.
+     *
+     * Only ever set on a question, because the other five kinds have their own
+     * ways of pointing at a medication and none of them is a chip on this form.
+     */
+    val medicationId: String? = null,
 ) {
     /** True when there is something in here worth keeping. */
     val isEmpty: Boolean
@@ -119,6 +127,7 @@ data class CaptureFormState(
                         it.pickedEdtf ?: "",
                         it.threadId ?: "",
                         it.personId ?: "",
+                        it.medicationId ?: "",
                     )
                 },
                 restore = {
@@ -130,6 +139,7 @@ data class CaptureFormState(
                         pickedEdtf = (it[3] as String).takeIf { text -> text.isNotEmpty() },
                         threadId = (it[4] as String).takeIf { text -> text.isNotEmpty() },
                         personId = (it[5] as String).takeIf { text -> text.isNotEmpty() },
+                        medicationId = (it[6] as String).takeIf { text -> text.isNotEmpty() },
                     )
                 },
             )
@@ -150,6 +160,8 @@ data class CaptureDraft(
     val threadId: String?,
     /** Set when who was chosen from the care team rather than typed. */
     val personId: String? = null,
+    /** Set when a question was marked as being about a medication. */
+    val medicationId: String? = null,
 )
 
 /**
@@ -193,6 +205,16 @@ fun CaptureFormScreen(
      * again. Empty in the first days, which is the normal beginning.
      */
     people: List<Repository.Person> = emptyList(),
+    /**
+     * What they are taking, offered as chips on a question only.
+     *
+     * `MASTER_SPEC.md` section 3 says a medication knows its pending questions.
+     * Nothing wrote `question.medication_id`, so the only way to ask something
+     * about a medication was to type its name into the text and hope to find it
+     * again by searching. Stopped medications are offered too: plenty of
+     * questions are about something she came off.
+     */
+    medications: List<Repository.Medication> = emptyList(),
     onSave: (CaptureDraft) -> Unit,
     onCancel: () -> Unit,
     /**
@@ -317,6 +339,54 @@ fun CaptureFormScreen(
                                     },
                                     modifier = Modifier.testTag(
                                         CaptureFormTags.person(person.id),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // **What it is about**, on a question only.
+                //
+                // `MASTER_SPEC.md` section 3 promises a medication knows its
+                // pending questions, and `question.medication_id` had no writer,
+                // so the only way to ask something about a medication was to
+                // type its name into the text. That question then lived
+                // nowhere: not on the medication, not on a prep sheet for the
+                // person who prescribed it, findable only by searching for a
+                // drug name somebody may have spelled differently.
+                //
+                // **Optional, like everything else on this form.** Plenty of
+                // questions are about nothing in particular, and rule 13 says an
+                // unfilled slot reads as "not yet".
+                if (kind == CaptureKind.QUESTION && medications.isNotEmpty()) {
+                    Spacer(Modifier.height(Space.m))
+                    ChoiceChipGroup(
+                        label = strings["capture.about.medication"],
+                        aside = strings["capture.about.medication.aside"],
+                    ) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(Space.s),
+                            verticalArrangement = Arrangement.spacedBy(Space.s),
+                        ) {
+                            medications.forEach { medication ->
+                                ChoiceChip(
+                                    label = medication.name,
+                                    selected = state.medicationId == medication.id,
+                                    onClick = {
+                                        onStateChange(
+                                            state.copy(
+                                                medicationId =
+                                                    if (state.medicationId == medication.id) {
+                                                        null
+                                                    } else {
+                                                        medication.id
+                                                    },
+                                            ),
+                                        )
+                                    },
+                                    modifier = Modifier.testTag(
+                                        CaptureFormTags.medication(medication.id),
                                     ),
                                 )
                             }
@@ -456,6 +526,10 @@ fun CaptureFormScreen(
                                 people.firstOrNull { it.id == chosen }
                                     ?.displayName == who.trim()
                             },
+                            // No such caveat here: the chip is the only way to
+                            // set this and nothing else on the form can
+                            // contradict it.
+                            medicationId = state.medicationId,
                         ),
                     )
                 },

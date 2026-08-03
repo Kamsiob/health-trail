@@ -17,6 +17,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -27,6 +28,7 @@ object MedicationTags {
     const val NAME = "medication"
     const val EDIT = "medication_edit"
     const val RECORD = "medication_record"
+    fun question(id: String) = "medication_question_$id"
     fun event(id: String) = "medication_event_$id"
 }
 
@@ -53,6 +55,16 @@ object MedicationTags {
 fun MedicationScreen(
     medication: Repository.Medication,
     history: List<Repository.MedicationEvent>,
+    /**
+     * Questions waiting to be asked about this one.
+     *
+     * `MASTER_SPEC.md` section 3 promises exactly this and it had no data
+     * behind it: `question.medication_id` sat in the schema with no writer and
+     * no reader, so a question about a dose change lived only in the questions
+     * section as a sentence with a drug name in it.
+     */
+    questions: List<Repository.Question>,
+    onOpenQuestion: (Repository.Question) -> Unit,
     onEdit: () -> Unit,
     onRecordChange: () -> Unit,
     onBack: () -> Unit,
@@ -122,7 +134,65 @@ fun MedicationScreen(
                 modifier = Modifier.fillMaxWidth().testTag(MedicationTags.EDIT),
             )
             Spacer(Modifier.height(Space.sectionGap))
+        }
 
+        // **Before the history, because it is the thing to act on.** The
+        // history is what happened; these are what to do about it, and somebody
+        // opening this screen on the way into a room needs them first.
+        if (questions.isNotEmpty()) {
+            item {
+                GroupHeader(labelKey = "medication.questions")
+                Spacer(Modifier.height(Space.headerGap))
+            }
+            questions.forEachIndexed { index, question ->
+                item(key = "q_${question.id}") {
+                    SpineRow(
+                        continuesAbove = index > 0,
+                        continuesBelow = index < questions.lastIndex,
+                        node = colors.blue,
+                        // Hollow: nobody has asked it yet. Same shape the prep
+                        // sheet uses for the same state, per DESIGN.md 5.2.1.
+                        state = Waypoint.UPCOMING,
+                        routeColor = colors.blue,
+                    ) {
+                        Column {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics(mergeDescendants = true) { }
+                                    .clip(Radius.card)
+                                    .background(colors.card)
+                                    .removableByLongPress(
+                                        label = strings["remove.hint"],
+                                        onLongPress = {},
+                                        onTap = { onOpenQuestion(question) },
+                                    )
+                                    .testTag(MedicationTags.question(question.id))
+                                    .padding(Space.cardPadding),
+                            ) {
+                                question.roleLabel?.takeIf { it.isNotBlank() }?.let {
+                                    Text(
+                                        text = it,
+                                        style = HealthTrail.type.mono,
+                                        color = colors.ink3Text,
+                                    )
+                                    Spacer(Modifier.height(Space.xs))
+                                }
+                                Text(
+                                    text = question.text,
+                                    style = HealthTrail.type.bodyL,
+                                    color = colors.ink,
+                                )
+                            }
+                            Spacer(Modifier.height(Space.cardGap))
+                        }
+                    }
+                }
+            }
+            item { Spacer(Modifier.height(Space.sectionGap)) }
+        }
+
+        item {
             GroupHeader(labelKey = "medication.history")
             Spacer(Modifier.height(Space.headerGap))
         }

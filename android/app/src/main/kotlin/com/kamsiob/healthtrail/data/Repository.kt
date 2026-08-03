@@ -2083,34 +2083,66 @@ class Repository private constructor(
         val entryId: String?,
         val askedEdtf: String?,
         val answerText: String?,
+        /** The medication it is about, when it is about one. */
+        val medicationId: String? = null,
+        /**
+         * That medication's name, carried so a question can say what it is
+         * about without the screen fetching it again. Null when the medication
+         * has since been removed, which leaves the question standing on its
+         * own rather than disappearing with it.
+         */
+        val medicationName: String? = null,
     ) {
         val isOpen: Boolean get() = askedEdtf.isNullOrBlank()
     }
 
+    private val questionColumns =
+        "SELECT q.id, q.text, q.role_label, q.entry_id, q.asked_edtf, q.answer_text, " +
+            "q.medication_id, m.name FROM live_question q " +
+            "LEFT JOIN live_medication m ON m.id = q.medication_id "
+
+    private fun android.database.Cursor.toQuestion() = Question(
+        id = getString(0),
+        text = getString(1),
+        roleLabel = getString(2),
+        entryId = getString(3),
+        askedEdtf = getString(4),
+        answerText = getString(5),
+        medicationId = getString(6),
+        medicationName = getString(7),
+    )
+
     /** Everything to ask, still waiting first, oldest first within each group. */
     suspend fun questions(subjectId: String): List<Question> = withContext(Dispatchers.IO) {
         db().database.rawQuery(
-            "SELECT id, text, role_label, entry_id, asked_edtf, answer_text " +
-                "FROM live_question WHERE subject_id = ? " +
-                "ORDER BY asked_edtf IS NOT NULL, created_at",
+            questionColumns + "WHERE q.subject_id = ? " +
+                "ORDER BY q.asked_edtf IS NOT NULL, q.created_at",
             arrayOf(subjectId),
         ).use { cursor ->
-            buildList {
-                while (cursor.moveToNext()) {
-                    add(
-                        Question(
-                            id = cursor.getString(0),
-                            text = cursor.getString(1),
-                            roleLabel = cursor.getString(2),
-                            entryId = cursor.getString(3),
-                            askedEdtf = cursor.getString(4),
-                            answerText = cursor.getString(5),
-                        ),
-                    )
-                }
-            }
+            buildList { while (cursor.moveToNext()) add(cursor.toQuestion()) }
         }
     }
+
+    /**
+     * The questions waiting to be asked about one medication.
+     *
+     * `MASTER_SPEC.md` section 3 promises a medication knows its pending
+     * questions, and until now nothing wrote `question.medication_id` and
+     * nothing read it. **Open ones only**, because this is the list somebody
+     * carries into the room, and one already asked has its answer on the
+     * question itself rather than here.
+     */
+    suspend fun openQuestionsAbout(medicationId: String): List<Question> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                questionColumns +
+                    "WHERE q.medication_id = ? AND (q.asked_edtf IS NULL OR q.asked_edtf = '') " +
+                    "ORDER BY q.created_at",
+                arrayOf(medicationId),
+            ).use { cursor ->
+                buildList { while (cursor.moveToNext()) add(cursor.toQuestion()) }
+            }
+        }
 
     /**
      * Records a question and the trail entry that carries it, in one transaction.
@@ -2138,6 +2170,18 @@ class Repository private constructor(
         occurred: Edtf.Date,
         threadId: String?,
         isUnfiled: Boolean,
+        /**
+         * The medication this is about, when it is about one.
+         *
+         * `MASTER_SPEC.md` section 3: "a medication knows its own incidents,
+         * its pending questions, its dose history, and its place on the
+         * Emergency Card." The column has been in the schema since Phase 0 and
+         * **nothing wrote to it and nothing read it**, so that clause of the
+         * promise had no data behind it at all. Half a question about a
+         * medication is somebody typing the drug's name into the text and
+         * hoping to find it again by searching.
+         */
+        medicationId: String? = null,
     ): Pair<String, String> = withContext(Dispatchers.IO) {
         val database = db().database
         database.beginTransaction()
@@ -2170,6 +2214,7 @@ class Repository private constructor(
                     "text" to text.ifBlank { "" },
                     "role_label" to roleLabel?.ifBlank { null },
                     "entry_id" to entryId,
+                    "medication_id" to medicationId,
                 ),
             )
             database.setTransactionSuccessful()
@@ -2683,6 +2728,19 @@ class Repository private constructor(
         val incidentId: String?,
         val incidentTitle: String?,
         val incidentIsOpen: Boolean,
+        /**
+         * The medication a question is about, when it is about one.
+         *
+         * **The other half of a link that was one way for an hour.** A
+         * medication learned to show its pending questions and the question's
+         * own entry still said nothing about the medication, which rule 18
+         * calls a dead end wearing a disguise. Reached through the question
+         * row, because the link belongs to the question rather than to the
+         * entry: the entry is what appears on the trail, and it is the question
+         * that is about a drug.
+         */
+        val medicationId: String?,
+        val medicationName: String?,
     )
 
     /** One entry read on its own, or null when it is gone. */
@@ -2703,10 +2761,12 @@ class Repository private constructor(
         database.rawQuery(
             "SELECT e.id, e.kind, e.title, e.body, e.occurred_edtf, e.occurred_start, " +
                 "e.created_at, e.is_unfiled, e.chapter_id, c.name, " +
-                "e.incident_id, i.title, i.resolved_at " +
+                "e.incident_id, i.title, i.resolved_at, q.medication_id, m.name " +
                 "FROM live_entry e " +
                 "LEFT JOIN live_chapter c ON c.id = e.chapter_id " +
                 "LEFT JOIN live_incident i ON i.id = e.incident_id " +
+                "LEFT JOIN live_question q ON q.entry_id = e.id " +
+                "LEFT JOIN live_medication m ON m.id = q.medication_id " +
                 "WHERE e.id = ?",
             arrayOf(entryId),
         ).use { cursor ->
@@ -2729,6 +2789,8 @@ class Repository private constructor(
                 incidentId = cursor.getString(10),
                 incidentTitle = cursor.getString(11),
                 incidentIsOpen = cursor.isNull(12),
+                medicationId = cursor.getString(13),
+                medicationName = cursor.getString(14),
             )
         }
     }

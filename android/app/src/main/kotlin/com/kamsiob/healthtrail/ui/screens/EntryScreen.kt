@@ -45,6 +45,7 @@ object EntryTags {
     fun thread(id: String) = "entry_thread_$id"
     fun person(id: String) = "entry_person_$id"
     const val CHAPTER = "entry_chapter"
+    const val MEDICATION = "entry_medication"
     const val INCIDENT = "entry_incident"
 }
 
@@ -75,6 +76,7 @@ fun EntryScreen(
     onOpenThread: (Repository.CareThread) -> Unit,
     onOpenPerson: (Repository.Person) -> Unit,
     onOpenChapter: () -> Unit,
+    onOpenMedication: () -> Unit,
     onOpenIncident: () -> Unit,
     onRemove: () -> Unit,
     onBack: () -> Unit,
@@ -124,6 +126,7 @@ fun EntryScreen(
         // **Where this sits in the record**, which is the half that was missing.
         val hasLinks = detail.chapterName != null ||
             detail.incidentTitle != null ||
+            detail.medicationName != null ||
             entry.threads.isNotEmpty() ||
             detail.people.isNotEmpty()
 
@@ -185,6 +188,21 @@ fun EntryScreen(
                         leading = { RouteSwatch(color = route, index = thread.colorIndex) },
                         label = thread.label,
                         note = strings["entry.thread"],
+                    )
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            }
+
+            // **What it is about**, above the chapter, because a question about
+            // a dose is about the dose first and the building second.
+            detail.medicationName?.let { name ->
+                item {
+                    LinkRow(
+                        testTag = EntryTags.MEDICATION,
+                        onClick = onOpenMedication,
+                        leading = { WaypointDot(color = colors.blue) },
+                        label = name,
+                        note = strings["entry.medication"],
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
