@@ -26,6 +26,7 @@
   "today.search": "搜索你记下的所有内容",
   "today.title": "今天",
   "today.digest.heading": "自您上次来过之后",
+  "today.digest.lastvisit": "你上次来是在 {date}。",
   "today.digest.new": "{count, plural, other {# 条新增}}",
   "today.digest.corrected": "{count, plural, other {更正了 # 项}}",
   "today.digest.removed": "{count, plural, other {删除了 # 项}}",

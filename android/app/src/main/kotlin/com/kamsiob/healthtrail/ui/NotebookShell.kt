@@ -615,6 +615,7 @@ fun NotebookShell(
                         onOpenEmergencyCard = { openSection = Repository.Section.EMERGENCY_CARD },
                         hasAnything = (counts?.sumOf { it.count } ?: 0) > 0,
                         digest = digest,
+                        lastVisitMillis = lastVisit,
                         onOpenSection = { section -> openSection = section },
                         // **A step disappears once it has been taken**, so the
                         // list is what is left rather than a fixed lecture. The

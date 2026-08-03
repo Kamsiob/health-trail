@@ -26,6 +26,7 @@
   "today.search": "Search everything you have written down",
   "today.title": "Today",
   "today.digest.heading": "Since you were last here",
+  "today.digest.lastvisit": "You were last here on {date}.",
   "today.digest.new": "{count, plural, one {1 new} other {# new}}",
   "today.digest.corrected": "{count, plural, one {1 thing corrected} other {# things corrected}}",
   "today.digest.removed": "{count, plural, one {1 thing removed} other {# things removed}}",

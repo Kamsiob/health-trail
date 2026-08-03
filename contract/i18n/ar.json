@@ -26,6 +26,7 @@
   "today.search": "ابحث في كل ما دوّنته",
   "today.title": "اليوم",
   "today.digest.heading": "منذ آخر مرة كنت هنا",
+  "today.digest.lastvisit": "آخر مرة كنت هنا كانت في {date}.",
   "today.digest.new": "{count, plural, zero {لا جديد} one {جديد واحد} two {جديدان} few {# جديدة} many {# جديدًا} other {# جديد}}",
   "today.digest.corrected": "{count, plural, zero {لا تصحيحات} one {تصحيح واحد} two {تصحيحان} few {# تصحيحات} many {# تصحيحًا} other {# تصحيح}}",
   "today.digest.removed": "{count, plural, zero {لا عمليات حذف} one {عنصر محذوف واحد} two {عنصران محذوفان} few {# عناصر محذوفة} many {# عنصرًا محذوفًا} other {# عنصر محذوف}}",

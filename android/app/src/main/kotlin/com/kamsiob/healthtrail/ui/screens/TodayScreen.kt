@@ -104,6 +104,15 @@ fun TodayScreen(
      * digest rather than a wrong one.
      */
     digest: Digest.Summary = Digest.nothing,
+    /**
+     * When the person was last here, or null on a first run.
+     *
+     * **The heading says "since you were last here" and never said when.**
+     * After four months away, "47 new" without a date is the one piece of
+     * context that matters, and journey seven in Part Three is precisely
+     * somebody coming back after four months.
+     */
+    lastVisitMillis: Long? = null,
     /** Where each digest row goes. Rule 18: a count that leads nowhere is a dead end. */
     onOpenSection: (Repository.Section) -> Unit = {},
     /**
@@ -175,7 +184,7 @@ fun TodayScreen(
             // read at a glance. A first launch and a quiet week both land here
             // and both correctly show nothing.
             if (hasAnything && !digest.isEmpty) {
-                DigestSection(digest, onOpenSection)
+                DigestSection(digest, onOpenSection, lastVisitMillis = lastVisitMillis)
                 if (coaching.isNotEmpty()) Spacer(Modifier.height(Space.sectionGap))
             }
             if (coaching.isNotEmpty()) {
@@ -367,6 +376,7 @@ private fun Step(number: Int, text: String, onOpen: () -> Unit) {
 private fun DigestSection(
     summary: Digest.Summary,
     onOpenSection: (Repository.Section) -> Unit,
+    lastVisitMillis: Long?,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -377,6 +387,33 @@ private fun DigestSection(
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
+        // **Only when it is genuinely a gap.** Below the threshold this is a
+        // line telling somebody who opens the app every morning that they
+        // opened it yesterday.
+        lastVisitMillis
+            ?.takeIf { millis ->
+                java.time.Duration.between(
+                    java.time.Instant.ofEpochMilli(millis),
+                    java.time.Instant.now(),
+                ).toDays() >= AWAY_DAYS
+            }
+            ?.let { millis ->
+                Spacer(Modifier.height(Space.xs))
+                Text(
+                    text = strings(
+                        "today.digest.lastvisit",
+                        "date" to EventDateText.render(
+                            strings,
+                            java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                                .toString(),
+                        ),
+                    ),
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
+            }
         Spacer(Modifier.height(Space.m))
 
         summary.added.forEach { added ->
@@ -519,3 +556,12 @@ private fun NextAppointment(
         )
     }
 }
+
+/**
+ * How long away has to be before the app says when you were last here.
+ *
+ * Three days. Somebody who opens this every morning does not need telling that
+ * they opened it yesterday, and somebody back after a hospital week or four
+ * months does.
+ */
+private const val AWAY_DAYS = 3L

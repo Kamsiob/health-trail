@@ -26,6 +26,7 @@
   "today.search": "Buscar en todo lo que ha anotado",
   "today.title": "Hoy",
   "today.digest.heading": "Desde la última vez que estuvo aquí",
+  "today.digest.lastvisit": "Estuvo aquí por última vez el {date}.",
   "today.digest.new": "{count, plural, one {1 nuevo} other {# nuevos}}",
   "today.digest.corrected": "{count, plural, one {1 cosa corregida} other {# cosas corregidas}}",
   "today.digest.removed": "{count, plural, one {1 cosa eliminada} other {# cosas eliminadas}}",
