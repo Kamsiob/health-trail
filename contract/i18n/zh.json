@@ -264,6 +264,8 @@
   "careteam.add.name": "姓名",
   "careteam.add.name.hint": "姓名，或者您对他们的称呼",
   "careteam.add.role": "职务",
+  "careteam.add.role.suggestions": "这类地方常见的角色",
+  "careteam.add.role.suggestions.aside": "点一个就会填进去。你可以改，也可以不用这些，自己写。",
   "careteam.add.role.hint": "护士、个案管理员、病区文员",
   "careteam.add.phone": "电话号码",
   "careteam.add.phone.hint": "如果有，请填直线号码",

@@ -264,6 +264,8 @@
   "careteam.add.name": "الاسم",
   "careteam.add.name.hint": "اسم، أو ما تناديه به",
   "careteam.add.role": "دوره",
+  "careteam.add.role.suggestions": "شائعة في هذا النوع من الأماكن",
+  "careteam.add.role.suggestions.aside": "انقر واحدة لتُملأ. يمكنك تغييرها، أو تجاهلها وكتابة ما تريد.",
   "careteam.add.role.hint": "ممرضة، منسق الحالة، موظف القسم",
   "careteam.add.phone": "رقم الهاتف",
   "careteam.add.phone.hint": "الخط المباشر إن توفر",

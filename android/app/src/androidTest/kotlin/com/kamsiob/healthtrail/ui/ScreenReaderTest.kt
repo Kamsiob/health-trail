@@ -359,7 +359,21 @@ class ScreenReaderTest {
 
     @Test
     fun addingSomebodyLabelsEverything() {
-        compose.show { AddPersonScreen(onSave = {}, onCancel = {}) }
+        compose.show {
+            AddPersonScreen(
+                // With the situation's roles offered, which is the state a
+                // person in a nursing home notebook actually meets. Composed
+                // without them, this screen would pass while the chips a real
+                // notebook shows went unchecked.
+                roleSuggestions = listOf(
+                    "Director of nursing",
+                    "Charge nurse on the unit",
+                    "Social worker or family liaison",
+                ),
+                onSave = {},
+                onCancel = {},
+            )
+        }
         assertEverythingIsLabeled("add someone to the care team")
     }
 

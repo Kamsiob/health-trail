@@ -204,6 +204,8 @@ fun NotebookShell(
     var correcting by remember { mutableStateOf<Pair<String, Edtf.Date>?>(null) }
     // Somebody being added to the care team, and the draft being written.
     var addingPerson by remember { mutableStateOf(false) }
+    /** Roles the active situation names, offered as chips when adding a contact. */
+    var roleSuggestions by remember { mutableStateOf<List<String>>(emptyList()) }
     var savingPerson by remember { mutableStateOf<PersonDraft?>(null) }
     // The person or medication being corrected. Null means the form, when
     // open, is adding rather than editing.
@@ -345,6 +347,10 @@ fun NotebookShell(
         try {
             val subject = repository.activeSubject()
             val emphasis = emphasisFor(context, subject?.situationTemplateId)
+            // **The roles this situation actually has**, so adding a contact
+            // offers them rather than asking the person to type a job title
+            // from memory. The catalog has carried them since it was written.
+            roleSuggestions = rolesFor(context, subject?.situationTemplateId)
             // Counts belong to a subject. With no subject there is no notebook
             // to count, and showing zeros would be inventing a notebook that
             // does not exist yet.
@@ -1351,6 +1357,7 @@ fun NotebookShell(
 
         if (addingPerson) {
             AddPersonScreen(
+                roleSuggestions = roleSuggestions,
                 existing = editingPerson,
                 onSave = { draft ->
                     addingPerson = false
@@ -2001,6 +2008,25 @@ fun NotebookShell(
  * later version of the app would carry, falls through to the same empty map
  * rather than failing.
  */
+/**
+ * The contact roles the active situation names.
+ *
+ * Empty for a notebook with no situation, which is a real state rather than a
+ * gap: "Not sure yet" is a valid answer to the picker, and a notebook with no
+ * template gets a free text field and no chips rather than somebody else's
+ * vocabulary.
+ */
+private suspend fun rolesFor(
+    context: android.content.Context,
+    templateId: String?,
+): List<String> {
+    if (templateId == null) return emptyList()
+    return TemplateCatalog.situations(context).all
+        .firstOrNull { it.id == templateId }
+        ?.roles
+        .orEmpty()
+}
+
 private suspend fun emphasisFor(
     context: android.content.Context,
     templateId: String?,

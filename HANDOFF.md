@@ -627,7 +627,31 @@ The notebook is drawn in the reference file, so it is listed here as a correctio
 
 **Worth recording beyond the checklist:** answering "Not sure yet" to the situation picker produces a notebook with no care threads, and the capture form then drops the thread question entirely rather than showing a question whose only answer is "not sure". The entry is not marked unfiled, because with nothing offered, not choosing is not the person declining to say. That behaved correctly without being specifically tested for.
 
-**Not walked yet:** P2 through P13. P10 through P12 need #62, since the template catalog is English only and a language persona against English content tests nothing.
+### P2, week one, building the notebook. Walked 2026-08-02 on the Pixel, fixture: fresh install, nursing home situation
+
+**Walked without the day-7 fixture**, and that limit is stated rather than hidden: the generator writes a plain SQLite file and the app's database is SQLCipher keyed by the phone's Keystore, so there is no way to seed it short of building an export container in Python. What was walked is everything P2's requirements turn on except volume.
+
+| Must be true | Result |
+|---|---|
+| The situation template applied its **threads** | Yes. Five, and the notebook counts them straight away |
+| It applied its **fold behavior** | Yes. Standing instructions, the trail, threads, and money forward; appointments and progress collapsed |
+| **Adding a contact offers the template's roles as suggestions without forcing them** | **It did not. Fixed this run.** All six now appear as chips above a free text field that is unchanged |
+| It applied its **checklist** and **document slots** | **No. Neither is built.** The catalog carries ten checklist items and six document slots for a nursing home and nothing reads them. Filed as #135 |
+| Any of it can be edited or deleted | Threads and people yes. The checklist and document slots do not exist to edit |
+
+**The roles finding is the one worth dwelling on.** `TemplateCatalog.Situation.roles` has existed since the catalog was written, with a comment on the field reading "Contact roles to offer when adding a person. Suggestions, not a fixed list." **The data was parsed, documented, and never shown.** A nursing home notebook knew there was a director of nursing, a charge nurse, a social worker, an assessment coordinator, an administrator, and a billing office, and it asked the person to type all six from memory.
+
+That is Part Two's rule almost word for word: anywhere the set of possible answers is knowable, offer chips rather than a text field.
+
+**The field stays, and a chip only fills it.** A role not on the list is the common case in home care, tapping a chip twice clears it, and what it filled can be edited. Nothing became a fixed vocabulary.
+
+**What P2 says to watch for, and what was seen:**
+
+- *Template content that reads as advice rather than administration.* The five threads are Nursing, Daily personal care, Activities, Meals and dietary, and Social services. All administration.
+- *A checklist that cannot be edited.* There is no checklist, which is #135 rather than a pass.
+- *Roles that cannot be renamed.* They are suggestions filling an ordinary text field, so renaming is typing.
+
+**Not walked yet:** P3 through P13. P10 through P12 need #62, since the template catalog is English only and a language persona against English content tests nothing.
 
 ---
 

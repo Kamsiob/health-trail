@@ -26,6 +26,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
+import com.kamsiob.healthtrail.ui.components.ChoiceChip
+import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -35,6 +39,7 @@ object AddPersonTags {
     const val ROOT = "add_person_root"
     const val NAME = "add_person_name"
     const val ROLE = "add_person_role"
+    fun suggestion(role: String) = "add_person_role_" + role.lowercase().replace(' ', '_')
     const val PHONE = "add_person_phone"
     const val SAVE = "add_person_save"
     const val CANCEL = "add_person_cancel"
@@ -72,6 +77,13 @@ data class PersonDraft(
  */
 @Composable
 fun AddPersonScreen(
+    /**
+     * Roles the active situation template names, offered as chips.
+     *
+     * Empty for a notebook with no situation, which is a real state: "Not sure
+     * yet" is a valid answer to the picker and produces a working notebook.
+     */
+    roleSuggestions: List<String> = emptyList(),
     onSave: (PersonDraft) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
@@ -136,6 +148,61 @@ fun AddPersonScreen(
                     fieldTestTag = AddPersonTags.NAME,
                 )
                 Spacer(Modifier.height(Space.m))
+
+                // **The roles this situation actually has, offered as chips.**
+                //
+                // The situation templates have carried a `roles` list since the
+                // catalog was written, documented there as "suggestions, not a
+                // fixed list", and nothing had ever shown them. A nursing home
+                // notebook knows there is a director of nursing, a charge
+                // nurse, a social worker, an assessment coordinator, an
+                // administrator, and a billing office, and it was asking the
+                // person to type all six from memory.
+                //
+                // Part Two: anywhere the set of possible answers is knowable,
+                // offer chips rather than a text field. P2 asks for exactly
+                // this, in exactly these words: offered as suggestions without
+                // forcing them.
+                //
+                // **The field stays.** A role that is not on the list is the
+                // common case in home care and in a hospital, tapping a chip
+                // only fills the field, and what it filled can be edited or
+                // cleared. Nothing here is a fixed vocabulary.
+                if (roleSuggestions.isNotEmpty()) {
+                    ChoiceChipGroup(
+                        label = strings["careteam.add.role.suggestions"],
+                        aside = strings["careteam.add.role.suggestions.aside"],
+                    ) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(Space.s),
+                            verticalArrangement = Arrangement.spacedBy(Space.s),
+                        ) {
+                            roleSuggestions.forEach { suggestion ->
+                                ChoiceChip(
+                                    label = suggestion,
+                                    // Selected when the field already says it,
+                                    // so a chip tapped by mistake can be seen
+                                    // and a second tap clears it.
+                                    selected = role.trim()
+                                        .equals(suggestion, ignoreCase = true),
+                                    onClick = {
+                                        role = if (
+                                            role.trim().equals(suggestion, ignoreCase = true)
+                                        ) {
+                                            ""
+                                        } else {
+                                            suggestion
+                                        }
+                                    },
+                                    modifier = Modifier.testTag(
+                                        AddPersonTags.suggestion(suggestion),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(Space.m))
+                }
 
                 HealthTrailTextField(
                     label = strings["careteam.add.role"],

@@ -264,6 +264,8 @@
   "careteam.add.name": "Su nombre",
   "careteam.add.name.hint": "Un nombre, o simplemente como le llama",
   "careteam.add.role": "Qué función tiene",
+  "careteam.add.role.suggestions": "Habituales en este tipo de sitio",
+  "careteam.add.role.suggestions.aside": "Toque uno para rellenarlo. Puede cambiarlo, o ignorarlos y escribir el suyo.",
   "careteam.add.role.hint": "Enfermera, gestor de casos, el administrativo de la planta",
   "careteam.add.phone": "Número de teléfono",
   "careteam.add.phone.hint": "La línea directa si la tiene",
