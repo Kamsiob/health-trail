@@ -38,6 +38,8 @@ import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
+import com.kamsiob.healthtrail.data.Readable
+import com.kamsiob.healthtrail.ui.components.Share
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
@@ -234,6 +236,8 @@ fun NotebookShell(
     var addingToIncident by remember { mutableStateOf<String?>(null) }
     /** The incident to settle or reopen, and which of the two. */
     var resolvingIncident by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    /** The incident waiting to be turned into a document and handed to the share sheet. */
+    var sharingIncident by remember { mutableStateOf<Repository.Incident?>(null) }
 
     /**
      * Search, and what has been typed into it.
@@ -808,6 +812,36 @@ fun NotebookShell(
             }
         }
 
+        // Turning a thread into something a sibling in another state can read.
+        // `MASTER_SPEC.md` 4.9: generated locally, handed to the share sheet,
+        // no account and no link.
+        sharingIncident?.let { incident ->
+            LaunchedEffect(incident.id) {
+                val entries = repository.incidentTrail(incident.id)
+                val subjectName = repository.activeSubject()?.displayName
+                val text = Readable.incident(
+                    strings = strings,
+                    subjectName = subjectName,
+                    incident = incident,
+                    entries = entries,
+                )
+                val intent = Share.documentIntent(
+                    context = context,
+                    fileName = Readable.fileName(
+                        title = incident.title,
+                        isoDate = java.time.LocalDate.now().toString(),
+                        fallback = strings["readable.fallback"],
+                    ),
+                    text = text,
+                    chooserTitle = strings["readable.share.title"],
+                )
+                sharingIncident = null
+                // Nothing to hand over is said rather than shown as a sheet
+                // with nothing behind it, per rule 11.
+                if (intent != null) context.startActivity(intent) else failed = true
+            }
+        }
+
         // Settling an incident, or reopening one. Written here rather than in
         // the screen's click handler so the screen stays a screen and the write
         // happens once, off the main thread, like every other write in this file.
@@ -851,6 +885,7 @@ fun NotebookShell(
                         addingToIncident = current.id
                         capturing = CaptureKind.CALL
                     },
+                    onShare = { sharingIncident = current },
                     onResolve = { resolvingIncident = current.id to true },
                     onReopen = { resolvingIncident = current.id to false },
                     onBack = { openIncident = null },

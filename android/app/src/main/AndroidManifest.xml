@@ -42,5 +42,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Hands a generated document to the system share sheet as a content
+          URI. `MASTER_SPEC.md` 4.9: generated locally, no account, no server,
+          no link. Not exported, so only the app the person picks from the sheet
+          ever gets a read grant, and the grant dies with the activity.
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.shared"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/shared_paths" />
+        </provider>
+
     </application>
 </manifest>

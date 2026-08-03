@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The one directory a shared document may come from.
+
+  Scoped to `cache/shared` rather than to the cache root, so nothing else the
+  app ever writes to the cache can become shareable by an accident somewhere
+  else. MASTER_SPEC.md 4.9.
+-->
+<paths>
+    <cache-path name="shared" path="shared/" />
+</paths>

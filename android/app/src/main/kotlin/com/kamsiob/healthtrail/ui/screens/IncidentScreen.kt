@@ -40,6 +40,7 @@ object IncidentTags {
     const val RESOLVE = "incident_resolve"
     const val REOPEN = "incident_reopen"
     const val ADD = "incident_add"
+    const val SHARE = "incident_share"
     fun node(id: String) = "incident_node_$id"
 }
 
@@ -217,6 +218,14 @@ fun IncidentScreen(
     incident: Repository.Incident,
     entries: List<Repository.TrailEntry>,
     onAdd: () -> Unit,
+    /**
+     * Hands this thread to the system share sheet as a readable document.
+     *
+     * `MASTER_SPEC.md` 4.7 asks for "its own export" and 4.9 says what that
+     * means: generated locally, legible standalone to a reader who has never
+     * seen the app.
+     */
+    onShare: () -> Unit,
     onResolve: () -> Unit,
     onReopen: () -> Unit,
     onBack: () -> Unit,
@@ -331,6 +340,12 @@ fun IncidentScreen(
                 label = strings["incident.add"],
                 onClick = onAdd,
                 modifier = Modifier.fillMaxWidth().testTag(IncidentTags.ADD),
+            )
+            Spacer(Modifier.height(Space.cardGap))
+            QuietButton(
+                label = strings["readable.share"],
+                onClick = onShare,
+                modifier = Modifier.fillMaxWidth().testTag(IncidentTags.SHARE),
             )
             Spacer(Modifier.height(Space.cardGap))
             if (incident.isOpen) {

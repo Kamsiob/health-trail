@@ -292,6 +292,14 @@ Reopening is offered plainly, because somebody whose answer turned out not to ho
 
 **What remains of journey 3 is the export**, "then exported as one document", which is the assembly view in #131.
 
+**A thread can be handed to somebody as a document they can read.** `MASTER_SPEC.md` 4.9, and the last criterion of the incident journey. Generated locally, handed to the system share sheet, no account and no link.
+
+**The governing sentence is 4.9's last one:** legible standalone to a reader who has never seen the app. That reader is usually a sibling in another state, and they will not be told what a thread is. So `Readable` writes sentences and dates rather than a data dump, and it ends by saying these are one person's own notes and not a medical record, because a tidy dated document is assumed official unless it says otherwise.
+
+**Written to a scoped cache directory, not to Downloads.** `cache/shared`, cleared before each new one, shared through a content URI that grants read to exactly the app the person picked. A file in Downloads would outlive the share and sit in a folder something else may sync, which is the whole of D67's argument about unencrypted exports applied to a smaller file.
+
+Walked on the Pixel: the sheet opened and the file on disk reads as a document, headed with the title, dated, with what happened in order and the footer under it.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
