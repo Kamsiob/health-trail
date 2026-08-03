@@ -54,6 +54,12 @@ POINTS = {
 # comparison this tool exists to enable would break every midnight.
 HISTORY_ENDS = date(2026, 6, 30)
 
+# How far past the end of the history the one appointment that has not happened
+# yet is scheduled. Far enough to still be ahead for a good while, and stated
+# here rather than buried, because it is the one thing in this file that goes
+# stale on its own.
+UPCOMING_DAYS = 150
+
 # Year 5 scale, from the issue. Everything smaller is scaled from these.
 FULL = {
     "entries": 1600,
@@ -510,11 +516,28 @@ class Generator:
         """
         wanted = max(2, self.scaled(FULL["appointments"]))
         made = []
-        for index in range(wanted):
+        for index in range(wanted + 1):
             title, where = APPOINTMENTS[index % len(APPOINTMENTS)]
             # Spread rather than clustered: meetings are the one thing in a
             # care record that happen on a schedule.
-            day = int(self.days * (index + 0.5) / wanted)
+            #
+            # **The last one has not happened yet**, which is the whole reason
+            # the screen exists. Every entry in a fixture lands inside the
+            # history, so the first version of this put every appointment in the
+            # past: the "coming up" half of the screen was empty at every
+            # horizon, and the prep sheet somebody actually opens, the one for a
+            # meeting they are about to walk into, could not be reached at all.
+            #
+            # UPCOMING_DAYS past the end of the history rather than relative to
+            # today, because a fixture that reads the clock is not deterministic
+            # and this file says so at the top. The cost is that it stops being
+            # upcoming once real time passes it, which is a known and stated
+            # property rather than a surprise: move HISTORY_ENDS forward.
+            day = (
+                self.days + UPCOMING_DAYS
+                if index == wanted
+                else int(self.days * (index + 0.5) / max(1, wanted))
+            )
             values = {
                 "subject_id": subject_id,
                 "title": title,
@@ -527,8 +550,9 @@ class Generator:
             }
             if people:
                 values["person_id"] = self.rng.choice(people)
-            # Everything but the last one already happened and was attended.
-            if index < wanted - 1:
+            # Everything that has already happened was attended. The one that
+            # has not is the sheet worth opening.
+            if index < wanted:
                 values["attended_edtf"] = values["scheduled_edtf"]
                 values["attended_start"] = values["scheduled_start"]
                 values["outcome_note"] = "Went through the care plan. Asked for it in writing."
@@ -548,15 +572,12 @@ class Generator:
         asked_at = [a for a in appointments if a[1] < self.days - 1]
         for index in range(wanted):
             day = self.day_of_activity()
-            values = {
-                "subject_id": subject_id,
-                "text": QUESTIONS[index % len(QUESTIONS)],
-            }
-            if people and self.rng.random() < 0.6:
-                values["person_id"] = self.rng.choice(people)
-                values["role_label"] = self.rng.choice(
-                    ["Charge nurse", "Social worker", "The doctor", "Billing"]
-                )
+            text, role = QUESTIONS[index % len(QUESTIONS)]
+            values = {"subject_id": subject_id, "text": text}
+            if role:
+                values["role_label"] = role
+                if people:
+                    values["person_id"] = self.rng.choice(people)
             # Two in three were asked. The rest are still waiting, which is what
             # the next prep sheet picks up.
             if self.rng.random() < 0.66 and asked_at:
@@ -1105,17 +1126,25 @@ APPOINTMENTS = [
 # **Administration, not clinical curiosity.** Rule 2. Every one of these is a
 # question about who did what and when, or about a decision somebody made. None
 # of them asks whether anything was medically right.
+# **Each question carries who it is for.** The first version chose a role at
+# random alongside the text, which put the billing office in charge of the
+# window bed and asked a clerk why nobody called about a fall. Nothing was
+# technically wrong and the screen looked broken, because a person reads the
+# pair and not the columns. A fixture that is realistic everywhere except in how
+# its pieces fit together teaches you to distrust the screen.
 QUESTIONS = [
-    "Why was the shower schedule changed?",
-    "Who authorized the room move?",
-    "Can I have the care plan in writing?",
-    "What is the aide to resident ratio on evenings?",
-    "Who do I call at night when the office is closed?",
-    "Why was I not told about the fall until the next day?",
-    "Can she have the window bed?",
-    "What is this line on the bill for?",
-    "When was the last time she was weighed?",
-    "Who is covering when Angela is off?",
+    ("Why was the shower schedule changed?", "Charge nurse"),
+    ("Who authorized the room move?", "Social worker"),
+    ("Can I have the care plan in writing?", "Social worker"),
+    ("What is the aide to resident ratio on evenings?", "Director of nursing"),
+    ("Who do I call at night when the office is closed?", "Charge nurse"),
+    ("Why was I not told about the fall until the next day?", "Director of nursing"),
+    ("Can she have the window bed?", "Social worker"),
+    ("What is this line on the bill for?", "Billing"),
+    ("When was the last time she was weighed?", "Charge nurse"),
+    ("Who is covering when Angela is off?", "Charge nurse"),
+    ("Has the dentist been asked to come?", None),
+    ("Is she still going to physical therapy?", "Physical therapy"),
 ]
 
 # **Names and doses only, and never a purpose that reads as a judgment.** The
