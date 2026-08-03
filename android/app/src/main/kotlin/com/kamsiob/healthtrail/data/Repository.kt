@@ -1403,6 +1403,16 @@ class Repository private constructor(
         val notes: String?,
         val stepCount: Int,
         val doneCount: Int,
+        /**
+         * The first step nobody has marked done, or null when none is left.
+         *
+         * **This is what the list shows instead of "2 of 5 steps done".** A
+         * completion count on the person's own work is what rule 13 rules out,
+         * and it was also the least useful thing the row could say: somebody
+         * scanning five long processes wants to know what to do next, not how
+         * far behind they are.
+         */
+        val nextStep: String?,
     ) {
         val isFinished: Boolean get() = status == "done" || status == "abandoned"
     }
@@ -1421,7 +1431,10 @@ class Repository private constructor(
     suspend fun projects(subjectId: String): List<Project> = withContext(Dispatchers.IO) {
         db().database.rawQuery(
             "SELECT p.id, p.name, p.template_id, p.status, p.waiting_on, p.notes, " +
-                "COUNT(s.id), COUNT(s.completed_edtf) " +
+                "COUNT(s.id), COUNT(s.completed_edtf), " +
+                "(SELECT n.text FROM live_project_step n " +
+                "  WHERE n.project_id = p.id AND n.completed_edtf IS NULL " +
+                "  ORDER BY n.sort_index, n.created_at LIMIT 1) " +
                 "FROM live_project p " +
                 "LEFT JOIN live_project_step s ON s.project_id = p.id " +
                 "WHERE p.subject_id = ? " +
@@ -1442,6 +1455,7 @@ class Repository private constructor(
                             notes = cursor.getString(5),
                             stepCount = cursor.getInt(6),
                             doneCount = cursor.getInt(7),
+                            nextStep = cursor.getString(8),
                         ),
                     )
                 }
@@ -1516,6 +1530,160 @@ class Repository private constructor(
         } finally {
             database.endTransaction()
         }
+    }
+
+    /**
+     * A project with no template behind it.
+     *
+     * **`MASTER_SPEC.md` 4.10 has always required this and nothing offered it.**
+     * Sixteen catalog processes is a good starting set and it is not the world:
+     * a family fighting something the catalog never heard of had no way in at
+     * all, which made the sixteen read as the only sixteen things that count.
+     *
+     * `template_id` stays null, which is what the schema's own comment on
+     * `custom_template.derived_from_id` already means by built from scratch,
+     * and it is what the detail screen reads to say "you started this one from
+     * nothing" rather than naming a template that does not exist.
+     */
+    suspend fun createProject(subjectId: String, name: String): String =
+        insert(
+            "project",
+            mapOf(
+                "subject_id" to subjectId,
+                "name" to name,
+                "template_id" to null,
+                "status" to "active",
+            ) + dateColumns("started", Edtf.day(LocalDate.now())),
+        )
+
+    /** Changes what a project is called. Every name in this app is a correction away. */
+    suspend fun renameProject(projectId: String, name: String) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE project SET name = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(name, System.currentTimeMillis(), projectId),
+        )
+    }
+
+    /**
+     * Adds a step to the end of a project.
+     *
+     * **The end, not the beginning**, because the person adding one has just
+     * learned about something further along. Moving it earlier is one tap from
+     * the step itself, and guessing wrong in the other direction costs two.
+     */
+    suspend fun addProjectStep(projectId: String, text: String): String =
+        withContext(Dispatchers.IO) {
+            val next = db().database.rawQuery(
+                "SELECT coalesce(MAX(sort_index), -1) + 1 FROM live_project_step " +
+                    "WHERE project_id = ?",
+                arrayOf(projectId),
+            ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+
+            insert(
+                "project_step",
+                mapOf(
+                    "project_id" to projectId,
+                    "text" to text,
+                    "sort_index" to next,
+                ),
+            )
+        }
+
+    /**
+     * Changes what a step says and what is written under it.
+     *
+     * **The note is a first class part of a step rather than an afterthought.**
+     * `project_step.note` has been in the schema since Phase 0 with no writer,
+     * and it is where "the woman on the phone said to call back after the 15th"
+     * goes. That sentence is the whole reason these processes are survivable.
+     */
+    suspend fun updateProjectStep(stepId: String, text: String, note: String?) =
+        withContext(Dispatchers.IO) {
+            db().database.execSQL(
+                "UPDATE project_step SET text = ?, note = ?, updated_at = ?, " +
+                    "rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(
+                    text,
+                    note?.ifBlank { null },
+                    System.currentTimeMillis(),
+                    stepId,
+                ),
+            )
+        }
+
+    /**
+     * Moves a step one place earlier or later.
+     *
+     * **A swap with its neighbor rather than a renumbering**, because a
+     * renumbering rewrites every row of the project for one move, and every one
+     * of those writes appends to the change log in the same transaction. One
+     * move should cost two entries in the record, not nine.
+     *
+     * **Both writes and nothing between them.** A swap that half applied would
+     * put two steps on the same index, which sorts by `created_at` and reads as
+     * a move that did nothing.
+     *
+     * The step at either end does not move, and the caller is not told off for
+     * asking: a control that is there and does nothing is what D42 removed
+     * elsewhere, so the screen hides it instead.
+     */
+    suspend fun moveProjectStep(stepId: String, earlier: Boolean) =
+        withContext(Dispatchers.IO) {
+            val database = db().database
+            database.beginTransaction()
+            try {
+                val here = database.rawQuery(
+                    "SELECT project_id, sort_index FROM live_project_step WHERE id = ?",
+                    arrayOf(stepId),
+                ).use {
+                    if (it.moveToFirst()) it.getString(0) to it.getInt(1) else null
+                } ?: return@withContext
+
+                val (projectId, index) = here
+                val comparison = if (earlier) "<" else ">"
+                val direction = if (earlier) "DESC" else "ASC"
+                val neighbor = database.rawQuery(
+                    "SELECT id, sort_index FROM live_project_step " +
+                        "WHERE project_id = ? AND sort_index $comparison ? " +
+                        "ORDER BY sort_index $direction LIMIT 1",
+                    arrayOf(projectId, index.toString()),
+                ).use {
+                    if (it.moveToFirst()) it.getString(0) to it.getInt(1) else null
+                } ?: return@withContext
+
+                val now = System.currentTimeMillis()
+                database.execSQL(
+                    "UPDATE project_step SET sort_index = ?, updated_at = ?, " +
+                        "rev = rev + 1 WHERE id = ?",
+                    arrayOf<Any?>(neighbor.second, now, stepId),
+                )
+                database.execSQL(
+                    "UPDATE project_step SET sort_index = ?, updated_at = ?, " +
+                        "rev = rev + 1 WHERE id = ?",
+                    arrayOf<Any?>(index, now, neighbor.first),
+                )
+                database.setTransactionSuccessful()
+            } finally {
+                database.endTransaction()
+            }
+        }
+
+    /**
+     * Removes a step.
+     *
+     * A tombstone like every other deletion, per rule 3, so a peer is told the
+     * step went rather than resurrecting it on the next sync.
+     */
+    suspend fun deleteProjectStep(stepId: String) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE project_step SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ?",
+            arrayOf<Any?>(
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                stepId,
+            ),
+        )
     }
 
     /**

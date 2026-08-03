@@ -1005,10 +1005,10 @@ class ScreenReaderTest {
         compose.show {
             ProjectsScreen(
                 projects = listOf(
-                    Repository.Project("pr1", "Medicaid application", "medicaid_ltc", "waiting", "The caseworker", null, 14, 3),
+                    Repository.Project("pr1", "Medicaid application", "medicaid_ltc", "waiting", "The caseworker", null, 14, 3, "Gather proof of income"),
                     // No steps and no waiting on, which strips two lines off the
                     // card and leaves the least to announce.
-                    Repository.Project("pr2", "Records request", null, "done", null, null, 0, 0),
+                    Repository.Project("pr2", "Records request", null, "done", null, null, 0, 0, null),
                 ),
                 onOpen = {},
                 onRemove = {},
@@ -1039,7 +1039,7 @@ class ScreenReaderTest {
     fun aProjectLabelsEverything() {
         compose.show {
             ProjectDetailScreen(
-                project = Repository.Project("pr1", "Medicaid application", "medicaid_ltc", "active", null, null, 3, 1),
+                project = Repository.Project("pr1", "Medicaid application", "medicaid_ltc", "active", null, null, 3, 1, "Gather proof of income"),
                 steps = listOf(
                     Repository.ProjectStep("s1", "Get the right form", "2026-08-01", null),
                     Repository.ProjectStep("s2", "Gather proof of income", null, null),

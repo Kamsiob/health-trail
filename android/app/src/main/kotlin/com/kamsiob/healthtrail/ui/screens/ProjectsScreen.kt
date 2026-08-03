@@ -169,17 +169,31 @@ private fun ProjectRow(
             )
         }
 
+        // **What is next, rather than how far behind you are.**
+        //
+        // This row said "2 of 5 steps done" until 2026-08-03, which is a
+        // completion count on the person's own work and is what rule 13 rules
+        // out. It was also the least useful thing the row could say: somebody
+        // scanning five long processes wants to know what to do next.
+        //
+        // **A project with nothing left says so and does not say it twice.** A
+        // finished one already carries "Done" in its own eyebrow, so the line
+        // is only worth printing where the steps ran out before the status did.
         if (project.stepCount > 0) {
-            Spacer(Modifier.height(Space.xs))
-            Text(
-                text = strings(
-                    "projects.steps_done",
-                    "done" to project.doneCount,
-                    "total" to project.stepCount,
-                ),
-                style = HealthTrail.type.bodyS,
-                color = colors.ink3Text,
-            )
+            val next = project.nextStep
+            val line = when {
+                next != null -> strings("projects.next", "step" to next)
+                project.isFinished -> null
+                else -> strings["projects.nothing_left"]
+            }
+            line?.let {
+                Spacer(Modifier.height(Space.xs))
+                Text(
+                    text = it,
+                    style = HealthTrail.type.bodyS,
+                    color = colors.ink3Text,
+                )
+            }
         }
     }
 }

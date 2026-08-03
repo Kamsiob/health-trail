@@ -883,6 +883,20 @@ Composed from Display L, Body M, Body S, the group header 5.13, the text field 5
 
 Specified in full at 5.16. Tracked on issue #39.
 
+**A project, rebuilt on 2026-08-03.** It was a checklist: a completion count at the top, checkboxes, strikethrough on what was done, no sign of where it came from, and nothing editable.
+
+**It is a spine now**, per 11.11 and 11.12, because a project is a sequence and it was the fourth thing in this app still drawn as a list of checkboxes. A filled waypoint is a step that is done and a hollow one is a step nobody has started, so **the shape carries the state and a step not started reads as "not yet"** rather than as a failure. Nothing is struck through.
+
+**The subtitle says where the project came from, and it used to say "2 of 5 steps done".** That is a completion count on the person's own work, which rule 13 rules out, and it was the loudest supporting line on the screen. What belongs there is that the steps were a starting point somebody else wrote and that the project is theirs now. **Three cases, because two would lie**: a project whose template is not in this build's catalog, which an export from a later version produces, still came from one, and telling its owner they started it from nothing is a false statement about their own record.
+
+**Position, not score.** The spine shows where they are. The list row says what is next rather than how far behind.
+
+**Every step is editable, which `MASTER_SPEC.md` 4.10 has required since Phase 0.** A long press opens the step in a sheet with its words, its note, move earlier, move later, and remove, and the move controls are absent at either end rather than present and inert, per D42. The same sheet adds a step and changes one, because they are the same question with a different heading. **`project_step.note` had sat in the schema with no writer and no reader**, and it is where "the woman on the phone said to call back after the 15th" goes.
+
+**The gap between steps lives inside the row.** A spacer between two spine rows has no gutter in it, so a continuous route rendered as a dashed one, and it looked deliberate.
+
+**A project with no template**, per 4.10, named on the start screen and opened straight away, with its own empty state. Sixteen catalog processes is a good starting set and it is not the world.
+
 **The Unfiled tray.** Everything the person saved without saying where it belonged.
 
 **Built because the capture form already promised it.** The form tells the person their entry is going to the Unfiled tray, and until 2026-08-01 there was nowhere to see it. A promise the app makes and does not keep costs more than a feature it never mentioned, which is why this outranked the rest of the queue.

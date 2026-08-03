@@ -1,20 +1,25 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,18 +28,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.ConfirmRemoveSheet
+import com.kamsiob.healthtrail.ui.components.EmptyDrawing
+import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.RouteDash
+import com.kamsiob.healthtrail.ui.components.SpineRow
+import com.kamsiob.healthtrail.ui.components.TextAction
+import com.kamsiob.healthtrail.ui.components.Waypoint
+import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -46,6 +63,15 @@ object ProjectDetailTags {
     const val WAITING = "project_waiting"
     const val SAVE_WAITING = "project_save_waiting"
     fun status(key: String) = "project_status_$key"
+    const val ADD_STEP = "project_add_step"
+    const val STEP_SHEET = "project_step_sheet"
+    const val STEP_TEXT = "project_step_text"
+    const val STEP_NOTE = "project_step_note"
+    const val STEP_UP = "project_step_up"
+    const val STEP_DOWN = "project_step_down"
+    const val STEP_SAVE = "project_step_save"
+    const val STEP_REMOVE = "project_step_remove"
+    const val NO_STEPS = "project_no_steps"
 }
 
 private val STATUSES = listOf("active", "waiting", "stalled", "done", "abandoned")
@@ -79,24 +105,55 @@ fun ProjectDetailScreen(
     onSetWaitingOn: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** What the template it came from is called, where it came from one. */
+    templateName: String? = null,
+    onAddStep: (String) -> Unit = {},
+    onEditStep: (stepId: String, text: String, note: String?) -> Unit = { _, _, _ -> },
+    onMoveStep: (stepId: String, earlier: Boolean) -> Unit = { _, _ -> },
+    onRemoveStep: (Repository.ProjectStep) -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     var waitingOn by remember(project.id, project.waitingOn) {
         mutableStateOf(project.waitingOn.orEmpty())
     }
+    // Which step's sheet is open, and null for the one that adds a new step.
+    var editing by remember(project.id) { mutableStateOf<Editing?>(null) }
+    var removing by remember(project.id) { mutableStateOf<Repository.ProjectStep?>(null) }
 
     SectionScaffold(
         name = ProjectDetailTags.NAME,
         title = project.name,
-        subtitle = if (steps.isEmpty()) {
-            strings["projects.subtitle"]
-        } else {
-            strings(
-                "projects.steps_done",
-                "done" to steps.count { it.isDone },
-                "total" to steps.size,
-            )
+        // **The provenance, and it used to say "2 of 5 steps done".**
+        //
+        // That is a completion count on the person's own work, which rule 13
+        // rules out, and it was the loudest supporting line on the screen. What
+        // belongs here instead is where this came from: that the steps were a
+        // starting point somebody else wrote, and that the project is theirs
+        // now. A project that does not say it came from a template reads as a
+        // checklist somebody handed them, which is exactly how it read.
+        //
+        // **Position is shown by the spine, not by a score.** Filled waypoints
+        // above, hollow ones below, and the person can see where they are
+        // without the app grading them.
+        // **Three cases, because two would lie.** A project whose template is
+        // not in this build's catalog, which an export written by a later
+        // version produces, is still a project that came from one, and telling
+        // its owner they started it from nothing is a false statement about
+        // their own record. Found on the phone: the year five fixture's
+        // template ids are not the catalog's, and every project claimed to have
+        // been made from scratch.
+        subtitle = when {
+            // **Not when the name would be said twice.** A project keeps its
+            // template's name until somebody renames it, so naming the
+            // template again produced "Started from the Medicaid application
+            // for long term care template", read directly under the same
+            // words at display size. The unnamed line says the same thing and
+            // does not stutter.
+            templateName != null && templateName != project.name ->
+                strings("projects.from_template", "name" to templateName)
+            project.templateId != null -> strings["projects.from_a_template"]
+            else -> strings["projects.own"]
         },
         onBack = onBack,
         backLabelKey = "section.back.projects",
@@ -143,71 +200,332 @@ fun ProjectDetailScreen(
             Spacer(Modifier.height(Space.l))
         }
 
-        for (step in steps) {
-            item(key = step.id) {
-                StepRow(step = step, onToggle = { onToggleStep(step) })
-                Spacer(Modifier.height(Space.s))
+        // **A spine, because a project is a sequence.** 11.11 and 11.12: a
+        // chapter list, an incident thread, a milestone arc and a project's
+        // steps are one shape seen four times, and this was the fourth one
+        // still drawn as a list of checkboxes.
+        //
+        // **The line is continuous rather than dashed**, per 5.2, because these
+        // steps are the person's actual path through a process rather than a
+        // filter over entries.
+        itemsIndexed(steps, key = { _, step -> step.id }) { index, step ->
+            SpineRow(
+                continuesAbove = index > 0,
+                continuesBelow = index < steps.lastIndex,
+                node = colors.blue,
+                // **Filled for done and hollow for not yet**, per 5.2.1, which
+                // is the whole point: the shape carries the state and a step
+                // nobody has started reads as "not yet" rather than as a
+                // failure. No strikethrough, which is the checklist idiom this
+                // screen is getting out of.
+                state = if (step.isDone) Waypoint.HAPPENED else Waypoint.UPCOMING,
+                dash = null,
+            ) {
+                // **The gap between steps lives inside the row, not between
+                // rows.** A spacer between two `SpineRow`s has no gutter in it,
+                // so the line stopped at the bottom of each card and started
+                // again at the top of the next, and a continuous route rendered
+                // as a dashed one. It looked deliberate, which is why it needed
+                // looking at rather than reading.
+                Column(modifier = Modifier.padding(bottom = Space.s)) {
+                    StepRow(
+                        step = step,
+                        onToggle = { onToggleStep(step) },
+                        onEdit = { editing = Editing.Existing(step) },
+                        onRemove = { removing = step },
+                    )
+                }
             }
         }
 
-        item { Spacer(Modifier.height(Space.l)) }
+        // **A project with no steps has an empty state, per 5.10.** A blank
+        // project made from nothing starts here, and "Add a step" alone above
+        // two thirds of an empty screen is the blank area rule 11 rules out.
+        // The drawing is the projects icon on the shared trail ground, per
+        // 5.17, so the empty screen is already teaching the shape the person
+        // will navigate by.
+        if (steps.isEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.NO_STEPS),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Spacer(Modifier.height(Space.l))
+                    EmptyDrawing(section = Repository.Section.PROJECTS)
+                    Spacer(Modifier.height(Space.m))
+                    Text(
+                        text = strings["projects.no_steps"],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
+
+        item {
+            Spacer(Modifier.height(Space.m))
+            // **Adding a step is the control this screen never had**, and
+            // `MASTER_SPEC.md` 4.10 has required it since Phase 0. It sits
+            // after the steps because that is where a new one goes.
+            TextAction(
+                label = strings["projects.add_step"],
+                onClick = { editing = Editing.New },
+                modifier = Modifier.testTag(ProjectDetailTags.ADD_STEP),
+            )
+            Spacer(Modifier.height(Space.l))
+        }
+    }
+
+    editing?.let { target ->
+        StepSheet(
+            step = (target as? Editing.Existing)?.step,
+            canMoveEarlier = (target as? Editing.Existing)
+                ?.let { steps.indexOf(it.step) > 0 } ?: false,
+            canMoveLater = (target as? Editing.Existing)
+                ?.let { steps.indexOf(it.step) < steps.lastIndex } ?: false,
+            onSave = { text, note ->
+                when (target) {
+                    Editing.New -> onAddStep(text)
+                    is Editing.Existing -> onEditStep(target.step.id, text, note)
+                }
+                editing = null
+            },
+            onMove = { earlier ->
+                (target as? Editing.Existing)?.let { onMoveStep(it.step.id, earlier) }
+                editing = null
+            },
+            onRemove = {
+                // The sheet closes first, so the confirmation is not a sheet
+                // over a sheet, which Material stacks and a person reads as one
+                // screen that has stopped responding.
+                (target as? Editing.Existing)?.let { removing = it.step }
+                editing = null
+            },
+            onDismiss = { editing = null },
+        )
+    }
+
+    removing?.let { step ->
+        ConfirmRemoveSheet(
+            what = step.text,
+            onConfirm = {
+                onRemoveStep(step)
+                removing = null
+            },
+            onDismiss = { removing = null },
+        )
     }
 }
 
+/** Whether the step sheet is changing one that exists or making a new one. */
+private sealed interface Editing {
+    data object New : Editing
+    data class Existing(val step: Repository.ProjectStep) : Editing
+}
+
 /**
- * One step, with a box that says whether it is done.
+ * One step, on the spine.
  *
- * The whole row is the target rather than the box alone, because a checkbox
- * sized to a design is smaller than a tired thumb, and the row already carries
- * the words that say what is being ticked.
+ * **A tap marks it done and a long press opens it**, which is the same gesture
+ * pair the rest of the app uses for a row: 5.4 puts removal and "more to do
+ * with this" behind a long press everywhere, and a step is a row like any
+ * other. The explicit long click action is declared rather than left as a
+ * gesture, so a reader user finds it in their list.
+ *
+ * **A done step is quieted, not struck through.** The waypoint beside it is
+ * already filled, which is the state, and crossing out the words is the
+ * checklist idiom this screen is getting out of. What has already been sent is
+ * exactly what somebody is asked about on the phone.
+ *
+ * **The note is shown under the step and it is the reason the note exists.**
+ * "The woman on the phone said to call back after the 15th" is the sentence
+ * that makes one of these processes survivable, and `project_step.note` had no
+ * writer and no reader until 2026-08-03.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun StepRow(step: Repository.ProjectStep, onToggle: () -> Unit) {
+private fun StepRow(
+    step: Repository.ProjectStep,
+    onToggle: () -> Unit,
+    onEdit: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, colors.card)
+    val ring by focusRingAlpha(interaction)
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                // A reader is told the state rather than left to infer it from
+                // a shape, which is the same reason chips report as checked.
+                stateDescription = if (step.isDone) "done" else "not done"
+                customActions = listOf(
+                    CustomAccessibilityAction(strings["projects.step.title"]) {
+                        onEdit(); true
+                    },
+                    CustomAccessibilityAction(strings["projects.step.remove"]) {
+                        onRemove(); true
+                    },
+                )
+            }
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.card)
             .background(surface)
-            .clickable(
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .combinedClickable(
                 interactionSource = interaction,
                 indication = null,
                 role = Role.Checkbox,
                 onClick = onToggle,
+                onLongClick = onEdit,
             )
-            .semantics {
-                // A reader is told the state rather than left to infer it from
-                // a shape, which is the same reason chips report as checked.
-                stateDescription = if (step.isDone) "done" else "not done"
-            }
             .testTag(ProjectDetailTags.step(step.id))
             .padding(Space.cardPadding),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .size(20.dp)
-                .clip(Radius.thumbnail)
-                .background(if (step.isDone) colors.leaf else Color_Transparent)
-                .border(
-                    2.dp,
-                    if (step.isDone) colors.leaf else colors.ink3NonText,
-                    Radius.thumbnail,
-                ),
-        )
-        Spacer(Modifier.width(Space.sm))
         Text(
             text = step.text,
             style = HealthTrail.type.bodyL,
-            color = if (step.isDone) colors.ink3Text else colors.ink,
-            textDecoration = if (step.isDone) TextDecoration.LineThrough else null,
-            modifier = Modifier.weight(1f),
+            color = if (step.isDone) colors.ink2 else colors.ink,
         )
+        step.note?.takeIf { it.isNotBlank() }?.let { note ->
+            Spacer(Modifier.height(Space.xs))
+            Text(text = note, style = HealthTrail.type.bodyM, color = colors.ink2)
+        }
     }
 }
 
-private val Color_Transparent = androidx.compose.ui.graphics.Color.Transparent
+/**
+ * One step, opened.
+ *
+ * **The same sheet adds a step and changes one**, because they are the same
+ * question with a different heading, which is the rule 5.4 already sets for a
+ * card's tap opening the form that made it. Somebody fixing a typo is never
+ * told they are adding a step.
+ *
+ * **Moving it earlier or later is here rather than a drag.** A drag is a
+ * gesture a reader user cannot perform and a tired thumb performs badly, and
+ * two named controls are one tap each. **A step at either end does not show the
+ * control that would do nothing**, per D42.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StepSheet(
+    step: Repository.ProjectStep?,
+    canMoveEarlier: Boolean,
+    canMoveLater: Boolean,
+    onSave: (text: String, note: String?) -> Unit,
+    onMove: (earlier: Boolean) -> Unit,
+    onRemove: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var text by remember(step?.id) { mutableStateOf(step?.text.orEmpty()) }
+    var note by remember(step?.id) { mutableStateOf(step?.note.orEmpty()) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = colors.card,
+        scrimColor = Color.Black.copy(alpha = SHEET_SCRIM),
+        shape = Radius.bottomSheet,
+        dragHandle = null,
+        modifier = Modifier.testTag(ProjectDetailTags.STEP_SHEET),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = Space.screenHorizontal)
+                .padding(top = Space.l, bottom = Space.l),
+        ) {
+            Text(
+                text = strings[if (step == null) "projects.step.new" else "projects.step.title"],
+                style = HealthTrail.type.displayM,
+                color = colors.ink,
+                modifier = Modifier.semantics { heading() },
+            )
+
+            Spacer(Modifier.height(Space.l))
+
+            HealthTrailTextField(
+                label = strings["projects.step.text"],
+                value = text,
+                onValueChange = { text = it },
+                hint = strings["projects.step.text.hint"],
+                fieldTestTag = ProjectDetailTags.STEP_TEXT,
+            )
+
+            // **Only on a step that exists.** A note about a step nobody has
+            // written yet is a field with nothing to be about, and the sheet
+            // that adds one should ask for the one thing it needs.
+            if (step != null) {
+                Spacer(Modifier.height(Space.m))
+                HealthTrailTextField(
+                    label = strings["projects.step.note"],
+                    value = note,
+                    onValueChange = { note = it },
+                    hint = strings["projects.step.note.hint"],
+                    fieldTestTag = ProjectDetailTags.STEP_NOTE,
+                    singleLine = false,
+                )
+
+                Spacer(Modifier.height(Space.m))
+                if (canMoveEarlier) {
+                    TextAction(
+                        label = strings["projects.step.up"],
+                        onClick = { onMove(true) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(ProjectDetailTags.STEP_UP),
+                    )
+                }
+                if (canMoveLater) {
+                    TextAction(
+                        label = strings["projects.step.down"],
+                        onClick = { onMove(false) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(ProjectDetailTags.STEP_DOWN),
+                    )
+                }
+
+                // **Removing is here, and it was reachable only by a screen
+                // reader for an hour.** The long press opens this sheet, and
+                // the row's custom accessibility actions offered removal to a
+                // reader user while a sighted person had no way to do it at
+                // all. Found by trying to remove a step on the phone.
+                //
+                // It is a text action opening the confirmation rather than a
+                // destructive button resting on the sheet, per 5.4: the alert
+                // fill exists only inside the confirmation it belongs to.
+                TextAction(
+                    label = strings["projects.step.remove"],
+                    onClick = onRemove,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(ProjectDetailTags.STEP_REMOVE),
+                )
+            }
+
+            Spacer(Modifier.height(Space.l))
+
+            FilledButton(
+                label = strings["common.save"],
+                onClick = { onSave(text.trim(), note.trim().ifBlank { null }) },
+                modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.STEP_SAVE),
+            )
+        }
+    }
+}
+
+/** Enough to read the sheet as over the screen rather than beside it. */
+private const val SHEET_SCRIM = 0.62f

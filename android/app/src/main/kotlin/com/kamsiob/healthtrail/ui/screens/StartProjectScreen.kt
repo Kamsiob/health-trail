@@ -9,19 +9,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -29,6 +35,9 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object StartProjectTags {
+    const val OWN = "start_project_own"
+    const val OWN_NAME = "start_project_own_name"
+    const val OWN_START = "start_project_own_start"
     const val ROOT = "start_project_root"
     const val CANCEL = "start_project_cancel"
     fun template(id: String) = "start_project_$id"
@@ -53,12 +62,20 @@ fun StartProjectScreen(
     onChoose: (TemplateCatalog.ProjectTemplate) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Starts a project with no template behind it, given what to call it. */
+    onStartOwn: (String) -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
+        // **`imePadding` because this screen grew a text field.** It had none
+        // until the blank project option landed, and without it the keyboard
+        // covered the very control the person had just typed a name for: type,
+        // then dismiss the keyboard, then scroll, then tap. That is D38 for the
+        // third time and it is invisible at rest, which is why 10.6 requires
+        // looking at every screen with a field with the keyboard actually up.
+        Column(modifier = Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -87,6 +104,21 @@ fun StartProjectScreen(
                         TemplateCard(template = template, onChoose = { onChoose(template) })
                         Spacer(Modifier.height(Space.cardGap))
                     }
+                }
+
+                // **Something the catalog never heard of**, which
+                // `MASTER_SPEC.md` 4.10 has always required and which nothing
+                // offered. Sixteen processes is a good starting set and it is
+                // not the world, and offering only sixteen made them read as
+                // the only sixteen things that count.
+                //
+                // **Last, not first.** For most people one of the sixteen is
+                // the answer, and putting the blank one at the top would ask
+                // everybody to write from nothing before showing them they did
+                // not have to.
+                item {
+                    Spacer(Modifier.height(Space.m))
+                    OwnProject(onStart = onStartOwn)
                 }
 
                 item { Spacer(Modifier.height(Space.l)) }
@@ -158,6 +190,61 @@ private fun TemplateCard(
                 text = strings["projects.state_varies"],
                 style = HealthTrail.type.bodyS,
                 color = colors.ink3Text,
+            )
+        }
+    }
+}
+
+/**
+ * Starting something the catalog does not cover.
+ *
+ * **The name is the only thing asked for**, because it is the only thing the
+ * app needs and everything else is the person's to add as they learn it. A
+ * blank project with a name is a working project, which is rule 13's "partial
+ * is a finished state" applied to a whole record rather than to a field.
+ *
+ * The action appears only once there is a name, because saving one with no name
+ * would put an untitled row in a list whose whole job is to be scanned.
+ */
+@Composable
+private fun OwnProject(onStart: (String) -> Unit) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    var name by rememberSaveable { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(Radius.card)
+            .background(colors.card)
+            .testTag(StartProjectTags.OWN)
+            .padding(Space.cardPadding),
+    ) {
+        Text(
+            text = strings["projects.blank"],
+            style = HealthTrail.type.displayS,
+            color = colors.ink,
+        )
+        Spacer(Modifier.height(Space.xs))
+        Text(
+            text = strings["projects.blank.aside"],
+            style = HealthTrail.type.bodyM,
+            color = colors.ink2,
+        )
+        Spacer(Modifier.height(Space.m))
+        HealthTrailTextField(
+            label = strings["projects.name"],
+            value = name,
+            onValueChange = { name = it },
+            hint = strings["projects.name.hint"],
+            fieldTestTag = StartProjectTags.OWN_NAME,
+        )
+        if (name.isNotBlank()) {
+            Spacer(Modifier.height(Space.m))
+            FilledButton(
+                label = strings["projects.start"],
+                onClick = { onStart(name.trim()) },
+                modifier = Modifier.fillMaxWidth().testTag(StartProjectTags.OWN_START),
             )
         }
     }

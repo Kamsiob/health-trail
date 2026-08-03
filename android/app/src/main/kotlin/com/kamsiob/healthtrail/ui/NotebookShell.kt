@@ -252,6 +252,13 @@ fun NotebookShell(
     var togglingStep by remember { mutableStateOf<Repository.ProjectStep?>(null) }
     var settingProjectStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     var settingWaitingOn by remember { mutableStateOf<Pair<String, String>?>(null) }
+    // Every step edit is a pending write held here rather than done inside a
+    // composable, which is the shape every other write on this screen uses.
+    var addingStep by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var editingStep by remember { mutableStateOf<Triple<String, String, String?>?>(null) }
+    var movingStep by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var removingStep by remember { mutableStateOf<String?>(null) }
+    var creatingOwnProject by remember { mutableStateOf<String?>(null) }
     var aboutOpen by remember { mutableStateOf(false) }
 
     /** Incidents, which `MASTER_SPEC.md` 4.7 makes threads rather than events. */
@@ -1068,6 +1075,18 @@ fun NotebookShell(
                 onSetStatus = { status -> settingProjectStatus = currentProject.id to status },
                 onSetWaitingOn = { who -> settingWaitingOn = currentProject.id to who },
                 onBack = { openProject = null },
+                // **The template's own name, looked up rather than stored.**
+                // `project.template_id` is the catalog id, and the person needs
+                // the words. A project whose template is not in this build's
+                // catalog, which an export from a later version can produce,
+                // shows no provenance line rather than an id.
+                templateName = currentProject.templateId?.let { id ->
+                    projectTemplates.firstOrNull { it.id == id }?.name
+                },
+                onAddStep = { text -> addingStep = currentProject.id to text },
+                onEditStep = { id, text, note -> editingStep = Triple(id, text, note) },
+                onMoveStep = { id, earlier -> movingStep = id to earlier },
+                onRemoveStep = { step -> removingStep = step.id },
             )
         }
 
@@ -1079,7 +1098,28 @@ fun NotebookShell(
                     chosenTemplate = template
                 },
                 onCancel = { startingProject = false },
+                onStartOwn = { name ->
+                    startingProject = false
+                    creatingOwnProject = name
+                },
             )
+        }
+
+        creatingOwnProject?.let { name ->
+            LaunchedEffect(name) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    val id = repository.createProject(subject.id, name)
+                    // **Opened straight away**, because a project with no steps
+                    // is a screen the person has to fill in, and sending them
+                    // back to a list to find it again is a tap paid for
+                    // nothing. Read back rather than assembled here, so what
+                    // opens is what the database holds.
+                    openProject = repository.projects(subject.id).firstOrNull { it.id == id }
+                }
+                creatingOwnProject = null
+                revision += 1
+            }
         }
 
         val template = chosenTemplate
@@ -1104,6 +1144,38 @@ fun NotebookShell(
             LaunchedEffect(step) {
                 repository.setProjectStepDone(step.id, !step.isDone)
                 togglingStep = null
+                revision += 1
+            }
+        }
+
+        addingStep?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.addProjectStep(pending.first, pending.second)
+                addingStep = null
+                revision += 1
+            }
+        }
+
+        editingStep?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.updateProjectStep(pending.first, pending.second, pending.third)
+                editingStep = null
+                revision += 1
+            }
+        }
+
+        movingStep?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.moveProjectStep(pending.first, pending.second)
+                movingStep = null
+                revision += 1
+            }
+        }
+
+        removingStep?.let { id ->
+            LaunchedEffect(id) {
+                repository.deleteProjectStep(id)
+                removingStep = null
                 revision += 1
             }
         }
