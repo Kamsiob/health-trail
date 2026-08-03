@@ -172,12 +172,19 @@ fun TrailScreen(
                 }
             }
 
-            for ((withinMonth, entry) in inMonth.withIndex()) {
+            for (entry in inMonth) {
                 val position = index
                 index += 1
-                // The row above this one on screen, which is the newer entry,
-                // and null at the top of a month run.
-                val previous = inMonth.getOrNull(withinMonth - 1)
+                // **The row above this one on screen, taken from the whole
+                // trail rather than from this month's run.**
+                //
+                // Scoping it to the month was wrong and it was wrong in the one
+                // case that matters: a gap large enough to be worth saying is
+                // usually a gap that crosses a month boundary, and those
+                // entries are the first in their group, so the marker never
+                // appeared. Found by putting two entries three weeks apart on
+                // the phone and watching nothing happen.
+                val previous = entries.getOrNull(position - 1)
                 item(key = entry.id) {
                     RouteRow(
                         draw = draw,

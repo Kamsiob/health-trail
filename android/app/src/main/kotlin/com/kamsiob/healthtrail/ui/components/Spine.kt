@@ -280,14 +280,16 @@ fun SpineRow(
 @Composable
 fun DistanceMarker(text: String, modifier: Modifier = Modifier) {
     val colors = HealthTrail.colors
-    Row(modifier = modifier.fillMaxWidth()) {
-        // Aligned to the spine, so it reads as a note on the line rather than
-        // as a row of its own.
-        Box(modifier = Modifier.width(Trail.gutterWidth + Space.s))
-        Text(
-            text = text,
-            style = HealthTrail.type.mono,
-            color = colors.ink3Text,
-        )
-    }
+    // **No leading gutter of its own.** This is placed inside a [SpineRow]'s
+    // content, which is already inset past the line, so adding the gutter again
+    // indented it further than every other thing on the screen: the month
+    // heading, the cards, and the dates all start at one edge and the marker
+    // started 28dp inside them. Seen on the phone, where a misaligned line is
+    // obvious and in the code it is arithmetic nobody questions.
+    Text(
+        text = text,
+        style = HealthTrail.type.mono,
+        color = colors.ink3Text,
+        modifier = modifier.fillMaxWidth(),
+    )
 }
