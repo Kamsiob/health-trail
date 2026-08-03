@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +49,7 @@ import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.screens.CaptureDraft
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
+import com.kamsiob.healthtrail.ui.screens.CaptureFormState
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.screens.CaptureSheet
 import com.kamsiob.healthtrail.ui.screens.edtf
@@ -139,6 +141,27 @@ fun NotebookShell(
     // changes since they were last here.
     var digest by remember { mutableStateOf(Digest.nothing) }
     var capturing by remember { mutableStateOf<CaptureKind?>(null) }
+
+    /**
+     * What the person has typed into the capture form and not yet saved.
+     *
+     * **Held here rather than in the form, and saved rather than remembered.**
+     * The form used to keep everything in a local `remember`, so a back press,
+     * a rotation, a theme change, or the system reclaiming memory threw away a
+     * half written note. Somebody standing in a corridor writing down what the
+     * nurse just said is exactly who that loses, and losing it is the worst
+     * thing this app could do short of losing the notebook.
+     *
+     * `rememberSaveable` puts it in the bundle, so it survives process death
+     * too, which `remember` at this level would not.
+     *
+     * **Nothing about it is ever shown as a warning.** No "you have unsaved
+     * changes", no confirmation before leaving, no completeness count. It is
+     * simply still there when they come back. Rule 13.
+     */
+    var captureDraft by rememberSaveable(stateSaver = CaptureFormState.Saver) {
+        mutableStateOf(CaptureFormState())
+    }
     // Bumped after every write, which is what makes the counts refresh without
     // the screen having to know what changed.
     var revision by remember { mutableStateOf(0) }
@@ -1527,11 +1550,24 @@ fun NotebookShell(
             CaptureFormScreen(
                 kind = kind,
                 threads = threads,
+                state = captureDraft,
+                onStateChange = { captureDraft = it },
                 onSave = { draft ->
                     capturing = null
+                    // **Cleared only once the entry is on its way to the
+                    // database.** Cleared any earlier and a save that failed
+                    // would take the note with it.
+                    captureDraft = CaptureFormState()
                     saving = draft
                 },
-                onCancel = { capturing = null },
+                onCancel = {
+                    capturing = null
+                    // **Cancel is the one thing that does discard it**, because
+                    // cancel means abandoning the entry. Back does not, which is
+                    // the whole point of holding it here. D65 draws the same
+                    // distinction for where back goes.
+                    captureDraft = CaptureFormState()
+                },
             )
         }
 

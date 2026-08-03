@@ -231,6 +231,10 @@ The diagnosis first, because the fix follows from it: **section 1 bans every che
 
 **Two defects found the same night, one by a test and one by looking.** `ScreenReaderTest` caught a hard crash within a minute of milestones existing, because a milestone's box is wider than the line's 9dp inset and `padding` refuses a negative value at runtime. And the empty state sat jammed under the subtitle with the whole screen blank beneath it, which reads as a screen that failed to load rather than a place waiting for something. That one was only visible on the phone.
 
+**A half written note now survives leaving the capture form.** The form held everything in a local `remember`, so a back press, a rotation, a theme change, or the system reclaiming memory threw it away. Somebody in a corridor writing down what the nurse just said is exactly who that loses. The draft is hoisted into `NotebookShell` in a `rememberSaveable`, so it survives all four including process death. **Cancel still discards it**, because cancel means abandoning the entry, and back does not, which is the same distinction D65 draws for where back goes. Walked on the phone both ways and held by `BackJourneyTest`.
+
+**Making the form controlled found a second thing.** With every field driven by the hoisted state, a caller that did not hoist got a form nothing could be typed into, and it looked completely normal. `CaptureTest` caught it within a minute. The parameters are required with no default now: a component that does nothing when used with its defaults is worse than one that will not compile. Both test files hoist exactly as the shell does rather than stubbing it, per `TESTING-PERSONAS.md` section 7.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.

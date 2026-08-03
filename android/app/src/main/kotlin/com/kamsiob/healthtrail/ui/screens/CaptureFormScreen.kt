@@ -61,6 +61,62 @@ object CaptureFormTags {
 enum class RoughWhen { TODAY, YESTERDAY, THIS_WEEK, NOT_SURE }
 
 /** What a captured entry carries. Every part of it can be empty. */
+/**
+ * A capture form part way through being filled in.
+ *
+ * **This exists so that leaving the form does not throw the note away.**
+ * `MASTER_SPEC.md` calls the capture form the thing somebody reaches for while
+ * a nurse is still talking. Losing a half written note from a hospital corridor
+ * is the worst thing this app could do short of losing the notebook, and until
+ * this existed the form held everything in a local `remember`: a back press, a
+ * rotation, or the system reclaiming memory took the lot.
+ *
+ * Held above the form by `NotebookShell` in a `rememberSaveable`, so it
+ * survives back, rotation, a theme change, and process death.
+ *
+ * **Never shown as a warning and never blocking.** Nothing tells the person
+ * they have an unfinished entry, nothing asks them to confirm leaving, and
+ * nothing counts how complete it is. It is simply still there. Rule 13.
+ */
+data class CaptureFormState(
+    val who: String = "",
+    val note: String = "",
+    val rough: RoughWhen? = RoughWhen.TODAY,
+    /** The EDTF string of a date chosen from the calendar, or null. */
+    val pickedEdtf: String? = null,
+    val threadId: String? = null,
+) {
+    /** True when there is something in here worth keeping. */
+    val isEmpty: Boolean
+        get() = who.isBlank() && note.isBlank() && pickedEdtf == null && threadId == null
+
+    companion object {
+        /**
+         * Saved as a flat list of strings, which is what the bundle can carry.
+         *
+         * A hand written saver rather than serialization, because the bundle is
+         * the one place this app's data leaves the encrypted database, and what
+         * goes into it should be short, obvious, and read at a glance. It holds
+         * an unsaved note, which is the person's words: nothing else about them
+         * belongs here.
+         */
+        val Saver: androidx.compose.runtime.saveable.Saver<CaptureFormState, Any> =
+            androidx.compose.runtime.saveable.listSaver(
+                save = { listOf(it.who, it.note, it.rough?.name ?: "", it.pickedEdtf ?: "", it.threadId ?: "") },
+                restore = {
+                    CaptureFormState(
+                        who = it[0] as String,
+                        note = it[1] as String,
+                        rough = (it[2] as String).takeIf { name -> name.isNotEmpty() }
+                            ?.let { name -> RoughWhen.valueOf(name) },
+                        pickedEdtf = (it[3] as String).takeIf { text -> text.isNotEmpty() },
+                        threadId = (it[4] as String).takeIf { text -> text.isNotEmpty() },
+                    )
+                },
+            )
+    }
+}
+
 data class CaptureDraft(
     val kind: CaptureKind,
     val who: String,
@@ -113,19 +169,37 @@ fun CaptureFormScreen(
     threads: List<Repository.CareThread>,
     onSave: (CaptureDraft) -> Unit,
     onCancel: () -> Unit,
+    /**
+     * What was typed last time, which is usually nothing.
+     *
+     * **Held above this screen so that leaving does not discard it.** See
+     * [CaptureFormState].
+     */
+    state: CaptureFormState,
+    /**
+     * **Required, with no default.** A no-op default made the form silently
+     * dead: every field is controlled by [state], so a caller that did not hoist
+     * got a form nothing could be typed into, and it looked completely normal.
+     * `CaptureTest` found it that way within a minute. A component that does
+     * nothing when used with its defaults is worse than one that will not
+     * compile.
+     */
+    onStateChange: (CaptureFormState) -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var who by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    var rough by remember { mutableStateOf<RoughWhen?>(RoughWhen.TODAY) }
+    // Read from the hoisted state and written straight back, so the caller is
+    // always holding current truth rather than a copy taken when the screen
+    // opened.
+    val who = state.who
+    val note = state.note
+    val rough = state.rough
+    val threadId = state.threadId
     // A date chosen from the calendar. Set means the chips are no longer the
     // answer, and the two can never both be the answer at once.
-    var picked by remember { mutableStateOf<Edtf.Date?>(null) }
+    val picked = state.pickedEdtf?.let { Edtf.parse(it) }
     var pickerOpen by remember { mutableStateOf(false) }
-    // Null means "not sure yet", which is a real answer rather than a blank.
-    var threadId by remember { mutableStateOf<String?>(null) }
 
     Surface(
         modifier = Modifier.fillMaxSize().testTag(CaptureFormTags.ROOT),
@@ -165,7 +239,7 @@ fun CaptureFormScreen(
                 HealthTrailTextField(
                     label = strings[key(kind, "who")],
                     value = who,
-                    onValueChange = { who = it },
+                    onValueChange = { onStateChange(state.copy(who = it)) },
                     hint = strings[key(kind, "who.hint")],
                     fieldTestTag = CaptureFormTags.WHO,
                 )
@@ -180,7 +254,7 @@ fun CaptureFormScreen(
                         ChoiceChip(
                             label = strings[option.labelKey],
                             selected = picked == null && rough == option,
-                            onClick = { rough = option; picked = null },
+                            onClick = { onStateChange(state.copy(rough = option, pickedEdtf = null)) },
                             modifier = Modifier.testTag(CaptureFormTags.whenChip(option)),
                         )
                     }
@@ -223,7 +297,7 @@ fun CaptureFormScreen(
                             ChoiceChip(
                                 label = thread.label,
                                 selected = threadId == thread.id,
-                                onClick = { threadId = thread.id },
+                                onClick = { onStateChange(state.copy(threadId = thread.id)) },
                                 dotColor = colors.threadRoutes[
                                     thread.colorIndex.mod(colors.threadRoutes.size),
                                 ],
@@ -234,7 +308,7 @@ fun CaptureFormScreen(
                         ChoiceChip(
                             label = strings["capture.thread.not_sure"],
                             selected = threadId == null,
-                            onClick = { threadId = null },
+                            onClick = { onStateChange(state.copy(threadId = null)) },
                             modifier = Modifier.testTag(CaptureFormTags.THREAD_UNSURE),
                         )
                     }
@@ -245,7 +319,7 @@ fun CaptureFormScreen(
                 HealthTrailTextField(
                     label = strings[key(kind, "note")],
                     value = note,
-                    onValueChange = { note = it },
+                    onValueChange = { onStateChange(state.copy(note = it)) },
                     hint = strings[key(kind, "note.hint")],
                     fieldTestTag = CaptureFormTags.NOTE,
                     // Grows with what is typed rather than sitting at a fixed
@@ -320,11 +394,9 @@ fun CaptureFormScreen(
                     // "I am not sure" from inside the picker is the same answer
                     // as the chip, so it lands on the chip rather than leaving
                     // two controls saying different things.
-                    picked = null
-                    rough = RoughWhen.NOT_SURE
+                    onStateChange(state.copy(pickedEdtf = null, rough = RoughWhen.NOT_SURE))
                 } else {
-                    picked = chosen
-                    rough = null
+                    onStateChange(state.copy(pickedEdtf = chosen.canonical, rough = null))
                 }
             },
             onDismiss = { pickerOpen = false },

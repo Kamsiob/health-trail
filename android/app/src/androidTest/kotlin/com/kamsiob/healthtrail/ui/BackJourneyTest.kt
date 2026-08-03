@@ -1,11 +1,14 @@
 package com.kamsiob.healthtrail.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToKey
+import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.Lifecycle
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -14,6 +17,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.components.NavTags
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
+import com.kamsiob.healthtrail.ui.screens.CaptureFormTags
 import com.kamsiob.healthtrail.ui.screens.CaptureTags
 import com.kamsiob.healthtrail.ui.screens.DisclaimerTags
 import com.kamsiob.healthtrail.ui.screens.NotebookTags
@@ -186,6 +190,52 @@ class BackJourneyTest {
         backWithoutLeavingTheApp("the capture sheet under a form")
 
         compose.onNodeWithTag(ShellTags.ROOT).assertIsDisplayed()
+    }
+
+    @Test
+    fun aHalfWrittenNoteSurvivesLeavingTheFormAndIsDiscardedOnlyByCancel() {
+        // **The worst thing this app could do short of losing the notebook.**
+        // Somebody in a corridor writing down what the nurse just said, who
+        // presses back for any reason, must not lose it. Until the draft was
+        // hoisted out of the form it was gone: a back press, a rotation, or the
+        // system reclaiming memory took the lot.
+        reachTheNotebook()
+
+        val words = "Nurse Ana, ward 4"
+
+        compose.onNodeWithTag(NavTags.CAPTURE).performClick()
+        compose.waitUntil(timeoutMillis = 10_000) { showing(CaptureTags.SHEET) }
+        compose.onNodeWithTag(CaptureTags.option(CaptureKind.CALL)).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput(words)
+        compose.waitForIdle()
+
+        // All the way out to the notebook, which is two presses now that back
+        // from a form returns to the sheet. D65.
+        backWithoutLeavingTheApp("a capture form")
+        backWithoutLeavingTheApp("the capture sheet")
+
+        compose.onNodeWithTag(NavTags.CAPTURE).performClick()
+        compose.waitUntil(timeoutMillis = 10_000) { showing(CaptureTags.SHEET) }
+        compose.onNodeWithTag(CaptureTags.option(CaptureKind.CALL)).performClick()
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(CaptureFormTags.WHO).assertTextContains(words, substring = true)
+
+        // **Cancel is the one thing that does discard it**, because cancel
+        // means abandoning the entry rather than stepping back a level.
+        compose.onNodeWithTag(CaptureFormTags.CANCEL).performClick()
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(NavTags.CAPTURE).performClick()
+        compose.waitUntil(timeoutMillis = 10_000) { showing(CaptureTags.SHEET) }
+        compose.onNodeWithTag(CaptureTags.option(CaptureKind.CALL)).performClick()
+        compose.waitForIdle()
+
+        assertTrue(
+            "cancel left the note behind, so abandoning an entry does not abandon it",
+            compose.onAllNodesWithText(words, substring = true).fetchSemanticsNodes().isEmpty(),
+        )
     }
 
     @Test

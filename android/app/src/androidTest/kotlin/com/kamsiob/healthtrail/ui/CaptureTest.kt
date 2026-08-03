@@ -16,6 +16,11 @@ import java.time.LocalDate
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.screens.CaptureDraft
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.kamsiob.healthtrail.ui.screens.CaptureFormState
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureFormTags
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
@@ -71,9 +76,20 @@ class CaptureTest {
         compose.setContent {
             HealthTrailTheme {
                 CompositionLocalProvider(LocalStrings provides strings) {
+                    // **Hoisted here exactly as `NotebookShell` hoists it**,
+                    // so this test drives the form the way the app does rather
+                    // than through a shape only a test would produce. The draft
+                    // outliving the form is the whole reason the state is up
+                    // here, and a test that stubbed it would prove a form that
+                    // does not ship.
+                    var state by rememberSaveable(stateSaver = CaptureFormState.Saver) {
+                        mutableStateOf(CaptureFormState())
+                    }
                     CaptureFormScreen(
                         kind = kind,
                         threads = threads,
+                        state = state,
+                        onStateChange = { state = it },
                         onSave = onSave,
                         onCancel = onCancel,
                     )

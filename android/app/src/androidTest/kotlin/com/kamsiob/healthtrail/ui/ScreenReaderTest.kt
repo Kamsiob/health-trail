@@ -48,6 +48,11 @@ import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
 import com.kamsiob.healthtrail.ui.screens.TrailScreen
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.kamsiob.healthtrail.ui.screens.CaptureFormState
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.screens.CaptureSheet
@@ -213,9 +218,12 @@ class ScreenReaderTest {
     @Test
     fun theCaptureFormLabelsEverything() {
         compose.show {
+            var state by remember { mutableStateOf(CaptureFormState()) }
             CaptureFormScreen(
                 kind = CaptureKind.CALL,
                 threads = listOf(Repository.CareThread("t1", "Nursing", 0)),
+                state = state,
+                onStateChange = { state = it },
                 onSave = {},
                 onCancel = {},
             )
