@@ -44,6 +44,7 @@ import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
+import com.kamsiob.healthtrail.ui.screens.ThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreState
@@ -267,6 +268,10 @@ fun NotebookShell(
 
     /** The appointment whose prep sheet is open, and the sheet itself. */
     var openPrepFor by remember { mutableStateOf<String?>(null) }
+
+    /** The care thread being read, and what is on it. */
+    var openThread by remember { mutableStateOf<Repository.CareThread?>(null) }
+    var threadEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
     var prep by remember { mutableStateOf<Repository.Prep?>(null) }
     var personEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
 
@@ -469,6 +474,7 @@ fun NotebookShell(
     BackHandler(enabled = openEntry != null) { openEntry = null }
     BackHandler(enabled = openPerson != null) { openPerson = null }
     BackHandler(enabled = openPrepFor != null) { openPrepFor = null }
+    BackHandler(enabled = openThread != null) { openThread = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -1194,6 +1200,7 @@ fun NotebookShell(
                 )
 
                 Repository.Section.THREADS -> CareThreadsScreen(
+                    onOpen = { openThread = it },
                     threads = threadCounts,
                     onBack = { openSection = null },
                 )
@@ -1315,6 +1322,18 @@ fun NotebookShell(
         // row appeared to do nothing at all: the entry screen was there and
         // the trail was painted over it. These are overlays in one Box, so
         // order is z-order, and the thing opened last has to be declared last.
+        openThread?.let { thread ->
+            LaunchedEffect(thread.id, revision) {
+                threadEntries = repository.entriesForThread(thread.id)
+            }
+            ThreadScreen(
+                thread = thread,
+                entries = threadEntries,
+                onOpenEntry = { openThread = null; openEntry = it.id },
+                onBack = { openThread = null },
+            )
+        }
+
         openPrepFor?.let { appointmentId ->
             LaunchedEffect(appointmentId, revision) {
                 val subjectId = repository.activeSubject()?.id
@@ -1365,11 +1384,12 @@ fun NotebookShell(
                     backLabelKey = if (openSection != null) "section.back.trail" else "section.back",
                     onEditDate = { editingDate = detail.entry },
                     onOpenPerson = { openEntry = null; openPerson = it },
-                    onOpenThread = {
-                        // Both ways: the entry names its thread, and the thread
-                        // opens. Rule 18.
+                    onOpenThread = { thread ->
+                        // Both ways, and precisely: the entry names its thread
+                        // and the thread itself opens, rather than the list it
+                        // is in. Rule 18.
                         openEntry = null
-                        openSection = Repository.Section.THREADS
+                        openThread = thread
                     },
                     onOpenChapter = {
                         openEntry = null

@@ -2872,6 +2872,45 @@ class Repository private constructor(
             )
         }
 
+    /**
+     * Everything on one care thread, most recent first.
+     *
+     * **A thread is the app's own metaphor and could not be opened.** Routes
+     * identify one on the trail, on an entry, and on the threads screen, and
+     * tapping the thread itself did nothing, which is the dead end #46 exists
+     * to remove. `MASTER_SPEC.md` 4.6: threads with per-thread colors,
+     * filtering, and preserved history when ended.
+     */
+    suspend fun entriesForThread(threadId: String): List<TrailEntry> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT e.id, e.kind, e.title, e.body, e.occurred_edtf, e.occurred_start, " +
+                    "e.created_at, e.is_unfiled FROM live_entry e " +
+                    "JOIN live_entry_thread et ON et.entry_id = e.id " +
+                    "WHERE et.thread_id = ? " +
+                    "ORDER BY coalesce(e.occurred_start, e.created_at) DESC",
+                arrayOf(threadId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            TrailEntry(
+                                id = cursor.getString(0),
+                                kind = cursor.getString(1),
+                                title = cursor.getString(2),
+                                body = cursor.getString(3),
+                                occurredEdtf = cursor.getString(4),
+                                occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                                createdAt = cursor.getLong(6),
+                                isUnfiled = cursor.getInt(7) == 1,
+                                threads = emptyList(),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
     companion object {
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"

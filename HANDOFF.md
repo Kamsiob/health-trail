@@ -364,6 +364,12 @@ It shares as a document with the questions numbered, because that is the order t
 
 **Appointments now open their prep sheet rather than the form for correcting them**, which is the third screen tonight to learn that a tap opens the thing itself.
 
+**A care thread can be opened, which is the last place the route led nowhere.** A thread is this app's own metaphor: its route identifies it on the trail, on an entry, and on the threads screen, and tapping the thread itself did nothing at all.
+
+**The spine runs in the thread's own color and dash**, so opening "Nursing" from the trail and opening it from the threads screen land somewhere recognizably the same. That is what 5.2.2 asked for and this was the last screen missing it.
+
+**An entry's thread link now opens the thread rather than the section it is in**, which is the difference between a link and a signpost.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -615,6 +621,7 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| One care thread, and everything on it | 2026-08-03 | #138 | not yet |
 | An appointment's prep sheet | 2026-08-03 | #137 | not yet |
 | One person, and everything that involved them | 2026-08-03 | #136 | not yet |
 | One entry, read on its own | 2026-08-02 | #134 | not yet |

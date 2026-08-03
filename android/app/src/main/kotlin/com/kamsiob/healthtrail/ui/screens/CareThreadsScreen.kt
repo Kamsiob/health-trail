@@ -20,6 +20,11 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.RouteDash
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import com.kamsiob.healthtrail.ui.components.pressedSurface
+import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -52,6 +57,8 @@ object ThreadTags {
 @Composable
 fun CareThreadsScreen(
     threads: List<Repository.ThreadWithCount>,
+    /** Opens the thread itself, which nothing could do until 2026-08-03. */
+    onOpen: (Repository.CareThread) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -74,6 +81,7 @@ fun CareThreadsScreen(
                     row = row,
                     continuesAbove = index > 0,
                     continuesBelow = index < threads.lastIndex,
+                    onOpen = { onOpen(row.thread) },
                 )
             }
         }
@@ -98,6 +106,7 @@ private fun ThreadSpineRow(
     row: Repository.ThreadWithCount,
     continuesAbove: Boolean,
     continuesBelow: Boolean,
+    onOpen: () -> Unit,
 ) {
     val colors = HealthTrail.colors
     val route = colors.threadRoutes[row.thread.colorIndex % colors.threadRoutes.size]
@@ -115,23 +124,33 @@ private fun ThreadSpineRow(
         dash = RouteDash.forIndex(row.thread.colorIndex),
     ) {
         Column {
-            ThreadRow(row)
+            ThreadRow(row, onOpen)
             Spacer(Modifier.height(Space.cardGap))
         }
     }
 }
 
 @Composable
-private fun ThreadRow(row: Repository.ThreadWithCount) {
+private fun ThreadRow(row: Repository.ThreadWithCount, onOpen: () -> Unit) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val route = colors.threadRoutes[row.thread.colorIndex % colors.threadRoutes.size]
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.card)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(Radius.card)
-            .background(colors.card)
+            .background(surface)
+            // A tap opens the thread, which is the rule every list in this
+            // app learned on 2026-08-03.
+            .removableByLongPress(
+                label = strings["remove.hint"],
+                onLongPress = {},
+                onTap = onOpen,
+                interactionSource = interaction,
+            )
             .testTag(ThreadTags.row(row.thread.id))
             .padding(Space.cardPadding),
         verticalAlignment = Alignment.CenterVertically,
