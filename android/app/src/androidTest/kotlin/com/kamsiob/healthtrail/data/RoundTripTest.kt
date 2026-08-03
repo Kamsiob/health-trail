@@ -140,21 +140,32 @@ class RoundTripTest {
     /**
      * Export and restore, optionally through encryption.
      *
-     * **Every assertion in this class runs both ways.** Encryption that
-     * preserves the bytes is the only kind worth having, and a suite that only
-     * exercised the unencrypted path would prove the round trip for a file
-     * nobody ships.
+     * **Every export is encrypted, because since format version 2 that is the
+     * only kind there is**, D67. This class used to run every assertion twice,
+     * once plain and once encrypted, on the reasoning that a suite exercising
+     * only the unencrypted path would prove the round trip for a file nobody
+     * ships. That reasoning now points the other way: the unencrypted path is
+     * the one nobody ships, so the plain half proved nothing and was removed
+     * rather than kept for symmetry.
      */
-    private suspend fun roundTrip(passphrase: String? = null) {
+    /**
+     * The passphrase the ordinary round trips use.
+     *
+     * It is a constant rather than a parameter with a null default because
+     * there is no unencrypted export to default to. D67.
+     */
+    private val DEFAULT_PASSPHRASE = "a passphrase for the round trip"
+
+    private suspend fun roundTrip(passphrase: String = DEFAULT_PASSPHRASE) {
         Backup.export(
             context,
             archive,
             exportedAt = 1_754_000_000_000L,
-            passphrase = passphrase?.toCharArray(),
+            passphrase = passphrase.toCharArray(),
         )
         val staging = File(context.cacheDir, "restore-${System.nanoTime()}")
         val opened = ExportContainer
-            .open(archive, staging, passphrase?.toCharArray())
+            .open(archive, staging, passphrase.toCharArray())
             .getOrThrow()
         Backup.restore(context, opened).getOrThrow()
         staging.deleteRecursively()
@@ -283,9 +294,16 @@ class RoundTripTest {
     @Test
     fun theManifestDescribesWhatIsActuallyInTheFile() = runBlocking<Unit> {
         seed()
-        val manifest = Backup.export(context, archive, exportedAt = 1_754_000_000_000L)
+        val manifest = Backup.export(
+            context,
+            archive,
+            exportedAt = 1_754_000_000_000L,
+            passphrase = DEFAULT_PASSPHRASE.toCharArray(),
+        )
         val staging = File(context.cacheDir, "manifest-${System.nanoTime()}")
-        val opened = ExportContainer.open(archive, staging).getOrThrow()
+        val opened = ExportContainer
+            .open(archive, staging, DEFAULT_PASSPHRASE.toCharArray())
+            .getOrThrow()
 
         assertEquals(ExportContainer.FORMAT_VERSION, opened.manifest.formatVersion)
         assertEquals(manifest.databaseSha256, opened.manifest.databaseSha256)

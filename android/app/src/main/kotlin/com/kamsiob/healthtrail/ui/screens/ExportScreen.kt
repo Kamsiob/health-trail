@@ -28,7 +28,6 @@ object ExportTags {
     const val PASSPHRASE = "export_passphrase"
     const val AGAIN = "export_again"
     const val SAVE = "export_save"
-    const val PLAIN = "export_plain"
     const val STATUS = "export_status"
     const val REVEAL = "export_reveal"
     const val AGAIN_ACTION = "export_again_action"
@@ -52,9 +51,13 @@ enum class ExportState { READY, WORKING, DONE, FAILED }
  * file that looks like a backup and can never be opened. That is the one
  * failure worth an extra field.
  *
- * **An unencrypted export is offered plainly rather than hidden.** The format
- * says so and the reason is right: it is their data and wanting to read it is
- * reasonable. It carries a warning rather than a scolding.
+ * **There is no unencrypted export, and this screen offers no way to ask for
+ * one.** Version 1 offered it plainly, and the reasoning was right for what
+ * version 1 wrote: the payload was the device keyed SQLCipher file, so a plain
+ * container still held bytes no other machine could read. Making the export
+ * portable changed what a plain one is. It is now a fully readable copy of the
+ * whole record, and this screen is the only place it could have been asked
+ * for, so this is where it stops. D67.
  *
  * **Nothing here reports success until the bytes are written.** "Saved" appears
  * after the file exists at the chosen place, never when the export began, and
@@ -63,7 +66,7 @@ enum class ExportState { READY, WORKING, DONE, FAILED }
 @Composable
 fun ExportScreen(
     state: ExportState,
-    onExport: (passphrase: String?) -> Unit,
+    onExport: (passphrase: String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     /** Puts the screen back to its resting state so another copy can be saved. */
@@ -77,6 +80,25 @@ fun ExportScreen(
     var revealed by remember { mutableStateOf(false) }
 
     val mismatch = again.isNotEmpty() && passphrase != again
+
+    // **A space at either end is invisible and permanent.**
+    //
+    // Found by walking the screen on the phone: a passphrase can end up with a
+    // trailing space without the person ever seeing one, because the field is
+    // masked and a soft keyboard appends one after a completion or a swipe.
+    // Both fields then look identical while differing, and the screen can only
+    // say they do not match.
+    //
+    // The worse version is months later on another phone, where the same
+    // invisible space means a correct passphrase is reported as wrong on the
+    // one file that is the only way back. D24 makes this the most consequential
+    // thing the app writes.
+    //
+    // **It says so rather than trimming.** Trimming would quietly change
+    // somebody's secret, and a space someone chose on purpose is theirs. Naming
+    // it turns an invisible failure into a visible one and leaves the decision
+    // where it belongs.
+    val edgeSpace = passphrase.isNotEmpty() && passphrase != passphrase.trim()
     val canEncrypt = passphrase.isNotEmpty() && passphrase == again
     val busy = state == ExportState.WORKING
     val done = state == ExportState.DONE
@@ -147,6 +169,7 @@ fun ExportScreen(
                 value = passphrase,
                 onValueChange = { passphrase = it },
                 hint = strings["export.passphrase.hint"],
+                note = if (edgeSpace) strings["export.passphrase.edges"] else null,
                 enabled = !busy,
                 keyboardType = KeyboardType.Password,
                 masked = !revealed,
@@ -196,22 +219,6 @@ fun ExportScreen(
                 onClick = { onExport(passphrase) },
                 enabled = canEncrypt && !busy,
                 modifier = Modifier.fillMaxWidth().testTag(ExportTags.SAVE),
-            )
-
-            Spacer(Modifier.height(Space.sectionGap))
-            GroupHeader(labelKey = "export.plain")
-            Spacer(Modifier.height(Space.headerGap))
-            Text(
-                text = strings["export.plain.warning"],
-                style = HealthTrail.type.bodyM,
-                color = colors.ink2,
-            )
-            Spacer(Modifier.height(Space.m))
-            QuietButton(
-                label = strings["export.plain"],
-                onClick = { onExport(null) },
-                enabled = !busy,
-                modifier = Modifier.fillMaxWidth().testTag(ExportTags.PLAIN),
             )
 
             // One line, and only when there is something true to say. DONE

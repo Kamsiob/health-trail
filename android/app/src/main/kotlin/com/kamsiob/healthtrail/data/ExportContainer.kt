@@ -36,10 +36,43 @@ import org.json.JSONObject
  * so restoring a backup would resurrect everything the person deleted. This is
  * the one place a tombstone is deliberately carried rather than filtered, and
  * it is why the whole database file is copied rather than the live views read.
+ *
+ * **Every export is encrypted. There is no unencrypted export**, as of format
+ * version 2. See [FORMAT_VERSION] for why that changed.
  */
 object ExportContainer {
 
-    const val FORMAT_VERSION = 1
+    /**
+     * The container format this build writes.
+     *
+     * **Version 2, and the change is that a passphrase is required.**
+     *
+     * Version 1 allowed an unencrypted export and offered it plainly, on the
+     * reasoning that it is the person's data and wanting to read it is
+     * reasonable. That reasoning was sound for what version 1 wrote: the
+     * payload was the SQLCipher file as it sat on disk, so an unencrypted
+     * container still held bytes nothing could read without this phone's
+     * Keystore.
+     *
+     * **Making the export portable changed what an unencrypted one is.** The
+     * payload is now a plain SQLite database, which is exactly what makes it
+     * openable on another machine and is the whole point of D61. An unencrypted
+     * export is therefore a fully readable copy of somebody's entire care
+     * record: every call, every diagnosis in a note, every medication, every
+     * bill, sitting in a folder that a file manager, a backup agent, or a cloud
+     * sync may pick up and copy somewhere the person never chose.
+     *
+     * The same property that fixed the recovery path is what makes the plain
+     * file dangerous, so the decision that was right at version 1 is wrong at
+     * version 2. **A passphrase is required and there is no way to ask for a
+     * file without one.** D67.
+     *
+     * The importer still reads a version 1 file, because refusing one would
+     * destroy a real backup to make a point. What it refuses is an unencrypted
+     * export of any version, and it says exactly what the file is rather than
+     * failing generically.
+     */
+    const val FORMAT_VERSION = 2
     const val MANIFEST = "manifest.json"
     const val DATABASE = "data.sqlite"
     const val ATTACHMENTS = "attachments/"
@@ -135,8 +168,16 @@ object ExportContainer {
          * wiped.** A passphrase that sits in the heap until garbage collection
          * is a passphrase in a heap dump, and this one opens the only copy of
          * somebody's records.
+         *
+         * **There is no default, and null is not for production.** Passing null
+         * writes a plain readable copy of the whole notebook, which no path a
+         * person can reach is allowed to do since format version 2. It stays
+         * possible only so the container's own tests can build the unencrypted
+         * file that [open] must refuse, and a test that builds one has to say
+         * so at the call site. A defaulted null would make the dangerous case
+         * the one you get by not thinking about it. D67.
          */
-        passphrase: CharArray? = null,
+        passphrase: CharArray?,
     ): Manifest = withContext(Dispatchers.IO) {
         val plainDatabase = source.database.readBytes()
 
@@ -273,6 +314,30 @@ object ExportContainer {
         data class PassphraseNeeded(override val message: String) : Problem
 
         /**
+         * An unencrypted export, which this app no longer writes or accepts.
+         *
+         * **The message says what the file is rather than that it failed.**
+         * Somebody holding one is holding a complete, readable copy of their
+         * own care record, and the useful thing to tell them is that, plus what
+         * to do instead. "Unsupported format" would be true and useless. D67.
+         */
+        data class NotEncrypted(override val message: String) : Problem
+
+        /**
+         * Decrypted cleanly, and what came out is not a database.
+         *
+         * **This is the pre-portability export, and it is a real file somebody
+         * may be holding.** Until 2026-08-02 the archive carried the SQLCipher
+         * file exactly as it sat on disk, keyed by 32 random bytes wrapped by
+         * the writing phone's Keystore, which cannot be exported. Such a file
+         * opens correctly, authenticates correctly, and yields a payload no
+         * other device can read, so without this check it would fail later as
+         * "damaged" and send somebody looking for a corruption that is not
+         * there. D61 and D67.
+         */
+        data class NotPortable(override val message: String) : Problem
+
+        /**
          * The payload did not authenticate.
          *
          * **This cannot distinguish a wrong passphrase from a tampered file**,
@@ -387,11 +452,33 @@ object ExportContainer {
             )
         }
 
+        // **An unencrypted export is refused, whatever version wrote it.**
+        //
+        // A version 1 file that carries a passphrase is still a real backup and
+        // is still read, because refusing one would destroy somebody's only
+        // recovery path in order to make a point about a format number. What is
+        // refused is the plain file, and it is refused by what it is rather
+        // than by what wrote it, so a hand assembled one is caught too. D67.
+        if (!manifest.encrypted) {
+            passphrase?.fill('\u0000')
+            return@withContext failure(
+                Problem.NotEncrypted(
+                    "This file is an unencrypted Health Trail export, which means it is a " +
+                        "complete and readable copy of the notebook: every call, every note, " +
+                        "every medication, and every bill. Older versions of the app could " +
+                        "write one. This version will not open one, because a file like this " +
+                        "in a folder that syncs somewhere is the whole record leaving the " +
+                        "phone. Open it on the version that wrote it and save a new export " +
+                        "with a passphrase. Nothing was changed."
+                )
+            )
+        }
+
         // Decrypted after the hash check and before the attachment checks,
         // because the hash describes the bytes as stored and the attachment
         // hashes describe them as written. Doing it in the other order would
         // fail every attachment on a perfectly good encrypted file.
-        if (manifest.encrypted) {
+        run {
             val parameters = manifest.encryption ?: return@withContext failure(
                 Problem.CouldNotDecrypt(
                     "This export says it is encrypted but does not record how, so there " +
@@ -432,8 +519,25 @@ object ExportContainer {
             } finally {
                 ExportCrypto.wipe(key)
             }
-        } else {
-            passphrase?.fill('\u0000')
+
+            // **What came out has to be a database.** An export written before
+            // 2026-08-02 decrypts perfectly and yields a SQLCipher file keyed
+            // to the phone that wrote it, which nothing else can open. Without
+            // this it fails two checks later as "damaged", sending somebody to
+            // hunt a corruption that is not there, on the one file standing
+            // between them and losing the record. D61 and D67.
+            if (!isSqlite(database.readBytes())) {
+                return@withContext failure(
+                    Problem.NotPortable(
+                        "This export opened with that passphrase, so the passphrase is " +
+                            "right and the file is not damaged. It was written by a " +
+                            "version of Health Trail whose exports could only be opened " +
+                            "by the phone that made them. If that phone still works, open " +
+                            "it there and save a new export, which will be readable " +
+                            "anywhere. Nothing was changed."
+                    )
+                )
+            }
         }
 
         // An attachment is named by its content hash, so a name that does not
@@ -462,6 +566,26 @@ object ExportContainer {
 
         Result.success(Opened(manifest, database, attachments))
     }
+
+    /**
+     * The sixteen byte header every plain SQLite file begins with.
+     *
+     * `PortabilityTest` asserts an export decrypts to one of these and that the
+     * live database does not, so the check cannot pass by going vacuous.
+     */
+    private const val SQLITE_MAGIC = "SQLite format 3\u0000"
+
+    /**
+     * True when these bytes are an ordinary SQLite database.
+     *
+     * **This is the whole portability question in one line.** A SQLCipher file
+     * is encrypted from its first byte and has no recognizable header, so the
+     * absence of this magic is exactly what an export written before
+     * 2026-08-02 looks like from the outside. D61.
+     */
+    private fun isSqlite(bytes: ByteArray): Boolean =
+        bytes.size >= 16 &&
+            String(bytes, 0, 16, Charsets.ISO_8859_1) == SQLITE_MAGIC
 
     /**
      * The last two checks the format's section 7 asks for, both of which have

@@ -1300,6 +1300,118 @@ never composed the shell, and the grep that found nothing because it silently
 skipped the file are three faces of one problem. **The lesson is to distrust a
 negative result from a tool that cannot tell you what it did not examine.**
 
+### D67. There is no unencrypted export, because making the file portable changed what a plain one is
+
+**Decided 2026-08-02. Format version goes to 2.**
+
+**Version 1 offered an unencrypted export and the reasoning was right at the
+time.** It is the person's data, wanting to read it is reasonable, and the
+screen carried a warning rather than a scolding. `contract/export-format.md`
+said so in those words.
+
+**What changed is not the principle, it is the file.** Version 1's payload was
+the SQLCipher database copied exactly as it sat on disk, keyed by 32 random
+bytes wrapped by the writing phone's Keystore. So an unencrypted container still
+held bytes that no other machine could read. That was comfortable and it was
+also the defect fixed the same day: it made every export unopenable anywhere
+else, which meant the only recovery path from key loss did not exist. D61.
+
+**The payload is now a plain SQLite database, which is exactly what makes the
+file portable.** An unencrypted container is therefore a complete, readable copy
+of somebody's entire care record: every call, every note, every medication,
+every bill, every photograph. On a phone it lands in a folder a file manager can
+browse, a backup agent can sweep, and a cloud sync can copy somewhere the person
+never chose, and none of that asks anybody first.
+
+**The property that fixed the recovery path is the property that makes the plain
+file dangerous.** So the answer that was right at version 1 is wrong at version
+2, and the decision is reversed rather than defended.
+
+**A passphrase is required and no interface offers a way to ask for a file
+without one.** The button, its warning copy, and its test tag are gone from
+`ExportScreen`, the two catalog strings are gone from all four languages so no
+translator carries a dead offer, and `Backup.export` takes a non-null
+`CharArray`. `ExportContainer.write` still accepts null, deliberately, with no
+default: it is how the container's own test builds the file that `open` must
+refuse, and a defaulted null would make the dangerous case the one you get by
+not thinking about it.
+
+**Somebody who wants to read their own data still can.** They have the
+passphrase they chose, the payload is documented SQLite, and `schema.sql` is
+published. What is gone is the file that needs no passphrase at all.
+
+### The importer refuses by what a file is, not by which version wrote it
+
+**A version 1 file carrying a passphrase is still read.** Refusing one would
+destroy somebody's real backup to make a point about a number, and the only
+recovery path from key loss is not a place to be tidy. What is refused is the
+unencrypted payload, whatever wrote it, so a hand assembled plain file is caught
+too.
+
+**Two new refusals, and both name what the file is rather than reporting a
+failure**, which is what section 7 of the format has always asked for:
+
+- **`NotEncrypted`.** Says the file is a complete and readable copy of the
+  notebook, says why this version will not open one, and says to save a new
+  export with a passphrase from the version that wrote it. "Unsupported format"
+  would have been true and useless.
+- **`NotPortable`.** The pre-portability export is a real file somebody may be
+  holding. It opens, it authenticates, and what comes out is a SQLCipher
+  database keyed to a phone that may no longer exist. Without this check it
+  failed two steps later as damaged, which would send somebody hunting a
+  corruption that is not there on the one file standing between them and losing
+  the record. **The message says the passphrase is right and the file is not
+  damaged**, because both are true and blaming either sends the person to fix
+  the wrong thing.
+
+### What the walk on the phone found, which no test would have
+
+**A space at either end of a passphrase is invisible and permanent.**
+
+Typing on the device, a passphrase ended up with a trailing space that nothing
+on screen could show, because the field is masked. Both fields looked identical
+while differing, and the screen could only say they did not match. A soft
+keyboard appends one after a completion or a swipe, so this is ordinary rather
+than exotic.
+
+**The worse version is months later on another phone**, where the same invisible
+space means a correct passphrase is reported as wrong, on the file D24 makes the
+only way back.
+
+**The screen now says so, and does not trim.** Trimming would quietly change
+somebody's secret, and a space chosen on purpose is theirs. Naming it turns an
+invisible failure into a visible one and leaves the decision where it belongs.
+Walked on the phone: the note appears the moment there is edge whitespace and is
+absent otherwise.
+
+### The tests moved with it rather than around it
+
+Every container test now builds an encrypted archive, because that is the only
+kind the app writes and the only kind the importer opens, and the failure cases
+they check happen after the encryption gate.
+
+**Two tests were assembling their own zip by hand**, which meant assembling
+their own manifest, which said unencrypted. They were passing through a door
+that no longer exists. Rebuilt to go through `write`, per the rule set the same
+night in `TESTING-PERSONAS.md` section 7.
+
+**`PortabilityTest`'s first case was inverted.** It asserted the payload in the
+archive is a readable SQLite file, which was the right property when an
+unencrypted export was normal and is now precisely what must never be true. It
+now asserts the archive never carries a readable database, which together with
+"an encrypted export decrypts to one" and "the live database is not one" closes
+the triangle.
+
+**`RoundTripTest` ran everything twice, plain and encrypted**, on the reasoning
+that a suite exercising only the unencrypted path would prove the round trip for
+a file nobody ships. That reasoning now points the other way, so the plain half
+was removed rather than kept for symmetry.
+
+Verified: 44 export tests on the Pixel, all 11 content checks, and the screen
+walked on the phone in both the matching and mismatched states, with the file
+picker reached only when a matching pair exists.
+
+
 ---
 
 ## BLOCKED

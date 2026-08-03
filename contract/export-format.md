@@ -26,7 +26,7 @@ Read before anything else. It is never encrypted, even when the payload is, beca
 
 ```json
 {
-  "format_version": 1,
+  "format_version": 2,
   "app_version": "0.1.0",
   "platform": "android",
   "exported_at": 1753977600000,
@@ -58,6 +58,8 @@ Read before anything else. It is never encrypted, even when the payload is, beca
 
 **The format version is in the manifest from release one.** An importer reads it first and refuses a version it does not understand, with a plain message naming the version it found and the versions it supports. It never guesses at an unknown format. This costs nothing now and is unfixable later.
 
+**A version 1 file that carries a passphrase is still read.** Refusing one would destroy somebody's real backup in order to make a point about a number, and the only recovery path from key loss is not a place to be tidy. What is refused is decided by what the file is, an unencrypted payload, rather than by which version wrote it, so a hand assembled plain file is caught too.
+
 **SQLite is the payload** because every target platform reads it natively or through a well maintained WebAssembly build, and because it preserves relationships, ordering, and state exactly. The schema is published in `schema.sql`, so the file is not a black box.
 
 **Tombstones are included.** An export that drops them cannot restore a deletion, which means restoring a backup resurrects things the person deleted.
@@ -78,7 +80,15 @@ The payload, meaning `data.sqlite` and everything under `attachments/`, is encry
 
 **If the passphrase is lost the file cannot be recovered.** There is no server, no recovery code, and no backdoor. The interface says exactly that, in those words, before the person commits to it, rather than afterward.
 
-**An unencrypted export is available** for someone who wants to inspect their own data, with a plain warning rather than a scolding. It is their data and wanting to read it is reasonable.
+**There is no unencrypted export, as of format version 2.** A passphrase is required, no interface offers a way to ask for a file without one, and the importer refuses a plain file whatever version wrote it.
+
+**Version 1 offered one, and that was right for what version 1 wrote.** The reasoning was that it is the person's data and wanting to read it is reasonable, which is still true. What changed is what a plain file is. Version 1's payload was the device keyed SQLCipher database copied as it sat on disk, so an unencrypted container still held bytes that no other machine could read. That was also the defect fixed on 2026-08-02: it made the export unopenable anywhere, which meant the only recovery path from key loss did not exist.
+
+**The payload is a plain SQLite database now, which is what makes the file portable and is the point of the whole format.** An unencrypted container is therefore a fully readable copy of somebody's entire care record: every call, every note, every medication, every bill. On a phone it lands in a folder a file manager can browse, a backup agent can sweep, and a cloud sync can copy somewhere the person never chose. **The property that fixed the recovery path is the one that makes the plain file dangerous**, so the answer that was right at version 1 is wrong at version 2.
+
+**Somebody who wants to read their own data still can.** They have the passphrase they chose, the payload is documented SQLite, and `schema.sql` is published. What is gone is the file that needs no passphrase at all.
+
+**A person holding an older file is told what it is.** The importer names an unencrypted export as a readable copy of the notebook and says to save a new one with a passphrase, and it names a pre-portability export as a file only the phone that wrote it can open, rather than reporting either as a generic failure or as damage. See section 7.
 
 ### 4.1 What implements it, and what may not
 
@@ -143,3 +153,5 @@ Each of these changes nothing and names what was wrong:
 - an attachment referenced by the database but absent from the archive
 - a manifest whose row counts disagree with the database
 - a correct file with the wrong passphrase
+- **an unencrypted export**, which is named as a readable copy of the whole notebook rather than as an unsupported format, and told what to do instead
+- **an export that decrypts to something other than a database**, which is the pre-portability file: the message says the passphrase is right and the file is not damaged, because both are true and blaming either sends the person to fix the wrong thing

@@ -42,8 +42,20 @@ object Backup {
         context: Context,
         target: File,
         exportedAt: Long,
-        /** Null writes an unencrypted file. Cleared by the writer either way. */
-        passphrase: CharArray? = null,
+        /**
+         * Required, and there is no way to ask for a file without one.
+         *
+         * **The export has no unencrypted form since format version 2.** The
+         * payload is now a plain SQLite database, which is what makes the file
+         * portable and is the whole point of D61, and it also means a plain
+         * container is a fully readable copy of somebody's entire care record
+         * sitting in a folder that something else may sync. The property that
+         * fixed the recovery path is the one that makes the plain file
+         * dangerous. D67.
+         *
+         * Cleared by the writer on every path.
+         */
+        passphrase: CharArray,
     ): ExportContainer.Manifest = withContext(Dispatchers.IO) {
         val database = HealthTrailDatabase.open(context)
 
@@ -59,8 +71,10 @@ object Backup {
         // not have. See `PortabilityTest`.
         //
         // What protects the contents is the container's own passphrase, chosen
-        // by the person, which is what `contract/export-format.md` always said
-        // and what an unencrypted export deliberately declines.
+        // by the person, which is what `contract/export-format.md` always said.
+        // **Since format version 2 there is no export that declines it**, D67,
+        // because a portable payload and an optional passphrase together mean
+        // the whole record in the clear.
         val staged = decryptedCopy(context, database, exportedAt)
 
         val store = Attachments.open(context)

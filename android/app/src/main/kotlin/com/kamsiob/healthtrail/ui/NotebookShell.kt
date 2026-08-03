@@ -582,12 +582,20 @@ fun NotebookShell(
                             "export-${System.currentTimeMillis()}.htx",
                         )
                         try {
+                            // **The screen cannot enable Save without a
+                            // matching pair**, so an empty passphrase here
+                            // would mean the state that produced it was
+                            // reached some other way. There is no unencrypted
+                            // export to fall back to since format version 2,
+                            // D67, so this refuses rather than quietly
+                            // writing the whole record in the clear.
+                            val chosen = passphrase?.takeIf { it.isNotEmpty() }
+                                ?: error("export reached with no passphrase")
                             Backup.export(
                                 context = context,
                                 target = staged,
                                 exportedAt = System.currentTimeMillis(),
-                                passphrase = passphrase?.takeIf { it.isNotEmpty() }
-                                    ?.toCharArray(),
+                                passphrase = chosen.toCharArray(),
                             )
                             context.contentResolver.openOutputStream(exportTarget)?.use { out ->
                                 staged.inputStream().use { it.copyTo(out) }

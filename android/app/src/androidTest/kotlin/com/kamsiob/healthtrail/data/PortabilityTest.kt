@@ -7,6 +7,7 @@ import java.util.zip.ZipInputStream
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -54,20 +55,31 @@ class PortabilityTest {
     }
 
     @Test
-    fun theDatabaseInsideAnExportIsReadableWithoutThisDevicesKeystore() = runBlocking {
+    fun theArchiveNeverCarriesAReadableDatabase() = runBlocking {
+        // **The other half of D67, and it only became testable when the payload
+        // became portable.** Since format version 2 there is no unencrypted
+        // export, so the bytes sitting in the archive must never be a database
+        // anybody can open. Before the portability fix this was true by
+        // accident, because the payload was a device keyed SQLCipher file that
+        // nothing could read. It is true on purpose now, and this is what would
+        // catch it silently becoming untrue again.
         val target = File(work, "export.htx")
-        Backup.export(context, target, exportedAt = 1_785_000_000_000L)
+        Backup.export(
+            context,
+            target,
+            exportedAt = 1_785_000_000_000L,
+            passphrase = "a passphrase for the tests".toCharArray(),
+        )
 
         val header = databaseHeaderIn(target)
 
-        assertTrue(
-            "The database inside the export is not a plain SQLite file. Its first " +
-                "sixteen bytes are ${header.joinToString(" ") { "%02x".format(it) }}, " +
-                "where a portable file would start with the SQLite magic. That means " +
-                "the archive carries the database still keyed by this device's " +
-                "Keystore, and no other device can ever open it. The export is the " +
-                "only recovery path from key loss, per D24, so this makes that path " +
-                "not exist.",
+        assertFalse(
+            "The payload inside the export is a plain SQLite file, readable by " +
+                "anyone who opens the archive. That is the whole record of " +
+                "somebody's care in the clear, in a file that a backup agent or a " +
+                "cloud sync may copy anywhere. Since format version 2 every export " +
+                "is encrypted and there is no path that writes one without a " +
+                "passphrase. D67.",
             header.contentEquals(sqliteMagic),
         )
     }
