@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.ui
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -175,10 +176,31 @@ class TodayScreenTest {
     }
 
     @Test
-    fun aQuietWeekSaysNothingRatherThanSayingNothingHappened() {
-        // A heading over "nothing changed" is a heading over nothing, and this
-        // screen is read at a glance.
+    fun aQuietWeekSaysSoRatherThanLeavingThePersonToInferIt() {
+        // **This is the opposite of what this test asserted until 2026-08-03**,
+        // and the change is deliberate.
+        //
+        // The screen used to show nothing at all when nothing had changed, on
+        // the reasoning that a heading over "nothing changed" is a heading over
+        // nothing. What that actually produced was a screen where the absence
+        // of a line carried the meaning, which is ambiguous between "nothing
+        // changed" and "the digest is not working" in exactly the way D49 and
+        // D64 are about. **A person opening the app after two days away asked a
+        // question, and the calm answer is still an answer.**
+        //
+        // `today.digest.empty` has been in all four catalogs since the digest
+        // was built, written for this and never shown.
         show(hasAnything = true, digest = Digest.nothing, coaching = emptyList())
+        val strings = Strings.load(context)
+        compose.onNodeWithTag(TodayTags.DIGEST)
+            .assertTextEquals(strings["today.digest.empty"])
+    }
+
+    @Test
+    fun afirstRunHasNoDigestAtAll() {
+        // Nothing has ever been written down, so "nothing new since you were
+        // last here" would be true and useless. The coaching leads instead.
+        show(hasAnything = false, digest = Digest.nothing, coaching = allSteps())
         compose.onNodeWithTag(TodayTags.DIGEST).assertIsNotDisplayed()
     }
 

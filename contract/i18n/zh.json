@@ -569,5 +569,6 @@
   "chips.all": "{count, plural, other {查看全部 # 项}}",
   "capture.more": "添加更多",
   "capture.more.aside": "这些都不是保存所必需的。",
-  "notebook.attention": "需要你处理"
+  "notebook.attention": "需要你处理",
+  "today.digest.total": "{count, plural, other {# 项新内容}}"
 }

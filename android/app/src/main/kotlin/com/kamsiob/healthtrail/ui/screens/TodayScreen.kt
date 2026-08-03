@@ -34,7 +34,9 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Chevron
+import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -165,29 +167,110 @@ fun TodayScreen(
                 style = HealthTrail.type.displayL,
                 color = colors.ink,
             )
-            Spacer(Modifier.height(Space.m))
+            Spacer(Modifier.height(Space.sm))
 
-            // **At the top, under the title**, where 4.8 puts it. It is one
-            // quiet row rather than a live field: a text box here would compete
-            // with the digest for the first thing the eye lands on, and this
-            // screen's job is to say what changed. Section 10.8, hierarchy
-            // before decoration.
-            QuietButton(
-                label = strings["today.search"],
-                onClick = onSearch,
-                modifier = Modifier.fillMaxWidth().testTag(TodayTags.SEARCH),
-            )
-            Spacer(Modifier.height(Space.l))
+            // **At the top, under the title**, where 4.8 puts it.
+            //
+            // **A recessed row rather than a card.** It was a full width white
+            // bar with a shadow, which is what 11.4 calls a dense row that was
+            // given a shadow: one line of text and a chevron's worth of
+            // meaning, taking a card's weight on the screen whose whole job is
+            // to say what changed. `sand` at the field radius is what 5.9 sets
+            // aside for a way into typing, and it is honest here because what
+            // it opens is a field.
+            SearchRow(onSearch)
 
-            // **Only when there is something to report.** A heading over
-            // "nothing changed" is a heading over nothing, and this screen is
-            // read at a glance. A first launch and a quiet week both land here
-            // and both correctly show nothing.
-            if (hasAnything && !digest.isEmpty) {
-                DigestSection(digest, onOpenSection, lastVisitMillis = lastVisitMillis)
-                if (coaching.isNotEmpty()) Spacer(Modifier.height(Space.sectionGap))
+            // **Only when there is something to report.** A first launch and a
+            // quiet week both land here and both correctly show nothing.
+            if (hasAnything) {
+                // **The hero, per 11.5.** One line at display size saying what
+                // changed, which is the single thing this screen exists to
+                // answer, and it used to be a Display S heading over a stack of
+                // identical cards. Rule 15: the biggest thing on the screen
+                // carries the most information.
+                //
+                // **"Nothing new" is a hero too, and that is deliberate.** It
+                // is the answer to the question the person opened the app to
+                // ask, and burying it in body text would make the calm case
+                // read as the failure case.
+                Hero(eyebrowKey = "today.digest.heading") {
+                    Text(
+                        text = if (digest.isEmpty) {
+                            strings["today.digest.empty"]
+                        } else {
+                            strings("today.digest.total", "count" to digest.newThings)
+                        },
+                        style = HealthTrail.type.displayM,
+                        color = colors.ink,
+                        modifier = Modifier.testTag(TodayTags.DIGEST),
+                    )
+
+                    // **Only when it is genuinely a gap.** Below the threshold
+                    // this is a line telling somebody who opens the app every
+                    // morning that they opened it yesterday.
+                    lastVisitMillis
+                        ?.takeIf { millis ->
+                            java.time.Duration.between(
+                                java.time.Instant.ofEpochMilli(millis),
+                                java.time.Instant.now(),
+                            ).toDays() >= AWAY_DAYS
+                        }
+                        ?.let { millis ->
+                            Spacer(Modifier.height(Space.xs))
+                            Text(
+                                text = strings(
+                                    "today.digest.lastvisit",
+                                    "date" to EventDateText.render(
+                                        strings,
+                                        java.time.Instant.ofEpochMilli(millis)
+                                            .atZone(java.time.ZoneId.systemDefault())
+                                            .toLocalDate()
+                                            .toString(),
+                                    ),
+                                ),
+                                style = HealthTrail.type.bodyM,
+                                color = colors.ink2,
+                            )
+                        }
+                }
+
+                // **The breakdown as dense rows, not cards**, per 11.3. Each is
+                // a name, a count and a way in, which is exactly the shape 11.3
+                // is for, and four of them as cards was four things all
+                // shouting the same volume as the thing that mattered.
+                if (!digest.isEmpty) {
+                    digest.added.forEachIndexed { index, added ->
+                        DenseRow(
+                            title = strings[labelKey(added.section)],
+                            trailing = strings("today.digest.new", "count" to added.count),
+                            chevron = true,
+                            divider = index < digest.added.lastIndex,
+                            onClick = { onOpenSection(added.section) },
+                            modifier = Modifier.testTag(TodayTags.digestRow(added.section)),
+                        )
+                    }
+
+                    val asides = listOfNotNull(
+                        digest.corrected.takeIf { it > 0 }
+                            ?.let { strings("today.digest.corrected", "count" to it) },
+                        digest.removed.takeIf { it > 0 }
+                            ?.let { strings("today.digest.removed", "count" to it) },
+                    )
+                    // One line each, as before. They are not counts of new
+                    // things and must not sit among the rows that are.
+                    asides.forEach { aside ->
+                        Spacer(Modifier.height(Space.s))
+                        Text(
+                            text = aside,
+                            style = HealthTrail.type.bodyM,
+                            color = colors.ink2,
+                        )
+                    }
+                }
             }
+
             if (coaching.isNotEmpty()) {
+                if (hasAnything) Spacer(Modifier.height(Space.sectionGap))
                 CoachedStart(steps = coaching, nothingWrittenYet = !hasAnything)
             }
 
@@ -196,9 +279,8 @@ fun TodayScreen(
             // heading over nothing, and this screen is read at a glance.
             val open = listOfNotNull(
                 // **Incidents come first**, because an incident nobody has
-                // answered is the thing the person is carrying around. The
-                // catalog has carried this string since before there was
-                // anything to count. Never a judgment about how long, per rule 2.
+                // answered is the thing the person is carrying around. Never a
+                // judgment about how long, per rule 2.
                 openIncidents.takeIf { it > 0 }?.let {
                     OpenItem(strings("today.open.incidents", "count" to it), onOpenIncidents)
                 },
@@ -216,16 +298,34 @@ fun TodayScreen(
             if (open.isNotEmpty() || nextAppointment != null) {
                 Spacer(Modifier.height(Space.sectionGap))
                 GroupHeader(labelKey = "today.open.group")
-                Spacer(Modifier.height(Space.headerGap))
+                Spacer(Modifier.height(Space.s))
 
-                open.forEach { item ->
-                    OpenRow(item)
-                    Spacer(Modifier.height(Space.cardGap))
+                open.forEachIndexed { index, item ->
+                    DenseRow(
+                        title = item.label,
+                        chevron = true,
+                        divider = index < open.lastIndex || nextAppointment != null,
+                        onClick = item.onOpen,
+                        modifier = if (item.testTag == null) {
+                            Modifier
+                        } else {
+                            Modifier.testTag(item.testTag)
+                        },
+                    )
                 }
 
+                // **The appointment keeps its date on a second line**, which is
+                // the one row here with two things to say. Everything else is a
+                // count and a way in.
                 nextAppointment?.let { appointment ->
-                    NextAppointment(appointment, onOpenAppointments)
-                    Spacer(Modifier.height(Space.cardGap))
+                    DenseRow(
+                        title = appointment.title,
+                        subtitle = EventDateText.render(strings, appointment.scheduledEdtf),
+                        chevron = true,
+                        divider = false,
+                        onClick = onOpenAppointments,
+                        modifier = Modifier.testTag(TodayTags.NEXT_APPOINTMENT),
+                    )
                 }
             }
 
@@ -240,7 +340,7 @@ fun TodayScreen(
             // and with the reason attached, and two controls to the same empty
             // screen is the same offer twice.
             if (coaching.none { it.section == Repository.Section.EMERGENCY_CARD }) {
-                Spacer(Modifier.height(Space.sectionGap))
+                Spacer(Modifier.height(Space.xl))
                 QuietButton(
                     label = strings["notebook.section.emergency_card"],
                     onClick = onOpenEmergencyCard,
@@ -252,6 +352,52 @@ fun TodayScreen(
             // bar and would otherwise sit on the last line.
             Spacer(Modifier.height(Space.xxl + Space.l))
         }
+    }
+}
+
+/**
+ * The way into search, as a recessed row rather than a card.
+ *
+ * It was a `QuietButton`, which is a full width white bar with a shadow, and
+ * 11.4 is blunt about that shape: a card whose whole content is one line is a
+ * dense row that was given a shadow. On the screen whose job is to say what
+ * changed, it was taking a card's weight to say "search".
+ *
+ * **`sand` at the field radius, which is what 5.9 sets aside for a way into
+ * typing**, and that is honest here because what it opens is a field. The label
+ * is `ink2` rather than a hint color, because it is a label rather than a
+ * placeholder standing in for one.
+ */
+@Composable
+private fun SearchRow(onSearch: () -> Unit) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.sand)
+    val ring by focusRingAlpha(interaction)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = Space.touchTarget)
+            .clip(Radius.tile)
+            .background(surface)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onSearch,
+            )
+            .testTag(TodayTags.SEARCH)
+            .padding(horizontal = Space.m, vertical = Space.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = strings["today.search"],
+            style = HealthTrail.type.bodyL,
+            color = colors.ink2,
+        )
     }
 }
 
@@ -355,96 +501,6 @@ private fun Step(number: Int, text: String, onOpen: () -> Unit) {
         )
         Spacer(Modifier.width(Space.sm))
         Chevron()
-    }
-}
-
-/**
- * What changed since the last visit.
- *
- * **Each section that gained something is a row that opens it**, drawn like the
- * notebook's own rows, because it is the same idea: a place and how much is in
- * it. Somebody who reads "the trail, 2 new" is already asking which two, and
- * the answer is one tap away rather than a hunt through a table of contents.
- *
- * **Corrections and removals are stated quietly and without a destination.**
- * They are usually the person tidying up after themselves, and the app has
- * nothing useful to show if they tapped: the corrected row is wherever it
- * always was, and the removed one is gone. Giving them the same weight as new
- * records would make the screen a report card on how tidy somebody is being.
- */
-@Composable
-private fun DigestSection(
-    summary: Digest.Summary,
-    onOpenSection: (Repository.Section) -> Unit,
-    lastVisitMillis: Long?,
-) {
-    val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-
-    Column(modifier = Modifier.fillMaxWidth().testTag(TodayTags.DIGEST)) {
-        Text(
-            text = strings["today.digest.heading"],
-            style = HealthTrail.type.displayS,
-            color = colors.ink,
-        )
-        // **Only when it is genuinely a gap.** Below the threshold this is a
-        // line telling somebody who opens the app every morning that they
-        // opened it yesterday.
-        lastVisitMillis
-            ?.takeIf { millis ->
-                java.time.Duration.between(
-                    java.time.Instant.ofEpochMilli(millis),
-                    java.time.Instant.now(),
-                ).toDays() >= AWAY_DAYS
-            }
-            ?.let { millis ->
-                Spacer(Modifier.height(Space.xs))
-                Text(
-                    text = strings(
-                        "today.digest.lastvisit",
-                        "date" to EventDateText.render(
-                            strings,
-                            java.time.Instant.ofEpochMilli(millis)
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate()
-                                .toString(),
-                        ),
-                    ),
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
-                )
-            }
-        Spacer(Modifier.height(Space.m))
-
-        summary.added.forEach { added ->
-            OpenRow(
-                OpenItem(
-                    label = strings[labelKey(added.section)],
-                    detail = strings("today.digest.new", "count" to added.count),
-                    onOpen = { onOpenSection(added.section) },
-                    testTag = TodayTags.digestRow(added.section),
-                ),
-            )
-            Spacer(Modifier.height(Space.cardGap))
-        }
-
-        val asides = listOfNotNull(
-            summary.corrected.takeIf { it > 0 }
-                ?.let { strings("today.digest.corrected", "count" to it) },
-            summary.removed.takeIf { it > 0 }
-                ?.let { strings("today.digest.removed", "count" to it) },
-        )
-        if (asides.isNotEmpty()) {
-            Spacer(Modifier.height(Space.xs))
-            asides.forEach { aside ->
-                Text(
-                    text = aside,
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
-                )
-                Spacer(Modifier.height(Space.xs))
-            }
-        }
     }
 }
 

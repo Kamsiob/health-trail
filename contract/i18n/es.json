@@ -569,5 +569,6 @@
   "chips.all": "{count, plural, one {Ver el otro} other {Ver los #}}",
   "capture.more": "Agregar más",
   "capture.more.aside": "Nada de esto hace falta para guardar.",
-  "notebook.attention": "Le necesita"
+  "notebook.attention": "Le necesita",
+  "today.digest.total": "{count, plural, one {1 cosa nueva} other {# cosas nuevas}}"
 }

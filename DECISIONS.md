@@ -1546,6 +1546,20 @@ D53 made `tools/screenshot.sh` switch heads-up notifications off for the duratio
 
 ---
 
+### D75. A screen that says nothing when nothing changed is ambiguous with a screen that is broken
+
+**Date:** 2026-08-03. **Decided by:** the session, rebuilding Today.
+
+Today showed no digest at all when nothing had changed since the last visit. The reasoning written into the code and its test was that "a heading over nothing changed is a heading over nothing", and this screen is read at a glance.
+
+**What that produced was a screen where the absence of a line carried the meaning.** A person opening the app after two days away asked a question, and got no answer at all: nothing distinguished "nothing changed" from "the digest did not run". That is the same shape as the destructive command guard, D49 and D64, and as `grep` returning no match on a file it could not read, D66. **This project has now been caught four times by a silent negative, and three of those were tools rather than screens.**
+
+**It says so now, at display size, as the hero.** `today.digest.empty`, "Nothing new since you were last here.", has been in all four catalogs since the digest was built and had never been shown on this path. **The calm answer is still an answer**, and burying it in body text would make the quiet case read as the failure case.
+
+**A first run still has no digest at all**, because nothing has ever been written down and "nothing new since you were last here" would be true and useless. The coaching leads there instead, and there is now a test for each of the two.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
