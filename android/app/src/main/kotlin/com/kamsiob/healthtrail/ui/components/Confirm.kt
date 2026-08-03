@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.onClick
@@ -196,9 +197,37 @@ fun Modifier.removableByLongPress(
     label: String,
     onLongPress: () -> Unit,
     onTap: (() -> Unit)? = null,
+    /**
+     * Fed press and release, so the surface under a finger can answer.
+     *
+     * **`detectTapGestures` emits no interactions of its own**, so a card
+     * carrying this and nothing else looked identical whether or not it was
+     * being touched, which rule 16 calls broken. Adding a separate
+     * `Modifier.clickable` beside it does not work either: the gesture detector
+     * consumes the tap first, so the click never arrives. That is exactly how
+     * the trail's rows appeared to ignore being tapped on 2026-08-02.
+     *
+     * Null when the caller has no surface to change, which is the case for a
+     * card that is only removable and not openable.
+     */
+    interactionSource: MutableInteractionSource? = null,
 ): Modifier = this
-    .pointerInput(onLongPress, onTap) {
+    .pointerInput(onLongPress, onTap, interactionSource) {
         detectTapGestures(
+            onPress = { offset ->
+                val press = PressInteraction.Press(offset)
+                interactionSource?.tryEmit(press)
+                // Released either way, so a finger that slid off does not leave
+                // the card looking permanently pressed.
+                val released = tryAwaitRelease()
+                interactionSource?.tryEmit(
+                    if (released) {
+                        PressInteraction.Release(press)
+                    } else {
+                        PressInteraction.Cancel(press)
+                    },
+                )
+            },
             onLongPress = { onLongPress() },
             onTap = if (onTap == null) null else { _ -> onTap() },
         )

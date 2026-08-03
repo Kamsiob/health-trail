@@ -306,6 +306,16 @@ Walked on the Pixel: the sheet opened and the file on disk reads as a document, 
 
 Two Compose lint errors about parameter order on screens written tonight, both fixed.
 
+**An entry can be opened, which nothing could do before.** A trail row's only tappable part was its date, and a search result opened the section and left the person to find the row again. **There was no way to get from a thing that happened to the thread it belonged to, the chapter it happened in, or the incident it was part of.** That is journey five's requirement and it is the dead end #46 exists to remove.
+
+The entry names where it sits and each of them opens. A thread is named by **its route**, the color and the dash together per 5.2.2, so it is recognizably the same thread seen on the care threads screen. The date stays a control, per rule 17.
+
+**Two defects found while wiring it, both invisible in the code.**
+
+**The row ignored being tapped.** `removableByLongPress` uses `detectTapGestures`, which consumes the tap, so a `Modifier.clickable` added beside it never fired. The modifier already had an `onTap` slot; it now also emits press interactions, so a card carrying it answers a finger, which rule 16 requires and which it never did.
+
+**Overlays are declared in one `Box`, so declaration order is z-order.** The entry screen was drawn before the section screens and the trail painted over it, so opening an entry looked like doing nothing at all. The same was true of the incident screen opened from an entry. Both are declared after the sections now, with a comment saying why.
+
 ### Where to pick up
 
 1. **Depth, not existence.** Every section exists; what each still owes is on its own design review issue. **#111, #113, #114, #115, #116, #117, #118, #119, #120, #121, #122, #123, #124** are all open with device screenshots and are waiting on the owner rather than on work.
@@ -402,7 +412,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
-**The whole instrumented suite: 264 tests across 29 classes, 0 failures**, run on the connected Pixel 10 Pro XL through `tools/verify.sh --device`, and the app was reinstalled immediately afterward per D56. **82 JVM unit tests, 0 failures.** All 11 implemented compliance checks pass, and **lint passes**, which is the step that keeps catching what the habitual checks do not.
+**The whole instrumented suite: 267 tests across 29 classes, 0 failures**, run on the connected Pixel 10 Pro XL through `tools/verify.sh --device`, and the app was reinstalled immediately afterward per D56. **82 JVM unit tests, 0 failures.** All 11 implemented compliance checks pass, and **lint passes**, which is the step that keeps catching what the habitual checks do not.
 
 **A pattern worth carrying forward.** Almost every defect this run found came from putting the built thing in a hand and changing one condition: the font at maximum, the keyboard up, the language set to Arabic, or simply looking at a screen that had already passed its tests. None of them were visible in the code, and several had passed a review. The tests are what keep them fixed; they are not what found them.
 
@@ -557,6 +567,7 @@ Every screen built without one is composed from existing components under `DESIG
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
+| One entry, read on its own | 2026-08-02 | #134 | not yet |
 | Incidents, and one incident's thread | 2026-08-02 | #133 | not yet |
 | Search | 2026-08-02 | #130 | not yet |
 | Exporting the notebook | 2026-08-02 | #126 | not yet |

@@ -114,6 +114,8 @@ private val NodeCenterY = 40.dp
 @Composable
 fun TrailScreen(
     entries: List<Repository.TrailEntry>,
+    /** Opens the entry itself, which nothing could do until 2026-08-02. */
+    onOpen: (Repository.TrailEntry) -> Unit,
     onEditDate: (Repository.TrailEntry) -> Unit,
     onRemove: (Repository.TrailEntry) -> Unit,
     onBack: () -> Unit,
@@ -209,10 +211,11 @@ fun TrailScreen(
                                 Spacer(Modifier.height(Space.s))
                             }
                             TrailRow(
-                            entry = entry,
-                            onEditDate = { onEditDate(entry) },
-                            onRemove = { onRemove(entry) },
-                        )
+                                entry = entry,
+                                onOpen = { onOpen(entry) },
+                                onEditDate = { onEditDate(entry) },
+                                onRemove = { onRemove(entry) },
+                            )
                             Spacer(Modifier.height(Space.cardGap))
                         }
                     }
@@ -332,18 +335,36 @@ private fun nodeColor(kind: String): Color {
 @Composable
 private fun TrailRow(
     entry: Repository.TrailEntry,
+    onOpen: () -> Unit,
     onEditDate: () -> Unit,
     onRemove: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.card)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(Radius.card)
-            .background(colors.card)
-            .removableByLongPress(strings["remove.hint"], onRemove)
+            .background(surface)
+            // **The row opens the entry now.** Its only tappable part was its
+            // date, so a person could correct when something happened and could
+            // never open the thing itself, which is the dead end #46 exists to
+            // remove.
+            //
+            // Through the long press modifier's own tap slot rather than beside
+            // it: `detectTapGestures` consumes the tap, so a separate
+            // `clickable` never fires, and the row silently ignored being
+            // tapped until this was found on the phone.
+            .removableByLongPress(
+                label = strings["remove.hint"],
+                onLongPress = onRemove,
+                onTap = onOpen,
+                interactionSource = interaction,
+            )
             .testTag(TrailTags.entry(entry.id))
             .padding(Space.cardPadding),
     ) {

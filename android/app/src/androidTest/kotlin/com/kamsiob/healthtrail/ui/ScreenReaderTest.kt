@@ -61,6 +61,8 @@ import com.kamsiob.healthtrail.ui.screens.Emphasis
 import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
+import com.kamsiob.healthtrail.ui.screens.EntryScreen
+import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.SetupScreen
 import com.kamsiob.healthtrail.ui.screens.SituationPickerScreen
@@ -297,6 +299,7 @@ class ScreenReaderTest {
     fun theTrailLabelsEverything() {
         compose.show {
             TrailScreen(
+                onOpen = {},
                 entries = listOf(
                     Repository.TrailEntry(
                         id = "e1",
@@ -815,6 +818,96 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("search, failed")
+    }
+
+    @Test
+    fun oneEntryReadOnItsOwnLabelsEverything() {
+        compose.show {
+            EntryScreen(
+                detail = Repository.EntryDetail(
+                    entry = Repository.TrailEntry(
+                        id = "e1",
+                        kind = "call",
+                        title = "Ward 4 nurse station",
+                        body = "They said the dressing was changed this morning",
+                        occurredEdtf = "2026-08-02",
+                        occurredStart = 1_785_000_000_000L,
+                        createdAt = 1_785_000_000_000L,
+                        isUnfiled = false,
+                        threads = listOf(Repository.CareThread("t1", "Wound care", 0)),
+                    ),
+                    chapterId = "c1",
+                    chapterName = "Riverbend Rehab",
+                    incidentId = "i1",
+                    incidentTitle = "Dressing not changed for two days",
+                    incidentIsOpen = true,
+                ),
+                onEditDate = {},
+                onOpenThread = {},
+                onOpenChapter = {},
+                onOpenIncident = {},
+                onRemove = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one entry, with everything hanging off it")
+    }
+
+    @Test
+    fun anEntryWithNothingHangingOffItLabelsEverything() {
+        compose.show {
+            EntryScreen(
+                detail = Repository.EntryDetail(
+                    entry = Repository.TrailEntry(
+                        id = "e2",
+                        kind = "call",
+                        title = null,
+                        body = null,
+                        occurredEdtf = null,
+                        occurredStart = null,
+                        createdAt = 1_785_000_000_000L,
+                        isUnfiled = false,
+                        threads = emptyList(),
+                    ),
+                    chapterId = null,
+                    chapterName = null,
+                    incidentId = null,
+                    incidentTitle = null,
+                    incidentIsOpen = false,
+                ),
+                onEditDate = {},
+                onOpenThread = {},
+                onOpenChapter = {},
+                onOpenIncident = {},
+                onRemove = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one entry, bare")
+    }
+
+    @Test
+    fun incidentsLabelEverything() {
+        compose.show {
+            IncidentsScreen(
+                incidents = listOf(
+                    Repository.Incident(
+                        id = "i1",
+                        title = "Dressing not changed for two days",
+                        description = null,
+                        reportedEdtf = "2026-08-02",
+                        reportedStart = 1_785_000_000_000L,
+                        resolvedAt = null,
+                        resolutionNote = null,
+                        chapterName = "Riverbend Rehab",
+                        entryCount = 2,
+                    ),
+                ),
+                onOpen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("incidents")
     }
 
     @Test

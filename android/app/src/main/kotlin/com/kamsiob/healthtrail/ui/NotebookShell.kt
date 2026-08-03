@@ -40,6 +40,7 @@ import com.kamsiob.healthtrail.ui.screens.IncidentScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
 import com.kamsiob.healthtrail.data.Readable
 import com.kamsiob.healthtrail.ui.components.Share
+import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
@@ -240,6 +241,16 @@ fun NotebookShell(
     var sharingIncident by remember { mutableStateOf<Repository.Incident?>(null) }
 
     /**
+     * The entry being read on its own.
+     *
+     * **Nothing could open one until 2026-08-02.** A trail row's only tappable
+     * part was its date, and a search result opened the section and left the
+     * person to find the row again. Rule 18 and #46.
+     */
+    var openEntry by remember { mutableStateOf<String?>(null) }
+    var entryDetail by remember { mutableStateOf<Repository.EntryDetail?>(null) }
+
+    /**
      * Search, and what has been typed into it.
      *
      * **The query is saved rather than remembered**, so somebody who searched,
@@ -431,6 +442,7 @@ fun NotebookShell(
     BackHandler(enabled = searchOpen) { searchOpen = false }
     BackHandler(enabled = incidentsOpen && openIncident == null) { incidentsOpen = false }
     BackHandler(enabled = openIncident != null) { openIncident = null }
+    BackHandler(enabled = openEntry != null) { openEntry = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -861,37 +873,6 @@ fun NotebookShell(
             }
         }
 
-        if (incidentsOpen) {
-            val current = openIncident
-            if (current == null) {
-                IncidentsScreen(
-                    incidents = incidents,
-                    onOpen = { openIncident = it },
-                    onBack = { incidentsOpen = false },
-                )
-            } else {
-                LaunchedEffect(current.id, revision) {
-                    incidentEntries = repository.incidentTrail(current.id)
-                }
-                IncidentScreen(
-                    incident = current,
-                    entries = incidentEntries,
-                    onAdd = {
-                        // **Carries the incident forward rather than asking
-                        // again.** Part Two: a prefill is a default the person
-                        // can change, and making somebody re-say which incident
-                        // they are already looking at is the app not paying
-                        // attention.
-                        addingToIncident = current.id
-                        capturing = CaptureKind.CALL
-                    },
-                    onShare = { sharingIncident = current },
-                    onResolve = { resolvingIncident = current.id to true },
-                    onReopen = { resolvingIncident = current.id to false },
-                    onBack = { openIncident = null },
-                )
-            }
-        }
 
         if (searchOpen) {
             // Re-run whenever the words change, and whenever the notebook does,
@@ -941,12 +922,22 @@ fun NotebookShell(
                 results = searchResults,
                 failed = searchFailed,
                 onOpen = { hit ->
-                    // **A result opens the section it lives in**, which is the
-                    // one place in the app that already knows how to show it.
-                    // Rule 18: links go both ways, and a result that opened
-                    // nothing would be the dead end #46 exists to remove.
+                    // **A trail result opens the entry itself**, which is what
+                    // journey five asks for: every line taps through to the
+                    // thing it came from. Opening the section and leaving the
+                    // person to find the row again was the closest this could
+                    // get before an entry could be opened at all.
+                    //
+                    // Everything else still opens its section, because those
+                    // sections are lists of the thing rather than lists of
+                    // entries, and each of them owns its own detail. Those are
+                    // the next ones to land.
                     searchOpen = false
-                    openSection = hit.section
+                    if (hit.section == Repository.Section.TRAIL) {
+                        openEntry = hit.id
+                    } else {
+                        openSection = hit.section
+                    }
                 },
                 onBack = { searchOpen = false },
             )
@@ -1057,12 +1048,15 @@ fun NotebookShell(
                 Destination.TODAY -> "section.back.today"
                 else -> "section.back"
             },
+
+
         ) {
             when (openSection) {
                 null -> Unit
 
                 Repository.Section.TRAIL -> TrailScreen(
                     entries = trail,
+                    onOpen = { openEntry = it.id },
                     onEditDate = { editingDate = it },
                     onRemove = { entry ->
                         removing = Removal(
@@ -1233,6 +1227,88 @@ fun NotebookShell(
                 }
             }
         }
+
+        // Declared here for the same z-order reason as the entry screen
+        // below: an incident opened from an entry that was opened from the
+        // trail has the trail painted over it otherwise, and the tap reads as
+        // doing nothing.
+        if (incidentsOpen) {
+            val current = openIncident
+            if (current == null) {
+                IncidentsScreen(
+                    incidents = incidents,
+                    onOpen = { openIncident = it },
+                    onBack = { incidentsOpen = false },
+                )
+            } else {
+                LaunchedEffect(current.id, revision) {
+                    incidentEntries = repository.incidentTrail(current.id)
+                }
+                IncidentScreen(
+                    incident = current,
+                    entries = incidentEntries,
+                    onAdd = {
+                        // **Carries the incident forward rather than asking
+                        // again.** Part Two: a prefill is a default the person
+                        // can change, and making somebody re-say which incident
+                        // they are already looking at is the app not paying
+                        // attention.
+                        addingToIncident = current.id
+                        capturing = CaptureKind.CALL
+                    },
+                    onShare = { sharingIncident = current },
+                    onResolve = { resolvingIncident = current.id to true },
+                    onReopen = { resolvingIncident = current.id to false },
+                    onBack = { openIncident = null },
+                )
+            }
+        }
+
+        // **Rendered after the section screens, which is what puts it on
+        // top.** Placed above them it drew underneath the trail, so tapping a
+        // row appeared to do nothing at all: the entry screen was there and
+        // the trail was painted over it. These are overlays in one Box, so
+        // order is z-order, and the thing opened last has to be declared last.
+        openEntry?.let { entryId ->
+            LaunchedEffect(entryId, revision) {
+                entryDetail = repository.entry(entryId)
+                // An entry that is gone closes rather than showing a blank
+                // screen, which is what a removal from underneath looks like.
+                if (entryDetail == null) openEntry = null
+            }
+            entryDetail?.takeIf { it.entry.id == entryId }?.let { detail ->
+                EntryScreen(
+                    detail = detail,
+                    backLabelKey = if (openSection != null) "section.back.trail" else "section.back",
+                    onEditDate = { editingDate = detail.entry },
+                    onOpenThread = {
+                        // Both ways: the entry names its thread, and the thread
+                        // opens. Rule 18.
+                        openEntry = null
+                        openSection = Repository.Section.THREADS
+                    },
+                    onOpenChapter = {
+                        openEntry = null
+                        openSection = Repository.Section.CHAPTERS
+                    },
+                    onOpenIncident = {
+                        openEntry = null
+                        openIncident = incidents.firstOrNull { it.id == detail.incidentId }
+                        incidentsOpen = openIncident != null
+                    },
+                    onRemove = {
+                        removing = Removal(
+                            section = Repository.Section.TRAIL,
+                            rowId = detail.entry.id,
+                            what = detail.entry.title.orEmpty(),
+                        )
+                        openEntry = null
+                    },
+                    onBack = { openEntry = null },
+                )
+            }
+        }
+
 
         // Correcting when something happened, from the entry itself, per rule
         // 17. The same picker every other date in the app opens, so a date is

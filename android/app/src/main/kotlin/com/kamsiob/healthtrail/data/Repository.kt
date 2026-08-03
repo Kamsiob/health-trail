@@ -2627,6 +2627,71 @@ class Repository private constructor(
         ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
     }
 
+    /**
+     * One entry, with everything hanging off it.
+     *
+     * **Rule 18: links go both ways.** An entry knew its threads only because
+     * the trail query gathered them in bulk, and it knew nothing at all about
+     * its chapter or its incident, so there was no way to get from a thing that
+     * happened to the thread it belonged to. That is a dead end wearing a
+     * disguise, which is what #46 exists to remove.
+     */
+    data class EntryDetail(
+        val entry: TrailEntry,
+        val chapterId: String?,
+        val chapterName: String?,
+        val incidentId: String?,
+        val incidentTitle: String?,
+        val incidentIsOpen: Boolean,
+    )
+
+    /** One entry read on its own, or null when it is gone. */
+    suspend fun entry(entryId: String): EntryDetail? = withContext(Dispatchers.IO) {
+        val database = db().database
+        val threads = mutableListOf<CareThread>()
+        database.rawQuery(
+            "SELECT t.id, t.label, t.color_index FROM live_entry_thread et " +
+                "JOIN live_care_thread t ON t.id = et.thread_id " +
+                "WHERE et.entry_id = ? ORDER BY t.sort_index, t.created_at",
+            arrayOf(entryId),
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                threads += CareThread(cursor.getString(0), cursor.getString(1), cursor.getInt(2))
+            }
+        }
+
+        database.rawQuery(
+            "SELECT e.id, e.kind, e.title, e.body, e.occurred_edtf, e.occurred_start, " +
+                "e.created_at, e.is_unfiled, e.chapter_id, c.name, " +
+                "e.incident_id, i.title, i.resolved_at " +
+                "FROM live_entry e " +
+                "LEFT JOIN live_chapter c ON c.id = e.chapter_id " +
+                "LEFT JOIN live_incident i ON i.id = e.incident_id " +
+                "WHERE e.id = ?",
+            arrayOf(entryId),
+        ).use { cursor ->
+            if (!cursor.moveToFirst()) return@withContext null
+            EntryDetail(
+                entry = TrailEntry(
+                    id = cursor.getString(0),
+                    kind = cursor.getString(1),
+                    title = cursor.getString(2),
+                    body = cursor.getString(3),
+                    occurredEdtf = cursor.getString(4),
+                    occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                    createdAt = cursor.getLong(6),
+                    isUnfiled = cursor.getInt(7) == 1,
+                    threads = threads,
+                ),
+                chapterId = cursor.getString(8),
+                chapterName = cursor.getString(9),
+                incidentId = cursor.getString(10),
+                incidentTitle = cursor.getString(11),
+                incidentIsOpen = cursor.isNull(12),
+            )
+        }
+    }
+
     companion object {
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"
