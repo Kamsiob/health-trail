@@ -2,6 +2,9 @@ package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +19,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,6 +39,7 @@ import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.Disclosure
+import com.kamsiob.healthtrail.ui.components.StageDots
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.MoreChip
 import com.kamsiob.healthtrail.ui.components.PickerOption
@@ -53,6 +59,9 @@ object CaptureFormTags {
     const val SAVE = "capture_form_save"
     const val CANCEL = "capture_form_cancel"
     const val UNFILED_NOTE = "capture_form_unfiled_note"
+    const val STAGE_DOTS = "capture_form_stages"
+    const val NEXT = "capture_form_next"
+    const val BACK = "capture_form_back"
     const val THREAD_UNSURE = "capture_thread_unsure"
     const val EXACT = "capture_when_exact"
     const val MORE = "capture_form_more"
@@ -275,6 +284,15 @@ fun CaptureFormScreen(
     // answer, and the two can never both be the answer at once.
     val picked = state.pickedEdtf?.let { Edtf.parse(it) }
     var pickerOpen by remember { mutableStateOf(false) }
+    /**
+     * Which of the three questions is on screen.
+     *
+     * **Not stored and not remembered between openings.** Capture is a
+     * conversation somebody has once, and reopening it on the stage they left
+     * would be the app deciding where they are in a sentence they have not
+     * started.
+     */
+    var stage by rememberSaveable { mutableIntStateOf(0) }
     // Which full set is open, if any. Not saveable: a sheet the person left is
     // one they closed, and reopening it under them after a rotation would be
     // the form deciding what they were doing.
@@ -327,6 +345,24 @@ fun CaptureFormScreen(
                 //
                 // **The fastest path through this screen is now type and
                 // save**, which is what somebody in a corridor actually does.
+                // **One question at a time, per law 3.** This screen used to ask
+                // four at once down one scroll: the note, the date, who, and the
+                // thread, which on a year five notebook is twenty three controls
+                // between somebody standing in a corridor and the thing they
+                // came to write down.
+                //
+                // **The note is stage one and the grid puts it third.** The grid
+                // draws who or what, then when, then the note. This screen kept
+                // the order it arrived at on the phone, because the person taps
+                // capture having just put a phone down and the thing in their
+                // head is what was said. Rule 15: the thing that matters most
+                // gets the best position. `DESIGN.md` 15.1 records the
+                // departure.
+                //
+                // **Saving is live from here.** Somebody who types one sentence
+                // and taps save never sees stage two or three, which is the
+                // fifteen second path law 3 is written around.
+                if (stage == 0) {
                 DictatableField(
                     label = strings[key(kind, "note")],
                     value = note,
@@ -337,11 +373,21 @@ fun CaptureFormScreen(
                     // height, because a fixed height silently teaches people to
                     // write less.
                     singleLine = false,
+                    // **Law 3: voice is the biggest control on the note
+                    // stage.** Somebody standing in a corridor with a phone in
+                    // one hand types badly and speaks fine, and a text link
+                    // beside a keyboard is not an offer they will take.
+                    prominentVoice = true,
                     imeAction = ImeAction.Default,
                 )
 
-                Spacer(Modifier.height(Space.sectionGap))
+                }
 
+                // **No spacer between the stages.** These used to separate four
+                // sections down one scroll. With one question on screen they
+                // were dead space at the top of stages two and three, which
+                // read as a screen that had failed to load its first line.
+                if (stage == 1) {
                 ChoiceChipGroup(
                     label = strings["capture.when"],
                     aside = strings["capture.when.hint"],
@@ -379,8 +425,9 @@ fun CaptureFormScreen(
                     )
                 }
 
-                Spacer(Modifier.height(Space.sectionGap))
+                }
 
+                if (stage == 2) {
                 HealthTrailTextField(
                     label = strings[key(kind, "who")],
                     value = who,
@@ -573,6 +620,7 @@ fun CaptureFormScreen(
                         modifier = Modifier.testTag(CaptureFormTags.UNFILED_NOTE),
                     )
                 }
+                }
 
                 Spacer(Modifier.height(Space.l))
             }
@@ -583,6 +631,56 @@ fun CaptureFormScreen(
             // system font.
             Spacer(Modifier.height(Space.m))
 
+            // **Where you are, and the way on, on one line.** Law 3 asks for
+            // progress dots and a skip that is always visible. The dots say
+            // where somebody is and never how much is left, per rule 13, and
+            // the way on is worded as skipping rather than advancing because
+            // every one of these questions is optional and the button should
+            // say so.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                StageDots(
+                    count = STAGES,
+                    current = stage,
+                    description = strings(
+                        "capture.stage",
+                        "current" to stage + 1,
+                        "total" to STAGES,
+                    ),
+                    modifier = Modifier.testTag(CaptureFormTags.STAGE_DOTS),
+                )
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (stage > 0) {
+                        TextAction(
+                            label = strings["capture.back"],
+                            onClick = { stage -= 1 },
+                            modifier = Modifier.testTag(CaptureFormTags.BACK),
+                        )
+                        Spacer(Modifier.width(Space.m))
+                    }
+                    if (stage < STAGES - 1) {
+                        TextAction(
+                            // **"Skip this", not "Next".** Nothing here is
+                            // required, and a button that says next implies the
+                            // question behind it has to be answered first.
+                            label = strings["capture.skip"],
+                            onClick = { stage += 1 },
+                            modifier = Modifier.testTag(CaptureFormTags.NEXT),
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(Space.s))
+
+            // **Live from stage one.** Somebody who types one sentence and taps
+            // save never sees the other two questions, which is the fifteen
+            // second path law 3 is written around. It saves whatever is filled
+            // in, from wherever they are.
             FilledButton(
                 label = strings["capture.save"],
                 onClick = {
@@ -733,6 +831,15 @@ val RoughWhen.labelKey: String
  *
  * Contract section 3.1 and `Edtf`.
  */
+/**
+ * How many questions capture asks. Three, which is law 3's maximum.
+ *
+ * **A fourth would be a form.** The disclosure inside the third stage holds the
+ * thread and the medication, which are what the app can work out or live
+ * without, and they stay behind one control nobody has to touch.
+ */
+private const val STAGES = 3
+
 fun RoughWhen.edtf(today: LocalDate): Edtf.Date = when (this) {
     RoughWhen.TODAY -> Edtf.day(today)
     RoughWhen.YESTERDAY -> Edtf.day(today.minusDays(1))

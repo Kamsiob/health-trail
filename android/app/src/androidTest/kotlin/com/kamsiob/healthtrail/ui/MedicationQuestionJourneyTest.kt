@@ -153,6 +153,11 @@ class MedicationQuestionJourneyTest {
         // disclosure on 2026-08-03. Walking in from the front door is the whole
         // point of this test, so it opens the control rather than reaching past
         // it.
+        // **The disclosure lives on the third stage now.** Capture became a
+        // staged conversation on 2026-08-04, per law 3, and what the app can
+        // work out or live without stayed behind one control on the last one.
+        // Walked to by tapping the same skip a person taps.
+        repeat(2) { compose.onNodeWithTag(CaptureFormTags.NEXT).performClick() }
         compose.onNodeWithTag(CaptureFormTags.MORE).performScrollTo().performClick()
 
         // **And the full set when the chip is not among the five**, which is

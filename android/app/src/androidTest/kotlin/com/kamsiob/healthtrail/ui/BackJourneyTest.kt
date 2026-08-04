@@ -210,7 +210,11 @@ class BackJourneyTest {
         compose.waitUntil(timeoutMillis = 10_000) { showing(CaptureTags.SHEET) }
         compose.onNodeWithTag(CaptureTags.option(CaptureKind.CALL)).performClick()
         compose.waitForIdle()
-        compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput(words)
+        // **The note rather than the who field**, which is what this test is
+        // named for and is now stage one of the staged capture. Using the who
+        // field meant walking two stages to prove something about leaving the
+        // form, which is two taps of noise around the assertion.
+        compose.onNodeWithTag(CaptureFormTags.NOTE).performTextInput(words)
         compose.waitForIdle()
 
         // All the way out to the notebook, which is two presses now that back
@@ -223,7 +227,10 @@ class BackJourneyTest {
         compose.onNodeWithTag(CaptureTags.option(CaptureKind.CALL)).performClick()
         compose.waitForIdle()
 
-        compose.onNodeWithTag(CaptureFormTags.WHO).assertTextContains(words, substring = true)
+        // Back on stage one, which is where a reopened form starts: the stage
+        // is not remembered, deliberately, because reopening somebody on stage
+        // three would be the app deciding where they are in a sentence.
+        compose.onNodeWithTag(CaptureFormTags.NOTE).assertTextContains(words, substring = true)
 
         // **Cancel is the one thing that does discard it**, because cancel
         // means abandoning the entry rather than stepping back a level.

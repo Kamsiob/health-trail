@@ -36,10 +36,10 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Step 2 is complete too.** All four bottom-navigation destinations are converted, so **the app reads as one app end to end**, which is what step 2 exists for. #169 through #172 are closed.
 
-**Step 3 is finished except for two, and both are recorded rather than left open-ended.** All eleven section screens carry their tab chip and their own heading from `SectionScaffold`. **Closed on device verification**: the trail #173, the care team #174, medications #175, progress #176, money #177, documents #178, the emergency card #179, search #180, chapters #181, ask next time #183, appointments #184, standing instructions #185, care threads #186, and the unfiled tray #187.
+**Step 3 is finished except for #182, which cannot be built yet.** All eleven section screens carry their tab chip and their own heading from `SectionScaffold`. **Closed on device verification**: the trail #173, the care team #174, medications #175, progress #176, money #177, documents #178, the emergency card #179, search #180, chapters #181, ask next time #183, appointments #184, standing instructions #185, care threads #186, and the unfiled tray #187.
 
 - **#182 tests and results has nothing to convert.** No table in the schema, no query, no screen. It is the section being built for the first time and it needs a schema decision, which is the owner's. The issue says exactly what has to be decided and is labeled `blocked`.
-- **#188 capture is the last one and the biggest**, and it was deliberately not started with under two hours left rather than leaving a half-staged form on the screen people use most. **The issue carries the full analysis**: what the screen is today, what law 3 asks for, the four pieces of work, and what must not be lost. Somebody opening that file starts with the thinking done.
+- **#188 capture is built.** It is a staged conversation now: three questions, one on screen at a time, dots saying which, a skip that is always visible, and save live from stage one. The fifteen second path law 3 is written around is type one sentence and save, without ever seeing stages two or three.
 
 **Step 4 has begun and five of it are closed**: one entry #189, one person #191, one chapter #193, one care thread #194, and search #180 which belongs to step 3.
 
@@ -63,10 +63,8 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Two undrawn screens followed rule 12** at the moment they were built: care threads (#186, review at **#223**) and standing instructions (#185, review at **#225**). Both are in `DESIGN.md` section 14 and both are named here, which is all three places.
 
-1. **#188 capture**, with the analysis already on the issue.
-2. **#192's two queries**, which is the smallest genuinely finishable thing on the board.
-3. **Then the rest of step 4**, #190 and #195 to #208.
-4. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
+1. **The rest of step 4**, #190 and #195 to #208.
+2. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
 
 **Nine things are waiting on the owner and none of them block anything.** **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table), **#220** (the trail's filter needs a decision about what a person filters by), **#182** (the tests section needs a schema before it can be built at all), **#230** (an incident cannot say which medication it was about, which rule 18 argues it should), and **#223** and **#225** (the two design reviews).
 

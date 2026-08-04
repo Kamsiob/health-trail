@@ -339,6 +339,7 @@ A row may be 46dp tall and still carry a 48dp touch target through invisible pad
 | **Pin marker and pinned group** | The person's own hierarchy, above everything |
 | **Sticky section header** | So the person always knows where they are |
 | **Edge scrubber** | Jump by year and month, riding **a reserved margin rather than sitting over the words**, in a band of roughly half the screen height. Every label is also its own tap target, so the gesture is never the only way. **Landing in a closed fold opens it**, because answering a jump with a door is not answering it. Same "not on a short list" rule as the search bar |
+| **Stage dots** | Where somebody is in a staged conversation, per law 3. Two to five stages. The current dot is **wider**, never a different color alone, and the row is **one node to a reader** saying which stage of how many in words. **Never a progress meter**: it says where you are and never how much is left to do, because rule 13 rules out grading the person's own diligence. Not for a screen with sections, which is not a sequence somebody agreed to |
 | **Sheet** | Rises from the bottom, 24dp top corners, scrim behind |
 | **FAB** | Gold, 48dp, bottom-trailing corner, opening a labeled menu that blooms upward from it |
 | **Bottom navigation** | Four tabs, even spacing, active tab marked with a tonal pill behind its icon |
@@ -621,6 +622,8 @@ The small touches that separate finished from correct. **They apply everywhere, 
 Recorded here per section 19, rather than left for a later session to find and mistake for drift.
 
 **Screen 08, the trail.** The grid draws a "Filter" control and a pin toggle in the header beside the search field. Neither is built. The filter is real work with its own question, which is what a person filters by (kind, thread, unfiled) and whether that survives leaving the screen; it is filed rather than guessed at. The pin toggle in the header would be a second way to reach a set the pinned group already shows at the top of the same screen.
+
+**Screens 04 to 06, capture.** The grid draws the three stages as who or what, then when, then the note. This screen keeps the note first, which is the order it arrived at on the phone: somebody taps capture having just put a phone down and the thing in their head is what was said. Rule 15 puts the thing that matters most in the best position, and law 3's own goal, finishing in under fifteen seconds standing up, is met by typing one sentence and saving without ever seeing stages two or three.
 
 **Screen 17, the emergency card.** The grid draws a Change pill on every block. That is four identical controls opening one editor, which is the same noise the trail's per-row pin turned out to be. There is one Change and one Share, at the top, where a person looks for the doors.
 

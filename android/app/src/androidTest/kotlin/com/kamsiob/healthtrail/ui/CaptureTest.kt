@@ -99,6 +99,27 @@ class CaptureTest {
         }
     }
 
+    /**
+     * Walks to the stage holding a control, the way a person does.
+     *
+     * **Capture became a staged conversation on 2026-08-04**, per law 3, and
+     * every test here was written when its four questions were on one scroll.
+     * The controls did not move; what changed is that one question is on screen
+     * at a time and the rest are one tap away.
+     *
+     * **It taps the same skip a person taps.** A test that reached in and set
+     * the stage would prove a screen nobody can use.
+     */
+    private fun toStage(stage: Int) {
+        repeat(stage) {
+            compose.onNodeWithTag(CaptureFormTags.NEXT).performClick()
+        }
+    }
+
+    /** The note is stage one, the date is stage two, and who is stage three. */
+    private val WHEN_STAGE = 1
+    private val WHO_STAGE = 2
+
     @Test
     fun aBlankCallStillSaves() {
         var draft: CaptureDraft? = null
@@ -118,6 +139,8 @@ class CaptureTest {
         var draft: CaptureDraft? = null
         showForm(onSave = { draft = it })
 
+        toStage(WHEN_STAGE)
+
         compose.onNodeWithTag(CaptureFormTags.whenChip(RoughWhen.NOT_SURE)).performClick()
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 
@@ -130,6 +153,8 @@ class CaptureTest {
         // knows the minute, is a normal case rather than an edge one, and
         // making them exhaust the chips first would say otherwise.
         showForm(onSave = {})
+
+        toStage(WHEN_STAGE)
         compose.onNodeWithTag(CaptureFormTags.EXACT).assertIsDisplayed()
     }
 
@@ -137,6 +162,8 @@ class CaptureTest {
     fun pickingADayReplacesTheChipAnswerRatherThanJoiningIt() {
         var draft: CaptureDraft? = null
         showForm(onSave = { draft = it })
+
+        toStage(WHEN_STAGE)
 
         compose.onNodeWithTag(CaptureFormTags.EXACT).performClick()
         compose.onNodeWithTag(DatePickerTags.day(14)).performClick()
@@ -154,6 +181,8 @@ class CaptureTest {
         // written from memory it is usually the true one.
         var draft: CaptureDraft? = null
         showForm(onSave = { draft = it })
+
+        toStage(WHEN_STAGE)
         val month = java.time.YearMonth.now()
 
         compose.onNodeWithTag(CaptureFormTags.EXACT).performClick()
@@ -172,6 +201,8 @@ class CaptureTest {
         // anything answers "not sure" rather than "today".
         var draft: CaptureDraft? = null
         showForm(onSave = { draft = it })
+
+        toStage(WHEN_STAGE)
 
         compose.onNodeWithTag(CaptureFormTags.whenChip(RoughWhen.NOT_SURE)).performClick()
         compose.onNodeWithTag(CaptureFormTags.EXACT).performClick()
@@ -231,6 +262,8 @@ class CaptureTest {
         var draft: CaptureDraft? = null
         showForm(onSave = { draft = it })
 
+        toStage(WHO_STAGE)
+
         compose.onNodeWithTag(CaptureFormTags.UNFILED_NOTE).assertIsDisplayed()
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 
@@ -241,6 +274,8 @@ class CaptureTest {
     fun choosingAThreadFilesItAndTakesTheUnfiledNoteAway() {
         var draft: CaptureDraft? = null
         showForm(onSave = { draft = it })
+
+        toStage(WHO_STAGE)
 
         // **The thread question is behind "Add more" as of 2026-08-03**, per
         // `DESIGN.md` 5.11.1 and the disclosure, so the test opens it the way a
@@ -313,8 +348,12 @@ class CaptureTest {
         var draft: CaptureDraft? = null
         showForm(onSave = { draft = it })
 
-        compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput("Ward desk")
+        // **What the note stage holds, then what the who stage holds.** Both
+        // survive the walk between them, which is the thing worth asserting
+        // now that they are two screens rather than two fields.
         compose.onNodeWithTag(CaptureFormTags.NOTE).performTextInput("Said they would call back")
+        toStage(WHO_STAGE)
+        compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput("Ward desk")
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 
         assertEquals("Ward desk", draft!!.who)
@@ -327,6 +366,7 @@ class CaptureTest {
         var canceled = false
         showForm(onSave = { draft = it }, onCancel = { canceled = true })
 
+        toStage(WHO_STAGE)
         compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput("Typed then abandoned")
         compose.onNodeWithTag(CaptureFormTags.CANCEL).performClick()
 
@@ -376,6 +416,7 @@ class CaptureTest {
         var draft: CaptureDraft? = null
         showForm(kind = kind, onSave = { draft = it })
 
+        toStage(WHO_STAGE)
         compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput("Dr Aurelio")
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 

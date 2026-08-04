@@ -7,6 +7,7 @@ import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Row
@@ -61,6 +62,16 @@ fun DictateAction(
     onText: (String) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    /**
+     * True where speaking is the point of the screen rather than an alternative
+     * on it.
+     *
+     * **Law 3: voice is the biggest control on the note stage.** Somebody
+     * standing in a corridor with a phone in one hand types badly and speaks
+     * fine, and a text link beside a keyboard is not an offer they will take.
+     * Everywhere else it stays a quiet action beside a field.
+     */
+    prominent: Boolean = false,
 ) {
     val context = LocalContext.current
     val strings = LocalStrings.current
@@ -96,9 +107,7 @@ fun DictateAction(
     // rather than an error. D52 is the same mistake in the other direction.
     val languageTag = strings.locale.toLanguageTag()
 
-    TextAction(
-        label = strings["dictate.speak"],
-        onClick = {
+    val speak: () -> Unit = {
             launcher.launch(
                 Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                     putExtra(
@@ -113,11 +122,29 @@ fun DictateAction(
                     putExtra(RecognizerIntent.EXTRA_PROMPT, strings["dictate.prompt"])
                 },
             )
-        },
-        enabled = enabled,
-        leading = { MicrophoneGlyph(tint = if (enabled) colors.blue else colors.ink2) },
-        modifier = modifier,
-    )
+    }
+
+    if (prominent) {
+        // **A quiet button rather than a filled one, deliberately.** There is
+        // already one filled action on the capture screen and it is Save, and
+        // law 2 allows exactly one. What "biggest" buys here is width and a
+        // real border at rest: it reads as a control somebody would press
+        // rather than as a link beside a field.
+        QuietButton(
+            label = strings["dictate.speak"],
+            onClick = speak,
+            enabled = enabled,
+            modifier = modifier.fillMaxWidth(),
+        )
+    } else {
+        TextAction(
+            label = strings["dictate.speak"],
+            onClick = speak,
+            enabled = enabled,
+            leading = { MicrophoneGlyph(tint = if (enabled) colors.blue else colors.ink2) },
+            modifier = modifier,
+        )
+    }
 }
 
 /**
@@ -173,6 +200,8 @@ fun DictatableField(
     singleLine: Boolean = false,
     imeAction: androidx.compose.ui.text.input.ImeAction =
         androidx.compose.ui.text.input.ImeAction.Default,
+    /** Passed through to [DictateAction]. Law 3, on the note stage of capture. */
+    prominentVoice: Boolean = false,
 ) {
     Column(modifier = modifier) {
         HealthTrailTextField(
@@ -188,6 +217,7 @@ fun DictatableField(
         )
         Spacer(Modifier.height(Space.s))
         DictateAction(
+            prominent = prominentVoice,
             enabled = enabled,
             onText = { spoken ->
                 // Appended, with a space, so half typed and half spoken is a
