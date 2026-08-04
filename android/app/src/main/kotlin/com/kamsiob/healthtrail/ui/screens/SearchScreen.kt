@@ -15,7 +15,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +27,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
+import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
@@ -97,6 +103,7 @@ fun SearchScreen(
     backLabelKey: String = "section.back.more",
 ) {
     val strings = LocalStrings.current
+    var openSections by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val colors = HealthTrail.colors
 
     // Grouped here rather than in the query, because the query returns them in
@@ -204,17 +211,51 @@ fun SearchScreen(
             return@SectionScaffold
         }
 
-        var first = true
-        for ((section, hits) in grouped) {
+        // **The best answer first and large, per law 1.** A list of forty
+        // results ranked by nothing a person can see is a list they read all of.
+        // The first hit is the one the query matched best, so it says so and
+        // takes the room to be read rather than scanned.
+        val best = results.firstOrNull()
+        if (best != null) {
+            item(key = "best_${best.id}") {
+                Text(
+                    text = Bidi.join(
+                        strings["search.best"],
+                        strings[sectionKey(best.section)],
+                    ),
+                    style = HealthTrail.type.mono,
+                    color = colors.ink2,
+                )
+                Spacer(Modifier.height(Space.xs))
+                ResultRow(hit = best, onOpen = { onOpen(best) }, lead = true)
+                Spacer(Modifier.height(Space.sectionGap))
+            }
+        }
+
+        // **Everything else folded by kind, named and counted.** The section is
+        // the kind a person thinks in, and the count is what tells them whether
+        // opening it is worth the tap.
+        val rest = results.drop(1).groupBy { it.section }
+        for ((section, hits) in rest) {
+            val open = section.name in openSections
             item(key = "group_${section.name}") {
-                if (!first) Spacer(Modifier.height(Space.s))
-                GroupHeaderText(
+                FoldRowText(
                     label = strings[sectionKey(section)],
+                    expanded = open,
+                    onToggle = {
+                        openSections = if (open) {
+                            openSections - section.name
+                        } else {
+                            openSections + section.name
+                        }
+                    },
+                    count = hits.size.toString(),
                     modifier = Modifier.testTag(SearchTags.group(section)),
                 )
-                Spacer(Modifier.height(Space.headerGap))
+                Spacer(Modifier.height(Space.cardGap))
             }
-            first = false
+
+            if (!open) continue
 
             hits.forEachIndexed { index, hit ->
                 item(key = hit.id) {
@@ -246,7 +287,12 @@ fun SearchScreen(
  * the whole argument for typographic rhythm in `DESIGN.md` 10.8.
  */
 @Composable
-private fun ResultRow(hit: Repository.SearchHit, onOpen: () -> Unit) {
+private fun ResultRow(
+    hit: Repository.SearchHit,
+    onOpen: () -> Unit,
+    /** True for the best match, which leads the screen and is read rather than scanned. */
+    lead: Boolean = false,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
@@ -273,7 +319,9 @@ private fun ResultRow(hit: Repository.SearchHit, onOpen: () -> Unit) {
         val date = hit.occurredEdtf?.takeIf { it.isNotBlank() }
             ?.let { EventDateText.render(strings, it) }
         val where = hit.chapterName
-        val eyebrow = listOfNotNull(date, where).joinToString("  ")
+        // Isolated and joined, because a date in one script beside a chapter
+        // name in another is two runs and reorders without it.
+        val eyebrow = Bidi.join(listOfNotNull(date, where))
         if (eyebrow.isNotEmpty()) {
             Text(text = eyebrow, style = HealthTrail.type.mono, color = colors.ink2)
             Spacer(Modifier.height(Space.xs))
@@ -285,10 +333,12 @@ private fun ResultRow(hit: Repository.SearchHit, onOpen: () -> Unit) {
         // and a search result did not, so the same entry read differently in
         // two places.
         Text(
-            text = hit.title.ifBlank {
-                hit.kind?.let { strings[kindNameKey(it)] } ?: strings["search.untitled"]
-            },
-            style = HealthTrail.type.displayS,
+            text = Bidi.isolate(
+                hit.title.ifBlank {
+                    hit.kind?.let { strings[kindNameKey(it)] } ?: strings["search.untitled"]
+                },
+            ),
+            style = if (lead) HealthTrail.type.hero else HealthTrail.type.displayS,
             color = colors.ink,
         )
 

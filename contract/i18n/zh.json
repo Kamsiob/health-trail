@@ -662,5 +662,7 @@
   "library.in_use": "{count, plural, other {已从这里开始 # 项}}",
   "library.never_used": "还没有从这里开始过",
   "library.empty": "你还没有做过自己的模板。改一个流程的步骤并保存，它就会出现在这里。",
-  "more.library": "模板"
+  "more.library": "模板",
+  "search.best": "最匹配",
+  "search.more": "其余全部"
 }

@@ -662,5 +662,7 @@
   "library.in_use": "{count, plural, one {1 started from this} other {# started from this}}",
   "library.never_used": "Nothing started from this yet",
   "library.empty": "You have not made any of your own yet. Change a project's steps and save them, and it turns up here.",
-  "more.library": "Templates"
+  "more.library": "Templates",
+  "search.best": "Best match",
+  "search.more": "Everything else"
 }

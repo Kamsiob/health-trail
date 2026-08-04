@@ -662,5 +662,7 @@
   "library.in_use": "{count, plural, zero {لم يبدأ منه شيء} one {بدأ منه واحد} two {بدأ منه اثنان} few {بدأ منه #} many {بدأ منه #} other {بدأ منه #}}",
   "library.never_used": "لم يبدأ منه شيء بعد",
   "library.empty": "لم تصنع أي قالب خاص بك بعد. غيّر خطوات مسار واحفظها، وسيظهر هنا.",
-  "more.library": "القوالب"
+  "more.library": "القوالب",
+  "search.best": "أفضل تطابق",
+  "search.more": "كل ما تبقى"
 }
