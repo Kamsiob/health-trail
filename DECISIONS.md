@@ -1784,6 +1784,38 @@ Minimum across all three: **10.8**
 
 ---
 
+### D88. The light tab hues are not distinguishable under simulated deuteranopia, and that is the owner's call rather than mine
+
+**Found by doing what D87 asked for**: the color vision screenshots. The dark hues were derived to hold up under simulated protanopia and deuteranopia and they do, at a minimum of 10.8 CIEDE2000. **Running the same simulation over the light theme, which was not re-derived because those values are the owner's from the grid, gives a very different answer.**
+
+| Vision model | Worst light pair | CIEDE2000 |
+|---|---|---|
+| Normal | moss against stone | 16.1 |
+| Protanopia | teal against stone | **4.2** |
+| Deuteranopia | **rose against moss** | **2.4** |
+
+**At 2.4 they are the same color.** The simulated screenshot at `docs/screenshots/v4-notebook-hues-light-deuteranopia.png` shows it plainly: care team, chapters, care threads, documents, standing instructions, and the emergency card all read as one olive-tan family.
+
+**Why the two themes came out different, and it is structural rather than an oversight.** In light theme a section's shape sits on near-white surfaces, so the 3:1 control floor caps how light it may be: measured per hue, the legal band tops out between 41 and 53 percent lightness. In dark theme the shape sits on a dark surface and may run up to 84 percent. **Dark has roughly twice the lightness range to separate six hues in, and lightness is what survives red-green color vision deficiency.** So the same derivation principle produces 10.8 in dark and cannot produce it in light.
+
+**The achievable ceiling for light is 7.6**, holding every hue angle exactly and moving only lightness. Reaching it requires moving `stone` from a warm gray `#7A756A` to a dark brown `#564A2E`, which stops it being stone. A gentler band that keeps every hue recognizable reaches only 2.9, which is no improvement worth having.
+
+**Why I did not simply fix it.** The worst pair is **rose against moss**, and both are the owner's values straight from the grid file. `DESIGN.md` 4.3 says the mapping is an owner decision and not mine to re-derive, and quietly restyling five hues he drew would be exactly the silent change this project keeps getting caught by. **The one hue I did add, `stone`, is not the problem**: changing it alone leaves rose against moss at 2.4.
+
+**What is true regardless of the outcome**, and it is the reason this is not an accessibility failure: **color is never the only carrier of meaning**, `DESIGN.md` 4.4. Every notebook tile carries its section name in text, and every section screen's tab chip sits directly above a title that names the section. **A person who cannot separate rose from moss reads the word**, exactly as intended. The hue separation is what makes the binder scannable at a glance; it is not what makes it usable.
+
+**The three options, for the owner:**
+
+1. **Leave the light hues as drawn.** The binder looks exactly as specified, and under red-green CVD the tabs stop being a scanning aid and become decoration, with the words doing the work. **This is what is built today.**
+2. **Spread the light hues in lightness to 7.6**, holding every hue angle. Five hues shift slightly and `stone` stops being gray.
+3. **Give the six sections a second, non-color differentiator** at the tab, most obviously the section drawing the app already owns. That costs nothing in hue identity and works for total color blindness too, which neither of the other options does.
+
+**Option 3 is the one I would build**, because it is the only one that does not trade one person's experience for another's, and because `DESIGN.md` already requires the icon to appear on the notebook row anyway. **It is not built, because it changes what a tab chip is**, and that is a design decision rather than a defect fix.
+
+**Recorded rather than deferred**, so no later session finds the simulated screenshots in the repository and assumes somebody already decided.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 

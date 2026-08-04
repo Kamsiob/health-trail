@@ -24,6 +24,7 @@ import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.IconTile
+import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.Tile
 import com.kamsiob.healthtrail.ui.components.tileColumns
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -352,20 +353,29 @@ private fun SectionTile(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    // The emergency card keeps the alert tone at every weight. Section 2.2
-    // gives `alert` to this one section, and the reference file draws its row
-    // that way in screen 04.
-    val emergency = row.section == Repository.Section.EMERGENCY_CARD
-    val tint = when {
-        emergency -> colors.alertInk
-        row.emphasis == Emphasis.FORWARD -> colors.ink
-        row.emphasis == Emphasis.FOLDED -> colors.ink3
-        else -> colors.ink2
+    // **Each section carries its own hue's icon in its own wash**, per
+    // `DESIGN.md` 4.3: "its notebook row carries its icon in its wash". The
+    // mapping is the owner's and lives in one place, [hueFor], so no screen
+    // decides a section's identity for itself.
+    //
+    // This replaces the single `sand` fill the previous direction used. That
+    // fill made twelve sections one shape in one color, which is the diagnosis
+    // D71 recorded: the notebook was organization rather than hierarchy, and
+    // nothing on it could be found by anything except reading.
+    //
+    // **The hue is identity, and emphasis is still carried by the fill**, which
+    // is the rule D33 set and v4 does not change. A section the situation
+    // template puts forward gets its wash filled. A standing section shows the
+    // drawing on the bare surface. A folded one is quieter still. So a person
+    // learns "documents are the manila ones" and the template can still say
+    // which ones matter this week, without the two meanings colliding.
+    val hue = hueFor(row.section)
+    val tint = when (row.emphasis) {
+        Emphasis.FOLDED -> colors.ink3
+        else -> hue.ink
     }
-    val fill = when {
-        row.emphasis == Emphasis.FOLDED -> Color.Transparent
-        emergency -> colors.alertWash
-        row.emphasis == Emphasis.FORWARD -> colors.sand
+    val fill = when (row.emphasis) {
+        Emphasis.FORWARD -> hue.wash
         else -> Color.Transparent
     }
 
@@ -380,6 +390,7 @@ private fun SectionTile(
     // the table showing through onto the app's front door, which is rule 20
     // exactly. It says whether there is anything on it instead, and it does not
     // grade how much, per rule 13.
+    val emergency = row.section == Repository.Section.EMERGENCY_CARD
     val countKey = if (emergency) "notebook.count.emergency_card" else "notebook.count"
 
     Tile(

@@ -6,14 +6,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Spacing, radii, and motion from DESIGN.md sections 4.1, 4.2, and 6.
+ * Spacing, radii, and elevation from DESIGN.md sections 6 and 4.7.
  *
  * These exist as tokens rather than literals so that a value cannot drift on one
  * screen, and so that changing one changes it everywhere.
  */
 @Immutable
 object Space {
-    /** The 4dp grid. */
+    /** The 4dp grid, kept for anything that genuinely steps on it. */
     val xs: Dp = 4.dp
     val s: Dp = 8.dp
     val sm: Dp = 12.dp
@@ -23,34 +23,88 @@ object Space {
     val xl: Dp = 32.dp
     val xxl: Dp = 40.dp
 
-    /** Screen horizontal padding. */
-    val screenHorizontal: Dp = 20.dp
-    /** Card internal padding. */
-    val cardPadding: Dp = 16.dp
-    /** Gap between cards. */
-    val cardGap: Dp = 12.dp
+    /**
+     * Screen horizontal padding, DESIGN.md section 6.
+     *
+     * 13dp under v4, down from 20dp. The grid is drawn tighter to the edge than
+     * the previous direction, which is what lets a dense row carry a leading
+     * element, two lines, a trailing value, and a chevron without crowding.
+     */
+    val screenHorizontal: Dp = 13.dp
+
+    /** Group row padding, 11 to 13dp. This is the outer value. */
+    val cardPadding: Dp = 13.dp
+
+    /** Group row padding, the tighter value, for a row carrying two lines. */
+    val rowPaddingTight: Dp = 11.dp
+
+    /** Between stacked elements. */
+    val cardGap: Dp = 10.dp
+
     /** Gap between a section header and its content. */
-    val headerGap: Dp = 12.dp
+    val headerGap: Dp = 10.dp
+
     /** Gap between sections. */
-    val sectionGap: Dp = 24.dp
+    val sectionGap: Dp = 20.dp
+
+    /**
+     * Minimum row height, DESIGN.md section 6.
+     *
+     * A row may be this tall visually and still carry a 48dp touch target
+     * through invisible padding. **The touch floor is never traded for
+     * density**, which is why these are two tokens rather than one.
+     */
+    val rowMinHeight: Dp = 46.dp
 
     /**
      * Minimum touch target, everywhere, regardless of the visual size of the
-     * thing being tapped. Several rows in the reference are visually shorter
-     * than this and get invisible padding to reach it.
+     * thing being tapped.
      */
     val touchTarget: Dp = 48.dp
+
+    /**
+     * The FAB's own size, and the clearance everything else owes it.
+     *
+     * DESIGN.md section 8 and D81: on any screen where the FAB is present, a
+     * bottom-anchored action bar ends before the FAB's zone, leaving the FAB's
+     * width plus [fabGap] clear on the trailing side, and scrolling content gets
+     * [fabScrollClearance] at the bottom so the last item can scroll fully clear
+     * of it. **Nothing tappable ever sits underneath the FAB.**
+     *
+     * In right to left the FAB is in the start corner and the clearance moves
+     * with it, which is why call sites use start and end rather than left and
+     * right.
+     */
+    val fabSize: Dp = 48.dp
+    val fabGap: Dp = 12.dp
+    val fabScrollClearance: Dp = 48.dp + 12.dp + 16.dp
 }
 
 @Immutable
 object Radius {
-    val card = RoundedCornerShape(20.dp)
-    /** Inset tile, icon tile, chip container. */
-    val tile = RoundedCornerShape(12.dp)
-    val thumbnail = RoundedCornerShape(8.dp)
-    val bottomSheet = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+    /** Cards and groups, 16 to 18dp under v4, with no border. */
+    val card = RoundedCornerShape(17.dp)
+
+    /** Inset tile, icon in its wash, chip container, the search bar's siblings. */
+    val tile = RoundedCornerShape(13.dp)
+
+    val thumbnail = RoundedCornerShape(13.dp)
+
+    /** A sheet rises with 24dp top corners, DESIGN.md section 6. */
+    val bottomSheet = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+
     val navContainer = RoundedCornerShape(24.dp)
-    /** Pills and buttons are fully rounded. */
+
+    /**
+     * The tab chip, DESIGN.md section 7.
+     *
+     * Rounded at the top and square at the bottom, because it is an index tab
+     * on a page rather than a pill. That asymmetry is the whole reason it reads
+     * as a binder tab, and it is why the chip is not [pill].
+     */
+    val tabChip = RoundedCornerShape(topStart = 7.dp, topEnd = 7.dp)
+
+    /** Pills, buttons, and chips are fully rounded. */
     val pill = RoundedCornerShape(percent = 50)
 }
 
@@ -120,7 +174,7 @@ object Trail {
 }
 
 /**
- * Elevation. DESIGN.md section 2.5.
+ * Elevation. DESIGN.md section 4.7.
  *
  * Light theme carries a soft, warm, low contrast two layer shadow. Dark theme
  * carries no shadow at all: elevation there is paper to card to sand, plus an
@@ -132,9 +186,14 @@ object Trail {
  */
 @Immutable
 object Elevation {
-    val cardBlur: Dp = 24.dp
-    val cardOffsetY: Dp = 8.dp
-    val cardBlurTight: Dp = 5.dp
+    /** The v4 card shadow, outer layer. */
+    val cardBlur: Dp = 26.dp
+    val cardOffsetY: Dp = 10.dp
+    /** The v4 card shadow, tight layer. */
+    val cardBlurTight: Dp = 6.dp
     val cardOffsetYTight: Dp = 2.dp
+    /** Rows, thumbnails, and anything raised only slightly. */
+    val smallBlur: Dp = 8.dp
+    val smallOffsetY: Dp = 2.dp
     val printHairline: Dp = 1.dp
 }

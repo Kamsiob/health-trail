@@ -145,6 +145,8 @@ Muted binder hues for section identity, each with a wash and a text-safe ink. **
 | `manila` | `#A3772D` | `#846024` | `#F1E6CC` | Documents, money |
 | `stone` | `#7A756A` | `#6A665C` | `#EAE7E0` | Standing instructions |
 
+**The light hues do not survive simulated deuteranopia, and that is an open owner decision rather than a defect.** Rose against moss measures 2.4 CIEDE2000 under it, which is the same color, and light theme's 3:1 shape floor caps lightness too tightly to separate six hues the way dark can. **The dark hues do hold, at a minimum of 10.8.** `DECISIONS.md` D88 carries the numbers, the achievable ceiling, and three options. **What makes this not an accessibility failure is 4.4**: every tile and every tab sits with its section's name in text, so the word carries it.
+
 **The section-to-hue mapping is an owner decision and is not to be re-derived.** Five come from the grid. **`stone` was added because the grid draws no standing instructions screen and the section needs an identity**, recorded as D79. Any section added later inherits the hue of the section it most resembles in kind, and the choice is recorded here with its reasoning.
 
 **The base hue is for shapes: the tab chip's fill, the avatar circle, the waypoint, the wash band, the icon in its wash. The ink variant is for text.** That split exists because every base hue fails the small-text floor, measured in 4.6. It is the same split this app already uses for gold, leaf, and alert, applied to six more hues rather than a new idea.
