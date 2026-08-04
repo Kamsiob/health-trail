@@ -27,6 +27,7 @@ object ExportTags {
     const val NAME = "export"
     const val PASSPHRASE = "export_passphrase"
     const val AGAIN = "export_again"
+    const val HINT = "export_hint"
     const val SAVE = "export_save"
     const val STATUS = "export_status"
     const val REVEAL = "export_reveal"
@@ -66,7 +67,7 @@ enum class ExportState { READY, WORKING, DONE, FAILED }
 @Composable
 fun ExportScreen(
     state: ExportState,
-    onExport: (passphrase: String) -> Unit,
+    onExport: (passphrase: String, hint: String?) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     /** Puts the screen back to its resting state so another copy can be saved. */
@@ -78,6 +79,7 @@ fun ExportScreen(
     var passphrase by remember { mutableStateOf("") }
     var again by remember { mutableStateOf("") }
     var revealed by remember { mutableStateOf(false) }
+    var hint by remember { mutableStateOf("") }
 
     val mismatch = again.isNotEmpty() && passphrase != again
 
@@ -111,6 +113,7 @@ fun ExportScreen(
         if (done) {
             passphrase = ""
             again = ""
+            hint = ""
             revealed = false
         }
     }
@@ -218,10 +221,52 @@ fun ExportScreen(
                 color = colors.alertInk,
             )
 
+            Spacer(Modifier.height(Space.sectionGap))
+
+            // **The reminder, and what it costs, in that order.**
+            //
+            // `contract/DATA-CONTRACT.md` 8.1 requires it and requires the app
+            // to say plainly that anyone holding the file can read it. It sits
+            // in the outer manifest in the clear, which is the only place a
+            // reminder can sit and still be a reminder: one inside the
+            // encryption would need the passphrase to read.
+            //
+            // **The field says what to write in it rather than what not to.**
+            // "Where the passphrase is written down, not the passphrase" is the
+            // whole instruction, and it teaches the safe answer instead of
+            // leaving somebody to invent one and then be told off.
+            HealthTrailTextField(
+                label = strings["export.hint.label"],
+                value = hint,
+                onValueChange = { hint = it },
+                hint = strings["export.hint.hint"],
+                // Said when it is true, which is the one case worth interrupting
+                // for: a reminder that contains the passphrase turns an
+                // encrypted archive into an unencrypted one for anybody who
+                // opens the outer layer. It does not block saving, per rule 13,
+                // because this is the person's own record and their call.
+                note = if (hint.isNotBlank() && passphrase.isNotBlank() &&
+                    hint.contains(passphrase, ignoreCase = true)
+                ) {
+                    strings["export.hint.contains"]
+                } else {
+                    null
+                },
+                enabled = !busy,
+                imeAction = ImeAction.Done,
+                fieldTestTag = ExportTags.HINT,
+            )
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = strings["export.hint.warning"],
+                style = HealthTrail.type.bodyM,
+                color = colors.ink2,
+            )
+
             Spacer(Modifier.height(Space.l))
             FilledButton(
                 label = strings["export.save"],
-                onClick = { onExport(passphrase) },
+                onClick = { onExport(passphrase, hint.trim().takeIf { it.isNotEmpty() }) },
                 enabled = canEncrypt && !busy,
                 modifier = Modifier.fillMaxWidth().testTag(ExportTags.SAVE),
             )

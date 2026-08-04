@@ -164,6 +164,23 @@ object ExportContainer {
          * anything, per 8.6.
          */
         val readablePages: Int = 0,
+        /**
+         * What the person wrote to remind themselves of the passphrase, or null.
+         *
+         * **In the outer manifest, in the clear, and the screen says so.**
+         * `contract/DATA-CONTRACT.md` 8.1: it has to be readable before the
+         * passphrase is known, or it is not a hint, it is a second thing to
+         * lose. That is exactly why the screen states plainly that anyone
+         * holding the file can read it and that it must never contain the
+         * passphrase itself.
+         *
+         * **It is the one field here the person wrote themselves**, so it is the
+         * one thing in the outer layer that could say something about them. That
+         * is their choice to make, made in front of a sentence that tells them
+         * what it costs, which is a different thing from the app deciding to put
+         * their row counts out there.
+         */
+        val passphraseHint: String? = null,
     ) {
         companion object
     }
@@ -226,6 +243,13 @@ object ExportContainer {
          * the real file and not a summary of it.
          */
         val schemaSql: String,
+        /**
+         * The person's own reminder, or null if they did not write one.
+         *
+         * Trimmed and emptied to null by the caller, so the format never has to
+         * decide whether a hint of three spaces is a hint.
+         */
+        val passphraseHint: String? = null,
     )
 
     /**
@@ -365,6 +389,7 @@ object ExportContainer {
             attachmentBytes = source.attachments.sumOf { it.length() },
             subjectCount = source.subjectCount,
             readablePages = readable.size,
+            passphraseHint = source.passphraseHint,
         )
 
         // Every file's hash, gathered as it is written, for CHECKSUMS.txt.
@@ -372,6 +397,7 @@ object ExportContainer {
 
         ZipOutputStream(staged.outputStream().buffered()).use { zip ->
             fun put(name: String, bytes: ByteArray) {
+                requireSafeName(name)
                 zip.putNextEntry(ZipEntry(name))
                 zip.write(bytes)
                 zip.closeEntry()
@@ -403,6 +429,55 @@ object ExportContainer {
             zip.closeEntry()
         }
         return manifest
+    }
+
+    /**
+     * Refuses a name that would not survive being extracted somewhere else.
+     *
+     * **The archive is a folder on somebody's computer in ten years**, and the
+     * computer is not this one. `contract/DATA-CONTRACT.md` 8.1 names the rules
+     * and they all come from the same place: a name that is fine on Android and
+     * impossible on Windows or a case-insensitive volume turns a restore into a
+     * partial one, silently, on the day it matters.
+     *
+     * **Checked rather than documented**, because the names are generated. The
+     * attachments are content hashes and safe by construction, and the readable
+     * pages are built from the person's own data, which is where a name will one
+     * day come from that nobody predicted. Asserted on a real export first: 106
+     * files, longest path 76 characters, no clashes.
+     */
+    private fun requireSafeName(name: String) {
+        require(name.all { it.code in 32..126 }) {
+            "an archive entry name is not ASCII: $name"
+        }
+        require(name.length <= MAX_PATH_LENGTH) {
+            "an archive entry path is longer than $MAX_PATH_LENGTH characters: $name"
+        }
+        require(name.none { it in "<>:\"|?*\\" }) {
+            "an archive entry name uses a character some systems refuse: $name"
+        }
+        val stem = name.substringAfterLast('/').substringBefore('.').uppercase()
+        require(stem !in RESERVED_NAMES) {
+            "an archive entry is named after a reserved device name: $name"
+        }
+    }
+
+    /** From 8.1. Short enough to survive being nested a few folders deep. */
+    private const val MAX_PATH_LENGTH = 180
+
+    /**
+     * Names Windows still refuses, forty years on, with or without an extension.
+     *
+     * A readable page called `con.html` is not a thing this app would generate
+     * today. It is exactly the thing that would arrive the day somebody's
+     * chapter is named for a person called Con.
+     */
+    private val RESERVED_NAMES = buildSet {
+        addAll(listOf("CON", "PRN", "AUX", "NUL"))
+        for (n in 1..9) {
+            add("COM$n")
+            add("LPT$n")
+        }
     }
 
     /**
@@ -555,6 +630,12 @@ object ExportContainer {
             appendLine()
             appendLine("You need the passphrase chosen when this file was made.")
             appendLine()
+            manifest.passphraseHint?.let { hint ->
+                appendLine("Whoever made this file left themselves this reminder of it:")
+                appendLine()
+                appendLine("  " + hint)
+                appendLine()
+            }
             appendLine("IF THE PASSPHRASE IS LOST, THIS ARCHIVE CANNOT BE OPENED.")
             appendLine("Not by its author, not by anyone. There is no server holding a copy,")
             appendLine("no recovery code, and no backdoor. This is not a policy that can be")
@@ -1311,6 +1392,10 @@ object ExportContainer {
         put("schema_version", FORMAT_VERSION)
         put("exported_at", exportedAt)
         put("encrypted", encrypted)
+        // Only when there is one. An absent key and an empty string are the same
+        // fact, and writing the empty one would put a field in every archive
+        // that exists to say the person declined.
+        passphraseHint?.let { put("passphrase_hint", it) }
         encryption?.let {
             put(
                 "encryption",
@@ -1400,6 +1485,7 @@ internal fun ExportContainer.Manifest.Companion.from(json: JSONObject): ExportCo
         appVersion = json.optString("app_version"),
         platform = json.optString("platform"),
         exportedAt = json.optLong("exported_at"),
+        passphraseHint = json.optString("passphrase_hint").takeIf { it.isNotBlank() },
         originDevice = json.optString("origin_device"),
         encrypted = json.optBoolean("encrypted", false),
         encryption = json.optJSONObject("encryption")?.let {

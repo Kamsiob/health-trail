@@ -356,6 +356,8 @@ fun NotebookShell(
     // Held between choosing a passphrase and choosing where the file goes,
     // because the system picker is a round trip through another activity.
     var pendingPassphrase by remember { mutableStateOf<String?>(null) }
+    /** The reminder the person wrote, which travels in the clear. 8.1. */
+    var pendingHint by remember { mutableStateOf<String?>(null) }
     var writeTo by remember { mutableStateOf<android.net.Uri?>(null) }
     var restoreOpen by remember { mutableStateOf(false) }
     var restoreState by remember { mutableStateOf<RestoreState>(RestoreState.Empty) }
@@ -778,8 +780,9 @@ fun NotebookShell(
         if (exportOpen) {
             ExportScreen(
                 state = exportState,
-                onExport = { passphrase ->
+                onExport = { passphrase, hint ->
                     pendingPassphrase = passphrase
+                    pendingHint = hint
                     exportState = ExportState.WORKING
                     chooseDestination.launch(exportFileName())
                 },
@@ -787,6 +790,7 @@ fun NotebookShell(
                     exportOpen = false
                     exportState = ExportState.READY
                     pendingPassphrase = null
+                    pendingHint = null
                 },
                 onAgain = { exportState = ExportState.READY },
             )
@@ -823,6 +827,7 @@ fun NotebookShell(
                                 target = staged,
                                 exportedAt = System.currentTimeMillis(),
                                 passphrase = chosen.toCharArray(),
+                                passphraseHint = pendingHint,
                             )
                             context.contentResolver.openOutputStream(exportTarget)?.use { out ->
                                 staged.inputStream().use { it.copyTo(out) }
@@ -837,6 +842,7 @@ fun NotebookShell(
                 }
                 writeTo = null
                 pendingPassphrase = null
+                pendingHint = null
             }
         }
 

@@ -56,7 +56,7 @@ class PassphraseMaskingTest {
     @Test
     fun theExportPassphraseIsConcealedUntilThePersonAsksToSeeIt() {
         compose.show {
-            ExportScreen(state = ExportState.READY, onExport = {}, onBack = {})
+            ExportScreen(state = ExportState.READY, onExport = { _, _ -> }, onBack = {})
         }
 
         compose.onNodeWithTag(ExportTags.PASSPHRASE).performTextInput(secret)
@@ -81,7 +81,7 @@ class PassphraseMaskingTest {
     @Test
     fun finishingAnExportTakesTheFormAndThePassphraseOffTheScreen() {
         compose.show {
-            ExportScreen(state = ExportState.DONE, onExport = {}, onBack = {})
+            ExportScreen(state = ExportState.DONE, onExport = { _, _ -> }, onBack = {})
         }
         compose.waitForIdle()
 

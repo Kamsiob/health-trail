@@ -56,6 +56,16 @@ object Backup {
          * Cleared by the writer on every path.
          */
         passphrase: CharArray,
+        /**
+         * What the person wrote to remind themselves, or null.
+         *
+         * **A String rather than a CharArray, unlike the passphrase, and that is
+         * the point.** The passphrase is wiped from memory because it opens the
+         * record; the hint is written into the archive in the clear on purpose,
+         * so treating it as a secret here would be a gesture rather than a
+         * protection, and a misleading one for whoever reads this next.
+         */
+        passphraseHint: String? = null,
     ): ExportContainer.Manifest = withContext(Dispatchers.IO) {
         val database = HealthTrailDatabase.open(context)
 
@@ -99,6 +109,7 @@ object Backup {
                     schemaSql = context.assets
                         .open(com.kamsiob.healthtrail.contract.ContractAssets.SCHEMA_PATH)
                         .use { it.readBytes().decodeToString() },
+                    passphraseHint = passphraseHint?.trim()?.takeIf { it.isNotEmpty() },
                 ),
                 passphrase = passphrase,
             )

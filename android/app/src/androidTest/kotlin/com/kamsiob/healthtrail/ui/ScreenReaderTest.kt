@@ -719,7 +719,7 @@ class ScreenReaderTest {
     @Test
     fun exportLabelsEverything() {
         compose.show {
-            ExportScreen(state = ExportState.READY, onExport = {}, onBack = {})
+            ExportScreen(state = ExportState.READY, onExport = { _, _ -> }, onBack = {})
         }
         assertEverythingIsLabeled("export")
     }
@@ -729,7 +729,7 @@ class ScreenReaderTest {
         // Every control is disabled in this state, which is exactly when a
         // reader is most likely to meet something that announces nothing.
         compose.show {
-            ExportScreen(state = ExportState.WORKING, onExport = {}, onBack = {})
+            ExportScreen(state = ExportState.WORKING, onExport = { _, _ -> }, onBack = {})
         }
         assertEverythingIsLabeled("export, working")
     }
