@@ -228,7 +228,7 @@ private fun BillRow(
     // **One ink for every amount.** A large bill is not colored differently
     // from a small one, which would be the app saying something about it.
     DenseRow(
-        title = bill.description,
+        title = Bidi.isolate(bill.description),
         subtitle = listOfNotNull(
             bill.receivedEdtf?.takeIf { it.isNotBlank() }
                 ?.let { EventDateText.render(strings, it) },

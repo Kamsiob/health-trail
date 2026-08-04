@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -183,7 +184,7 @@ fun EntryScreen(
                         testTag = EntryTags.person(person.id),
                         onClick = { onOpenPerson(person) },
                         leading = { WaypointDot(color = colors.blue) },
-                        label = person.displayName,
+                        label = Bidi.isolate(person.displayName),
                         note = person.roleLabel?.takeIf { it.isNotBlank() }
                             ?: strings["entry.person"],
                     )
@@ -198,7 +199,7 @@ fun EntryScreen(
                         testTag = EntryTags.thread(thread.id),
                         onClick = { onOpenThread(thread) },
                         leading = { RouteSwatch(color = route, index = thread.colorIndex) },
-                        label = thread.label,
+                        label = Bidi.isolate(thread.label),
                         note = strings["entry.thread"],
                     )
                     Spacer(Modifier.height(Space.cardGap))

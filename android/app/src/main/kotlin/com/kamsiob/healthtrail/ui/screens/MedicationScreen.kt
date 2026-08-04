@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -76,7 +77,7 @@ fun MedicationScreen(
 
     SectionScaffold(
         name = MedicationTags.NAME,
-        title = medication.name,
+        title = Bidi.isolate(medication.name),
         subtitle = medication.doseText?.takeIf { it.isNotBlank() }
             ?: strings["medication.nodose"],
         onBack = onBack,

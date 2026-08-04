@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Digest
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Chevron
@@ -344,7 +345,7 @@ fun TodayScreen(
             val everything = open + listOfNotNull(
                 nextAppointment?.let { appointment ->
                     OpenItem(
-                        label = appointment.title,
+                        label = Bidi.isolate(appointment.title),
                         onOpen = onOpenAppointments,
                         testTag = TodayTags.NEXT_APPOINTMENT,
                         subtitle = EventDateText.render(strings, appointment.scheduledEdtf),
@@ -360,7 +361,7 @@ fun TodayScreen(
 
                 GroupedSurface {
                     DenseRow(
-                        title = lead.label,
+                        title = Bidi.isolate(lead.label),
                         subtitle = lead.subtitle,
                         chevron = true,
                         divider = false,
@@ -383,7 +384,7 @@ fun TodayScreen(
                             Spacer(Modifier.height(Space.cardGap))
                             GroupedRows(items = rest) { item, isLast ->
                                 DenseRow(
-                                    title = item.label,
+                                    title = Bidi.isolate(item.label),
                                     subtitle = item.subtitle,
                                     chevron = true,
                                     divider = !isLast,

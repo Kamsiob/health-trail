@@ -186,7 +186,7 @@ private fun MedicationRow(
     ).let { Bidi.join(it) }.takeIf { it.isNotBlank() }
 
     DenseRow(
-        title = medication.name,
+        title = Bidi.isolate(medication.name),
         subtitle = detail,
         trailing = medication.doseText?.takeIf { it.isNotBlank() },
         chevron = true,
