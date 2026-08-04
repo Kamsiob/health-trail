@@ -34,7 +34,11 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Step 2 is complete too.** All four bottom-navigation destinations are converted, so **the app reads as one app end to end**, which is what step 2 exists for. #169 through #172 are closed.
 
-1. **Next: step 3, #173 to #188**, the section screens, in the order the default situation template surfaces them.
+**Step 3 is under way.** All eleven section screens gained their tab chip and their own heading from `SectionScaffold`, so that pattern cannot drift. **Three are fully converted inside**: the care team #174, medications #175, and money #177.
+
+**None of the step 3 issues are closed yet**, deliberately. They close only on device verification at both themes, at maximum font scale, and in RTL, and the conversions so far have been seen in light only. **A verification sweep over all of them together is the next thing**, rather than four passes per screen.
+
+1. **Continue step 3, #173 to #188**, the section screens, in the order the default situation template surfaces them.
 2. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
 
 **THE ARCHIVE runs on its own track and must not be scheduled behind the screens.** #209 through #215, with #9 as the parent.
