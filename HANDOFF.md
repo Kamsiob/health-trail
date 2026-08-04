@@ -153,7 +153,7 @@ One documentation-only commit, before any application code, exactly as instructe
 - **`DESIGN.md` was rewritten**, not patched. Identity, the five laws, the tokens including the tab pack and `stone`, the component inventory, the FAB correction, the interaction grammar, the method for an undrawn screen, the polish list, and the two audits. Paragraphs describing replaced patterns were **deleted rather than kept as history**, and section 18 records exactly what survived and what did not, so nobody mistakes a deliberate deletion for an omission.
 - **`contract/DATA-CONTRACT.md` gained THE ARCHIVE in full**, marked as an owner-approved amendment. `contract/export-format.md` was renamed to `contract/EXPORT-FORMAT.md` and given its new job.
 - **`MASTER_SPEC.md` was corrected** wherever it described the old design or an export weaker than THE ARCHIVE.
-- **`DECISIONS.md` gained D76 through D85**, one per decision this direction forced.
+- **`DECISIONS.md` gained D76 through D85**, one per decision this direction forced. **It runs to D98 now**, the later ones from the nights of building rather than from step zero.
 - **The board was reconciled.** 37 issues closed as superseded with the reason named, 3 rewritten in place, 67 opened, all on the board in `ORDER OF WORK` order.
 
 ---
@@ -168,7 +168,7 @@ One documentation-only commit, before any application code, exactly as instructe
 
 **What replaces it is harder and better.** An encrypted archive must remain **openable by someone who has the passphrase but does not have this app**, because a format only this app can decrypt is the same failure as a format only this app can read, arriving one step later. So the container is two layers: a plain outer ZIP64 holding only a stranger-readable `README.txt`, a non-sensitive `MANIFEST.json`, and `payload.enc`. **Nothing in the outer layer reveals anything about the person.**
 
-Three requirements make that real rather than aspirational, and each is a build gate: the format is published **byte for byte** in `contract/EXPORT-FORMAT.md` under AGPL so it survives this project, #214. A standalone decryptor ships at `tools/decrypt/` with no build step and a README somebody who does not write software can follow, tested in continuous integration against a real archive, #215. And the passphrase gets every chance to survive: confirmed twice, an optional hint stored in the outer manifest **in plaintext with the app saying so plainly**, and a backup that reuses a passphrase set once. **D84 carries the full account.**
+**All three of these are now built**, on 2026-08-04, and each is described in section 0 with what verified it. They are kept here as the requirements rather than as pending work. Three requirements make that real rather than aspirational, and each was a build gate: the format is published **byte for byte** in `contract/EXPORT-FORMAT.md` under AGPL so it survives this project, #214. A standalone decryptor ships at `tools/decrypt/` with no build step and a README somebody who does not write software can follow, tested in continuous integration against a real archive, #215. And the passphrase gets every chance to survive: confirmed twice, an optional hint stored in the outer manifest **in plaintext with the app saying so plainly**, and a backup that reuses a passphrase set once. **D84 carries the full account.**
 
 **The lesson worth keeping.** A quiet reversal would have removed a real safety property and nobody would have noticed for months. That is the same shape as every silent negative this project has been caught by.
 
