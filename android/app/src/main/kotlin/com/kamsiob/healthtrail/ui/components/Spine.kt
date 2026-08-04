@@ -63,6 +63,19 @@ enum class Waypoint {
     /** Something that happened. The default, and most of what a notebook holds. */
     HAPPENED,
 
+    /**
+     * Something started and not finished: an open incident, an unanswered
+     * question, a request nobody has come back on.
+     *
+     * **A heavier ring than [UPCOMING], and that difference is load bearing.**
+     * Open and upcoming are both "not done", and a person scanning a thread has
+     * to tell "I am waiting on somebody" from "this has not come round yet",
+     * because only the first one is theirs to chase. The grid draws open at a
+     * 3px ring against upcoming's 2.5px, filled with the page rather than the
+     * ink, so it reads as a hole in the line rather than as a lighter dot.
+     */
+    OPEN,
+
     /** Something upcoming, or expected and not yet here. */
     UPCOMING,
 
@@ -179,6 +192,19 @@ private fun DrawScope.drawWaypoint(
 
     when (state) {
         Waypoint.HAPPENED -> drawCircle(color.copy(alpha = alpha), radius, center)
+
+        // A heavier ring than upcoming, on the page's own surface, so it reads
+        // as a hole in the line. Same 12dp, so an open thing is not a larger
+        // thing, which would say it matters more than the ones around it.
+        Waypoint.OPEN -> {
+            drawCircle(surface.copy(alpha = alpha), radius, center)
+            drawCircle(
+                color = color.copy(alpha = alpha),
+                radius = radius - Trail.openStroke.toPx() / 2,
+                center = center,
+                style = Stroke(width = Trail.openStroke.toPx()),
+            )
+        }
 
         // Hollow, and the stroke sits inside the same 12dp so an upcoming thing
         // does not read as a larger thing.

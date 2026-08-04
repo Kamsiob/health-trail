@@ -107,7 +107,7 @@ fun ChapterScreen(
                         continuesAbove = index > 0,
                         continuesBelow = index < detail.incidents.lastIndex,
                         node = colors.alert,
-                        state = if (incident.isOpen) Waypoint.UPCOMING else Waypoint.MILESTONE,
+                        state = if (incident.isOpen) Waypoint.OPEN else Waypoint.MILESTONE,
                         routeColor = colors.alert,
                         dash = null,
                     ) {
