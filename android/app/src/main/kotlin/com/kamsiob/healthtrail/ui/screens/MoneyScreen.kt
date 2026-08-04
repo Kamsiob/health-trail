@@ -19,6 +19,15 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.components.WashBand
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.FoldRowText
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -31,6 +40,7 @@ object MoneyTags {
     const val NAME = "money"
     const val ADD = "money_add"
     const val TOTAL = "money_total"
+    fun fold(state: String) = "money_fold_$state"
     fun row(id: String) = "bill_$id"
 }
 
@@ -82,6 +92,7 @@ fun MoneyScreen(
     val colors = HealthTrail.colors
     val open = bills.filter { it.isOpen }
     val openTotal = open.mapNotNull { it.amountMinor }.sum()
+    var openStates by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val currency = bills.firstOrNull()?.currency ?: "USD"
 
     SectionScaffold(
@@ -103,51 +114,92 @@ fun MoneyScreen(
         // The total sits above the list, per section 4.3, and only appears when
         // there is something unsettled to total. A zero total on a settled
         // notebook would be a number with nothing behind it.
+        // **The total is a wash band**, per grid screen 14: a section-colored
+        // strip carrying one summary figure above the detail rather than inside
+        // it. Only when there is something unsettled to total, because a zero
+        // on a settled notebook is a number with nothing behind it.
+        //
+        // **It states the figure and stops.** No arrow, no comparison to last
+        // month, no color that changes with the amount. Whether fifteen
+        // thousand dollars is a lot is the person's to judge, per rule 2.
         if (open.isNotEmpty() && openTotal > 0) {
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(Radius.card)
-                        .background(colors.sand)
-                        .testTag(MoneyTags.TOTAL)
-                        .padding(Space.cardPadding),
-                ) {
-                    Text(
-                        text = strings["money.open_total"],
-                        style = HealthTrail.type.mono,
-                        color = colors.ink2,
-                    )
-                    Spacer(Modifier.height(Space.xs))
-                    Text(
-                        text = formatMoney(strings, openTotal, currency),
-                        style = HealthTrail.type.displayM,
-                        color = colors.ink,
-                    )
-                }
-                Spacer(Modifier.height(Space.l))
+                WashBand(
+                    label = strings["money.open_total"],
+                    value = formatMoney(strings, openTotal, currency),
+                    hue = hueFor(Repository.Section.MONEY),
+                    description = strings["money.open_total"] + ", " +
+                        formatMoney(strings, openTotal, currency),
+                    modifier = Modifier.testTag(MoneyTags.TOTAL),
+                )
+                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
-        for (state in STATE_ORDER) {
+        // **The one that needs a decision leads; every other state folds**,
+        // per grid screen 14 and law 1. A person opens this screen because
+        // something wants an answer, and four groups at one weight makes them
+        // read all of it to find which.
+        //
+        // **A fold carries its count and its own sum**, so the person can see
+        // what is behind it without opening it.
+        STATE_ORDER.forEachIndexed { index, state ->
             val inState = bills.filter { it.state == state }
-            if (inState.isEmpty()) continue
+            if (inState.isEmpty()) return@forEachIndexed
 
-            item(key = "state_$state") {
-                GroupHeader(labelKey = "money.state.$state")
-                Spacer(Modifier.height(Space.headerGap))
-            }
-            for (bill in inState) {
-                item(key = bill.id) {
-                    BillRow(
-                        bill = bill,
-                        onRemove = { onRemove(bill) },
-                        onEdit = { onEdit(bill) },
+            val leads = index == 0
+            if (leads) {
+                item(key = "lead_$state") {
+                    GroupedSurface {
+                        inState.forEachIndexed { row, bill ->
+                            BillRow(
+                                bill = bill,
+                                onRemove = { onRemove(bill) },
+                                onEdit = { onEdit(bill) },
+                                isLast = row == inState.lastIndex,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            } else {
+                val sum = inState.mapNotNull { it.amountMinor }.sum()
+                item(key = "fold_$state") {
+                    FoldRowText(
+                        label = strings["money.state.$state"],
+                        expanded = openStates.contains(state),
+                        onToggle = {
+                            openStates = if (openStates.contains(state)) {
+                                openStates - state
+                            } else {
+                                openStates + state
+                            }
+                        },
+                        count = if (sum > 0) {
+                            "${inState.size} · ${formatMoney(strings, sum, currency)}"
+                        } else {
+                            inState.size.toString()
+                        },
+                        modifier = Modifier.testTag(MoneyTags.fold(state)),
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
+                if (openStates.contains(state)) {
+                    item(key = "open_$state") {
+                        GroupedSurface {
+                            inState.forEachIndexed { row, bill ->
+                                BillRow(
+                                    bill = bill,
+                                    onRemove = { onRemove(bill) },
+                                    onEdit = { onEdit(bill) },
+                                    isLast = row == inState.lastIndex,
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(Space.cardGap))
+                    }
+                }
             }
-            item(key = "gap_$state") { Spacer(Modifier.height(Space.s)) }
         }
 
         item {
@@ -165,58 +217,33 @@ private fun BillRow(
     bill: Repository.Bill,
     onRemove: () -> Unit,
     onEdit: () -> Unit,
+    isLast: Boolean,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
 
-    Column(
+    // **The amount is the trailing value, right aligned and tabular**, per
+    // `DESIGN.md` 15: amounts right-align so a column of them can be read down.
+    //
+    // **One ink for every amount.** A large bill is not colored differently
+    // from a small one, which would be the app saying something about it.
+    DenseRow(
+        title = bill.description,
+        subtitle = listOfNotNull(
+            bill.receivedEdtf?.takeIf { it.isNotBlank() }
+                ?.let { EventDateText.render(strings, it) },
+            bill.stateNote?.takeIf { it.isNotBlank() },
+            bill.notes?.takeIf { it.isNotBlank() },
+        ).joinToString(" · ").takeIf { it.isNotBlank() },
+        trailing = bill.amountMinor
+            ?.let { formatMoney(strings, it, bill.currency) }
+            ?: strings["money.no_amount"],
+        chevron = true,
+        divider = !isLast,
+        onClick = onEdit,
         modifier = Modifier
-            .fillMaxWidth()
-            .clip(Radius.card)
-            .background(colors.card)
             .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
-            .testTag(MoneyTags.row(bill.id))
-            .padding(Space.cardPadding),
-    ) {
-        bill.receivedEdtf?.takeIf { it.isNotBlank() }?.let { received ->
-            Text(
-                text = EventDateText.render(strings, received),
-                style = HealthTrail.type.mono,
-                color = colors.ink2,
-            )
-            Spacer(Modifier.height(Space.xs))
-        }
-
-        Row(verticalAlignment = Alignment.Top) {
-            Text(
-                text = bill.description,
-                style = HealthTrail.type.displayS,
-                color = colors.ink,
-                modifier = Modifier.weight(1f),
-            )
-            Spacer(Modifier.width(Space.sm))
-            Text(
-                text = bill.amountMinor
-                    ?.let { formatMoney(strings, it, bill.currency) }
-                    ?: strings["money.no_amount"],
-                style = HealthTrail.type.displayS,
-                // **One ink for every amount.** A large bill is not colored
-                // differently from a small one: that would be the app saying
-                // something about it.
-                color = if (bill.amountMinor == null) colors.ink2 else colors.ink,
-            )
-        }
-
-        bill.stateNote?.takeIf { it.isNotBlank() }?.let { note ->
-            Spacer(Modifier.height(Space.xs))
-            Text(text = note, style = HealthTrail.type.bodyM, color = colors.ink2)
-        }
-
-        bill.notes?.takeIf { it.isNotBlank() }?.let { notes ->
-            Spacer(Modifier.height(Space.xs))
-            Text(text = notes, style = HealthTrail.type.bodyM, color = colors.ink2)
-        }
-    }
+            .testTag(MoneyTags.row(bill.id)),
+    )
 }
 
 /**
