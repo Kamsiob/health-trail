@@ -3647,6 +3647,156 @@ class Repository private constructor(
             )
         }
 
+    // ---- month review ---------------------------------------------------
+
+    /**
+     * How many of one kind of thing were written down in the month.
+     *
+     * **A count, and the app stops there.** `MASTER_SPEC.md` section 5 allows
+     * counts and forbids what they mean: nothing here says a month was busy, or
+     * quiet, or worse than the one before it, because all three would be the app
+     * forming an opinion about somebody's care. Rule 2.
+     */
+    data class KindCount(val kind: String, val count: Int)
+
+    /**
+     * One month of the record, gathered.
+     *
+     * `MASTER_SPEC.md` section 4.5 and `DESIGN.md` section 14: a period of the
+     * trail, composed, **every line tapping through to its source entry.**
+     *
+     * **It is a view, not a document.** Nothing here is stored, summarized, or
+     * derived into a new fact. Every row in every list is the row that already
+     * exists somewhere else in the notebook, gathered by the one thing they have
+     * in common, which is when they happened. That is what makes each line able
+     * to open its own source, and it is why section 5 can promise the output is
+     * verifiable: there is nothing to verify beyond a date comparison.
+     *
+     * **A row belongs to the month only if its whole date fits inside it.** An
+     * entry dated "2026" overlaps June and eleven other months, and putting it
+     * in June's review would be the app claiming a precision the person never
+     * gave. Rule 17, and `DESIGN.md` 9.2: display never invents precision. So a
+     * year-precise row appears in no month's review, which is correct rather
+     * than a gap, because the record never said it happened in one. A month
+     * precise row does belong, and sits among the days without being given one.
+     */
+    data class MonthReview(
+        /**
+         * The first instant of the month, so the screen names the month in the
+         * locale's own words rather than being handed an English string.
+         */
+        val monthStart: Long,
+        /** What was written down, newest first, exactly as the trail holds it. */
+        val entries: List<TrailEntry>,
+        /** The same entries counted by kind, in the order the trail draws them. */
+        val kinds: List<KindCount>,
+        /** What somebody decided was worth marking, oldest first, as on the arc. */
+        val milestones: List<Milestone>,
+        val appointments: List<Appointment>,
+        /** Incidents first reported in the month, whether or not they were answered. */
+        val reported: List<Incident>,
+        /**
+         * Incidents answered in the month **and reported before it.**
+         *
+         * **Answered is a moment rather than a date somebody gave**, because it
+         * is stamped when the person marks it, so it needs no precision test.
+         * An incident reported in March and answered in June belongs to June's
+         * review as an answer and to March's as a report, which is what
+         * happened.
+         *
+         * **One reported and answered inside the same month is in [reported]
+         * only.** It listed twice on the screen, under two headings, and read
+         * as a defect rather than as two facts: what somebody learns from the
+         * second row is that it was answered, which the first row can say in a
+         * word. The rule is the honest one either way, since neither list is a
+         * count of incidents and both are answers to "what happened in June".
+         */
+        val answered: List<Incident>,
+        val documents: List<Document>,
+        /**
+         * Places that began in the month, and places that ended in it.
+         *
+         * **A place can be in both**, which is what an overnight stay is, and
+         * the screen says so in one row rather than listing the name twice.
+         */
+        val began: List<Chapter>,
+        val ended: List<Chapter>,
+    ) {
+        /**
+         * True when the month holds nothing at all.
+         *
+         * **Not a total, and there is deliberately no total on this class.** A
+         * single number over a month invites the comparison with last month
+         * that rule 2 forbids the app to make, and law 1 would put it in
+         * competition with the one thing the screen leads with. Each group
+         * carries its own count where a count answers something.
+         */
+        val isEmpty: Boolean get() = entries.isEmpty() && milestones.isEmpty() &&
+            appointments.isEmpty() && documents.isEmpty() && began.isEmpty() &&
+            ended.isEmpty() && reported.isEmpty() && answered.isEmpty()
+    }
+
+    /**
+     * Gathers one month.
+     *
+     * Composed over the readers that already exist rather than through a query
+     * of its own, which is what `MASTER_SPEC.md` section 5 means by the engine
+     * doing its arithmetic in code: the rows come from the same place the
+     * screens get them, so a review can never disagree with the section it
+     * points at.
+     */
+    suspend fun monthReview(
+        subjectId: String,
+        month: java.time.YearMonth,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): MonthReview = withContext(Dispatchers.IO) {
+        val from = month.atDay(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        val to = month.plusMonths(1).atDay(1).atStartOfDay(zone).toInstant().toEpochMilli() - 1
+
+        fun inMonth(edtf: String?): Boolean = fitsInside(edtf, from, to, zone)
+
+        val entries = trail(subjectId).filter { inMonth(it.occurredEdtf) }
+        val allIncidents = incidents(subjectId)
+        val reported = allIncidents.filter { inMonth(it.reportedEdtf) }
+        val reportedIds = reported.map { it.id }.toSet()
+
+        MonthReview(
+            monthStart = from,
+            entries = entries,
+            // The trail's own order, so a kind never moves between months.
+            kinds = KIND_ORDER.mapNotNull { kind ->
+                entries.count { it.kind == kind }.takeIf { it > 0 }
+                    ?.let { KindCount(kind, it) }
+            },
+            milestones = milestones(subjectId).filter { inMonth(it.occurredEdtf) },
+            appointments = appointments(subjectId).filter { inMonth(it.scheduledEdtf) },
+            reported = reported,
+            answered = allIncidents.filter {
+                it.resolvedAt?.let { at -> at in from..to } == true && it.id !in reportedIds
+            },
+            documents = documents(subjectId).filter { inMonth(it.receivedEdtf) },
+            began = chapters(subjectId).filter { inMonth(it.startedEdtf) },
+            ended = chapters(subjectId).filter { inMonth(it.endedEdtf) },
+        )
+    }
+
+    /**
+     * True when everything the date could mean happens inside the window.
+     *
+     * **Both ends, not just the start.** Testing the start alone would put a
+     * year-precise "2026" into January's review, since January is where that
+     * year begins, which is the app inventing a month nobody named. An unknown
+     * date and a date this version cannot read both answer false and belong to
+     * no month, which is honest: neither says when it happened.
+     */
+    private fun fitsInside(edtf: String?, from: Long, to: Long, zone: ZoneId): Boolean {
+        val parsed = edtf?.takeIf { it.isNotBlank() }?.let { Edtf.parse(it) } ?: return false
+        val range = Edtf.resolve(parsed, zone)
+        val start = range.start ?: return false
+        val end = range.end ?: return false
+        return start >= from && end <= to
+    }
+
     /**
      * Everything on one care thread, most recent first.
      *
@@ -3971,6 +4121,23 @@ class Repository private constructor(
     )
 
     companion object {
+        /**
+         * The kinds of entry, in the order a month review counts them.
+         *
+         * **The notebook's own order, never by how many.** Ranking by count
+         * would move the kinds around from month to month and put whichever
+         * part of a month happened most at the top, which is the same mistake
+         * [Digest] refuses to make with sections and for the same reason: the
+         * places never move.
+         *
+         * A kind the schema gains later is left out rather than counted into
+         * something, exactly as `Digest.sectionOf` leaves an unmapped table
+         * out. It shows up in the entries themselves either way.
+         */
+        internal val KIND_ORDER = listOf(
+            "call", "visit", "incident", "measurement", "question", "document", "note",
+        )
+
         /** The person accepted the disclaimer at this time. Never cleared. */
         const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted_at"
 

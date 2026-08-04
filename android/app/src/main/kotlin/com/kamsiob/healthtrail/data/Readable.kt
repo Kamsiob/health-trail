@@ -169,6 +169,139 @@ object Readable {
     }
 
     /**
+     * One month, as something to send to a sibling in another state.
+     *
+     * `MASTER_SPEC.md` 4.9 lists a month review among the things that are
+     * shareable, and this is the reason the screen has a filled action at all: a
+     * month gathered on a phone helps one person, and a month somebody can send
+     * is what the app is for.
+     *
+     * **Same order as the screen**, which is the notebook's own, so a person who
+     * has read one recognizes the other. Nothing here is summarized: it repeats
+     * the rows, and the only sentences the app contributes are the headings.
+     *
+     * **The counts by kind appear here and not on the screen.** In a document
+     * being read by somebody who cannot tap anything, "9 calls" is the fastest
+     * honest summary of a month. On the screen the rows themselves are one tap
+     * away and the same line would be a count of what is visible underneath it.
+     */
+    fun monthReview(
+        strings: Strings,
+        subjectName: String?,
+        month: String,
+        review: Repository.MonthReview,
+    ): String = buildString {
+        appendLine(month)
+        appendLine("=".repeat(month.length))
+        appendLine()
+
+        subjectName?.takeIf { it.isNotBlank() }?.let {
+            appendLine(strings("readable.about", "name" to it))
+        }
+
+        // **Counted by kind and never totalled.** A single number over a month
+        // is the one line in this document somebody would compare against last
+        // month's, and the app does not make that comparison or invite it. Nine
+        // calls is a fact; forty-two things is a verdict wearing a number.
+        if (review.kinds.isNotEmpty()) {
+            appendLine()
+            review.kinds.forEach { (kind, count) ->
+                // The kind's own noun, so the document never says "Log a call",
+                // which is the button rather than the thing.
+                appendLine("${strings[kindNameKeyFor(kind)]}: $count")
+            }
+        }
+
+        section(strings["review.marked"], review.milestones) { milestone ->
+            line(dateOf(strings, milestone.occurredEdtf), milestone.label, milestone.note)
+        }
+        section(strings["review.where"], review.began) { chapter ->
+            line(dateOf(strings, chapter.startedEdtf), chapter.name, strings["review.began"])
+        }
+        section(strings["review.ended"], review.ended) { chapter ->
+            line(dateOf(strings, chapter.endedEdtf), chapter.name, chapter.reason)
+        }
+        section(strings["review.appointments"], review.appointments) { appointment ->
+            line(
+                dateOf(strings, appointment.scheduledEdtf),
+                appointment.title.ifBlank { strings["prep.untitled"] },
+                appointment.locationNote,
+            )
+        }
+        section(strings["review.reported"], review.reported) { incident ->
+            line(dateOf(strings, incident.reportedEdtf), incident.title, incident.description)
+        }
+        section(strings["review.answered"], review.answered) { incident ->
+            line(dateOf(strings, incident.reportedEdtf), incident.title, incident.resolutionNote)
+        }
+        section(strings["review.documents"], review.documents) { document ->
+            line(dateOf(strings, document.receivedEdtf), document.title, document.originalLocation)
+        }
+        section(strings["review.entries"], review.entries) { entry ->
+            line(
+                dateOf(strings, entry.occurredEdtf),
+                entry.title?.takeIf { it.isNotBlank() } ?: strings[kindNameKeyFor(entry.kind)],
+                entry.body,
+            )
+        }
+
+        appendLine()
+        appendLine(footer(strings))
+    }
+
+    /**
+     * A heading and its rows, or nothing at all.
+     *
+     * **An empty section is left out rather than headed and empty.** A document
+     * saying "What went wrong" over a blank space reads as something missing
+     * from the file, where its absence reads as nothing having gone wrong, which
+     * is what the record says.
+     */
+    private fun <T> StringBuilder.section(
+        heading: String,
+        rows: List<T>,
+        render: StringBuilder.(T) -> Unit,
+    ) {
+        if (rows.isEmpty()) return
+        appendLine()
+        appendLine(heading)
+        appendLine("-".repeat(heading.length))
+        rows.forEach { row ->
+            appendLine()
+            render(row)
+        }
+    }
+
+    /** One row: when, what, and whatever was written under it. */
+    private fun StringBuilder.line(date: String, title: String, body: String?) {
+        appendLine(date)
+        appendLine(title)
+        body?.takeIf { it.isNotBlank() }?.let { appendLine(it) }
+    }
+
+    /** A date at exactly the precision somebody gave it, or the plain fact that nobody did. */
+    private fun dateOf(strings: Strings, edtf: String?): String =
+        edtf?.takeIf { it.isNotBlank() }?.let { EventDateText.render(strings, it) }
+            ?: strings["date.unknown"]
+
+    /**
+     * The catalog key naming a kind of entry.
+     *
+     * The same mapping the trail uses, kept here rather than reached for across
+     * the layer boundary, because this object is pure and a screen file is not.
+     * Both read the same seven kinds out of the schema.
+     */
+    private fun kindNameKeyFor(kind: String): String = when (kind) {
+        "call" -> "entry.kind.call"
+        "visit" -> "entry.kind.visit"
+        "incident" -> "entry.kind.incident"
+        "measurement" -> "entry.kind.measurement"
+        "question" -> "entry.kind.question"
+        "document" -> "entry.kind.document"
+        else -> "entry.kind.note"
+    }
+
+    /**
      * What every shared document ends with.
      *
      * **This is not boilerplate and it is not a disclaimer for the app's

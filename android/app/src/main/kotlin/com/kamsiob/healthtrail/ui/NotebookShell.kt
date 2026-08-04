@@ -47,6 +47,7 @@ import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.AddMilestoneScreen
 import com.kamsiob.healthtrail.ui.screens.MilestoneDraft
 import com.kamsiob.healthtrail.ui.screens.MilestonesScreen
+import com.kamsiob.healthtrail.ui.screens.MonthReviewScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.BillScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
@@ -320,6 +321,17 @@ fun NotebookShell(
 
     /** The appointment whose prep sheet is open, and the sheet itself. */
     var openPrepFor by remember { mutableStateOf<String?>(null) }
+    /**
+     * The month being reviewed, and what it holds.
+     *
+     * **The month rather than a label**, because the label is already localized
+     * and reading the app's own rendering back as data is how a screen ends up
+     * agreeing with itself in English and disagreeing in Arabic.
+     */
+    var reviewMonth by remember { mutableStateOf<java.time.YearMonth?>(null) }
+    var review by remember { mutableStateOf<Repository.MonthReview?>(null) }
+    /** A month waiting to become a document for the share sheet. */
+    var sharingReview by remember { mutableStateOf<Repository.MonthReview?>(null) }
     var milestonesOpen by remember { mutableStateOf(false) }
     var addingMilestone by remember { mutableStateOf(false) }
     var editingMilestone by remember { mutableStateOf<Repository.Milestone?>(null) }
@@ -556,6 +568,12 @@ fun NotebookShell(
     }
 
     BackHandler(enabled = openSection != null) { openSection = null }
+    // **Above the trail it was opened from and below everything it opens.** The
+    // dispatcher hands a press to the most recently added enabled callback, so a
+    // chapter reached through a review has to register after this line or back
+    // would close the review out from under it and leave the chapter standing.
+    // Every door on the review screen is registered below.
+    BackHandler(enabled = reviewMonth != null) { reviewMonth = null; review = null }
     BackHandler(enabled = openProject != null) { openProject = null }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
     BackHandler(enabled = searchOpen) { searchOpen = false }
@@ -1079,6 +1097,35 @@ fun NotebookShell(
             }
         }
 
+        // One month as a document, for the sibling who is not here.
+        sharingReview?.let { gathered ->
+            LaunchedEffect(gathered.monthStart) {
+                val month = com.kamsiob.healthtrail.time.EventDateText.monthHeading(
+                    strings,
+                    gathered.monthStart,
+                    java.time.ZoneId.systemDefault(),
+                )
+                val text = Readable.monthReview(
+                    strings = strings,
+                    subjectName = repository.activeSubject()?.displayName,
+                    month = month,
+                    review = gathered,
+                )
+                val intent = Share.documentIntent(
+                    context = context,
+                    fileName = Readable.fileName(
+                        title = month,
+                        isoDate = java.time.LocalDate.now().toString(),
+                        fallback = strings["readable.fallback"],
+                    ),
+                    text = text,
+                    chooserTitle = strings["readable.share.title"],
+                )
+                sharingReview = null
+                if (intent != null) context.startActivity(intent) else failed = true
+            }
+        }
+
         // Pinning an entry, or taking the pin out. Here rather than in the
         // screen's click handler for the same reason settling an incident is:
         // the screen stays a screen, and the write happens once and off the
@@ -1408,6 +1455,15 @@ fun NotebookShell(
                 Repository.Section.TRAIL -> TrailScreen(
                     entries = trail,
                     onOpen = { openEntry = it.id },
+                    // The month header is the door, per rule 18 and 13.5. Any
+                    // instant inside the month says which month it is, and the
+                    // zone turns it into one in the same place the review does.
+                    onReview = { millis ->
+                        reviewMonth = java.time.YearMonth.from(
+                            java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault()),
+                        )
+                    },
                     // **Pinning writes and then reloads, like every other write
                     // in the shell.** The pinned run is derived from the rows
                     // rather than held beside them, so a pin that only moved a
@@ -1739,6 +1795,35 @@ fun NotebookShell(
                 onOpenEntry = { openThread = null; openEntry = it.id },
                 onBack = { openThread = null },
             )
+        }
+
+        // **One month of the trail, gathered.** The second half of #200 and the
+        // last row of `DESIGN.md` section 14 that pointed at nothing. It sits
+        // above the trail rather than inside it because it is a screen the trail
+        // opens, and every line on it opens something further.
+        reviewMonth?.let { month ->
+            LaunchedEffect(month, revision) {
+                val subjectId = repository.activeSubject()?.id
+                review = subjectId?.let { repository.monthReview(it, month) }
+                if (review == null) reviewMonth = null
+            }
+            review?.let { gathered ->
+                MonthReviewScreen(
+                    review = gathered,
+                    // **The review stays open underneath every door.** Somebody
+                    // reading one entry out of June and coming back belongs in
+                    // June, not on the trail they passed through. Rule 18, and
+                    // the same shape the prep sheet uses.
+                    onOpenEntry = { openEntry = it.id },
+                    onOpenMilestones = { milestonesOpen = true },
+                    onOpenChapter = { openChapter = it },
+                    onOpenAppointment = { openPrepFor = it.id },
+                    onOpenIncident = { openIncident = it },
+                    onOpenDocument = { openDocument = it },
+                    onShare = { sharingReview = gathered },
+                    onBack = { reviewMonth = null; review = null },
+                )
+            }
         }
 
         if (milestonesOpen) {

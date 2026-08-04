@@ -32,23 +32,21 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 2. #200 is half built, and half of the built half has never been on a phone
+## 2. #200 is built end to end and needs its sweep
 
-**Read this before touching it.** The session that started it ended when the phone had to be unplugged.
+**Both halves exist and both have been used on the phone.** What is left is verification, not construction.
 
-**Built and verified on the device:** the milestone reader and writer in `Repository.kt`, `MilestonesScreen` (the arc), `AddMilestoneScreen`, the door to the arc from the chapters list, and the shell wiring. Marking a milestone works, an unknown date saves and sorts to the end of the arc, and changing one's date re-sorts it. `docs/screenshots/milestones-v4-light.png` is that screen.
+**The arc.** The milestone reader and writer, `MilestonesScreen`, `AddMilestoneScreen`, the door from the chapters list, and the shell wiring. All verified on the device including the parts a previous session could only compile: **marking a milestone by hand and choosing a chapter makes the chapter door appear on its row, and the chapter's own "What was worth marking" fold shows it back.** Rule 18 holds in both directions, seen rather than asserted. `docs/screenshots/milestones-v4-light.png`.
 
-**Compiled, checks passing, never installed or looked at:**
+**The fixture still cannot exercise the chapter link on its own**: generated milestones carry no `chapter_id`, so a walk that needs the door has to mark one by hand first. That is #235.
 
-- The chapter chip group on `AddMilestoneScreen`. Tapping the chosen chip again clears it.
-- `chapter_id` on `updateMilestone`, so correcting one can change or clear it.
-- The chapter door on each row of the arc, and `chapter.milestones` on `ChapterScreen`, which is rule 18's other end.
+**Month review**, `MonthReviewScreen`, reached from the trail's own month heading, which now carries a chevron. Hero is the month's milestones and nothing else, then where they were, appointments, what went wrong, what was answered, paperwork, and a fold holding everything written down. One filled action, which shares the month as a document through `Readable.monthReview`. `docs/screenshots/review-light.png`.
 
-**The fixture cannot exercise the chapter link on its own**: the generated milestones carry no `chapter_id`, so the door only appears once somebody marks one by hand and picks a place. **Do that first**, then sweep.
+**Two defects were found by looking at it and are fixed:** a place that began and ended in one month listed its name twice, and an incident reported and answered in one month listed twice under two headings. Both now read as one row. The gold total band was built and removed the same day, for the reason in `DESIGN.md` section 14.
 
-**Then #200 still needs:** the sweep at both themes, font scale 2.0 and Arabic; the empty state; the instrumented suite; a `needs-design-review` issue per rule 12, since the arc is undrawn; the `DESIGN.md` section 14 row; and **month review, the second half of the issue, which is not started.**
+**#200 still needs:** the sweep at both themes, font scale 2.0 and Arabic; the empty state seen; the instrumented suite; and a `needs-design-review` issue per rule 12 for each of the two screens, since neither is drawn.
 
-**The device may hold one extra milestone**, "Walked to the window on her own", written by hand while testing the writer. `tools/seed.sh` clears it.
+**The device holds one extra milestone**, "Sat up for the whole visit", written by hand to exercise the chapter link. `tools/seed.sh` clears it.
 
 ---
 

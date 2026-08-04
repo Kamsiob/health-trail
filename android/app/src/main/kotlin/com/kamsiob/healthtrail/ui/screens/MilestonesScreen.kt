@@ -15,10 +15,11 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -110,6 +111,14 @@ fun MilestonesScreen(
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
                                 .clip(Radius.card)
+                                // **The label says what the tap does.** It said
+                                // "Open this milestone" and opened the sheet
+                                // headed "Change what you marked", so a reader
+                                // user was told a screen would open and got a
+                                // form. There is nothing further to open: a
+                                // milestone is a date, a line and a note, and
+                                // this row is already all three, so correcting
+                                // it is the only thing left for a tap to mean.
                                 .openableByTap(
                                     label = strings["milestones.open"],
                                     onTap = { onOpen(milestone) },
@@ -147,17 +156,40 @@ fun MilestonesScreen(
                         // inside it, because the card opens the milestone and a
                         // second tap target inside a tappable card is two
                         // things fighting for one finger.
+                        //
+                        // **It wears the navigation costume rather than the
+                        // action one.** It was an outlined pill carrying the
+                        // chapter's name, and law 2 gives that costume to "a
+                        // smaller action, always a verb or a dialable number"
+                        // while it gives navigation the row ending in a
+                        // chevron. A place name is a noun and this opens a
+                        // screen, so it was wearing the wrong one on both
+                        // counts. Same shape one incident already uses to point
+                        // at a person: the name on the first line, what it is
+                        // to this record on the second.
+                        //
+                        // **The second line rather than a mono header**, which
+                        // would be one header per milestone saying the same
+                        // three words down the whole arc. Section 15 says a
+                        // line that is the same for every row is said once, and
+                        // there is no once here, because only some milestones
+                        // name a place.
                         milestone.chapterId?.let { chapterId ->
                             val name = milestone.chapterName
                                 ?.takeIf { it.isNotBlank() } ?: return@let
                             Spacer(Modifier.height(Space.xs))
-                            TextAction(
-                                label = Bidi.isolate(name),
-                                onClick = { onOpenChapter(chapterId) },
-                                modifier = Modifier.testTag(
-                                    MilestoneTags.chapter(milestone.id),
-                                ),
-                            )
+                            GroupedSurface {
+                                DenseRow(
+                                    title = Bidi.isolate(name),
+                                    subtitle = strings["milestones.where.open"],
+                                    chevron = true,
+                                    divider = false,
+                                    onClick = { onOpenChapter(chapterId) },
+                                    modifier = Modifier.testTag(
+                                        MilestoneTags.chapter(milestone.id),
+                                    ),
+                                )
+                            }
                         }
 
                         Spacer(Modifier.height(Space.cardGap))

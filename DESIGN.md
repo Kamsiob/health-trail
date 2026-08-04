@@ -576,7 +576,7 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 | One question set | 21 Fifty questions | The pinned group, opened |
 | One test round | 20 Tests and results | The round card, opened |
 | One test's history | 24 Tracking one thing | A chart of one thing over time |
-| Month review | 08 The trail | A period of the trail, composed, every line tapping through to its source. **Not started.** The second half of #200 |
+| Month review | 08 The trail | A period of the trail, composed, every line tapping through to its source. **Built 2026-08-04**, #200. Reached from the trail's own month heading, which gained a chevron and opens the month it names: the door costs no furniture and sits where the eye already is. **It has no total, deliberately.** A gold band reading "Written down this month, 42" was built and removed the same day: at that weight it competed with the hero, which law 1 says means the screen is wrong, and a single number over a month is an invitation to compare it against last month's, which is a judgment about somebody's care. Each group counts itself instead. **Review issue still owed**, per 13.4 |
 | The milestone arc | 19 Chapters | A spine of milestones with gold rings. **Built 2026-08-04**, #200, and it is where the app first became able to read or write a milestone at all: the table shipped in the schema and nothing touched it, #234. Reached from the chapters list, because there is no thirteenth section. **Review issue still owed**, per 13.4 |
 | Projects, the list | 12 Medications | Peers with state, active first |
 | Starting a project | 23 Track something new | A grouped, searchable picker |

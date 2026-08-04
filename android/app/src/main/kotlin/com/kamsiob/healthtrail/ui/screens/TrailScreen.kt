@@ -119,6 +119,14 @@ object TrailTags {
 fun TrailScreen(
     entries: List<Repository.TrailEntry>,
     onOpen: (Repository.TrailEntry) -> Unit,
+    /**
+     * Opens one month, gathered, given any instant inside it.
+     *
+     * An instant rather than a label, because the label is already localized
+     * and parsing it back into a month would be reading the app's own rendering
+     * as data.
+     */
+    onReview: (Long) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     zone: ZoneId = ZoneId.systemDefault(),
@@ -273,9 +281,30 @@ fun TrailScreen(
                 }
 
                 is TrailRowSpec.Month -> stickyHeader(key = "month_${row.label}") {
+                    // **The month header is the door to that month's review**,
+                    // per rule 18 and 13.5: a review nobody can find is a
+                    // screen nobody has. The header is where the eye already is
+                    // when somebody wonders what a month held, and it costs no
+                    // furniture, where a row under fourteen entries would be
+                    // discoverable only by scrolling past the thing it
+                    // summarizes.
+                    //
+                    // **A closed month is a fold rather than a door**, and that
+                    // is deliberate: a fold opens in place, which is what a
+                    // sand row promises. Reviewing a month somebody has not
+                    // opened is one tap further, which is the right price for
+                    // keeping the two costumes honest.
+                    //
+                    // **The undated group is a heading and never a door.** The
+                    // entries nobody could date sit under their own heading at
+                    // the end, and there is no month to review: opening one
+                    // would mean the app picking a month for them, which is the
+                    // precision rule 17 forbids inventing.
                     StickySectionHeader(
                         title = row.label,
                         count = strings("trail.month.count", "count" to row.count),
+                        openLabel = row.firstMillis?.let { strings["review.open"] },
+                        onOpen = row.firstMillis?.let { millis -> { onReview(millis) } },
                         modifier = Modifier.testTag(TrailTags.month(row.label)),
                     )
                 }
@@ -353,8 +382,15 @@ private sealed interface TrailRowSpec {
     /** The pinned run, above time itself. */
     data class Pinned(val entries: List<Repository.TrailEntry>) : TrailRowSpec
 
-    /** An open month's sticky header, carrying its own count. */
-    data class Month(val label: String, val count: Int) : TrailRowSpec
+    /**
+     * An open month's sticky header, carrying its own count.
+     *
+     * [firstMillis] is any instant inside the month, which is what the review
+     * needs to know which month it is, and null for the group holding entries
+     * nobody could date. Null is what makes that group a heading rather than a
+     * door.
+     */
+    data class Month(val label: String, val count: Int, val firstMillis: Long?) : TrailRowSpec
 
     /** A closed month, or the single door to everything older. */
     data class Fold(val label: String, val count: Int, val isEarlier: Boolean) : TrailRowSpec
@@ -479,7 +515,16 @@ private fun planTrail(
             return@forEachIndexed
         }
 
-        add(TrailRowSpec.Month(label, inMonth.size), yearOfMonth[label])
+        add(
+            TrailRowSpec.Month(
+                label = label,
+                count = inMonth.size,
+                // Any dated entry in the group answers which month it is. The
+                // undated group has none, which is what leaves it a heading.
+                firstMillis = inMonth.firstNotNullOfOrNull { it.occurredStart },
+            ),
+            yearOfMonth[label],
+        )
         for (entry in inMonth) {
             val position = positions.getValue(entry.id)
             // **The row above this one in the whole trail, not in this month.**
