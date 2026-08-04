@@ -34,6 +34,7 @@ import java.time.LocalDate
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
+import com.kamsiob.healthtrail.ui.components.CaptureFab
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
 import com.kamsiob.healthtrail.ui.screens.headingFor
@@ -607,6 +608,19 @@ fun NotebookShell(
         color = HealthTrail.colors.paper,
     ) {
         Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
+            // **The capture button is a corner FAB in v4, not a notch in the
+            // navigation bar.** It overlays the content rather than sitting in
+            // the bar, so the bar is four equal tabs, and it lands where a thumb
+            // already rests on a large phone.
+            //
+            // `BottomEnd` rather than `BottomRight`, so in Arabic it moves to
+            // the start corner with the rest of the layout and the clearance in
+            // `FabClearance` moves with it.
+            //
+            // Nothing tappable may sit underneath it, per `DESIGN.md` section 8
+            // and D81. Screens inside this box owe it `fabScrollClearance` at
+            // the bottom of any scrolling list and `fabSafeActionBar` on any
+            // bottom-anchored action.
             Box(modifier = Modifier.weight(1f)) {
                 when (destination) {
                     Destination.NOTEBOOK -> {
@@ -717,12 +731,20 @@ fun NotebookShell(
                         },
                     )
                 }
+
+                CaptureFab(
+                    open = sheetOpen,
+                    onClick = { sheetOpen = true },
+                    description = strings["capture.button.description"],
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = Space.sm, bottom = Space.sm),
+                )
             }
 
             BottomNav(
                 current = destination,
                 onSelect = { destination = it },
-                onCapture = { sheetOpen = true },
                 labels = {
                     when (it) {
                         Destination.TODAY -> strings["nav.today"]
@@ -731,7 +753,6 @@ fun NotebookShell(
                         Destination.MORE -> strings["nav.more"]
                     }
                 },
-                captureDescription = strings["capture.button.description"],
             )
         }
 
