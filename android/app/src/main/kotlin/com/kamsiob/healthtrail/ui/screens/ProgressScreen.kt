@@ -173,7 +173,7 @@ fun ProgressScreen(
                     others.forEachIndexed { index, measure ->
                         val forMeasure = byMeasure[measure.id].orEmpty()
                         DenseRow(
-                            title = measure.name,
+                            title = Bidi.isolate(measure.name),
                             trailing = latestOf(strings, measure, forMeasure, brief = true)
                                 ?: strings("progress.readings", "count" to 0),
                             divider = index < others.size - 1,
@@ -359,7 +359,7 @@ private fun TextMeasureHero(
     Column(
         modifier = Modifier.fillMaxWidth().testTag(ProgressTags.measure(measure.id)),
     ) {
-        Text(text = measure.name, style = HealthTrail.type.bodyM, color = colors.ink2)
+        Text(text = Bidi.isolate(measure.name), style = HealthTrail.type.bodyM, color = colors.ink2)
         Spacer(Modifier.height(Space.xs))
         Text(
             text = latest?.let { valueOf(it) } ?: strings("progress.readings", "count" to 0),

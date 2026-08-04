@@ -184,7 +184,7 @@ private fun IncidentSpineRow(
                 }
 
                 Text(
-                    text = incident.title.ifBlank { strings["incidents.untitled"] },
+                    text = Bidi.isolate(incident.title.ifBlank { strings["incidents.untitled"] }),
                     style = HealthTrail.type.displayS,
                     color = colors.ink,
                 )

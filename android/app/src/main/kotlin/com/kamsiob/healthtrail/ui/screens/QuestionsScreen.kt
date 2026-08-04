@@ -234,7 +234,7 @@ private fun QuestionRow(
     }
 
     DenseRow(
-        title = question.text,
+        title = Bidi.isolate(question.text),
         subtitle = detail,
         // **The one action worth taking from the list**, per law 2: an outlined
         // pill carrying a verb. A question already asked has nothing to mark.

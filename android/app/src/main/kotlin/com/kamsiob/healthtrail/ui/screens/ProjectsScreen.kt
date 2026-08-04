@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.fabScrollClearance
@@ -206,7 +207,7 @@ private fun ProjectRow(
         Spacer(Modifier.height(Space.xs))
 
         Text(
-            text = project.name,
+            text = Bidi.isolate(project.name),
             style = HealthTrail.type.displayS,
             color = if (project.isFinished) colors.ink2 else colors.ink,
         )
