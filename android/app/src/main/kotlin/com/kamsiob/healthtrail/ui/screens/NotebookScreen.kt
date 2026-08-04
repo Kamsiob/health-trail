@@ -24,6 +24,7 @@ import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.IconTile
+import com.kamsiob.healthtrail.ui.components.fabScrollClearance
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.Tile
 import com.kamsiob.healthtrail.ui.components.tileColumns
@@ -280,11 +281,22 @@ fun NotebookScreen(
             }
             TileGrid(rows = folded, compact = true, onOpen = onOpen)
 
-            // Clearance for the capture button, which overlaps the navigation
-            // bar's top edge by 16dp and would otherwise sit on top of the last
-            // tile. 56dp button, 16dp overhang, plus a gap so the last row is
-            // readable rather than merely uncovered.
-            Spacer(Modifier.height(Space.xxl + Space.l))
+            // **Clearance for the corner FAB**, per `DESIGN.md` section 8 and
+            // D81: the last item has to scroll fully clear of it, not merely
+            // exist beneath it. A row the person can see and cannot tap is
+            // worse than one they cannot see, because it looks like the app is
+            // ignoring them.
+            //
+            // **This was caught on the phone rather than in review**, which is
+            // the whole reason section 8 is a mechanical audit. The moment the
+            // capture button moved from the navigation bar's middle to the
+            // trailing corner, the old clearance was measured against the wrong
+            // thing and the emergency card tile ended up underneath it.
+            //
+            // The value comes from [fabScrollClearance] rather than being
+            // arithmetic here, so a change to the button's size reaches every
+            // screen instead of the one somebody remembered.
+            Spacer(Modifier.height(fabScrollClearance))
         }
     }
 }
