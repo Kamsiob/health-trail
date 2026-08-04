@@ -15,6 +15,10 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.FoldRow
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -29,6 +33,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 
 object ChapterTags {
     const val NAME = "chapters"
+    const val EARLIER_FOLD = "chapters_earlier_fold"
     fun row(id: String) = "chapter_$id"
 }
 
@@ -65,6 +70,7 @@ fun ChaptersScreen(
     val strings = LocalStrings.current
     val current = chapters.filter { it.isCurrent }
     val earlier = chapters.filterNot { it.isCurrent }
+    var earlierOpen by rememberSaveable { mutableStateOf(false) }
 
     SectionScaffold(
         name = ChapterTags.NAME,
@@ -95,41 +101,52 @@ fun ChaptersScreen(
                         onOpen = { onOpen(chapter) },
                         state = Waypoint.MILESTONE,
                         continuesAbove = index > 0,
-                        continuesBelow = index < current.lastIndex || earlier.isNotEmpty(),
+                        continuesBelow = index < current.lastIndex,
                     )
                 }
             }
         }
 
         if (earlier.isNotEmpty()) {
+            // **The road here folds**, per grid screen 19 and law 4: closed
+            // periods collapse into a fold rather than sitting open beside the
+            // place the person is now. History serves the present.
+            //
+            // **"Other places" rather than "Before that."**
+            //
+            // A chapter is current when it has no end date, so a stay that
+            // began in December and is still running sits above an overnight
+            // trip to the emergency department in June, and calling that trip
+            // "before that" is the app stating an order the record contradicts.
+            // Seen with a month six fixture, where exactly that pair occurs.
+            //
+            // A person leaves a place and comes back, goes to hospital for a
+            // night and returns, or moves between a facility and home
+            // repeatedly. The heading has to be true in all of those, so it
+            // names the group rather than sequencing it, and the dates on each
+            // row carry the sequence.
             item {
                 Spacer(Modifier.height(Space.s))
-                // **"Other places" rather than "Before that."**
-                //
-                // A chapter is current when it has no end date, so a stay that
-                // began in December and is still running sits above an
-                // overnight trip to the emergency department in June, and
-                // calling that trip "before that" is the app stating an order
-                // the record contradicts. Seen with a month six fixture, where
-                // exactly that pair occurs.
-                //
-                // A person leaves a place and comes back, goes to hospital for
-                // a night and returns, or moves between a facility and home
-                // repeatedly. The heading has to be true in all of those, so it
-                // names the group rather than sequencing it, and the dates on
-                // each row carry the sequence.
-                GroupHeader(labelKey = "chapters.earlier")
-                Spacer(Modifier.height(Space.headerGap))
+                FoldRow(
+                    labelKey = "chapters.earlier",
+                    expanded = earlierOpen,
+                    onToggle = { earlierOpen = !earlierOpen },
+                    count = earlier.size.toString(),
+                    modifier = Modifier.testTag(ChapterTags.EARLIER_FOLD),
+                )
+                Spacer(Modifier.height(Space.cardGap))
             }
-            earlier.forEachIndexed { index, chapter ->
-                item(key = chapter.id) {
-                    ChapterSpineRow(
-                        chapter = chapter,
-                        onOpen = { onOpen(chapter) },
-                        state = Waypoint.HAPPENED,
-                        continuesAbove = true,
-                        continuesBelow = index < earlier.lastIndex,
-                    )
+            if (earlierOpen) {
+                earlier.forEachIndexed { index, chapter ->
+                    item(key = chapter.id) {
+                        ChapterSpineRow(
+                            chapter = chapter,
+                            onOpen = { onOpen(chapter) },
+                            state = Waypoint.HAPPENED,
+                            continuesAbove = index > 0,
+                            continuesBelow = index < earlier.lastIndex,
+                        )
+                    }
                 }
             }
         }
