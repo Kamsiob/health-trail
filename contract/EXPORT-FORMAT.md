@@ -1,5 +1,19 @@
 # The Health Trail export container
 
+> **This file has a new and larger job as of 2026-08-03, and it is named in `contract/DATA-CONTRACT.md` section 8.1 as one of the three requirements that make the archive outlive this project.**
+>
+> **It must specify the container byte for byte**: header, salt, nonce, Argon2id parameters, cipher, and layout. It lives in this repository under AGPL like everything else, **so that somebody holding an encrypted archive and the passphrase can decrypt it in ten years with no access to this app, this repository's owner, or any server.** That is not a documentation nicety. It is the thing standing between an encrypted archive and a lost record.
+>
+> **The byte-for-byte specification is not written yet.** What follows is the version 2 container as built, which is accurate on encryption and incomplete on layout. **Writing it out in full is tracked on the board and is a release blocker**, alongside the standalone decryption tool at `tools/decrypt/` that this document has to be sufficient to reimplement from.
+>
+> **Where this file and `DATA-CONTRACT.md` section 8 disagree today, section 8 wins.**
+>
+> **What changed on 2026-08-03 and is no longer true below.** The container is now **two layers**, section 8.1. The outer layer is a plain, unencrypted ZIP64 holding exactly `README.txt`, a non-sensitive `MANIFEST.json`, and `payload.enc`. The inner layer, once decrypted, is the full container: `README.txt`, `MANIFEST.json`, `CHECKSUMS.txt`, `data/trail.sqlite`, `data/schema.sql`, `readable/`, and `attachments/`. The file is named `health-trail-YYYY-MM-DD.zip` rather than `.htx`. Attachments are named by attachment id in ASCII rather than by content hash. **The human-readable copy did not exist at all, and it is now the point of the format.**
+>
+> **What in this file still applies and is still binding:** the encryption design in section 4, including which library implements Argon2id and why the derivation parameters travel with the file; the clean-failure cases in section 7; and the cross-platform rule below.
+>
+> **Section 4's conclusion is confirmed rather than superseded.** There is no unencrypted export. THE ARCHIVE as first supplied offered one, the contradiction with D67 was surfaced rather than silently resolved, and **the owner struck that sentence and confirmed D67 the same day.** D84 carries the full account, including what replaces the unencrypted option: publish the format, ship a standalone decryption tool, and give the passphrase every chance to survive.
+
 Binding on every platform. A file written by the Android app imports into the web version and the reverse, with no conversion step. That is the entire reason this specification exists rather than each platform inventing its own.
 
 The governing rule, from the universal data portability standard: **anything the app can store, the export contains and the import restores.** A feature that stores something the export does not carry silently loses records on device migration, which for this audience is the worst failure the app can have.

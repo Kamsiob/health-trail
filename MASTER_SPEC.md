@@ -76,11 +76,11 @@ The person must never have to remember where something was filed, because every 
 
 ## 4. Feature specification
 
-`reference/screen-grid.html` is the layout specification for all of this, and `DESIGN.md` section 8 states what each screen must do that the image cannot show. This section defines behavior.
+`reference/screen-grid.html` is the layout specification for all of this. It holds the twenty-five screens of **design direction v4, adopted 2026-08-03**, which supersedes the direction this specification was originally written against. `DESIGN.md` is binding on how every screen looks and behaves, and section 13 of it is the method for the screens the grid does not draw. This section defines behavior only.
 
 ### 4.1 First run
 
-Disclaimer gate, explicit accept, wording fixed in `DESIGN.md` section 7. Then essentials-first setup: who you are looking after, where they are, one phone number you would need in an emergency. Everything else is offered but skippable. A situation template is chosen, which configures sections, roles, threads, a first-days checklist, and document slots, all of it editable and deletable afterward.
+Disclaimer gate, explicit accept, wording fixed in `DESIGN.md` section 11.1. Then essentials-first setup: who you are looking after, where they are, one phone number you would need in an emergency. Everything else is offered but skippable. A situation template is chosen, which configures sections, roles, threads, a first-days checklist, and document slots, all of it editable and deletable afterward.
 
 ### 4.2 Capture, the only way in
 
@@ -94,7 +94,7 @@ Dates are stored as EDTF, the Extended Date/Time Format standardized as ISO 8601
 
 The interface hides all of it: chips for the common cases, an exact date and time always available as a peer of the chips rather than behind them, and natural expression where it is easier. The person never sees EDTF and never chooses a precision.
 
-The full model, its columns, and its round-trip requirement are in `contract/DATA-CONTRACT.md`. The display rules are `DESIGN.md` section 10.9. The owner approved this on 2026-07-31 and it is made before real data exists, because retrofitting it later means discarding records. D34.
+The full model, its columns, and its round-trip requirement are in `contract/DATA-CONTRACT.md`. The display rules are `DESIGN.md` section 9.2. The owner approved this on 2026-07-31 and it is made before real data exists, because retrofitting it later means discarding records. D34.
 
 Capture is additionally exposed as a home screen widget, a quick settings tile, and a share sheet target, so a photographed bill or an emailed PDF lands directly in capture.
 
@@ -143,13 +143,15 @@ Everything shareable is generated locally as a PDF or text and handed to the sys
 
 Every export must be legible standalone to a reader who has never seen the app.
 
+**The full notebook export is THE ARCHIVE**, `contract/DATA-CONTRACT.md` section 8, and nothing weaker. It is a ZIP64 archive carrying the SQLite payload, its schema, a manifest, checksums, the original attachment bytes, and **a complete human-readable HTML copy that renders every field and needs no software to read.** The single-item exports above are the PDF and text paths and are separate from it. **A backup and a full export are the same artifact.**
+
 ### 4.10 Templates, and the template library
 
 The catalog in `templates/` ships bundled and offline: 14 situation templates, 16 project templates, 16 progress presets, 11 standing instruction starters. `templates/SCHEMA.md` defines every field and, importantly, what must never be done with the ones flagged high risk.
 
 The downloadable pack mechanism, using signed hash-verified packs from GitHub releases, is not in v1. Design the loader with it in mind, because it is also the mechanism behind the future Facility Edition.
 
-**None of these screens are in `reference/screen-grid.html`.** The library, the pickers, and the editor have no mockup. They are built under the protocol in `DESIGN.md` section 10: composed from the existing components, shipped complete with every state, and logged in three places at the moment they are built.
+**None of these screens are in `reference/screen-grid.html`.** The library, the pickers, and the editor have no mockup. They are built under the protocol in `DESIGN.md` section 13: composed from the inventory in section 7, shipped complete with every state, and logged in three places at the moment they are built. `DESIGN.md` section 14 names which drawn screen each of them follows.
 
 #### Where it lives, and what it has to feel like
 
@@ -191,7 +193,7 @@ The same holds for changing things later. Anything applied can be renamed, reord
 
 ### 4.11 Backup and restore
 
-Critical for this audience, and specified in the data contract. Automated local backup to a folder the person chooses, using durable permission and scheduled work, with no cloud. A rolling set of recent files. A quiet permanent indicator of the last successful backup that never nags. The offer made once, at the moment there is something worth losing, with a decline honored permanently. Restore as easy as backup, and tested onto a fresh install, an install with data, and a weaker device.
+Critical for this audience, and specified in the data contract, which was amended on 2026-08-03 to carry THE ARCHIVE. **The scheduled backup writes exactly the archive format in `contract/DATA-CONTRACT.md` section 8**, so there is no second, weaker format for the file the person will actually reach for when the phone is gone. Automated local backup to a folder the person chooses, using durable permission and scheduled work, with no cloud. A rolling set of recent files. A quiet permanent indicator of the last successful backup that never nags. The offer made once, at the moment there is something worth losing, with a decline honored permanently. Restore as easy as backup, and tested onto a fresh install, an install with data, and a weaker device.
 
 ### 4.12 Transparency screens
 
@@ -240,7 +242,7 @@ English, Spanish, Chinese, and Arabic, all four in v1.
 
 Consequences that must be handled from Phase 0 rather than retrofitted:
 
-- **Right to left layout** for Arabic, designed into every screen from the first screen. `DESIGN.md` section 4.4 covers the specifics, including that the trail itself mirrors.
+- **Right to left layout** for Arabic, designed into every screen from the first screen. `DESIGN.md` section 5.4 covers the specifics, including that the trail itself mirrors and that the FAB moves to the start corner.
 - **Font coverage** for four scripts, with a bundled Noto fallback chain verified by rendering real strings on a device.
 - **The message template architecture** described in section 5.
 - **Three terms must never use their direct cognate**, because the cognate misleads or stigmatizes: hospice, power of attorney, and social worker. The descriptive phrasing is carried in the template data's `localization_note` fields.
@@ -318,7 +320,7 @@ The three safety guards from `RUN-SAFETY.md` section 1, installed before any fea
 
 Phase 0 is deliberately larger than usual. Every item in it is something that cannot be added later without discarding user data or reimplementing a platform.
 
-**Phase 1. The notebook core.** Disclaimer gate, essentials-first setup, situation templates applied, Today with the digest engine, capture with all six inputs and the Unfiled tray, the trail, care team, medications, the emergency card, and the notebook table of contents. At the end of this phase a person could use the app daily. Every screen built to `DESIGN.md` including empty states, error states, and motion.
+**Phase 1. The notebook core.** Disclaimer gate, essentials-first setup, situation templates applied, Today with the digest engine, capture with all six inputs and the Unfiled tray, the trail, care team, medications, the emergency card, and the notebook table of contents. At the end of this phase a person could use the app daily. Every screen built to `DESIGN.md` including empty states, error states, and motion. **Phase 1 is reopened by the v4 adoption:** every screen it delivered is converted to the new direction before the phase is called done again.
 
 **Phase 2. Time and structure.** Chapters with transfers and archiving, care threads with filtering and ending, appointments with prep sheets, ask next time, the year scrubber and folding months, month review, the milestone arc.
 
@@ -340,8 +342,8 @@ Phase 0 is deliberately larger than usual. Every item in it is something that ca
 
 1. It works on the device or the emulator, verified rather than assumed.
 2. Its tests exist, compile, and pass, and every fixed bug has a regression test.
-3. It survives the export, wipe, import round trip with field-by-field equality. Anything the app can store, the export contains and the import restores.
-4. It matches `DESIGN.md` in both themes, at the largest font size, with a screen reader, and in all four languages including RTL.
+3. It survives the export, wipe, import round trip with field-by-field equality, **and the regeneration test in `contract/DATA-CONTRACT.md` section 8.5**: the readable copy regenerated from the reimported database is byte-identical to the one in the original archive. Anything the app can store, the archive contains, the readable copy renders, and the import restores.
+4. It matches `DESIGN.md` in both themes, at the largest font size, with a screen reader, and in all four languages including RTL, **and it passes the costume audit and the overflow audit in `DESIGN.md` section 16, on the phone.**
 5. It contains no medical or legal advice, no interpretation, no ranges, no thresholds, no color-coded values, no em dashes.
 6. Its issue is closed with acceptance criteria met and verified, and its commit references the issue number.
 7. The living documents describe the app as it now is, corrected in the same commit.

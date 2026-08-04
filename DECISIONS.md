@@ -916,7 +916,7 @@ To recapture the first-run screens, which cannot be reached any other way once t
 
 **Date:** 2026-08-01. **Decided by:** the owner.
 
-`contract/export-format.md` has always named Argon2id and AES-256-GCM. The open question was what implements Argon2id, since neither the platform nor SQLCipher exposes one, and the easy answer was to quietly use PBKDF2 because it is already there.
+`contract/EXPORT-FORMAT.md` has always named Argon2id and AES-256-GCM. The open question was what implements Argon2id, since neither the platform nor SQLCipher exposes one, and the easy answer was to quietly use PBKDF2 because it is already there.
 
 **The format stays exactly as written.** AES-256-GCM comes from the platform JCE. Argon2id comes from **Bouncy Castle**, `Argon2BytesGenerator`, which is pure Java and needs no native library and no NDK step.
 
@@ -926,7 +926,7 @@ To recapture the first-run screens, which cannot be reached any other way once t
 
 Shipped values are 3 iterations over 64 MiB at parallelism 1, above the OWASP baseline rather than at it. Tune only if it measures unusably slow on the phone.
 
-**Not yet implemented.** Recorded now because the decision was made now, and because per the work order the round trip test comes before encryption. `contract/export-format.md` section 4.1 and 4.2 carry the binding version.
+**Not yet implemented.** Recorded now because the decision was made now, and because per the work order the round trip test comes before encryption. `contract/EXPORT-FORMAT.md` section 4.1 and 4.2 carry the binding version.
 
 ### D52. Chinese uses the system face, and looking for that found that Chinese did not work at all
 
@@ -1053,7 +1053,7 @@ this phone is lost."
 log triggers all travel rather than being redeclared in Kotlin against D16.
 Restore does the reverse and keys the result with the receiving device's own
 passphrase. What protects the contents in transit is the container passphrase
-the person chose, which is what `contract/export-format.md` always specified.
+the person chose, which is what `contract/EXPORT-FORMAT.md` always specified.
 
 **The check that would have caught it, now permanent.** `PortabilityTest`
 inspects the first sixteen bytes of the payload for the SQLite magic. It also
@@ -1306,7 +1306,7 @@ negative result from a tool that cannot tell you what it did not examine.**
 
 **Version 1 offered an unencrypted export and the reasoning was right at the
 time.** It is the person's data, wanting to read it is reasonable, and the
-screen carried a warning rather than a scolding. `contract/export-format.md`
+screen carried a warning rather than a scolding. `contract/EXPORT-FORMAT.md`
 said so in those words.
 
 **What changed is not the principle, it is the file.** Version 1's payload was
@@ -1557,6 +1557,125 @@ Today showed no digest at all when nothing had changed since the last visit. The
 **It says so now, at display size, as the hero.** `today.digest.empty`, "Nothing new since you were last here.", has been in all four catalogs since the digest was built and had never been shown on this path. **The calm answer is still an answer**, and burying it in body text would make the quiet case read as the failure case.
 
 **A first run still has no digest at all**, because nothing has ever been written down and "nothing new since you were last here" would be true and useless. The coaching leads there instead, and there is now a test for each of the two.
+
+---
+
+## 2026-08-03, the adoption of design direction v4
+
+### D76. Design direction v4 is adopted and supersedes the direction the app was built on
+
+**Decision.** `health-trail-screen-grid-v4.html`, supplied by the owner, becomes the visual and experience direction for this app. It is a replacement rather than an addition. `DESIGN.md` was rewritten rather than patched, and `MASTER_SPEC.md` was corrected wherever it described the old design.
+
+**Alternatives considered.** Reconciling v4 with the existing direction and keeping whichever was stronger per topic. Layering v4 over what exists and converting screens opportunistically. Keeping the old direction's paragraphs as history beneath the new ones.
+
+**Reasoning.** The owner's instruction was explicit that this is a replacement and that an old pattern is not preserved because the code already does it that way. All three alternatives produce the same failure, which this project has already met once: two standards in one codebase, and no way for a reviewer to tell which one a given screen was built against. Keeping the old paragraphs as history is the most tempting and the worst, because a future session reading in good faith cannot tell a superseded rule from a live one. `DESIGN.md` section 18 names exactly what survived and what was deleted, which is the audit trail that would otherwise have been the history.
+
+**What this does not override, and cannot.** `contract/DATA-CONTRACT.md`, and the content rules that keep this app non-medical. Any tension between a visual idea and either resolves against the visual idea. The one exception is THE ARCHIVE, which extends the contract rather than contradicting it, and is D83.
+
+**What would have to change to revisit this.** An owner decision. Nothing else.
+
+### D77. Three statements in the grid file are stale, and this repository is authoritative on all three
+
+**Decision.** The grid file is the visual reference, and three of its statements are corrected rather than followed. `DESIGN.md` section 3 records the correction rather than the original.
+
+1. Part B's introduction says eighteen screens. **Twenty-five are drawn**, numbered 01 through 25.
+2. Part C's list of undrawn screens maps Chapters and Appointments as undrawn, but **both are drawn, at 19 and 22**, and it states three mappings twice. Rebuilt clean as `DESIGN.md` section 14.
+3. Part C's heading says depth never exceeds two while its own body correctly describes tab bar, then section, then detail. **Three levels is correct.**
+
+**Reasoning.** Each is a leftover from an earlier revision of the file rather than an instruction, and the owner said so when supplying it. Recording the correction rather than the original matters because the grid is the thing a future session opens first: without this entry, someone counts eighteen screens, finds twenty-five, and assumes the file is not the reference. The depth one is the most load bearing, because "never exceeds two" read literally would push adding and editing onto their own screens, which is the opposite of what the interaction grammar requires.
+
+### D78. The v3 grid is retired, one copy only, and the concept PDF is stale in its visuals
+
+**Decision.** The v4 file replaced `reference/screen-grid.html` in place. **The v3 content is gone from the working tree and there are no archived variants.** `reference/concept-review.pdf` is kept, and `DESIGN.md` now opens by saying it is a historical record of the concept review and is not the visual reference.
+
+**Alternatives considered.** Keeping v3 alongside v4 as `screen-grid-v3.html`. Deleting the concept PDF too.
+
+**Reasoning.** Two grid files in one folder is a coin flip for whoever opens the folder next, and this project has already lost a night to a document that described a state that had passed. Git holds v3 permanently at blob `fbeb6cf`, so nothing was actually destroyed and the recovery path is one command. The concept PDF stays because its sequence and its voice are still useful reading and neither is superseded; only its screens are, and the line at the top of `DESIGN.md` says exactly that rather than leaving a reader to discover it.
+
+### D79. A sixth tab hue, `stone`, was added for standing instructions
+
+**Decision.** `stone` `#7A756A` with wash `#EAE7E0`, for standing instructions. It joins the five hues the grid supplies and is a real token in the theme alongside them.
+
+**Reasoning.** The grid draws no standing instructions screen, so the tab pack it supplies has five hues for twelve sections. Standing instructions is not "medications" and not "money": it is a record of what was asked of a facility and whether they did it, which is its own kind. Giving it a borrowed hue would make two unrelated sections read as one family, and tabs are identity, so a wrong tab is a wrong claim about what a section is. Stone is deliberately the quietest hue in the pack, because a standing instruction is administrative rather than clinical.
+
+**The mapping is the owner's and is not re-derived.** Any section added later inherits the hue of the section it most resembles in kind, and the choice is recorded in `DESIGN.md` with its reasoning rather than made silently.
+
+### D80. Every tab hue needs a text-safe ink variant, because all six fail the small-text floor as drawn
+
+**Decision.** Each of the six tab hues keeps its base value for shapes, and gains a darker **ink** variant for text: rose `#8E5944`, teal `#387067`, slate `#516880`, moss `#5F6B3A`, manila `#846024`, stone `#6A665C`. Two base tokens were also corrected: `ink-2` `#5A6B77` to `#576873`, and `blue` `#2F6F8F` to `#2E6D8C`.
+
+**How this was found.** Measured on adoption, before any screen work, against the actual warm surfaces rather than against white.
+
+| Hue as drawn | On paper | On sand | On its own wash |
+|---|---|---|---|
+| rose `#A5674F` | 4.01 | 3.56 | 3.55 |
+| teal `#3F7E74` | 4.19 | 3.73 | 3.85 |
+| slate `#57708A` | 4.56 | 4.06 | 4.20 |
+| moss `#6E7C43` | 4.03 | 3.58 | 3.78 |
+| manila `#A3772D` | 3.56 | 3.17 | 3.23 |
+| stone `#7A756A` | 4.07 | 3.62 | 3.71 |
+
+**Every one is under the 4.5:1 floor for text under 18sp, on every surface it lands on.** The ink variants clear it everywhere, worst case teal at 4.50 on sand.
+
+**Reasoning.** The tab chip is drawn at 8px uppercase mono, roughly 11sp at real scale, and it is the first element on every section screen. This is not theoretical. The accessibility floors are one of the three things the owner's direction explicitly leaves standing unchanged, so a token set that fails them is a conflict the floor wins. **The mapping is untouched**: every hue keeps its hue angle and its saturation and only its lightness moves, so the binder tabs still read as the owner specified at arm's length. This is also not a new idea in this codebase, it is the split already used for gold, leaf, and alert, applied to six more hues.
+
+**What would have to change to revisit this.** A measured demonstration that the tab chip is only ever used at 18sp or above, which would move it to the 3:1 floor. It is not, and law 2 puts it on every section screen.
+
+### D81. A bottom action bar never spans the full width on a screen that has the FAB
+
+**Decision.** Where the FAB is present, a bottom-anchored action bar ends before the FAB's zone, leaving the FAB's width plus a 12dp gap clear on the trailing side. Scrolling content gets enough bottom padding that the last item clears the FAB. **Nothing tappable ever sits underneath it.** In RTL the FAB is in the start corner and the clearance moves with it.
+
+**Reasoning.** The grid draws several screens with a full width button running under the corner FAB, and the owner identified it as an error in the drawing rather than an instruction. A control the person cannot reach because another control sits on top of it is the most basic possible defect, and it is invisible in a static mockup because nothing overlaps until the FAB is real. It joins the overflow audit as a mechanical check rather than something a reviewer has to notice.
+
+### D82. Every component not in the v4 inventory is retired
+
+**Decision.** `DESIGN.md` section 7 is the complete component inventory. Anything in the codebase not on it is retired, and a screen using one is rebuilt from the inventory rather than keeping the one-off alive.
+
+**What this retires, from `android/app/src/main/kotlin/com/kamsiob/healthtrail/ui/components/`:** the icon tile as the notebook's organizing shape, `SectionIcon.kt` and `Tile.kt` in their current form, because the v4 notebook is a grouped surface of rows with the section icon in its wash rather than a twelve-tile grid. `Disclosure.kt`, superseded by the fold row, which is a different shape with a count in it. `GroupHeader.kt`, superseded by the mono eyebrow and the sticky section header. `ChipPicker.kt` and `Chips.kt` in their current form, because a chip is now a costume with fixed open and chosen states rather than a picker widget. `Buttons.kt`, which must become exactly two costumes, filled and outlined, and nothing else. `DenseRow.kt`, `Hero.kt`, `Spine.kt`, `Thumbnail.kt`, `Press.kt`, `Chevron.kt`, `EmptyDrawing.kt`, `Dictate.kt`, `DatePicker.kt`, `TextFields.kt`, `Share.kt`, `Confirm.kt` and `BottomNav.kt` survive as concepts and are rebuilt against the new tokens and geometry rather than retired outright.
+
+**Nine components in the inventory do not exist at all yet** and are new work: the tab chip, the fold row, the wash band, the avatar, the chart card, the round card, the agenda and month grid, the view toggle, the pin marker and pinned group, the sticky section header, and the edge scrubber.
+
+**Reasoning.** This project has already learned what happens when the library is smaller than the screens need: everything converges on the one shape that exists, which was D71. The opposite failure is a library that grows a one-off per screen, and the defense against it is that the inventory is closed. Keeping a retired component around because one screen still uses it is how a codebase ends up with two of everything, so the screen is rebuilt instead.
+
+### D83. `contract/DATA-CONTRACT.md` is amended to carry THE ARCHIVE
+
+**Decision.** Section 8 of the data contract was replaced in full by THE ARCHIVE: the container layout, the readable copy, the import rules, the named failure modes, and the tests. Marked as an owner-approved amendment. Section 9 was corrected so that the automated backup writes the same artifact, and `contract/EXPORT-FORMAT.md` was marked superseded with the parts that still apply named.
+
+**Reasoning.** This is the one part of the v4 direction that extends the data contract rather than being subordinate to it, and the owner said so explicitly. The substance is a real strengthening rather than a restatement. The old container was a `.htx` zip holding a manifest, a SQLite file, and attachments, which is a good machine format and produces a file **only this app can read**. THE ARCHIVE adds the half that was missing: a complete, dependency-free, human-readable HTML copy that renders every field, plus a README written for a person, plus checksums, plus the schema as commented DDL.
+
+**The regeneration test is the part worth protecting.** Export, import onto a clean install, regenerate the readable copy, assert byte-identical to the one in the original archive. Because the readable copy renders every field, one assertion covers nearly everything a round trip can silently break. That is a stronger guarantee than the field-by-field test alone, and it is cheap to keep true.
+
+**What would have to change to revisit this.** An owner decision, per the standing rule on this document.
+
+### D84. D67 stands: every export is encrypted, and THE ARCHIVE was corrected to match
+
+**Decision, made by the owner on 2026-08-03 after the contradiction was surfaced.** **Every export is encrypted with a passphrase. There is no unencrypted export path, no chip offering one, and no settings toggle producing one.** The sentence in THE ARCHIVE offering an unencrypted export **is struck**, and the amendment now confirms D67 rather than reversing it.
+
+**How this arose, recorded because the process is the point.** THE ARCHIVE as first supplied required that "an unencrypted export is offered with a factual warning and no scolding," which directly contradicted D67. The contradiction was flagged rather than silently resolved in either direction, and the owner corrected the amendment within the same run. **A quiet reversal would have removed a real safety property and nobody would have noticed for months**, which is the same failure shape as every silent negative this project has been caught by.
+
+**Why D67 was right and remains right.** The fix on 2026-08-02 made the payload a plain SQLite database, which is what made the file portable and is the point of the whole format. The consequence is that an unencrypted container would be a **fully readable copy of an entire care record**: every call, every note, every medication, every bill. It lands in a folder a file manager can browse, a backup agent can sweep, and a cloud sync can copy somewhere the person never chose. At version 1 that was not true, because the payload was the device-keyed database and a plain container still held bytes no other machine could read. **The property that fixed the recovery path is the one that makes a plain file dangerous.**
+
+**What replaces the unencrypted option is the requirement D67 did not cover, and it is harder.** An encrypted archive must remain **openable by someone who has the passphrase but does not have this app**. A format only this app can decrypt is the same failure as a format only this app can read, arriving one step later. **The container is therefore two layers**, specified in `contract/DATA-CONTRACT.md` section 8.1: a plain outer ZIP64 holding only `README.txt`, a non-sensitive `MANIFEST.json`, and `payload.enc`, with the full container inside the encryption.
+
+**Nothing in the outer layer reveals anything about the person.** No names, no counts, no dates of care, and no locale that would narrow down who this is. Only the format version, the app and schema versions, the export timestamp, and every parameter needed to derive the key again in ten years.
+
+**Three requirements make the outer promise real rather than aspirational**, and each is a build gate rather than an intention:
+
+1. **The format is published byte for byte** in `contract/EXPORT-FORMAT.md`, under AGPL like everything else, **so it survives this project.**
+2. **A standalone decryption tool ships at `tools/decrypt/`**, no build step, no dependency beyond a standard Argon2 and AEAD library, with a README somebody who does not write software can follow, **tested in continuous integration against a real archive on every change to the export code.**
+3. **The passphrase gets every chance to survive.** Confirmed twice at export. One quiet line saying it is the only key and belongs somewhere that is not the phone. An optional hint stored in the outer manifest in plaintext, with the app saying plainly that **anyone holding the file can read the hint, so it must never contain the passphrase.** Automated backup reuses a passphrase set once, so the recurring backup is never blocked by a prompt nobody sees.
+
+**The offline read test is extended to the full path** and is what actually proves the archive outlives the app: on a machine with no network that has never had this app installed, extract the outer layer with a general-purpose zip tool, decrypt `payload.enc` using only `tools/decrypt/`, then open `readable/index.html` in a browser. **A test that starts from an already-decrypted folder proves only half of it, and the missing half is the one that fails in ten years.**
+
+**What would have to change to revisit this.** An owner decision. The question has now been asked and answered explicitly, so it is closed rather than open.
+
+### D85. The dark theme is not converted until its values are re-derived and measured
+
+**Decision.** The dark theme derivation stands unchanged, as the owner's direction requires. **Its concrete hex values do not**, because every one of them was derived from the previous light ladder, and that ladder is gone. The dark theme is re-derived against the v4 surfaces and the six tab hues, measured rather than calculated, and **until that is done the dark theme is not converted and is not claimed to be.**
+
+**Reasoning.** "The derivation stands unchanged" and "the values stand unchanged" are different statements, and only the first is what the direction says. The derivation is the method: surfaces lighter as they come forward, elevation by lightness rather than shadow, no shadow at all, gold and red keeping their meanings, never black. That method is sound and is reused as-is. Applied to a new light ladder it produces different numbers, and **the six tab hues have no dark counterpart at all**, because the tab pack did not exist in the previous direction.
+
+**The reason this is a decision rather than a task** is D29, which this project has now made twice: writing that something is verified when it has not been observed. A dark theme carrying light-theme-derived values would render, would look approximately right in a screenshot, and would fail contrast in ways nobody would find without measuring. So it is stated as unconverted until measured, and it gates the same audits every screen does.
 
 ---
 

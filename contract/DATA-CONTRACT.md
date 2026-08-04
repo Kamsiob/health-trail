@@ -6,6 +6,8 @@ Health Trail ships on Android first. A web version and possibly a Linux desktop 
 
 The one sentence version: **the database and the export format are a public contract between three platforms and a future sync engine, so they get designed once, correctly, at the start.**
 
+**Amended 2026-08-03 by owner decision, recorded as D83.** Section 8 was replaced in full by **THE ARCHIVE**, which is a substantially stronger export and import specification than the one this document previously carried. The amendment is binding, it arrived with design direction v4, and it is the one part of that direction that extends this contract rather than being subordinate to it. Section 9 was corrected to match, because a backup and an export are now the same artifact.
+
 ---
 
 ## 1. Why this exists
@@ -27,7 +29,7 @@ The repository is a monorepo from the first commit, even though only one platfor
 ```
 /contract          platform neutral, the source of truth for anything shared
   schema.sql       the canonical schema as DDL, with comments
-  export-format.md the export container specification
+  EXPORT-FORMAT.md the export container specification
   i18n/            message catalogs, ICU MessageFormat
   test-vectors/    golden input and expected output files, see section 7
 /templates         the template catalog, already written, consumed by every platform
@@ -216,41 +218,175 @@ The vectors must cover the cases that actually break:
 
 ---
 
-## 8. The export container
+## 8. THE ARCHIVE
 
-One file, versioned from the first release, self describing enough that a stranger could read it in ten years.
+**Owner-approved amendment, 2026-08-03, recorded as D83.** This section replaces the export container specification this document previously carried. It is binding, and **any gap in it is a release blocker.**
+
+**Two failures would be worse than any bug in this app**, because both destroy years of a person's work with no recovery and no server to fall back on.
+
+**The first:** a person exports after three years, opens the file, and cannot read it. **Nothing in this app matters if the record it produces is only readable by this app.** A caregiver's archive outlives the phone, outlives Android, and very likely outlives this project.
+
+**The second:** a person exports, gets a new phone, imports, and the record comes back subtly wrong. Entries attached to the wrong person, attachments missing, dates shifted by a day, pins gone, a resolved incident open again. **Silent partial correctness is worse than an honest failure**, because the person will not notice for months and by then the source device is wiped.
+
+Everything below exists to make both impossible.
+
+### 8.1 The container, which is two layers
+
+**Every export is encrypted with a passphrase. There is no unencrypted export path, no chip offering one, and no settings toggle producing one.** D67 stands, confirmed by the owner on 2026-08-03 and recorded as D84.
+
+**The requirement that replaces the unencrypted option is harder and better: an encrypted archive must remain openable by someone who has the passphrase but does not have this app.** A format only this app can decrypt is the same failure as a format only this app can read, arriving one step later.
+
+**So the container is two layers, not one.**
+
+#### The outer layer
+
+**A plain, unencrypted ZIP64 archive**, so it does not break past four gigabytes or past 65,535 entries. Named so it sorts and identifies itself without being opened, for example `health-trail-2027-03-14.zip`. It contains **exactly three things**:
 
 ```
-healthtrail-export-YYYYMMDD-HHMM.htx        (a zip container)
-  manifest.json      format version, app version and platform, export timestamp,
-                     origin device id, row counts per table, sha256 of data.sqlite,
-                     attachment count and total bytes, whether the payload is encrypted
-  data.sqlite        the whole database, tombstones included
-  attachments/       one file per attachment, named by content hash
+README.txt      plain UTF-8, ASCII only, readable by anyone who opens the file
+MANIFEST.json   the non-sensitive header only
+payload.enc     the encrypted archive described below
 ```
 
-Rules:
+**Nothing in the outer layer reveals anything about the person or their record.** The outer `MANIFEST.json` carries **only**: format version, app version, schema version, export timestamp, the encryption algorithm, the key derivation function, and every Argon2id parameter needed to derive the key again in ten years. **No names, no counts, no dates of care, and no locale that would narrow down who this is.**
 
-- **The format version is in the manifest from release one.** An importer reads the version first and refuses a version it does not understand, with a plain message naming the version it found and the versions it supports. Never guess at an unknown format.
-- **SQLite is the payload** because all three target platforms read it natively or through a well maintained WebAssembly build, and because it preserves relationships, ordering, and state exactly. The schema is published, so the file is not a black box.
-- **Tombstones are included.** An export that drops them cannot restore a deletion, which means restoring a backup resurrects things the user deleted.
-- **Encryption is offered and defaults on,** using a passphrase the user chooses, because this file contains health information and will land in a folder the user picked. The encryption of the export is independent of the at-rest database encryption on the device, since a portable file cannot depend on a key held in one device's keystore. If the passphrase is lost the file cannot be recovered, there is no server and no backdoor, and the interface must say exactly that before the user commits to it.
-- **An unencrypted export is available** for someone who wants to inspect their own data, with a plain warning rather than a scolding.
-- **Import is atomic.** It fully succeeds or changes nothing. Never a partial import.
-- **Import is honest.** If the file contains a table or column this version does not recognize, say so and name it rather than silently dropping it.
-- **Import offers merge or replace** as an explicit choice, described in plain terms, defaulting to whichever is safer for the situation the app can detect.
+**The outer `README.txt` is written for a stranger who found this file and has the passphrase.** It states what the file is, that the contents are encrypted, exactly which algorithm and parameters were used, where the format is documented, and **how to decrypt it without this app**. It states plainly that **a lost passphrase means the archive is unrecoverable, with no server, no backdoor, and no recovery path anywhere.** It names `tools/decrypt/` and gives its repository path.
 
-### The round trip test
+#### The inner layer
 
-Per the universal data portability rules, this is not "did the export succeed" but field by field equality after export, wipe, and import. It asserts on: every row of every table including tombstones, all archived, pinned, resolved, and completion state, ordering, all timestamps to the millisecond, every relationship between rows, every attachment present and hash-verified, and the schema version. It runs on: a fresh install, an install with existing data, and a device with less storage than the source. It runs on an emulator, never on the owner's device.
+Once decrypted, `payload.enc` is the full container, unchanged:
 
-No feature is finished until it survives that round trip. A feature that stores something the export does not carry is a feature that silently loses user data on device migration, which for this audience is the worst failure the app can have.
+```
+README.txt          plain UTF-8, ASCII-only characters, no markup
+MANIFEST.json       the machine header
+CHECKSUMS.txt       SHA-256 of every other file, one per line
+data/trail.sqlite   the complete record, the file the importer reads
+data/schema.sql     the schema this file was written against, as DDL with comments
+readable/           the human copy, described in 8.2
+attachments/        the original bytes of every photo and document
+```
+
+**The inner `README.txt` is the first thing a stranger reads once inside, so it is written for a person and not for a developer.** It says what this file is, who made it and when, which folder to open to just read the record with no software at all, which file to give back to the app, and what the format version is.
+
+**The inner `MANIFEST.json` carries:** format version, app version, schema version, export timestamp as UTC epoch milliseconds plus the IANA timezone id of the device, the locale the readable copy was written in, a row count per table, a file count and total byte size for attachments, and **the list of any attachment whose bytes could not be read at export time.** This is where the identifying detail lives, which is why it is inside the encryption rather than outside it.
+
+#### Three requirements that make the outer promise real rather than aspirational
+
+1. **The format is published.** `contract/EXPORT-FORMAT.md` specifies the container **byte for byte**: header, salt, nonce, Argon2id parameters, cipher, and layout. It lives in this repository under AGPL like everything else, **so it survives this project.**
+2. **A standalone decryption tool ships in the repository** at `tools/decrypt/`, written in a language with **no build step and no dependency beyond a standard Argon2 and AEAD library**, with a README somebody who does not write software can follow. **It is tested in continuous integration against a real archive on every change to the export code.**
+3. **The passphrase gets every chance to survive.** At export the person confirms it **twice**, and the screen tells them, in the app's voice and without lecturing, that this passphrase is the only key and belongs somewhere that is not the phone. They may optionally write a **hint**, stored in the **outer** `MANIFEST.json` in plaintext, so **the app must say plainly that the hint is readable by anyone who has the file and must never contain the passphrase itself.** Automated local backup reuses a passphrase the person set once, so the recurring backup is never blocked by a prompt they will not see.
+
+**SQLite is the payload** because it is one of a small number of formats the US Library of Congress lists as recommended for long-term preservation of datasets, and because the file format is stable, public domain, and readable by every platform this project will ever target. That choice was already in this contract and it is correct. **What the contract was missing is that SQLite has no place to record what its tables mean** beyond the CREATE TABLE statements, which is exactly why `MANIFEST.json`, `data/schema.sql` with real comments, and the readable copy all ship beside it.
+
+**Tombstones are included.** An export that drops them cannot restore a deletion, which means restoring a backup resurrects things the person deleted.
+
+### 8.2 The readable copy
+
+**The standard is HL7 Clinical Document Architecture's**, which has required for twenty years that a clinical document be renderable by any recipient using general-market tools with no special stylesheet shipped alongside it, and that the complete attested content be present in the human-readable form rather than only in the machine entries. **Apply exactly that standard here.**
+
+**Completeness.** Every field stored in the database appears somewhere in the readable copy. **It is not a summary, not a highlight reel, and not a subset.** If a column exists and nothing renders it, that is a defect, and 8.5 makes it a build failure.
+
+**No dependencies.** Plain HTML. No JavaScript. No web fonts. No external stylesheet, no CDN, **no network request of any kind.** One small CSS block inlined in each page so every page stands alone even if separated from the others. System font stack only. **It must render correctly on a browser that does not exist yet**, which means using nothing clever.
+
+**Structure.** `readable/index.html` is the front door: who this record is about, the date range it covers, the counts by section, and a table of contents linking to every other page. Then **one page per section per year**, so no single page becomes unopenable at year five. **Attachments are referenced by relative path into `../attachments/`, never embedded as base64**, because a three-year archive inlined into one file will not open.
+
+**Printable.** A print stylesheet, so a person can print a year, or one incident thread, and hand it to a doctor, a lawyer, or a sibling. **Page breaks land between entries, never inside one.**
+
+**Faithful to the record and to the app's rules.** Same content rules as the app: no ranges, no interpretation, no color-coded values, no conclusions. **Gaps in a measurement render as gaps.** A field the person never filled reads as **not recorded**, never as zero and never as blank.
+
+**Faithful to the person's language.** Written in the locale the person used the app in, with the correct `dir` attribute and correct RTL rendering for Arabic, **verified in a browser and not assumed.**
+
+**Dates.** Every date renders in a form a stranger reads without ambiguity, showing the local date and time as the person experienced it plus the UTC offset. **Never a bare epoch number. Never a locale-ambiguous numeric date such as 03/04/2027.**
+
+**Cross-referenced.** Every entry in the readable copy prints its id, and that id is the same id in `data/trail.sqlite`, so a person or a future tool can move between the two halves of the archive by hand.
+
+**Deterministic.** The same database produces **byte-identical** HTML every time. The generation timestamp lives in one named place and nowhere else. **8.5 depends on this.**
+
+### 8.3 Import must map, not merely parse
+
+**Import is not "did the file open." Import is "is the record on the new phone the same record."**
+
+**Verify before writing.** Read `MANIFEST.json` first and refuse an unrecognized format version by name, stating what was found and what is supported. Then verify every checksum in `CHECKSUMS.txt`. Then verify that every attachment row in the database has a matching file and that every file matches its recorded hash. **Only then begin writing.**
+
+**Atomic.** It fully succeeds or changes nothing. **There is no partial import and no half-restored state, ever.**
+
+**Identity by id, never by position.** Every row carries the UUID it was created with. Import matches on that id and on nothing else. **Never match by name, by row order, by index, or by any value the person can edit.** This is the single most common way a round trip silently produces a wrong record, and the schema already prevents it, so the importer must not reintroduce it.
+
+**Nothing is invented at import.** No new ids. No refreshed timestamps on existing rows. No re-derived ordering. No defaulted values filling a null. **If the file does not say it, the import does not decide it.**
+
+**References resolve or the import stops.** If any row points at a parent that is not present in the file, the import halts before committing and names the row and the missing parent in plain language. **It never quietly drops the child and it never quietly creates a placeholder parent.**
+
+**Attachments relink.** Every attachment is written to storage and its row is repointed at the new path, then verified by hash. **An attachment listed in the manifest as missing at export time is imported as a known-missing attachment with its name and date intact**, so the person sees that a photo existed and is gone, rather than never learning it was there.
+
+**State survives.** Tombstones import as tombstones, so a deleted thing stays deleted. Pins, archived state, resolved state, completion state, and the person's per-section view choices all restore. **A resolved incident that reopens on a new phone is a failure.**
+
+**Merge or replace is an explicit choice**, described in plain words, never a guess. Merge matches by id, resolves by the later `updated_at`, and **writes every resolution to a conflict log the person can actually open and read.**
+
+**Unknown content is named, not dropped.** If the file contains a table or a column this version does not recognize, say so and name it. **Never silently discard part of someone's record.**
+
+### 8.4 The named failure modes
+
+These are the specific mechanisms that corrupt round trips in practice. **Each one gets its own test**, not a general confidence that it is handled.
+
+**Time.** Store every timestamp as UTC epoch milliseconds plus the IANA timezone id in effect where the entry was made. **A note written on July 6 must still read July 6 after the person moves to another country.** Test import on a device set to a different timezone, on a device whose clock is wrong, and across a daylight saving boundary in both directions.
+
+**Unicode.** Normalize all text to NFC on write and compare NFC-normalized on import. **A name typed with a combining accent on one device and a precomposed character on another is the same person, not two.** Test with Spanish accents, Arabic, and Chinese.
+
+**Filenames.** Write ZIP entries with the UTF-8 flag set, which is bit eleven of the general purpose flag field. **Do not rely on it being read correctly**, though: name every file inside `attachments/` from its attachment id using ASCII characters only, and carry the person's original filename in the database and in the readable copy. That removes the entire codepage class of failure and the case-collision class at once. **No two entries may differ only by case. No path longer than 180 characters. No reserved Windows names, no trailing dots or spaces, no colons or backslashes.**
+
+**Ordering.** Every query that feeds an export or a render has an explicit `ORDER BY` on stable columns. **Never depend on rowid, insertion order, or default iteration order.**
+
+**Numbers.** Money as integer minor units, never floating point. **A measurement stores both the text the person typed and the parsed value, and both survive the round trip**, so 5.0 does not come back as 5 and a value the app could not parse is not lost.
+
+**Absence.** Null, empty string, and zero are three different things and stay three different things. **Not recorded is never rendered as a number.**
+
+**Scale.** Test at the five-year fixture: thousands of entries, hundreds of attachments, an archive past four gigabytes, and more than 65,535 entries. **Confirm ZIP64 on both the writing and the reading side** rather than assuming the platform handles it.
+
+**Encryption.** The export passphrase derives the export key, **independently of the device database key**, which cannot travel and which has already broken this app's exports once. Record the derivation parameters in the **outer** `MANIFEST.json`, unencrypted, so a future version or a stranger with the passphrase can still open an old file.
+
+**Encryption is the largest long-term risk to readability**, since a technical protection mechanism is precisely what preservation practice warns against. **The answer here is not to offer a plain file**, which D67 removed for good reason and which the owner confirmed on 2026-08-03: the payload is now a plain SQLite database, so an unencrypted container would be a fully readable copy of an entire care record sitting in a folder a file manager can browse and a cloud sync can copy. **The answer is 8.1's two layers**: publish the format, ship a standalone decryption tool that does not need this app, and give the passphrase every chance to survive. **The export screen states plainly that a lost passphrase means a lost archive with no recovery.**
+
+### 8.5 The tests
+
+**The regeneration test, which is the important one.** Export an archive. Import it onto a clean install. Regenerate the readable copy from the imported database. **Assert it is byte-identical to the readable copy inside the original archive.** Because the readable copy renders every field, any value lost, shifted, reordered, or re-derived anywhere in the round trip changes the output and fails the test. **One assertion, near-total coverage.**
+
+**The coverage test.** Enumerate every column in `contract/schema.sql` and assert each one appears in the readable renderer's field map. **Adding a column without rendering it fails the build** until it is either rendered or explicitly listed as not-for-rendering with a written reason. This is what keeps completeness true in year three rather than only on the day it was built.
+
+**The field-by-field round trip**, which this contract already required, stands, **extended to** attachments verified by hash, tombstones, pins, view preferences, and the conflict log. It asserts on every row of every table including tombstones, all archived, pinned, resolved, and completion state, ordering, all timestamps to the millisecond, every relationship between rows, and the schema version. It runs on a fresh install, an install with existing data, and a device with less storage than the source. It runs on an emulator, never on the owner's device.
+
+**The offline read test, which is the whole two-layer promise as a single procedure.** On a machine with **no network** that has **never had this app installed**:
+
+1. **Extract the outer layer with a general-purpose zip tool.** Not the app, not a script this project wrote for the purpose. Whatever the machine already has.
+2. **Decrypt `payload.enc` using only `tools/decrypt/`**, following its README as somebody who does not write software would.
+3. **Open `readable/index.html` in a browser.**
+
+**Everything must render, every link must work, every attachment must open.** Run it in each of the four locales, and confirm the Arabic copy reads right to left.
+
+**That full path is the test, and it is what actually proves the archive outlives the app.** A test that starts from an already-decrypted folder proves only half of it, and the missing half is the one that fails in ten years.
+
+**The cross-device test.** Export on one device, import on a **different** device with a different timezone, a different system locale, and a different Android version. **This is the actual new phone scenario and it is not covered by any test that runs on one device.**
+
+**The shape test.** Run all of the above at empty, one, a few, and many, since an export of an almost-empty notebook and an export of a five-year notebook fail in different ways.
+
+**The stranger test, run by a person and not by code.** Hand the readable copy to someone who has never seen the app and ask them what happened in a given month. **If they cannot answer from the archive alone, the readable copy has failed regardless of what the tests say.**
+
+**No feature is finished until it survives all of this.** A feature that stores something the archive does not carry is a feature that silently loses user data on device migration, which for this audience is the worst failure the app can have.
+
+### 8.6 The two screens
+
+Export and import are screens under design direction v4, not system dialogs. Their shapes are in `DESIGN.md` section 14. What this contract fixes about their behavior:
+
+- **Export:** the one thing is a plain description of what the person is about to receive, in the app's voice, **naming that it contains a copy they can read without the app.** **There is no encryption choice, because there is no unencrypted export.** What the screen asks for instead is the passphrase, **confirmed twice**, with one quiet line saying this passphrase is the only key and belongs somewhere that is not the phone. The optional hint is a single field, and beside it the screen says plainly that **anyone who has the file can read the hint, so it must never contain the passphrase.** One filled action.
+- **Import:** **nothing is written before the person sees what the file holds.** Show the date range, the counts by section, the attachment count, and the version, then the merge or replace choice as chips, then one filled action. **Progress is honest and cancellable at any point before the commit.**
+- **Failure speaks plainly.** Name the file, name what was wrong with it, and say what the person can do. **Never a stack trace, never an error code alone, never a message implying the person did something wrong.**
 
 ---
 
 ## 9. Automated local backup
 
 Backup matters more here than in most apps, because the people using it are exhausted and the record is often the only continuous account of years of care.
+
+**The automated local backup writes the archive format in section 8, unchanged.** A backup and an export are the same artifact and are covered by the same tests in 8.5. There is no second, weaker format for backups, because the backup is the file the person will actually reach for when the phone is gone, and it is the one that has to be readable in ten years.
 
 - Android supports genuine automated local backup: the app asks once for durable permission to write to a folder the user chooses, then a scheduled job writes a fresh export there on a cadence. No cloud, no account, no server. If the folder the user picked happens to be synced by something they already run, that is their choice and their business.
 - The folder choice is the user's, always. Never a hidden app-private location they cannot reach.
@@ -272,7 +408,7 @@ Phase 0 is not complete until all of these are true:
 4. Ids are generated locally and are collision safe. There is no auto-increment primary key on any user data table.
 5. Every write appends to `change_log` in the same transaction, proven by a test.
 6. The `SyncTransport` interface exists with the file-based implementation behind it, and the reconciliation code has no knowledge of transport.
-7. The export container writes and reads, with the manifest, the version check, encryption, and the full round trip test passing on an emulator.
+7. The archive in section 8 writes and reads, with the manifest, the version check, encryption, the readable copy, and **the regeneration test in 8.5** passing on an emulator. The regeneration test is the gate: an archive that round trips field by field but whose readable copy is not byte-identical after reimport has not met this criterion.
 8. `/web` opens the same schema through SQLite in WebAssembly and reads the same template JSON, proving the contract.
 9. Test vectors exist for at least the empty, single entry, and gap cases, and both platforms run them.
 10. Everything in this document that was adapted or deviated from is recorded in DECISIONS.md with the reasoning.

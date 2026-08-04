@@ -13,7 +13,7 @@ How Health Trail is put together, for someone who wants to understand or modify 
 ```
 contract/          platform neutral. The source of truth for anything shared.
   schema.sql       the canonical schema as DDL, with comments        [exists]
-  export-format.md the export container specification                [exists]
+  EXPORT-FORMAT.md the export container specification                [exists]
   i18n/            message catalogs, ICU MessageFormat               [pending]
   test-vectors/    golden input and expected output per locale       [pending]
 templates/         57 care templates as JSON                         [exists]

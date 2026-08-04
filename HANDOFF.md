@@ -2,420 +2,98 @@
 
 **This is the current state of the work.** Read it before doing anything, every session, per `CLAUDE.md` rule 1. It is rewritten to current truth rather than appended to, so nothing in it describes a state that has passed.
 
-If you are a session with no memory, this file plus `git log` and the issue tracker is everything you need. Read this in full, then `CLAUDE.md`, then continue only from what the repository says is true.
+If you are a session with no memory, this file plus `git log` and the issue board is everything you need.
 
-**Last rewritten:** 2026-08-02, and updated continuously through the run that began that evening. Sections 0a, 3, 4, and 6 are current to the last commit.
-
-**Work in progress is on a branch and pushed.** Every increment is committed and pushed as it lands, per rule 7, so nothing is only on this machine. The phone holds a build matching the work.
-
-**The single most important thing this run found:** every export the app had ever written could only be opened by the phone that wrote it, which meant the only recovery path from key loss did not exist. It is fixed, and D61 explains why no test caught it.
-
-**The phone holds a current build with a seeded notebook**, per D56. If an instrumented run has just wiped it, reinstall and reseed before doing anything else.
-
-If you find yourself re-reading files you already read this session, compaction has happened. Stop, read this file again, and re-orient before continuing.
+**Last rewritten:** 2026-08-03, at the end of the step zero that adopted design direction v4.
 
 ---
 
-## 0a. The guard question is answered, and it is now waiting on the owner. Do not probe it again
+## 0. The headline, and it is the only thing you need to act on
 
-**Read this instead of section 0 and section 7's opening, both of which describe the state before the answer.**
+**Design direction v4 is adopted. It supersedes the design this app was built on. No screen has been converted yet.**
 
-**Answered 2026-08-02 at 20:52, first thing in a fresh session.** The probe was run as instructed and the result is not what the last three sessions were expecting.
+The whole visual and experience direction changed: new tokens, new type scale, a new component inventory, a new interaction grammar, and a new method for undrawn screens. `reference/screen-grid.html` **is now the v4 grid** and the old one is gone from the working tree. `DESIGN.md` was rewritten rather than patched.
 
-**The guard did not fire, and this time that is a measurement.** The log gains a line for every command the guard inspects, passed or blocked. Five ordinary commands were run in this session and the log gained nothing from any of them.
+**Everything the owner sent is now in the repository and on the board.** That was the point of step zero: the prompt that started this run is redundant, and a session starting cold from this file alone can do the work.
 
-**The bigger finding.** The two lines the log has ever held were both written by running the script by hand during the fix, not by Claude Code invoking the hook. So the honest statement is not that the guard broke. **This project's destructive command guard has never been observed to fire through Claude Code, on any day, in any session.**
+### Pick this up first, in this order
 
-**The hypothesis the last three sessions carried is dead.** It was that a session cannot benefit from a hook configuration it edits itself, which predicted the guard would work from the next session's first command. This was that session. It did not.
+1. **#150, the font gate, before anything visual.** Screenshot a screen carrying all three faces, confirm the letterforms by eye, and record the confirmation here. **This app has already shipped multiple sessions of visual review that were invalid because a face had silently fallen back to the system typeface.** It is a gate, not a checkbox, `DESIGN.md` 5.2.
+2. **#149, the token set**, measured. Nothing else in the conversion starts until the theme matches `DESIGN.md` sections 4.1 to 4.3.
+3. **#151, shape and rhythm**, then **#153 to #168**, the component inventory. Eleven components do not exist at all; five need real rebuilds.
+4. **Only then #169 to #172**, the four bottom-navigation destinations, so the app reads as one app end to end at the earliest possible moment.
+5. **Then #173 to #188** section screens, then **#189 to #208** detail screens, sheets, onboarding, settings, and edge states.
 
-**The script is fine and that was checked again.** Piped a real payload in, it printed the refusal, exited 2, and logged. The defect is entirely in the wiring.
+**`ORDER OF WORK` is not a suggestion.** A half-converted app is worse than either version and it makes review impossible.
 
-**The fix is known and the agent is not allowed to make it.** Claude Code refused the edit to the hook script, because it does not let a session modify the hooks that constrain it. That refusal is correct and was not worked around. **It is B5 in `DECISIONS.md`, written for the owner in steps he can act on**, and it is the only blocked item in the project. D64 has the full account.
-
-**So: do not spend fifteen minutes on this again.** The next session's probe is worth running only after B5 is done, and then it is one line, `cat ~/.claude/health-trail-guard.log`. Until then the answer is known.
-
-**What actually protects the work** is rule 6 followed by hand, which has held through three long unattended runs, and Claude Code's auto mode classifier, which is what refused the destructive commands each time. **Neither is this project's guard.** Nothing destructive was run in this session.
-
----
-
-## 0a-old. The guard was tested on 2026-08-01 at 22:31, and it failed. Kept for the record
-
-**Superseded by 0a above.**
-
-The probe was run first thing, as instructed. **The guard did not fire.** D49 carries the full account and D56 and D57 carry two standing rules the owner set during the same run.
-
-**The two commands section 0 names were both refused by Claude Code's own auto mode classifier rather than by this guard**, so neither tested what it was meant to test. **A refusal arriving from somewhere else is not evidence about the guard.** The test that answered it was `git restore --version`: on the blocklist, harmless if it runs, dull enough that the classifier allowed it. It ran.
-
-**`CLAUDE_PROJECT_DIR` is empty in a session's shell.** The quoting fix was real and insufficient: an unset variable yields an unusable path exactly as surely as an unquoted one. The hook path is now **absolute, with no variable in it**.
-
-**The guard now logs every invocation** to `~/.claude/health-trail-guard.log`, blocked or passed. This is the change that matters. Three times this project has been unable to answer "did the guard run", because a guard that does not fire produces exactly as much output as a guard with nothing to do.
-
-**So the test for the next session is now a one liner, and it comes before the two commands:**
-
-    cat ~/.claude/health-trail-guard.log
-
-**If it has no line stamped inside your session, you have no guard**, whatever the configuration says. Run the two commands in section 0 anyway to confirm, and record the outcome in D49 either way.
-
-**What protected the phone through this run** was the auto mode classifier, not this project's guard.
-
-### Checked again at the end of the long run, 2026-08-02 06:23
-
-`cat ~/.claude/health-trail-guard.log` holds **two lines, both stamped 22:31 on 2026-08-01**, which are the two from the fix itself. **Nothing from the eight hours after it.** So the guard did not fire once during the whole run, and the absolute path plus logging did not change that within the session that made the change.
-
-**The most likely reason is mundane and should be tested rather than assumed:** `.claude/settings.json` is read when a session starts, so a session that edits its own hook configuration is the one session that cannot benefit from it. That predicts the guard works from the *next* session's first command. **Predicting is not testing.** The next session must run `cat ~/.claude/health-trail-guard.log` first, then a blocklisted command, then read the log again, and record the outcome in D49 either way.
-
-**Do not write "the guard is live" anywhere without a log line stamped inside your own session.** That error is D29 and it has now been made twice.
-
-**Nothing destructive was run in this session.** Rule 6 was followed by hand throughout, and the only device actions were installs, instrumented test runs, and removing two test export files this session created in Downloads.
+**THE ARCHIVE runs on its own track and does not wait for any of this.** #209 through #215, plus the parent #9. Its two screens are built in step 4 with everything else, but the container, the readable copy, the importer, and the tests are independent of screen work and must not be scheduled behind it.
 
 ---
 
-## 0. Read this before you trust anything about safety
+## 0a. Where the project actually stood before this run touched anything
 
-**All three run safety guards were decorative until 2026-08-01, and the repository said otherwise for a week.** D29, D49, D50, D53.
+Written honestly, per the instruction, including what was found half-done.
 
-The destructive command hook interpolated a path, this project's path contains spaces, the shell split it, the executable was never found, and the hook exited 127. **A blocking hook has to exit 2**, so 127 read as "nothing to say" and every destructive command ran. The pre-compaction save had the identical defect. The retry cap turned out not to be a hook at all but a tool nothing ever called.
+**The tree was clean and `main` was current.** `git status --porcelain` returned nothing, `HEAD` was `527ff06`, and nothing was unpushed. The previous session, which was updating the knowledge documents and the issue board, **had finished rather than stopped mid-way.** That was checked rather than assumed.
 
-None of that produced a single line of output, which is the whole problem: **a guard that does not fire looks exactly like a guard with nothing to do.**
+**What existed and worked.** The core loop ran end to end on real hardware. 50 screen files, 20 component files, a seeded year five fixture on the phone, 277 instrumented tests, 102 unit tests, lint, and eleven content checks, all green as of the previous session's last commit.
 
-**The quoting is fixed and a check in continuous integration now fails on it.** What is not proven is that the hook fires in your session, because a fix made mid session does not take effect in that session. **Prove it first, before anything else:**
+**What was half-done and is now superseded rather than finished.** The previous run had built six of the nine components in the old section 11 library and left three written down but unbuilt: the stat display, the avatar, and the segmented control. **That work is not resumed as it stands.** It was folded into the v4 conversion issues, per the instruction that work in flight on the old direction is not resumed. The avatar survives into the v4 inventory as #156; the segmented control became the view toggle #160; the stat display folded into the token and type pass.
 
-    git reset --hard HEAD          # on a clean tree
-    adb shell pm clear com.kamsiob.healthtrail
+**The one thing that was open and stays open.** `#128` / `B5`: this project's destructive command guard has never been observed to fire through Claude Code, on any day, in any session. **Only the owner can install the fix**, because Claude Code correctly refuses to let a session edit the hooks that constrain it. **It does not block the work.** What has actually protected this repository through four long unattended runs is rule 6 followed by hand, plus Claude Code's own classifier. Do not spend time re-probing it; the answer is known until B5 is done.
 
-Both must be refused with "Blocked by the Health Trail destructive command guard". **If either runs, fixing that comes before any other work.** `RUN-SAFETY.md` section 1.1 has the full procedure. **Record the result in D49 either way, including a pass**, because that entry is the only place the outcome of this test is written down.
-
-Guard 2 has still never fired and cannot be triggered on demand. Treat it as absent and keep this file current by hand.
+**Nothing destructive was run in this run.** The only deletion was the v3 grid, which was the owner's explicit instruction, and its blob survives in git at `fbeb6cf`.
 
 ---
 
-## 1. The thing that changed everything, and it is retroactive
+## 1. What step zero did
 
-**The owner sent the standing quality bar mid-session.** It is recorded as **D34** and written into `CLAUDE.md` as rules 14 through 21, into `DESIGN.md` as sections 10.8, 10.9, and 10.10 plus additions to sections 1, 6, and 9, and into `MASTER_SPEC.md` section 4.2.
+One documentation-only commit, before any application code, exactly as instructed.
 
-**Nothing in it is forward-only.** Every screen already built, every document already written, and every issue already open comes up to it. A codebase where the standard changed halfway through is a codebase with two standards. Issue **#43** is the retroactive audit and it is not optional.
-
-The parts that change how you work, compressed:
-
-- **No screen ships thin.** Functionally correct and visually plain is not done.
-- **Hierarchy before decoration**, in the order `DESIGN.md` 10.8 sets out. Uniform weight is not neutral.
-- **Everything the person touches responds.** One press treatment for the whole app, `DESIGN.md` 5.14.
-- **Dates are a real model**, EDTF, never falsely precise, always editable, unknown is a first-class value.
-- **Links go both ways**, and taps are the currency.
-- **Accessibility is a gate**, verified with the settings actually on.
-- **Look at it on the phone before closing anything**, then fix the worst thing you find and look again.
+- **`reference/screen-grid.html` is now v4.** The v3 file is gone from the working tree, one copy only, no archived variants. `reference/concept-review.pdf` is kept and `DESIGN.md` now says at the top that it is a historical record and not the visual reference.
+- **`DESIGN.md` was rewritten**, not patched. Identity, the five laws, the tokens including the tab pack and `stone`, the component inventory, the FAB correction, the interaction grammar, the method for an undrawn screen, the polish list, and the two audits. Paragraphs describing replaced patterns were **deleted rather than kept as history**, and section 18 records exactly what survived and what did not, so nobody mistakes a deliberate deletion for an omission.
+- **`contract/DATA-CONTRACT.md` gained THE ARCHIVE in full**, marked as an owner-approved amendment. `contract/export-format.md` was renamed to `contract/EXPORT-FORMAT.md` and given its new job.
+- **`MASTER_SPEC.md` was corrected** wherever it described the old design or an export weaker than THE ARCHIVE.
+- **`DECISIONS.md` gained D76 through D85**, one per decision this direction forced.
+- **The board was reconciled.** 37 issues closed as superseded with the reason named, 3 rewritten in place, 67 opened, all on the board in `ORDER OF WORK` order.
 
 ---
 
-## 2. Where the work is, exactly
+## 2. Two things the owner decided during this run, both of which change what gets built
 
-**Phase 0** is substantially built and not closed. Eleven of its issues remain open: #1 the parent, #7, #8, #9, #10, #12, #13, #15, #16, #17, and #18. All are in section 5 with what each is actually waiting on.
+### 2a. D67 stands. Every export is encrypted, and the archive is two layers
 
-**Phase 1** is where the work is. The core loop runs end to end on real hardware: the gold capture button opens the sheet, the sheet opens a form, the form saves, the entry is written, the change log trigger fires in the same transaction, and the notebook's count refreshes through the live view.
+**THE ARCHIVE as first supplied required that an unencrypted export be offered. That directly contradicted D67**, which had removed the unencrypted export because the payload became a plain SQLite database, meaning a plain container would be a fully readable copy of an entire care record sitting in a folder a file manager can browse and a cloud sync can copy.
 
-**All four screens the owner named as visually thin have been rebuilt** and their issues are closed: the disclaimer gate, setup, the situation picker, and the capture form, plus the notebook table of contents last, #36 through pull request #49. Nothing is in flight.
+**The contradiction was flagged rather than silently resolved in either direction, and the owner corrected it the same day.** D67 stands. There is no unencrypted export path, no chip offering one, and no settings toggle producing one.
 
----
+**What replaces it is harder and better.** An encrypted archive must remain **openable by someone who has the passphrase but does not have this app**, because a format only this app can decrypt is the same failure as a format only this app can read, arriving one step later. So the container is two layers: a plain outer ZIP64 holding only a stranger-readable `README.txt`, a non-sensitive `MANIFEST.json`, and `payload.enc`. **Nothing in the outer layer reveals anything about the person.**
 
-## 2a. Two standing rules the owner set on 2026-08-01, both binding
+Three requirements make that real rather than aspirational, and each is a build gate: the format is published **byte for byte** in `contract/EXPORT-FORMAT.md` under AGPL so it survives this project, #214. A standalone decryptor ships at `tools/decrypt/` with no build step and a README somebody who does not write software can follow, tested in continuous integration against a real archive, #215. And the passphrase gets every chance to survive: confirmed twice, an optional hint stored in the outer manifest **in plaintext with the app saying so plainly**, and a backup that reuses a passphrase set once. **D84 carries the full account.**
 
-**One current build of the app stays installed on the phone at all times.** D56. He went to use it and it was not there: the previous session ended on an instrumented run, and `connectedAndroidTest` uninstalls the app. **The phone is where he tests, and he cannot test an app that is not installed.** So an instrumented run is followed by a reinstall in the same increment, before anything else is picked up, and a session never ends with the app absent. The old rule about exporting first was about not losing data and missed the more basic thing.
+**The lesson worth keeping.** A quiet reversal would have removed a real safety property and nobody would have noticed for months. That is the same shape as every silent negative this project has been caught by.
 
-**Another application of his on the same phone is out of bounds entirely**, and is deliberately not named in this repository. D57. Enumerating a shared device surfaces things that are not this project's, and the right response to seeing them is to stop looking.
+### 2b. The tab hues all failed the contrast floor, and the floor won
 
-**A third instruction governs the languages.** D58: the translated languages ship with a friendly disclaimer on the language selection screen rather than behind a native speaker gate, English never carries one because it is authored rather than translated, and the translations get a good faith check at the very end. #102 is closed and #109 carries the disclaimer. **#62 lost `release-blocking`**: the app ships in English, and the rest of language access sits behind the app itself.
+**Measured on adoption, before a single screen was built against the palette.** All six tab hues, used as small text, measured between 3.23:1 and 4.56:1 against every surface they land on. **Every one is under the 4.5:1 floor.**
 
-## 3. The precise next action
+This is not theoretical: the tab chip is drawn at roughly 11sp and is the **first element on every section screen**.
 
-### Start here. Rewritten 2026-08-03 at 13:52, at the start of the run that builds the component library
+**The owner's section-to-hue mapping is untouched and was not re-derived.** Each hue keeps its hue angle and its saturation; only its lightness moves, so the binder tabs still read exactly as specified at arm's length. The base is for shapes, and a new **ink** variant carries text. That is not a new idea here, it is the split this codebase already used for gold, leaf, and alert, applied to six more hues. **D80** has the measured table.
 
-**Read this section and "Where to pick up" below, then start. Everything else in this file is context you can reach for when you need it.**
-
-#### What this run is about, and it changes what every screen is built from
-
-**The owner used the app and named the problem: it is uninspired, everything on every screen is the same shape, and the cause is that this app has exactly one component.** A full width rounded card containing text. Grouping twelve of them under headers is organization, not hierarchy. **D71** carries the diagnosis and **`DESIGN.md` section 11** is the answer: ten components and five layout patterns, each with its geometry, its states, and the clause section 5 always omitted, **when to use it and when not to.** The old section 11 became section 12. **`CLAUDE.md` rule 22** carries the short form, and it was added mid-run, so it is one a compaction can lose, per section 8 of this file.
-
-**The bans in section 1 all stay.** The other failure mode is the one to watch now: avoiding generated-looking design does not mean avoiding design. Plain is not a virtue here and crude is not authenticity.
-
-**Read section 11 before touching any screen.** Everything below is built from it, and **#144** is the retroactive sweep of everything already built.
-
-#### Where the run got to, at 2026-08-03 17:20
-
-**Everything is on `origin/main` and the phone holds a matching build with the year five fixture.** The suite is green: 277 instrumented, 102 unit, lint, and the eleven content checks.
-
-**Done tonight, in the owner's order:** section 11 itself, the icon set, the capture sheet and the form behind it, the unfiled tray, the notebook, Today, projects and the template library, and documents as a gallery.
-
-**Six components exist now and are used rather than described:** the tile 11.2, the dense row 11.3, the hero 11.5, the thumbnail 11.7, the capped chip group 5.11.1, and the disclosure 5.18. **Three from section 11 are still only written down**: the stat display 11.6, the avatar 11.8, and the segmented control 11.9.
-
-**The next thing is the care team with avatars**, which is item 10 and the last of the three named screens, then bills, then `#144`'s sweep of everything else. `#146`, `#147` and `#148` are tonight's new design reviews.
-
-**Four new decisions:** D71 the component library, D72 the status bar crop, D73 the suite that had been red for a day, D74 the journey test that passed alone, D75 the screen that said nothing when nothing changed.
-
-`main` is current and green. Continuous integration passes on it. Nothing is uncommitted and no branch is ahead of `main`: the last commit is the navigation bar icons. **D69 is the rule that made that true and it is new: an increment ends when `main` contains it, and `git rev-list --count origin/main..HEAD` reading zero is the check.** The whole of the previous night sat on unmerged branches because D48 only guarded the start of an increment.
-
-**What this run was about, in one sentence:** the fixture generator learned to write the tables the app had grown into, and almost everything below was found by looking at a screen with real data on it for the first time.
-
-**The eight defects that came out of that**, all fixed, all on `main`:
-
-1. **The app crashed** opening any medication whose history held a `noted` event. No catalog defined the key and it was built by interpolating a database column.
-2. **The medication picker wrote a word the database rejects**, `restarted` where the schema says `resumed`. Three layers agreed with each other and disagreed with the CHECK constraint.
-3. **A stopped medication claimed to be on the emergency card**, which is the one claim in this app whose cost is outside it.
-4. **An untitled entry led with a stock phrase** at display size while the sentence the person wrote sat below it in body text. Most entries are untitled.
-5. **Removing an untitled entry asked "remove what?" with a blank.**
-6. **Records were named with the button that made them**: "Log a visit" appeared wherever an untitled visit was listed, an imperative sitting where a description belongs.
-7. **Waypoints drifted out of line with their rows** on any card shorter than the trail's.
-8. **The spine stopped mirroring in Arabic** the moment its node moved into a canvas, and it looked correct.
-
-**The phone is clean.** `font_scale` 1.0, `animator_duration_scale` deleted, app locale back to `en-US`, the app installed and holding a year-five fixture, which is generated data and not the owner's. `/tmp/restore-a11y.sh` exists if a setting is ever left changed.
-
-**One thing needs the owner and only the owner: B5**, the destructive command guard, in the BLOCKED section of `DECISIONS.md`. It has never fired. Rule 6 is being kept by hand.
+Two base tokens moved for the same reason: `ink-2` to `#576873` and `blue` to `#2E6D8C`, both of which were fractionally under the floor on `sand`.
 
 ---
 
-**Rewritten 2026-08-02 after the long run that opened the notebook.** What is below the horizontal rule is the older export work and it is still accurate; what is here is what changed.
+## 3. What is deliberately not claimed
 
-### What happened on the night of 2026-08-01 into 08-02
+**The dark theme is not converted, and saying otherwise would be the error D29 records, which this project has already made twice.**
 
-**The notebook opened.** `onOpen` was an empty lambda: twelve sections with live counts and not one of them opened. Capture wrote entries and nothing anywhere gave one back.
+The derivation stands unchanged, as the owner's direction requires. **The values do not**, because every one was derived from the previous light ladder and that ladder is gone. The six tab hues have no dark counterpart at all, because the tab pack did not exist before. **#152** is the re-derivation, measured rather than calculated, and until it lands the dark theme is unconverted and is described that way everywhere.
 
-**All twelve sections now open onto real screens**, and **all six capture inputs are built**, which closed #57 and removed the last `NOT_BUILT` screen except More's note about what is still coming.
+**No screen has been converted.** The documents describe where the app is going. The app itself is still entirely on the old direction, and every screen still on it is visible as an open issue, which is what `ORDER OF WORK` step 5 asks for.
 
-| What landed | Notes |
-|---|---|
-| The trail | Built to `DESIGN.md` 5.2, dashed route and kind-colored nodes, after first being built as a plain card list and rejected under rule 14 |
-| Care team, medications, appointments, money, documents | Each with its own way in, since none could be created before |
-| Ask next time, standing instructions | Both were counting zero while the thing they count was being captured |
-| Care threads, progress, chapters | Read-only sections the notebook counted and would not open |
-| **Projects** | The whole destination said "not built". Sixteen catalog processes with their ordered steps |
-| **About** | Closed #25, the oldest open issue. Links the canonical privacy policy |
-| Removing and correcting | Long press removes anything, a tap corrects it, everywhere |
-| **The system back button** | It left the app from every screen above the notebook. That was the worst defect found all night |
-| Arabic headings | Every Display L title broke mid-word, in every language using a connected script, since the type scale was written |
-
-**The pull request is #112**, on branch `fix/guard-observable`, and every increment in it is a separate commit.
-
-### What happened on the morning of 2026-08-02, continuing the same run
-
-**Restore was built and the round trip closed on the phone.** Exported with a
-passphrase, added a care team row named SHOULD NOT SURVIVE afterward, restored,
-and the row was gone with the original two people back. Five honest states,
-including a wrong passphrase that leaves the field in place to try again.
-
-**Then the export turned out not to be portable, which was the serious find of
-the run.** `Backup.export` copied the SQLCipher file exactly as it sits on disk,
-and that file is keyed by 32 random bytes wrapped by this phone's Keystore,
-which cannot be exported and does not travel. **Every export written before this
-was unopenable on any other device.** D24 makes the export the only recovery
-path from key loss, so the one scenario it exists for, the phone being gone, was
-the exact scenario in which the file was unreadable. Every round trip test
-passed throughout, because all of them restore onto the same device where the
-key never changes. The bug lived in the gap between what the tests exercised and
-what the file is for.
-
-The archive now carries a plain SQLite database produced by `sqlcipher_export`
-inside a transaction, so the whole schema travels rather than being redeclared
-against D16, and restore keys the result with the receiving device's own
-passphrase. `PortabilityTest` checks the payload's first sixteen bytes for the
-SQLite magic, checks an encrypted export decrypts to one, and checks the live
-database is *not* one so the first check cannot pass by becoming vacuous.
-
-**The export passphrase was on screen in plain text**, found by walking the
-screen rather than reading it. `KeyboardType.Password` selects a keyboard and
-conceals nothing; masking is a visual transformation and has to be asked for
-separately. Both fields are concealed now with one control to reveal them,
-cleared the moment the file exists, and the result replaces the form instead of
-sitting under two still live buttons.
-
-**Today's digest is built, which closes the last thing the app admitted was
-unbuilt.** `Digest` is pure, takes change log rows and a timestamp, and has ten
-JVM vectors. The counting rules it settles are in its own documentation. Each
-row opens its section and each coached step opens what it names and disappears
-once taken. **`LastVisit` marks a visit once per process**, which it did not at
-first: it was once per composition, so a theme change or rotation advanced the
-mark mid-visit and the digest went blank. Found on the phone, with a freshly
-seeded notebook reporting nothing at all.
-
-### What happened on the night of 2026-08-02 into 08-03
-
-**Rewritten to current truth at the end of the run rather than appended to**, per this file's own rule. The order below is what a fresh session needs to know, not the order it happened in.
-
-#### The guard is answered and handed over
-
-**It has never fired through Claude Code, on any day, in any session.** Section 0a has the whole account. The fix needs the owner because Claude Code refuses to let a session edit its own hooks, which is correct. **B5** in `DECISIONS.md` and **#128**. Rule 6 followed by hand throughout, as it has been for three runs.
-
-#### The pattern the whole night turned on
-
-**Four separate tools reported on something other than what they were asked about**, and each was silent about its own blind spot:
-
-| The tool | What it said | What it was looking at |
-|---|---|---|
-| The destructive command guard | Nothing, which reads as a clean run | It was never invoked. D64 |
-| The interface suite, 130 tests | Every screen passes | One screen at a time, no shell, no back button. D65 |
-| `grep` and `git grep` | No match for a call that exists | Not the file, which two NUL bytes made binary. D66 |
-| `uiautomator dump` | Twenty four reader stops | The view tree, not the semantics tree. D68 |
-
-**Distrust a negative result from a tool that cannot tell you what it did not examine.** That sentence is the most valuable thing this project learned tonight.
-
-#### What that produced
-
-**`TESTING-PERSONAS.md` section 7 is the shortcut rule**, written from the audit D39 asked for. Screen tests and journey tests are different tests and this project needs both; every screen owes at least one journey that reaches it. **`BackJourneyTest` found a real defect on its first run.**
-
-**`check_text_sources.py`** fails any source file that grep cannot read. It caught its own author twice within the hour.
-
-**`ReaderStopsTest`** asks Compose for the merged semantics tree rather than asking the window manager, which closes the countable half of #44.
-
-#### The export
-
-**There is no unencrypted export, as of format version 2.** D67. Making the payload portable is what made a plain one dangerous, so the decision that was right at version 1 is wrong at version 2. The importer refuses by what a file is rather than by which version wrote it, and names what it refused.
-
-#### The visual system
-
-**`DESIGN.md` 5.2 is a system in five parts now and it is built**: waypoints with states, routes that are a color and a dash together, spines, distance markers, and the empty state drawings. Plus tabular figures everywhere. **The diagnosis is in 5.2 itself**: section 1's bans were right and nothing replaced them, so every screen converged on a card with text in it.
-
-#### The app became usable end to end
-
-| What landed | Why it mattered |
-|---|---|
-| **Search**, ten sections, grouped in notebook order | A years long notebook is unusable without it. #47's universal half |
-| **Incidents as threads** | `MASTER_SPEC.md` 4.7. It was an entry with a scary kind: reported once, never followed, never resolved |
-| **One entry, read on its own** | Nothing could open one. A trail row's only tappable part was its date |
-| **A person, and every call involving them** | Section 3 promised it since Phase 0 and `entry_person` had no writer |
-| **A care thread, a chapter, a medication** | Each is a place the route led nowhere |
-| **The prep sheet** | 4.5, and the app's most useful two minutes |
-| **A shareable document** | 4.9. Generated locally, handed to the share sheet, legible to somebody who has never seen the app |
-| **Draft preservation and dictation** | The two friction fixes that matter most on the capture form |
-
-**Six lists learned the same rule: a tap opens the thing itself.** Each previously opened either nothing or the form for correcting itself.
-
-#### The fixtures unlock the personas
-
-**`tools/fixtures/pack.py`** wraps a generated fixture in a real export container and it goes in through the app's own restore screen. **D61's portability fix is what made that possible**, used in the other direction. It found journey six broken at the last step within minutes, and three fixture defects that were invisible in a database file and obvious on a screen.
-
-
-**A standing instruction can record the times it was not followed**, which is P4's stated gap and the part of the record a family actually needs in a room. `instruction_violation` sat in the schema from Phase 0 with no reader and no writer.
-
-**"We asked in writing in March, and it happened again in May and again in June" is a different conversation from "we asked in March."**
-
-**A count, and immediately under it the sentence saying what it is not.** `MASTER_SPEC.md` 4.11 requires that line every time a count like this is shown, and the two are one thought: a bare number would be the app implying a conclusion it is not entitled to. **Zero says nothing at all**, because a count of nothing is not a finding and printing it would turn every instruction into a scoreboard with most of the scores at zero.
-
-**The link to the bill or incident it broke is optional and stays that way.** Somebody writing this down in a corridor knows it happened; working out what it belongs to is a later, calmer job, and asking now is how the thing never gets written down.
-
-### Where to pick up
-
-**Rewritten 2026-08-03 at 13:52, and this is the owner's order for the run rather than the previous night's.** Each one is a whole increment.
-
-1. **`DESIGN.md` section 11, the component library. Done**, and it came before any screen was touched deliberately.
-2. **The icon set. Done.** Twenty three drawings: thirteen sections, four destinations, and six capture kinds, of which two are deliberately not new drawings because a captured question lands in Ask next time and a captured document lands in Documents. **Four section drawings were changed and none of them looked wrong on its own**: medications, money, the trail, and projects each shared a silhouette with something else, which does not matter in a list and is fatal in a grid. `DESIGN.md` 5.12.1. **`tools/icons/sheet.py` renders the whole set from the app's own paths** at 44dp, 32dp, and 20dp, and both collisions were invisible in the source and obvious on the sheet. `docs/icon-set.png` is the current sheet.
-3. **The capture sheet and the form behind it. Done.** Two new components came out of it and both are in `DESIGN.md`: **the capped chip group with its full set behind search**, 5.11.1, and **the disclosure**, 5.18. The dense row, 11.3, is built and is what the picker's list is made of.
-
-   **What the form looks like now.** What happened comes first and used to come last, which is rule 15 backwards in the same way the entry screen was. Then when, then who with five person chips picked by **who the person has been dealing with lately** rather than who was added first, `Repository.peopleByRecentUse`. Everything else is behind "Add more". On the year five notebook that took the form from twenty three controls to two fields and ten chips, and the whole thing now fits on one screen with the save button still pinned in the lower half.
-
-   **The line saying an entry with no thread goes to the Unfiled tray stays outside the disclosure**, because for somebody who never opens it that sentence is the only thing telling them where their entry is going.
-
-3a. **The old item, for the record.** Two of its three defects were fixed first. **The clipping was the title sitting on the content's first pixel** with the sheet's own 28dp corners cutting into it, which is a missing top padding rather than a peek height, and it is fixed. **The six choices are a two by three tile grid**, one column above font scale 1.3, walked in English at 1.0 and 2.0 and in Arabic where it mirrors correctly. **What remains is the form behind it**, where the person still meets roughly twenty three chips on a year five notebook: at most five per group, most recently used and most contextually likely, plus one control opening the full set with search, and the note field moved to the top where it belongs.
-4. **The unfiled tray, inverted to suggestion first. Done.** It offered every care thread as a chip on every card: seven threads times eighty six waiting entries is six hundred and eighty eight pills in one scroll. It leads with the matcher's suggestion now, one tap files it, two alternates sit under it, and everything else including "None of these" is behind "Somewhere else" with search. **Filing went from two taps to one.** The two alternates are the threads this person actually files into, `Repository.threadsByRecentUse`, because the matcher works on whole words and finds nothing more often than not. Walked at font scale 1.0 and 2.0 and in Arabic; **2.0 broke "Speech therapy" into "Speec / h / therapy" across a third of the width** and the alternates stack above 1.3 now.
-5. **The notebook: a hero plus a tile grid. Done.** The hero carries what needs the person now, at most two lines, and is **absent when nothing does**, because announcing the absence of a problem at display size is not information. Then twelve tiles: forward and standing at standard size differing by the fill on their drawing, folded compact and last.
-
-   **The four group headers went and nothing moved.** The order is still `MASTER_SPEC.md` 4.4's. The headers were a fix for a list; in a grid they chopped twelve tiles into groups of three, four, three and two and left a half empty row in three of the four, which cost most of what the grid was worth. **Measured on the phone, not reasoned about.** Ten of the twelve sections are visible without scrolling now against the year five fixture, where seven were, and the whole notebook is a little over one screen where it was about two and a half.
-
-   Two components landed with it and both are reusable: **the tile**, 11.2, which the capture sheet also uses, and **the hero**, 11.5. Walked at 1.0, at 2.0 where the grid drops to one column and nothing breaks a word, and in Arabic where the grid mirrors and the section drawings correctly do not.
-6. **Today: a hero plus dense rows. Done.** It was seven identical white cards at uniform weight, which is exactly what the owner meant by lines of text in rowed boxes. **The hero is one line saying what changed**, at display size, and the breakdown and the still-open counts are dense rows with hairlines. The search bar was a full width white card with a shadow to say one word; it is a recessed row now, per 11.4.
-
-   **A quiet week says so now instead of showing nothing**, which is D75 and a behavior change with its test reversed: the absence of a line was carrying the meaning, and nothing distinguished "nothing changed" from "the digest did not run". A first run still has no digest, because nothing has ever been written down.
-
-   Walked at 1.0, at 2.0 where the whole screen still fits without a word breaking, and in Arabic.
-7. **Projects. Half done, and the half that is done is the functional half.** A project is a **spine** now, with a filled waypoint for a step that is done and a hollow one for a step nobody has started, so a step not started reads as "not yet" and nothing is struck through. The subtitle says **where it came from** rather than "2 of 5 steps done", in three cases because two would lie. The list row says **what is next** rather than how far behind. **Every step is editable**: long press opens a sheet with its words, its note, move earlier, move later, and remove, and `project_step.note` finally has a writer and a reader. **A project with no template** can be started and opens straight away with its own empty state. `#146` is the design review with what I was unsure about.
-
-   **The rest of the brief landed too.** A project's steps can be **saved as the person's own template**, which is what makes editing a shipped one their copy rather than a change to the catalog: `custom_template.derived_from_id` keeps the lineage and had no writer until now. **The library in More** shows their own templates first, then the sixteen shipped ones, each saying how many steps it has, where it came from, and what it has produced, with the projects themselves as rows that open. `#147` is its design review. **The start screen offers their own templates above the sixteen**, which it did not for the first hour and which made a saved template a saved template that does not exist.
-
-   **Walked end to end on the phone:** saved a project's five steps, found the template in the library, started a project from it, and watched the library go from "Nothing started from this yet" to "1 started from this" with the project linked. At font scale 2.0 and in Arabic as well.
-
-8. **#144, the retroactive sweep** of every other existing screen against section 11.
-9. **Documents as a gallery with real thumbnails. Done. Bills are not.** Documents was a column of cards each carrying a 180dp photograph; it is three across, grouped by year, with the title, date and where the original physically is under each. **The screen had never rendered an image**: the fixture's attachments were random filler bytes, so every thumbnail fell back to its kind drawing and the code looked finished. The fixture writes page images now. `#148` is the design review.
-
-   **Bills are the remaining half.** `attachment.bill_id` is in the schema with no fixture writer and no join in `bills()`. A bill's primary content is an amount and a state, so the right answer there is probably a thumbnail in the leading slot of a dense row rather than a gallery, and that is a guess rather than a decision.
-10. **Care team with avatars.**
-11. **#62, the template catalog in four languages.**
-12. **Remaining Phase 1:** the emergency card, More, and anything still saying it is unbuilt.
-13. **#43 and #44**, the audit and the accessibility gate, alongside all of the above rather than after them.
-14. **The eight journeys walked end to end, then personas P2 through P13.**
-
-**Still true and still waiting, from the previous night.** These are not superseded, they sit behind the list above.
-
-- **The design review queue waits on the owner rather than on work.** Thirty five `needs-design-review` issues. **Six of them describe a screen that was rebuilt on 2026-08-03 and each carries a comment saying what changed**, so nothing there sends somebody to review a screen that is gone. Nothing here is blocked on code.
-
-- **The three connections the spec promises and the schema cannot hold: #141.** An incident knows its project, a bill knows the call where it was disputed, a bill knows the standing instruction it broke. All three are additive nullable columns; what needs deciding is whether each is a column or a link table, and getting that wrong costs a second migration. **This is a decision, not a task.**
-
-- **P7's two unwalked targets**, which are the interesting half: the export of a full year-five notebook completing, showing progress, being cancellable and surviving being backgrounded; and memory across twenty minutes of navigation. The fixture and the passphrase are in section 8. **Everything needed to walk them is on the phone already.**
-
-- **#142, a benchmark that can actually see a 400ms target.** P7 asks for search under 400ms and the answer tonight was "faster than adb can observe", because `uiautomator dump` costs 2,770ms on this notebook and `screencap` costs 985ms. An instrumented test timing `Repository.search` with `System.nanoTime` would give a number that holds in continuous integration. Until it exists, that target has no evidence behind it either way.
-
-- **#131, the other half of search**: scoped search per section, the assembly view, date range search against imprecise dates, reconstructing a day. **The assembly view is also P7's untestable target**, so this closes two things.
-
-- **#135, a situation template applies its threads and nothing else.** The ten item first-days checklist and the six document slots are parsed and unread, and the checklist is the highest value content in the catalog.
-
-- **The personas still unwalked: P3, P5, P6, P8 through P13.** All of them are reachable now that the generator writes people, appointments, questions, medications and an emergency card. **P9 is the cheapest and the most revealing**: it needs no device at all, only reading an export as somebody who has never seen the app.
-
-- **#44's remaining half, which needs ears.** How a label sounds, where pauses land, whether a row is bearable at higher verbosity, and Arabic with the reader running.
-
-- **#143, the fourteen tables that still have no fixture writer.** Each is a screen that has never met generated data, which is exactly the condition that produced six of tonight's eight defects. The issue orders them by how much screen each unlocks.
-
-- **#125 asks the owner a question**: should the app open on Today rather than the Notebook? P7 measured cold launch to the notebook because that is where the app opens.
-
-- **The final translation good faith check**, deliberately last, and **language access after everything above**, per section 5.
-
-### `main` is current again, and there is now a rule for the end of an increment
-
-Tonight ran as a chain of branches, each cut from the last, and none of them was ever merged. `main` sat at `d2ad004` thirty six commits back: the commit this session started from. Everything was pushed and nothing was at risk, which is why it went unnoticed for a whole night. A fresh session clones `main`, reads `HANDOFF.md`, and would have found a file describing a night that had not happened.
-
-`origin/main` is fast forwarded and **D69 adds the missing half of D48**: an increment ends when `main` contains it, and `git rev-list --count origin/main..HEAD` reading zero is the check, the same way `git branch --show-current` is the check at the other end.
-
-### What the light theme pass has found so far
-
-The pass is running now and it is not only producing captures. Three things on screens that had already been walked in dark:
-
-**An untitled entry led with a stock phrase.** Most entries have no title, because capture asks what happened rather than for a name, which is right. The entry screen rendered "Something you wrote down" at display size with the sentence the person actually wrote in body text underneath it: the largest words on the screen carrying the least information, rule 15 backwards. The body is now the heading, cut at a word boundary past ninety characters and then repeated in full below. `headingFor` in `EntryScreen.kt`, six cases in `EntryHeadingTest`.
-
-**Removing an untitled entry asked "remove what?" with a blank.** The entry screen passed `entry.title.orEmpty()` into the confirmation, so an entry with no title named nothing. It now names the same words the heading shows. The trail's own remove already had an honest fallback; the two are deliberately different because they name what is on the screen the person is looking at.
-
-**A record was named with the button that made it.** `kindLabelKey` mapped to the `capture.*` catalog keys, so a visit already written down appeared on the trail, on a person, in a chapter, on a thread, on a prep sheet and in search results as "Log a visit". An imperative sitting where the description belongs, reading as an instruction to somebody looking back over six months. The `entry.kind.*` nouns already existed in all four catalogs for the entry screen's subtitle. Renamed `kindNameKey` and repointed; all nine callers name something that has happened.
-
-### The accessibility gate, walked on tonight's screens
-
-**Font scale 2.0**: the medications list, one medication with its history, and the prep sheet with both its spines all hold. Nothing truncated, nothing overlapping, everything reachable by scrolling. The waypoints stay anchored to the first line of each card, which is what the clamp is for.
-
-**Arabic**, set through the app's own per-app locale rather than by changing the phone's language, so nothing outside this app was touched. The layout mirrors, the gutter moves to the correct side, and **the spine itself did not mirror**, which is the finding. `Modifier.offset` is layout direction aware; the canvas that replaced it is not, so the line sat nineteen dp from the start edge instead of nine. It looked right in isolation and was caught by measuring the same screen in both directions: fifty nine pixels from the start edge in English, eighty one in Arabic, sixty one after the fix.
-
-**The phone was restored exactly**, per rule 19. `font_scale` back to 1.0, `animator_duration_scale` deleted rather than set, the app's locale back to en-US, and the restore script was written to `/tmp` before anything was changed.
-
-### What is owed on every screen built tonight
-
-**Light theme captures, Arabic, and font scale 2.0** for the eight new screens. The gate was walked on a sample tonight, not on all of them: the notebook, the disclaimer, the incident thread, and Today were checked at 2.0 and in Arabic and all pass. **The nav label cap came out of that pass**, D68's sibling finding.
-
-**The fixture had no appointments, no medications, no questions and one person**, so the prep sheet, the medication history, the questions section and the person screen could not be reached from a seed at all. Found trying to capture them, and **fixed**: `care_team`, `involve`, `appointments`, `questions`, `medications` and `medication_history` are written now, and a month six seed opens on ten people, eight medications with seventeen events behind them, nine questions and two care plan meetings.
-
-**It immediately paid for itself three times, all on the medications screens, all within ten minutes of the first real seed.**
-
-**The app crashed outright opening any medication with a `noted` event.** `Strings.resolve` throws on a key no catalog defines, which is right for a key the code writes and wrong for one built by interpolating a database column. `medication.event.noted` was a real value in the schema's CHECK constraint that no catalog had. `medicationEventKey` is a `when` over the six kinds now, with a fallback, so a notebook written by a later build cannot take the app down.
-
-**The picker wrote a value the database rejects.** `medication_event.kind` allows `resumed`; `MedicationChange` offered `restarted`, and all four catalogs agreed with the picker rather than with the schema. Choosing "Started again" would have failed the CHECK constraint. That path had never been exercised because nothing had ever produced a medication with a history. `MedicationEventKindTest` reads the constraint out of `contract/schema.sql` and holds the picker and the four catalogs against it, rather than restating the list and becoming a fourth copy of the same mistake.
-
-**A stopped medication claimed to be on the emergency card.** The card assembles itself from medications that say they belong on it and drops the stopped ones, correctly and deliberately. The list and the detail screen each rendered the stored flag instead, so a medication she stopped in February sat there in alert orange claiming to be on the card somebody hands a paramedic. One rule in one place now, `Medication.showsOnEmergencyCard`, held by `EmergencyCardClaimTest`.
-
-### What the "everything connects" audit found
-
-`MASTER_SPEC.md` section 3 lists what connects to what under **Everything connects. No dead ends.** Every clause was checked against the built app tonight. Most now hold. **A medication knows its pending questions** was built in both directions: the question form offers medications as chips, the medication carries a "Waiting to ask" section, and the question's entry links back. **An incident knows its people and its documents** needed no new column, only a join nobody had written.
-
-**Three clauses cannot be built without schema columns that do not exist**, and the schema is fixed by contract under rule 3, so they are **#141** rather than done: an incident knows its project, a bill knows the call where it was disputed, and a bill knows the standing instruction it broke. The third is the sharpest, because "they charged us for the transport after we asked in writing to be called first" is exactly the sentence this app exists to produce.
-
-**`MedicationQuestionJourneyTest` walks it from the front door**, per `TESTING-PERSONAS.md` section 7: adds the medication through the form, asks through the capture sheet, taps the chip, and follows the link both ways. It took five runs to get green and **not one of the five failures was in the thing being tested**: a button below the fold in a lazy list, the capture button being drawn under an open section, a save button deliberately outside the scrolling region, and twice a scaffold name used where a test tag was meant. That is the ordinary cost of walking in from the front door rather than composing a screen, and it is also the reason those tests find what screen tests cannot.
-
-Seventeen tables still have no writer. The ones that matter next are `emergency_card` and `emergency_contact`, `custom_template`, `cost_sheet` and `cost_entry`, and `person_chapter`, which is one of the links-both-ways gaps.
-
-**A modeling error came out of it.** `scaled` was being applied to two things that are not events: the care team and the medication list are a roster, not a stream. Somebody on seven medications is on seven medications on her first day, and a family a month in already knows the charge nurse. Scaling them by history length gave a month six fixture two medications and made every medication screen look thin for a reason that had nothing to do with the screen. `roster()` holds them flat; what grows with time is the churn, the people who left and the medications that were stopped.
-
-**The reader pass with TalkBack running**, #44, for the same eight.
-
+**The undrawn-screen map moved.** It used to live in this file and in `DESIGN.md` section 8. **It is now `DESIGN.md` section 14**, rebuilt clean from the twenty-five screens that actually exist, correcting a list in the grid that was stale and repeated three of its own mappings. Chapters and Appointments are drawn, at 19 and 22, and are no longer listed as undrawn.
 
 ## 4. What is done, and how each piece was verified
 
@@ -481,6 +159,8 @@ Verified means checked through the mechanism, not inferred from the code being w
 ---
 
 ## 5. Remaining work inventory, in order
+
+> **Superseded on 2026-08-03 by the v4 adoption.** The inventory below describes work against the old direction. **The live inventory is the board**, project 3, where 67 new issues sit in `ORDER OF WORK` order and 37 old ones were closed as superseded. Section 0 of this file names what to pick up first. What follows is kept because the closed-issue history in it is still useful for a session wondering whether something was ever built.
 
 **Rebuilt from the tracker on 2026-08-01.** The previous version of this section had four rows spliced in from section 4's verification table, which put `MigrationTest` text under issue #9 and left three rows with no issue number at all. It also listed #39 as unbuilt while sections 4 and 9 recorded it as built and walked. It was patched too many times and is now derived from `gh issue list` rather than edited in place. **If this section and section 3 ever disagree, rebuild this one from the tracker and make section 3 follow it.**
 
@@ -630,7 +310,13 @@ The same shape as the hook defect in D49: configuration read once at startup, ed
 
 ## 9. Screens built without a mockup
 
-Every screen built without one is composed from existing components under `DESIGN.md` section 10, ships complete with every state, and is logged in three places at the moment it is built: a `needs-design-review` issue with a device screenshot, an entry in `DESIGN.md` section 8, and a line here.
+> **The map moved on 2026-08-03. It is now `DESIGN.md` section 14**, rebuilt clean from the twenty-five screens the v4 grid actually draws, and it names which drawn screen every undrawn screen follows. It corrects a list in the grid's own Part C that was stale and repeated three of its own mappings, and that wrongly listed Chapters and Appointments as undrawn when both are drawn, at 19 and 22.
+>
+> **The protocol also moved**, from `DESIGN.md` section 10 to **section 13**, and the three places a new screen is logged are now: a `needs-design-review` issue with a device screenshot, a row in `DESIGN.md` section 14, and a line here.
+>
+> **Every `needs-design-review` issue in the table below was closed as superseded**, because each reviewed a screen built on the old direction and each is replaced by a conversion issue carrying the two audits. The table is kept as the record of what was built and when.
+
+Every screen built without one is composed from existing components, ships complete with every state, and is logged in three places at the moment it is built.
 
 | Screen | Built | Issue | Reviewed |
 |---|---|---|---|
@@ -793,4 +479,4 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 
 ## 13. Uncommitted work
 
-**None.** Everything described here is committed and merged on `main`. Verified with `git status --porcelain` returning nothing and `git branch --show-current` reading `main`, rather than assumed from the last branch this file happened to mention.
+**None as of the step zero commit.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed. Per the memory this project keeps: **an increment ends when `origin/main` has it**, and a local commit is not done.
