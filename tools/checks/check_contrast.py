@@ -109,6 +109,9 @@ def pairs_for(theme: dict) -> list:
         ("ink2", "paper", TEXT_FLOOR, "secondary text on the app background"),
         ("ink2", "card", TEXT_FLOOR, "secondary text on a card"),
         ("ink2", "sand", TEXT_FLOOR, "secondary text on a recessed surface"),
+        # A fold row's label. foldSurface is sand in light and a darker value in
+        # dark, so it is measured separately rather than assumed to equal sand.
+        ("ink2", "foldSurface", TEXT_FLOOR, "a fold row's label"),
         # The single accent, as a link and as a filled button.
         ("blue", "paper", TEXT_FLOOR, "a link on the app background"),
         ("blue", "card", TEXT_FLOOR, "a link on a card"),

@@ -40,9 +40,16 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * person standing in a hallway without hiding anything from the person with ten
  * minutes.
  *
- * **Sand means "more lives here."** That is the whole of its costume, and it is
- * why the fold is never drawn on `card`: a fold on a raised surface reads as an
- * item in a list rather than as a door to more of them.
+ * **A quieter surface means "more lives here."** That is the whole of its
+ * costume, and it is why the fold is never drawn on `card`: a fold on a raised
+ * surface reads as an item in a list rather than as a door to more of them.
+ *
+ * **It uses `foldSurface`, not `sand`, and the difference is not pedantry.** In
+ * light the two are the same value. In dark, `sand` is lighter than `card`,
+ * because a recessed input on a dark screen reads as lighter, and that would
+ * make the fold the brightest thing on the screen. `foldSurface` sits between
+ * `paper` and `card` in dark, so the fold recedes in both themes. **What is kept
+ * across themes is the meaning rather than the token.**
  *
  * **It always says what it holds and how much.** A fold with no count is a
  * mystery box, and the count is the entire reason folding is not hiding: a
@@ -95,7 +102,7 @@ fun FoldRowText(
     // Open, the fold stops being sand and becomes the surface its contents sit
     // on, which is what tells the person the door is already open rather than
     // leaving two identical rows one of which happens to be showing something.
-    val resting = if (expanded) colors.card else colors.sand
+    val resting = if (expanded) colors.card else colors.foldSurface
     val surface by pressedSurface(interaction, resting)
 
     // The chevron turns rather than being swapped for a different glyph, so the
@@ -150,7 +157,7 @@ fun FoldRowText(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(percent = 50))
-                    .background(if (expanded) colors.sand else colors.card)
+                    .background(if (expanded) colors.foldSurface else colors.card)
                     .padding(horizontal = Space.s, vertical = 2.dp),
             ) {
                 Text(text = count, style = type.mono, color = colors.ink2)
