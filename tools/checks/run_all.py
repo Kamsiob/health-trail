@@ -28,6 +28,7 @@ CHECKS = [
     ("check_readable_coverage.py", "every schema column is rendered in the archive or explicitly not"),
     ("check_decrypt_tool.py", "an archive still opens with only the standalone decryptor"),
     ("check_format_spec.py", "the published format specification still matches the code"),
+    ("check_query_ordering.py", "every query feeding a render or an export orders itself"),
     ("check_contrast.py", "every color pair in both themes against the WCAG AA floors"),
     ("check_ink3_is_not_text.py", "ink3 is non-text only, so no label is drawn at 2.37:1"),
     ("check_self_contained.py", "nothing outside this project is named in the repository"),

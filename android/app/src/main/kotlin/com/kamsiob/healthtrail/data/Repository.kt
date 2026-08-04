@@ -776,7 +776,14 @@ class Repository private constructor(
         db().database.rawQuery(
             "SELECT t.id FROM live_entry_thread et " +
                 "JOIN live_care_thread t ON t.id = et.thread_id " +
-                "WHERE et.entry_id = ?",
+                "WHERE et.entry_id = ? " +
+                // **The same order threads appear in everywhere else**, so one
+                // entry's threads read the same here as on the threads screen.
+                // Unordered, this returned whatever SQLite chose, which is
+                // stable until a vacuum or an index changes it, at which point
+                // two exports of one unchanged database stop matching and 8.5's
+                // regeneration test begins failing intermittently. 8.4.
+                "ORDER BY t.sort_index, t.created_at",
             arrayOf(entryId),
         ).use { cursor ->
             buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
