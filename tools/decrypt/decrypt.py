@@ -59,6 +59,8 @@ import zipfile
 from pathlib import Path
 
 MANIFEST = "manifest.json"
+PRIVATE_MANIFEST = "manifest-private.json"
+README = "README.txt"
 DATABASE = "data.sqlite"
 ATTACHMENTS = "attachments/"
 READABLE = "readable/"
@@ -190,13 +192,10 @@ def main() -> int:
         written = manifest.get("app_version")
         if written:
             print(f"Written by Health Trail {written}")
-        readable = manifest.get("readable", {}).get("pages")
-        if readable:
-            print(f"{readable} readable pages")
-        counts = manifest.get("database", {}).get("row_counts", {})
-        if counts:
-            total = sum(int(v) for v in counts.values())
-            print(f"{total} records across {len(counts)} kinds")
+        # Nothing about the person is readable yet, by design. The counts live
+        # in the encrypted half of the manifest so that a backup agent, a cloud
+        # sync, or a file manager preview learns nothing from the file sitting
+        # in a folder. contract/DATA-CONTRACT.md 8.1.
         print()
 
         passphrase = getpass.getpass("Passphrase: ")
@@ -209,6 +208,29 @@ def main() -> int:
 
         out.mkdir(parents=True, exist_ok=True)
         (out / MANIFEST).write_bytes(archive.read(MANIFEST))
+        if README in archive.namelist():
+            (out / README).write_bytes(archive.read(README))
+
+        # The private half of the manifest, which is where the counts live.
+        # Decrypted first because it is the cheapest thing in the archive: a
+        # wrong passphrase fails here in milliseconds rather than after a large
+        # payload has been through the cipher.
+        if PRIVATE_MANIFEST in archive.namelist():
+            private = json.loads(
+                decrypt_entry(
+                    AESGCM, key, attachment_nonce(PRIVATE_MANIFEST),
+                    archive.read(PRIVATE_MANIFEST), "the archive's own description",
+                ).decode("utf-8")
+            )
+            (out / PRIVATE_MANIFEST).write_text(json.dumps(private, indent=2))
+            counts = private.get("database", {}).get("row_counts", {})
+            if counts:
+                total = sum(int(v) for v in counts.values())
+                print(f"{total} records across {len(counts)} kinds")
+            pages = private.get("readable", {}).get("pages")
+            if pages:
+                print(f"{pages} readable pages")
+            print()
 
         payload = decrypt_entry(
             AESGCM, key, nonce, archive.read(DATABASE), "the record"
@@ -219,7 +241,7 @@ def main() -> int:
         pages = 0
         files = 0
         for name in sorted(archive.namelist()):
-            if name in (MANIFEST, DATABASE) or name.endswith("/"):
+            if name in (MANIFEST, DATABASE, PRIVATE_MANIFEST, README) or name.endswith("/"):
                 continue
             data = archive.read(name)
             if name.startswith(ATTACHMENTS):

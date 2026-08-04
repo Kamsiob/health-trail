@@ -74,6 +74,25 @@ object ExportContainer {
      */
     const val FORMAT_VERSION = 2
     const val MANIFEST = "manifest.json"
+
+    /**
+     * Everything about the archive that would say something about the person.
+     *
+     * **Encrypted, because the outer manifest must not describe the record.**
+     * `contract/DATA-CONTRACT.md` section 8.1: nothing in the outer layer
+     * reveals anything about the person or their record, and only the format
+     * version, the app and schema versions, the export timestamp and the key
+     * derivation parameters may sit in the clear.
+     *
+     * Row counts alone are a profile. "23 appointments, 9 chapters, 1,630
+     * entries, 6 years" describes how ill somebody has been and for how long,
+     * to anything that can read the file without the passphrase: a backup
+     * agent, a cloud sync, a file manager preview.
+     */
+    const val PRIVATE_MANIFEST = "manifest-private.json"
+
+    /** Written for a stranger who found the file. Section 8.1. */
+    const val README = "README.txt"
     const val DATABASE = "data.sqlite"
     const val ATTACHMENTS = "attachments/"
 
@@ -253,7 +272,27 @@ object ExportContainer {
         target.parentFile?.mkdirs()
         ZipOutputStream(target.outputStream().buffered()).use { zip ->
             zip.putNextEntry(ZipEntry(MANIFEST))
-            zip.write(manifest.toJson().toString(2).toByteArray())
+            zip.write(manifest.toPublicJson().toString(2).toByteArray())
+            zip.closeEntry()
+
+            // **Written for a stranger who found this file and has the
+            // passphrase.** Section 8.1. ASCII only, no markup, because it has
+            // to be readable by whatever opens a text file in ten years.
+            zip.putNextEntry(ZipEntry(README))
+            zip.write(readmeText(manifest).toByteArray(Charsets.US_ASCII))
+            zip.closeEntry()
+
+            // Everything that would describe the person goes inside the
+            // encryption, per section 8.1.
+            zip.putNextEntry(ZipEntry(PRIVATE_MANIFEST))
+            val privateBytes = manifest.toPrivateJson().toString(2).toByteArray()
+            zip.write(
+                if (key != null) {
+                    ExportCrypto.encrypt(key, nonceFor(PRIVATE_MANIFEST), privateBytes)
+                } else {
+                    privateBytes
+                },
+            )
             zip.closeEntry()
 
             zip.putNextEntry(ZipEntry(DATABASE))
@@ -318,6 +357,80 @@ object ExportContainer {
      * first twelve bytes of it gives a distinct nonce per attachment without
      * storing one per file in the manifest.
      */
+    /**
+     * The first thing a stranger opens. `contract/DATA-CONTRACT.md` section 8.1.
+     *
+     * **Written for a person, not for a developer.** It says what the file is,
+     * that the contents are encrypted, exactly which algorithm and parameters
+     * were used, where the format is documented, how to decrypt it without this
+     * app, and that a lost passphrase means a lost archive with no recovery path
+     * anywhere.
+     *
+     * **ASCII only and no markup**, so it opens correctly in whatever reads a
+     * text file in ten years, on a machine whose defaults nobody can predict.
+     *
+     * **It carries nothing about the person.** No name, no counts, no dates. It
+     * sits in the clear beside the ciphertext, so everything in it is public.
+     */
+    private fun readmeText(manifest: Manifest): String {
+        val encryption = manifest.encryption
+        return buildString {
+            appendLine("WHAT THIS FILE IS")
+            appendLine()
+            appendLine("This is a Health Trail archive. It holds one person's care notebook:")
+            appendLine("the notes somebody kept about looking after them, the calls they made,")
+            appendLine("the questions they asked, and photographs of the paperwork.")
+            appendLine()
+            appendLine("It was written by Health Trail " + manifest.appVersion + ",")
+            appendLine("archive format version " + manifest.formatVersion + ".")
+            appendLine()
+            appendLine("THE CONTENTS ARE ENCRYPTED")
+            appendLine()
+            appendLine("You need the passphrase chosen when this file was made.")
+            appendLine()
+            appendLine("IF THE PASSPHRASE IS LOST, THIS ARCHIVE CANNOT BE OPENED.")
+            appendLine("Not by its author, not by anyone. There is no server holding a copy,")
+            appendLine("no recovery code, and no backdoor. This is not a policy that can be")
+            appendLine("appealed to somebody; it is a property of how the file was written.")
+            appendLine()
+            appendLine("HOW TO OPEN IT WITHOUT THIS APP")
+            appendLine()
+            appendLine("You do not need Health Trail, or the phone this came from.")
+            appendLine()
+            if (encryption != null) {
+                appendLine("The key is derived from your passphrase with " + encryption.kdf + ":")
+                appendLine("  iterations   " + encryption.iterations)
+                appendLine("  memory       " + encryption.memoryKib + " KiB")
+                appendLine("  parallelism  " + encryption.parallelism)
+                appendLine("The contents are then decrypted with " + encryption.algorithm + ".")
+                appendLine("The salt and nonce are in manifest.json beside this file.")
+                appendLine()
+            }
+            appendLine("The format is specified byte for byte at:")
+            appendLine("  contract/EXPORT-FORMAT.md")
+            appendLine("in the Health Trail source repository, which is public and licensed")
+            appendLine("so that it outlives the project.")
+            appendLine()
+            appendLine("A ready made tool is in the same repository at:")
+            appendLine("  tools/decrypt/")
+            appendLine("It needs Python and two ordinary libraries, and its README is written")
+            appendLine("for somebody who does not write software.")
+            appendLine()
+            appendLine("ONCE IT IS OPEN")
+            appendLine()
+            appendLine("Open readable/index.html in any web browser. That folder is the whole")
+            appendLine("record as ordinary pages and needs no software and no internet at all.")
+            appendLine()
+            appendLine("The same record is also in data.sqlite, which any SQLite tool reads,")
+            appendLine("and the original photographs and documents are in attachments/.")
+            appendLine()
+            appendLine("WHAT THIS IS NOT")
+            appendLine()
+            appendLine("These are one person's own notes. It is not a clinical record, it was")
+            appendLine("not written or checked by a doctor, and nothing in it is advice.")
+        }
+    }
+
     private fun nonceFor(name: String): ByteArray =
         java.security.MessageDigest.getInstance("SHA-256")
             .digest(name.toByteArray())
@@ -482,6 +595,7 @@ object ExportContainer {
         staging.mkdirs()
 
         var manifestJson: JSONObject? = null
+        var privateManifest: ByteArray? = null
         val attachments = mutableListOf<File>()
         val database = File(staging, DATABASE)
 
@@ -491,6 +605,7 @@ object ExportContainer {
                 while (entry != null) {
                     when {
                         entry.name == MANIFEST -> manifestJson = JSONObject(zip.readText())
+                        entry.name == PRIVATE_MANIFEST -> privateManifest = zip.readBytes()
                         entry.name == DATABASE -> database.outputStream().use { zip.copyTo(it) }
                         entry.name.startsWith(ATTACHMENTS) && !entry.isDirectory -> {
                             val out = File(staging, entry.name.removePrefix(ATTACHMENTS))
@@ -519,7 +634,12 @@ object ExportContainer {
             )
         )
 
+        // Built from the public half only, so the version and the key
+        // derivation are readable before a passphrase exists. The counts are
+        // zero here and are filled in from the encrypted half once the key is
+        // derived, which is why `manifest` is rebuilt at the end.
         val manifest = Manifest.from(json)
+        var storedDatabaseHash: String? = null
 
         // Read before anything else, and refuse a version we do not understand
         // rather than guessing. This costs nothing now and is unfixable later.
@@ -540,16 +660,16 @@ object ExportContainer {
             )
         }
 
-        val actual = Attachments.sha256(database.readBytes())
-        if (actual != manifest.databaseSha256) {
-            return@withContext failure(
-                Problem.DatabaseCorrupt(
-                    "The records in this export do not match what its manifest says they " +
-                        "should be. The file was probably damaged in transit. Nothing was " +
-                        "changed."
-                )
-            )
-        }
+        // **The hash check moved after decryption**, because the hash now lives
+        // in the encrypted half of the manifest. Section 8.1: a hash of the
+        // ciphertext is a fingerprint of one specific file, and leaving it in
+        // the clear would let somebody match two copies of one person's archive
+        // across two places without opening either.
+        //
+        // Truncation is still caught either way: GCM authenticates, so a short
+        // file fails its tag. The hash check is kept so a damaged file still
+        // gets its own sentence rather than being reported as a possible wrong
+        // passphrase.
 
         // **An unencrypted export is refused, whatever version wrote it.**
         //
@@ -602,7 +722,23 @@ object ExportContainer {
 
             try {
                 val nonce = unbase64(parameters.nonce)
-                database.writeBytes(ExportCrypto.decrypt(key, nonce, database.readBytes()))
+
+                // **The private half of the manifest first.** It carries the
+                // payload hash, so the hash check below needs it, and it is
+                // also the cheapest thing to decrypt: a wrong passphrase fails
+                // here in milliseconds rather than after a four gigabyte
+                // payload has been through the cipher.
+                privateManifest?.let { sealed ->
+                    val opened = JSONObject(
+                        ExportCrypto.decrypt(key, nonceFor(PRIVATE_MANIFEST), sealed)
+                            .decodeToString(),
+                    )
+                    for (field in opened.keys()) json.put(field, opened.get(field))
+                }
+
+                val stored = database.readBytes()
+                database.writeBytes(ExportCrypto.decrypt(key, nonce, stored))
+                storedDatabaseHash = Attachments.sha256(stored)
                 attachments.forEach {
                     it.writeBytes(ExportCrypto.decrypt(key, nonceFor(it.name), it.readBytes()))
                 }
@@ -639,6 +775,21 @@ object ExportContainer {
             }
         }
 
+        // **Rebuilt from the merged manifest.** The public half gave the version
+        // and the key derivation; the private half gave the counts, the hash,
+        // and everything else the restore screen shows before it writes.
+        val opened = Manifest.from(json)
+
+        if (storedDatabaseHash != null && storedDatabaseHash != opened.databaseSha256) {
+            return@withContext failure(
+                Problem.DatabaseCorrupt(
+                    "The records in this export do not match what its manifest says they " +
+                        "should be. The file was probably damaged in transit. Nothing was " +
+                        "changed."
+                )
+            )
+        }
+
         // An attachment is named by its content hash, so a name that does not
         // match its bytes is corruption by definition. Checked here rather than
         // at use, because finding it later means finding it after the import
@@ -663,7 +814,7 @@ object ExportContainer {
                 ?.let { return@withContext failure<Opened>(it) }
         }
 
-        Result.success(Opened(manifest, database, attachments))
+        Result.success(Opened(opened, database, attachments))
     }
 
     /**
@@ -809,12 +960,24 @@ object ExportContainer {
     /** Carries a [Problem] through a `Result` without losing which one it was. */
     class ExportProblem(val problem: Problem) : Exception(problem.message)
 
-    private fun Manifest.toJson(): JSONObject = JSONObject().apply {
+    /**
+     * What may sit in the clear. `contract/DATA-CONTRACT.md` section 8.1.
+     *
+     * **Only what a reader needs before it can ask for a passphrase**, which is
+     * the format version, what wrote it, when, and how the key is derived.
+     * Nothing here says anything about the person: no counts, no dates of care,
+     * no device identity, no locale.
+     *
+     * The list is deliberately short and adding to it is a decision. A field
+     * here is a field that anything with access to the folder can read: a
+     * backup agent, a cloud sync, a file manager preview.
+     */
+    private fun Manifest.toPublicJson(): JSONObject = JSONObject().apply {
         put("format_version", formatVersion)
         put("app_version", appVersion)
         put("platform", platform)
+        put("schema_version", FORMAT_VERSION)
         put("exported_at", exportedAt)
-        put("origin_device", originDevice)
         put("encrypted", encrypted)
         encryption?.let {
             put(
@@ -830,12 +993,28 @@ object ExportContainer {
                 },
             )
         }
+    }
+
+    /**
+     * Everything else, which goes inside the encryption.
+     *
+     * **Row counts are a profile.** "23 appointments, 9 chapters, 1,630
+     * entries, 6 years" describes how ill somebody has been and for how long.
+     * So are the attachment count, the subject count, the page count, and the
+     * device that wrote it.
+     *
+     * The payload hash lives here too. It describes the ciphertext, so it is
+     * still checkable, and it is a fingerprint of a specific file that would
+     * otherwise let somebody match two copies of one person's archive across
+     * two places without opening either.
+     */
+    private fun Manifest.toPrivateJson(): JSONObject = JSONObject().apply {
+        put("origin_device", originDevice)
         put(
             "database",
             JSONObject().apply {
                 put("sha256", databaseSha256)
                 put("byte_size", databaseBytes)
-                put("schema_version", FORMAT_VERSION)
                 put("row_counts", JSONObject(rowCounts.toMap()))
             },
         )
