@@ -729,5 +729,19 @@
   "projects.start.open": "从这个开始",
   "library.used": "使用中",
   "library.unused": "还没有用过",
-  "library.open": "打开这个模板"
+  "library.open": "打开这个模板",
+  "more.situation": "这个本子是怎么设置的",
+  "situation.change.title": "这个本子是怎么设置的",
+  "situation.change.lead": "你选的照护场景决定了哪些板块排在前面、当时给你提供了哪些照护线索，以及最初几天的清单里有什么。情况变了，随时可以改。",
+  "situation.change.current": "目前",
+  "situation.change.to": "将改为",
+  "situation.change.none": "还没有选择场景。所有板块都在，什么也没有收起来。",
+  "situation.change.boundary": "改这个通常意味着新的一章",
+  "situation.change.boundary.body": "照护地点变了，原来那个地方的记录原样保留。你写下的一切都不会被更改、移动或删除。如果现在换了地方，可以同时为它开始新的一章。",
+  "situation.change.action": "换一个场景",
+  "situation.change.chapter": "现在在哪里",
+  "situation.change.chapter.hint": "你会说出口的那个名字",
+  "situation.change.chapter.skip": "没有搬走",
+  "situation.change.done": "更改场景",
+  "situation.change.open": "更改这个本子的设置"
 }

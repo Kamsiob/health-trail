@@ -27,6 +27,7 @@ object MoreTags {
     const val LIBRARY = "more_library"
     const val EXPORT = "more_export"
     const val RESTORE = "more_restore"
+    const val SITUATION = "more_situation"
 }
 
 /**
@@ -57,6 +58,7 @@ fun MoreScreen(
     onSearch: () -> Unit,
     modifier: Modifier = Modifier,
     onLibrary: () -> Unit = {},
+    onSituation: () -> Unit = {},
 ) {
     AppearanceScreen(
         choice = choice,
@@ -79,6 +81,7 @@ fun MoreScreen(
                 onRestore = onRestore,
                 onSearch = onSearch,
                 onLibrary = onLibrary,
+                onSituation = onSituation,
             )
         },
         footer = { ComingHere() },
@@ -100,6 +103,7 @@ private fun MoreDestinations(
     onRestore: () -> Unit,
     onSearch: () -> Unit,
     onLibrary: () -> Unit,
+    onSituation: () -> Unit,
 ) {
     val strings = LocalStrings.current
 
@@ -121,6 +125,14 @@ private fun MoreDestinations(
     val destinations = listOf(
         Destination(strings["more.search"], onSearch, MoreTags.SEARCH),
         Destination(strings["more.library"], onLibrary, MoreTags.LIBRARY),
+        // **How the notebook is set up, which had no door at all.** The
+        // situation picker ran once during setup and was then unreachable
+        // forever, so a family whose care moved could not tell the app, and
+        // could not even see which setting they had chosen. 13.5 calls a
+        // capability only its author can find not finished, and law 5 promises
+        // this is "all of it changeable afterward from one screen, without
+        // penalty". This is that screen's door.
+        Destination(strings["more.situation"], onSituation, MoreTags.SITUATION),
         Destination(strings["more.export"], onExport, MoreTags.EXPORT),
         Destination(strings["more.restore"], onRestore, MoreTags.RESTORE),
         Destination(strings["more.about"], onAbout, MoreTags.ABOUT),

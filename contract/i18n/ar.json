@@ -729,5 +729,19 @@
   "projects.start.open": "ابدأ بهذا",
   "library.used": "قيد الاستخدام",
   "library.unused": "لم يُستخدم بعد",
-  "library.open": "افتح هذا القالب"
+  "library.open": "افتح هذا القالب",
+  "more.situation": "كيف أُعدّ هذا الدفتر",
+  "situation.change.title": "كيف أُعدّ هذا الدفتر",
+  "situation.change.lead": "الوضع الذي اخترته يحدد أي الأقسام تتصدر، وأي مسارات الرعاية عُرضت عليك، وما احتوته قائمة الأيام الأولى. يمكنك تغييره كلما تغيّر الوضع.",
+  "situation.change.current": "في الوقت الحالي",
+  "situation.change.to": "التغيير إلى",
+  "situation.change.none": "لم تختر وضعًا. كل الأقسام موجودة ولا شيء مطوي.",
+  "situation.change.boundary": "تغيير هذا يعني عادةً بداية فصل جديد",
+  "situation.change.boundary.body": "حين تنتقل الرعاية، يبقى سجل المكان السابق كما هو تمامًا. لا شيء مما دوّنته يتغير أو ينتقل أو يُحذف. وإن كان المكان الجديد هو حيث هم الآن، يمكنك بدء فصل له في الوقت نفسه.",
+  "situation.change.action": "اختر وضعًا آخر",
+  "situation.change.chapter": "أين هم الآن",
+  "situation.change.chapter.hint": "الاسم الذي تقوله بصوتك",
+  "situation.change.chapter.skip": "لم ينتقلوا",
+  "situation.change.done": "غيّر الوضع",
+  "situation.change.open": "غيّر إعداد هذا الدفتر"
 }

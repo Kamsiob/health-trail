@@ -2359,6 +2359,47 @@ class Repository private constructor(
         val isCurrent: Boolean get() = endedEdtf.isNullOrBlank()
     }
 
+    /**
+     * They moved: the place they were ends today and a new one begins today.
+     *
+     * **This is what a chapter boundary is, and stating one without making one
+     * is the screen telling the person something the record does not say.** A
+     * chapter is current because it has no end date, so starting a second one
+     * without ending the first leaves two places somebody is in at once, and
+     * the chapters screen shows both under "where they are now".
+     *
+     * **Ending a chapter destroys nothing.** It writes a date on it, and every
+     * entry, incident, document and milestone filed against it stays exactly
+     * where it was. That is what #202 promises in its own words, and it is why
+     * this is a date rather than a deletion.
+     *
+     * **Today, at day precision, because that is what anybody knows.** Not the
+     * minute: a minute would be a claim about when the move happened, and
+     * nobody said that. Rule 17.
+     *
+     * **Only the chapters with no end date are touched**, so a stay somebody
+     * already closed by hand keeps the date they gave it.
+     */
+    suspend fun moveToChapter(subjectId: String, name: String): String =
+        withContext(Dispatchers.IO) {
+            val today = Edtf.day(LocalDate.now())
+            val ending = dateColumns("ended", today)
+            val assignments = ending.keys.joinToString(", ") { "$it = ?" }
+            db().database.execSQL(
+                "UPDATE chapter SET $assignments, updated_at = ?, rev = rev + 1 " +
+                    "WHERE subject_id = ? AND deleted_at IS NULL " +
+                    "AND (ended_edtf IS NULL OR ended_edtf = '')",
+                (
+                    ending.values + listOf(System.currentTimeMillis(), subjectId)
+                    ).toTypedArray(),
+            )
+            insertRow(
+                "chapter",
+                mapOf("subject_id" to subjectId, "name" to name) +
+                    dateColumns("started", today),
+            )
+        }
+
     /** Every place, most recent first. */
     suspend fun chapters(subjectId: String): List<Chapter> = withContext(Dispatchers.IO) {
         db().database.rawQuery(

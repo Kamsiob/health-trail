@@ -729,5 +729,19 @@
   "projects.start.open": "Start this one",
   "library.used": "In use",
   "library.unused": "Not started from yet",
-  "library.open": "Open this template"
+  "library.open": "Open this template",
+  "more.situation": "How this notebook is set up",
+  "situation.change.title": "How this notebook is set up",
+  "situation.change.lead": "The setting you chose decides which sections lead, which care threads you were offered, and what the first days checklist held. You can change it whenever the situation changes.",
+  "situation.change.current": "Right now",
+  "situation.change.to": "Changing to",
+  "situation.change.none": "No setting chosen. Every section is here and nothing is folded away.",
+  "situation.change.boundary": "Changing this is usually a chapter boundary",
+  "situation.change.boundary.body": "When care moves, the record of the old place stays exactly as it is. Nothing you have written down is changed, moved, or removed. If somewhere new is where they are now, you can start a chapter for it at the same time.",
+  "situation.change.action": "Choose a different setting",
+  "situation.change.chapter": "Where they are now",
+  "situation.change.chapter.hint": "The name you would say out loud",
+  "situation.change.chapter.skip": "They have not moved",
+  "situation.change.done": "Change the setting",
+  "situation.change.open": "Change how this notebook is set up"
 }

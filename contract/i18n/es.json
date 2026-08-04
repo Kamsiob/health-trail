@@ -729,5 +729,19 @@
   "projects.start.open": "Empezar este",
   "library.used": "En uso",
   "library.unused": "Todavía sin usar",
-  "library.open": "Abrir esta plantilla"
+  "library.open": "Abrir esta plantilla",
+  "more.situation": "Cómo está configurado este cuaderno",
+  "situation.change.title": "Cómo está configurado este cuaderno",
+  "situation.change.lead": "El entorno que eligió decide qué secciones van primero, qué hilos de cuidado se le ofrecieron y qué contenía la lista de los primeros días. Puede cambiarlo cuando cambie la situación.",
+  "situation.change.current": "Ahora mismo",
+  "situation.change.to": "Cambiando a",
+  "situation.change.none": "No eligió ningún entorno. Todas las secciones están aquí y nada está plegado.",
+  "situation.change.boundary": "Cambiar esto suele marcar un capítulo nuevo",
+  "situation.change.boundary.body": "Cuando el cuidado se traslada, el registro del lugar anterior queda tal como está. Nada de lo que anotó se cambia, se mueve ni se borra. Si ahora está en un lugar nuevo, puede empezar un capítulo para él al mismo tiempo.",
+  "situation.change.action": "Elegir otro entorno",
+  "situation.change.chapter": "Dónde está ahora",
+  "situation.change.chapter.hint": "El nombre que diría en voz alta",
+  "situation.change.chapter.skip": "No se ha mudado",
+  "situation.change.done": "Cambiar el entorno",
+  "situation.change.open": "Cambiar cómo está configurado este cuaderno"
 }

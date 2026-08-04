@@ -13,14 +13,14 @@
 Everything below is verified rather than asserted, as of 2026-08-04:
 
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
-- **16 repository checks pass** (`python3 tools/checks/run_all.py`).
+- **17 repository checks pass** (`python3 tools/checks/run_all.py`).
 - **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
 - **325 instrumented tests pass**, last full run 2026-08-04 after #201 landed.
 - The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
 **Take these in this order.**
 
-1. **#200 and #201 are done and closed.** Sections 2 and 3 are the account of what they landed and what came out of them. **Start at #202.**
+1. **#200 and #201 are done and closed**, and sections 3 and 4 say what came out of them. **#202 is in flight and section 2 says what is left: the sweep, the tests, and two review issues.**
 2. **The rest of step 4**, #201 through #208, in number order, **except take #208 last**. Each was scoped on 2026-08-04 and the two with gaps carry a comment saying so:
    - **#202** is half a conversion and half a build. "Change of situation" does not exist anywhere, and whoever takes it has to decide first whether changing the situation is a chapter boundary in the data or only in the words.
    - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape.
@@ -33,7 +33,21 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 2. What #201 landed
+## 2. #202 is in flight
+
+**Both halves are built and used on the phone in light.** What is left is the sweep at dark, font scale 2.0 and Arabic, the instrumented tests, and the two review issues.
+
+**The picker is converted**: the setting each group leads with keeps its card and its burden line, and the rest are dense rows in a grouped surface. Fourteen cards was three and a half screenfuls on the first screen after the disclaimer.
+
+**Change of situation is new and it had no door at all.** The picker ran once during setup and was then unreachable forever, so a family whose care moved could not tell the app and could not even see which setting they had. It is now a destination in More. The screen states the boundary plainly and offers a chapter, and **the boundary is made rather than only stated**: `moveToChapter` ends the open chapter today and starts the new one today, because starting a second without ending the first left two places somebody was in at once.
+
+**Two things it said that were not true, both found by looking at it:** "Right now" showed the setting the person had just picked, before anything was written, and the chapter field carried a mono header saying the same three words as its own label.
+
+**A missing catalog key crashed the app on opening**, and nothing caught it: the four catalogs agreed with each other, seventeen checks passed, the Kotlin compiled and lint was clean, because nothing compared the literals in the code against the catalog. **`check_string_keys.py` now does**, and it was proved against the real crash rather than assumed.
+
+---
+
+## 3. What #201 landed
 
 **Both screens are converted, swept and closed.** Both themes, font scale 2.0, Arabic, and the search's own empty state, on the phone. Reviews at **#239** and **#240**, `DESIGN.md` section 14 carries both rows, and D104 and D105 carry the two decisions.
 
@@ -51,7 +65,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 3. What #200 landed, and the four issues that came out of it
+## 4. What #200 landed, and the four issues that came out of it
 
 **Both halves are built, swept, tested and logged.** This section is here because the next session inherits the decisions rather than the work.
 
@@ -75,7 +89,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 4. What is built
+## 5. What is built
 
 **Design direction v4 is adopted and most of the app is in it.** `reference/screen-grid.html` is the v4 grid. `DESIGN.md` was rewritten rather than patched.
 
@@ -90,7 +104,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 5. What keeps going wrong, so it stops
+## 6. What keeps going wrong, so it stops
 
 **These are patterns, not history. Every one of them has now happened more than once.**
 
@@ -106,6 +120,8 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 **The sweeps are where the defects are, and almost none is visible in English at font scale 1.0.** Text the person typed gets rearranged in Arabic; `Bidi.isolate` and `Bidi.join` are the fix and `DESIGN.md` section 15 carries the rule. `report_bidi_isolation.py` generates the remaining worklist, 76 candidates, tracked at **#226**.
 
+**A catalog key is a string literal, and nothing was checking the literals.** `ChangeSituationScreen` asked for `more.title`, which has never existed, and `Strings.resolve` throws rather than falling back, which is correct. The screen crashed the app the first time it was opened, having passed seventeen checks, the Kotlin compiler and lint, because `check_i18n.py` holds the four catalogs to **each other** and nothing held the **code** to them. `check_string_keys.py` reads the other direction now and was proved against the real crash.
+
 **A screen added to the shell is a screen the instrumented suite has to be told about, and "checks pass" does not mean the suite compiles.** `ScreenReaderTest` had been broken since `050ac27`: the arc added a parameter to `ChaptersScreen` and nothing recompiled the test source, so the whole suite could not build for a day while `run_all.py` and `compileDebugKotlin` both reported clean. **`compileDebugAndroidTestKotlin` is not in the main compile path.** Run `tools/verify.sh`, which is the only runner that reaches all of it.
 
 **A defect can live entirely inside somebody else's app.** The calendar hand-off put a November 27 appointment on the 26th, and the screen said November 27 the whole time. It cost three attempts and none of the causes was time zones.
@@ -114,11 +130,11 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 6. Running the work
+## 7. Running the work
 
 **Never route around a check to make progress, and never delete or weaken a test to make a build pass.**
 
-    python3 tools/checks/run_all.py                    # 16 content and contract checks, seconds
+    python3 tools/checks/run_all.py                    # 17 content and contract checks, seconds
     tools/verify.sh                                    # the honest runner, includes lintDebug
     cd android && ./gradlew :app:connectedDebugAndroidTest   # 297 tests, about six minutes
 
@@ -138,7 +154,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 7. Blocked, and it does not stop the work
+## 8. Blocked, and it does not stop the work
 
 **One thing is blocked: B5.** The destructive command guard needs installing from user settings and **only the owner can do it**, because Claude Code correctly refuses to let a session edit the hooks that constrain it. D64 has the account and B5 in `DECISIONS.md` is written as steps he can act on.
 
@@ -148,7 +164,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 8. The phone
+## 9. The phone
 
 - **Pixel 10 Pro XL, serial `57241FDCQ0000H`, over USB. The only test device.**
 - **No emulator.** Dropped from this project. Do not launch one, do not create an AVD, do not treat its absence as a blocker. D21, D23, B4.
@@ -184,7 +200,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 9. This environment, so a fresh session does not rediscover it
+## 10. This environment, so a fresh session does not rediscover it
 
 **An edit that replaces text must assert it matched.** Nine decision entries were once written and none reached `DECISIONS.md`: the anchor they targeted had been consumed by an earlier edit, so every one matched nothing and reported success. A silent no-op is worse than an error, because the work continues on top of a record that is not there.
 
@@ -218,11 +234,11 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 **Run `tools/verify.sh`, not the checks you happen to remember.** Continuous integration failed on 2026-08-02 for a lint error, `Uri.parse` where the KTX `String.toUri` was wanted, in code that had been walked on the device and had passed all ten content checks and 185 instrumented tests. **`verify.sh` runs `lintDebug` and would have caught it.** Running `run_all.py` plus the instrumented suite by hand feels like verifying and skips whatever is not in that habit.
 
-**Verification.** `tools/verify.sh` is the honest runner: it captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. `python3 tools/checks/run_all.py` runs the 16 content and contract checks alone. **Never chain a commit on a grep of output.**
+**Verification.** `tools/verify.sh` is the honest runner: it captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. `python3 tools/checks/run_all.py` runs the 17 content and contract checks alone. **Never chain a commit on a grep of output.**
 
 ---
 
-## 10. Where everything else is
+## 11. Where everything else is
 
 | Question | File |
 |---|---|
@@ -240,6 +256,6 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 11. Uncommitted work
+## 12. Uncommitted work
 
 **None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed.

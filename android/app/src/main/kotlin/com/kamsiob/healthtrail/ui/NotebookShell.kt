@@ -47,7 +47,10 @@ import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.AddMilestoneScreen
 import com.kamsiob.healthtrail.ui.screens.MilestoneDraft
 import com.kamsiob.healthtrail.ui.screens.MilestonesScreen
+import com.kamsiob.healthtrail.ui.screens.ChangeSituationScreen
 import com.kamsiob.healthtrail.ui.screens.MonthReviewScreen
+import com.kamsiob.healthtrail.ui.screens.SituationChange
+import com.kamsiob.healthtrail.ui.screens.SituationPickerScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.BillScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
@@ -271,6 +274,28 @@ fun NotebookShell(
         mutableStateOf<List<Repository.OwnTemplate>>(emptyList())
     }
     var libraryOpen by remember { mutableStateOf(false) }
+    /**
+     * How the notebook is set up, and changing it.
+     *
+     * **The picker ran once during setup and was then unreachable forever**, so
+     * a family whose care moved could not tell the app and could not even see
+     * which setting they had picked. Law 5 promises all of it is changeable
+     * afterward from one screen, and there was no screen.
+     */
+    var situationOpen by remember { mutableStateOf(false) }
+    var situationPickerOpen by remember { mutableStateOf(false) }
+    var situations by remember { mutableStateOf<TemplateCatalog.Situations?>(null) }
+    var chosenSituation by remember { mutableStateOf<TemplateCatalog.Situation?>(null) }
+    /** The change waiting to be written: the setting, and a chapter or null. */
+    var applyingSituation by remember { mutableStateOf<SituationChange?>(null) }
+    /**
+     * Which setting the notebook is on, reloaded with everything else.
+     *
+     * The id rather than the subject, because it is the only field of the
+     * subject anything above the notebook reads, and holding the whole row here
+     * would be a second copy of it going stale beside the first.
+     */
+    var situationId by remember { mutableStateOf<String?>(null) }
     var savingTemplate by remember { mutableStateOf<Repository.Project?>(null) }
     // Which projects have had their steps saved, so the control says so once
     // rather than inviting the same save again.
@@ -464,6 +489,7 @@ fun NotebookShell(
         failed = false
         try {
             val subject = repository.activeSubject()
+            situationId = subject?.situationTemplateId
             val emphasis = emphasisFor(context, subject?.situationTemplateId)
             // **The roles this situation actually has**, so adding a contact
             // offers them rather than asking the person to type a job title
@@ -583,6 +609,11 @@ fun NotebookShell(
     // app. `BackJourneyTest` exists because that exact thing was wrong on every
     // screen above the notebook once.
     BackHandler(enabled = libraryOpen && openProject == null) { libraryOpen = false }
+    BackHandler(enabled = situationOpen && !situationPickerOpen) {
+        situationOpen = false
+        chosenSituation = null
+    }
+    BackHandler(enabled = situationPickerOpen) { situationPickerOpen = false }
     BackHandler(enabled = openIncident != null) { openIncident = null }
     BackHandler(enabled = openPerson != null) { openPerson = null }
     BackHandler(enabled = openPrepFor != null) { openPrepFor = null }
@@ -773,6 +804,7 @@ fun NotebookShell(
                         onAbout = { aboutOpen = true },
                         onSearch = { searchOpen = true },
                         onLibrary = { libraryOpen = true },
+                        onSituation = { situationOpen = true },
                         onExport = { exportState = ExportState.READY; exportOpen = true },
                         onRestore = {
                             restoreState = RestoreState.Empty
@@ -1316,6 +1348,69 @@ fun NotebookShell(
                 },
                 onBack = { libraryOpen = false },
             )
+        }
+
+        if (situationOpen) {
+            // Loaded once and held, because the picker and this screen both
+            // read it and the catalog is an asset rather than a query.
+            LaunchedEffect(Unit) {
+                if (situations == null) situations = TemplateCatalog.situations(context)
+            }
+            val catalog = situations
+            if (situationPickerOpen && catalog != null) {
+                SituationPickerScreen(
+                    situations = catalog,
+                    onChoose = {
+                        chosenSituation = it
+                        situationPickerOpen = false
+                    },
+                    // **Backing out of the picker leaves the setting alone.**
+                    // Skip on this screen means "not now", not "no situation":
+                    // clearing what they already had because they opened a
+                    // picker and closed it would be the app throwing away an
+                    // answer nobody withdrew.
+                    onSkip = { situationPickerOpen = false },
+                )
+            } else {
+                ChangeSituationScreen(
+                    current = catalog?.all?.firstOrNull { it.id == situationId },
+                    chosen = chosenSituation,
+                    onOpenPicker = { situationPickerOpen = true },
+                    onApply = { chapterName ->
+                        chosenSituation?.let {
+                            applyingSituation = SituationChange(it, chapterName)
+                        }
+                    },
+                    onBack = { situationOpen = false; chosenSituation = null },
+                )
+            }
+        }
+
+        applyingSituation?.let { change ->
+            LaunchedEffect(change.situation.id, change.chapterName) {
+                val subjectId = repository.activeSubject()?.id
+                if (subjectId != null) {
+                    repository.applySituation(
+                        subjectId = subjectId,
+                        templateId = change.situation.id,
+                        // **The threads the new setting offers, added rather
+                        // than swapped.** A thread from the old setting is a
+                        // thread the person has been writing on, and ending it
+                        // because the address changed would be the app deciding
+                        // a concern is over.
+                        threads = change.situation.threads.map { it.id to it.label },
+                    )
+                    // **The move, not just a new name.** A chapter boundary
+                    // that starts a place without ending the one before it
+                    // leaves two places somebody is in at once, and the
+                    // chapters screen shows both as current. Seen on the phone.
+                    change.chapterName?.let { repository.moveToChapter(subjectId, it) }
+                }
+                applyingSituation = null
+                chosenSituation = null
+                situationOpen = false
+                revision += 1
+            }
         }
 
         startingFromOwn?.let { template ->

@@ -30,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -168,12 +170,32 @@ fun SituationPickerScreen(
                         )
                         Spacer(Modifier.height(Space.headerGap))
                     }
-                    inGroup.forEach { situation ->
-                        item(key = situation.id) {
-                            SituationRow(
-                                situation = situation,
-                                onClick = { onChoose(situation) },
-                            )
+                    // **The likeliest one is a card and the rest are rows.**
+                    // Fourteen cards was three and a half screenfuls on the
+                    // first screen after the disclaimer, and rule 22 is why: a
+                    // name and a line telling two settings apart is a row, and
+                    // only the leading one carries a third line worth reading.
+                    // The hierarchy inside each group survives, and it is now
+                    // carried by shape rather than by length alone.
+                    item(key = "lead_$id") {
+                        SituationCard(
+                            situation = inGroup.first(),
+                            onClick = { onChoose(inGroup.first()) },
+                        )
+                        Spacer(Modifier.height(Space.cardGap))
+                    }
+                    val rest = inGroup.drop(1)
+                    if (rest.isNotEmpty()) {
+                        item(key = "rest_$id") {
+                            GroupedSurface {
+                                rest.forEachIndexed { index, situation ->
+                                    SituationRow(
+                                        situation = situation,
+                                        divider = index < rest.lastIndex,
+                                        onClick = { onChoose(situation) },
+                                    )
+                                }
+                            }
                             Spacer(Modifier.height(Space.cardGap))
                         }
                     }
@@ -188,14 +210,17 @@ fun SituationPickerScreen(
                 }.sortedBy { it.phase }
                 if (ungrouped.isNotEmpty()) {
                     item(key = "ungrouped_gap") { Spacer(Modifier.height(Space.sectionGap)) }
-                    ungrouped.forEach { situation ->
-                        item(key = situation.id) {
-                            SituationRow(
-                                situation = situation,
-                                onClick = { onChoose(situation) },
-                            )
-                            Spacer(Modifier.height(Space.cardGap))
+                    item(key = "ungrouped") {
+                        GroupedSurface {
+                            ungrouped.forEachIndexed { index, situation ->
+                                SituationRow(
+                                    situation = situation,
+                                    divider = index < ungrouped.lastIndex,
+                                    onClick = { onChoose(situation) },
+                                )
+                            }
                         }
+                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
 
@@ -235,7 +260,34 @@ fun SituationPickerScreen(
 }
 
 /**
- * One setting, as a card.
+ * One setting the group does not lead with, as a row.
+ *
+ * **A name and the line that tells it apart from its neighbor**, which is two
+ * lines somebody scans rather than three they read, so rule 22 makes it a row.
+ * The subtitle is uncapped for the reason D105 gives: it is the sentence that
+ * distinguishes a nursing home from assisted living, and a cap on it is a
+ * truncation at some font size.
+ *
+ * **No chevron.** A chevron means a screen opens, and tapping here chooses.
+ */
+@Composable
+private fun SituationRow(
+    situation: TemplateCatalog.Situation,
+    divider: Boolean,
+    onClick: () -> Unit,
+) {
+    DenseRow(
+        title = situation.name,
+        subtitle = situation.subtitle.takeIf { it.isNotBlank() },
+        subtitleMaxLines = Int.MAX_VALUE,
+        divider = divider,
+        onClick = onClick,
+        modifier = Modifier.testTag(SituationPickerTags.row(situation.id)),
+    )
+}
+
+/**
+ * The setting its group leads with, as a card.
  *
  * **Name and subtitle always.** The subtitle exists specifically so two similar
  * settings can be told apart, and a name alone forces a guess between a nursing
@@ -259,7 +311,7 @@ fun SituationPickerScreen(
  * tapping here chooses.
  */
 @Composable
-private fun SituationRow(
+private fun SituationCard(
     situation: TemplateCatalog.Situation,
     onClick: () -> Unit,
 ) {
