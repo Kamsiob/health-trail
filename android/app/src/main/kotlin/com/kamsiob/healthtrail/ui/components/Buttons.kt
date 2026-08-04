@@ -86,28 +86,24 @@ fun FilledButton(
 }
 
 /**
- * The support button, and the only outlined button in the app.
+ * The support button, which is now an ordinary outlined action in blue.
  *
- * **It is a deliberate, recorded exception to section 2.2**, which reserves
- * `gold` for the trail metaphor and the capture button and says plainly that
- * it never fills a button that is not the capture button. The owner asked for
- * a gold outline here. Two things keep the exception narrow rather than making
- * the rule meaningless:
+ * **D59's gold-outline exception ended on 2026-08-03, by owner decision.**
+ * `DECISIONS.md` D93. Gold is the trail and capture only, and an outlined gold
+ * button was **a seventh costume existing on exactly one screen**, which is
+ * precisely the class of thing law 2 was written to eliminate. A person who has
+ * learned that gold means "the way in" met one gold thing that was not.
  *
- * **It is an outline, not a fill.** The rule 2.2 is actually protecting is that
- * gold means "the way in" and must not be spent twice. An outlined box reads as
- * an offer rather than as an action of that weight.
+ * **The copy is unchanged.** The visible label is still the caller's, and on
+ * both screens that is "Support this work."
  *
- * **The label is `ink`, not gold**, because 2.2 also says `gold` never colors
- * text, and that half of the rule is kept exactly.
+ * **It must never read as a request.** It sits after the sentence saying the app
+ * is free and asks for nothing, and both screens are fully passable without
+ * noticing it. A support button that reads as a nag undoes the sentence above
+ * it, which is worth more than the button.
  *
- * They are never on screen together: this appears on the disclaimer gate, which
- * is the one screen with no capture button, and in More, which is a list.
- *
- * **It must never read as a request.** It sits after the sentence saying the
- * app is free and asks for nothing, and the screen it lives on is fully
- * passable without noticing it. A support button that reads as a nag undoes the
- * sentence above it, which is worth more than the button.
+ * It delegates rather than drawing its own pill, so there is one outlined action
+ * in this app and not two that drift.
  */
 @Composable
 fun SupportButton(
@@ -115,41 +111,7 @@ fun SupportButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, Color.Transparent)
-    val ring by focusRingAlpha(interaction)
-
-    Box(
-        modifier = modifier
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.tile)
-            .background(surface)
-            .border(
-                width = 2.dp,
-                // The focus ring takes the border over rather than drawing a
-                // second one outside it, which would be two rectangles around
-                // one control.
-                color = if (ring > 0f) colors.blue.copy(alpha = ring) else colors.gold,
-                shape = Radius.tile,
-            )
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .padding(horizontal = Space.l, vertical = Space.sm),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = label,
-            style = HealthTrail.type.label,
-            color = colors.ink,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.defaultMinSize(minHeight = 0.dp),
-        )
-    }
+    QuietButton(label = label, onClick = onClick, modifier = modifier)
 }
 
 /**

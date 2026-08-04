@@ -114,7 +114,7 @@ A real ladder, from recessed to raised.
 | `sand` | `#ECE4D1` | Recessed: inputs, folds, insets, the search bar |
 | `card` | `#FFFFFF` | Raised groups and sheets |
 | `ink` | `#233240` | Primary text |
-| `ink-2` | `#576873` | Secondary text. Corrected from `#5A6B77`, see 4.6 |
+| `ink-2` | `#576873` | Secondary text, **and the only other text level there is**, see 4.6 |
 | `ink-3` | `#94A0A9` | **Non-text only**, see 4.6. Hairlines, dividers, inactive strokes |
 | `hairline` | `rgba(35,50,64,.10)` | Row separators inside a group |
 | `hairline-heavy` | `rgba(35,50,64,.20)` | Chip borders, the view toggle's container |
@@ -136,16 +136,18 @@ Unchanged in meaning and never used for anything else. Each carries a deep or in
 
 Muted binder hues for section identity, each with a wash and a text-safe ink. **Tabs are identity, never state.**
 
-| Hue | Base | Ink, for text | Wash | Sections |
+| Hue | Base, shapes | Ink, text | Wash | Sections |
 |---|---|---|---|---|
-| `rose` | `#A5674F` | `#8E5944` | `#F2E1D8` | People, chapters |
-| `teal` | `#3F7E74` | `#387067` | `#DEEBE6` | Medications, tests, questions |
-| `slate` | `#57708A` | `#516880` | `#E3E9F0` | Appointments |
-| `moss` | `#6E7C43` | `#5F6B3A` | `#EAECD8` | Progress, care threads |
-| `manila` | `#A3772D` | `#846024` | `#F1E6CC` | Documents, money |
-| `stone` | `#7A756A` | `#6A665C` | `#EAE7E0` | Standing instructions |
+| `rose` | `#BC6949` | `#995338` | `#F2E1D8` | People, chapters |
+| `teal` | `#4D8980` | `#3E6F67` | `#DEEBE6` | Medications, tests, questions |
+| `slate` | `#4A5E73` | `#52687F` | `#E3E9F0` | Appointments |
+| `moss` | `#484D38` | `#606845` | `#EAECD8` | Progress, care threads |
+| `manila` | `#825A17` | `#835E21` | `#F1E6CC` | Documents, money |
+| `stone` | `#706A5C` | `#71654B` | `#EAE7E0` | Standing instructions |
 
-**The light hues do not survive simulated deuteranopia, and that is an open owner decision rather than a defect.** Rose against moss measures 2.4 CIEDE2000 under it, which is the same color, and light theme's 3:1 shape floor caps lightness too tightly to separate six hues the way dark can. **The dark hues do hold, at a minimum of 10.8.** `DECISIONS.md` D88 carries the numbers, the achievable ceiling, and three options. **What makes this not an accessibility failure is 4.4**: every tile and every tab sits with its section's name in text, so the word carries it.
+**The six are spread across lightness and saturation rather than sitting at the contrast floor**, D89. As the grid drew them they collapsed under red-green color vision deficiency: rose against moss measured 2.4 CIEDE2000 under simulated deuteranopia, which is the same color. **Every hue keeps its angle, which is the owner's mapping; only lightness and saturation move, and they move to separate the six from each other.** They now hold at **11.1 across normal vision, protanopia, and deuteranopia**, and no pair collapses.
+
+**If a later change puts any pair back under about 10, the answer is not more color.** It is the notebook row and the avatar gaining a second distinguisher, the section icon at differing shape weight. D89 holds that in reserve.
 
 **The section-to-hue mapping is an owner decision and is not to be re-derived.** Five come from the grid. **`stone` was added because the grid draws no standing instructions screen and the section needs an identity**, recorded as D79. Any section added later inherits the hue of the section it most resembles in kind, and the choice is recorded here with its reasoning.
 
@@ -211,7 +213,7 @@ Muted binder hues for section identity, each with a wash and a text-safe ink. **
 | `ink-3` `#94A0A9` at 2.37:1 on paper | **Non-text only.** It never renders text | Not applicable |
 | `gold` `#D99D2B` as text at 2.12:1 | `gold-ink` `#895D10`. Gold itself never renders text | 4.56:1 on `sand` |
 
-**There are two text levels in this app, not three, and that is a consequence of the floor rather than a style choice.** The previous direction carried a text-safe tertiary alongside `ink-2`. Against warm `sand` at 4.5:1 there is no room for one: anything light enough to read as tertiary fails, and anything that clears the floor is `ink-2` again. **So `ink-3` is non-text only and the third level comes from size and weight**, which is what law 1's scale jump is made of anyway. Every call site that used the old tertiary text token now uses `ink-2`.
+**There are two text levels in this app, `ink` and `ink-2`, and `ink-3` is non-text only. That is a consequence of the floor rather than a style choice, and a third is not to be reintroduced from the old table.** D92. The previous direction carried a text-safe tertiary alongside `ink-2`. Against warm `sand` at 4.5:1 there is no room for one: anything light enough to read as tertiary fails, and anything that clears the floor is `ink-2` again. **So `ink-3` is non-text only and the third level comes from size and weight**, which is what law 1's scale jump is made of anyway. Every call site that used the old tertiary text token now uses `ink-2`.
 
 **The tab chip is the reason this matters rather than a theoretical concern.** The grid draws it at 8px uppercase mono, which is roughly 11sp at real scale, and it is the first element on every section screen. Drawn in the base hue it fails on all three surfaces. Drawn in the ink variant on its own wash it clears, and it looks the same at arm's length.
 

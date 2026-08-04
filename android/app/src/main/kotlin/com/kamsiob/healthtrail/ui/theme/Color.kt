@@ -175,25 +175,42 @@ val LightColors = HealthTrailColors(
     onAlertFill = Color(0xFFFFFFFF),
     alertWash = Color(0xFFF6E2DA),
 
+    // **Spread across a lightness and saturation range rather than sitting at
+    // the contrast floor**, D89. Every hue keeps its angle, which is the owner's
+    // mapping; only lightness and saturation move, and they move to separate the
+    // six from each other rather than to clear a minimum.
+    //
+    // **The ink variants are spread too, and that was the binding half.** They
+    // were first derived for contrast alone, and the notebook draws each
+    // section's icon in `ink` rather than `base`, so on the one screen that
+    // shows all six the separation being measured was not the separation being
+    // seen. The inks hold at 12.5 across the three vision models.
+    //
+    // As the grid drew them, the six collapsed under red-green color vision
+    // deficiency: rose against moss measured 2.4 CIEDE2000 under simulated
+    // deuteranopia, which is the same color. **They now hold at 11.1 across
+    // normal vision, protanopia, and deuteranopia**, and no pair collapses, so
+    // the second distinguisher D89 holds in reserve is not needed.
+    //
     // People and chapters.
-    rose = TabHue(Color(0xFFA5674F), Color(0xFF8E5944), Color(0xFFF2E1D8)),
+    rose = TabHue(Color(0xFFBC6949), Color(0xFFA14C2B), Color(0xFFF2E1D8)),
     // Medications, tests, questions.
-    teal = TabHue(Color(0xFF3F7E74), Color(0xFF387067), Color(0xFFDEEBE6)),
+    teal = TabHue(Color(0xFF4D8980), Color(0xFF2D7166), Color(0xFFDEEBE6)),
     // Appointments.
-    slate = TabHue(Color(0xFF57708A), Color(0xFF516880), Color(0xFFE3E9F0)),
+    slate = TabHue(Color(0xFF4A5E73), Color(0xFF324E6C), Color(0xFFE3E9F0)),
     // Progress, care threads.
-    moss = TabHue(Color(0xFF6E7C43), Color(0xFF5F6B3A), Color(0xFFEAECD8)),
+    moss = TabHue(Color(0xFF484D38), Color(0xFF23241E), Color(0xFFEAECD8)),
     // Documents, money.
-    manila = TabHue(Color(0xFFA3772D), Color(0xFF846024), Color(0xFFF1E6CC)),
+    manila = TabHue(Color(0xFF825A17), Color(0xFF4A3107), Color(0xFFF1E6CC)),
     // Standing instructions. Added in v4 because the grid draws no such screen
     // and the section needs an identity. D79.
-    stone = TabHue(Color(0xFF7A756A), Color(0xFF6A665C), Color(0xFFEAE7E0)),
+    stone = TabHue(Color(0xFF706A5C), Color(0xFF4E483C), Color(0xFFEAE7E0)),
 
     threadRoutes = listOf(
         Color(0xFF2E6D8C), // physical therapy
         Color(0xFF4E8A5C), // occupational therapy
-        Color(0xFFA5674F), // speech
-        Color(0xFF6E7C43), // nursing
+        Color(0xFFBC6949), // speech
+        Color(0xFF484D38), // nursing
     ),
 
     isDark = false,

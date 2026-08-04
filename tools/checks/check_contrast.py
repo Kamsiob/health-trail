@@ -172,6 +172,11 @@ def pairs_for(theme: dict) -> list:
         checks.append((f"{hue}Ink", "sand", TEXT_FLOOR, f"{hue} text on a recessed surface"))
         checks.append((f"{hue}Base", "paper", UI_FLOOR, f"a {hue} shape on the app background"))
         checks.append((f"{hue}Base", "card", UI_FLOOR, f"a {hue} shape on a card"))
+        # The base sits on its own wash too: the tab chip's underline, the
+        # avatar's initials field, the icon in its wash. D89 requires each hue to
+        # clear the floor against its own wash rather than only against the
+        # neutral surfaces.
+        checks.append((f"{hue}Base", f"{hue}Wash", UI_FLOOR, f"a {hue} shape on its own wash"))
     for index in range(4):
         checks.append(
             (f"threadRoute{index}", "paper", None, f"care thread route {index} on the app background")
