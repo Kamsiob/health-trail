@@ -388,6 +388,7 @@
   "questions.empty": "Nothing waiting. Anything you save as a question turns up here.",
   "questions.group.waiting": "Still to ask",
   "questions.group.asked": "Asked",
+  "questions.group.anyone": "For anyone",
   "questions.mark_asked": "I asked this",
   "questions.asked_on": "Asked {date}",
   "thread.count": "{count, plural, =0 {Nothing on this one yet} one {1 thing on this one} other {# things on this one}}",

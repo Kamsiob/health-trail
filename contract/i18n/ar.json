@@ -388,6 +388,7 @@
   "questions.empty": "لا شيء بالانتظار. كل ما تحفظه كسؤال سيظهر هنا.",
   "questions.group.waiting": "لم يُسأل بعد",
   "questions.group.asked": "سُئلت",
+  "questions.group.anyone": "لأي شخص",
   "questions.mark_asked": "سألت هذا",
   "questions.asked_on": "سُئلت في {date}",
   "thread.count": "{count, plural, zero {لا شيء على هذا الخيط بعد} one {أمر واحد على هذا الخيط} two {أمران على هذا الخيط} few {# أمور على هذا الخيط} many {# أمرًا على هذا الخيط} other {# أمر على هذا الخيط}}",

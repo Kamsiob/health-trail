@@ -388,6 +388,7 @@
   "questions.empty": "Nada pendiente. Lo que guarde como pregunta aparecerá aquí.",
   "questions.group.waiting": "Por preguntar",
   "questions.group.asked": "Preguntadas",
+  "questions.group.anyone": "Para cualquiera",
   "questions.mark_asked": "Ya lo pregunté",
   "questions.asked_on": "Preguntada el {date}",
   "thread.count": "{count, plural, =0 {Nada en este todavía} one {1 cosa en este} other {# cosas en este}}",

@@ -388,6 +388,7 @@
   "questions.empty": "没有待问的问题。您保存为问题的内容都会出现在这里。",
   "questions.group.waiting": "待询问",
   "questions.group.asked": "已询问",
+  "questions.group.anyone": "给任何人",
   "questions.mark_asked": "我问过了",
   "questions.asked_on": "询问于 {date}",
   "thread.count": "{count, plural, =0 {这条线索上还没有内容} other {这条线索上有 # 条}}",
