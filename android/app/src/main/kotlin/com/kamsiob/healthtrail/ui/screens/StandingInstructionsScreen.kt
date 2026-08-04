@@ -81,6 +81,7 @@ fun StandingInstructionsScreen(
         onBack = onBack,
         modifier = modifier,
         section = Repository.Section.STANDING_INSTRUCTIONS,
+        headingKey = "instructions.heading",
     ) {
         if (instructions.isEmpty()) {
             item {

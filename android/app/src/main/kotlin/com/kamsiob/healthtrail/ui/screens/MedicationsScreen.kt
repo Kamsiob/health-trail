@@ -65,6 +65,7 @@ fun MedicationsScreen(
         onBack = onBack,
         modifier = modifier,
         section = Repository.Section.MEDICATIONS,
+        headingKey = "meds.heading",
     ) {
         if (medications.isEmpty()) {
             item {

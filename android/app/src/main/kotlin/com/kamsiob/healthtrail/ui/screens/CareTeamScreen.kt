@@ -65,6 +65,7 @@ fun CareTeamScreen(
         onBack = onBack,
         modifier = modifier,
         section = Repository.Section.CARE_TEAM,
+        headingKey = "careteam.heading",
     ) {
         if (people.isEmpty()) {
             item { SectionEmpty(name = CareTeamTags.NAME, text = strings["careteam.empty"], section = Repository.Section.CARE_TEAM, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }

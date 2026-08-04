@@ -81,6 +81,7 @@ fun AppointmentsScreen(
         onBack = onBack,
         modifier = modifier,
         section = Repository.Section.APPOINTMENTS,
+        headingKey = "appointments.heading",
     ) {
         if (appointments.isEmpty()) {
             item {

@@ -66,6 +66,7 @@ fun QuestionsScreen(
         onBack = onBack,
         modifier = modifier,
         section = Repository.Section.ASK_NEXT_TIME,
+        headingKey = "questions.heading",
     ) {
         if (questions.isEmpty()) {
             item { SectionEmpty(name = QuestionTags.NAME, text = strings["questions.empty"], section = Repository.Section.ASK_NEXT_TIME, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }

@@ -81,6 +81,7 @@ fun DocumentsScreen(
         onBack = onBack,
         modifier = modifier,
         section = Repository.Section.DOCUMENTS,
+        headingKey = "documents.heading",
     ) {
         if (documents.isEmpty()) {
             item {

@@ -94,6 +94,19 @@ fun SectionScaffold(
      * the base ladder instead, per 4.3.
      */
     section: Repository.Section? = null,
+    /**
+     * What the screen calls itself, which is not what the section is called.
+     *
+     * **The tab says where you are and the heading says what you came for.**
+     * The grid draws "Care team" on the tab over "Who you call" as the heading,
+     * and "Medications" over "What she takes". Saying the same words twice in
+     * two type sizes is a heading that carries nothing, on the screen law 1
+     * says must have one dominant thing.
+     *
+     * Defaults to [title] for a screen that has no separate question yet, which
+     * is visibly redundant rather than quietly wrong.
+     */
+    headingKey: String? = null,
     content: LazyListScope.() -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -122,7 +135,11 @@ fun SectionScaffold(
                     // v4 the hero is the one thing on the screen, and a section
                     // title is furniture: it says where you are, and what
                     // matters is what is under it.
-                    Text(text = title, style = HealthTrail.type.displayM, color = colors.ink)
+                    Text(
+                        text = headingKey?.let { strings[it] } ?: title,
+                        style = HealthTrail.type.displayM,
+                        color = colors.ink,
+                    )
                     Spacer(Modifier.height(Space.xs))
                     Text(
                         text = subtitle,

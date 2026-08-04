@@ -91,6 +91,7 @@ fun MoneyScreen(
         onBack = onBack,
         modifier = modifier,
         section = Repository.Section.MONEY,
+        headingKey = "money.heading",
     ) {
         if (bills.isEmpty()) {
             item {
