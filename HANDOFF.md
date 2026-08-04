@@ -36,8 +36,8 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 2. **Still open: #150**, for the Arabic and Chinese re-confirmation. The Latin faces are confirmed above.
 3. **Still open: #152**, for the color vision screenshots only. **The dark values are in and measured; what is missing is eyes.** Nothing on screen carries a tab hue yet, because the notebook still draws the old sand icon tiles, so the CVD check is gated on #153.
 4. **Done: #151 shape and rhythm, and #153 the tab chip.** `Dimens.kt` carries the v4 geometry, including the FAB clearance tokens D81 requires and a 46dp row minimum held separately from the 48dp touch floor so density can never quietly eat the target. `hueFor` maps every section to its hue in one place and the notebook draws each icon in its own wash.
-5. **Next: the rest of the inventory, #154 to #168.** Ten components still do not exist: the fold row, the wash band, the avatar, the chart card, the round card, the agenda and month grid, the view toggle, the pin marker and pinned group, the sticky section header, and the edge scrubber. Four rebuilds remain: the two action costumes, the chip, the spine, the FAB with its bloom menu, and the bottom navigation.
-6. **Then #169 to #172**, the four bottom-navigation destinations, so the app reads as one app end to end at the earliest possible moment.
+5. **Done: most of the inventory.** Built and landed: the tab chip, the fold row, the wash band, the avatar, the chart card, the view toggle, the pinned group, the sticky header, the corner FAB, the four-tab bar, and the outlined action costume. **Six remain: #158 the round card, #159 the agenda and month grid, #163 the edge scrubber, #165 the chip, #166 the spine.**
+6. **Then #169 to #172**, the four bottom-navigation destinations.
 7. **Then #173 to #188** section screens, then **#189 to #208** detail screens, sheets, onboarding, settings, and edge states.
 
 **`ORDER OF WORK` is not a suggestion.** A half-converted app is worse than either version and it makes review impossible.
@@ -112,6 +112,8 @@ Two base tokens moved for the same reason: `ink-2` to `#576873` and `blue` to `#
 **The cause is structural rather than an oversight.** A light-theme shape sits on near-white surfaces so the 3:1 floor caps it between 41 and 53 percent lightness; a dark-theme shape may run to 84. **Dark has twice the room, and lightness is what survives red-green CVD.**
 
 **It is not fixed, deliberately.** The worst pair is between two hues the owner drew, and restyling five of his hues quietly is the class of change this project keeps getting caught by. **D88 and #217** carry the numbers, the measured 7.6 ceiling, and three options, with a recommendation. **It is a quality gap and not an accessibility failure**, because every tile and tab sits with its section's name in text.
+
+**Two defects were caught on the phone rather than in review, and both are the reason the audits are mechanical.** The moment the FAB moved to the corner, the notebook's emergency card tile was underneath it, because the old clearance had been measured against a button in the middle of the bar and the arithmetic lived in the screen rather than in a token. That is D81 on the first screen within a minute. And `Dr. Priya Raman` gave initials `DR`, so every doctor on a roster would have shared initials, which the avatar exists to prevent; that one was caught by its own test before any screen used it.
 
 **One gap left inside #152:** the ink variants were derived for contrast against their own wash and have not been through the CVD optimization the bases have. The notebook icons draw in `ink`, so the screenshots partly test the unoptimized half.
 
