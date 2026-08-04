@@ -1816,6 +1816,104 @@ Minimum across all three: **10.8**
 
 ---
 
+### D89. The light tab hues are spread across lightness and saturation, and they hold at 11.1
+
+**Owner ruling on #217 and D88, 2026-08-03.** Do not un-darken the hues and do not change any hue's section assignment. **Spread the six deliberately across a lightness range rather than pushing all six to the same contrast floor**, keeping each above the floor against its own wash. Every hue keeps its angle; **only lightness and saturation move, and they move to separate the six from each other rather than to sit at the minimum.**
+
+**Done, and the palette still reads as the binder.** A first unconstrained search reached 14.7 by pushing rose to 16 percent lightness, which is not rose, so the search was bounded to keep each hue within about 12 points of lightness and 14 of saturation of where the owner drew it. **The result is 11.1, up from 2.4**, and every hue is still recognizably itself.
+
+| Hue | Base, shapes | Ink, text | Wash | base on wash | base on paper | ink on wash | ink on sand |
+|---|---|---|---|---|---|---|---|
+| `rose` | `#BC6949` | `#995338` | `#F2E1D8` | 3.15 | 3.55 | 4.53 | 4.55 |
+| `teal` | `#4D8980` | `#3E6F67` | `#DEEBE6` | 3.29 | 3.58 | 4.66 | 4.51 |
+| `slate` | `#4A5E73` | `#52687F` | `#E3E9F0` | 5.47 | 5.94 | 4.71 | 4.55 |
+| `moss` | `#484D38` | `#606845` | `#EAECD8` | 7.30 | 7.79 | 4.91 | 4.65 |
+| `manila` | `#825A17` | `#835E21` | `#F1E6CC` | 4.94 | 5.44 | 4.72 | 4.62 |
+| `stone` | `#706A5C` | `#71654B` | `#EAE7E0` | 4.35 | 4.77 | 4.64 | 4.52 |
+
+**Normal vision**
+
+| | rose | teal | slate | moss | manila | stone |
+|---|---|---|---|---|---|---|
+| **rose** | . | 40.6 | 35.9 | 33.9 | 19.7 | 22.9 |
+| **teal** | 40.6 | . | 23.3 | 24.9 | 34.1 | 21.8 |
+| **slate** | 35.9 | 23.3 | . | 23.0 | 33.4 | 20.1 |
+| **moss** | 33.9 | 24.9 | 23.0 | . | 21.0 | 13.5 |
+| **manila** | 19.7 | 34.1 | 33.4 | 21.0 | . | 17.1 |
+| **stone** | 22.9 | 21.8 | 20.1 | 13.5 | 17.1 | . |
+
+Worst pair: **moss against stone, 13.5**
+
+**Simulated protanopia**
+
+| | rose | teal | slate | moss | manila | stone |
+|---|---|---|---|---|---|---|
+| **rose** | . | 16.5 | 30.6 | 16.8 | 11.1 | 11.1 |
+| **teal** | 16.5 | . | 19.2 | 22.7 | 25.7 | 11.7 |
+| **slate** | 30.6 | 19.2 | . | 22.9 | 34.8 | 19.1 |
+| **moss** | 16.8 | 22.7 | 22.9 | . | 14.8 | 11.2 |
+| **manila** | 11.1 | 25.7 | 34.8 | 14.8 | . | 16.8 |
+| **stone** | 11.1 | 11.7 | 19.1 | 11.2 | 16.8 | . |
+
+Worst pair: **rose against stone, 11.1**
+
+**Simulated deuteranopia**
+
+| | rose | teal | slate | moss | manila | stone |
+|---|---|---|---|---|---|---|
+| **rose** | . | 24.3 | 37.9 | 25.2 | 13.1 | 16.9 |
+| **teal** | 24.3 | . | 15.3 | 22.2 | 27.4 | 13.0 |
+| **slate** | 37.9 | 15.3 | . | 23.0 | 36.2 | 21.4 |
+| **moss** | 25.2 | 22.2 | 23.0 | . | 16.9 | 11.7 |
+| **manila** | 13.1 | 27.4 | 36.2 | 16.9 | . | 15.6 |
+| **stone** | 16.9 | 13.0 | 21.4 | 11.7 | 15.6 | . |
+
+Worst pair: **moss against stone, 11.7**
+
+Minimum across all three: **11.1**  (was 2.4)
+
+**Every pair clears 11.1 across normal vision, protanopia, and deuteranopia**, against 2.4 before. **No pair collapses**, so the owner's fallback, that the notebook row and the avatar gain the section icon at differing shape weight as a second distinguisher, **is not needed and is held in reserve.** If a later hue is added and any pair falls back under about 10, that is the answer rather than any further color change.
+
+**Light is now marginally ahead of dark**, 11.1 against 10.8, which is the right relationship: light has the narrower lightness band to work in, so it needed the deliberate spread more.
+
+**The contrast checker gained a pair per hue**, base against its own wash, because a tab chip's underline, an avatar's initials field, and a section icon all put the base on the wash and nothing was measuring that. Tightest is rose at 3.15:1 against a 3:1 floor.
+
+### D90. The content rules are enforced in the type wherever they can be, not only in the document
+
+**Owner confirmation of a judgment call, 2026-08-03.** The chart card has no parameter for a target, a normal range, a threshold, a zone, or a color ramp, and no way to pass one.
+
+**The reasoning the owner named, which is stronger than the one it was built on:** enforcing a rule in the type rather than in a document is **the only version that survives a session that has not read the document.** `CLAUDE.md` and `DESIGN.md` are read at the start of a session and lost to compaction; a function signature is read at the moment somebody tries to break the rule.
+
+**So this generalizes.** Wherever a content rule can be made structurally impossible to violate rather than merely forbidden, it is. Concretely, in order of how likely each is to be reached for: no component accepts a threshold, a target, or a range. No component accepts a color chosen by a value. No count component accepts a delta or a comparison. Anything that would render a judgment about a measurement has nowhere to put one.
+
+**Segments are never joined across a gap**, for the same class of reason. A record whose purpose is being true cannot interpolate: joining the dots across three missing months draws a line the person never recorded.
+
+### D91. Platform semantics over app strings, wherever the same choice appears
+
+**Owner confirmation, 2026-08-03.** The fold row announces its state through Compose's `expand` and `collapse` semantics actions rather than through catalog strings.
+
+**Two reasons, and the second is the one that generalizes.** The obvious one is translation: four catalog entries would say something the system already says in the reader's language. **The one that matters more is that the reader gets the wording they already know from every other app on their phone**, and this app maintains nothing that can drift out of step with it.
+
+**So it is the default now**, not a one-off. Anywhere a control has a state the platform already names, the platform names it: expanded and collapsed, selected, checked, disabled, in-progress, and the standard roles. App strings are for things only this app knows, which is most of its content and almost none of its control states.
+
+### D92. Two text levels, plus a non-text `ink-3`
+
+**Owner confirmation, 2026-08-03.** At the 4.5:1 floor against warm `sand` there is no room for a third distinct text level: anything light enough to read as tertiary fails the floor, and anything that clears the floor is `ink-2` again.
+
+**The floor wins over the ladder**, and hierarchy comes from size and weight instead, which is what law 1's scale jump is made of anyway.
+
+**`ink-3` is non-text only.** Hairlines, dividers, inactive strokes. It measures 2.37:1 on paper and **must never render a word.** The previous direction carried a separate text-safe tertiary and `DESIGN.md` 4.1 and 4.6 now say two levels plainly, **so a later session does not reintroduce a third from the old table.**
+
+### D93. D59 ends: there is no gold outlined button
+
+**Owner decision, 2026-08-03, superseding D59.** The support button becomes an ordinary outlined action in blue, at the bottom of Settings and About where it already sits. **The copy is unchanged**: the visible label stays "Support this work."
+
+**The reasoning.** Gold is the trail and capture only. An outlined gold button was **a seventh costume that existed on exactly one screen**, which is precisely the class of thing the costume rule was written to eliminate. A person who has learned that gold means "the way in" met one gold thing that was not.
+
+**How this came up is worth keeping.** The v4 inventory left no room for the exception, and rather than delete a decision the owner had made, it was flagged. **The owner's instruction on that is now standing: an exception he made gets surfaced, never overridden on the agent's own judgment.** That holds whichever way the answer goes.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
