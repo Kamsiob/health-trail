@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -153,7 +154,7 @@ private fun PersonRow(
         subtitle = listOfNotNull(
             role.takeIf { it != heading },
             person.notes?.takeIf { it.isNotBlank() },
-        ).joinToString(" · ").takeIf { it.isNotBlank() },
+        ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
         leading = {
             // The subject's own avatar carries blue, per `DESIGN.md` 7, and
             // there is exactly one of them. Everyone else is the section's rose.

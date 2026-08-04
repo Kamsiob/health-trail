@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
@@ -182,7 +183,7 @@ private fun MedicationRow(
         // on a card it is not on. The list contradicted the card, and the card
         // is the one somebody hands to a paramedic.
         strings["meds.on_card.badge"].takeIf { medication.showsOnEmergencyCard },
-    ).joinToString(" · ").takeIf { it.isNotBlank() }
+    ).let { Bidi.join(it) }.takeIf { it.isNotBlank() }
 
     DenseRow(
         title = medication.name,

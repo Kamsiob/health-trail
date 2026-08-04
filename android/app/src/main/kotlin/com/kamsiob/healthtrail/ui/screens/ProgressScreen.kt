@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
@@ -299,11 +300,11 @@ private fun latestOf(
     if (brief && measure.isText) return date
     val value = valueOf(latest) ?: return date
     val unit = latest.unit?.takeIf { it.isNotBlank() } ?: measure.unit?.takeIf { it.isNotBlank() }
-    return buildString {
-        append(value)
-        if (unit != null) append(" ").append(unit)
-        append(" · ").append(date)
-    }
+    // **Isolated, because this line mixes directions.** A number, a Latin unit
+    // and an Arabic month in one string are three bidirectional runs, and
+    // without isolation the algorithm reorders them against each other: this
+    // read "2026 يونيو to 10 · 26 0 1.4" on the phone.
+    return Bidi.join(listOfNotNull(value, unit).joinToString(" "), date)
 }
 
 /**

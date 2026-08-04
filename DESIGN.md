@@ -609,6 +609,7 @@ The small touches that separate finished from correct. **They apply everywhere, 
 - **Empty states** get a single line-art trail motif in ink at low opacity, drawn as a set at one stroke weight, plus two lines of warm copy: what this place is for, and the one action to start.
 - **Icons are one coherent set at one stroke weight**, drawn for this app's sections and capture types, **never assembled from a default library.**
 - **The trail mirrors correctly right to left**, including waypoints, scrubbers, and the FAB corner.
+- **Any line built by joining parts is isolated, never concatenated.** A value, a unit and a date in one string are separate bidirectional runs, and in Arabic the algorithm reorders them against each other: `1.4 0 to 10 · 26 يونيو 2026` rendered as `2026 يونيو to 10 · 26 0 1.4`. `Bidi.join` wraps each part so it lays out on its own and the parts keep the order the code put them in. It applies to every joined line in the app, not only the one it was found on.
 - **A list that has earned law 4's tools gives up a margin for them.** A rail drawn over the content looks right against short fixture text and cuts through the first real sentence that reaches the end of its line.
 
 **When you notice a small refinement in this spirit that costs little, add it, and record it here**, so it becomes part of the system rather than a one-off.

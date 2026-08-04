@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
@@ -176,7 +177,7 @@ fun MoneyScreen(
                             }
                         },
                         count = if (sum > 0) {
-                            "${inState.size} · ${formatMoney(strings, sum, currency)}"
+                            Bidi.join(inState.size.toString(), formatMoney(strings, sum, currency))
                         } else {
                             inState.size.toString()
                         },
@@ -233,7 +234,7 @@ private fun BillRow(
                 ?.let { EventDateText.render(strings, it) },
             bill.stateNote?.takeIf { it.isNotBlank() },
             bill.notes?.takeIf { it.isNotBlank() },
-        ).joinToString(" · ").takeIf { it.isNotBlank() },
+        ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
         trailing = bill.amountMinor
             ?.let { formatMoney(strings, it, bill.currency) }
             ?: strings["money.no_amount"],

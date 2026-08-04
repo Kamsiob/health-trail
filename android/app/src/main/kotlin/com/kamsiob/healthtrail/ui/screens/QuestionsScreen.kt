@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -229,7 +230,7 @@ private fun QuestionRow(
             ),
             question.answerText?.takeIf { it.isNotBlank() }
                 ?: strings["questions.answer.none"],
-        ).joinToString(" · ")
+        ).let { Bidi.join(it) }
     }
 
     DenseRow(
