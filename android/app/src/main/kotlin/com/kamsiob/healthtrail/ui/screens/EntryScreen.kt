@@ -103,7 +103,19 @@ fun EntryScreen(
 
     SectionScaffold(
         name = EntryTags.NAME,
-        title = heading.text,
+        // **The chip says where you are and the heading says what you came
+        // for.** This passed the entry's own words as the title, so the whole
+        // sentence appeared in the tab chip in 11sp mono and again underneath at
+        // display weight. One entry belongs to the trail, so the chip says the
+        // trail, and it wears the trail's own hue like every other screen there.
+        title = strings["notebook.section.trail"],
+        heading = Bidi.isolate(heading.text),
+        section = Repository.Section.TRAIL,
+        // **What kind of thing this is, and not when.** The date belongs to the
+        // control below that changes it, and putting it here as well was the
+        // same value in two slots: the screenshot showed "A call, June 17, 2026"
+        // above a row reading "June 17, 2026, Change". The grid draws both; the
+        // ban on saying one thing twice is older and wins.
         subtitle = strings[kindKey(entry.kind)],
         onBack = onBack,
         backLabelKey = backLabelKey,

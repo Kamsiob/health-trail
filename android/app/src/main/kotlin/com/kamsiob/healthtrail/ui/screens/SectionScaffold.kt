@@ -123,6 +123,19 @@ fun SectionScaffold(
      */
     headingKey: String? = null,
     /**
+     * The heading in the person's own words, when it cannot come from the
+     * catalog.
+     *
+     * **Detail screens need this and the twelve sections do not.** A section's
+     * heading is a question the app wrote; one entry's heading is what somebody
+     * typed at two in the morning. Before this existed a detail screen had to
+     * pass its own words as [title], which put them in the tab chip **and** in
+     * the heading: the same sentence twice, once in mono at 11sp and once at
+     * display weight, which section 1 bans by name and which looked like a
+     * rendering fault rather than emphasis.
+     */
+    heading: String? = null,
+    /**
      * The list's own scroll state, for a screen that has to move it.
      *
      * **Only a screen with law 4's tools needs this.** The edge scrubber's whole
@@ -178,7 +191,7 @@ fun SectionScaffold(
                     // title is furniture: it says where you are, and what
                     // matters is what is under it.
                     Text(
-                        text = headingKey?.let { strings[it] } ?: title,
+                        text = heading ?: headingKey?.let { strings[it] } ?: title,
                         style = HealthTrail.type.displayM,
                         color = colors.ink,
                     )
