@@ -311,15 +311,20 @@ private fun Templates(
     GroupedSurface {
         templates.forEachIndexed { index, template ->
             DenseRow(
-                title = template.name,
-                subtitle = template.subtitle.takeIf { it.isNotBlank() },
-                // **Two lines, because this subtitle is a sentence somebody
-                // reads to choose.** At one line every row on this screen ended
-                // mid-sentence: "Applying for coverage of nursing", "Matching
-                // what was billed against". The row's fixed height is what makes
-                // a long list scannable and it is not worth a truncated
-                // sentence on the one screen whose whole job is choosing.
-                subtitleMaxLines = 2,
+                // **Isolated even though it is catalog copy rather than the
+                // person's own words.** The sixteen are English until #62
+                // translates them, so in an Arabic layout every one of these is
+                // an opposite-direction run, which is the case section 15's
+                // rule exists for. A name ending in a bracket or a digit
+                // reorders against the layout without it.
+                title = Bidi.isolate(template.name),
+                subtitle = template.subtitle.takeIf { it.isNotBlank() }
+                    ?.let { Bidi.isolate(it) },
+                // **Uncapped, because this subtitle is a sentence somebody
+                // reads to choose.** At one line every row ended mid-sentence,
+                // and at two they did it again the moment the system font
+                // reached 2.0. Any fixed cap truncates at some size.
+                subtitleMaxLines = Int.MAX_VALUE,
                 trailing = template.steps.size
                     .takeIf { it > 0 }
                     ?.let { strings("projects.step_count", "count" to it) },

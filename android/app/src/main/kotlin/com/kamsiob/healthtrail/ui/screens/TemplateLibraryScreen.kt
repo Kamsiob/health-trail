@@ -141,8 +141,8 @@ fun TemplateLibraryScreen(
             shippedUsed.forEach { template ->
                 item(key = "u_${template.id}") {
                     TemplateCard(
-                        title = template.name,
-                        provenance = template.subtitle,
+                        title = Bidi.isolate(template.name),
+                        provenance = Bidi.isolate(template.subtitle),
                         steps = template.steps.size,
                         started = startedFrom(template.id),
                         onOpenProject = onOpenProject,
@@ -246,13 +246,16 @@ fun TemplateLibraryScreen(
                             // the dead end rule 18 forbids. Starting one is the
                             // picker's job, and it is one tap from Projects.
                             DenseRow(
-                                title = template.name,
-                                subtitle = template.subtitle.takeIf { it.isNotBlank() },
-                                // A sentence rather than a tag, so it gets the
-                                // second line the picker gives it too. The same
-                                // sixteen rows in two shapes would be 13.2's
-                                // pattern-appearing-twice defect.
-                                subtitleMaxLines = 2,
+                                // English until #62, so an opposite-direction
+                                // run in an Arabic layout. Section 15.
+                                title = Bidi.isolate(template.name),
+                                subtitle = template.subtitle.takeIf { it.isNotBlank() }
+                                    ?.let { Bidi.isolate(it) },
+                                // **Uncapped, because this subtitle is a sentence somebody
+                                // reads to choose.** At one line every row ended mid-sentence,
+                                // and at two they did it again the moment the system font
+                                // reached 2.0. Any fixed cap truncates at some size.
+                                subtitleMaxLines = Int.MAX_VALUE,
                                 trailing = strings(
                                     "projects.step_count",
                                     "count" to template.steps.size,

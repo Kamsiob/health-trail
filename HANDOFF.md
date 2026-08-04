@@ -15,12 +15,12 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **16 repository checks pass** (`python3 tools/checks/run_all.py`).
 - **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **313 instrumented tests pass**, last full run 2026-08-04 after the month review landed.
+- **325 instrumented tests pass**, last full run 2026-08-04 after #201 landed.
 - The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
 **Take these in this order.**
 
-1. **#200 is done and closed**, and section 3 is the account of what came out of it. **#201 is in flight and section 2 says what is left of it: the sweep, the states, the suite, and two review issues.**
+1. **#200 and #201 are done and closed.** Sections 2 and 3 are the account of what they landed and what came out of them. **Start at #202.**
 2. **The rest of step 4**, #201 through #208, in number order, **except take #208 last**. Each was scoped on 2026-08-04 and the two with gaps carry a comment saying so:
    - **#202** is half a conversion and half a build. "Change of situation" does not exist anywhere, and whoever takes it has to decide first whether changing the situation is a chapter boundary in the data or only in the words.
    - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape.
@@ -33,9 +33,9 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 2. #201 is in flight
+## 2. What #201 landed
 
-**The picker and the library are converted and on the phone in light.** What is left is the sweep: dark, font scale 2.0, Arabic, the empty states, and the instrumented suite. Then the two `needs-design-review` issues, since neither screen is drawn.
+**Both screens are converted, swept and closed.** Both themes, font scale 2.0, Arabic, and the search's own empty state, on the phone. Reviews at **#239** and **#240**, `DESIGN.md` section 14 carries both rows, and D104 and D105 carry the two decisions.
 
 **The sixteen project templates gained a `category`**, one of `paying`, `challenge`, `moving`, `papers`, held to that closed set by `check_templates.py` and labeled per locale under `projects.category.*`. **It is what the person is trying to do, not what kind of office it involves**, and it is not `phase`, which is build order and never reaches a screen. `templates/SCHEMA.md` carries the definition. Both screens group by it in the same fixed order, which lives in each file as `CATEGORY_ORDER`.
 
@@ -44,6 +44,10 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 **`DenseRow` gained `subtitleMaxLines`, defaulting to 1.** Every subtitle on the picker ended mid-sentence at one line. **Raise it only where the second line is a sentence somebody reads rather than a tag**; the fixed row height is what makes a long list scannable.
 
 **The fixture's projects carried no `template_id`**, so the library could never show what any template produced, which is the whole reason it is a library rather than a catalog. Three of the five now do, and `check_fixtures.py` holds the ids to the real catalog so renaming a template fails the build rather than producing a project pointing at nothing. Third instance of this shape after #237 and #229.
+
+**325 instrumented tests pass**, up from 313: `StartProjectScreenTest` covers the grouping and the search, and `ScreenReaderTest` walks both screens.
+
+**The catalog is still English inside an Arabic layout**, which is #62 and not new. Every template name and subtitle now goes through `Bidi.isolate` so it cannot reorder against the layout, which is a patch over that rather than a fix for it.
 
 ---
 
@@ -223,7 +227,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 | Question | File |
 |---|---|
 | What to do next | This file, section 1. Then the board, project 3, in `ORDER OF WORK` order |
-| Why something is the way it is | `DECISIONS.md`, D1 through D103 |
+| Why something is the way it is | `DECISIONS.md`, D1 through D105 |
 | What it should look like | `DESIGN.md`, plus `reference/screen-grid.html`. Section 14 is the undrawn-screen map |
 | What the data may do | `contract/DATA-CONTRACT.md`, and `contract/EXPORT-FORMAT.md` for the archive |
 | What the app is for | `MASTER_SPEC.md` |

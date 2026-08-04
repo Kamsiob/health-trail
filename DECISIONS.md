@@ -2012,6 +2012,28 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **The hero is the milestones and nothing else, and a month with none has no hero.** Every other candidate to lead with, the worst incident or the busiest week, is the app deciding what mattered about somebody's month. A milestone is the one thing in this app the person marked themselves, so leading with it repeats their decision. Law 1 says no hero at all is a valid screen, and a month where nobody marked anything is honestly a month where nobody marked anything.
 
+### D104. The sixteen project templates gained a category, and it is what the person is trying to do
+
+**2026-08-04, converting #201.** Screen 23 groups its picker so nothing hides below the fold unannounced, and the project templates had nothing to group by. `phase` is the order these were built in, and grouping somebody's options around the app's own history is rule 20 exactly.
+
+**So the data gained `category`, one of `paying`, `challenge`, `moving`, `papers`**, held to that closed set by `check_templates.py`, documented in `templates/SCHEMA.md`, and labeled per locale under `projects.category.*`. A closed set rather than free text because a category with no label renders as a raw key, and a second spelling of an existing one splits a group in two without anybody noticing.
+
+**The four are what the person is trying to do, not what kind of office is involved.** Somebody looking for a process is thinking "they cut her off and I want to fight it", not "this is a Medicare matter". A taxonomy built from the institutions would be correct and useless, because the person does not know which institution it is yet; that is usually why they are looking.
+
+**Content is the owner's**, so the four names and the sixteen assignments are recorded here as a decision to disagree with rather than as a fact. `family_leave` under "Papers and permissions" is the one genuinely arguable assignment: it is a paperwork process, and it is also the only template about the caregiver rather than the person being cared for. A fifth category holding one template read worse than a slightly loose fourth.
+
+**The picker and the library use one order and one set**, each holding it as `CATEGORY_ORDER`. Two screens showing the same sixteen in two orders is 13.2's pattern-appearing-twice defect.
+
+### D105. A row that must not clip does not count its lines
+
+**2026-08-04, on the phone, twice in one hour.** The template picker's subtitle is the sentence somebody reads to choose, and `DenseRow` capped it at one line, so every row on the screen ended mid-sentence: "Applying for coverage of nursing", "Matching what was billed against".
+
+**The first fix was two lines and it was the same mistake.** At the system font's maximum the same sentences truncated again, one line further along. **Any fixed cap is a cap in the smallest type and a truncation in the largest**, and 16.2 forbids clipped content at both.
+
+**So the rule is: where the second line is a sentence somebody reads, it is uncapped; where it is a tag, a role, a state or a date, it stays at one.** `DenseRow` carries the choice as `subtitleMaxLines`, defaulting to one, because the row's fixed height is what lets fifty of them be scanned and that must stay the default.
+
+**This is why 16.2 requires the maximum font pass rather than a reading of the code.** Two lines looks like a fix at scale 1.0 and is a defect at 2.0, and nothing about the source says which.
+
 ---
 
 ## BLOCKED

@@ -21,6 +21,7 @@ import com.kamsiob.healthtrail.ui.components.CaptureFab
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
 import com.kamsiob.healthtrail.ui.screens.MilestonesScreen
+import com.kamsiob.healthtrail.ui.screens.TemplateLibraryScreen
 import com.kamsiob.healthtrail.ui.screens.MonthReviewScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.data.ExportContainer
@@ -626,6 +627,99 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("the milestone arc")
+    }
+
+    /**
+     * The picker with the person's own template at the top.
+     *
+     * The other case, further down, loads the real catalog and covers the
+     * sixteen and their four folds. This one covers the shape that only appears
+     * once somebody has saved a template of their own, which is the state the
+     * fixture cannot reach.
+     */
+    @Test
+    fun startingAProjectWithTheirOwnTemplateLabelsEverything() {
+        compose.show {
+            StartProjectScreen(
+                templates = listOf(
+                    TemplateCatalog.ProjectTemplate(
+                        id = "medicaid_ltc",
+                        name = "Medicaid application for long term care",
+                        subtitle = "Applying for coverage of nursing home or facility care",
+                        category = "paying",
+                        stateVariance = true,
+                        roles = emptyList(),
+                        steps = listOf("One", "Two"),
+                    ),
+                    TemplateCatalog.ProjectTemplate(
+                        id = "discharge_appeal",
+                        name = "Fighting a facility discharge",
+                        subtitle = "When a facility says someone has to leave",
+                        category = "challenge",
+                        stateVariance = false,
+                        roles = emptyList(),
+                        steps = listOf("One"),
+                    ),
+                ),
+                own = listOf(
+                    Repository.OwnTemplate(
+                        id = "mine",
+                        name = "The one I wrote",
+                        derivedFromId = null,
+                        steps = listOf("One"),
+                        createdAt = 0L,
+                    ),
+                ),
+                onChoose = {},
+                onChooseOwn = {},
+                onStartOwn = {},
+                onCancel = {},
+            )
+        }
+        assertEverythingIsLabeled("starting a project")
+    }
+
+    /**
+     * The library, with one template in use and the rest folded, so the card
+     * shape, the fold and the project row inside a card are all walked.
+     */
+    @Test
+    fun theTemplateLibraryLabelsEverything() {
+        val shipped = listOf(
+            TemplateCatalog.ProjectTemplate(
+                id = "medicaid_ltc",
+                name = "Medicaid application for long term care",
+                subtitle = "Applying for coverage of nursing home or facility care",
+                category = "paying",
+                stateVariance = true,
+                roles = emptyList(),
+                steps = listOf("One", "Two"),
+            ),
+            TemplateCatalog.ProjectTemplate(
+                id = "records_request",
+                name = "Requesting medical records",
+                subtitle = "Getting copies of records you have a right to see",
+                category = "papers",
+                stateVariance = false,
+                roles = emptyList(),
+                steps = listOf("One"),
+            ),
+        )
+        compose.show {
+            TemplateLibraryScreen(
+                shipped = shipped,
+                own = emptyList(),
+                projects = listOf(
+                    Repository.Project(
+                        "p1", "Medicaid application", "medicaid_ltc", "active",
+                        null, null, 14, 3, "Find the last three bank statements",
+                    ),
+                ),
+                onOpenProject = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("the template library")
     }
 
     /**

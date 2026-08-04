@@ -83,6 +83,13 @@ fun DenseRow(
      * "Applying for coverage of nursing home or facility care" and "Applying
      * for services that let somebody stay at home", and at one line both ended
      * mid-sentence, which rule 11 calls a truncation and 16.2 calls clipped.
+     *
+     * **Where the subtitle is a sentence, pass `Int.MAX_VALUE` rather than a
+     * number.** Two was the first fix and it truncated again the moment the
+     * system font reached 2.0, because any fixed cap is a cap in the smallest
+     * type and a truncation in the largest. A row that must not clip must not
+     * count its lines at all. Found on the phone at maximum font scale, which
+     * is why 16.2 requires that pass rather than a reading of the code.
      */
     subtitleMaxLines: Int = 1,
     /**

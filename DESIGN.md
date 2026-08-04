@@ -352,6 +352,8 @@ A row may be 46dp tall and still carry a 48dp touch target through invisible pad
 
 **A screen also has a layout pattern**, and using the same one as the screen it was reached from is a deliberate choice rather than the default.
 
+**A dense row's second line is one line when it is a tag and uncapped when it is a sentence.** A role, a state, a category or a date is one line by nature and stays there, which is what lets fifty rows be scanned. Where the second line is what somebody actually reads to choose, it wraps freely: **a fixed cap is a cap at the smallest type size and a truncation at the largest**, so two lines looked like a fix at scale 1.0 and clipped again at 2.0. D105.
+
 ---
 
 ## 8. The FAB correction
@@ -579,8 +581,8 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 | Month review | 08 The trail | A period of the trail, composed, every line tapping through to its source. **Built 2026-08-04**, #200. Reached from the trail's own month heading, which gained a chevron and opens the month it names: the door costs no furniture and sits where the eye already is. **It has no total, deliberately.** A gold band reading "Written down this month, 42" was built and removed the same day: at that weight it competed with the hero, which law 1 says means the screen is wrong, and a single number over a month is an invitation to compare it against last month's, which is a judgment about somebody's care. Each group counts itself instead. Review at #236 |
 | The milestone arc | 19 Chapters | A spine of milestones with gold rings. **Built 2026-08-04**, #200, and it is where the app first became able to read or write a milestone at all: the table shipped in the schema and nothing touched it, #234. Reached from the chapters list, because there is no thirteenth section. The chapter door wears the chevron row rather than the outlined pill it was first built with: law 2 gives that costume to a verb and gives navigation the chevron, and a place name is a noun. Review at #235 |
 | Projects, the list | 12 Medications | Peers with state, active first |
-| Starting a project | 23 Track something new | A grouped, searchable picker |
-| The template library | 23 Track something new | Same picker shape, the person's own first |
+| Starting a project | 23 Track something new | A grouped, searchable picker. **Converted 2026-08-04**, #201. The sixteen were a flat wall of cards and are rows in folds. **The grouping needed a category the data did not have**, so the templates gained one, held to `paying`, `challenge`, `moving`, `papers` by `check_templates.py`: it is what the person is trying to do, never what kind of office it involves, and never `phase`, which is build order. The person's own lead when they have any, the first category otherwise. Review at #239 |
+| The template library | 23 Track something new | Same picker shape, the person's own first. **Converted 2026-08-04**, #201. **It reports rather than offers**, so what has produced something leads as cards holding its projects, and the rest folds by the picker's four categories. Fifteen of sixteen say "nothing started from this yet" in a real notebook, and sixteen cards mostly reporting nothing is the uniform weight rule 15 names. Review at #240 |
 | One template | 15 One project | Steps in order, editable in place |
 | Export | 07 Filing | One thing, then the passphrase confirmed twice, one filled action. **No encryption choice, because there is no unencrypted export**, `contract/DATA-CONTRACT.md` 8.1 and D84 |
 | Import and restore | 07 Filing | Show what the file holds before writing anything |
