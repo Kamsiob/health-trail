@@ -66,7 +66,9 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 3. **Then the rest of step 4**, #190 and #195 to #208.
 4. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
 
-**Six things are waiting on the owner and none of them block anything.** **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table), **#220** (the trail's filter needs a decision about what a person filters by), **#182** (the tests section needs a schema), **#223** and **#225** (the two design reviews).
+**Nine things are waiting on the owner and none of them block anything.** **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table), **#220** (the trail's filter needs a decision about what a person filters by), **#182** (the tests section needs a schema before it can be built at all), **#230** (an incident cannot say which medication it was about, which rule 18 argues it should), and **#223** and **#225** (the two design reviews).
+
+**Two fixture defects are filed and both are the same shape**: something built and wired that the generated notebook never exercises, so nobody looks at it. **#219** leaves every chapter open, so eight places all read as current. **#229** never links a question to a medication, so a path that exists end to end has never rendered.
 
 **One is release-blocking and is not a decision, it is work: #227.** Nothing in the app normalizes text to NFC, which section 8.4 requires. A name typed with a combining accent on one phone and a precomposed one on another is two different people to search and to merge. It was not fixed on the spot because it touches every write path and a half-applied normalization is worse than none.
 
