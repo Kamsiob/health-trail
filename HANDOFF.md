@@ -14,6 +14,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **16 repository checks pass** (`python3 tools/checks/run_all.py`).
+- **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
 - **313 instrumented tests pass**, last full run 2026-08-04 after the month review landed.
 - The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
