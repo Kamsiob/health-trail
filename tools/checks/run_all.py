@@ -26,6 +26,7 @@ CHECKS = [
     ("check_contract_isolation.py", "/contract stays platform neutral, no second schema"),
     ("check_schema.py", "schema.sql against the data contract, shape and behavior"),
     ("check_contrast.py", "every color pair in both themes against the WCAG AA floors"),
+    ("check_ink3_is_not_text.py", "ink3 is non-text only, so no label is drawn at 2.37:1"),
     ("check_self_contained.py", "nothing outside this project is named in the repository"),
     ("check_i18n.py", "the four locale catalogs against each other and their rules"),
     ("check_live_views.py", "no base table read outside a live view, so tombstones cannot leak"),
