@@ -18,6 +18,14 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.fabScrollClearance
+import com.kamsiob.healthtrail.ui.components.wholeAppHue
+import com.kamsiob.healthtrail.ui.components.TabChip
+import com.kamsiob.healthtrail.ui.components.FoldRow
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -27,6 +35,7 @@ object ProjectTags {
     const val ROOT = "projects_root"
     const val START = "projects_start"
     const val EMPTY = "projects_empty"
+    const val FINISHED_FOLD = "projects_finished_fold"
     fun row(id: String) = "project_$id"
 }
 
@@ -64,6 +73,7 @@ fun ProjectsScreen(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
+    var finishedOpen by rememberSaveable { mutableStateOf(false) }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         LazyColumn(
@@ -74,19 +84,23 @@ fun ProjectsScreen(
                 .padding(horizontal = Space.screenHorizontal),
         ) {
             item {
-                Spacer(Modifier.height(Space.l))
+                Spacer(Modifier.height(Space.sm))
+                // Projects belong to no section, so gold and the base ladder
+                // rather than a section hue, per `DESIGN.md` 4.3.
+                TabChip(hue = wholeAppHue(), labelKey = "projects.tab")
+                Spacer(Modifier.height(Space.s))
                 Text(
                     text = strings["nav.projects"],
-                    style = HealthTrail.type.displayL,
+                    style = HealthTrail.type.displayM,
                     color = colors.ink,
                 )
-                Spacer(Modifier.height(Space.s))
+                Spacer(Modifier.height(Space.xs))
                 Text(
                     text = strings["projects.subtitle"],
                     style = HealthTrail.type.bodyM,
                     color = colors.ink2,
                 )
-                Spacer(Modifier.height(Space.l))
+                Spacer(Modifier.height(Space.cardGap))
             }
 
             if (projects.isEmpty()) {
@@ -101,7 +115,18 @@ fun ProjectsScreen(
                 }
             }
 
-            for (project in projects) {
+            // **Live projects lead, finished ones fold**, per law 1 and law 4:
+            // a finished group collapses into a fold rather than sitting among
+            // the ones that still need something.
+            //
+            // **Finished is not hidden and never reads as an achievement
+            // count.** The fold names them and counts them, and the count is a
+            // fact about the list rather than a score on the person, per rule
+            // 13. Nothing here says "3 of 7 done".
+            val live = projects.filterNot { it.isFinished }
+            val finished = projects.filter { it.isFinished }
+
+            for (project in live) {
                 item(key = project.id) {
                     ProjectRow(
                         project = project,
@@ -112,6 +137,31 @@ fun ProjectsScreen(
                 }
             }
 
+            if (finished.isNotEmpty()) {
+                item {
+                    FoldRow(
+                        labelKey = "projects.finished",
+                        expanded = finishedOpen,
+                        onToggle = { finishedOpen = !finishedOpen },
+                        count = finished.size.toString(),
+                        modifier = Modifier.testTag(ProjectTags.FINISHED_FOLD),
+                    )
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+                if (finishedOpen) {
+                    for (project in finished) {
+                        item(key = project.id) {
+                            ProjectRow(
+                                project = project,
+                                onOpen = { onOpen(project) },
+                                onRemove = { onRemove(project) },
+                            )
+                            Spacer(Modifier.height(Space.cardGap))
+                        }
+                    }
+                }
+            }
+
             item {
                 Spacer(Modifier.height(Space.s))
                 QuietButton(
@@ -119,9 +169,10 @@ fun ProjectsScreen(
                     onClick = onStart,
                     modifier = Modifier.fillMaxWidth().testTag(ProjectTags.START),
                 )
-                // The capture button sits over the bottom of this destination,
-                // so the last thing in the list needs room to clear it.
-                Spacer(Modifier.height(Space.xxl))
+                // The FAB sits over the bottom of this destination, so the last
+                // thing in the list needs room to scroll fully clear of it,
+                // from the token rather than from arithmetic here. D81.
+                Spacer(Modifier.height(fabScrollClearance))
             }
         }
     }

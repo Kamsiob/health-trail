@@ -469,6 +469,8 @@
   "docs.edit.title": "修改已填写的内容",
   "appts.edit.title": "修改已填写的内容",
   "projects.subtitle": "漫长的流程：申请、申诉、索取。每一项都是一份步骤清单，以及您在等谁的记录。",
+  "projects.tab": "事项",
+  "projects.finished": "已完成",
   "projects.empty": "尚未开始。这些事情往往要花几个月、打十几通电话，应用会替您串起来。",
   "projects.start": "开始一项",
   "projects.start.title": "您要处理哪一项？",

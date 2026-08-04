@@ -469,6 +469,8 @@
   "docs.edit.title": "Change what you wrote",
   "appts.edit.title": "Change what you wrote",
   "projects.subtitle": "The long processes: applications, appeals, requests. Each one is a list of steps and a note of who you are waiting on.",
+  "projects.tab": "Projects",
+  "projects.finished": "Finished",
   "projects.empty": "Nothing started. These are the things that take months and a dozen phone calls, and the app keeps the thread of them.",
   "projects.start": "Start one",
   "projects.start.title": "What are you taking on?",
