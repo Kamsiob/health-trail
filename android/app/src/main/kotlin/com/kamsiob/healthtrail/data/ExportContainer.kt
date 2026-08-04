@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.data
 
 import android.database.sqlite.SQLiteDatabase
+import androidx.annotation.VisibleForTesting
 import java.io.File
 import java.io.InputStream
 import java.util.zip.ZipEntry
@@ -446,7 +447,8 @@ object ExportContainer {
      * day come from that nobody predicted. Asserted on a real export first: 106
      * files, longest path 76 characters, no clashes.
      */
-    private fun requireSafeName(name: String) {
+    @VisibleForTesting
+    internal fun requireSafeName(name: String) {
         require(name.all { it.code in 32..126 }) {
             "an archive entry name is not ASCII: $name"
         }
