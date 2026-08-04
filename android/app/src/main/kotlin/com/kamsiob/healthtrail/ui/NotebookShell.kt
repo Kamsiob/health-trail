@@ -2573,7 +2573,7 @@ private data class Removal(
 /**
  * The name the file picker opens with.
  *
- * The shape `contract/export-format.md` section 1 specifies, so a person with
+ * The shape `contract/EXPORT-FORMAT.md` section 1 specifies, so a person with
  * several of these can tell them apart by name alone.
  */
 private fun exportFileName(): String {

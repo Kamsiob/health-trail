@@ -22,7 +22,7 @@ import org.junit.runner.RunWith
  * are the same file, transferring one twice is free, and a corrupt transfer is
  * detectable by rehashing.
  *
- * The last is the one the export depends on. `contract/export-format.md`
+ * The last is the one the export depends on. `contract/EXPORT-FORMAT.md`
  * section 7 lists "an attachment whose hash does not match its filename" as a
  * file that must fail cleanly, and it can only be detected because the name is
  * a claim about the bytes.

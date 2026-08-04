@@ -10,7 +10,7 @@ import org.bouncycastle.crypto.params.Argon2Parameters
 /**
  * Key derivation and payload encryption for the export file.
  *
- * **Argon2id and AES-256-GCM, exactly as `contract/export-format.md` names
+ * **Argon2id and AES-256-GCM, exactly as `contract/EXPORT-FORMAT.md` names
  * them.** Neither is a preference and neither is negotiable, which is the point
  * of D51.
  *

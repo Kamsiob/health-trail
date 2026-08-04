@@ -140,6 +140,9 @@ run {
     val missing = buildList {
         if (!contractDir.resolve("schema.sql").isFile) add(contractDir.resolve("schema.sql").path)
         if (!contractDir.resolve("EXPORT-FORMAT.md").isFile) add(contractDir.resolve("EXPORT-FORMAT.md").path)
+        if (!contractDir.resolve("readable-fields.json").isFile) {
+            add(contractDir.resolve("readable-fields.json").path)
+        }
         if (!templatesDataDir.isDirectory) add(templatesDataDir.path)
     }
     if (missing.isNotEmpty()) {
@@ -176,6 +179,10 @@ val copyContractAssets by tasks.registering(Sync::class) {
 
     from(contractDir.resolve("schema.sql")) { into("contract") }
     from(contractDir.resolve("EXPORT-FORMAT.md")) { into("contract") }
+    // Which of the schema's columns the archive's readable copy renders, and
+    // why each of the rest does not. In /contract because the web version
+    // renders the same archive from the same decisions.
+    from(contractDir.resolve("readable-fields.json")) { into("contract") }
     from(templatesDataDir) {
         into("templates")
         include("*.json")
@@ -195,12 +202,88 @@ val copyContractAssets by tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir("generated/contractAssets"))
 }
 
+/**
+ * Turns `contract/readable-fields.json` into a Kotlin constant.
+ *
+ * **Generated rather than parsed at runtime, and the reason is determinism.**
+ * The archive's readable copy has to be byte identical across runs, because
+ * `contract/DATA-CONTRACT.md` 8.5's regeneration test asserts exactly that, and
+ * the field order is part of what makes it so. Parsing at runtime would put that
+ * order at the mercy of whichever JSON implementation is present, and JSON does
+ * not guarantee object key order.
+ *
+ * Generating it also means the app carries no parser for this file, the order is
+ * fixed at build time, and the whole thing is unit testable with no Android and
+ * no Robolectric.
+ *
+ * **The contract stays the single source.** This reads `/contract` and writes a
+ * build output. Nothing is hand maintained on this side, so the two cannot
+ * drift, which is D16's rule.
+ */
+val generateReadableFields by tasks.registering {
+    group = "build"
+    description = "Generates ReadableFieldMap.kt from contract/readable-fields.json."
+
+    val source = contractDir.resolve("readable-fields.json")
+    val outputDir = layout.buildDirectory.dir("generated/readableFields")
+    inputs.file(source)
+    outputs.dir(outputDir)
+
+    doLast {
+        val root = groovy.json.JsonSlurper().parse(source) as Map<*, *>
+        val file = outputDir.get().asFile.resolve(
+            "com/kamsiob/healthtrail/data/ReadableFieldMap.kt",
+        )
+        file.parentFile.mkdirs()
+        file.writeText(
+            buildString {
+                appendLine("package com.kamsiob.healthtrail.data")
+                appendLine()
+                appendLine("// Generated from contract/readable-fields.json by the build.")
+                appendLine("// Do not edit. Change the contract file instead.")
+                appendLine("//")
+                appendLine("// Which of the schema's columns the archive's readable copy renders,")
+                appendLine("// in the order it renders them. contract/DATA-CONTRACT.md 8.2 and 8.5.")
+                appendLine("internal object ReadableFieldMap {")
+                appendLine("    val tables: Map<String, ReadableArchive.TableFields> = mapOf(")
+                root.keys.sortedBy { it.toString() }.forEach { table ->
+                    val entry = root[table] as Map<*, *>
+                    val order = (entry["order"] as? List<*>).orEmpty()
+                    val columns = entry["columns"] as? Map<*, *> ?: emptyMap<Any, Any>()
+                    appendLine("        \"$table\" to ReadableArchive.TableFields(")
+                    appendLine("            listOf(")
+                    order.forEach { column ->
+                        val decision = columns[column] as? Map<*, *>
+                        val renderer = decision?.get("render")?.toString()
+                        if (!renderer.isNullOrEmpty()) {
+                            appendLine("                \"$column\" to \"$renderer\",")
+                        }
+                    }
+                    appendLine("            ),")
+                    appendLine("        ),")
+                }
+                appendLine("    )")
+                appendLine("}")
+            },
+        )
+    }
+}
+
+// A plain path rather than a Provider: the Android source set API rejects a
+// Provider because it cannot tell generated files from editable ones.
+android.sourceSets.getByName("main").kotlin.srcDir(
+    layout.buildDirectory.get().asFile.resolve("generated/readableFields"),
+)
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    dependsOn(generateReadableFields)
+}
+
 // Every variant's assets depend on the copy, including the test variants, so a
 // test can never run against assets that were not refreshed.
 tasks.withType<com.android.build.gradle.tasks.MergeSourceSetFolders>().configureEach {
     dependsOn(copyContractAssets)
 }
-tasks.named("preBuild") { dependsOn(copyContractAssets) }
+tasks.named("preBuild") { dependsOn(copyContractAssets, generateReadableFields) }
 
 dependencies {
     implementation(libs.androidx.core.ktx)

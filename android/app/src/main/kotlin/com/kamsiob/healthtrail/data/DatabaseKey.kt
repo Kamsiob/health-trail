@@ -33,7 +33,7 @@ import javax.crypto.spec.GCMParameterSpec
  * be conflated.** This key never leaves the device and the person never sees
  * it. An export is a portable file that has to open on a different device, so
  * it cannot depend on one device's keystore and uses a passphrase the person
- * chooses instead. See `contract/export-format.md`.
+ * chooses instead. See `contract/EXPORT-FORMAT.md`.
  *
  * Platform backup is switched off, so these wrapped bytes never leave the
  * device either. If they did, they would be useless without the Keystore key,
