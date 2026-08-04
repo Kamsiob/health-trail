@@ -32,6 +32,7 @@ class EntryHeadingTest {
         createdAt = 0L,
         isUnfiled = false,
         threads = emptyList(),
+        pinnedAt = null,
     )
 
     @Test

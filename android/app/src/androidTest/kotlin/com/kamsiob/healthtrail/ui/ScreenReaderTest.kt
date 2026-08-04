@@ -15,6 +15,7 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.BottomNav
+import com.kamsiob.healthtrail.ui.components.CaptureFab
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
@@ -273,20 +274,34 @@ class ScreenReaderTest {
 
     @Test
     fun theBottomNavigationLabelsEverything() {
-        // The capture button is the one control in the app with no words on it
-        // at all, so it is the one most likely to announce nothing. It carries
-        // a content description, and this is what keeps it carrying one.
         val strings = Strings.load(context)
         compose.show {
             BottomNav(
                 current = Destination.NOTEBOOK,
                 onSelect = {},
-                onCapture = {},
                 labels = { strings["nav.notebook"] },
-                captureDescription = strings["capture.button.description"],
             )
         }
         assertEverythingIsLabeled("bottom navigation")
+    }
+
+    @Test
+    fun theCaptureButtonLabelsItself() {
+        // **The one control in the app with no words on it at all**, so it is
+        // the one most likely to announce nothing. It left the navigation bar
+        // in the v4 pass and became the floating button, which is also how this
+        // test came to be calling a signature that no longer existed: the
+        // androidTest sources are not built by the unit test task, so it went
+        // unnoticed until the trail brought a row here.
+        val strings = Strings.load(context)
+        compose.show {
+            CaptureFab(
+                open = false,
+                onClick = {},
+                description = strings["capture.button.description"],
+            )
+        }
+        assertEverythingIsLabeled("the capture button")
     }
 
     // -- the sections the notebook opens onto ------------------------------
@@ -312,6 +327,7 @@ class ScreenReaderTest {
                         createdAt = 1_753_000_000_000,
                         isUnfiled = true,
                         threads = listOf(Repository.CareThread("t1", "Nursing", 0)),
+                        pinnedAt = null,
                     ),
                     // An entry with no date, which is the row most likely to
                     // announce nothing at all.
@@ -325,10 +341,23 @@ class ScreenReaderTest {
                         createdAt = 1_753_000_000_000,
                         isUnfiled = false,
                         threads = emptyList(),
+                        pinnedAt = null,
+                    ),
+                    // A pinned entry, which is the row that carries a second
+                    // control and a mark that must not be announced twice.
+                    Repository.TrailEntry(
+                        id = "e3",
+                        kind = "incident",
+                        title = "Call light not answered",
+                        body = null,
+                        occurredEdtf = "2026-07-06",
+                        occurredStart = 1_751_000_000_000,
+                        createdAt = 1_751_000_000_000,
+                        isUnfiled = false,
+                        threads = emptyList(),
+                        pinnedAt = 1_751_500_000_000,
                     ),
                 ),
-                onEditDate = {},
-                onRemove = {},
                 onBack = {},
             )
         }
@@ -853,6 +882,7 @@ class ScreenReaderTest {
                         createdAt = 1_785_000_000_000L,
                         isUnfiled = false,
                         threads = listOf(Repository.CareThread("t1", "Wound care", 0)),
+                        pinnedAt = null,
                     ),
                     people = listOf(Repository.Person("p1", "Marguerite Boateng", "Charge nurse", "555 0134", null, null)),
                     chapterId = "c1",
@@ -870,6 +900,7 @@ class ScreenReaderTest {
                 onOpenMedication = {},
                 onOpenIncident = {},
                 onRemove = {},
+                onSetPinned = {},
                 onBack = {},
             )
         }
@@ -891,6 +922,7 @@ class ScreenReaderTest {
                         createdAt = 1_785_000_000_000L,
                         isUnfiled = false,
                         threads = emptyList(),
+                        pinnedAt = null,
                     ),
                     people = emptyList(),
                     chapterId = null,
@@ -908,6 +940,7 @@ class ScreenReaderTest {
                 onOpenMedication = {},
                 onOpenIncident = {},
                 onRemove = {},
+                onSetPinned = {},
                 onBack = {},
             )
         }
@@ -972,6 +1005,7 @@ class ScreenReaderTest {
                             createdAt = 1_785_000_000_000L,
                             isUnfiled = false,
                             threads = emptyList(),
+                            pinnedAt = null,
                         ),
                     ),
                     sinceEdtf = "2026-06-01",

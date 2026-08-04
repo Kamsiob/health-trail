@@ -1,125 +1,124 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
+import com.kamsiob.healthtrail.ui.components.EdgeScrubber
+import com.kamsiob.healthtrail.ui.components.FoldRowText
+import com.kamsiob.healthtrail.ui.components.PinMark
+import com.kamsiob.healthtrail.ui.components.PinnedGroupText
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
+import com.kamsiob.healthtrail.ui.components.ScopedSearch
 import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
-import com.kamsiob.healthtrail.ui.components.focusRingAlpha
+import com.kamsiob.healthtrail.ui.components.StickySectionHeader
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
-import com.kamsiob.healthtrail.ui.theme.Trail
+import java.time.Instant
 import java.time.ZoneId
 
 object TrailTags {
     const val NAME = "trail"
+    const val SEARCH = "trail_search"
+    const val SCRUBBER = "trail_scrubber"
     fun entry(id: String) = "trail_entry_$id"
-    fun date(id: String) = "trail_date_$id"
+    fun pin(id: String) = "trail_pin_$id"
     fun month(label: String) = "trail_month_$label"
 }
-
-/** The gutter the route runs down, and where in it the line sits. */
-private val GutterWidth = 28.dp
-private val LineCenter = 9.dp
-
-/**
- * Where a node sits down the row, so it lands on the date rather than floating
- * at the card's top corner. Measured against the card's own padding and the
- * date's touch target rather than guessed, and checked on the device.
- */
-private val NodeCenterY = 40.dp
 
 /**
  * The trail: everything the person has written down, most recent first.
  *
- * **This screen is why capture was worth building.** Until it existed the app
- * took entries and never gave one back, which made every other screen a promise
- * it could not keep. The notebook counted twelve sections and opened none.
+ * **This is the screen v4's law 4 was written for.** A notebook kept for five
+ * years holds sixteen hundred entries, and every list in this app was built as
+ * though it held twelve. The four tools all land here together because they only
+ * work together: a sticky header without a scrubber tells you where you are in a
+ * scroll you cannot escape, and a scrubber without folding drops you into the
+ * middle of a wall.
  *
- * **It is the app's signature element and it is specified exactly**, in
- * `DESIGN.md` section 5.2. A dashed gold route runs down the start edge, 2dp at
- * 65% opacity, and each entry sits on it as a 12dp node ringed in the current
- * background so it reads as sitting on the line rather than beside it. The node
- * carries the entry type: gold for a call, blue for a visit, alert for an
- * incident. It was first built as a plain list of cards, which was functionally
- * correct and visually plain, which rule 14 says is not done.
+ * **The one thing, per law 1: what is at the top of the trail right now.** The
+ * newest month is open and everything older is folded and counted. A person
+ * opening this screen in a corridor sees this month; a person with ten minutes
+ * opens as far back as they like. Nothing is hidden, and every fold says what it
+ * holds and how much.
  *
- * **Months head their own runs**, through the section 5.13 group header, which
- * is how the reference file heads a month in the trail.
+ * **Pinned entries float above time itself.** In a five year record the thing
+ * somebody needs at a desk is almost never the most recent thing. It is the
+ * letter they have to quote, or the incident nobody answered. Pinning is the
+ * person saying "I keep needing this one" and it changes nothing else: no state,
+ * no category, no meaning the app added.
  *
- * **Ordered by when things happened, not by when they were typed.** A call
- * logged on Tuesday about Sunday belongs on Sunday. Entries whose date is not
- * known gather at the end under their own heading rather than being placed at
- * zero or at today, because inventing a position on a timeline is the app
- * claiming something the person never said.
+ * **The pin is not on the row.** It was, for one build, and ten pin buttons down
+ * one screen were the loudest thing on it. Pinning is a decision somebody makes
+ * a handful of times over years, so it lives on the entry screen, one tap away,
+ * and the row carries only the mark that says an entry is pinned.
  *
- * **The date is the one thing on a row that is tappable**, and tapping it opens
- * the same picker every other date in the app uses. Rule 17 requires a date to
- * be editable forever from the entry itself, and a date captured in a hallway is
- * the one most likely to be wrong. The rest of the row does not respond, which
- * is deliberate: rule 16 says a control that does nothing on press reads as
- * broken, so only the thing that responds is made to look touchable.
+ * **The search is scoped to the trail and filters as you type.** It reads what
+ * the person wrote, which is titles and notes, and it never reaches into other
+ * sections. Dates are the scrubber's job and saying so is better than quietly
+ * matching "June" against a rendered string somebody cannot see.
  *
- * **The route draws itself in once**, over 400ms with the nodes staggered 30ms
- * behind it, per section 6. It happens on entry to the screen and never on
- * scroll. With reduced motion on it renders immediately, through the same
- * tokens, because a spec built inline is one that setting cannot reach.
+ * **The route is still the app's signature**, per `DESIGN.md` 5.2 and the
+ * inventory's "a spine for anything sequential". A dashed gold line runs down
+ * the start edge, each entry sits on it as a node carrying its kind, and mono
+ * markers say when a real gap passed. It mirrors for free, because the gutter is
+ * the start edge rather than the left one.
+ *
+ * **The rows lost their cards in the v4 pass.** An entry in a list is a date and
+ * a line about what happened, which rule 22 calls a dense row; the note it
+ * carries is three or more lines somebody reads, which is the entry screen. The
+ * clamped body preview went with the card, and with it the odd middle state
+ * where a list row showed most of a note and asked you to open it for the rest.
+ *
+ * **The date is no longer a button inside a row that is also a button.** Law 2
+ * wants one costume per thing, and a row you tap to open with a second target
+ * inside it is two. Rule 17 is kept where it belongs: the entry screen edits its
+ * own date, one tap away, and that screen already did.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TrailScreen(
     entries: List<Repository.TrailEntry>,
-    /** Opens the entry itself, which nothing could do until 2026-08-02. */
     onOpen: (Repository.TrailEntry) -> Unit,
-    onEditDate: (Repository.TrailEntry) -> Unit,
-    onRemove: (Repository.TrailEntry) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     zone: ZoneId = ZoneId.systemDefault(),
@@ -127,18 +126,58 @@ fun TrailScreen(
     val strings = LocalStrings.current
     val motion = LocalMotion.current
 
-    // Grouped by the month a thing happened in, keeping the order the query
-    // already put them in. Entries with no date fall into their own group at
-    // the end, which is where the ordering already placed them.
-    val groups = remember(entries, strings, zone) {
-        entries.groupBy { entry ->
-            entry.occurredStart
-                ?.let { EventDateText.monthHeading(strings, it, zone) }
-                ?: strings["date.unknown"]
+    var query by rememberSaveable { mutableStateOf("") }
+    var openMonths by rememberSaveable { mutableStateOf(emptySet<String>()) }
+    var earlierOpen by rememberSaveable { mutableStateOf(false) }
+    // Which month the scrubber asked for, held until the plan that contains it
+    // has been built. A scrub can open several folds, and the row it wants does
+    // not exist in the list until the next composition.
+    var scrollWanted by remember { mutableStateOf<String?>(null) }
+
+    val listState = rememberLazyListState()
+
+    val plan = remember(entries, strings, zone, query, openMonths, earlierOpen) {
+        planTrail(
+            entries = entries,
+            strings = strings,
+            zone = zone,
+            query = query,
+            openMonths = openMonths,
+            earlierOpen = earlierOpen,
+        )
+    }
+
+    // **How many items sit above the plan**, which is what turns a plan index
+    // into a list index. The scaffold's own header is one; the search field is
+    // another when the notebook is large enough to have earned it.
+    //
+    // It was hard coded to one for a build, and the scrubber landed a row early
+    // every time: the month header it aimed at arrived with the fold row above
+    // it still on screen, so a jump to 2022 looked like a jump to the bottom of
+    // 2023. Found by scrubbing on the phone, not by reading this.
+    val headerItems = 1 + if (entries.size >= MIN_SEARCH_ENTRIES) 1 else 0
+
+    // **Where the list actually is**, read from the topmost visible row rather
+    // than assumed. Derived rather than remembered, so it recomputes while a
+    // finger is moving and not one frame after it stops.
+    val currentYear by remember(plan) {
+        derivedStateOf {
+            val row = listState.firstVisibleItemIndex - headerItems
+            val label = plan.rowYears.getOrNull(row.coerceAtLeast(0))
+            plan.years.indexOfFirst { it.label == label }.coerceAtLeast(0)
         }
     }
 
-    // The one ambient flourish, per section 6, and it runs once per screen
+    LaunchedEffect(plan, scrollWanted) {
+        val wanted = scrollWanted ?: return@LaunchedEffect
+        val index = plan.rows.indexOfFirst { it is TrailRowSpec.Month && it.label == wanted }
+        if (index >= 0) {
+            listState.scrollToItem(index + headerItems)
+            scrollWanted = null
+        }
+    }
+
+    // The one ambient flourish, per section 10, and it runs once per screen
     // entry rather than on every recomposition.
     var drawn by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { drawn = true }
@@ -156,76 +195,345 @@ fun TrailScreen(
         modifier = modifier,
         section = Repository.Section.TRAIL,
         headingKey = "trail.heading",
+        listState = listState,
+        rail = if (plan.years.size >= MIN_SCRUB_YEARS && query.isBlank()) {
+            {
+                EdgeScrubber(
+                    labels = plan.years.map { it.label },
+                    currentIndex = currentYear,
+                    onScrub = { index ->
+                        val year = plan.years.getOrNull(index) ?: return@EdgeScrubber
+                        // **Scrubbing opens what it lands in.** Dropping somebody
+                        // onto a closed fold for the year they asked for would be
+                        // the app hearing the request and answering with a door.
+                        openMonths = openMonths + year.months
+                        earlierOpen = true
+                        scrollWanted = year.firstMonth
+                    },
+                    description = strings["trail.scrubber"],
+                    modifier = Modifier.testTag(TrailTags.SCRUBBER),
+                )
+            }
+        } else {
+            null
+        },
     ) {
         if (entries.isEmpty()) {
-            item { SectionEmpty(name = TrailTags.NAME, text = strings["trail.empty"], section = Repository.Section.TRAIL, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }
+            item {
+                SectionEmpty(
+                    name = TrailTags.NAME,
+                    text = strings["trail.empty"],
+                    section = Repository.Section.TRAIL,
+                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
+                )
+            }
+            return@SectionScaffold
         }
 
-        var index = 0
-        for ((month, inMonth) in groups) {
-            item(key = "month_$month") {
-                // The route runs behind the heading too, so the path reads as
-                // one path rather than as several that happen to line up.
-                RouteRow(draw = draw, continuesAbove = index > 0, continuesBelow = true) {
-                    Column {
-                        Spacer(Modifier.height(Space.s))
-                        GroupHeaderText(
-                            label = month,
-                            modifier = Modifier.testTag(TrailTags.month(month)),
-                        )
-                        Spacer(Modifier.height(Space.headerGap))
-                    }
-                }
+        // The search sits above everything including the pins, because it is the
+        // way into a list this size and burying it under a group nobody has
+        // pinned to yet would be the first thing to go wrong at year three.
+        if (entries.size >= MIN_SEARCH_ENTRIES) {
+            item(key = "search") {
+                ScopedSearch(
+                    value = query,
+                    onValueChange = { query = it },
+                    hint = strings("trail.search.hint", "count" to entries.size),
+                    clearLabel = strings["trail.search.clear"],
+                    testTag = TrailTags.SEARCH,
+                )
+                Spacer(Modifier.height(Space.cardGap))
             }
+        }
 
-            for (entry in inMonth) {
-                val position = index
-                index += 1
-                // **The row above this one on screen, taken from the whole
-                // trail rather than from this month's run.**
-                //
-                // Scoping it to the month was wrong and it was wrong in the one
-                // case that matters: a gap large enough to be worth saying is
-                // usually a gap that crosses a month boundary, and those
-                // entries are the first in their group, so the marker never
-                // appeared. Found by putting two entries three weeks apart on
-                // the phone and watching nothing happen.
-                val previous = entries.getOrNull(position - 1)
-                item(key = entry.id) {
+        if (query.isNotBlank()) {
+            item(key = "found") {
+                Text(
+                    text = strings("trail.search.count", "count" to plan.rows.count {
+                        it is TrailRowSpec.Entry
+                    }),
+                    style = HealthTrail.type.mono,
+                    color = HealthTrail.colors.ink2,
+                    modifier = Modifier.padding(bottom = Space.s),
+                )
+            }
+        }
+
+        for ((index, row) in plan.rows.withIndex()) {
+            when (row) {
+                is TrailRowSpec.Pinned -> item(key = "pinned") {
+                    PinnedGroupText(label = strings["trail.pinned"]) {
+                        Column {
+                            for (entry in row.entries) {
+                                TrailRow(entry = entry, onOpen = { onOpen(entry) })
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+
+                is TrailRowSpec.Month -> stickyHeader(key = "month_${row.label}") {
+                    StickySectionHeader(
+                        title = row.label,
+                        count = strings("trail.month.count", "count" to row.count),
+                        modifier = Modifier.testTag(TrailTags.month(row.label)),
+                    )
+                }
+
+                is TrailRowSpec.Fold -> item(key = "fold_${row.label}") {
+                    FoldRowText(
+                        label = row.label,
+                        expanded = false,
+                        onToggle = {
+                            if (row.isEarlier) earlierOpen = true
+                            else openMonths = openMonths + row.label
+                        },
+                        count = row.count.toString(),
+                        modifier = Modifier.testTag(TrailTags.month(row.label)),
+                    )
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+
+                is TrailRowSpec.Entry -> item(key = row.entry.id) {
                     RouteRow(
                         draw = draw,
-                        continuesAbove = true,
-                        continuesBelow = position < entries.size - 1,
-                        node = nodeColor(entry.kind),
-                        nodeDelayMillis = position * motion.trailNodeStaggerMillis,
+                        continuesAbove = row.continuesAbove,
+                        continuesBelow = row.continuesBelow,
+                        node = nodeColor(row.entry.kind),
+                        nodeDelayMillis = index * motion.trailNodeStaggerMillis,
                     ) {
                         Column {
-                            // **The gap to the entry above, when there is one
-                            // worth saying.** Section 5.2.4. A list of the same
-                            // rows reads as a week of calls or as somebody left
-                            // alone for four months, and only the dates say
-                            // which, where nobody does the arithmetic.
-                            //
-                            // The word is "earlier" rather than "later" because
-                            // this list runs newest first, so reading downward
-                            // is travelling backward. A marker whose direction
-                            // disagrees with the list is worse than none.
-                            gapAbove(entry, previous, zone)?.let { gap ->
+                            row.gap?.let { gap ->
                                 DistanceMarker(strings(gap.key, "count" to gap.count))
                                 Spacer(Modifier.height(Space.s))
                             }
-                            TrailRow(
-                                entry = entry,
-                                onOpen = { onOpen(entry) },
-                                onEditDate = { onEditDate(entry) },
-                                onRemove = { onRemove(entry) },
-                            )
-                            Spacer(Modifier.height(Space.cardGap))
+                            TrailRow(entry = row.entry, onOpen = { onOpen(row.entry) })
                         }
                     }
                 }
             }
         }
+
+        if (query.isNotBlank() && plan.rows.none { it is TrailRowSpec.Entry }) {
+            item(key = "nothing") {
+                Text(
+                    text = strings["trail.search.none"],
+                    style = HealthTrail.type.bodyM,
+                    color = HealthTrail.colors.ink2,
+                    modifier = Modifier.padding(vertical = Space.l),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * How few entries make the two big-list tools furniture rather than help.
+ *
+ * Both the scrubber and the search field are explicit in `DESIGN.md` section 7
+ * about not appearing on a list that fits in a screenful or two. A search field
+ * over eight entries costs more to read than the list under it.
+ */
+private const val MIN_SEARCH_ENTRIES = 12
+private const val MIN_SCRUB_YEARS = 2
+
+/**
+ * How many months stay visible as their own folds before the rest become
+ * "Earlier".
+ *
+ * Three, which is the reference file's shape: the current month open, a couple
+ * of named months behind it, and one door to the whole record. Naming twelve
+ * months is a wall of doors, and a person who wants March of last year reaches
+ * it with the scrubber rather than by reading a list of months.
+ */
+private const val NAMED_MONTHS = 3
+
+/** What the trail draws, in order, once the folding has been worked out. */
+private sealed interface TrailRowSpec {
+    /** The pinned run, above time itself. */
+    data class Pinned(val entries: List<Repository.TrailEntry>) : TrailRowSpec
+
+    /** An open month's sticky header, carrying its own count. */
+    data class Month(val label: String, val count: Int) : TrailRowSpec
+
+    /** A closed month, or the single door to everything older. */
+    data class Fold(val label: String, val count: Int, val isEarlier: Boolean) : TrailRowSpec
+
+    /** One entry on the route. */
+    data class Entry(
+        val entry: Repository.TrailEntry,
+        val gap: Distance.Gap?,
+        val continuesAbove: Boolean,
+        val continuesBelow: Boolean,
+    ) : TrailRowSpec
+}
+
+/** A year the scrubber can jump to, and what opening it has to open. */
+private data class TrailYear(
+    val label: String,
+    val firstMonth: String,
+    val months: Set<String>,
+)
+
+private data class TrailPlan(
+    val rows: List<TrailRowSpec>,
+    val years: List<TrailYear>,
+    /**
+     * Which year each row belongs to, position for position with [rows].
+     *
+     * **It is what lets the scrubber say where you actually are.** The first
+     * build lit the newest year permanently, which is a control reporting a
+     * position it never checked: it looked right on a screen that had not been
+     * scrolled and was wrong from the first swipe.
+     */
+    val rowYears: List<String?>,
+)
+
+/**
+ * Works out the whole screen before any of it is drawn.
+ *
+ * **It is a pure function over the entries and what the person has opened**,
+ * which is what lets the folding be checked without a phone and, more usefully,
+ * what lets the scrubber know which list index a year lands on. A layout that
+ * decides its own shape while it is being emitted cannot answer that question.
+ */
+private fun planTrail(
+    entries: List<Repository.TrailEntry>,
+    strings: Strings,
+    zone: ZoneId,
+    query: String,
+    openMonths: Set<String>,
+    earlierOpen: Boolean,
+): TrailPlan {
+    val rows = mutableListOf<TrailRowSpec>()
+    val rowYears = mutableListOf<String?>()
+    fun add(row: TrailRowSpec, year: String?) {
+        rows += row
+        rowYears += year
+    }
+
+    val term = query.trim().lowercase()
+    if (term.isNotEmpty()) {
+        // **Flat, and no folds.** Somebody who has typed a word is looking at a
+        // handful of results, and folding those by month would hide the answer
+        // behind the structure the search exists to escape.
+        val found = entries.filter { entry ->
+            entry.title?.lowercase()?.contains(term) == true ||
+                entry.body?.lowercase()?.contains(term) == true
+        }
+        found.forEachIndexed { index, entry ->
+            add(
+                TrailRowSpec.Entry(
+                    entry = entry,
+                    gap = null,
+                    continuesAbove = index > 0,
+                    continuesBelow = index < found.size - 1,
+                ),
+                null,
+            )
+        }
+        return TrailPlan(rows, emptyList(), rowYears)
+    }
+
+    val pinned = entries.filter { it.pinnedAt != null }.sortedByDescending { it.pinnedAt }
+    if (pinned.isNotEmpty()) add(TrailRowSpec.Pinned(pinned), null)
+
+    // Grouped by the month a thing happened in, keeping the order the query
+    // already put them in. Entries with no date fall into their own group at the
+    // end, which is where the ordering already placed them.
+    val byMonth = LinkedHashMap<String, MutableList<Repository.TrailEntry>>()
+    for (entry in entries) {
+        val label = entry.occurredStart
+            ?.let { EventDateText.monthHeading(strings, it, zone) }
+            ?: strings["date.unknown"]
+        byMonth.getOrPut(label) { mutableListOf() } += entry
+    }
+
+    val months = byMonth.keys.toList()
+    val positions = entries.withIndex().associate { (index, entry) -> entry.id to index }
+    val years = yearsOf(byMonth, zone)
+    val yearOfMonth = buildMap {
+        for (year in years) for (label in year.months) put(label, year.label)
+    }
+
+    months.forEachIndexed { monthIndex, label ->
+        val inMonth = byMonth.getValue(label)
+        // The newest month is always open. Everything else opens because the
+        // person opened it, or because the scrubber landed in it.
+        val open = monthIndex == 0 || label in openMonths
+        val beyondNamed = monthIndex > NAMED_MONTHS
+
+        if (beyondNamed && !earlierOpen) {
+            if (months.getOrNull(monthIndex - 1) != null && rows.none { it is TrailRowSpec.Fold && it.isEarlier }) {
+                val remaining = months.drop(monthIndex).sumOf { byMonth.getValue(it).size }
+                add(
+                    TrailRowSpec.Fold(strings["trail.earlier"], remaining, isEarlier = true),
+                    yearOfMonth[label],
+                )
+            }
+            return@forEachIndexed
+        }
+
+        if (!open) {
+            add(TrailRowSpec.Fold(label, inMonth.size, isEarlier = false), yearOfMonth[label])
+            return@forEachIndexed
+        }
+
+        add(TrailRowSpec.Month(label, inMonth.size), yearOfMonth[label])
+        for (entry in inMonth) {
+            val position = positions.getValue(entry.id)
+            // **The row above this one in the whole trail, not in this month.**
+            // Scoping it to the month was wrong in the one case that matters: a
+            // gap worth saying usually crosses a month boundary, and those
+            // entries are the first in their group, so the marker never
+            // appeared.
+            val previous = entries.getOrNull(position - 1)
+            add(
+                TrailRowSpec.Entry(
+                    entry = entry,
+                    gap = gapAbove(entry, previous, zone),
+                    continuesAbove = true,
+                    continuesBelow = position < entries.size - 1,
+                ),
+                yearOfMonth[label],
+            )
+        }
+    }
+
+    return TrailPlan(rows, years, rowYears)
+}
+
+/**
+ * The years the scrubber offers, newest first, each knowing which months it has
+ * to open to show itself.
+ *
+ * **Two digits, because the strip is a margin.** "26" beside "25" is read as a
+ * year by anybody who has used a filing cabinet, and four digits at that size is
+ * either unreadable or a column the content has to give up.
+ *
+ * Entries whose date is unknown belong to no year and are not offered. They sit
+ * under their own heading at the end of the trail, which the scrubber's last
+ * label already lands beside, and inventing a year for them would be the app
+ * claiming something the person never said.
+ */
+private fun yearsOf(
+    byMonth: Map<String, List<Repository.TrailEntry>>,
+    zone: ZoneId,
+): List<TrailYear> {
+    val grouped = LinkedHashMap<Int, MutableSet<String>>()
+    val firstMonth = LinkedHashMap<Int, String>()
+    for ((label, inMonth) in byMonth) {
+        val millis = inMonth.firstNotNullOfOrNull { it.occurredStart } ?: continue
+        val year = Instant.ofEpochMilli(millis).atZone(zone).year
+        grouped.getOrPut(year) { linkedSetOf() } += label
+        firstMonth.putIfAbsent(year, label)
+    }
+    return grouped.entries.map { (year, labels) ->
+        TrailYear(
+            label = (year % 100).toString().padStart(2, '0'),
+            firstMonth = firstMonth.getValue(year),
+            months = labels,
+        )
     }
 }
 
@@ -233,11 +541,11 @@ fun TrailScreen(
  * The distance from the row above to this one, or null when there is nothing
  * worth saying.
  *
- * **An entry whose date is not a day never produces a marker.** A month, a
- * year, or an unknown date carries a real range rather than a point, and the
- * distance between two ranges is not a number the person gave. Rule 17 and
- * `DESIGN.md` 10.9 both say the app never invents precision, and a confident
- * "Three weeks earlier" derived from two vague months would be exactly that.
+ * **An entry whose date is not a day never produces a marker.** A month, a year,
+ * or an unknown date carries a real range rather than a point, and the distance
+ * between two ranges is not a number the person gave. Rule 17 and `DESIGN.md`
+ * 10.9 both say the app never invents precision, and a confident "Three weeks
+ * earlier" derived from two vague months would be exactly that.
  */
 private fun gapAbove(
     entry: Repository.TrailEntry,
@@ -256,8 +564,6 @@ private fun gapAbove(
 /**
  * True when this date names a single day or a moment within one.
  *
- * A month, a season, a year, or an unknown date carries a range rather than a
- * point, and the distance between two ranges is not a number the person gave.
  * Read through `Edtf.parse` rather than by inspecting the string here, so there
  * is one parser and one answer.
  */
@@ -270,15 +576,9 @@ private fun isDayPrecise(edtf: String?): Boolean {
  * One position on the route: the dashed line, an optional node, and whatever
  * sits beside them.
  *
- * The line is drawn to the full height of the row including the gap beneath the
- * card, which is what makes it continuous rather than a series of segments with
- * daylight between them. `IntrinsicSize.Min` is what lets the gutter know how
- * tall the content beside it turned out to be.
- *
- * **It mirrors for free.** The gutter is the start edge rather than the left
- * one, so in Arabic the whole trail moves to the other side and the content
- * flows from it, per section 8. A timeline that reads left to right in a right
- * to left layout is broken rather than stylish.
+ * Drawn by the shared spine rather than here, so the chapter list and the care
+ * threads read as the same shape rather than as unrelated lists.
+ * `DESIGN.md` section 5.2.3.
  */
 @Composable
 private fun RouteRow(
@@ -290,14 +590,6 @@ private fun RouteRow(
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
-    val motion = LocalMotion.current
-
-    // **Drawn by the shared spine rather than here.** This was the only place
-    // the trail vocabulary existed for a week, which is how a whole visual
-    // system ended up sitting on one screen doing nothing for the other
-    // twenty. The drawing moved to `SpineRow` unchanged, at the same geometry,
-    // and the chapter list and the care threads now read as the same shape
-    // rather than as unrelated lists. `DESIGN.md` section 5.2.3.
     SpineRow(
         continuesAbove = continuesAbove,
         continuesBelow = continuesBelow,
@@ -312,10 +604,10 @@ private fun RouteRow(
 /**
  * What the node's color says the entry is, per section 5.2.
  *
- * The three the design names each get their own. Everything else takes the
- * quiet non-text ink rather than borrowing one of the three, because a
- * measurement wearing the incident color would be the app saying something
- * about it that is not true.
+ * The three the design names each get their own. Everything else takes the quiet
+ * non-text ink rather than borrowing one of the three, because a measurement
+ * wearing the incident color would be the app saying something about it that is
+ * not true.
  */
 @Composable
 private fun nodeColor(kind: String): Color {
@@ -329,97 +621,78 @@ private fun nodeColor(kind: String): Color {
 }
 
 /**
- * One entry, as the trail shows it.
+ * One entry, as the trail shows it: a mono eyebrow carrying the date and what
+ * kind of thing it was, then the line the person wrote.
  *
- * The hierarchy is rule 15's order rather than uniform weight: what happened
- * carries the most, in Display S; the date is a quiet mono eyebrow above it;
- * the note recedes into Body M; the threads it runs through sit last as the
- * route dots the rest of the app already uses for them.
+ * The whole row is one target and it opens the entry. The pin is the one other
+ * thing on it, and it is a real control with its own label rather than a mark
+ * that only responds to a gesture nobody was told about.
  */
 @Composable
-private fun TrailRow(
-    entry: Repository.TrailEntry,
-    onOpen: () -> Unit,
-    onEditDate: () -> Unit,
-    onRemove: () -> Unit,
-) {
+private fun TrailRow(entry: Repository.TrailEntry, onOpen: () -> Unit) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
     val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
+    val surface by pressedSurface(interaction, Color.Transparent)
+    val date = EventDateText.render(strings, entry.occurredEdtf)
+    val kind = strings[kindNameKey(entry.kind)]
+    val title = entry.title?.takeIf { it.isNotBlank() } ?: kind
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(Radius.card)
             .background(surface)
-            // **The row opens the entry now.** Its only tappable part was its
-            // date, so a person could correct when something happened and could
-            // never open the thing itself, which is the dead end #46 exists to
-            // remove.
-            //
-            // Through the long press modifier's own tap slot rather than beside
-            // it: `detectTapGestures` consumes the tap, so a separate
-            // `clickable` never fires, and the row silently ignored being
-            // tapped until this was found on the phone.
-            .removableByLongPress(
-                label = strings["remove.hint"],
-                onLongPress = onRemove,
-                onTap = onOpen,
+            .clickable(
                 interactionSource = interaction,
+                // The surface is the answer to the touch, per 5.14. A ripple on
+                // top would be a second, louder answer to the same tap.
+                indication = null,
+                role = Role.Button,
+                onClick = onOpen,
             )
             .testTag(TrailTags.entry(entry.id))
-            .padding(Space.cardPadding),
+            // One stop for the reader. The eyebrow and the line are one thing,
+            // and a reader that stopped twice per entry would stop three
+            // thousand times in this notebook.
+            .semantics(mergeDescendants = true) { }
+            .padding(vertical = Space.s, horizontal = Space.sm),
     ) {
-        EditableDate(entry = entry, onClick = onEditDate)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // **State, not a control.** The pin itself is on the entry screen.
+            // A mark here says this is one of the ones you keep coming back to;
+            // it does not offer to change that, because sixteen hundred rows
+            // carrying a second target was the loudest thing on the screen.
+            if (entry.pinnedAt != null) {
+                PinMark(tint = colors.goldInk)
+                Spacer(Modifier.width(Space.xs))
+            }
+            Text(
+                text = strings("trail.row.eyebrow", "date" to date, "kind" to kind),
+                style = HealthTrail.type.mono,
+                color = colors.ink2,
+            )
+        }
 
         Spacer(Modifier.height(Space.xs))
 
-        // A blank title is normal and always has been: the capture form
-        // requires nothing. The kind is what the app knows for certain, so the
-        // row never shows an empty line where the subject should be.
-        Text(
-            text = entry.title?.takeIf { it.isNotBlank() } ?: strings[kindNameKey(entry.kind)],
-            style = HealthTrail.type.displayS,
-            color = colors.ink,
-        )
-
-        entry.body?.takeIf { it.isNotBlank() }?.let { body ->
-            Spacer(Modifier.height(Space.xs))
-            // **Clamped, and it could not be until tonight.**
-            //
-            // A note has no length limit and should not have one: somebody
-            // writing down what a nurse said at 2am writes as much as they
-            // need. Rendered whole in the list, one such note made a single
-            // row taller than several screens, and the trail stopped being a
-            // list of what happened. Seen with a month six fixture, where the
-            // generator writes a deliberately enormous entry for exactly this.
-            //
-            // This was the right answer only once a row could be opened. Until
-            // the entry screen landed, clamping here would have hidden text
-            // with nowhere to read it, which is the truncation rule 11 forbids.
-            // Now the full note is one tap away and the list can be a list.
-            Text(
-                text = body,
-                style = HealthTrail.type.bodyM,
-                color = colors.ink2,
-                maxLines = TRAIL_BODY_LINES,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+        // A blank title is normal and always has been: the capture form requires
+        // nothing. The kind is what the app knows for certain, so the row never
+        // shows an empty line where the subject should be.
+        Text(text = title, style = HealthTrail.type.bodyL, color = colors.ink)
 
         if (entry.threads.isNotEmpty()) {
-            Spacer(Modifier.height(Space.sm))
+            Spacer(Modifier.height(Space.xs))
             ThreadTrace(threads = entry.threads)
         }
 
-        // The tray already offers to file this. Saying so here is the other
-        // half of that link, per rule 18: the tray shows the entry, so the
-        // entry says it is in the tray. Stated rather than styled as a warning,
-        // because being unfiled is a state and not a mistake.
+        // The tray already offers to file this. Saying so here is the other half
+        // of that link, per rule 18: the tray shows the entry, so the entry says
+        // it is in the tray. Stated rather than styled as a warning, because
+        // being unfiled is a state and not a mistake.
         if (entry.isUnfiled) {
-            Spacer(Modifier.height(Space.s))
+            Spacer(Modifier.height(Space.xs))
             Text(
                 text = strings["trail.unfiled"],
                 style = HealthTrail.type.mono,
@@ -427,52 +700,8 @@ private fun TrailRow(
             )
         }
     }
-}
 
-/**
- * The date, as an eyebrow that can be corrected.
- *
- * It renders through [EventDateText] like every other date in the app, so an
- * entry saved with "Not sure" says the date is not known rather than showing
- * the day it was typed, and a month never collapses to its first day.
- *
- * It carries a content description naming what tapping it does, because
- * "August 18, 2026" read aloud on its own tells a reader user nothing about why
- * it is focusable.
- */
-@Composable
-private fun EditableDate(entry: Repository.TrailEntry, onClick: () -> Unit) {
-    val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-    val rendered = EventDateText.render(strings, entry.occurredEdtf)
-
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-    val ring by focusRingAlpha(interaction)
-
-    Box(
-        modifier = Modifier
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.tile)
-            .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
-            .clickable(
-                interactionSource = interaction,
-                // The surface is the answer to the touch, per 5.14. A ripple on
-                // top would be a second, louder answer to the same tap.
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .testTag(TrailTags.date(entry.id))
-            .semantics {
-                contentDescription = strings("trail.date.action", "date" to rendered)
-            }
-            .padding(vertical = Space.s, horizontal = Space.s),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Text(text = rendered, style = HealthTrail.type.mono, color = colors.ink2)
-    }
+    Spacer(Modifier.height(Space.cardGap))
 }
 
 /**
@@ -491,12 +720,8 @@ private fun ThreadTrace(threads: List<Repository.CareThread>) {
     Column {
         for (thread in threads) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // The thread's route rather than a dot, per 5.2.2, so it is
-                // recognizably the same thread wherever it appears.
                 RouteSwatch(
-                    color = colors.threadRoutes[
-                        thread.colorIndex % colors.threadRoutes.size
-                    ],
+                    color = colors.threadRoutes[thread.colorIndex % colors.threadRoutes.size],
                     index = thread.colorIndex,
                 )
                 Spacer(Modifier.width(Space.s))
@@ -509,19 +734,10 @@ private fun ThreadTrace(threads: List<Repository.CareThread>) {
 /**
  * The catalog key naming a kind of entry, for rows the person left untitled.
  *
- * An entry always has a kind and may have nothing else, which is what the
- * capture form promises when it says a half note beats no note.
- *
  * **A record is named with a noun, not with the button that made it.** This
  * pointed at the `capture.*` keys, so a visit already written down appeared on
  * the trail as "Log a visit": the imperative on the button the person had
- * already pressed, sitting where the description of the thing belongs. It reads
- * as an instruction rather than a record, which is the wrong thing entirely to
- * put in front of somebody looking back over six months.
- *
- * The `entry.kind.*` nouns already existed in all four catalogs for the entry
- * screen's subtitle. Every caller of this names something that has happened, so
- * every caller wanted those.
+ * already pressed, sitting where the description of the thing belongs.
  */
 internal fun kindNameKey(kind: String): String = when (kind) {
     "call" -> "entry.kind.call"
@@ -532,11 +748,3 @@ internal fun kindNameKey(kind: String): String = when (kind) {
     "document" -> "entry.kind.document"
     else -> "entry.kind.note"
 }
-
-/**
- * How much of a note the trail shows before the row is opened.
- *
- * Three, matching a search result, so a person who has learned one row has
- * learned the other. `DESIGN.md` 10.8 on typographic rhythm.
- */
-private const val TRAIL_BODY_LINES = 3

@@ -41,6 +41,7 @@ import com.kamsiob.healthtrail.ui.theme.Trail
 object EntryTags {
     const val NAME = "entry"
     const val DATE = "entry_date"
+    const val PIN = "entry_pin"
     const val REMOVE = "entry_remove"
     fun thread(id: String) = "entry_thread_$id"
     fun person(id: String) = "entry_person_$id"
@@ -79,6 +80,17 @@ fun EntryScreen(
     onOpenMedication: () -> Unit,
     onOpenIncident: () -> Unit,
     onRemove: () -> Unit,
+    /**
+     * Pin this to the top of the trail, or take the pin out.
+     *
+     * **The pin lives here rather than on every row of the trail.** It was built
+     * on the row first, which put a second control on sixteen hundred rows to
+     * serve a decision somebody makes a handful of times. Seen on the phone, ten
+     * pin buttons down one screen were the loudest thing on it, competing with
+     * the words they were sitting beside. Rule 15: uniform weight is not
+     * neutral. The trail still shows the mark on a pinned entry, as state.
+     */
+    onSetPinned: (Boolean) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     backLabelKey: String = "section.back",
@@ -226,6 +238,16 @@ fun EntryScreen(
 
         item {
             Spacer(Modifier.height(Space.sectionGap))
+            // **A bordered pill, because it does something now and is not why
+            // the screen was opened**, which is law 2's definition of the
+            // smaller action. The label says what the tap will do rather than
+            // what the state is, so it is an offer rather than a report.
+            QuietButton(
+                label = strings[if (entry.pinnedAt != null) "trail.unpin" else "trail.pin"],
+                onClick = { onSetPinned(entry.pinnedAt == null) },
+                modifier = Modifier.fillMaxWidth().testTag(EntryTags.PIN),
+            )
+            Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["entry.remove"],
                 onClick = onRemove,

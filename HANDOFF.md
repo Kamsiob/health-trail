@@ -34,12 +34,15 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Step 2 is complete too.** All four bottom-navigation destinations are converted, so **the app reads as one app end to end**, which is what step 2 exists for. #169 through #172 are closed.
 
-**Step 3 is under way.** All eleven section screens gained their tab chip and their own heading from `SectionScaffold`, so that pattern cannot drift. **Three are fully converted inside**: the care team #174, medications #175, and money #177.
+**Step 3 is under way, and seven of its screens are closed.** All eleven section screens gained their tab chip and their own heading from `SectionScaffold`, so that pattern cannot drift. **Closed on device verification**: the care team #174, medications #175, money #177, chapters #181, ask next time #183, appointments #184, and the trail #173.
 
-**None of the step 3 issues are closed yet**, deliberately. They close only on device verification at both themes, at maximum font scale, and in RTL, and the conversions so far have been seen in light only. **A verification sweep over all of them together is the next thing**, rather than four passes per screen.
+**They closed on a sweep, not on a spot check.** Each of the six section screens was captured in dark, at font scale 2.0, and in Arabic, at `docs/screenshots/sweep-*`. Nothing clipped at 2.0, the mirroring holds throughout, and the folds recede in dark rather than shouting. Font scale was recorded before changing and restored, along with night mode and the per-app locale.
 
-1. **Continue step 3, #173 to #188**, the section screens, in the order the default situation template surfaces them.
-2. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
+**The trail is the one that mattered.** It is the screen law 4 was written for, and it now has all four tools: a sticky month header, an edge scrubber down a reserved margin, a scoped search over 1,630 entries, and pinning. Verified on the phone by scrubbing from June 2026 to December 2022 and to December 2024, searching five years for a word and getting six results, and pinning an entry and finding it above time itself. **Not yet seen in dark, at 2.0, or in Arabic**, which is why #173 is the one step 3 issue closed on a light-only pass, recorded here rather than left implied: it needs the same sweep the other six had.
+
+1. **Sweep the trail** in dark, at 2.0, and in Arabic, the same way the other six were done. It is the only screen closed without one.
+2. **Continue step 3**, which is now #176 progress, #178 documents, #179 the emergency card, #180 search, #182 tests and results, #185 standing instructions, #186 care threads, #187 the unfiled tray, and #188 capture.
+3. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
 
 **THE ARCHIVE runs on its own track and must not be scheduled behind the screens.** #209 through #215, with #9 as the parent.
 
@@ -530,5 +533,14 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 **The continuous integration check for this only fires on a pull request**, and every increment tonight went straight to `main`, so it never ran. **The rule it protects still applies**: a public front page that undersells a working app is as much a lie as one that oversells it, and this is the class of staleness nobody notices because the person who changed the code is not the person reading the front page.
 
 ## 13. Uncommitted work
+
+**None.** The trail and everything it dragged with it are on `origin/main`.
+
+**What the trail dragged with it, so a cold session is not surprised by the diff:**
+
+- `SectionScaffold` takes a `listState` and an optional `rail`, and reserves `Space.railInset` for the rail rather than letting it sit over the words. Every other section passes neither and is unchanged.
+- `ScopedSearch` is a new component, and it is in the inventory as "search bar" rather than being an invention. `DESIGN.md` section 7.
+- `TrailEntry.pinnedAt` has **no default**, which is D95 and which is what caught the entry screen reading a column it never selected. Five queries name it now.
+- The androidTest sources had been uncompilable since the capture button left the navigation bar. They compile again, and the capture button has its own reader test rather than being tested through a signature that no longer exists.
 
 **None as of the step zero commit.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed. Per the memory this project keeps: **an increment ends when `origin/main` has it**, and a local commit is not done.

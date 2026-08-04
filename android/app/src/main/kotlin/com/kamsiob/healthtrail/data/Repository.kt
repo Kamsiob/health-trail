@@ -917,6 +917,27 @@ class Repository private constructor(
         val createdAt: Long,
         val isUnfiled: Boolean,
         val threads: List<CareThread>,
+        /**
+         * When the person pinned this, or null if they have not.
+         *
+         * **Pinned entries float above time itself**, which is law 4's fourth
+         * tool. In a five year notebook the thing somebody needs at the desk is
+         * almost never the most recent thing, and scrolling to it every time is
+         * the tax that makes a person stop opening the app.
+         *
+         * The timestamp rather than a flag, because the pinned run is ordered
+         * most recently pinned first and because "you pinned this in June" is
+         * what the row says.
+         *
+         * **It has no default, deliberately.** It had one for an hour, and in
+         * that hour the entry screen's own query kept selecting the columns it
+         * always had: the pin wrote to the database and the button that wrote it
+         * still offered to pin, because nothing had gone looking for the value.
+         * A default is what let a second reader of this table compile while
+         * quietly dropping a column. Every construction site now has to say what
+         * it knows, and the two that did not know were the two that were wrong.
+         */
+        val pinnedAt: Long?,
     )
 
     /**
@@ -954,8 +975,8 @@ class Repository private constructor(
         }
 
         db().database.rawQuery(
-            "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, is_unfiled " +
-                "FROM live_entry WHERE subject_id = ? " +
+            "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, is_unfiled, " +
+                "pinned_at FROM live_entry WHERE subject_id = ? " +
                 "ORDER BY occurred_start IS NULL, occurred_start DESC, created_at DESC",
             arrayOf(subjectId),
         ).use { cursor ->
@@ -973,11 +994,32 @@ class Repository private constructor(
                             createdAt = cursor.getLong(6),
                             isUnfiled = cursor.getInt(7) == 1,
                             threads = threadsByEntry[id].orEmpty(),
+                            pinnedAt = if (cursor.isNull(8)) null else cursor.getLong(8),
                         ),
                     )
                 }
             }
         }
+    }
+
+    /**
+     * Pin an entry to the top of the trail, or take the pin out.
+     *
+     * **Pinning is not filing and it is not a favorite.** It is the person
+     * saying "I keep needing this one", usually about the letter they have to
+     * quote or the incident nobody has answered. It changes where the entry
+     * appears and nothing else about it: no state, no category, no meaning the
+     * app added.
+     *
+     * `pinned_at` has existed in the schema since the contract was written and
+     * nothing wrote to it until the trail earned law 4's fourth tool.
+     */
+    suspend fun setEntryPinned(entryId: String, pinned: Boolean) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        db().database.execSQL(
+            "UPDATE entry SET pinned_at = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(if (pinned) now else null, now, entryId),
+        )
     }
 
     /** One person on the care team, with everything a row about them shows. */
@@ -3088,7 +3130,7 @@ class Repository private constructor(
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
                 "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, " +
-                    "is_unfiled FROM live_entry WHERE incident_id = ? " +
+                    "is_unfiled, pinned_at FROM live_entry WHERE incident_id = ? " +
                     // **Oldest first, which is the opposite of the trail.** The
                     // trail answers "what has been happening lately" and reads
                     // newest first. A thread answers "how did this go", and a
@@ -3109,6 +3151,7 @@ class Repository private constructor(
                                 createdAt = cursor.getLong(6),
                                 isUnfiled = cursor.getInt(7) == 1,
                                 threads = emptyList(),
+                                pinnedAt = if (cursor.isNull(8)) null else cursor.getLong(8),
                             ),
                         )
                     }
@@ -3246,7 +3289,8 @@ class Repository private constructor(
         database.rawQuery(
             "SELECT e.id, e.kind, e.title, e.body, e.occurred_edtf, e.occurred_start, " +
                 "e.created_at, e.is_unfiled, e.chapter_id, c.name, " +
-                "e.incident_id, i.title, i.resolved_at, q.medication_id, m.name " +
+                "e.incident_id, i.title, i.resolved_at, q.medication_id, m.name, " +
+                "e.pinned_at " +
                 "FROM live_entry e " +
                 "LEFT JOIN live_chapter c ON c.id = e.chapter_id " +
                 "LEFT JOIN live_incident i ON i.id = e.incident_id " +
@@ -3268,6 +3312,7 @@ class Repository private constructor(
                     createdAt = cursor.getLong(6),
                     isUnfiled = cursor.getInt(7) == 1,
                     threads = threads,
+                    pinnedAt = if (cursor.isNull(15)) null else cursor.getLong(15),
                 ),
                 chapterId = cursor.getString(8),
                 chapterName = cursor.getString(9),
@@ -3305,7 +3350,7 @@ class Repository private constructor(
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
                 "SELECT e.id, e.kind, e.title, e.body, e.occurred_edtf, e.occurred_start, " +
-                    "e.created_at, e.is_unfiled FROM live_entry e " +
+                    "e.created_at, e.is_unfiled, e.pinned_at FROM live_entry e " +
                     "JOIN live_entry_person ep ON ep.entry_id = e.id " +
                     "WHERE ep.person_id = ? " +
                     "ORDER BY coalesce(e.occurred_start, e.created_at) DESC",
@@ -3324,6 +3369,7 @@ class Repository private constructor(
                                 createdAt = cursor.getLong(6),
                                 isUnfiled = cursor.getInt(7) == 1,
                                 threads = emptyList(),
+                                pinnedAt = if (cursor.isNull(8)) null else cursor.getLong(8),
                             ),
                         )
                     }
@@ -3450,7 +3496,7 @@ class Repository private constructor(
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
                 "SELECT e.id, e.kind, e.title, e.body, e.occurred_edtf, e.occurred_start, " +
-                    "e.created_at, e.is_unfiled FROM live_entry e " +
+                    "e.created_at, e.is_unfiled, e.pinned_at FROM live_entry e " +
                     "JOIN live_entry_thread et ON et.entry_id = e.id " +
                     "WHERE et.thread_id = ? " +
                     "ORDER BY coalesce(e.occurred_start, e.created_at) DESC",
@@ -3469,6 +3515,7 @@ class Repository private constructor(
                                 createdAt = cursor.getLong(6),
                                 isUnfiled = cursor.getInt(7) == 1,
                                 threads = emptyList(),
+                                pinnedAt = if (cursor.isNull(8)) null else cursor.getLong(8),
                             ),
                         )
                     }
@@ -3535,7 +3582,7 @@ class Repository private constructor(
             val entries = mutableListOf<TrailEntry>()
             database.rawQuery(
                 "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, " +
-                    "is_unfiled FROM live_entry WHERE chapter_id = ? " +
+                    "is_unfiled, pinned_at FROM live_entry WHERE chapter_id = ? " +
                     "ORDER BY coalesce(occurred_start, created_at) DESC",
                 arrayOf(chapterId),
             ).use { cursor ->
@@ -3550,6 +3597,7 @@ class Repository private constructor(
                         createdAt = cursor.getLong(6),
                         isUnfiled = cursor.getInt(7) == 1,
                         threads = emptyList(),
+                        pinnedAt = if (cursor.isNull(8)) null else cursor.getLong(8),
                     )
                 }
             }

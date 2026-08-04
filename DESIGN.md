@@ -334,11 +334,11 @@ A row may be 46dp tall and still carry a 48dp touch target through invisible pad
 | **Round card** | For lab work. One card per draw, holding its tests, its reason, its documents, and who ordered it. **Every test name is a door to that test's own history** |
 | **Agenda list and month grid** | For appointments, drawn only from what is recorded in the app |
 | **Thumbnail gallery** | The person's own paper, visible |
-| **Search bar** | Sand, rounded |
+| **Scoped search bar** | Sand, rounded, sitting at the top of the list it searches and **never reaching outside it**. Its hint says how many things are in scope. Filters as you type, with no submit; a clear control appears only once there is something to clear. **Not on a list that fits in a screenful or two** |
 | **View toggle** | Remembered per section |
 | **Pin marker and pinned group** | The person's own hierarchy, above everything |
 | **Sticky section header** | So the person always knows where they are |
-| **Edge scrubber** | Jump by year and month |
+| **Edge scrubber** | Jump by year and month, riding **a reserved margin rather than sitting over the words**, in a band of roughly half the screen height. Every label is also its own tap target, so the gesture is never the only way. **Landing in a closed fold opens it**, because answering a jump with a door is not answering it. Same "not on a short list" rule as the search bar |
 | **Sheet** | Rises from the bottom, 24dp top corners, scrim behind |
 | **FAB** | Gold, 48dp, bottom-trailing corner, opening a labeled menu that blooms upward from it |
 | **Bottom navigation** | Four tabs, even spacing, active tab marked with a tonal pill behind its icon |
@@ -609,8 +609,17 @@ The small touches that separate finished from correct. **They apply everywhere, 
 - **Empty states** get a single line-art trail motif in ink at low opacity, drawn as a set at one stroke weight, plus two lines of warm copy: what this place is for, and the one action to start.
 - **Icons are one coherent set at one stroke weight**, drawn for this app's sections and capture types, **never assembled from a default library.**
 - **The trail mirrors correctly right to left**, including waypoints, scrubbers, and the FAB corner.
+- **A list that has earned law 4's tools gives up a margin for them.** A rail drawn over the content looks right against short fixture text and cuts through the first real sentence that reaches the end of its line.
 
 **When you notice a small refinement in this spirit that costs little, add it, and record it here**, so it becomes part of the system rather than a one-off.
+
+### 15.1 Departures from the reference file, and why
+
+Recorded here per section 19, rather than left for a later session to find and mistake for drift.
+
+**Screen 08, the trail.** The grid draws a "Filter" control and a pin toggle in the header beside the search field. Neither is built. The filter is real work with its own question, which is what a person filters by (kind, thread, unfiled) and whether that survives leaving the screen; it is filed rather than guessed at. The pin toggle in the header would be a second way to reach a set the pinned group already shows at the top of the same screen.
+
+**Screen 08, the pin itself.** The grid implies the pin is something you do from the trail. It is done from the entry instead. Built on the row first, it put a second target on every one of sixteen hundred rows to serve a decision somebody makes a handful of times, and on the phone ten pin buttons down one screen were the loudest thing on it, which inverts rule 15. The row keeps the mark as state.
 
 ---
 

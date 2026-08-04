@@ -1912,6 +1912,22 @@ Minimum across all three: **11.1**  (was 2.4)
 
 **How this came up is worth keeping.** The v4 inventory left no room for the exception, and rather than delete a decision the owner had made, it was flagged. **The owner's instruction on that is now standing: an exception he made gets surfaced, never overridden on the agent's own judgment.** That holds whichever way the answer goes.
 
+### D94. The pin is on the entry, not on the trail row
+
+**2026-08-04, while building the trail's law 4 tools.** Pinning was built as a 48dp control on every trail row, which is where the reference file implies it lives. On the phone with the year five fixture, ten pin buttons ran down one screen and were the loudest thing on it, competing with the words they sat beside.
+
+**Pinning is a decision somebody makes a handful of times over years.** Giving it a permanent target on sixteen hundred rows spends the screen's attention on the rarest thing it does. It now lives on the entry screen as an outlined action, one tap away, and the trail row carries the gold mark as **state rather than as a control**.
+
+Rule 15: uniform weight is not neutral. `DESIGN.md` 15.1 records the departure from the grid.
+
+### D95. `pinned_at` has no default on the model, and that is what caught the defect
+
+**2026-08-04.** `TrailEntry.pinnedAt` was added with `= null`, which let every existing reader of the entry table keep compiling. The entry screen's own query never selected the column, so pinning wrote to the database and the button that had just written it still offered to pin. The value was there; nothing had gone looking for it.
+
+**The default is removed.** Five queries read this table and the compiler named all five, of which two were wrong and three were merely incomplete: an entry shown on a person, on a thread, on a chapter or under an incident now knows whether it is pinned, so the mark is the same wherever the entry appears.
+
+**This is D90's pattern applied to a column rather than to a content rule.** A default value on a model is a small convenience that reads as a lie the moment a second reader exists. Where a field must be answered, make the compiler ask.
+
 ---
 
 ## BLOCKED

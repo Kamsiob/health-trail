@@ -1,8 +1,10 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -10,11 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.TextAction
 import androidx.compose.ui.Alignment
@@ -40,6 +45,15 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * there is no way for one of them to be forgotten.
  */
 val LocalSectionBackKey = androidx.compose.runtime.compositionLocalOf { "section.back" }
+
+/**
+ * How much of the screen's height the edge rail occupies.
+ *
+ * Slightly over half, which is what the reference file draws: enough travel for
+ * a drag to be worth making, short enough that the labels read as one index
+ * rather than as digits scattered down the margin.
+ */
+private const val RAIL_HEIGHT_FRACTION = 0.55f
 
 object SectionTags {
     const val BACK = "section_back"
@@ -107,6 +121,28 @@ fun SectionScaffold(
      * is visibly redundant rather than quietly wrong.
      */
     headingKey: String? = null,
+    /**
+     * The list's own scroll state, for a screen that has to move it.
+     *
+     * **Only a screen with law 4's tools needs this.** The edge scrubber's whole
+     * job is to jump the list to a year, and it cannot do that without the state
+     * the list is scrolling. Every other section leaves it alone and gets the
+     * remembered default, so passing it is visibly the exception.
+     */
+    listState: LazyListState = rememberLazyListState(),
+    /**
+     * A strip riding the trailing margin, full height, over the list.
+     *
+     * **It is the margin of a page, not a column of the layout.** The scrubber
+     * sits in the space beside the text rather than taking width from it, which
+     * is why it is an overlay here rather than a `Row` around the list. In
+     * Arabic the trailing edge is the left one and it moves there without this
+     * having to know, because it is aligned by direction rather than by side.
+     *
+     * Empty for every screen that does not have one, which is all of them but
+     * the trail today.
+     */
+    rail: (@Composable () -> Unit)? = null,
     content: LazyListScope.() -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -117,12 +153,17 @@ fun SectionScaffold(
         // shell rather than inside it and does not inherit what the four
         // destinations get. The Unfiled tray learned this the same way.
         Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn(
+                state = listState,
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .testTag(SectionTags.root(name))
-                    .padding(horizontal = Space.screenHorizontal),
+                    .padding(horizontal = Space.screenHorizontal)
+                    // The rail gets a margin of its own rather than sitting on
+                    // top of the words. Direction aware, so in Arabic the
+                    // reserved strip moves to the left with it.
+                    .padding(end = if (rail != null) Space.railInset else 0.dp),
             ) {
                 item {
                     Spacer(Modifier.height(Space.sm))
@@ -152,6 +193,22 @@ fun SectionScaffold(
                 content()
 
                 item { Spacer(Modifier.height(Space.l)) }
+            }
+
+                rail?.let { strip ->
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            // **Half the height, centered**, rather than the
+                            // whole of it. Spread over a full screen the labels
+                            // read as scattered digits beside the content; in a
+                            // band they read as an index, which is the thing
+                            // they are.
+                            .fillMaxHeight(RAIL_HEIGHT_FRACTION)
+                            .padding(end = Space.xs),
+                        contentAlignment = Alignment.Center,
+                    ) { strip() }
+                }
             }
 
             // The pinned action footer, per DESIGN.md 5.15, with its required gap.

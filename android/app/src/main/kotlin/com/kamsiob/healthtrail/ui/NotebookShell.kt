@@ -281,6 +281,8 @@ fun NotebookShell(
     var addingToIncident by remember { mutableStateOf<String?>(null) }
     /** The incident to settle or reopen, and which of the two. */
     var resolvingIncident by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    /** The entry waiting to be pinned to the top of the trail, or unpinned. */
+    var pinningEntry by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     /** The incident waiting to be turned into a document and handed to the share sheet. */
     var sharingIncident by remember { mutableStateOf<Repository.Incident?>(null) }
     /** The prep sheet waiting to become a document. */
@@ -1011,6 +1013,20 @@ fun NotebookShell(
             }
         }
 
+        // Pinning an entry, or taking the pin out. Here rather than in the
+        // screen's click handler for the same reason settling an incident is:
+        // the screen stays a screen, and the write happens once and off the
+        // main thread. The trail is re-read rather than patched, because the
+        // pinned run is derived from the rows and a pin held only in memory
+        // would be right until the screen was left.
+        pinningEntry?.let { (id, pinned) ->
+            LaunchedEffect(id, pinned) {
+                repository.setEntryPinned(id, pinned)
+                pinningEntry = null
+                revision += 1
+            }
+        }
+
         // Settling an incident, or reopening one. Written here rather than in
         // the screen's click handler so the screen stays a screen and the write
         // happens once, off the main thread, like every other write in this file.
@@ -1326,15 +1342,11 @@ fun NotebookShell(
                 Repository.Section.TRAIL -> TrailScreen(
                     entries = trail,
                     onOpen = { openEntry = it.id },
-                    onEditDate = { editingDate = it },
-                    onRemove = { entry ->
-                        removing = Removal(
-                            section = Repository.Section.TRAIL,
-                            rowId = entry.id,
-                            what = entry.title?.takeIf { it.isNotBlank() }
-                                ?: strings[kindNameKey(entry.kind)],
-                        )
-                    },
+                    // **Pinning writes and then reloads, like every other write
+                    // in the shell.** The pinned run is derived from the rows
+                    // rather than held beside them, so a pin that only moved a
+                    // flag in memory would be correct until the screen was left
+                    // and wrong afterward.
                     onBack = { openSection = null },
                 )
 
@@ -1711,6 +1723,7 @@ fun NotebookShell(
                     detail = detail,
                     backLabelKey = if (openSection != null) "section.back.trail" else "section.back",
                     onEditDate = { editingDate = detail.entry },
+                    onSetPinned = { pinned -> pinningEntry = detail.entry.id to pinned },
                     onOpenPerson = { openEntry = null; openPerson = it },
                     onOpenThread = { thread ->
                         // Both ways, and precisely: the entry names its thread
