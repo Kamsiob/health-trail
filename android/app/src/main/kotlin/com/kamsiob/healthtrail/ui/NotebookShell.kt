@@ -102,6 +102,7 @@ import com.kamsiob.healthtrail.ui.screens.BillDraft
 import com.kamsiob.healthtrail.ui.screens.MoneyScreen
 import com.kamsiob.healthtrail.ui.screens.AddDocumentScreen
 import com.kamsiob.healthtrail.ui.screens.DocumentDraft
+import com.kamsiob.healthtrail.ui.screens.DocumentScreen
 import com.kamsiob.healthtrail.ui.screens.DocumentsScreen
 import com.kamsiob.healthtrail.data.Attachments
 import com.kamsiob.healthtrail.ui.screens.parseAmountToMinor
@@ -286,6 +287,8 @@ fun NotebookShell(
     var pinningEntry by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     /** True while the emergency card is on its way to the share sheet. */
     var sharingCard by remember { mutableStateOf(false) }
+    /** The document whose own screen is open, or null. */
+    var openDocument by remember { mutableStateOf<Repository.Document?>(null) }
     /** The bill whose own screen is open, or null. */
     var openBill by remember { mutableStateOf<Repository.Bill?>(null) }
     /** The incident waiting to be turned into a document and handed to the share sheet. */
@@ -1400,11 +1403,7 @@ fun NotebookShell(
                             Repository.Section.DOCUMENTS, document.id, document.title,
                         )
                     },
-                    onEdit = { document ->
-                        editingDocument = document
-                        documentError = null
-                        addingDocument = true
-                    },
+                    onOpen = { document -> openDocument = document },
                     onAdd = {
                         editingDocument = null
                         documentError = null
@@ -1755,6 +1754,27 @@ fun NotebookShell(
                 onOpenEntry = { openPerson = null; openEntry = it.id },
                 onBack = { openPerson = null },
                 backLabelKey = "section.back.careteam",
+            )
+        }
+
+        // **A document's own screen**, same story as the bill: the row opened
+        // the editor, so nothing in the app ever showed a piece of the person's
+        // own paper at a size somebody could read.
+        openDocument?.let { current ->
+            val fresh = documents.firstOrNull { it.id == current.id } ?: current
+            DocumentScreen(
+                document = fresh,
+                onEdit = {
+                    editingDocument = fresh
+                    documentError = null
+                    addingDocument = true
+                },
+                onOpenChapter = { chapterId ->
+                    openDocument = null
+                    openChapter = chapters.firstOrNull { it.id == chapterId }
+                    if (openChapter == null) openSection = Repository.Section.CHAPTERS
+                },
+                onBack = { openDocument = null },
             )
         }
 

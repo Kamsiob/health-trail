@@ -73,7 +73,14 @@ object DocTags {
 fun DocumentsScreen(
     documents: List<Repository.Document>,
     onRemove: (Repository.Document) -> Unit,
-    onEdit: (Repository.Document) -> Unit,
+    /**
+     * Opens the document itself.
+     *
+     * **The cell used to open the form that edits it**, which is the app
+     * answering "show me this" with "change this" on the one section whose
+     * whole point is holding the person's own paper.
+     */
+    onOpen: (Repository.Document) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -165,7 +172,7 @@ fun DocumentsScreen(
                             attachments = attachments,
                             stacked = false,
                             onRemove = { onRemove(document) },
-                            onEdit = { onEdit(document) },
+                            onEdit = { onOpen(document) },
                         )
                     }
                 }
@@ -180,7 +187,7 @@ fun DocumentsScreen(
                             attachments = attachments,
                             stacked = true,
                             onRemove = { onRemove(document) },
-                            onEdit = { onEdit(document) },
+                            onEdit = { onOpen(document) },
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -227,7 +234,7 @@ fun DocumentsScreen(
                                 attachments = attachments,
                                 divider = index < inFolder.size - 1,
                                 onRemove = { onRemove(document) },
-                                onEdit = { onEdit(document) },
+                                onEdit = { onOpen(document) },
                             )
                         }
                     }
@@ -246,7 +253,7 @@ fun DocumentsScreen(
                                     attachments = attachments,
                                     stacked = columns > 1,
                                     onRemove = { onRemove(document) },
-                                    onEdit = { onEdit(document) },
+                                    onEdit = { onOpen(document) },
                                     modifier = Modifier.weight(1f),
                                 )
                             }

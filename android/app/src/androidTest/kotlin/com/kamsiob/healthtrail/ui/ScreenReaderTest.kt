@@ -665,7 +665,7 @@ class ScreenReaderTest {
                     Repository.Document("d2", "Discharge summary", null, "With the ward clerk", null, null, null, null),
                 ),
                 onRemove = {},
-                onEdit = {},
+                onOpen = {},
                 onAdd = {},
                 onBack = {},
             )

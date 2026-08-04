@@ -1916,15 +1916,19 @@ class Repository private constructor(
         /** Null when the document was recorded without a photograph. */
         val sha256: String?,
         val byteSize: Long?,
+        /** The place this came out of, so a document can be opened from there. */
+        val chapterId: String? = null,
+        val chapterName: String? = null,
     )
 
     /** Every document, most recently received first. */
     suspend fun documents(subjectId: String): List<Document> = withContext(Dispatchers.IO) {
         db().database.rawQuery(
             "SELECT d.id, d.title, d.category, d.original_location, d.notes, " +
-                "d.received_edtf, a.sha256, a.byte_size " +
+                "d.received_edtf, a.sha256, a.byte_size, d.chapter_id, c.name " +
                 "FROM live_document d " +
                 "LEFT JOIN live_attachment a ON a.document_id = d.id " +
+                "LEFT JOIN live_chapter c ON c.id = d.chapter_id " +
                 "WHERE d.subject_id = ? " +
                 "ORDER BY d.received_start IS NULL, d.received_start DESC, d.created_at DESC",
             arrayOf(subjectId),
@@ -1941,6 +1945,8 @@ class Repository private constructor(
                             receivedEdtf = cursor.getString(5),
                             sha256 = cursor.getString(6),
                             byteSize = if (cursor.isNull(7)) null else cursor.getLong(7),
+                            chapterId = cursor.getString(8),
+                            chapterName = cursor.getString(9),
                         ),
                     )
                 }

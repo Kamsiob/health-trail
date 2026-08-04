@@ -677,5 +677,9 @@
   "bill.from": "Enviada por",
   "bill.where": "De dónde viene",
   "bill.edit": "Cambiar lo que usted escribió",
-  "bill.nothing": "Todavía no hay un importe anotado"
+  "bill.nothing": "Todavía no hay un importe anotado",
+  "document.where": "De dónde viene",
+  "document.nophoto": "Todavía no hay una fotografía. Lo que usted anotó está aquí, y se puede añadir una imagen cuando la haya.",
+  "document.edit": "Cambiar lo que usted escribió",
+  "section.back.documents": "Volver a los documentos"
 }

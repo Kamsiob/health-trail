@@ -677,5 +677,9 @@
   "bill.from": "أرسلها",
   "bill.where": "من أين جاءت",
   "bill.edit": "غيّر ما كتبته",
-  "bill.nothing": "لم يُدوَّن مبلغ بعد"
+  "bill.nothing": "لم يُدوَّن مبلغ بعد",
+  "document.where": "من أين جاء",
+  "document.nophoto": "لا توجد صورة له بعد. ما دُوّن عنه موجود هنا، ويمكن إضافة صورة متى توفرت.",
+  "document.edit": "غيّر ما كتبته",
+  "section.back.documents": "العودة إلى المستندات"
 }

@@ -41,9 +41,11 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 - **#182 tests and results has nothing to convert.** No table in the schema, no query, no screen. It is the section being built for the first time and it needs a schema decision, which is the owner's. The issue says exactly what has to be decided and is labeled `blocked`.
 - **#188 capture is built.** It is a staged conversation now: three questions, one on screen at a time, dots saying which, a skip that is always visible, and save live from stage one. The fifteen second path law 3 is written around is type one sentence and save, without ever seeing stages two or three.
 
-**Step 4 has begun and seven of it are closed**: one entry #189, one incident and the incidents list #190, one person #191, one medication #192, one chapter #193, one care thread #194, and one bill #196.
+**Step 4 has begun and eight of it are closed**: one entry #189, one incident and the incidents list #190, one person #191, one medication #192, one chapter #193, one care thread #194, one document #195, and one bill #196.
 
-**One bill did not exist as a screen at all.** Tapping a bill opened the form that edits it, which is the app answering "tell me about this" with "change this", and it is why the place a bill came out of and who sent it had nowhere to appear. That is worth checking for on the remaining detail screens: a row whose only behavior is edit is a screen nobody built.
+**Two detail screens did not exist at all: one bill and one document.** Tapping either opened the form that edits it, which is the app answering "tell me about this" with "change this". For documents that is the section whose whole point is holding the person's own paper, and nothing in the app ever showed a piece of it at a size somebody could read.
+
+**Check the remaining detail screens for the same thing.** A row whose only behavior is edit is a screen nobody built, and both of these also had links the schema already carried and nothing read: a bill and a document each know their chapter, and a chapter could list them while they could not name it.
 
 **One thing from #189 that every detail screen inherited.** `SectionScaffold` takes a **heading** in the person's own words now, separate from the `title` that names the tab chip. Before that a detail screen had to pass its own words as the title, which put a typed sentence in an 11sp mono chip and again underneath at display weight. **Six screens had that defect** and all six were fixed together: one entry, one person, one medication, one chapter, one care thread, one incident and one project. Each says which section it belongs to and wears its hue.
 
@@ -65,7 +67,7 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Two undrawn screens followed rule 12** at the moment they were built: care threads (#186, review at **#223**) and standing instructions (#185, review at **#225**). Both are in `DESIGN.md` section 14 and both are named here, which is all three places.
 
-1. **The rest of step 4**, #195 and #197 to #208.
+1. **The rest of step 4**, #197 to #208.
 2. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
 
 **Nine things are waiting on the owner and none of them block anything.** **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table), **#220** (the trail's filter needs a decision about what a person filters by), **#182** (the tests section needs a schema before it can be built at all), **#230** (an incident cannot say which medication it was about, which rule 18 argues it should), and **#223** and **#225** (the two design reviews).
@@ -599,6 +601,8 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 - **One was a test tag that went missing in a redesign.** The notebook's counts carried a tag while the front door was tiles; the v4 conversion made it dense rows and the tag stayed with the tile, so three tests looked for a node that no longer existed with no way to know why. `DenseRow` can tag its subtitle now.
 
 **All 291 pass as of the end of this run.** Confirmed by a full run after the fixes, not by rerunning the two classes that had been red.
+
+**Do not touch the phone while it runs.** A capture attempted mid-run on 2026-08-04 force-stopped the app under the suite and produced a partial result: 79 tests with one failure in `MigrationTest`, which is not a defect, it is interference. A run driven from two places at once tells you nothing.
 
 **Run `:app:connectedDebugAndroidTest` after any run that changes a screen.** It takes about six minutes and it is the only thing that would have caught these. **It uninstalls the app and takes the notebook with it**, so `tools/seed.sh year5 5 walk-year-five` afterward.
 

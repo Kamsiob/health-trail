@@ -677,5 +677,9 @@
   "bill.from": "寄件方",
   "bill.where": "来自哪里",
   "bill.edit": "修改您写的内容",
-  "bill.nothing": "还没有记下金额"
+  "bill.nothing": "还没有记下金额",
+  "document.where": "来自哪里",
+  "document.nophoto": "还没有它的照片。您记下的内容都在这里，有照片时随时可以补上。",
+  "document.edit": "修改您写的内容",
+  "section.back.documents": "返回文件"
 }

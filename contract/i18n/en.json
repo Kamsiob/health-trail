@@ -677,5 +677,9 @@
   "bill.from": "Sent by",
   "bill.where": "Where this came from",
   "bill.edit": "Change what you wrote",
-  "bill.nothing": "No amount written down yet"
+  "bill.nothing": "No amount written down yet",
+  "document.where": "Where this came from",
+  "document.nophoto": "No photograph of this one yet. What is written down about it is here, and a picture can be added whenever there is one.",
+  "document.edit": "Change what you wrote",
+  "section.back.documents": "Back to documents"
 }
