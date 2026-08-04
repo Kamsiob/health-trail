@@ -20,6 +20,8 @@ import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.CaptureFab
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.MilestonesScreen
+import com.kamsiob.healthtrail.ui.screens.MonthReviewScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.data.ExportContainer
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
@@ -362,6 +364,7 @@ class ScreenReaderTest {
                         pinnedAt = 1_751_500_000_000,
                     ),
                 ),
+                onReview = {},
                 onBack = {},
             )
         }
@@ -580,10 +583,157 @@ class ScreenReaderTest {
                     Repository.Chapter("c2", "Home", null, null, null, "2026-07-01"),
                 ),
                 onOpen = {},
+                onOpenMilestones = {},
                 onBack = {},
             )
         }
         assertEverythingIsLabeled("chapters")
+    }
+
+    /**
+     * The arc, including the chapter door that only appears once somebody has
+     * named a place. The fixture cannot produce one, #235, so the case is built
+     * here by hand rather than left unwalked.
+     */
+    @Test
+    fun theMilestoneArcLabelsEverything() {
+        compose.show {
+            MilestonesScreen(
+                milestones = listOf(
+                    Repository.Milestone(
+                        id = "m1",
+                        label = "First day without oxygen",
+                        occurredEdtf = "2026-06-19",
+                        occurredStart = 1_750_000_000_000,
+                        chapterId = null,
+                        chapterName = null,
+                        note = null,
+                    ),
+                    Repository.Milestone(
+                        id = "m2",
+                        label = "Sat up for the whole visit",
+                        occurredEdtf = "2026-08-12",
+                        occurredStart = 1_755_000_000_000,
+                        chapterId = "c1",
+                        chapterName = "Maplewood Care Center",
+                        note = "She knew who I was.",
+                    ),
+                ),
+                onOpen = {},
+                onOpenChapter = {},
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("the milestone arc")
+    }
+
+    /**
+     * One month gathered, with every group present at once.
+     *
+     * **Every row on it is a door**, which is what makes it worth walking: a
+     * screen made entirely of clickable nodes is the screen where an unlabeled
+     * one costs the most, because a reader user meets nothing else.
+     */
+    @Test
+    fun theMonthReviewLabelsEverything() {
+        compose.show {
+            MonthReviewScreen(
+                review = Repository.MonthReview(
+                    monthStart = 1_748_736_000_000,
+                    entries = listOf(
+                        Repository.TrailEntry(
+                            id = "e1",
+                            kind = "call",
+                            title = "Care plan meeting",
+                            body = "She was sitting up and knew who I was.",
+                            occurredEdtf = "2026-06-29",
+                            occurredStart = 1_751_000_000_000,
+                            createdAt = 1_751_000_000_000,
+                            isUnfiled = false,
+                            threads = emptyList(),
+                            pinnedAt = null,
+                        ),
+                    ),
+                    kinds = listOf(Repository.KindCount("call", 1)),
+                    milestones = listOf(
+                        Repository.Milestone(
+                            id = "m1",
+                            label = "First day without oxygen",
+                            occurredEdtf = "2026-06-19",
+                            occurredStart = 1_750_000_000_000,
+                            chapterId = null,
+                            chapterName = null,
+                            note = null,
+                        ),
+                    ),
+                    appointments = listOf(
+                        Repository.Appointment(
+                            "a1", "Care plan meeting", "2026-06-11", 2L, "4West day room", null,
+                        ),
+                    ),
+                    reported = listOf(
+                        Repository.Incident(
+                            id = "i1",
+                            title = "Wrong medication brought to the room",
+                            description = null,
+                            reportedEdtf = "2026-06-12",
+                            reportedStart = 1_749_000_000_000,
+                            resolvedAt = 1_750_500_000_000,
+                            resolutionNote = null,
+                            chapterName = null,
+                            entryCount = 2,
+                        ),
+                    ),
+                    answered = listOf(
+                        Repository.Incident(
+                            id = "i2",
+                            title = "Nobody called back",
+                            description = null,
+                            reportedEdtf = "2026-03-04",
+                            reportedStart = 1_741_000_000_000,
+                            resolvedAt = 1_750_500_000_000,
+                            resolutionNote = null,
+                            chapterName = null,
+                            entryCount = 1,
+                        ),
+                    ),
+                    documents = listOf(
+                        Repository.Document(
+                            id = "d1",
+                            title = "Care plan, signed",
+                            category = "medical",
+                            originalLocation = null,
+                            notes = null,
+                            receivedEdtf = "2026-06-12",
+                            sha256 = null,
+                            byteSize = null,
+                        ),
+                    ),
+                    began = listOf(
+                        Repository.Chapter(
+                            "c1", "Emergency department, overnight", null, null,
+                            "2026-06-02", "2026-06-03",
+                        ),
+                    ),
+                    ended = listOf(
+                        Repository.Chapter(
+                            "c1", "Emergency department, overnight", null, null,
+                            "2026-06-02", "2026-06-03",
+                        ),
+                    ),
+                ),
+                onOpenEntry = {},
+                onOpenMilestones = {},
+                onOpenChapter = {},
+                onOpenAppointment = {},
+                onOpenIncident = {},
+                onOpenDocument = {},
+                onShare = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("the month review")
     }
 
     @Test

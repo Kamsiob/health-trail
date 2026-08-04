@@ -14,12 +14,12 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **16 repository checks pass** (`python3 tools/checks/run_all.py`).
-- **297 instrumented tests pass**, last full run 2026-08-04 against `c99bff5`. Nothing since has been run on the device, which is what section 2 is about.
+- **313 instrumented tests pass**, last full run 2026-08-04 after the month review landed.
 - The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
 **Take these in this order.**
 
-1. **Finish #200, the milestone arc and month review.** It is part built, part unverified, and section 2 says exactly which is which. **Start there, not with a fresh issue.**
+1. **#200 is done and closed.** Section 2 is the account of what landed and what came out of it. **Start at #201.**
 2. **The rest of step 4**, #201 through #208, in number order, **except take #208 last**. Each was scoped on 2026-08-04 and the two with gaps carry a comment saying so:
    - **#202** is half a conversion and half a build. "Change of situation" does not exist anywhere, and whoever takes it has to decide first whether changing the situation is a chapter boundary in the data or only in the words.
    - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape.
@@ -32,19 +32,25 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 2. #200 is built end to end and needs its sweep
+## 2. What #200 landed, and the four issues that came out of it
 
-**Both halves exist and both have been used on the phone.** What is left is verification, not construction.
+**Both halves are built, swept, tested and logged.** This section is here because the next session inherits the decisions rather than the work.
 
 **The arc.** The milestone reader and writer, `MilestonesScreen`, `AddMilestoneScreen`, the door from the chapters list, and the shell wiring. All verified on the device including the parts a previous session could only compile: **marking a milestone by hand and choosing a chapter makes the chapter door appear on its row, and the chapter's own "What was worth marking" fold shows it back.** Rule 18 holds in both directions, seen rather than asserted. `docs/screenshots/milestones-v4-light.png`.
 
-**The fixture still cannot exercise the chapter link on its own**: generated milestones carry no `chapter_id`, so a walk that needs the door has to mark one by hand first. That is #235.
+**The fixture still cannot exercise the chapter link on its own**: generated milestones carry no `chapter_id`, so a walk that needs the door has to mark one by hand first. That is **#237**.
 
 **Month review**, `MonthReviewScreen`, reached from the trail's own month heading, which now carries a chevron. Hero is the month's milestones and nothing else, then where they were, appointments, what went wrong, what was answered, paperwork, and a fold holding everything written down. One filled action, which shares the month as a document through `Readable.monthReview`. `docs/screenshots/review-light.png`.
 
 **Two defects were found by looking at it and are fixed:** a place that began and ended in one month listed its name twice, and an incident reported and answered in one month listed twice under two headings. Both now read as one row. The gold total band was built and removed the same day, for the reason in `DESIGN.md` section 14.
 
-**#200 still needs:** the sweep at both themes, font scale 2.0 and Arabic; the empty state seen; the instrumented suite; and a `needs-design-review` issue per rule 12 for each of the two screens, since neither is drawn.
+**The sweep is done and both screens passed it.** Both themes, font scale 2.0, and Arabic, on the device. `docs/screenshots/` holds `milestones-v4-light`, `milestones-v4-dark`, `milestones-arabic-dark`, `milestones-max-font-dark`, `review-light`, `review-dark`, `review-arabic-dark`, `review-max-font-dark`. Nothing clipped at 2.0, the last item clears in both, the trail mirrors with the spine on the start edge, and the person's own words stay isolated in Arabic.
+
+**313 instrumented tests pass**, up from 297: `MonthReviewTest` covers the boundary rules, and `ScreenReaderTest` now walks the arc and the review.
+
+**Rule 12 is discharged for both.** The arc's review is **#235** and the month review's is **#236**, each with its device screenshots, what it was composed from, what was deliberately not invented, and what I was unsure about. `DESIGN.md` section 14 carries both rows.
+
+**Two things were found and filed rather than built:** the fixture never gives a milestone a chapter, **#237**, and `milestone.measure_id` is a schema link nothing reads, **#238**, which needs the owner's decision because expressing it at all comes close to interpreting a measurement.
 
 **The device holds one extra milestone**, "Sat up for the whole visit", written by hand to exercise the chapter link. `tools/seed.sh` clears it.
 
@@ -57,7 +63,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 - **Step 1, the foundation: complete.** Every token in both themes, the type scale with all three faces verified per locale, the geometry, and all sixteen components. #149 through #168 closed.
 - **Step 2, the four destinations: complete.** #169 through #172 closed.
 - **Step 3, the section screens: complete but for #182**, which is blocked. Fourteen closed on device verification.
-- **Step 4, the detail screens: ten of twenty closed.** #189 through #198. #199 is blocked; #200 is in flight; #201 through #208 are untouched.
+- **Step 4, the detail screens: eleven of twenty closed.** #189 through #198, and #200. #199 is blocked; #201 through #208 are untouched.
 
 **#192, one medication, closed with its remainder split out rather than left vague.** Its questions are built and the fixture never exercises them, **#229**; its incidents cannot be expressed because the schema has no link from an incident to a medication, **#230**, which is the owner's call.
 
@@ -80,6 +86,8 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 **Not everything is a card.** The prep sheet's questions were eight cards on a spine, each repeating its role in mono. Rule 22: a question is one sentence, which is a row. Where a wall of something already has a solved composition elsewhere in the app, use that one rather than inventing a second answer.
 
 **The sweeps are where the defects are, and almost none is visible in English at font scale 1.0.** Text the person typed gets rearranged in Arabic; `Bidi.isolate` and `Bidi.join` are the fix and `DESIGN.md` section 15 carries the rule. `report_bidi_isolation.py` generates the remaining worklist, 76 candidates, tracked at **#226**.
+
+**A screen added to the shell is a screen the instrumented suite has to be told about, and "checks pass" does not mean the suite compiles.** `ScreenReaderTest` had been broken since `050ac27`: the arc added a parameter to `ChaptersScreen` and nothing recompiled the test source, so the whole suite could not build for a day while `run_all.py` and `compileDebugKotlin` both reported clean. **`compileDebugAndroidTestKotlin` is not in the main compile path.** Run `tools/verify.sh`, which is the only runner that reaches all of it.
 
 **A defect can live entirely inside somebody else's app.** The calendar hand-off put a November 27 appointment on the 26th, and the screen said November 27 the whole time. It cost three attempts and none of the causes was time zones.
 
@@ -200,7 +208,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 | Question | File |
 |---|---|
 | What to do next | This file, section 1. Then the board, project 3, in `ORDER OF WORK` order |
-| Why something is the way it is | `DECISIONS.md`, D1 through D102 |
+| Why something is the way it is | `DECISIONS.md`, D1 through D103 |
 | What it should look like | `DESIGN.md`, plus `reference/screen-grid.html`. Section 14 is the undrawn-screen map |
 | What the data may do | `contract/DATA-CONTRACT.md`, and `contract/EXPORT-FORMAT.md` for the archive |
 | What the app is for | `MASTER_SPEC.md` |

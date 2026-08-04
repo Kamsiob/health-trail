@@ -1996,6 +1996,22 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **What is done folds with its count, and nothing is hidden.** "Already done, 2" is a count of what is in the fold, which is what every other fold in this app says, and it is a different sentence from "2 of 5", which rule 13 rules out. One tap brings all of it back, because what has already been sent is exactly what somebody is asked about on the phone.
 
+### D103. A month review carries no total, and the door to it is the trail's own month heading
+
+**2026-08-04, building the second half of #200 and looking at it on the phone.** The screen was built with a gold wash band under the hero reading "Written down this month, 42". It came off the same day, and two separate rules each rule it out on their own.
+
+**Law 1.** A number at wash-band weight is a second dominant element, and law 1 says that if two things compete for the top the screen is wrong. The hero on this screen is what the person marked as worth remembering, and a count sitting under it at similar weight was the only thing on the screen that was not a door to anything.
+
+**Rule 2, which is the one that settles it.** A single number over a month is only interesting next to another month's, and the moment somebody reads two of them the app has offered a comparison about the quality of somebody's care. Counts are allowed, per `MASTER_SPEC.md` section 5, and this one is allowed too: what is not allowed is putting it where its only use is comparison. **Each group counts itself instead**, where a count answers a question about that group, and the fold carries the only number anybody needs.
+
+**The same reasoning removed the total from the shared document** and left the counts by kind. "Nine calls" is a fact somebody can act on. "Forty-two things" is a verdict wearing a number.
+
+**The door is the trail's own month heading, which gained a chevron.** Section 14 says the review follows screen 08, and the heading is the period: putting the door on it costs no furniture, and it sits where the eye already is when somebody wonders what a month held. A row under fourteen entries would be discoverable only by scrolling past the thing it summarizes, which 13.5 calls not finished.
+
+**A closed month stays a fold and does not become a door.** A sand fold promises to open in place and that is what it does. Reviewing a month nobody has opened costs one more tap, which is the right price for keeping the two costumes distinct, per law 2.
+
+**The hero is the milestones and nothing else, and a month with none has no hero.** Every other candidate to lead with, the worst incident or the busiest week, is the app deciding what mattered about somebody's month. A milestone is the one thing in this app the person marked themselves, so leading with it repeats their decision. Law 1 says no hero at all is a valid screen, and a month where nobody marked anything is honestly a month where nobody marked anything.
+
 ---
 
 ## BLOCKED
