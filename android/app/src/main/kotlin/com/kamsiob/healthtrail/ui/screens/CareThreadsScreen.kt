@@ -18,11 +18,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
@@ -63,6 +70,17 @@ fun CareThreadsScreen(
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
+    val zone = remember { java.time.ZoneId.systemDefault() }
+
+    // **The one that is moving leads.** A care notebook runs several threads at
+    // once and they are almost never equally live: one has a grievance going
+    // through it this week and four have not been touched since spring.
+    // Ordering by when a thread was created says nothing about which is which.
+    val running = threads.filter { it.endedEdtf.isNullOrBlank() }
+        .sortedByDescending { it.lastActivity ?: Long.MIN_VALUE }
+    val ended = threads.filter { !it.endedEdtf.isNullOrBlank() }
+
+    var endedOpen by rememberSaveable { mutableStateOf(false) }
 
     SectionScaffold(
         name = ThreadTags.NAME,
@@ -74,17 +92,63 @@ fun CareThreadsScreen(
         headingKey = "threads.heading",
     ) {
         if (threads.isEmpty()) {
-            item { SectionEmpty(name = ThreadTags.NAME, text = strings["threads.empty"], section = Repository.Section.THREADS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }
+            item {
+                SectionEmpty(
+                    name = ThreadTags.NAME,
+                    text = strings["threads.empty"],
+                    section = Repository.Section.THREADS,
+                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
+                )
+            }
+            return@SectionScaffold
         }
 
-        threads.forEachIndexed { index, row ->
+        // **A thread with nothing on it is shown, not hidden.** Applying a
+        // situation template creates several at once and most are empty on day
+        // one. They are places the record will go rather than places it has
+        // been, and hiding them would mean the set the person chose quietly
+        // disagrees with the set they see.
+        running.forEachIndexed { index, row ->
             item(key = row.thread.id) {
                 ThreadSpineRow(
                     row = row,
                     continuesAbove = index > 0,
-                    continuesBelow = index < threads.lastIndex,
+                    continuesBelow = index < running.lastIndex,
+                    lead = index == 0,
+                    zone = zone,
                     onOpen = { onOpen(row.thread) },
                 )
+            }
+        }
+
+        // **Ended threads fold, and they are kept.** A thread that has finished
+        // is the record of something that happened, not a mistake to clear
+        // away, and it stays reachable with its own count.
+        if (ended.isNotEmpty()) {
+            item(key = "ended") {
+                Spacer(Modifier.height(Space.s))
+                FoldRow(
+                    labelKey = "threads.ended",
+                    expanded = endedOpen,
+                    onToggle = { endedOpen = !endedOpen },
+                    count = ended.size.toString(),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+
+            if (endedOpen) {
+                ended.forEachIndexed { index, row ->
+                    item(key = "ended_${row.thread.id}") {
+                        ThreadSpineRow(
+                            row = row,
+                            continuesAbove = index > 0,
+                            continuesBelow = index < ended.lastIndex,
+                            lead = false,
+                            zone = zone,
+                            onOpen = { onOpen(row.thread) },
+                        )
+                    }
+                }
             }
         }
     }
@@ -103,21 +167,37 @@ fun CareThreadsScreen(
  * rather than the person's actual path. A chapter journey gets the continuous
  * line. That distinction is the last bullet of 5.2.
  */
+/**
+ * How much of its color an ended thread keeps.
+ *
+ * `DESIGN.md` section 5.2: an ended thread keeps its color and drops in
+ * opacity, so it reads as finished rather than deleted. Sixty percent is far
+ * enough to feel past and near enough that the route is still recognizably the
+ * same thread it was.
+ */
+private const val ENDED_THREAD_ALPHA = 0.6f
+
 @Composable
 private fun ThreadSpineRow(
     row: Repository.ThreadWithCount,
     continuesAbove: Boolean,
     continuesBelow: Boolean,
+    /** True for the thread that moved most recently, which leads the screen. */
+    lead: Boolean,
+    zone: java.time.ZoneId,
     onOpen: () -> Unit,
 ) {
     val colors = HealthTrail.colors
-    val route = colors.threadRoutes[row.thread.colorIndex % colors.threadRoutes.size]
+    val base = colors.threadRoutes[row.thread.colorIndex % colors.threadRoutes.size]
 
-    // **An ended thread should keep its color and drop to ENDED_THREAD_ALPHA**,
-    // per section 5.2, so it reads as finished rather than deleted. That is not
-    // wired here because `CareThread` does not carry an ended timestamp yet, and
-    // inventing one in the view would be the interface guessing at data the app
-    // does not have. The token is defined and waiting.
+    // **An ended thread keeps its color and drops to `ENDED_THREAD_ALPHA`**, per
+    // section 5.2, so it reads as finished rather than deleted. It could not be
+    // wired until the query carried `ended_edtf`, which it does now: the token
+    // had been defined and waiting since the screen was first built.
+    val ended = !row.endedEdtf.isNullOrBlank()
+    val route = if (ended) base.copy(alpha = ENDED_THREAD_ALPHA) else base
+
+
     SpineRow(
         continuesAbove = continuesAbove,
         continuesBelow = continuesBelow,
@@ -126,17 +206,22 @@ private fun ThreadSpineRow(
         dash = RouteDash.forIndex(row.thread.colorIndex),
     ) {
         Column {
-            ThreadRow(row, onOpen)
+            ThreadRow(row = row, lead = lead, route = route, zone = zone, onOpen = onOpen)
             Spacer(Modifier.height(Space.cardGap))
         }
     }
 }
 
 @Composable
-private fun ThreadRow(row: Repository.ThreadWithCount, onOpen: () -> Unit) {
+private fun ThreadRow(
+    row: Repository.ThreadWithCount,
+    lead: Boolean,
+    route: androidx.compose.ui.graphics.Color,
+    zone: java.time.ZoneId,
+    onOpen: () -> Unit,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val route = colors.threadRoutes[row.thread.colorIndex % colors.threadRoutes.size]
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, colors.card)
 
@@ -163,8 +248,12 @@ private fun ThreadRow(row: Repository.ThreadWithCount, onOpen: () -> Unit) {
         Spacer(Modifier.width(Space.sm))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = row.thread.label,
-                style = HealthTrail.type.displayS,
+                text = Bidi.isolate(row.thread.label),
+                // **The leading thread is the one thing on the screen**, at the
+                // hero size. Everything under it is the same row at display
+                // weight, which is law 1's scale jump rather than four things
+                // at one size and nothing to look at first.
+                style = if (lead) HealthTrail.type.hero else HealthTrail.type.displayS,
                 color = colors.ink,
             )
             Spacer(Modifier.height(Space.xs))
@@ -172,7 +261,18 @@ private fun ThreadRow(row: Repository.ThreadWithCount, onOpen: () -> Unit) {
             // reads as words rather than as a digit and says the same thing in
             // both places.
             Text(
-                text = strings("notebook.count", "count" to row.entryCount),
+                text = Bidi.join(
+                    strings("notebook.count", "count" to row.entryCount),
+                    when {
+                        !row.endedEdtf.isNullOrBlank() ->
+                            EventDateText.render(strings, row.endedEdtf)
+                        row.lastActivity != null -> strings(
+                            "threads.moving",
+                            "date" to EventDateText.monthHeading(strings, row.lastActivity, zone),
+                        )
+                        else -> strings["threads.quiet"]
+                    },
+                ),
                 style = HealthTrail.type.mono,
                 color = colors.ink2,
             )

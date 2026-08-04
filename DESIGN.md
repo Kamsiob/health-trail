@@ -561,7 +561,7 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 | One medication, and how it changed | 10 One incident | A history in order is a spine |
 | One chapter | 19 Chapters | The current place opened, holding what it holds |
 | One care thread | 10 One incident | A thread is a sequence with an outcome |
-| Care threads, the list | 12 Medications | Peers with state, folded when ended |
+| Care threads, the list | 12 Medications | Peers with state, folded when ended. **Built 2026-08-04**, #186, review at #223 |
 | One document | 09 One entry | The paper itself, then where the original lives |
 | One bill | 09 One entry | The amount, its state, and what it is linked to |
 | One appointment | 09 One entry | The facts, then the prep, then the calendar hand-off |

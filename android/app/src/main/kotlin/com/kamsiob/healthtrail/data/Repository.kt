@@ -2449,7 +2449,22 @@ class Repository private constructor(
     // -- care threads --------------------------------------------------------
 
     /** A thread, with how much of the record runs through it. */
-    data class ThreadWithCount(val thread: CareThread, val entryCount: Int)
+    data class ThreadWithCount(
+        val thread: CareThread,
+        val entryCount: Int,
+        /**
+         * When something last happened on this thread, or null if nothing has.
+         *
+         * **What makes a thread the one that is moving.** A care notebook runs
+         * several of these at once and they are almost never equally live: one
+         * has a grievance going through it this week and four have not been
+         * touched since spring. Ordering by when the thread was created says
+         * nothing about which is which.
+         */
+        val lastActivity: Long? = null,
+        /** The EDTF the person gave when the thread ended, or null if it runs. */
+        val endedEdtf: String? = null,
+    )
 
     /**
      * The threads and what is on each, in the order the person sees them.
@@ -2465,12 +2480,14 @@ class Repository private constructor(
     suspend fun threadsWithCounts(subjectId: String): List<ThreadWithCount> =
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
-                "SELECT t.id, t.label, t.color_index, COUNT(et.id) " +
+                "SELECT t.id, t.label, t.color_index, COUNT(et.id), " +
+                    "MAX(e.occurred_start), t.ended_edtf " +
                     "FROM live_care_thread t " +
                     "LEFT JOIN live_entry_thread et ON et.thread_id = t.id " +
                     "LEFT JOIN live_entry e ON e.id = et.entry_id " +
                     "WHERE t.subject_id = ? " +
-                    "GROUP BY t.id, t.label, t.color_index, t.sort_index, t.created_at " +
+                    "GROUP BY t.id, t.label, t.color_index, t.ended_edtf, " +
+                    "t.sort_index, t.created_at " +
                     "ORDER BY t.sort_index, t.created_at",
                 arrayOf(subjectId),
             ).use { cursor ->
@@ -2484,6 +2501,8 @@ class Repository private constructor(
                                     colorIndex = cursor.getInt(2),
                                 ),
                                 entryCount = cursor.getInt(3),
+                                lastActivity = if (cursor.isNull(4)) null else cursor.getLong(4),
+                                endedEdtf = cursor.getString(5),
                             ),
                         )
                     }
