@@ -26,6 +26,7 @@ object InstructionTags {
     fun violation(id: String) = "instruction_violation_$id"
     const val NAME = "standing_instructions"
     const val ADD = "standing_instructions_add"
+    const val MEANING = "standing_instructions_meaning"
     fun row(id: String) = "standing_instruction_$id"
     fun tag(id: String) = "standing_instruction_tag_$id"
 }
@@ -90,15 +91,60 @@ fun StandingInstructionsScreen(
             }
         }
 
-        for (instruction in instructions) {
+        // **The one with something wrong leads.** Law 1: what a person opens
+        // this screen for is whether what they asked for is being done, and the
+        // instruction that has not been is the answer to that. Where nothing
+        // has been broken, the one still waiting for an answer leads instead,
+        // and where everything is settled the most recent does.
+        val lead = instructions.maxWithOrNull(
+            compareBy(
+                { violations[it.id] ?: 0 },
+                { if (it.isAcknowledged) 0 else 1 },
+            ),
+        )
+
+        // **Each tag explains itself once, on the first instruction carrying
+        // it.** Explaining only on the leading instruction was the first fix and
+        // it was wrong: a notebook whose lead is an unbacked request would never
+        // show what "backed by federal rules" means anywhere at all. Seen on the
+        // phone, where the federal instruction sat with its label and no
+        // explanation on the screen.
+        val explained = mutableSetOf<String>()
+        val ordered = instructions.sortedByDescending { it.id == lead?.id }
+
+        ordered.forEachIndexed { index, instruction ->
+            val explainHere = explained.add(instruction.tag)
             item(key = instruction.id) {
                 InstructionRow(
                     violationCount = violations[instruction.id] ?: 0,
                     onRecordViolation = { onRecordViolation(instruction) },
                     instruction = instruction,
                     tag = tags[instruction.tag],
+                    lead = explainHere,
                     onRemove = { onRemove(instruction) },
                     onAcknowledge = { onAcknowledge(instruction) },
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
+        // **Said once for the screen rather than once per instruction.** Both
+        // of these paragraphs were repeated verbatim on every card: three
+        // instructions meant the same two hundred words three times, which is
+        // section 1's "same label in two slots" at paragraph length, and it
+        // buried what each instruction actually said.
+        //
+        // They are still said. The content rules require the app to state that
+        // it counts and does not conclude, and that a request is not a rule.
+        // What changes is that a person reads each of them once.
+        if (instructions.isNotEmpty()) {
+            item(key = "footnote") {
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = strings["instruction.violations.meaning"],
+                    style = HealthTrail.type.bodyS,
+                    color = HealthTrail.colors.ink2,
+                    modifier = Modifier.testTag(InstructionTags.MEANING),
                 )
                 Spacer(Modifier.height(Space.cardGap))
             }
@@ -118,6 +164,12 @@ fun StandingInstructionsScreen(
 @Composable
 private fun InstructionRow(
     violationCount: Int,
+    /**
+     * True on the first instruction carrying this tag, which is the one that
+     * spells the tag out. Every other instruction with the same tag shows the
+     * label alone, because the label is what differs between them.
+     */
+    lead: Boolean = false,
     onRecordViolation: () -> Unit,
     instruction: Repository.StandingInstruction,
     tag: TemplateCatalog.InstructionTag?,
@@ -180,12 +232,20 @@ private fun InstructionRow(
                         colors.ink2
                     },
                 )
-                Spacer(Modifier.height(Space.xs))
-                Text(
-                    text = tag.explainer,
-                    style = HealthTrail.type.bodyS,
-                    color = colors.ink2,
-                )
+                // **The explainer only on the one that leads.** It is the same
+                // paragraph for every instruction carrying the same tag, so
+                // three requests meant the same seventy words three times, and
+                // what each instruction actually said was buried between them.
+                // The label stays on every row, because that is the part that
+                // differs and the part somebody scans for.
+                if (lead) {
+                    Spacer(Modifier.height(Space.xs))
+                    Text(
+                        text = tag.explainer,
+                        style = HealthTrail.type.bodyS,
+                        color = colors.ink2,
+                    )
+                }
             }
         }
 
@@ -235,12 +295,10 @@ private fun InstructionRow(
                 style = HealthTrail.type.mono,
                 color = colors.ink2,
             )
-            Spacer(Modifier.height(Space.xs))
-            Text(
-                text = strings["instruction.violations.meaning"],
-                style = HealthTrail.type.bodyS,
-                color = colors.ink2,
-            )
+            // **The sentence about what a count means is not here any more.**
+            // It said the same thing under every instruction. It is said once
+            // for the screen instead, which is where a person reads it once
+            // rather than skipping it three times.
         }
 
         Spacer(Modifier.height(Space.sm))

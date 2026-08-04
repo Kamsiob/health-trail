@@ -555,7 +555,7 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 
 | Undrawn screen | Follows | Why that one |
 |---|---|---|
-| Standing instructions, the list | 12 Medications | A record of what was asked, folded by state, with `stone` |
+| Standing instructions, the list | 12 Medications | A record of what was asked, folded by state, with `stone`. **Built 2026-08-04**, #185, review at #225 |
 | One standing instruction | 10 One incident | What was asked, then every violation on a spine |
 | One person | 09 One entry | Identity, then their own facts, then everything connected |
 | One medication, and how it changed | 10 One incident | A history in order is a spine |
@@ -609,6 +609,7 @@ The small touches that separate finished from correct. **They apply everywhere, 
 - **Empty states** get a single line-art trail motif in ink at low opacity, drawn as a set at one stroke weight, plus two lines of warm copy: what this place is for, and the one action to start.
 - **Icons are one coherent set at one stroke weight**, drawn for this app's sections and capture types, **never assembled from a default library.**
 - **The trail mirrors correctly right to left**, including waypoints, scrubbers, and the FAB corner.
+- **A paragraph that is the same for every row is said once for the screen, not once per row.** Standing instructions carried its tag explainer and its counting disclaimer under every instruction: three of them meant the same two hundred words three times, and what each instruction actually said was buried between them. Say it once, and where a paragraph belongs to a category rather than to the screen, say it on the first row of each category rather than only on the first row overall.
 - **Any line built by joining parts is isolated, never concatenated.** A value, a unit and a date in one string are separate bidirectional runs, and in Arabic the algorithm reorders them against each other: `1.4 0 to 10 · 26 يونيو 2026` rendered as `2026 يونيو to 10 · 26 0 1.4`. `Bidi.join` wraps each part so it lays out on its own and the parts keep the order the code put them in. It applies to every joined line in the app, not only the one it was found on.
 - **A list that has earned law 4's tools gives up a margin for them.** A rail drawn over the content looks right against short fixture text and cuts through the first real sentence that reaches the end of its line.
 
