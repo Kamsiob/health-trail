@@ -186,9 +186,9 @@ Two base tokens moved for the same reason: `ink-2` to `#576873` and `blue` to `#
 
 ## 3. What is deliberately not claimed
 
-**The dark theme is derived but not yet built, and saying otherwise would be the error D29 records, which this project has already made twice.**
+**The dark theme is built and looked at, and this section said otherwise until 2026-08-04.** `DarkColors` carries the full ladder in `Color.kt`, starting at `#141C23`, and **101 dark screenshots** sit in `docs/screenshots`, one for every screen closed on a sweep. D87 and `DESIGN.md` 4.5 hold the derivation and both measured tables.
 
-**The derivation is done and published**, D87 and `DESIGN.md` 4.5: the full dark surface ladder and all six tab hues with washes and ink variants, with both measured tables. **What has not happened is putting the values in `Color.kt` and looking at them on the phone.** Until that, the dark theme is unbuilt and is described that way everywhere.
+**What that leaves genuinely unclaimed** is the dark theme under a color vision check: #152 is open for the protanopia and deuteranopia screenshots against the respread hues, and the tables are the floor rather than the verification.
 
 **The color vision verification is done, and the hues were respread because of what it found.** Simulated protanopia and deuteranopia over the real screenshots at both themes, committed in `docs/screenshots/`.
 
