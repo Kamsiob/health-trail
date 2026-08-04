@@ -44,6 +44,9 @@ import com.kamsiob.healthtrail.data.Readable
 import com.kamsiob.healthtrail.ui.components.Share
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.PersonScreen
+import com.kamsiob.healthtrail.ui.screens.AddMilestoneScreen
+import com.kamsiob.healthtrail.ui.screens.MilestoneDraft
+import com.kamsiob.healthtrail.ui.screens.MilestonesScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.BillScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
@@ -317,6 +320,11 @@ fun NotebookShell(
 
     /** The appointment whose prep sheet is open, and the sheet itself. */
     var openPrepFor by remember { mutableStateOf<String?>(null) }
+    var milestonesOpen by remember { mutableStateOf(false) }
+    var addingMilestone by remember { mutableStateOf(false) }
+    var editingMilestone by remember { mutableStateOf<Repository.Milestone?>(null) }
+    var savingMilestone by remember { mutableStateOf<MilestoneDraft?>(null) }
+    var milestones by remember { mutableStateOf<List<Repository.Milestone>>(emptyList()) }
 
     /** The care thread being read, and what is on it. */
     var openThread by remember { mutableStateOf<Repository.CareThread?>(null) }
@@ -486,6 +494,7 @@ fun NotebookShell(
             threadCounts = subject?.let { repository.threadsWithCounts(it.id) }.orEmpty()
             readings = subject?.let { repository.readings(it.id) }.orEmpty()
             chapters = subject?.let { repository.chapters(it.id) }.orEmpty()
+            milestones = subject?.let { repository.milestones(it.id) }.orEmpty()
             appointments = subject?.let { repository.appointments(it.id) }.orEmpty()
             instructions = subject?.let { repository.standingInstructions(it.id) }.orEmpty()
             violationCounts = subject?.let { repository.violationCounts(it.id) }.orEmpty()
@@ -561,6 +570,11 @@ fun NotebookShell(
     BackHandler(enabled = openPrepFor != null) { openPrepFor = null }
     BackHandler(enabled = openThread != null) { openThread = null }
     BackHandler(enabled = openChapter != null) { openChapter = null }
+    BackHandler(enabled = milestonesOpen && !addingMilestone) { milestonesOpen = false }
+    BackHandler(enabled = addingMilestone) {
+        addingMilestone = false
+        editingMilestone = null
+    }
     // **The entry sits on top of whatever opened it, so its way back is
     // registered last.** The dispatcher hands the press to the most recently
     // added enabled callback, so an entry opened from a prep sheet with this
@@ -1467,6 +1481,7 @@ fun NotebookShell(
                 Repository.Section.CHAPTERS -> ChaptersScreen(
                     onOpen = { openChapter = it },
                     chapters = chapters,
+                    onOpenMilestones = { milestonesOpen = true },
                     onBack = { openSection = null },
                 )
 
@@ -1723,6 +1738,21 @@ fun NotebookShell(
                 entries = threadEntries,
                 onOpenEntry = { openThread = null; openEntry = it.id },
                 onBack = { openThread = null },
+            )
+        }
+
+        if (milestonesOpen) {
+            MilestonesScreen(
+                milestones = milestones,
+                // **Tapping one opens the form that changes it**, which is the
+                // exception the bill and the document taught: a milestone is a
+                // label, a date and a note, and a detail screen for three lines
+                // would be a door onto the same three lines. Rule 17 keeps the
+                // date editable forever and this is where that happens.
+                onOpen = { editingMilestone = it; addingMilestone = true },
+                onOpenChapter = { milestonesOpen = false; openChapter = chapters.firstOrNull { c -> c.id == it } },
+                onAdd = { editingMilestone = null; addingMilestone = true },
+                onBack = { milestonesOpen = false },
             )
         }
 
@@ -2177,6 +2207,50 @@ fun NotebookShell(
                 }
                 editingAppointment = null
                 savingAppointment = null
+                revision += 1
+            }
+        }
+
+        if (addingMilestone) {
+            AddMilestoneScreen(
+                existing = editingMilestone,
+                chapters = chapters,
+                onSave = { draft ->
+                    addingMilestone = false
+                    savingMilestone = draft
+                },
+                onCancel = { addingMilestone = false; editingMilestone = null },
+            )
+        }
+
+        val milestoneDraft = savingMilestone
+        if (milestoneDraft != null) {
+            LaunchedEffect(milestoneDraft) {
+                val subject = repository.activeSubject()
+                // **A milestone with no words is not one.** The date can be
+                // anything, including unknown, but something has to have been
+                // marked, and a blank save is somebody backing out rather than
+                // recording an empty moment.
+                val correcting = editingMilestone
+                if (correcting != null && milestoneDraft.label.isNotBlank()) {
+                    repository.updateMilestone(
+                        milestoneId = correcting.id,
+                        label = milestoneDraft.label.trim(),
+                        occurred = milestoneDraft.occurred ?: Edtf.unknown(),
+                        chapterId = milestoneDraft.chapterId,
+                        note = milestoneDraft.note,
+                    )
+                } else if (subject != null && milestoneDraft.label.isNotBlank()) {
+                    repository.createMilestone(
+                        subjectId = subject.id,
+                        label = milestoneDraft.label.trim(),
+                        occurred = milestoneDraft.occurred ?: Edtf.unknown(),
+                        chapterId = milestoneDraft.chapterId,
+                        note = milestoneDraft.note,
+                    )
+                }
+                editingMilestone = null
+                savingMilestone = null
                 revision += 1
             }
         }

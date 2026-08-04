@@ -15,6 +15,9 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -34,6 +37,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object ChapterTags {
     const val NAME = "chapters"
     const val EARLIER_FOLD = "chapters_earlier_fold"
+    const val MILESTONES = "chapters_milestones"
     fun row(id: String) = "chapter_$id"
 }
 
@@ -64,6 +68,8 @@ fun ChaptersScreen(
     /** Opens the chapter itself. Every stop on the journey was a dead end. */
     onOpen: (Repository.Chapter) -> Unit,
     chapters: List<Repository.Chapter>,
+    /** Opens the milestone arc, which has no section of its own to live in. */
+    onOpenMilestones: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -149,6 +155,32 @@ fun ChaptersScreen(
                     }
                 }
             }
+        }
+
+        // **The arc is a door from here, per section 14 and rule 18.** Chapters
+        // are where somebody was; milestones are what happened along the way,
+        // and each one names the chapter it fell in. A screen that could not be
+        // reached would be the discoverability failure 13.5 names, and there is
+        // no thirteenth section to put it in.
+        item {
+            Spacer(Modifier.height(Space.sectionGap))
+            GroupedSurface {
+                DenseRow(
+                    title = strings["milestones.door"],
+                    subtitle = strings["milestones.subtitle"],
+                    leading = {
+                        WaypointDot(
+                            color = HealthTrail.colors.gold,
+                            state = Waypoint.MILESTONE,
+                        )
+                    },
+                    chevron = true,
+                    divider = false,
+                    onClick = onOpenMilestones,
+                    modifier = Modifier.testTag(ChapterTags.MILESTONES),
+                )
+            }
+            Spacer(Modifier.height(Space.l))
         }
     }
 }

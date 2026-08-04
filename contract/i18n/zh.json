@@ -687,5 +687,20 @@
   "document.where": "来自哪里",
   "document.nophoto": "还没有它的照片。您记下的内容都在这里，有照片时随时可以补上。",
   "document.edit": "修改您写的内容",
-  "section.back.documents": "返回文件"
+  "section.back.documents": "返回文件",
+  "milestones.heading": "走到这里的路",
+  "milestones.subtitle": "你认为值得记下的时刻。这里没有任何内容是应用推断出来的。",
+  "milestones.empty": "还没有记下什么。当发生了你会讲给别人听的事，就记在这里，它会留在轨迹上。",
+  "milestones.add": "记下一个时刻",
+  "milestones.edit.title": "修改你记下的内容",
+  "milestones.add.lead": "几句话，以及知道的话是什么时候。两样以后都可以改。",
+  "milestones.label": "发生了什么",
+  "milestones.label.hint": "用你自己的话",
+  "milestones.when": "是什么时候",
+  "milestones.note": "关于它值得记住的事",
+  "milestones.note.hint": "谁在场、说了什么、为什么重要",
+  "milestones.open": "打开这个时刻",
+  "milestones.door": "走到这里的路",
+  "chapter.milestones": "值得记下的事",
+  "milestones.where": "当时在哪里"
 }

@@ -687,5 +687,20 @@
   "document.where": "De dónde viene",
   "document.nophoto": "Todavía no hay una fotografía. Lo que usted anotó está aquí, y se puede añadir una imagen cuando la haya.",
   "document.edit": "Cambiar lo que usted escribió",
-  "section.back.documents": "Volver a los documentos"
+  "section.back.documents": "Volver a los documentos",
+  "milestones.heading": "El camino hasta ahora",
+  "milestones.subtitle": "Los momentos que decidiste marcar. Nada de esto lo deduce la aplicación.",
+  "milestones.empty": "Nada marcado todavía. Cuando pase algo que le contarías a alguien, márcalo aquí y se queda en el rastro.",
+  "milestones.add": "Marcar un momento",
+  "milestones.edit.title": "Cambiar lo que marcaste",
+  "milestones.add.lead": "Unas palabras, y cuándo fue si lo sabes. Puedes cambiar cualquiera de las dos después.",
+  "milestones.label": "Qué pasó",
+  "milestones.label.hint": "Con tus palabras",
+  "milestones.when": "Cuándo fue",
+  "milestones.note": "Algo que valga la pena recordar",
+  "milestones.note.hint": "Quién estaba, qué se dijo, por qué importó",
+  "milestones.open": "Abrir este momento",
+  "milestones.door": "El camino hasta ahora",
+  "chapter.milestones": "Lo que valió la pena marcar",
+  "milestones.where": "Dónde estaba"
 }

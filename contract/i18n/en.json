@@ -687,5 +687,20 @@
   "document.where": "Where this came from",
   "document.nophoto": "No photograph of this one yet. What is written down about it is here, and a picture can be added whenever there is one.",
   "document.edit": "Change what you wrote",
-  "section.back.documents": "Back to documents"
+  "section.back.documents": "Back to documents",
+  "milestones.heading": "The path so far",
+  "milestones.subtitle": "The moments you decided were worth marking. Nothing here is worked out by the app.",
+  "milestones.empty": "Nothing marked yet. When something happens that you would tell somebody about, mark it here and it stays on the trail.",
+  "milestones.add": "Mark a milestone",
+  "milestones.edit.title": "Change what you marked",
+  "milestones.add.lead": "A few words, and when it was if you know. You can change either of them later.",
+  "milestones.label": "What happened",
+  "milestones.label.hint": "In your own words",
+  "milestones.when": "When it was",
+  "milestones.note": "Anything worth remembering about it",
+  "milestones.note.hint": "Who was there, what was said, why it mattered",
+  "milestones.open": "Open this milestone",
+  "milestones.door": "The path so far",
+  "chapter.milestones": "What was worth marking",
+  "milestones.where": "Where they were"
 }

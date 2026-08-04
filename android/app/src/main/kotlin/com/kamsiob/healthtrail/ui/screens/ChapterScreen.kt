@@ -36,6 +36,8 @@ object ChapterTags2 {
     fun entry(id: String) = "chapter_entry_$id"
     fun incident(id: String) = "chapter_incident_$id"
     fun document(id: String) = "chapter_document_$id"
+    const val MILESTONES_FOLD = "chapter_milestones_fold"
+    fun milestone(id: String) = "chapter_milestone_$id"
 }
 
 /**
@@ -65,6 +67,7 @@ fun ChapterScreen(
     // What went wrong leads open; the rest are folded until asked for.
     var incidentsOpen by rememberSaveable { mutableStateOf(true) }
     var documentsOpen by rememberSaveable { mutableStateOf(false) }
+    var milestonesOpen by rememberSaveable { mutableStateOf(false) }
     var entriesOpen by rememberSaveable { mutableStateOf(false) }
     val colors = HealthTrail.colors
     val chapter = detail.chapter
@@ -160,6 +163,39 @@ fun ChapterScreen(
                             Spacer(Modifier.height(Space.cardGap))
                         }
                     }
+                }
+            }
+            item { Spacer(Modifier.height(Space.s)) }
+        }
+
+        // **What was worth marking while they were here, per rule 18.** A
+        // milestone names its chapter on the arc, and a chapter could not name
+        // its milestones, which is a link with one end. It leads the folds
+        // rather than following them: of everything a chapter holds, this is
+        // the part somebody would tell another person about.
+        if (detail.milestones.isNotEmpty()) {
+            item(key = "milestones_fold") {
+                FoldRow(
+                    labelKey = "chapter.milestones",
+                    expanded = milestonesOpen,
+                    onToggle = { milestonesOpen = !milestonesOpen },
+                    count = detail.milestones.size.toString(),
+                    modifier = Modifier.testTag(ChapterTags2.MILESTONES_FOLD),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+        if (detail.milestones.isNotEmpty() && milestonesOpen) {
+            detail.milestones.forEach { milestone ->
+                item(key = "m_${milestone.id}") {
+                    Card(
+                        testTag = ChapterTags2.milestone(milestone.id),
+                        onTap = null,
+                        eyebrow = EventDateText.render(strings, milestone.occurredEdtf),
+                        title = milestone.label,
+                        body = milestone.note,
+                    )
+                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
             item { Spacer(Modifier.height(Space.s)) }

@@ -687,5 +687,20 @@
   "document.where": "من أين جاء",
   "document.nophoto": "لا توجد صورة له بعد. ما دُوّن عنه موجود هنا، ويمكن إضافة صورة متى توفرت.",
   "document.edit": "غيّر ما كتبته",
-  "section.back.documents": "العودة إلى المستندات"
+  "section.back.documents": "العودة إلى المستندات",
+  "milestones.heading": "الطريق حتى الآن",
+  "milestones.subtitle": "اللحظات التي رأيت أنها تستحق التسجيل. لا شيء هنا يستنتجه التطبيق.",
+  "milestones.empty": "لا شيء مسجل بعد. حين يحدث شيء كنت ستخبر به أحدًا، سجّله هنا ويبقى على الأثر.",
+  "milestones.add": "سجّل محطة",
+  "milestones.edit.title": "غيّر ما سجّلته",
+  "milestones.add.lead": "بضع كلمات، ومتى كان إن كنت تعرف. يمكنك تغيير أي منهما لاحقًا.",
+  "milestones.label": "ما الذي حدث",
+  "milestones.label.hint": "بكلماتك أنت",
+  "milestones.when": "متى كان",
+  "milestones.note": "أي شيء يستحق التذكّر عنه",
+  "milestones.note.hint": "من كان هناك، وما الذي قيل، ولماذا كان مهمًا",
+  "milestones.open": "افتح هذه المحطة",
+  "milestones.door": "الطريق حتى الآن",
+  "chapter.milestones": "ما استحق التسجيل",
+  "milestones.where": "أين كانوا"
 }

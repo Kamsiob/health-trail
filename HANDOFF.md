@@ -78,8 +78,27 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **The calendar hand-off cost three attempts and none of them were time zones.** An appointment on November 27 opened the calendar app on the 26th. An all day event's end is exclusive and none was being sent, so the calendar received a day of zero length and drew the day before. `CalendarHandoffTest` covers it now. **The screen said November 27 the whole time**, which is the shape of every defect that only exists inside somebody else's app after the person has tapped.
 
-1. **The rest of step 4**, #199 to #208.
+1. **Finish #200, which is part built and NOT device verified.** The state is below.
+2. **The rest of step 4**, #201 to #208. **#199 is blocked**, on the same schema decision as #182: there is no test, no round and no result anywhere, so there is nothing to convert.
 2. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
+
+### #200 is half done and the half that is done has not been on the phone since the last edit
+
+**Read this before touching it.** The session stopped mid issue because the phone had to be unplugged, and the last three changes compiled and passed the sixteen checks but were **never installed or looked at**.
+
+**What is built and was verified on the device:** the milestone reader and writer in `Repository.kt`, `MilestonesScreen` (the arc), `AddMilestoneScreen`, the door to the arc from the chapters list, and the shell wiring. Marking a milestone works, an unknown date saves and sorts to the end of the arc, and opening one to change its date re-sorts it. `docs/screenshots/milestones-v4-light.png` is that screen.
+
+**What was added afterward and has never run on a phone:**
+
+- The chapter chip group on `AddMilestoneScreen`, so a milestone can name where they were. Tapping the chosen chip again clears it.
+- `chapter_id` on `updateMilestone`, so correcting one can change or clear it. Without this the chips would have shown on the edit form and thrown the answer away.
+- The chapter door on each row of the arc, and `chapter.milestones` on `ChapterScreen`, which is rule 18's other end.
+
+**None of that is confirmed and the fixture cannot confirm the door on its own**: the generated milestones have no `chapter_id`, so the link only appears once somebody marks one and picks a place. **Do that first**, then sweep.
+
+**What #200 still needs:** the sweep at both themes, font scale 2.0 and Arabic, the empty state, the instrumented suite, a `needs-design-review` issue per rule 12 since the arc is undrawn, the `DESIGN.md` section 14 row, and **month review, which is the second half of the issue and has not been started.**
+
+**The device has one extra milestone on it**, "Walked to the window on her own", written by hand while testing the writer. `tools/seed.sh` clears it.
 
 **Nine things are waiting on the owner and none of them block anything.** **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table), **#220** (the trail's filter needs a decision about what a person filters by), **#182** (the tests section needs a schema before it can be built at all), **#230** (an incident cannot say which medication it was about, which rule 18 argues it should), and **#223** and **#225** (the two design reviews).
 

@@ -2384,6 +2384,123 @@ class Repository private constructor(
         }
     }
 
+    // -- milestones, the arc ---------------------------------------------------
+
+    /**
+     * One thing somebody decided was worth marking.
+     *
+     * **The app never decides one.** A milestone is not derived from anything:
+     * not from a count of entries, not from a measurement crossing a number,
+     * not from a chapter starting. Rule 2, and the reason this is a table of
+     * its own rather than a flag on an entry. "First day without oxygen" is a
+     * sentence only the person watching can write.
+     *
+     * **The table shipped in `contract/schema.sql` and nothing read it or wrote
+     * it until 2026-08-04**, which meant an export carried a section of
+     * milestones the person had no way to have written. #234.
+     *
+     * `chapterName` comes from the join rather than being stored, so a chapter
+     * renamed later renames itself here too.
+     */
+    data class Milestone(
+        val id: String,
+        val label: String,
+        val occurredEdtf: String?,
+        val occurredStart: Long?,
+        val chapterId: String?,
+        val chapterName: String?,
+        val note: String?,
+    )
+
+    /**
+     * Every milestone for one subject, oldest first.
+     *
+     * **Oldest first, unlike the trail.** The trail answers "what happened
+     * lately" and this answers "how did we get here", which is read forward.
+     *
+     * **An unknown date sorts last rather than first.** A milestone somebody
+     * marked without a date still happened, and putting it at the head of the
+     * arc would claim it happened before everything else. It goes at the end,
+     * where it reads as "and also this", which is what it is.
+     */
+    suspend fun milestones(subjectId: String): List<Milestone> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT m.id, m.label, m.occurred_edtf, m.occurred_start, " +
+                    "m.chapter_id, c.name, m.note " +
+                    "FROM live_milestone m " +
+                    "LEFT JOIN live_chapter c ON c.id = m.chapter_id " +
+                    "WHERE m.subject_id = ? " +
+                    "ORDER BY m.occurred_start IS NULL, m.occurred_start, m.created_at",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            Milestone(
+                                id = cursor.getString(0),
+                                label = cursor.getString(1),
+                                occurredEdtf = cursor.getString(2),
+                                occurredStart =
+                                    if (cursor.isNull(3)) null else cursor.getLong(3),
+                                chapterId = cursor.getString(4),
+                                chapterName = cursor.getString(5),
+                                note = cursor.getString(6),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /**
+     * Marks one.
+     *
+     * Only the label is required, and the date may be as coarse as the person
+     * gave it or unknown, which is a real answer and saves like any other.
+     */
+    suspend fun createMilestone(
+        subjectId: String,
+        label: String,
+        occurred: Edtf.Date,
+        chapterId: String? = null,
+        note: String? = null,
+    ): String = insert(
+        "milestone",
+        mapOf(
+            "subject_id" to subjectId,
+            "label" to label,
+            "chapter_id" to chapterId,
+            "note" to note?.ifBlank { null },
+        ) + dateColumns("occurred", occurred),
+    )
+
+    /** Changes what was marked, or when. Every date stays editable forever. */
+    suspend fun updateMilestone(
+        milestoneId: String,
+        label: String,
+        occurred: Edtf.Date,
+        /**
+         * Where they were, and **null is a value here rather than "leave it
+         * alone"**. The form offers the chapter chips when correcting as well
+         * as when marking, and tapping the chosen one again clears it, so a
+         * writer that ignored null would show a control that does nothing.
+         */
+        chapterId: String? = null,
+        note: String? = null,
+    ) = withContext(Dispatchers.IO) {
+        val columns = dateColumns("occurred", occurred) + mapOf(
+            "label" to label,
+            "chapter_id" to chapterId,
+            "note" to note?.ifBlank { null },
+        )
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+        db().database.execSQL(
+            "UPDATE milestone SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), milestoneId)).toTypedArray(),
+        )
+    }
+
     // -- readings, for the progress section ----------------------------------
 
     /**
@@ -3585,6 +3702,14 @@ class Repository private constructor(
         val entries: List<TrailEntry>,
         val incidents: List<Incident>,
         val documents: List<Document>,
+        /**
+         * What was worth marking while they were here.
+         *
+         * **Rule 18's other end.** A milestone names its chapter on the arc,
+         * and a chapter could not name its milestones, which is a link with one
+         * side. Oldest first, like the arc itself.
+         */
+        val milestones: List<Milestone>,
     )
 
     /**
@@ -3654,6 +3779,7 @@ class Repository private constructor(
                 entries = entries,
                 incidents = incidents(subjectId).filter { it.chapterName == chapter.name },
                 documents = documentsInChapter(database, chapterId),
+                milestones = milestones(subjectId).filter { it.chapterId == chapterId },
             )
         }
 
