@@ -14,6 +14,10 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import com.kamsiob.healthtrail.ui.components.Avatar
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -72,14 +76,21 @@ fun CareTeamScreen(
             item { Spacer(Modifier.height(Space.l)) }
         }
 
-        for (person in people) {
-            item(key = person.id) {
-                PersonRow(
-                    person = person,
-                    onCall = { onCall(person) },
-                    onRemove = { onRemove(person) },
-                    onOpen = { onOpen(person) },
-                )
+        // **One group, not one card each.** The grid draws the people you call
+        // as a single grouped surface with hairlines between them.
+        if (people.isNotEmpty()) {
+            item {
+                GroupedSurface {
+                    people.forEachIndexed { index, person ->
+                        PersonRow(
+                            person = person,
+                            onCall = { onCall(person) },
+                            onRemove = { onRemove(person) },
+                            onOpen = { onOpen(person) },
+                            isLast = index == people.lastIndex,
+                        )
+                    }
+                }
                 Spacer(Modifier.height(Space.cardGap))
             }
         }
@@ -112,6 +123,7 @@ private fun PersonRow(
     onCall: () -> Unit,
     onRemove: () -> Unit,
     onOpen: () -> Unit,
+    isLast: Boolean,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -128,65 +140,44 @@ private fun PersonRow(
     // be the app characterizing somebody it knows nothing about.
     val heading = name ?: phone ?: role
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(Radius.card)
-            .background(colors.card)
-            // **A tap opens the person now, rather than the form for
-            // correcting them.** Correcting a number is the rarer thing, and
-            // it moved onto the person's own page beside everything else about
-            // them. What a tap should open is the thing itself, which is the
-            // same rule the trail row learned tonight.
-            .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
-            .testTag(CareTeamTags.person(person.id))
-            .padding(Space.cardPadding),
-    ) {
-        // The role is the eyebrow only when it is not already carrying the
-        // heading, so it never appears twice on the same card.
-        if (role != null && heading != role) {
-            Text(text = role, style = HealthTrail.type.mono, color = colors.ink2)
-            Spacer(Modifier.height(Space.xs))
-        }
-
-        if (heading != null) {
-            Text(
-                text = heading,
-                style = HealthTrail.type.displayS,
-                color = colors.ink,
-            )
-        }
-
-        person.notes?.takeIf { it.isNotBlank() }?.let { notes ->
-            Spacer(Modifier.height(Space.xs))
-            Text(text = notes, style = HealthTrail.type.bodyM, color = colors.ink2)
-        }
-
-        Spacer(Modifier.height(Space.xs))
-
-        if (phone != null) {
-            // A text action rather than a filled button. There is one per card,
-            // and a column of filled buttons turns a quiet list into a wall of
-            // blue, which is section 2.2's accent spent on repetition. The
-            // Unfiled tray made the same call for the same reason.
-            //
-            // When the number is already the heading, the action says "Call"
-            // rather than repeating the number two lines under itself.
-            TextAction(
-                label = if (heading == phone) {
-                    strings["careteam.call"]
-                } else {
-                    strings("careteam.call.number", "number" to phone)
-                },
-                onClick = onCall,
-                modifier = Modifier.testTag(CareTeamTags.call(person.id)),
-            )
+    // **A dense row with an avatar, not a card.** Grid screen 11, and
+    // `DESIGN.md` 7: a card is for something with three or more lines a person
+    // reads, and this is a name, a role and a number somebody scans for. Twelve
+    // cards is a wall; twelve rows with initial marks is scannable in one pass.
+    //
+    // **The number is an outlined action on the row itself**, which is what the
+    // grid draws and what law 2 gives to a dialable thing. It is the one action
+    // worth taking about a person from a list, and it saves opening them first.
+    DenseRow(
+        title = heading.orEmpty(),
+        subtitle = listOfNotNull(
+            role.takeIf { it != heading },
+            person.notes?.takeIf { it.isNotBlank() },
+        ).joinToString(" · ").takeIf { it.isNotBlank() },
+        leading = {
+            // The subject's own avatar carries blue, per `DESIGN.md` 7, and
+            // there is exactly one of them. Everyone else is the section's rose.
+            Avatar(name = heading.orEmpty(), hue = hueFor(Repository.Section.CARE_TEAM))
+        },
+        trailingContent = if (phone != null) {
+            {
+                QuietButton(
+                    label = if (heading == phone) {
+                        strings["careteam.call"]
+                    } else {
+                        strings("careteam.call.number", "number" to phone)
+                    },
+                    onClick = onCall,
+                    modifier = Modifier.testTag(CareTeamTags.call(person.id)),
+                )
+            }
         } else {
-            Text(
-                text = strings["careteam.no_phone"],
-                style = HealthTrail.type.bodyS,
-                color = colors.ink2,
-            )
-        }
-    }
+            null
+        },
+        divider = !isLast,
+        onClick = onOpen,
+        modifier = Modifier
+            .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
+            .testTag(CareTeamTags.person(person.id)),
+    )
 }
