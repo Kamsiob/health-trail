@@ -1948,6 +1948,16 @@ So the payload is a run of frames: four bytes of big-endian length, then that ma
 
 **The index and the final flag are belt and braces, and the code says so.** Two probes proved it: removing the final-frame check still refused a truncated file, because the zip inside the payload has its central directory at the end; unbinding the index on both sides still refused a reordered file, because the nonce already carries the position. They are kept because they cost nothing and because the structural protection is an accident of what is inside the payload today. **The point of recording this is that the first two versions of that comment claimed credit for the wrong mechanism**, which is how a test comes to be trusted for a reason that is not true.
 
+### D98. The archive is named `.zip`, not `.htx`
+
+**2026-08-04, writing the byte-for-byte specification.** The export was `healthtrail-export-YYYYMMDD-HHMM.htx`. The extension existed so the file was recognizable as this app's and so nobody opened it expecting a document, which is a real consideration and the smaller one.
+
+**It made the file a dead end at the first step.** The whole two-layer container exists so that somebody who has the passphrase and does not have this app can open their record. That procedure begins with copying the file to a computer and opening it. A `.htx` file opens with nothing, on any machine, and the person has to already know it is a zip and know to rename it. The outer layer is a plain ZIP64 precisely so that any machine can read it, **and the extension is what tells the machine that.**
+
+Decided under rule 23: of two defensible answers, the one that is easiest for the person, provided it is safe, private and compatible. It is all three. Nothing about what is inside the file changes, the manifest still identifies it, and `contract/DATA-CONTRACT.md` 8.1's own example was already `health-trail-2027-03-14.zip`.
+
+**The restore picker never filtered on extension**, so nothing had to change to keep reading older files.
+
 ---
 
 ## BLOCKED
