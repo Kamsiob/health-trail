@@ -37,6 +37,15 @@ import com.kamsiob.healthtrail.ui.components.Chevron
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.Hero
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.GroupedRows
+import com.kamsiob.healthtrail.ui.components.FoldRow
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.animation.AnimatedVisibility
+import com.kamsiob.healthtrail.ui.components.wholeAppHue
+import com.kamsiob.healthtrail.ui.components.TabChip
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -49,6 +58,7 @@ object TodayTags {
     const val EMPTY = "today_empty"
     const val DIGEST = "today_digest"
     const val SEARCH = "today_search"
+    const val ALSO_WAITING = "today_also_waiting"
     const val EMERGENCY = "today_emergency"
     const val NEXT_APPOINTMENT = "today_next_appointment"
     fun step(number: Int) = "today_step_$number"
@@ -149,6 +159,7 @@ fun TodayScreen(
     onSearch: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
+    var alsoOpen by rememberSaveable { mutableStateOf(false) }
     val colors = HealthTrail.colors
 
     Surface(
@@ -161,24 +172,33 @@ fun TodayScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = Space.screenHorizontal),
         ) {
-            Spacer(Modifier.height(Space.l))
-            Text(
-                text = strings["today.title"],
-                style = HealthTrail.type.displayL,
-                color = colors.ink,
-            )
             Spacer(Modifier.height(Space.sm))
+
+            // **The tab and the way to search, on one row**, per grid screen 01.
+            // Today belongs to no section, so it takes gold and the base ladder
+            // rather than a section hue, per `DESIGN.md` 4.3.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TabChip(hue = wholeAppHue(), labelKey = "today.tab")
+                QuietButton(
+                    label = strings["today.search"],
+                    onClick = onSearch,
+                    modifier = Modifier.testTag(TodayTags.SEARCH),
+                )
+            }
+            Spacer(Modifier.height(Space.cardGap))
 
             // **At the top, under the title**, where 4.8 puts it.
             //
-            // **A recessed row rather than a card.** It was a full width white
-            // bar with a shadow, which is what 11.4 calls a dense row that was
-            // given a shadow: one line of text and a chevron's worth of
-            // meaning, taking a card's weight on the screen whose whole job is
-            // to say what changed. `sand` at the field radius is what 5.9 sets
-            // aside for a way into typing, and it is honest here because what
-            // it opens is a field.
-            SearchRow(onSearch)
+            // **The full width search row is gone.** Grid screen 01 puts the
+            // way to search in the header beside the tab, as a small outlined
+            // action, and a second search affordance under the title would be
+            // two doors to one place on the screen law 1 says must have one
+            // dominant thing. What is dominant here is what changed, not the
+            // way to go looking for something else.
 
             // **Only when there is something to report.** A first launch and a
             // quiet week both land here and both correctly show nothing.
@@ -200,7 +220,12 @@ fun TodayScreen(
                         } else {
                             strings("today.digest.total", "count" to digest.newThings)
                         },
-                        style = HealthTrail.type.displayM,
+                        // **Hero scale, per law 1**, which is the answer to
+                        // why the person opened this screen and is meant to be
+                        // felt at arm's length. `DESIGN.md` 5.1 puts the hero at
+                        // 21 to 24sp against supporting content at 13sp, and the
+                        // jump is the hierarchy.
+                        style = HealthTrail.type.hero,
                         color = colors.ink,
                         modifier = Modifier.testTag(TodayTags.DIGEST),
                     )
@@ -239,12 +264,17 @@ fun TodayScreen(
                 // is for, and four of them as cards was four things all
                 // shouting the same volume as the thing that mattered.
                 if (!digest.isEmpty) {
-                    digest.added.forEachIndexed { index, added ->
+                    // **In a group, like every other run of rows in the app.**
+                    // Bare rows with chevrons floating on `paper` are a legal
+                    // costume but a different shape from the same rows two
+                    // inches below them, and a screen read at a glance cannot
+                    // afford two treatments of one thing.
+                    GroupedRows(items = digest.added) { added, isLast ->
                         DenseRow(
                             title = strings[labelKey(added.section)],
                             trailing = strings("today.digest.new", "count" to added.count),
                             chevron = true,
-                            divider = index < digest.added.lastIndex,
+                            divider = !isLast,
                             onClick = { onOpenSection(added.section) },
                             modifier = Modifier.testTag(TodayTags.digestRow(added.section)),
                         )
@@ -295,37 +325,75 @@ fun TodayScreen(
                 },
             )
 
-            if (open.isNotEmpty() || nextAppointment != null) {
-                Spacer(Modifier.height(Space.sectionGap))
-                GroupHeader(labelKey = "today.open.group")
-                Spacer(Modifier.height(Space.s))
+            // **The one that needs the person leads; the rest fold.**
+            //
+            // This was four dense rows and an appointment, all at one weight,
+            // which is the shape law 1 exists to end: a person in a hallway had
+            // to read five lines to find the one that was theirs to chase.
+            //
+            // Grid screen 01 draws it as one row and a fold called "Also
+            // waiting" carrying its count, and screen 02 shows that fold opened
+            // in place. **Nothing is hidden**: the fold names what it holds and
+            // how much, and one tap has all of it.
+            //
+            // **The order is already the priority order.** Incidents first,
+            // because an incident nobody has answered is the thing the person
+            // is carrying around, then questions, then what somebody else owes,
+            // then filing. So the lead is simply the first of them, with no
+            // second ranking rule to disagree with the first.
+            val everything = open + listOfNotNull(
+                nextAppointment?.let { appointment ->
+                    OpenItem(
+                        label = appointment.title,
+                        onOpen = onOpenAppointments,
+                        testTag = TodayTags.NEXT_APPOINTMENT,
+                        subtitle = EventDateText.render(strings, appointment.scheduledEdtf),
+                    )
+                },
+            )
 
-                open.forEachIndexed { index, item ->
+            if (everything.isNotEmpty()) {
+                Spacer(Modifier.height(Space.sectionGap))
+
+                val lead = everything.first()
+                val rest = everything.drop(1)
+
+                GroupedSurface {
                     DenseRow(
-                        title = item.label,
+                        title = lead.label,
+                        subtitle = lead.subtitle,
                         chevron = true,
-                        divider = index < open.lastIndex || nextAppointment != null,
-                        onClick = item.onOpen,
-                        modifier = if (item.testTag == null) {
-                            Modifier
-                        } else {
-                            Modifier.testTag(item.testTag)
-                        },
+                        divider = false,
+                        onClick = lead.onOpen,
+                        modifier = lead.testTag?.let { Modifier.testTag(it) } ?: Modifier,
                     )
                 }
 
-                // **The appointment keeps its date on a second line**, which is
-                // the one row here with two things to say. Everything else is a
-                // count and a way in.
-                nextAppointment?.let { appointment ->
-                    DenseRow(
-                        title = appointment.title,
-                        subtitle = EventDateText.render(strings, appointment.scheduledEdtf),
-                        chevron = true,
-                        divider = false,
-                        onClick = onOpenAppointments,
-                        modifier = Modifier.testTag(TodayTags.NEXT_APPOINTMENT),
+                if (rest.isNotEmpty()) {
+                    Spacer(Modifier.height(Space.cardGap))
+                    FoldRow(
+                        labelKey = "today.also_waiting",
+                        expanded = alsoOpen,
+                        onToggle = { alsoOpen = !alsoOpen },
+                        count = rest.size.toString(),
+                        modifier = Modifier.testTag(TodayTags.ALSO_WAITING),
                     )
+                    AnimatedVisibility(visible = alsoOpen) {
+                        Column {
+                            Spacer(Modifier.height(Space.cardGap))
+                            GroupedRows(items = rest) { item, isLast ->
+                                DenseRow(
+                                    title = item.label,
+                                    subtitle = item.subtitle,
+                                    chevron = true,
+                                    divider = !isLast,
+                                    onClick = item.onOpen,
+                                    modifier = item.testTag?.let { Modifier.testTag(it) }
+                                        ?: Modifier,
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -516,6 +584,8 @@ private data class OpenItem(
     val onOpen: () -> Unit,
     val detail: String? = null,
     val testTag: String? = null,
+    /** A second line, which only the appointment has: it is the one row here with a date to say. */
+    val subtitle: String? = null,
 )
 
 /**

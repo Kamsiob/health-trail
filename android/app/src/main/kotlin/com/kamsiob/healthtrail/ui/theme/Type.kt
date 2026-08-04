@@ -27,6 +27,17 @@ import androidx.compose.ui.unit.sp
 @Immutable
 data class HealthTrailTypography(
     /** Screen titles. */
+    /**
+     * The one thing on a screen, per law 1. `DESIGN.md` 5.1.
+     *
+     * **23sp against supporting content at 13sp, and the jump is the point.**
+     * Hierarchy fails when sizes are close, and closing this gap to make a
+     * screen look balanced is the most common way to lose it. It is meant to be
+     * felt at arm's length by somebody standing in a hallway.
+     *
+     * **At most one per screen, and no hero at all is a valid screen.**
+     */
+    val hero: TextStyle,
     val displayL: TextStyle,
     /** Detail page titles, month headers. */
     val displayM: TextStyle,
@@ -107,6 +118,13 @@ private val MonoFamily = FontFamily(
 )
 
 val HealthTrailType = HealthTrailTypography(
+    hero = TextStyle(
+        fontFamily = DisplayFamily,
+        fontSize = 23.sp,
+        lineHeight = 27.sp,
+        fontWeight = FontWeight.ExtraBold,
+        letterSpacing = (-0.015).em,
+    ),
     displayL = TextStyle(
         fontFamily = DisplayFamily,
         fontSize = 28.sp,
@@ -231,6 +249,7 @@ private val CONNECTED_SCRIPTS = setOf("ar", "fa", "ur")
 fun healthTrailTypeFor(locale: java.util.Locale): HealthTrailTypography =
     if (locale.language in CONNECTED_SCRIPTS) {
         HealthTrailType.copy(
+            hero = HealthTrailType.hero.copy(letterSpacing = TextUnit.Unspecified),
             displayL = HealthTrailType.displayL.copy(letterSpacing = TextUnit.Unspecified),
             displayM = HealthTrailType.displayM.copy(letterSpacing = TextUnit.Unspecified),
         )
