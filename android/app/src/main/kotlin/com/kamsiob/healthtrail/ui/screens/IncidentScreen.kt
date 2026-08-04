@@ -154,7 +154,7 @@ private fun IncidentSpineRow(
         continuesAbove = continuesAbove,
         continuesBelow = continuesBelow,
         node = colors.alert,
-        state = if (incident.isOpen) Waypoint.UPCOMING else Waypoint.MILESTONE,
+        state = if (incident.isOpen) Waypoint.OPEN else Waypoint.MILESTONE,
         routeColor = colors.alert,
     ) {
         Column {
@@ -404,7 +404,7 @@ fun IncidentScreen(
                     continuesAbove = entries.isNotEmpty(),
                     continuesBelow = false,
                     node = colors.alert,
-                    state = Waypoint.UPCOMING,
+                    state = Waypoint.OPEN,
                     routeColor = colors.alert,
                     dash = null,
                 ) {

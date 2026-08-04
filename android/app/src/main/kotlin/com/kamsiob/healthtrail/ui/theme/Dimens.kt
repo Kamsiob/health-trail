@@ -140,6 +140,16 @@ object Trail {
     /** An upcoming waypoint is hollow at the same 12dp, so it is not a larger thing. */
     val hollowStroke: Dp = 2.dp
 
+    /**
+     * An open waypoint's ring, heavier than [hollowStroke].
+     *
+     * Open and upcoming are both "not done", and the difference is load
+     * bearing: a person scanning a thread has to tell "I am waiting on
+     * somebody" from "this has not come round yet", because only the first is
+     * theirs to chase. The grid draws 3 against 2.5.
+     */
+    val openStroke: Dp = 3.dp
+
     /** A milestone's outer ring, and the air between it and the disc. Section 5.2.1. */
     val milestoneRing: Dp = 1.5.dp
     val milestoneGap: Dp = 4.dp
