@@ -77,6 +77,12 @@ fun DenseRow(
      */
     dividerInset: Dp = if (leading != null) LEADING_SIZE + Space.sm else 0.dp,
     divider: Boolean = true,
+    /**
+     * Horizontal inset for the row's own content. Defaults to the group row
+     * padding in `DESIGN.md` section 6. Pass `0.dp` for a full bleed list whose
+     * screen already provides the inset.
+     */
+    contentPadding: Dp = Space.cardPadding,
     onClick: (() -> Unit)? = null,
 ) {
     val colors = HealthTrail.colors
@@ -114,7 +120,18 @@ fun DenseRow(
                         )
                     },
                 )
-                .padding(vertical = Space.s),
+                // **A row's content never touches its container's edge.**
+                // `DESIGN.md` section 6 puts group row padding at 11 to 13dp,
+                // and this had none: inside a grouped surface the leading icon
+                // sat flush against the card's rounded corner, which clipped it.
+                // Seen in Arabic first, where it reads as a layout error rather
+                // than as a tight margin, and then in English, where it had
+                // been wrong the whole time and simply looked deliberate.
+                //
+                // Full bleed callers pass zero, which is the trail's case: there
+                // the screen's own padding provides the inset and doubling it
+                // would push a 1,630 row list needlessly inward.
+                .padding(horizontal = contentPadding, vertical = Space.s),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (leading != null) {
@@ -154,7 +171,7 @@ fun DenseRow(
         }
 
         if (divider) {
-            Hairline(inset = dividerInset)
+            Hairline(inset = contentPadding + dividerInset, end = contentPadding)
         }
     }
 }
@@ -167,12 +184,14 @@ fun DenseRow(
  * rather than held to the 3:1 ratio, exactly as the group header's rule is.
  */
 @Composable
-fun Hairline(modifier: Modifier = Modifier, inset: Dp = 0.dp) {
+fun Hairline(modifier: Modifier = Modifier, inset: Dp = 0.dp, end: Dp = 0.dp) {
     val colors = HealthTrail.colors
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = inset)
+            // Start and end rather than left and right, so in Arabic the rule
+            // still runs under the words and still stops short of the far edge.
+            .padding(start = inset, end = end)
             .height(1.dp)
             .background(colors.ink3.copy(alpha = HAIRLINE_ALPHA)),
     )
