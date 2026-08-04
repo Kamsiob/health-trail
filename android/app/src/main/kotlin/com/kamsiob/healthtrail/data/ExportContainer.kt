@@ -272,7 +272,22 @@ object ExportContainer {
             // sensitive than the database.
             readable.forEach { (path, html) ->
                 zip.putNextEntry(ZipEntry(READABLE + path))
-                zip.write(html.toByteArray(Charsets.UTF_8))
+                val bytes = html.toByteArray(Charsets.UTF_8)
+                if (key != null) {
+                    // **Encrypted like everything else, and this was wrong once.**
+                    // The first version wrote these pages in the clear, which put
+                    // the person's entire record in prose into a file anything
+                    // with access to the folder could read. That is worse than
+                    // the plain database D67 removed, because prose needs no
+                    // tooling at all: a file manager preview would show it.
+                    //
+                    // A nonce derived from the page's own path, which is unique
+                    // within the archive, so every page gets a distinct nonce
+                    // under one key without the manifest carrying one per page.
+                    zip.write(ExportCrypto.encrypt(key, nonceFor(READABLE + path), bytes))
+                } else {
+                    zip.write(bytes)
+                }
                 zip.closeEntry()
             }
 

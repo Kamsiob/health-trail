@@ -52,6 +52,11 @@ SCHEMA_ALLOWED = {
     # failing change log write rolls the data write back with it. It declares
     # no table and no column.
     "tools/checks/check_schema.py",
+    # Parses contract/schema.sql to enumerate every column, so it necessarily
+    # carries the pattern it parses for. It declares nothing: it reads the one
+    # schema and asserts the archive's field map covers it, which is the
+    # opposite of a second copy. contract/DATA-CONTRACT.md 8.5.
+    "tools/checks/check_readable_coverage.py",
 }
 
 # Test sources are exempt as a category rather than file by file.
