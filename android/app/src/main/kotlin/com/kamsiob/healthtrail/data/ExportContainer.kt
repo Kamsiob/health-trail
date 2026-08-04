@@ -77,6 +77,17 @@ object ExportContainer {
     const val DATABASE = "data.sqlite"
     const val ATTACHMENTS = "attachments/"
 
+    /**
+     * The human copy. `contract/DATA-CONTRACT.md` section 8.2.
+     *
+     * **This is the point of the format.** A machine payload only this app can
+     * read is a record that dies with the app, and a caregiver's archive
+     * outlives the phone, outlives Android, and very likely outlives this
+     * project. Everything else in the container exists so this folder can be
+     * trusted.
+     */
+    const val READABLE = "readable/"
+
     /** What a reader learned before deciding whether it can import. */
     data class Manifest(
         val formatVersion: Int,
@@ -102,6 +113,16 @@ object ExportContainer {
         val attachmentCount: Int,
         val attachmentBytes: Long,
         val subjectCount: Int,
+        /**
+         * How many pages the readable copy holds.
+         *
+         * **Recorded so a missing human copy is loud rather than silent.** The
+         * offline read test in 8.5 opens `readable/index.html` on a machine with
+         * no network, and a zero here is a failed export rather than a quiet
+         * one. It also lets an importer say what a file contains before writing
+         * anything, per 8.6.
+         */
+        val readablePages: Int = 0,
     ) {
         companion object
     }
@@ -181,6 +202,11 @@ object ExportContainer {
     ): Manifest = withContext(Dispatchers.IO) {
         val plainDatabase = source.database.readBytes()
 
+        // Rendered before the manifest, because the manifest reports how many
+        // pages there are and a count written before the pages exist is a claim
+        // rather than a fact.
+        val readable = readablePages(source.database)
+
         // Fresh per file. Reusing a nonce under one key is the mistake that
         // breaks GCM outright rather than merely weakening it.
         val salt = passphrase?.let { ExportCrypto.randomSalt() }
@@ -221,6 +247,7 @@ object ExportContainer {
             attachmentCount = source.attachments.size,
             attachmentBytes = source.attachments.sumOf { it.length() },
             subjectCount = source.subjectCount,
+            readablePages = readable.size,
         )
 
         target.parentFile?.mkdirs()
@@ -232,6 +259,22 @@ object ExportContainer {
             zip.putNextEntry(ZipEntry(DATABASE))
             zip.write(databaseBytes)
             zip.closeEntry()
+
+            // **The readable copy, rendered from the same staged database the
+            // payload carries**, so the two halves of the archive cannot
+            // disagree. An archive whose readable copy said something different
+            // from its SQLite would be the silent partial correctness section 8
+            // opens by calling worse than an honest failure.
+            //
+            // It is written from the plain file before encryption, and it goes
+            // inside the encrypted payload with everything else, because it is
+            // the person's whole record in prose and is if anything more
+            // sensitive than the database.
+            readable.forEach { (path, html) ->
+                zip.putNextEntry(ZipEntry(READABLE + path))
+                zip.write(html.toByteArray(Charsets.UTF_8))
+                zip.closeEntry()
+            }
 
             source.attachments.forEach { file ->
                 zip.putNextEntry(ZipEntry(ATTACHMENTS + file.name))
@@ -264,6 +307,47 @@ object ExportContainer {
         java.security.MessageDigest.getInstance("SHA-256")
             .digest(name.toByteArray())
             .copyOf(ExportCrypto.NONCE_BYTES)
+
+    /**
+     * The readable copy's pages, keyed by their path inside `readable/`.
+     *
+     * **Empty rather than throwing if anything goes wrong reading the staged
+     * database.** An export that fails outright because the human copy could not
+     * be built would cost the person the machine payload too, and the payload is
+     * the half that restores. The readable copy is what makes the archive
+     * outlive the app; the payload is what gets their record back on a new
+     * phone, and losing the second to protect the first is the wrong trade at
+     * the moment somebody is exporting.
+     *
+     * **A missing readable folder is loud rather than silent**, because
+     * `MANIFEST.json` carries the page count and the offline read test in 8.5
+     * opens `readable/index.html` on a machine with no network. A zero there is
+     * a failed export, not a quiet one.
+     */
+    private fun readablePages(database: File): Map<String, String> = try {
+        val fields = ReadableFieldMap.tables
+        val rows = ReadableRows.read(database, fields.keys)
+        ReadableArchive.render(
+            ReadableArchive.Source(
+                tables = rows,
+                // The locale the readable copy is written in, section 8.2. The
+                // catalog the app is running is the one the person chose.
+                lang = java.util.Locale.getDefault().toLanguageTag(),
+                dir = if (
+                    android.text.TextUtils.getLayoutDirectionFromLocale(java.util.Locale.getDefault()) ==
+                    android.view.View.LAYOUT_DIRECTION_RTL
+                ) {
+                    "rtl"
+                } else {
+                    "ltr"
+                },
+                subjectName = ReadableRows.subjectName(rows),
+            ),
+            fields,
+        )
+    } catch (error: RuntimeException) {
+        emptyMap()
+    }
 
     private fun base64(bytes: ByteArray): String =
         android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
@@ -748,6 +832,12 @@ object ExportContainer {
             },
         )
         put("subject_count", subjectCount)
+        put(
+            "readable",
+            JSONObject().apply {
+                put("pages", readablePages)
+            },
+        )
     }
 
     private fun ZipInputStream.readText(): String = readBytes().decodeToString()
