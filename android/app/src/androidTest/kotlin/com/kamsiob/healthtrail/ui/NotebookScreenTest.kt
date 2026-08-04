@@ -5,6 +5,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -110,6 +111,16 @@ class NotebookScreenTest {
      * needs a lazy list to ask, and there is no longer one here.
      */
     private fun scrollTo(section: Repository.Section) {
+        // **Eight of the twelve live behind "More sections".** The notebook
+        // became four sections and a fold on 2026-08-03, per law 1, and every
+        // test here was written when all twelve were on the front door. Opening
+        // the fold is what a person does, so it is what these do: nothing is
+        // hidden, it is one tap away, and the tests reach it the same way.
+        if (compose.onAllNodesWithTag(NotebookTags.section(section))
+                .fetchSemanticsNodes().isEmpty()
+        ) {
+            compose.onNodeWithTag(NotebookTags.FOLD).performScrollTo().performClick()
+        }
         compose.onNodeWithTag(NotebookTags.section(section)).performScrollTo()
     }
 

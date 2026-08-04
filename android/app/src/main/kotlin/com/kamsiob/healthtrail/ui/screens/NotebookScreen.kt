@@ -339,6 +339,7 @@ private fun SectionRow(
         // the far edge reads as a column in a table and invites comparing
         // sections against each other, which says nothing.
         subtitle = strings(countKey, "count" to row.count),
+        subtitleTestTag = NotebookTags.count(row.section),
         leading = {
             IconTile(
                 section = row.section,

@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -59,6 +60,16 @@ fun DenseRow(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    /**
+     * A tag on the subtitle itself, for a caller whose second line is a fact
+     * something asserts on.
+     *
+     * **The notebook needed this and did not have it.** Its counts carried a
+     * test tag while the front door was tiles; the v4 conversion made it rows
+     * and the tag went with the tile, so three tests looked for a node that no
+     * longer existed and had no way to know that is why.
+     */
+    subtitleTestTag: String? = null,
     /**
      * An avatar, a thumbnail, a waypoint, or a thread swatch. Never an icon
      * tile, which belongs to tiles and to the table of contents.
@@ -152,6 +163,7 @@ fun DenseRow(
                         style = type.bodyM,
                         color = colors.ink2,
                         maxLines = 1,
+                        modifier = subtitleTestTag?.let { Modifier.testTag(it) } ?: Modifier,
                     )
                 }
             }

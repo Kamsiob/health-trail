@@ -98,6 +98,16 @@ class MedicationQuestionJourneyTest {
         // **Scrolls to the tile rather than asking a list for a key.** The
         // notebook became a plain scrolling column of tiles on 2026-08-03, so
         // there is no lazy list to ask, and every tile is in the tree.
+        // **Eight of the twelve live behind "More sections".** The notebook
+        // became four sections and a fold on 2026-08-03, per law 1, and every
+        // test here was written when all twelve were on the front door. Opening
+        // the fold is what a person does, so it is what these do: nothing is
+        // hidden, it is one tap away, and the tests reach it the same way.
+        if (compose.onAllNodesWithTag(NotebookTags.section(section))
+                .fetchSemanticsNodes().isEmpty()
+        ) {
+            compose.onNodeWithTag(NotebookTags.FOLD).performScrollTo().performClick()
+        }
         compose.onNodeWithTag(NotebookTags.section(section)).performScrollTo()
         compose.onNodeWithTag(NotebookTags.section(section)).performClick()
         compose.waitUntil(timeoutMillis = 10_000) { showing(SectionTags.BACK) }
