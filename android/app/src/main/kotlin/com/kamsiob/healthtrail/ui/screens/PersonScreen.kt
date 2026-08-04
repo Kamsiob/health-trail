@@ -13,6 +13,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.ui.components.Avatar
+import com.kamsiob.healthtrail.ui.components.AvatarSize
+import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
@@ -85,6 +88,21 @@ fun PersonScreen(
         backLabelKey = backLabelKey,
         modifier = modifier,
     ) {
+        // **Identity first, at 56dp.** A person's screen opens with the person,
+        // and initials in their section's own wash are what makes a list of
+        // nine names a list of nine people. It sits under the name rather than
+        // beside it, because the scaffold's heading is where the name belongs
+        // and putting a second copy of it next to the mark would be the same
+        // words twice again.
+        item {
+            Avatar(
+                name = person.displayName,
+                hue = hueFor(Repository.Section.CARE_TEAM),
+                size = AvatarSize.header,
+            )
+            Spacer(Modifier.height(Space.m))
+        }
+
         // **What you need to know before you dial, above the thing that
         // dials.** "Days, 7 to 3, ask for her by name" and "the one who
         // actually calls back" are the reason somebody opened this screen at
