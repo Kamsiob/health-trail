@@ -239,6 +239,17 @@ object TemplateCatalog {
         val id: String,
         val name: String,
         val subtitle: String,
+        /**
+         * What the person is trying to do, which is how the picker groups the
+         * sixteen. One of `paying`, `challenge`, `moving`, `papers`, held to
+         * that set by `check_templates.py` and labeled per locale under
+         * `projects.category.*`.
+         *
+         * **Not `phase`**, which is the order these were built in and never
+         * reaches a screen. Grouping by that would be the app organizing
+         * somebody's options around its own history, which is rule 20.
+         */
+        val category: String,
         val stateVariance: Boolean,
         val roles: List<String>,
         val steps: List<String>,
@@ -257,6 +268,7 @@ object TemplateCatalog {
                     id = item.getString("id"),
                     name = item.getString("name"),
                     subtitle = item.optString("subtitle"),
+                    category = item.optString("category"),
                     stateVariance = item.optBoolean("state_variance", false),
                     roles = item.optJSONArray("roles").toLabels(),
                     steps = item.optJSONArray("steps").toStrings(),

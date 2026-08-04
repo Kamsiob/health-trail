@@ -52,9 +52,15 @@ SITUATION_REQUIRED = [
     "threads", "checklist", "documents", "burden",
 ]
 PROJECT_REQUIRED = [
-    "id", "name", "subtitle", "phase", "roles", "steps", "documents",
+    "id", "name", "subtitle", "category", "phase", "roles", "steps", "documents",
     "waiting_on_prompts", "failure_points", "timeline_shape",
 ]
+
+# What the person is trying to do, which is how the picker groups the sixteen.
+# **Closed rather than free text**, because a category the app has no label for
+# renders as a raw key on screen, and a seventeenth spelling of an existing one
+# splits a group in two without anybody noticing. `templates/SCHEMA.md`.
+PROJECT_CATEGORIES = ("paying", "challenge", "moving", "papers")
 PRESET_REQUIRED = [
     "id", "name", "unit_options", "cadence", "medication_markers", "style",
     "gap_tolerance", "fields", "advice_risk",
@@ -236,6 +242,12 @@ class Validator:
             self.required(where, item, PROJECT_REQUIRED)
             if item.get("phase") not in (1, 2, 3):
                 self.fail(where, f"phase is {item.get('phase')!r}, expected 1, 2, or 3")
+            if item.get("category") not in PROJECT_CATEGORIES:
+                self.fail(
+                    where,
+                    f"category is {item.get('category')!r}, expected one of "
+                    f"{', '.join(PROJECT_CATEGORIES)}",
+                )
             for entry in item.get("roles", []):
                 if not isinstance(entry, dict) or "id" not in entry or "label" not in entry:
                     self.fail(where, f"roles entry is not an object with id and label: {entry!r}")

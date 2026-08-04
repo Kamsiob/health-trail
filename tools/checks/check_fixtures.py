@@ -15,6 +15,7 @@ Kamsiob, AGPL-3.0.
 """
 
 import hashlib
+import json
 import sqlite3
 import sys
 import tempfile
@@ -119,6 +120,35 @@ def main():
             missing_projects = PROJECT_STATES - distinct("project", "status")
             if missing_projects:
                 failures.append(f"no project in state {sorted(missing_projects)}.")
+
+            # **A project has to have come from a template, and the template has
+            # to be real.** The template library's whole job is saying what each
+            # template produced, and every generated project carried no
+            # template at all, so that half of the screen had never rendered.
+            # The same shape as the milestones that carried no chapter, #237.
+            #
+            # The ids are checked against the catalog rather than a list here,
+            # so renaming a template in templates/data/projects.json fails this
+            # instead of silently producing a project pointing at nothing.
+            catalog = {
+                item["id"]
+                for item in json.loads(
+                    (ROOT / "templates/data/projects.json").read_text(encoding="utf-8")
+                )["templates"]
+            }
+            used = {t for t in distinct("project", "template_id") if t is not None}
+            if not used:
+                failures.append(
+                    "no project was started from a template, so the template library "
+                    "can never show what any template produced, which is the whole "
+                    "reason it is a library rather than a catalog."
+                )
+            unknown = used - catalog
+            if unknown:
+                failures.append(
+                    f"projects point at templates that are not in the catalog: "
+                    f"{sorted(unknown)}."
+                )
             if distinct("standing_instruction", "tag") != {"federal", "request"}:
                 failures.append(
                     "the fixture does not carry both standing instruction tags, so the "

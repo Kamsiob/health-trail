@@ -71,6 +71,21 @@ fun DenseRow(
      */
     subtitleTestTag: String? = null,
     /**
+     * How many lines the second line may take, and one is the shape.
+     *
+     * **Raise it only where the subtitle is a sentence rather than a tag.** The
+     * row's whole value is that fifty of them can be scanned, and that comes
+     * from every one being the same height. A role, a state, a category or a
+     * date is one line by nature and must stay at one.
+     *
+     * The picker for the sixteen project templates is the case this exists for:
+     * there the second line is what somebody actually reads to choose between
+     * "Applying for coverage of nursing home or facility care" and "Applying
+     * for services that let somebody stay at home", and at one line both ended
+     * mid-sentence, which rule 11 calls a truncation and 16.2 calls clipped.
+     */
+    subtitleMaxLines: Int = 1,
+    /**
      * An avatar, a thumbnail, a waypoint, or a thread swatch. Never an icon
      * tile, which belongs to tiles and to the table of contents.
      */
@@ -162,7 +177,7 @@ fun DenseRow(
                         text = subtitle,
                         style = type.bodyM,
                         color = colors.ink2,
-                        maxLines = 1,
+                        maxLines = subtitleMaxLines,
                         modifier = subtitleTestTag?.let { Modifier.testTag(it) } ?: Modifier,
                     )
                 }

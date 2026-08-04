@@ -718,5 +718,16 @@
   "review.entry.open": "افتح هذه المدونة",
   "review.empty": "لا شيء من هذا الشهر بعد. كل ما تسجّله عنه سيتجمع هنا.",
   "review.share": "شارك هذا الشهر",
-  "review.open": "راجع هذا الشهر"
+  "review.open": "راجع هذا الشهر",
+  "projects.category.paying": "دفع تكاليف الرعاية",
+  "projects.category.challenge": "الاعتراض على قرار",
+  "projects.category.moving": "الانتقال والعودة إلى البيت",
+  "projects.category.papers": "الأوراق والتفويضات",
+  "projects.search.hint": "ابحث في {count, plural, zero {لا عمليات} one {عملية واحدة} two {عمليتين} few {# عمليات} many {# عملية} other {# عملية}}",
+  "projects.search.clear": "امسح البحث",
+  "projects.search.none": "لا شيء هنا يطابق ذلك. جرّب كلمة أقصر، أو ابدأ بلا قالب.",
+  "projects.start.open": "ابدأ بهذا",
+  "library.used": "قيد الاستخدام",
+  "library.unused": "لم يُستخدم بعد",
+  "library.open": "افتح هذا القالب"
 }

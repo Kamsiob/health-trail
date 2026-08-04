@@ -12,6 +12,7 @@
       "id": "medicaid_ltc",
       "name": "Medicaid application for long term care",
       "subtitle": "Applying for coverage of nursing home or facility care",
+      "category": "paying",
       "phase": 2,
       "state_variance": true,
       "roles": [
@@ -63,6 +64,7 @@
       "id": "medicaid_waiver",
       "name": "Medicaid waiver for care at home",
       "subtitle": "Applying for services that let someone stay out of a facility",
+      "category": "paying",
       "phase": 2,
       "state_variance": true,
       "roles": [
@@ -113,6 +115,7 @@
       "id": "medicare_appeal",
       "name": "Appeal when Medicare coverage is ending",
       "subtitle": "Challenging a discharge or the end of covered services",
+      "category": "challenge",
       "phase": 1,
       "roles": [
         { "id": "review_org", "label": "Your regional Medicare quality review organization" },
@@ -159,6 +162,7 @@
       "id": "prior_auth_appeal",
       "name": "Appeal an insurance denial",
       "subtitle": "When insurance refuses to approve or pay for something",
+      "category": "challenge",
       "phase": 3,
       "state_variance": true,
       "roles": [
@@ -206,6 +210,7 @@
       "id": "discharge_planning",
       "name": "Planning a discharge home",
       "subtitle": "Getting ready before someone leaves the hospital or facility",
+      "category": "moving",
       "phase": 1,
       "roles": [
         { "id": "discharge_planner", "label": "Discharge planner or case manager" },
@@ -252,6 +257,7 @@
       "id": "records_request",
       "name": "Requesting medical records",
       "subtitle": "Getting copies of records you have a right to see",
+      "category": "papers",
       "phase": 1,
       "roles": [
         { "id": "records_dept", "label": "Medical records department" },
@@ -298,6 +304,7 @@
       "id": "ombudsman_complaint",
       "name": "Filing a complaint about a facility",
       "subtitle": "Going to the ombudsman or the state agency",
+      "category": "challenge",
       "phase": 2,
       "roles": [
         { "id": "ombudsman", "label": "Long term care ombudsman" },
@@ -343,6 +350,7 @@
       "id": "disability_benefits",
       "name": "Applying for disability benefits",
       "subtitle": "A long application with a lot of medical history",
+      "category": "paying",
       "phase": 3,
       "roles": [
         { "id": "benefits_office", "label": "Local Social Security office" },
@@ -388,6 +396,7 @@
       "id": "veteran_benefits",
       "name": "Veteran and caregiver benefits",
       "subtitle": "Applying for benefits available to veterans and their caregivers",
+      "category": "paying",
       "phase": 3,
       "roles": [
         { "id": "caregiver_support", "label": "Veterans caregiver support team" },
@@ -434,6 +443,7 @@
       "id": "guardianship",
       "name": "Guardianship or conservatorship",
       "subtitle": "A court process for decision making when someone cannot decide",
+      "category": "papers",
       "phase": 3,
       "state_variance": true,
       "roles": [
@@ -481,6 +491,7 @@
       "id": "legal_documents",
       "name": "Setting up legal and medical decision papers",
       "subtitle": "Power of attorney, health care decision maker, and written wishes",
+      "category": "papers",
       "phase": 1,
       "state_variance": true,
       "roles": [
@@ -529,6 +540,7 @@
       "id": "family_leave",
       "name": "Taking leave from work to provide care",
       "subtitle": "Requesting protected time off for yourself",
+      "category": "papers",
       "phase": 2,
       "roles": [
         { "id": "hr", "label": "Human resources at your employer" },
@@ -572,6 +584,7 @@
       "id": "facility_transfer",
       "name": "Moving to a different facility",
       "subtitle": "Arranging a transfer from one place to another",
+      "category": "moving",
       "phase": 3,
       "state_variance": true,
       "roles": [
@@ -618,6 +631,7 @@
       "id": "discharge_appeal",
       "name": "Fighting a facility discharge",
       "subtitle": "When a facility says someone has to leave",
+      "category": "challenge",
       "phase": 2,
       "state_variance": true,
       "roles": [
@@ -668,6 +682,7 @@
       "id": "asset_documentation",
       "name": "Documenting money for a Medicaid application",
       "subtitle": "Organizing years of financial records",
+      "category": "paying",
       "phase": 2,
       "state_variance": true,
       "roles": [
@@ -716,6 +731,7 @@
       "id": "bill_reconciliation",
       "name": "Sorting out bills and insurance statements",
       "subtitle": "Matching what was billed against what was covered",
+      "category": "paying",
       "phase": 3,
       "roles": [
         { "id": "provider_billing", "label": "Billing office where the care happened" },

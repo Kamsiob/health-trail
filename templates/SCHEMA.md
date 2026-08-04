@@ -48,6 +48,7 @@ One entry per long bureaucratic process.
 | Field | Type | Meaning |
 |---|---|---|
 | `id`, `name`, `subtitle`, `phase` | | As above. |
+| `category` | one of `paying`, `challenge`, `moving`, `papers` | **What the person is trying to do**, which is how the picker groups them. Not what kind of office it involves and not which law it sits under: somebody looking for a process is thinking "they cut her off and I want to fight it", not "this is a Medicare matter". The four are named in the locale catalogs under `projects.category.*` and the picker keeps them in the order listed here. **Not the same as `phase`**, which is build order and never reaches a screen. |
 | `roles` | array of `{id, label}` | Contacts specific to this project, kept separate from the medical care team. |
 | `steps` | array of strings | Becomes the project checklist, each item marked complete or not. Order is a suggestion. |
 | `documents` | array of strings | Documents to gather for this project. |

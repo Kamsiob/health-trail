@@ -718,5 +718,16 @@
   "review.entry.open": "Open this entry",
   "review.empty": "Nothing from this month yet. Whatever you write down about it will gather here.",
   "review.share": "Share this month",
-  "review.open": "Review this month"
+  "review.open": "Review this month",
+  "projects.category.paying": "Paying for care",
+  "projects.category.challenge": "Challenging a decision",
+  "projects.category.moving": "Moving and coming home",
+  "projects.category.papers": "Papers and permissions",
+  "projects.search.hint": "Search {count, plural, one {1 process} other {# processes}}",
+  "projects.search.clear": "Clear the search",
+  "projects.search.none": "Nothing here matches that. Try a shorter word, or start with no template.",
+  "projects.start.open": "Start this one",
+  "library.used": "In use",
+  "library.unused": "Not started from yet",
+  "library.open": "Open this template"
 }

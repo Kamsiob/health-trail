@@ -718,5 +718,16 @@
   "review.entry.open": "Abrir esta nota",
   "review.empty": "Todavía no hay nada de este mes. Lo que anote sobre él se reunirá aquí.",
   "review.share": "Compartir este mes",
-  "review.open": "Repasar este mes"
+  "review.open": "Repasar este mes",
+  "projects.category.paying": "Pagar los cuidados",
+  "projects.category.challenge": "Impugnar una decisión",
+  "projects.category.moving": "Mudanzas y regreso a casa",
+  "projects.category.papers": "Papeles y permisos",
+  "projects.search.hint": "Buscar en {count, plural, one {1 proceso} other {# procesos}}",
+  "projects.search.clear": "Borrar la búsqueda",
+  "projects.search.none": "Aquí no hay nada que coincida. Pruebe una palabra más corta, o empiece sin plantilla.",
+  "projects.start.open": "Empezar este",
+  "library.used": "En uso",
+  "library.unused": "Todavía sin usar",
+  "library.open": "Abrir esta plantilla"
 }

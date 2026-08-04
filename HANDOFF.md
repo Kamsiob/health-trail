@@ -20,7 +20,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 **Take these in this order.**
 
-1. **#200 is done and closed.** Section 2 is the account of what landed and what came out of it. **Start at #201.**
+1. **#200 is done and closed**, and section 3 is the account of what came out of it. **#201 is in flight and section 2 says what is left of it: the sweep, the states, the suite, and two review issues.**
 2. **The rest of step 4**, #201 through #208, in number order, **except take #208 last**. Each was scoped on 2026-08-04 and the two with gaps carry a comment saying so:
    - **#202** is half a conversion and half a build. "Change of situation" does not exist anywhere, and whoever takes it has to decide first whether changing the situation is a chapter boundary in the data or only in the words.
    - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape.
@@ -33,7 +33,21 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 2. What #200 landed, and the four issues that came out of it
+## 2. #201 is in flight
+
+**The picker and the library are converted and on the phone in light.** What is left is the sweep: dark, font scale 2.0, Arabic, the empty states, and the instrumented suite. Then the two `needs-design-review` issues, since neither screen is drawn.
+
+**The sixteen project templates gained a `category`**, one of `paying`, `challenge`, `moving`, `papers`, held to that closed set by `check_templates.py` and labeled per locale under `projects.category.*`. **It is what the person is trying to do, not what kind of office it involves**, and it is not `phase`, which is build order and never reaches a screen. `templates/SCHEMA.md` carries the definition. Both screens group by it in the same fixed order, which lives in each file as `CATEGORY_ORDER`.
+
+**Both screens were walls of sixteen cards and are now rows in folds.** The picker leads with the person's own templates, or with the first category when they have none, and searches. The library leads with what has actually produced something, as cards, and folds the rest.
+
+**`DenseRow` gained `subtitleMaxLines`, defaulting to 1.** Every subtitle on the picker ended mid-sentence at one line. **Raise it only where the second line is a sentence somebody reads rather than a tag**; the fixed row height is what makes a long list scannable.
+
+**The fixture's projects carried no `template_id`**, so the library could never show what any template produced, which is the whole reason it is a library rather than a catalog. Three of the five now do, and `check_fixtures.py` holds the ids to the real catalog so renaming a template fails the build rather than producing a project pointing at nothing. Third instance of this shape after #237 and #229.
+
+---
+
+## 3. What #200 landed, and the four issues that came out of it
 
 **Both halves are built, swept, tested and logged.** This section is here because the next session inherits the decisions rather than the work.
 
@@ -57,7 +71,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 3. What is built
+## 4. What is built
 
 **Design direction v4 is adopted and most of the app is in it.** `reference/screen-grid.html` is the v4 grid. `DESIGN.md` was rewritten rather than patched.
 
@@ -72,7 +86,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 4. What keeps going wrong, so it stops
+## 5. What keeps going wrong, so it stops
 
 **These are patterns, not history. Every one of them has now happened more than once.**
 
@@ -96,7 +110,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 5. Running the work
+## 6. Running the work
 
 **Never route around a check to make progress, and never delete or weaken a test to make a build pass.**
 
@@ -120,7 +134,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 6. Blocked, and it does not stop the work
+## 7. Blocked, and it does not stop the work
 
 **One thing is blocked: B5.** The destructive command guard needs installing from user settings and **only the owner can do it**, because Claude Code correctly refuses to let a session edit the hooks that constrain it. D64 has the account and B5 in `DECISIONS.md` is written as steps he can act on.
 
@@ -130,7 +144,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 7. The phone
+## 8. The phone
 
 - **Pixel 10 Pro XL, serial `57241FDCQ0000H`, over USB. The only test device.**
 - **No emulator.** Dropped from this project. Do not launch one, do not create an AVD, do not treat its absence as a blocker. D21, D23, B4.
@@ -166,7 +180,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 8. This environment, so a fresh session does not rediscover it
+## 9. This environment, so a fresh session does not rediscover it
 
 **An edit that replaces text must assert it matched.** Nine decision entries were once written and none reached `DECISIONS.md`: the anchor they targeted had been consumed by an earlier edit, so every one matched nothing and reported success. A silent no-op is worse than an error, because the work continues on top of a record that is not there.
 
@@ -204,7 +218,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 9. Where everything else is
+## 10. Where everything else is
 
 | Question | File |
 |---|---|
@@ -222,6 +236,6 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 10. Uncommitted work
+## 11. Uncommitted work
 
 **None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed.

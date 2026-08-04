@@ -866,6 +866,7 @@ class Generator:
                 {
                     "subject_id": subject_id,
                     "name": PROJECTS[index % len(PROJECTS)],
+                    "template_id": PROJECT_TEMPLATES[index % len(PROJECT_TEMPLATES)],
                     "status": state,
                     "started_edtf": (self.start + timedelta(days=day)).isoformat(),
                     "started_start": self.ms(day, 0, 0),
@@ -1172,6 +1173,26 @@ PROJECTS = [
     "Appeal the level of care assessment",
     "Move her belongings out of the old room",
     "Find a dentist who will come to the facility",
+]
+
+# Which template each of those was started from, and None for the ones somebody
+# wrote themselves.
+#
+# **Every project came out with no template behind it**, so the template library
+# could never show what any template had produced, which is the whole reason it
+# is a library rather than a catalog. Three of these five are plainly one of the
+# sixteen and two plainly are not, which is also the honest mix: families start
+# things the catalog never heard of.
+#
+# The ids are held to the real catalog by `check_fixtures.py`, so a template
+# renamed or removed in `templates/data/projects.json` fails the build here
+# rather than producing a project pointing at nothing.
+PROJECT_TEMPLATES = [
+    "medicaid_ltc",
+    "legal_documents",
+    "discharge_appeal",
+    None,
+    None,
 ]
 
 PROJECT_STEPS = [
