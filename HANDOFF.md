@@ -37,7 +37,17 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 1. **Next: step 3, #173 to #188**, the section screens, in the order the default situation template surfaces them.
 2. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
 
-**THE ARCHIVE runs on its own track and must not be scheduled behind the screens.** #209 through #215, with #9 as the parent. Move to it if the visual track blocks.
+**THE ARCHIVE runs on its own track and must not be scheduled behind the screens.** #209 through #215, with #9 as the parent.
+
+**Started, and the foundations are in:**
+
+- **The field map and its coverage check.** `contract/readable-fields.json` carries a decision for all **570 columns across 39 tables**, 313 rendered and 257 explicitly not, every one with a written reason. `check_readable_coverage.py` fails the build when a column has no decision, and rejects a reason under 25 characters. **Proved to fire** on a probe table before being trusted.
+- **The page shell**, `ReadablePage.kt`. No JavaScript, no web fonts, no external stylesheet, no network request of any kind. CSS inlined per page so a page mailed on its own still stands up. Print stylesheet with breaks between entries.
+- **Dates**, `ReadableDate.kt`. Month spelled out, offset carried, precision never invented, unknown a real answer. 12 tests.
+- **The renderer**, `ReadableArchive.kt`. Pure, deterministic, one page per section per year. 18 tests, two of which exist only to pin that row order cannot change the output.
+
+**What is next on this track:** wiring the renderer into `ExportContainer` so `readable/` is actually written into the archive, then the two-layer container in 8.1, then the importer in 8.3.
+
 
 **One cross-cutting defect is filed and not fixed: #218.** Removal on every list row is long-press-only across **seventeen screens**, which law 2 bans. It is not a bare gesture, it declares a reader action, so a screen reader user can remove a row and a sighted person who does not know the gesture cannot. The v4 answer is already in section 9: removal belongs on the thing's own detail screen. It needs one answer across all seventeen, which is why it is its own issue rather than half done inside a screen conversion.
 
