@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
@@ -17,6 +21,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
@@ -57,6 +62,10 @@ fun ChapterScreen(
     backLabelKey: String = "section.back.chapters",
 ) {
     val strings = LocalStrings.current
+    // What went wrong leads open; the rest are folded until asked for.
+    var incidentsOpen by rememberSaveable { mutableStateOf(true) }
+    var documentsOpen by rememberSaveable { mutableStateOf(false) }
+    var entriesOpen by rememberSaveable { mutableStateOf(false) }
     val colors = HealthTrail.colors
     val chapter = detail.chapter
 
@@ -104,11 +113,26 @@ fun ChapterScreen(
         // **Incidents first**, because a stay with something unresolved in it
         // is a stay defined by that, and it is what somebody opens a chapter
         // looking for.
+        // **Each group folds, named and counted.** Three headings at one weight
+        // over three lists that run for pages is the wall law 1 is about: a
+        // person opening a place they lived for a year has to read all of it to
+        // find out what is in it. The counts are what let them choose.
+        //
+        // **What went wrong is open and the rest are folded**, because an
+        // incident is the thing somebody comes to a chapter looking for. That is
+        // a judgment and it is written down here rather than left implicit.
         if (detail.incidents.isNotEmpty()) {
-            item {
-                GroupHeader(labelKey = "chapter.incidents")
-                Spacer(Modifier.height(Space.headerGap))
+            item(key = "incidents_fold") {
+                FoldRow(
+                    labelKey = "chapter.incidents",
+                    expanded = incidentsOpen,
+                    onToggle = { incidentsOpen = !incidentsOpen },
+                    count = detail.incidents.size.toString(),
+                )
+                Spacer(Modifier.height(Space.cardGap))
             }
+        }
+        if (detail.incidents.isNotEmpty() && incidentsOpen) {
             detail.incidents.forEachIndexed { index, incident ->
                 item(key = "i_${incident.id}") {
                     SpineRow(
@@ -142,10 +166,17 @@ fun ChapterScreen(
         }
 
         if (detail.documents.isNotEmpty()) {
-            item {
-                GroupHeader(labelKey = "chapter.documents")
-                Spacer(Modifier.height(Space.headerGap))
+            item(key = "documents_fold") {
+                FoldRow(
+                    labelKey = "chapter.documents",
+                    expanded = documentsOpen,
+                    onToggle = { documentsOpen = !documentsOpen },
+                    count = detail.documents.size.toString(),
+                )
+                Spacer(Modifier.height(Space.cardGap))
             }
+        }
+        if (detail.documents.isNotEmpty() && documentsOpen) {
             detail.documents.forEach { document ->
                 item(key = "d_${document.id}") {
                     Card(
@@ -162,43 +193,48 @@ fun ChapterScreen(
             item { Spacer(Modifier.height(Space.s)) }
         }
 
-        item {
-            GroupHeader(labelKey = "chapter.entries")
-            Spacer(Modifier.height(Space.headerGap))
+        item(key = "entries_fold") {
+            FoldRow(
+                labelKey = "chapter.entries",
+                expanded = entriesOpen,
+                onToggle = { entriesOpen = !entriesOpen },
+                count = detail.entries.size.toString(),
+            )
+            Spacer(Modifier.height(Space.cardGap))
         }
-
-        if (detail.entries.isEmpty()) {
-            item {
-                Text(
-                    text = strings["chapter.entries.empty"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
-                )
-                Spacer(Modifier.height(Space.l))
-            }
-            return@SectionScaffold
-        }
-
-        detail.entries.forEachIndexed { index, entry ->
-            item(key = entry.id) {
-                SpineRow(
-                    continuesAbove = index > 0,
-                    continuesBelow = index < detail.entries.lastIndex,
-                    node = colors.gold,
-                    routeColor = colors.gold,
-                    dash = RouteDash.TRAIL,
-                ) {
-                    Column {
-                        Card(
-                            testTag = ChapterTags2.entry(entry.id),
-                            onTap = { onOpenEntry(entry) },
-                            eyebrow = entry.occurredEdtf?.takeIf { it.isNotBlank() }
-                                ?.let { EventDateText.render(strings, it) },
-                            title = entry.title?.takeIf { it.isNotBlank() }
-                                ?: strings[kindNameKey(entry.kind)],
-                            body = entry.body,
-                        )
-                        Spacer(Modifier.height(Space.cardGap))
+        if (entriesOpen) {
+            if (detail.entries.isEmpty()) {
+                item {
+                    Text(
+                        text = strings["chapter.entries.empty"],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
+                    )
+                    Spacer(Modifier.height(Space.l))
+                }
+            } else {
+                detail.entries.forEachIndexed { index, entry ->
+                    item(key = entry.id) {
+                        SpineRow(
+                            continuesAbove = index > 0,
+                            continuesBelow = index < detail.entries.lastIndex,
+                            node = colors.gold,
+                            routeColor = colors.gold,
+                            dash = RouteDash.TRAIL,
+                        ) {
+                            Column {
+                                Card(
+                                    testTag = ChapterTags2.entry(entry.id),
+                                    onTap = { onOpenEntry(entry) },
+                                    eyebrow = entry.occurredEdtf?.takeIf { it.isNotBlank() }
+                                        ?.let { EventDateText.render(strings, it) },
+                                    title = entry.title?.takeIf { it.isNotBlank() }
+                                        ?: strings[kindNameKey(entry.kind)],
+                                    body = entry.body,
+                                )
+                                Spacer(Modifier.height(Space.cardGap))
+                            }
+                        }
                     }
                 }
             }
