@@ -46,7 +46,12 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 - **Dates**, `ReadableDate.kt`. Month spelled out, offset carried, precision never invented, unknown a real answer. 12 tests.
 - **The renderer**, `ReadableArchive.kt`. Pure, deterministic, one page per section per year. 18 tests, two of which exist only to pin that row order cannot change the output.
 
-**What is next on this track:** wiring the renderer into `ExportContainer` so `readable/` is actually written into the archive, then the two-layer container in 8.1, then the importer in 8.3.
+- **The readable copy is in the archive**, and proved end to end on the phone. A real export off the year five notebook: 3.6 MB, 103 entries, the manifest, the payload, 40 attachments, and **61 readable pages covering 2021 to 2026**. The index names the person, states the range, counts every section, and says plainly it is somebody's own notes and not a clinical record. No `http`, no `script`, no `link` tag anywhere in a real page.
+- **The field map is generated at build time**, not parsed at runtime, so the field order is fixed before the code runs rather than resting on a JSON parser preserving object key order, which the format does not guarantee.
+
+**What is next on this track:** the two-layer container in 8.1, then the importer in 8.3, then `tools/decrypt/` and the byte-for-byte format spec, #214 and #215.
+
+**One defect this found, and it is the kind only the device finds.** A real export page read "Still waiting to be filed: 0", which is a sentence with no meaning outside a database. Flags render as words now.
 
 
 **One cross-cutting defect is filed and not fixed: #218.** Removal on every list row is long-press-only across **seventeen screens**, which law 2 bans. It is not a bare gesture, it declares a reader action, so a screen reader user can remove a row and a sighted person who does not know the gesture cannot. The v4 answer is already in section 9: removal belongs on the thing's own detail screen. It needs one answer across all seventeen, which is why it is its own issue rather than half done inside a screen conversion.
