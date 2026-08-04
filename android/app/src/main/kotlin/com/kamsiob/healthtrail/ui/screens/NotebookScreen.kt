@@ -357,14 +357,14 @@ private fun SectionTile(
     // that way in screen 04.
     val emergency = row.section == Repository.Section.EMERGENCY_CARD
     val tint = when {
-        emergency -> colors.alertText
+        emergency -> colors.alertInk
         row.emphasis == Emphasis.FORWARD -> colors.ink
-        row.emphasis == Emphasis.FOLDED -> colors.ink3NonText
+        row.emphasis == Emphasis.FOLDED -> colors.ink3
         else -> colors.ink2
     }
     val fill = when {
         row.emphasis == Emphasis.FOLDED -> Color.Transparent
-        emergency -> colors.alertSoft
+        emergency -> colors.alertWash
         row.emphasis == Emphasis.FORWARD -> colors.sand
         else -> Color.Transparent
     }

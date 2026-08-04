@@ -217,7 +217,7 @@ private fun TemplateCard(
                 // they have the strength to begin.
                 text = strings("projects.step_count", "count" to template.steps.size),
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
         }
 
@@ -226,7 +226,7 @@ private fun TemplateCard(
             Text(
                 text = strings["projects.state_varies"],
                 style = HealthTrail.type.bodyS,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
         }
     }
@@ -321,7 +321,7 @@ private fun OwnTemplateCard(
         Text(
             text = strings("projects.step_count", "count" to template.steps.size),
             style = HealthTrail.type.mono,
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
         Text(text = template.name, style = HealthTrail.type.displayS, color = colors.ink)

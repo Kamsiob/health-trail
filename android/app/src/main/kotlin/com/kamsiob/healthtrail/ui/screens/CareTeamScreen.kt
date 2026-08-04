@@ -143,7 +143,7 @@ private fun PersonRow(
         // The role is the eyebrow only when it is not already carrying the
         // heading, so it never appears twice on the same card.
         if (role != null && heading != role) {
-            Text(text = role, style = HealthTrail.type.mono, color = colors.ink3Text)
+            Text(text = role, style = HealthTrail.type.mono, color = colors.ink2)
             Spacer(Modifier.height(Space.xs))
         }
 
@@ -183,7 +183,7 @@ private fun PersonRow(
             Text(
                 text = strings["careteam.no_phone"],
                 style = HealthTrail.type.bodyS,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
         }
     }

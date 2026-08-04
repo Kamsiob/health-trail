@@ -123,7 +123,7 @@ fun AboutScreen(
             Text(
                 text = strings("about.version", "version" to BuildConfig.VERSION_NAME),
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
         }
     }

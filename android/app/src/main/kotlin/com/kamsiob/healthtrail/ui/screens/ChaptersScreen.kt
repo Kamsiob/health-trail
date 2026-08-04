@@ -158,9 +158,9 @@ private fun ChapterSpineRow(
     SpineRow(
         continuesAbove = continuesAbove,
         continuesBelow = continuesBelow,
-        node = if (chapter.isCurrent) colors.blaze else colors.ink3NonText,
+        node = if (chapter.isCurrent) colors.gold else colors.ink3,
         state = state,
-        routeColor = colors.blaze,
+        routeColor = colors.gold,
         dash = null,
     ) {
         Column {
@@ -204,7 +204,7 @@ private fun ChapterRow(chapter: Repository.Chapter, onOpen: () -> Unit) {
                     rendered
                 },
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
         }
@@ -222,7 +222,7 @@ private fun ChapterRow(chapter: Repository.Chapter, onOpen: () -> Unit) {
 
         chapter.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             Spacer(Modifier.height(Space.xs))
-            Text(text = notes, style = HealthTrail.type.bodyS, color = colors.ink3Text)
+            Text(text = notes, style = HealthTrail.type.bodyS, color = colors.ink2)
         }
     }
 }

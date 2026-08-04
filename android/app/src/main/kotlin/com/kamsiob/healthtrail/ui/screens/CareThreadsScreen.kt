@@ -172,7 +172,7 @@ private fun ThreadRow(row: Repository.ThreadWithCount, onOpen: () -> Unit) {
             Text(
                 text = strings("notebook.count", "count" to row.entryCount),
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
         }
     }

@@ -37,7 +37,7 @@ fun HealthTrailTheme(
         darkColorScheme(
             primary = colors.blue,
             onPrimary = colors.onBlue,
-            primaryContainer = colors.blueSoft,
+            primaryContainer = colors.blueWash,
             onPrimaryContainer = colors.blueDeep,
             secondary = colors.leaf,
             onSecondary = colors.paper,
@@ -49,15 +49,15 @@ fun HealthTrailTheme(
             onSurfaceVariant = colors.ink2,
             error = colors.alert,
             onError = colors.onAlertFill,
-            errorContainer = colors.alertSoft,
-            onErrorContainer = colors.alertText,
-            outline = colors.ink3NonText,
+            errorContainer = colors.alertWash,
+            onErrorContainer = colors.alertInk,
+            outline = colors.ink3,
         )
     } else {
         lightColorScheme(
             primary = colors.blue,
             onPrimary = colors.onBlue,
-            primaryContainer = colors.blueSoft,
+            primaryContainer = colors.blueWash,
             onPrimaryContainer = colors.blueDeep,
             secondary = colors.leaf,
             onSecondary = colors.card,
@@ -69,9 +69,9 @@ fun HealthTrailTheme(
             onSurfaceVariant = colors.ink2,
             error = colors.alert,
             onError = colors.onAlertFill,
-            errorContainer = colors.alertSoft,
-            onErrorContainer = colors.alertText,
-            outline = colors.ink3NonText,
+            errorContainer = colors.alertWash,
+            onErrorContainer = colors.alertInk,
+            outline = colors.ink3,
         )
     }
 

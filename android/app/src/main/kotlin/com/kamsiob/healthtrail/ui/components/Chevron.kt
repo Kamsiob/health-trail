@@ -53,14 +53,14 @@ fun Chevron(
         val baseX = if (forward) 0f else size.width
 
         drawLine(
-            color = colors.ink3NonText,
+            color = colors.ink3,
             start = Offset(baseX, 0f),
             end = Offset(tipX, midY),
             strokeWidth = strokeWidth,
             cap = StrokeCap.Round,
         )
         drawLine(
-            color = colors.ink3NonText,
+            color = colors.ink3,
             start = Offset(tipX, midY),
             end = Offset(baseX, size.height),
             strokeWidth = strokeWidth,

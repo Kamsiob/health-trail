@@ -75,7 +75,7 @@ fun Disclosure(
                 Text(
                     text = strings[asideKey],
                     style = HealthTrail.type.bodyS,
-                    color = colors.ink3Text,
+                    color = colors.ink2,
                 )
             }
         }

@@ -196,7 +196,7 @@ fun SearchScreen(
                     Text(
                         text = strings["search.nomatch.next"],
                         style = HealthTrail.type.bodyM,
-                        color = colors.ink3Text,
+                        color = colors.ink2,
                         textAlign = TextAlign.Center,
                     )
                 }
@@ -221,8 +221,8 @@ fun SearchScreen(
                     SpineRow(
                         continuesAbove = index > 0,
                         continuesBelow = index < hits.lastIndex,
-                        node = colors.ink3NonText,
-                        routeColor = colors.ink3NonText,
+                        node = colors.ink3,
+                        routeColor = colors.ink3,
                         // Dashed, because a search result is a filter over the
                         // record rather than the person's own path. 5.2.3.
                         dash = RouteDash.TRAIL,
@@ -275,7 +275,7 @@ private fun ResultRow(hit: Repository.SearchHit, onOpen: () -> Unit) {
         val where = hit.chapterName
         val eyebrow = listOfNotNull(date, where).joinToString("  ")
         if (eyebrow.isNotEmpty()) {
-            Text(text = eyebrow, style = HealthTrail.type.mono, color = colors.ink3Text)
+            Text(text = eyebrow, style = HealthTrail.type.mono, color = colors.ink2)
             Spacer(Modifier.height(Space.xs))
         }
 

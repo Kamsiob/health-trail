@@ -4,196 +4,266 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 /**
- * The color tokens from DESIGN.md sections 2.1, 2.3, and 2.4, at their exact
- * values.
+ * The color tokens from DESIGN.md sections 4.1 through 4.6, at their exact
+ * values, under design direction v4.
  *
- * Three rules that the type system here is shaped to enforce, rather than
- * leaving them to be remembered:
+ * Four rules the type system here is shaped to enforce rather than leaving them
+ * to be remembered:
  *
- * There is one accent, [blue]. Every action, every button, every link.
+ * There is one accent, [blue]. Every action, every button.
  *
- * [blaze] is reserved for the trail metaphor and the capture button. It is not
- * a second accent. It never fills a button that is not the capture button,
- * never highlights a row, and never colors text. Gold text is [blazeText],
- * which is a different value chosen to pass contrast.
+ * [gold] is the trail and capture. It is not a second accent. It never fills a
+ * button that is not the capture button and never colors ordinary text. Gold
+ * text is [goldInk], a different value chosen to pass contrast.
  *
- * [alert] belongs to the emergency card, the open incident dot and pill, and
- * the disputed bill pill. It never appears as a warning about a measurement,
- * ever, because the app does not judge measurements.
+ * [alert] belongs to the emergency card, the open incident dot and pill, and the
+ * disputed bill pill. It never appears as a warning about a measurement, ever,
+ * because the app does not judge measurements.
+ *
+ * A tab hue is identity, never state. It says which section you are in and
+ * nothing more. See [TabHue].
  *
  * Color is never the only carrier of meaning. Every state that has a color also
- * has a word, a shape, or an icon. An incident is not the red one, it is the
- * one whose pill says OPEN.
+ * has a word, a shape, or an icon. An incident is not the red one, it is the one
+ * whose pill says OPEN.
  */
 @Immutable
 data class HealthTrailColors(
     /** App background. Warm, never white. */
     val paper: Color,
-    /** Card and sheet surfaces. */
-    val card: Color,
-    /** Recessed surfaces: icon tiles, avatars, inset rows, disabled chips. */
+    /** Recessed: inputs, folds, insets, the search bar. */
     val sand: Color,
+    /** Raised groups and sheets. */
+    val card: Color,
 
     /** Primary text. */
     val ink: Color,
-    /** Secondary text. */
+    /**
+     * Secondary text, and the only other text level there is.
+     *
+     * DESIGN.md 4.6: at the 4.5:1 floor against warm `sand` there is no room for
+     * a third distinct text level. Anything light enough to read as tertiary
+     * fails the floor, and anything that clears the floor is this value. So the
+     * app has two text colors and gets its third level from size and weight,
+     * which is what law 1's scale jump is made of anyway.
+     */
     val ink2: Color,
     /**
-     * Tertiary text, at the corrected value from DESIGN.md section 2.3. The
-     * mockups used #96A4AE here, which is about 2.3:1 on paper and fails AA at
-     * real text sizes.
+     * Non-text only: hairlines, dividers, inactive icon strokes, the scrubber's
+     * inactive marks. These need 3:1 as interface components rather than 4.5:1
+     * as text, and this value is 2.37:1 on paper, so it never renders a word.
      */
-    val ink3Text: Color,
-    /**
-     * Non-text only: hairline rules, dividers, inactive icon strokes. These
-     * need 3:1 as UI components rather than 4.5:1 as text.
-     */
-    val ink3NonText: Color,
+    val ink3: Color,
 
-    /** The single accent. */
+    /** Row separators inside a group. */
+    val hairline: Color,
+    /** Chip borders, the view toggle's container. */
+    val hairlineHeavy: Color,
+
+    /** The single accent. Every action and only actions. */
     val blue: Color,
+    /** Text on a blue wash, and the pressed state. */
     val blueDeep: Color,
     /** Text and icons on a [blue] fill. */
     val onBlue: Color,
-    val blueSoft: Color,
+    val blueWash: Color,
 
-    /** Shapes only: the mark, the trail line, timeline nodes, the capture button. */
-    val blaze: Color,
+    /** The trail and capture only. Shapes, never text. */
+    val gold: Color,
     /**
      * The glyph on the capture button.
      *
-     * Not white. DESIGN.md section 5.5 originally said white, and measurement
-     * put white on [blaze] at 2.38:1 in light and 1.97:1 in dark, well under
-     * the 3:1 a control needs. The capture button is the single way data enters
-     * this app and it has to be findable without thought by someone tired, in
-     * bad light, and often older. So the fill stays gold in both themes, which
-     * is what carries the meaning, and the glyph darkens.
+     * Not white. White on [gold] measures 2.38:1, well under the 3:1 a control
+     * needs. The capture button is the single way data enters this app and it
+     * has to be findable without thought by someone tired, in bad light, and
+     * often older. So the fill stays gold in both themes, which is what carries
+     * the meaning, and the glyph darkens. This value measures 6.88:1.
      */
-    val onBlaze: Color,
-    /** Gold text. [blaze] itself never renders text. */
-    val blazeText: Color,
-    val blazeSoft: Color,
+    val onGold: Color,
+    /** Gold text. [gold] itself never renders text. */
+    val goldInk: Color,
+    val goldWash: Color,
 
-    /** Shapes only. Resolved and progress indicators. */
+    /** Resolved and done only. */
     val leaf: Color,
-    /** Green text. */
-    val leafText: Color,
-    val leafSoft: Color,
+    val leafInk: Color,
+    val leafWash: Color,
 
-    /** Emergency card, open incident dots, the disputed state. Never a measurement. */
+    /** Emergency, open incidents, disputed. Never a measurement. */
     val alert: Color,
-    val alertText: Color,
+    val alertInk: Color,
     /** The emergency card header fill. */
     val alertFill: Color,
     val onAlertFill: Color,
-    val alertSoft: Color,
+    val alertWash: Color,
+
+    /** Section identity, DESIGN.md 4.3. The mapping is an owner decision. */
+    val rose: TabHue,
+    val teal: TabHue,
+    val slate: TabHue,
+    val moss: TabHue,
+    val manila: TabHue,
+    val stone: TabHue,
 
     /** Care thread route colors, in order. */
     val threadRoutes: List<Color>,
 
     val isDark: Boolean,
+) {
+    /** Every tab hue in the order DESIGN.md 4.3 lists them. */
+    val tabHues: List<TabHue> get() = listOf(rose, teal, slate, moss, manila, stone)
+}
+
+/**
+ * One section's identity color, in three parts.
+ *
+ * The split exists because every base hue fails the small-text floor. Measured
+ * on adoption, the six bases landed between 3.23:1 and 4.56:1 against the
+ * surfaces they sit on, and the tab chip is roughly 11sp and is the first
+ * element on every section screen. DECISIONS.md D80.
+ *
+ * [base] is for shapes: the tab chip's fill, the avatar circle, the waypoint,
+ * the icon in its wash. [ink] is for text. [wash] is its own background.
+ *
+ * This is not a new idea in this codebase. It is the split already used for
+ * gold, leaf, and alert, applied to six more hues.
+ */
+@Immutable
+data class TabHue(
+    val base: Color,
+    val ink: Color,
+    val wash: Color,
 )
 
 /**
- * Light theme, exactly the values in the mockups apart from the three text
- * contrast corrections in DESIGN.md section 2.3.
+ * Light theme, DESIGN.md 4.1 through 4.3.
+ *
+ * Three values differ from the grid file, each because it failed the floor when
+ * measured against the actual warm surfaces rather than against white. D80.
  */
 val LightColors = HealthTrailColors(
-    paper = Color(0xFFFAF6EE),
+    paper = Color(0xFFF6F1E6),
+    sand = Color(0xFFECE4D1),
     card = Color(0xFFFFFFFF),
-    sand = Color(0xFFF1EBDC),
 
-    ink = Color(0xFF22384A),
-    // 5C6F7E measured 4.38:1 on sand, just under the floor. Darkened until it
-    // clears on all three surfaces it lands on.
-    ink2 = Color(0xFF5A6D7C),
-    // 5E6E79, the correction DESIGN.md section 2.3 proposed, measured 4.43:1 on
-    // sand. The document says its own numbers are calculated and the
-    // measurement is what counts, and this is the measurement.
-    ink3Text = Color(0xFF5C6C77),
-    ink3NonText = Color(0xFF96A4AE),
+    ink = Color(0xFF233240),
+    // The grid draws #5A6B77, which measures 4.36:1 on sand, under the floor.
+    ink2 = Color(0xFF576873),
+    ink3 = Color(0xFF94A0A9),
 
-    blue = Color(0xFF2F6F8F),
-    blueDeep = Color(0xFF245A75),
-    onBlue = Color(0xFFF3FAFD),
-    blueSoft = Color(0xFFE3EEF3),
+    hairline = Color(0x1A233240),
+    hairlineHeavy = Color(0x33233240),
 
-    blaze = Color(0xFFD99D2B),
-    onBlaze = Color(0xFF22384A),
-    // 9A6E14 measured 4.22:1 on paper and 3.87:1 inside a gold tonal card,
-    // against the roughly 4.9:1 DESIGN.md calculated. That calculation was
-    // against white rather than against warm paper.
-    blazeText = Color(0xFF8F6309),
-    blazeSoft = Color(0xFFF7ECD1),
+    // The grid draws #2F6F8F, which measures 4.37:1 on sand, under the floor.
+    blue = Color(0xFF2E6D8C),
+    blueDeep = Color(0xFF245C77),
+    onBlue = Color(0xFFFFFFFF),
+    blueWash = Color(0xFFE2EDF2),
+
+    gold = Color(0xFFD99D2B),
+    onGold = Color(0xFF2B1D06),
+    goldInk = Color(0xFF895D10),
+    goldWash = Color(0xFFF5E9CD),
 
     leaf = Color(0xFF4E8A5C),
-    leafText = Color(0xFF3D7049),
-    leafSoft = Color(0xFFE4EFE5),
+    leafInk = Color(0xFF3B6C48),
+    leafWash = Color(0xFFE2EDE1),
 
-    alert = Color(0xFFB84A2E),
-    // The shape color measured 4.22:1 as text inside a red tonal pill, so text
-    // gets its own slightly darker value, the same split already used for gold
-    // and green.
-    alertText = Color(0xFFB34529),
-    alertFill = Color(0xFFB84A2E),
+    alert = Color(0xFFB5492E),
+    alertInk = Color(0xFF9A3C25),
+    alertFill = Color(0xFFB5492E),
     onAlertFill = Color(0xFFFFFFFF),
-    alertSoft = Color(0xFFF8E4DB),
+    alertWash = Color(0xFFF6E2DA),
+
+    // People and chapters.
+    rose = TabHue(Color(0xFFA5674F), Color(0xFF8E5944), Color(0xFFF2E1D8)),
+    // Medications, tests, questions.
+    teal = TabHue(Color(0xFF3F7E74), Color(0xFF387067), Color(0xFFDEEBE6)),
+    // Appointments.
+    slate = TabHue(Color(0xFF57708A), Color(0xFF516880), Color(0xFFE3E9F0)),
+    // Progress, care threads.
+    moss = TabHue(Color(0xFF6E7C43), Color(0xFF5F6B3A), Color(0xFFEAECD8)),
+    // Documents, money.
+    manila = TabHue(Color(0xFFA3772D), Color(0xFF846024), Color(0xFFF1E6CC)),
+    // Standing instructions. Added in v4 because the grid draws no such screen
+    // and the section needs an identity. D79.
+    stone = TabHue(Color(0xFF7A756A), Color(0xFF6A665C), Color(0xFFEAE7E0)),
 
     threadRoutes = listOf(
-        Color(0xFF2F6F8F), // physical therapy
+        Color(0xFF2E6D8C), // physical therapy
         Color(0xFF4E8A5C), // occupational therapy
-        Color(0xFFB36A3C), // speech
-        Color(0xFF6E7F5A), // nursing
+        Color(0xFFA5674F), // speech
+        Color(0xFF6E7C43), // nursing
     ),
 
     isDark = false,
 )
 
 /**
- * Dark theme, from DESIGN.md section 2.4.
+ * Dark theme, DESIGN.md 4.5, re-derived against the v4 ladder. D87.
  *
  * A trail map at dusk, not an inverted document. Surfaces get lighter as they
  * come forward and elevation is carried by surface lightness rather than by
- * shadow. Never black, which smears on OLED during scroll and is harsh in a
- * dark room, which is exactly when this theme gets used.
+ * shadow. Never black, which smears on OLED during scroll and is harsh in a dark
+ * room, which is exactly when this theme gets used.
+ *
+ * `sand` is lighter than `card` here, the opposite of light theme. A recessed
+ * surface reads as lighter on dark, which is why an input field on a dark screen
+ * is drawn lighter than the card it sits in rather than darker.
+ *
+ * The six tab hues are separated along lightness rather than only along hue,
+ * and that is deliberate. A first derivation optimized each hue against its own
+ * wash alone and produced six colors that collapsed under red-green color vision
+ * deficiency: rose against stone measured 2.8 CIEDE2000 under simulated
+ * deuteranopia, which is the same color. Lightness is what survives red-green
+ * CVD, so the hues keep their angles exactly, which is the owner's mapping, and
+ * spread across a 48 to 78 percent lightness band. Minimum pairwise separation
+ * is 10.8 across normal vision, protanopia, and deuteranopia.
  */
 val DarkColors = HealthTrailColors(
-    paper = Color(0xFF121A20),
-    card = Color(0xFF1A242B),
-    sand = Color(0xFF223038),
+    paper = Color(0xFF141C23),
+    sand = Color(0xFF25313A),
+    card = Color(0xFF1C262E),
 
-    ink = Color(0xFFE9EEF1),
-    ink2 = Color(0xFFA6B4BD),
-    // 7F9099 measured 4.10:1 on sand, which is the lightest dark surface and
-    // therefore the tightest pairing in this theme.
-    ink3Text = Color(0xFF8798A1),
-    ink3NonText = Color(0xFF66757E),
+    ink = Color(0xFFE8EDF1),
+    ink2 = Color(0xFFAFBCC5),
+    ink3 = Color(0xFF6E7C85),
+
+    hairline = Color(0x1AFFFFFF),
+    hairlineHeavy = Color(0x33FFFFFF),
 
     blue = Color(0xFF7FB6D4),
     blueDeep = Color(0xFF9BCBE4),
     onBlue = Color(0xFF0B171E),
-    blueSoft = Color(0xFF1E323D),
+    blueWash = Color(0xFF1E323D),
 
-    blaze = Color(0xFFE3B155),
-    onBlaze = Color(0xFF0B171E),
-    blazeText = Color(0xFFE9BE6E),
-    blazeSoft = Color(0xFF33290F),
+    gold = Color(0xFFE3B155),
+    onGold = Color(0xFF2B1D06),
+    goldInk = Color(0xFFE9BE6E),
+    goldWash = Color(0xFF33290F),
 
     leaf = Color(0xFF74B383),
-    leafText = Color(0xFF8CC79A),
-    leafSoft = Color(0xFF16291C),
+    leafInk = Color(0xFF8CC79A),
+    leafWash = Color(0xFF16291C),
 
     alert = Color(0xFFE58163),
-    alertText = Color(0xFFE58163),
+    alertInk = Color(0xFFE58163),
     alertFill = Color(0xFFA8412A),
     onAlertFill = Color(0xFFFFFFFF),
-    alertSoft = Color(0xFF3B1E14),
+    alertWash = Color(0xFF3B1E14),
+
+    rose = TabHue(Color(0xFFC79B8A), Color(0xFFB98E7E), Color(0xFF2F1D16)),
+    teal = TabHue(Color(0xFFA0CFC8), Color(0xFF6CADA2), Color(0xFF172E2A)),
+    slate = TabHue(Color(0xFF6789AD), Color(0xFF829BB5), Color(0xFF1B222A)),
+    moss = TabHue(Color(0xFFCFD8B6), Color(0xFF9BAA6E), Color(0xFF282D18)),
+    manila = TabHue(Color(0xFFD1A761), Color(0xFFC39A55), Color(0xFF312614)),
+    stone = TabHue(Color(0xFF9F8856), Color(0xFFAA976E), Color(0xFF2A251B)),
 
     threadRoutes = listOf(
         Color(0xFF7FB6D4), // physical therapy
         Color(0xFF74B383), // occupational therapy
-        Color(0xFFD0946A), // speech
-        Color(0xFF9CAE85), // nursing
+        Color(0xFFC79B8A), // speech
+        Color(0xFFCFD8B6), // nursing
     ),
 
     isDark = true,
@@ -204,5 +274,5 @@ val DarkColors = HealthTrailColors(
  * does not shift between themes, because it is the single way data enters the
  * app and it has to be findable without thought.
  */
-val CaptureButtonLight: Color = LightColors.blaze
-val CaptureButtonDark: Color = DarkColors.blaze
+val CaptureButtonLight: Color = LightColors.gold
+val CaptureButtonDark: Color = DarkColors.gold

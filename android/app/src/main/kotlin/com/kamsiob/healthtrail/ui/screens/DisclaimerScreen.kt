@@ -113,7 +113,7 @@ fun DisclaimerScreen(onAccept: () -> Unit) {
                 Image(
                     painter = painterResource(R.drawable.ic_mark),
                     contentDescription = null,
-                    colorFilter = ColorFilter.tint(colors.blaze),
+                    colorFilter = ColorFilter.tint(colors.gold),
                     modifier = Modifier
                         .size(44.dp)
                         .clearAndSetSemantics { },

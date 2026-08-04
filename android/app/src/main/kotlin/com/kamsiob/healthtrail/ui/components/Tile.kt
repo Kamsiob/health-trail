@@ -118,7 +118,7 @@ fun Tile(
             Text(
                 text = count,
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
                 modifier = if (countTestTag == null) {
                     Modifier
                 } else {

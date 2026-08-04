@@ -168,7 +168,7 @@ private fun TemplateCard(
         Text(
             text = strings("projects.step_count", "count" to steps),
             style = HealthTrail.type.mono,
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
         Text(text = title, style = HealthTrail.type.displayS, color = colors.ink)
@@ -186,7 +186,7 @@ private fun TemplateCard(
                 strings("library.in_use", "count" to started.size)
             },
             style = HealthTrail.type.bodyS,
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
 
         started.forEachIndexed { index, project ->

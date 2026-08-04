@@ -21,7 +21,7 @@ the app's storage, nothing is pushed into its data directory, and no debug hook
 exists to be left behind. The fixture arrives the way somebody else's backup
 would, which means seeding a persona also exercises the import path every time.
 
-`contract/export-format.md` is the specification. This writes format version 2,
+`contract/EXPORT-FORMAT.md` is the specification. This writes format version 2,
 which is encrypted only, per D67.
 
 Usage:

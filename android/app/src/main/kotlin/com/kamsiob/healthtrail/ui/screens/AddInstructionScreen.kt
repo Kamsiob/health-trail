@@ -112,7 +112,7 @@ fun AddInstructionScreen(
                             Text(
                                 text = tag.explainer,
                                 style = HealthTrail.type.bodyS,
-                                color = colors.ink3Text,
+                                color = colors.ink2,
                             )
                         }
                         Spacer(Modifier.height(Space.headerGap))
@@ -175,7 +175,7 @@ private fun StarterCard(
         Text(
             text = strings["instructions.what_to_say"],
             style = HealthTrail.type.mono,
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
         Text(text = starter.wording, style = HealthTrail.type.bodyL, color = colors.ink)
@@ -190,7 +190,7 @@ private fun StarterCard(
             Text(
                 text = strings["instructions.how_to_ask"],
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
             Text(text = askFor, style = HealthTrail.type.bodyM, color = colors.ink2)

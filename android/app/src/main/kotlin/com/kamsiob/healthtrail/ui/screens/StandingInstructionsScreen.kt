@@ -143,7 +143,7 @@ private fun InstructionRow(
                     "date" to EventDateText.render(strings, given),
                 ),
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
         }
@@ -173,16 +173,16 @@ private fun InstructionRow(
                     text = tag.label,
                     style = HealthTrail.type.mono,
                     color = if (instruction.tag == "federal") {
-                        colors.leafText
+                        colors.leafInk
                     } else {
-                        colors.ink3Text
+                        colors.ink2
                     },
                 )
                 Spacer(Modifier.height(Space.xs))
                 Text(
                     text = tag.explainer,
                     style = HealthTrail.type.bodyS,
-                    color = colors.ink3Text,
+                    color = colors.ink2,
                 )
             }
         }
@@ -198,7 +198,7 @@ private fun InstructionRow(
                     "date" to EventDateText.render(strings, instruction.acknowledgedEdtf),
                 ),
                 style = HealthTrail.type.mono,
-                color = colors.leafText,
+                color = colors.leafInk,
             )
             Spacer(Modifier.height(Space.xs))
         }
@@ -207,7 +207,7 @@ private fun InstructionRow(
                 ?: strings["instructions.ack.none"],
             style = HealthTrail.type.bodyM,
             color = if (instruction.acknowledgedHow.isNullOrBlank()) {
-                colors.ink3Text
+                colors.ink2
             } else {
                 colors.ink2
             },
@@ -231,7 +231,7 @@ private fun InstructionRow(
             Text(
                 text = strings("instruction.violations.count", "count" to violationCount),
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
             Text(

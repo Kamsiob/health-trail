@@ -300,7 +300,7 @@ private fun RouteRow(
         continuesAbove = continuesAbove,
         continuesBelow = continuesBelow,
         node = node,
-        routeColor = colors.blaze,
+        routeColor = colors.gold,
         dash = RouteDash.TRAIL,
         progress = draw,
         content = content,
@@ -319,10 +319,10 @@ private fun RouteRow(
 private fun nodeColor(kind: String): Color {
     val colors = HealthTrail.colors
     return when (kind) {
-        "call" -> colors.blaze
+        "call" -> colors.gold
         "visit" -> colors.blue
         "incident" -> colors.alert
-        else -> colors.ink3NonText
+        else -> colors.ink3
     }
 }
 
@@ -421,7 +421,7 @@ private fun TrailRow(
             Text(
                 text = strings["trail.unfiled"],
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
         }
     }
@@ -469,7 +469,7 @@ private fun EditableDate(entry: Repository.TrailEntry, onClick: () -> Unit) {
             .padding(vertical = Space.s, horizontal = Space.s),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Text(text = rendered, style = HealthTrail.type.mono, color = colors.ink3Text)
+        Text(text = rendered, style = HealthTrail.type.mono, color = colors.ink2)
     }
 }
 

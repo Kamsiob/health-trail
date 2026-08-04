@@ -306,7 +306,7 @@ fun ProjectDetailScreen(
                     Text(
                         text = strings["projects.save_as_template.aside"],
                         style = HealthTrail.type.bodyS,
-                        color = colors.ink3Text,
+                        color = colors.ink2,
                     )
                 }
             }

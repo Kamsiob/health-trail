@@ -78,7 +78,7 @@ fun FilledButton(
         Text(
             text = label,
             style = HealthTrail.type.label,
-            color = if (enabled) colors.onBlue else colors.ink3Text,
+            color = if (enabled) colors.onBlue else colors.ink2,
             textAlign = TextAlign.Center,
             modifier = Modifier.defaultMinSize(minHeight = 0.dp),
         )
@@ -89,7 +89,7 @@ fun FilledButton(
  * The support button, and the only outlined button in the app.
  *
  * **It is a deliberate, recorded exception to section 2.2**, which reserves
- * `blaze` for the trail metaphor and the capture button and says plainly that
+ * `gold` for the trail metaphor and the capture button and says plainly that
  * it never fills a button that is not the capture button. The owner asked for
  * a gold outline here. Two things keep the exception narrow rather than making
  * the rule meaningless:
@@ -98,7 +98,7 @@ fun FilledButton(
  * gold means "the way in" and must not be spent twice. An outlined box reads as
  * an offer rather than as an action of that weight.
  *
- * **The label is `ink`, not gold**, because 2.2 also says `blaze` never colors
+ * **The label is `ink`, not gold**, because 2.2 also says `gold` never colors
  * text, and that half of the rule is kept exactly.
  *
  * They are never on screen together: this appears on the disclaimer gate, which
@@ -130,7 +130,7 @@ fun SupportButton(
                 // The focus ring takes the border over rather than drawing a
                 // second one outside it, which would be two rectangles around
                 // one control.
-                color = if (ring > 0f) colors.blue.copy(alpha = ring) else colors.blaze,
+                color = if (ring > 0f) colors.blue.copy(alpha = ring) else colors.gold,
                 shape = Radius.tile,
             )
             .clickable(
@@ -197,7 +197,7 @@ fun QuietButton(
         Text(
             text = label,
             style = HealthTrail.type.label,
-            color = if (enabled) colors.ink else colors.ink3Text,
+            color = if (enabled) colors.ink else colors.ink2,
             textAlign = TextAlign.Center,
             modifier = Modifier.defaultMinSize(minHeight = 0.dp),
         )
@@ -261,7 +261,7 @@ fun TextAction(
             Text(
                 text = label,
                 style = HealthTrail.type.label,
-                color = if (enabled) colors.blue else colors.ink3Text,
+                color = if (enabled) colors.blue else colors.ink2,
                 textAlign = TextAlign.Center,
             )
         }

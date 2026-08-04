@@ -346,7 +346,7 @@ private fun MonthGrid(
                 Text(
                     text = initial,
                     style = HealthTrail.type.mono,
-                    color = colors.ink3Text,
+                    color = colors.ink2,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f),
                 )
@@ -406,7 +406,7 @@ private fun DayCell(
 ) {
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
-    val resting = if (selected) colors.blueSoft else Color.Transparent
+    val resting = if (selected) colors.blueWash else Color.Transparent
     val surface by pressedSurface(interaction, resting)
     val ring by focusRingAlpha(interaction)
 
@@ -436,7 +436,7 @@ private fun DayCell(
                 style = HealthTrail.type.bodyM,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                 color = when {
-                    dimmed -> colors.ink3Text
+                    dimmed -> colors.ink2
                     selected -> colors.blueDeep
                     else -> colors.ink
                 },
@@ -447,7 +447,7 @@ private fun DayCell(
                     modifier = Modifier
                         .size(4.dp)
                         .clip(CircleShape)
-                        .background(colors.ink3NonText),
+                        .background(colors.ink3),
                 )
             }
         }

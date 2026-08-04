@@ -68,12 +68,12 @@ fun GroupHeaderText(label: String, modifier: Modifier = Modifier) {
         Text(
             text = label.uppercase(strings.locale),
             style = HealthTrail.type.mono,
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
         Spacer(Modifier.width(Space.sm))
         Canvas(modifier = Modifier.weight(1f).height(1.dp)) {
             drawLine(
-                color = colors.ink3NonText.copy(alpha = HAIRLINE_ALPHA),
+                color = colors.ink3.copy(alpha = HAIRLINE_ALPHA),
                 start = Offset(0f, size.height / 2f),
                 end = Offset(size.width, size.height / 2f),
                 strokeWidth = size.height,

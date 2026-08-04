@@ -143,7 +143,7 @@ private fun QuestionRow(
             .padding(Space.cardPadding),
     ) {
         question.roleLabel?.takeIf { it.isNotBlank() }?.let { role ->
-            Text(text = role, style = HealthTrail.type.mono, color = colors.ink3Text)
+            Text(text = role, style = HealthTrail.type.mono, color = colors.ink2)
             Spacer(Modifier.height(Space.xs))
         }
 
@@ -170,7 +170,7 @@ private fun QuestionRow(
                     "date" to EventDateText.render(strings, question.askedEdtf),
                 ),
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
             // **An asked question with no answer says so**, rather than
@@ -182,7 +182,7 @@ private fun QuestionRow(
                     ?: strings["questions.answer.none"],
                 style = HealthTrail.type.bodyM,
                 color = if (question.answerText.isNullOrBlank()) {
-                    colors.ink3Text
+                    colors.ink2
                 } else {
                     colors.ink2
                 },
