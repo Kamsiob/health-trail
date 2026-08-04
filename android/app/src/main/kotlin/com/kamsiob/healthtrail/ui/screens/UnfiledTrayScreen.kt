@@ -23,7 +23,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,9 +39,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.Suggest
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
@@ -52,6 +61,8 @@ object UnfiledTags {
     const val ROOT = "unfiled_root"
     const val EMPTY = "unfiled_empty"
     const val CLOSE = "unfiled_close"
+    const val LATER = "unfiled_later"
+    fun behind(id: String) = "unfiled_behind_$id"
     fun entry(id: String) = "unfiled_entry_$id"
     /** The suggestion, which is the primary action on a card that has one. */
     fun file(id: String) = "unfiled_file_$id"
@@ -93,6 +104,11 @@ fun UnfiledTrayScreen(
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
+    // Which ones the person has said "not now" to, this time through. Not a
+    // stored state: it is about this sitting, and it must not become a quiet
+    // second inbox the record knows about.
+    var passed by rememberSaveable { mutableStateOf(emptySet<String>()) }
+    var behindOpen by rememberSaveable { mutableStateOf(false) }
     val colors = HealthTrail.colors
 
     Surface(
@@ -153,14 +169,104 @@ fun UnfiledTrayScreen(
                     }
                 }
 
-                items@ for (entry in entries) {
-                    item(key = entry.id) {
+                // **One at a time, and this screen was showing eighty six.**
+                // Law 1: the one thing is where *this* one lives. A wall of
+                // items each asking the same question is the pile the person
+                // came here to get out from under, reproduced on a screen.
+                //
+                // Everything else is counted behind one fold, so nothing is
+                // hidden and the number is honest.
+                val waiting = entries.filter { it.id !in passed }
+                val current = waiting.firstOrNull()
+
+                if (current != null) {
+                    item(key = current.id) {
                         UnfiledRow(
-                            entry = entry,
+                            entry = current,
                             threads = threads,
-                            onFile = { threadId -> onFile(entry.id, threadId) },
+                            onFile = { threadId -> onFile(current.id, threadId) },
+                        )
+                        Spacer(Modifier.height(Space.m))
+                        // **Leaving it is a real answer, not a failure.** Rule
+                        // 13: partial is a finished state. Somebody who does not
+                        // know where this belongs should be able to say so and
+                        // move on, and the thing stays exactly where it was.
+                        TextAction(
+                            label = strings["unfiled.later"],
+                            onClick = { passed = passed + current.id },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(UnfiledTags.LATER),
+                        )
+                        Spacer(Modifier.height(Space.sectionGap))
+                    }
+                } else if (entries.isNotEmpty()) {
+                    // Everything has been passed over at least once. Said
+                    // plainly, with the way to go round again, rather than an
+                    // empty screen that looks like the work is gone.
+                    item(key = "passed") {
+                        Text(
+                            text = strings["unfiled.all_passed"],
+                            style = HealthTrail.type.bodyL,
+                            color = colors.ink2,
+                        )
+                        Spacer(Modifier.height(Space.m))
+                        QuietButton(
+                            label = strings["unfiled.title"],
+                            onClick = { passed = emptySet() },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(Modifier.height(Space.sectionGap))
+                    }
+                }
+
+                val behind = entries.filter { it.id != current?.id }
+                if (behind.isNotEmpty()) {
+                    item(key = "behind") {
+                        FoldRow(
+                            labelKey = "unfiled.behind",
+                            expanded = behindOpen,
+                            onToggle = { behindOpen = !behindOpen },
+                            count = behind.size.toString(),
                         )
                         Spacer(Modifier.height(Space.cardGap))
+                    }
+
+                    if (behindOpen) {
+                        item(key = "behind_list") {
+                            GroupedSurface {
+                                behind.forEachIndexed { index, entry ->
+                                    DenseRow(
+                                        title = Bidi.isolate(
+                                            entry.title?.takeIf { it.isNotBlank() }
+                                                ?: strings[kindKey(entry.kind)],
+                                        ),
+                                        trailing = EventDateText.render(
+                                            strings, entry.occurredEdtf,
+                                        ),
+                                        divider = index < behind.size - 1,
+                                        // Tapping one brings it to the front,
+                                        // which is the only thing this list can
+                                        // usefully do: it is a queue, and the
+                                        // person is choosing what to answer next.
+                                        // **Brings this one to the front.** The
+                                        // list is a queue and the only useful
+                                        // thing a person can do with it is
+                                        // choose what to answer next, so
+                                        // everything currently ahead of it steps
+                                        // aside and it is no longer passed over.
+                                        onClick = {
+                                            passed = entries
+                                                .map { it.id }
+                                                .filterNot { it == entry.id }
+                                                .toSet()
+                                        },
+                                        modifier = Modifier.testTag(UnfiledTags.behind(entry.id)),
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(Space.cardGap))
+                        }
                     }
                 }
 
