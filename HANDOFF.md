@@ -582,6 +582,16 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 
 **None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed. Per the memory this project keeps: **an increment ends when `origin/main` has it**, and a local commit is not done.
 
+### The instrumented suite, which had not run in weeks
+
+**291 instrumented tests.** They could not run at all until this session, because the `androidTest` sources stopped compiling when the capture button left the navigation bar and nothing rebuilds them on the unit test task. Compiling them again meant running them again, and running them found **seven failures, none from tonight's work**:
+
+- **Five were the notebook becoming four sections and a fold** on 2026-08-03. Every test there was written when all twelve sections were on the front door. They open the fold now, which is what a person does.
+- **Two were the same thing** reached through the medication journey.
+- **One was a test tag that went missing in a redesign.** The notebook's counts carried a tag while the front door was tiles; the v4 conversion made it dense rows and the tag stayed with the tile, so three tests looked for a node that no longer existed with no way to know why. `DenseRow` can tag its subtitle now.
+
+**Run `:app:connectedDebugAndroidTest` after any run that changes a screen.** It takes about six minutes and it is the only thing that would have caught these.
+
 ### The device, as it was left
 
 **The year five fixture is loaded** through the app's own restore screen, which is how `tools/seed.sh` puts it there. If the notebook looks empty, an instrumented test run has cleared it: `tools/seed.sh year5 5 walk-year-five` puts it back in about a minute.
