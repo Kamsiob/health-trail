@@ -24,6 +24,20 @@ import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.IconTile
+import com.kamsiob.healthtrail.ui.components.wholeAppHue
+import com.kamsiob.healthtrail.ui.components.WaypointDot
+import com.kamsiob.healthtrail.ui.components.Waypoint
+import com.kamsiob.healthtrail.ui.components.TabChip
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.GroupedRows
+import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.animation.AnimatedVisibility
 import com.kamsiob.healthtrail.ui.components.fabScrollClearance
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.Tile
@@ -37,6 +51,10 @@ object NotebookTags {
     fun count(section: Repository.Section) = "notebook_count_${section.name.lowercase()}"
     const val WAITING = "notebook_waiting"
     const val OPEN_INCIDENTS = "notebook_open_incidents"
+    const val FOLD = "notebook_fold"
+
+    /** One section's row. Kept as `section(...)` so existing tests still find it. */
+    fun row(section: Repository.Section) = section(section)
 }
 
 /**
@@ -184,166 +202,161 @@ fun NotebookScreen(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val bySection = sections.associateBy { it.section }
+    var foldOpen by rememberSaveable { mutableStateOf(false) }
 
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = colors.paper,
-    ) {
+    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
-            // **A plain scrolling column rather than a lazy list**, which is
-            // not a regression. Twelve tiles and a hero is a fixed, small
-            // screen: laziness buys nothing here and costs the one thing that
-            // matters, which is that every tile exists in the tree so a test
-            // and a screen reader both reach it without a scroll dance. The
-            // trail, which is sixteen hundred rows, is still lazy.
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .testTag(NotebookTags.ROOT)
                 .padding(horizontal = Space.screenHorizontal),
+            verticalArrangement = Arrangement.spacedBy(Space.cardGap),
         ) {
-            Spacer(Modifier.height(Space.l))
+            Spacer(Modifier.height(Space.sm))
+
+            // **The binder's own tab.** The notebook belongs to no section, so
+            // it takes gold and the base ladder rather than a section hue, per
+            // `DESIGN.md` 4.3.
+            TabChip(hue = wholeAppHue(), labelKey = "notebook.tab")
+
             Text(
                 text = strings["notebook.title"],
-                style = HealthTrail.type.displayL,
+                style = HealthTrail.type.displayM,
                 color = colors.ink,
             )
-            Spacer(Modifier.height(Space.s))
-            Text(
-                text = strings["notebook.subtitle"],
-                style = HealthTrail.type.bodyM,
-                color = colors.ink2,
-            )
 
-            // **The hero, and it is absent more often than it is present**, per
-            // 11.5. A notebook with nothing waiting and no open incident has
-            // nothing that needs the person right now, and saying so at display
-            // size would be an announcement about the absence of a problem.
-            // The grid simply starts higher.
+            // **What needs the person, as one row rather than a hero.**
             //
-            // **Two lines at most and never three.** Two things needing
-            // attention is a fact about a notebook; three at display size is a
-            // screen shouting, and the rest are in their own sections where
-            // they already live.
+            // The grid draws it as a single grouped row with an open marker, and
+            // that is right for this screen: the notebook's job is to be a table
+            // of contents, so the one thing at the top is a door to whatever is
+            // wrong rather than a display-size statement of it. Today is the
+            // screen that says it large, and saying it twice at two sizes would
+            // be the app raising its voice about the same fact.
+            //
+            // **Absent when there is nothing**, per 11.5. Announcing the absence
+            // of a problem is not information.
             if (waiting > 0 || openIncidents > 0) {
-                Hero(eyebrowKey = "notebook.attention") {
-                    if (waiting > 0) {
-                        HeroLine(
-                            text = strings("unfiled.waiting", "count" to waiting),
-                            onClick = onOpenUnfiled,
-                            modifier = Modifier.testTag(NotebookTags.WAITING),
-                        )
-                    }
+                GroupedSurface {
                     if (openIncidents > 0) {
-                        HeroLine(
-                            text = strings("today.open.incidents", "count" to openIncidents),
+                        DenseRow(
+                            title = strings("today.open.incidents", "count" to openIncidents),
+                            leading = {
+                                WaypointDot(color = colors.alert, state = Waypoint.OPEN)
+                            },
+                            chevron = true,
+                            divider = waiting > 0,
                             onClick = onOpenIncidents,
                             modifier = Modifier.testTag(NotebookTags.OPEN_INCIDENTS),
                         )
                     }
+                    if (waiting > 0) {
+                        DenseRow(
+                            title = strings("unfiled.waiting", "count" to waiting),
+                            chevron = true,
+                            divider = false,
+                            onClick = onOpenUnfiled,
+                            modifier = Modifier.testTag(NotebookTags.WAITING),
+                        )
+                    }
                 }
-            } else {
-                Spacer(Modifier.height(Space.l))
             }
 
-            // **One grid, and the four group headers are gone.**
+            // **Four sections, not twelve**, per grid screen 03 and law 1. The
+            // situation template decides which four lead; everything else waits
+            // behind one fold, named and counted.
             //
-            // **Nothing moved.** The order is still `NotebookGroup`'s, which is
-            // still `MASTER_SPEC.md` section 4.4's, so a person who learned
-            // where documents were finds them in the same place. That is what
-            // 10.8 actually protects and it is untouched.
-            //
-            // **What went is the headers, and they were a fix for a list.**
-            // Twelve rows at uniform weight read as a list of everything, so
-            // #36 grouped them, correctly. A grid is told apart by shape and
-            // position instead, which is the job the headers were doing, and
-            // four headers chopping twelve tiles into groups of three, four,
-            // three and two left a half empty row in three of the four and cost
-            // most of what the grid was worth: seven rows and four headers
-            // instead of six rows, which is barely shorter than the list it
-            // replaced. Measured on the phone against the year five fixture
-            // rather than reasoned about.
-            //
-            // **Two grids, because the template's three weights are two tile
-            // sizes plus one fill rule**, per 11.2. Forward and standing are
-            // the same size and differ by the fill on their drawing; folded is
-            // compact and sits after them, still in its own place in the order,
-            // still one tap away. Folded means quieter, never gone.
+            // **The order never changes and nothing is ever hidden.** A section
+            // the template folds is still in its own place inside the fold, one
+            // tap away, so a person who learned where documents were finds them
+            // in the same place. That is what 10.8 protects and it is untouched.
             val ordered = NotebookGroup.entries.flatMap { group ->
                 group.sections.mapNotNull { bySection[it] }
             }
-            val full = ordered.filter { it.emphasis != Emphasis.FOLDED }
-            val folded = ordered.filter { it.emphasis == Emphasis.FOLDED }
+            val forward = ordered.filter { it.emphasis == Emphasis.FORWARD }
+            // With no template every section stands, and a screen of twelve rows
+            // with a fold holding nothing would be worse than the plain list. So
+            // the lead group falls back to the standing sections and the fold
+            // simply does not appear.
+            val lead = if (forward.isNotEmpty()) forward else ordered
+            val rest = ordered - lead.toSet()
 
-            TileGrid(rows = full, compact = false, onOpen = onOpen)
-            if (full.isNotEmpty() && folded.isNotEmpty()) {
-                Spacer(Modifier.height(Space.s))
+            GroupedRows(items = lead) { row, isLast ->
+                SectionRow(row = row, isLast = isLast, onOpen = onOpen)
             }
-            TileGrid(rows = folded, compact = true, onOpen = onOpen)
 
-            // **Clearance for the corner FAB**, per `DESIGN.md` section 8 and
-            // D81: the last item has to scroll fully clear of it, not merely
-            // exist beneath it. A row the person can see and cannot tap is
-            // worse than one they cannot see, because it looks like the app is
-            // ignoring them.
-            //
-            // **This was caught on the phone rather than in review**, which is
-            // the whole reason section 8 is a mechanical audit. The moment the
-            // capture button moved from the navigation bar's middle to the
-            // trailing corner, the old clearance was measured against the wrong
-            // thing and the emergency card tile ended up underneath it.
-            //
-            // The value comes from [fabScrollClearance] rather than being
-            // arithmetic here, so a change to the button's size reaches every
-            // screen instead of the one somebody remembered.
+            if (rest.isNotEmpty()) {
+                FoldRow(
+                    labelKey = "notebook.fold.more",
+                    expanded = foldOpen,
+                    onToggle = { foldOpen = !foldOpen },
+                    count = rest.size.toString(),
+                    modifier = Modifier.testTag(NotebookTags.FOLD),
+                )
+                // **Opens in place**, per `DESIGN.md` section 9, because what it
+                // holds is eight rows rather than a screenful.
+                AnimatedVisibility(visible = foldOpen) {
+                    GroupedRows(items = rest) { row, isLast ->
+                        SectionRow(row = row, isLast = isLast, onOpen = onOpen)
+                    }
+                }
+            }
+
             Spacer(Modifier.height(fabScrollClearance))
         }
     }
 }
 
 /**
- * A run of sections, as a grid.
+ * One section, as a row in a grouped surface.
  *
- * The row is measured to its tallest tile, so a two line name never leaves its
- * neighbor short, and a row that is not full keeps its columns rather than
- * letting the last tile stretch to the width of two, which would read as one
- * section being the important one.
+ * **Its icon sits in its own section's wash**, per `DESIGN.md` 4.3, which is
+ * what lets a person find documents by color before reading a word. The mapping
+ * is the owner's and lives in `hueFor` alone.
+ *
+ * **The count is Mono and a count of zero reads as words.** "Nothing yet"
+ * invites, where a column of zeros reads as a scorecard of what the person has
+ * failed to fill in. One style at one weight for every section, so a row's
+ * emphasis is never mistaken for a judgment about how full it is.
  */
 @Composable
-private fun TileGrid(
-    rows: List<SectionCount>,
-    compact: Boolean,
+private fun SectionRow(
+    row: SectionCount,
+    isLast: Boolean,
     onOpen: (Repository.Section) -> Unit,
 ) {
-    if (rows.isEmpty()) return
-    val columns = tileColumns(compact)
+    val strings = LocalStrings.current
+    val hue = hueFor(row.section)
+    val emergency = row.section == Repository.Section.EMERGENCY_CARD
+    val countKey = if (emergency) "notebook.count.emergency_card" else "notebook.count"
 
-    rows.chunked(columns).forEach { row ->
-        Row(
-            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
-            horizontalArrangement = Arrangement.spacedBy(Space.cardGap),
-        ) {
-            row.forEach { entry ->
-                SectionTile(
-                    row = entry,
-                    compact = compact,
-                    onClick = { onOpen(entry.section) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .testTag(NotebookTags.section(entry.section)),
-                )
-            }
-            // **A short last row shares the full width rather than leaving a
-            // hole.** Holding the column left a half tile of empty paper beside
-            // the last section of a group, which reads as a missing tile rather
-            // than as the end of a row. A wider tile is the same tile: same
-            // height, same drawing, same fill, and the width is the grid's to
-            // set. This is why there is no spacer here.
-        }
-        Spacer(Modifier.height(Space.cardGap))
-    }
+    DenseRow(
+        title = strings[labelKey(row.section)],
+        // **The count is the row's second line, not a trailing value.** The grid
+        // draws it that way and it is right for a table of contents: "Care team,
+        // 9 people" reads as one fact about one section, where a number pushed to
+        // the far edge reads as a column in a table and invites comparing
+        // sections against each other, which says nothing.
+        subtitle = strings(countKey, "count" to row.count),
+        leading = {
+            IconTile(
+                section = row.section,
+                tint = hue.ink,
+                background = hue.wash,
+                tileSize = SectionIconSize,
+                iconSize = SectionDrawingSize,
+            )
+        },
+        chevron = true,
+        divider = !isLast,
+        onClick = { onOpen(row.section) },
+        modifier = Modifier.testTag(NotebookTags.row(row.section)),
+    )
 }
+
+private val SectionIconSize = 32.dp
+private val SectionDrawingSize = 18.dp
 
 /**
  * One section, as a tile at one of three weights.

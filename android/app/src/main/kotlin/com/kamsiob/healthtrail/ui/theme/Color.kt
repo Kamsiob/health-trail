@@ -55,6 +55,25 @@ data class HealthTrailColors(
      */
     val ink3: Color,
 
+    /**
+     * The fold row's surface, which is not simply `sand`.
+     *
+     * **A fold means "quieter, and more lives here."** In light theme `sand` is
+     * darker than `card`, so a fold recedes and the meaning is carried for free.
+     * In dark theme `sand` is *lighter* than `card`, because a recessed input on
+     * a dark screen reads as lighter, and that inverts the fold: it becomes the
+     * brightest surface on the screen and reads as raised.
+     *
+     * **Seen on the phone rather than reasoned about.** The converted notebook
+     * in dark had its fold row shouting over the four sections above it.
+     *
+     * So the fold keeps its meaning rather than its token: `sand` in light,
+     * and a value between `paper` and `card` in dark. What is preserved across
+     * themes is "quieter than the group beside it", which is the thing the
+     * costume actually promises.
+     */
+    val foldSurface: Color,
+
     /** Row separators inside a group. */
     val hairline: Color,
     /** Chip borders, the view toggle's container. */
@@ -151,6 +170,7 @@ val LightColors = HealthTrailColors(
     ink2 = Color(0xFF576873),
     ink3 = Color(0xFF94A0A9),
 
+    foldSurface = Color(0xFFECE4D1),
     hairline = Color(0x1A233240),
     hairlineHeavy = Color(0x33233240),
 
@@ -246,6 +266,9 @@ val DarkColors = HealthTrailColors(
     ink2 = Color(0xFFAFBCC5),
     ink3 = Color(0xFF6E7C85),
 
+    // Between paper and card, so a fold recedes in dark exactly as it does in
+    // light. ink2 measures 8.39:1 on it.
+    foldSurface = Color(0xFF18212A),
     hairline = Color(0x1AFFFFFF),
     hairlineHeavy = Color(0x33FFFFFF),
 
