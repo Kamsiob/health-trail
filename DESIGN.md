@@ -610,6 +610,7 @@ The small touches that separate finished from correct. **They apply everywhere, 
 - **Icons are one coherent set at one stroke weight**, drawn for this app's sections and capture types, **never assembled from a default library.**
 - **The trail mirrors correctly right to left**, including waypoints, scrubbers, and the FAB corner.
 - **A paragraph that is the same for every row is said once for the screen, not once per row.** Standing instructions carried its tag explainer and its counting disclaimer under every instruction: three of them meant the same two hundred words three times, and what each instruction actually said was buried between them. Say it once, and where a paragraph belongs to a category rather than to the screen, say it on the first row of each category rather than only on the first row overall.
+- **The person's own words are isolated wherever they are rendered**, not only when joined. A dose of "500 mg, twice a day" in an Arabic layout renders as "mg, twice a day 500", and an allergy ending in a period gets the period moved to the front. Any `Text` carrying something a person typed, inside a layout that has a direction, goes through `Bidi.isolate`.
 - **Any line built by joining parts is isolated, never concatenated.** A value, a unit and a date in one string are separate bidirectional runs, and in Arabic the algorithm reorders them against each other: `1.4 0 to 10 · 26 يونيو 2026` rendered as `2026 يونيو to 10 · 26 0 1.4`. `Bidi.join` wraps each part so it lays out on its own and the parts keep the order the code put them in. It applies to every joined line in the app, not only the one it was found on.
 - **A list that has earned law 4's tools gives up a margin for them.** A rail drawn over the content looks right against short fixture text and cuts through the first real sentence that reaches the end of its line.
 
@@ -620,6 +621,8 @@ The small touches that separate finished from correct. **They apply everywhere, 
 Recorded here per section 19, rather than left for a later session to find and mistake for drift.
 
 **Screen 08, the trail.** The grid draws a "Filter" control and a pin toggle in the header beside the search field. Neither is built. The filter is real work with its own question, which is what a person filters by (kind, thread, unfiled) and whether that survives leaving the screen; it is filed rather than guessed at. The pin toggle in the header would be a second way to reach a set the pinned group already shows at the top of the same screen.
+
+**Screen 17, the emergency card.** The grid draws a Change pill on every block. That is four identical controls opening one editor, which is the same noise the trail's per-row pin turned out to be. There is one Change and one Share, at the top, where a person looks for the doors.
 
 **Screen 13, Progress.** The grid draws the measures under the hero as chevron rows. A chevron means a screen opens, per law 2, and the per-measure history screen is #199 and does not exist yet. A chevron pointing at nothing is the dead end rule 18 forbids, so until that screen exists the rows are a choice: tapping one makes it the hero, which is the adaptive layout working rather than a substitute for it.
 

@@ -432,6 +432,7 @@ class ScreenReaderTest {
                     Repository.Medication("m1", "Warfarin", "Small blue one", null, null, true, null),
                 ),
                 onCall = {},
+                onShare = {},
                 onEdit = {},
                 onBack = {},
             )

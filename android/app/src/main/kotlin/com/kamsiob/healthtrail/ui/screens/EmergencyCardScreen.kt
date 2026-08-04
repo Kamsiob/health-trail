@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -23,6 +26,8 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object EmergencyTags {
     const val NAME = "emergency_card"
     const val EDIT = "emergency_card_edit"
+    const val SHARE = "emergency_card_share"
+    const val CHANGE = "emergency_card_change"
     fun field(key: String) = "emergency_field_$key"
     fun contact(id: String) = "emergency_contact_$id"
     fun call(id: String) = "emergency_call_$id"
@@ -59,6 +64,14 @@ fun EmergencyCardScreen(
     medications: List<Repository.Medication>,
     onCall: (Repository.EmergencyContact) -> Unit,
     onEdit: () -> Unit,
+    /**
+     * Hands the card to the share sheet as plain text.
+     *
+     * **The door out, per the grid.** The card is the one thing in this app most
+     * likely to be needed by somebody who does not have the app: a sibling in
+     * another state, a neighbor with a key, the folder at the nurses' station.
+     */
+    onShare: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -70,7 +83,33 @@ fun EmergencyCardScreen(
         subtitle = strings["emergency.subtitle"],
         onBack = onBack,
         modifier = modifier,
+        section = Repository.Section.EMERGENCY_CARD,
+        headingKey = "emergency.heading",
     ) {
+        // **Two doors, at the top, where a person looks for them.** The grid
+        // draws a Change pill on every block. That is four identical controls
+        // opening one editor, which is the same noise the trail's per-row pin
+        // turned out to be, so there is one of each instead. `DESIGN.md` 15.1
+        // records the departure.
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Space.s),
+            ) {
+                QuietButton(
+                    label = strings["emergency.share"],
+                    onClick = onShare,
+                    modifier = Modifier.weight(1f).testTag(EmergencyTags.SHARE),
+                )
+                QuietButton(
+                    label = strings["emergency.change"],
+                    onClick = onEdit,
+                    modifier = Modifier.weight(1f).testTag(EmergencyTags.CHANGE),
+                )
+            }
+            Spacer(Modifier.height(Space.sectionGap))
+        }
+
         // **Who to call comes first, above everything else on the card.**
         // Somebody holding this phone in an emergency needs a number before
         // they need a blood type: the number reaches a person who knows the
@@ -221,7 +260,7 @@ private fun ContactRow(
     ) {
         contact.relationship?.takeIf { it.isNotBlank() }?.let { relationship ->
             Text(
-                text = relationship,
+                text = Bidi.isolate(relationship),
                 style = HealthTrail.type.mono,
                 color = colors.alertInk,
             )
@@ -229,7 +268,7 @@ private fun ContactRow(
         }
 
         Text(
-            text = contact.displayName,
+            text = Bidi.isolate(contact.displayName),
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
@@ -279,13 +318,13 @@ private fun MedicationCardRow(medication: Repository.Medication) {
             .padding(Space.cardPadding),
     ) {
         Text(
-            text = medication.name,
+            text = Bidi.isolate(medication.name),
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
         medication.doseText?.takeIf { it.isNotBlank() }?.let { dose ->
             Spacer(Modifier.height(Space.xs))
-            Text(text = dose, style = HealthTrail.type.bodyM, color = colors.ink2)
+            Text(text = Bidi.isolate(dose), style = HealthTrail.type.bodyM, color = colors.ink2)
         }
     }
 }
@@ -324,7 +363,7 @@ private fun CardField(entry: CardEntry) {
         )
         Spacer(Modifier.height(Space.xs))
         Text(
-            text = entry.value,
+            text = Bidi.isolate(entry.value),
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )

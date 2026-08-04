@@ -283,6 +283,8 @@ fun NotebookShell(
     var resolvingIncident by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     /** The entry waiting to be pinned to the top of the trail, or unpinned. */
     var pinningEntry by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    /** True while the emergency card is on its way to the share sheet. */
+    var sharingCard by remember { mutableStateOf(false) }
     /** The incident waiting to be turned into a document and handed to the share sheet. */
     var sharingIncident by remember { mutableStateOf<Repository.Incident?>(null) }
     /** The prep sheet waiting to become a document. */
@@ -996,6 +998,38 @@ fun NotebookShell(
             }
         }
 
+        // The emergency card as something a sibling in another state, or a
+        // neighbor with a key, can read without this app.
+        if (sharingCard) {
+            LaunchedEffect(Unit) {
+                val text = Readable.emergencyCard(
+                    strings = strings,
+                    subjectName = repository.activeSubject()?.displayName,
+                    card = emergencyCard,
+                    // **Keyed by the card, not the subject.** The first version
+                    // passed the subject id, which is a valid id of the wrong
+                    // thing: the query matched nothing, returned empty, and the
+                    // document handed to a stranger came out with no contacts on
+                    // it. Nothing failed and nothing said so. Caught by reading
+                    // the file the share sheet was about to send.
+                    contacts = emergencyContacts,
+                    medications = medications.filter { it.showsOnEmergencyCard },
+                )
+                val intent = Share.documentIntent(
+                    context = context,
+                    fileName = Readable.fileName(
+                        title = strings["readable.card.title"],
+                        isoDate = java.time.LocalDate.now().toString(),
+                        fallback = strings["readable.fallback"],
+                    ),
+                    text = text,
+                    chooserTitle = strings["readable.share.title"],
+                )
+                sharingCard = false
+                if (intent != null) context.startActivity(intent) else failed = true
+            }
+        }
+
         // The prep sheet as a document, for a meeting or for a sibling.
         sharingPrep?.let { sheet ->
             LaunchedEffect(sheet.appointment.id) {
@@ -1480,6 +1514,7 @@ fun NotebookShell(
                     medications = medications.filter { it.showsOnEmergencyCard },
                     onCall = { contact -> dial(context, contact.phone) },
                     onEdit = { editingEmergencyCard = true },
+                    onShare = { sharingCard = true },
                     onBack = { openSection = null },
                 )
 

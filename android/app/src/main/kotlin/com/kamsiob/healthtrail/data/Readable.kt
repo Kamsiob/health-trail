@@ -184,6 +184,88 @@ object Readable {
      * removed rather than escaped, because an escaped file name is a file name
      * nobody recognizes.
      */
+    /**
+     * The emergency card, as something to hand to a stranger.
+     *
+     * **This is the one document in the app most likely to be read by somebody
+     * who has never heard of it**, in a corridor, on a phone that is not this
+     * one. So it is ordered the way it would be needed rather than the way it is
+     * stored: who to call, then what they take, then the things that change what
+     * somebody does in the next ten minutes.
+     *
+     * **It carries no advice and draws no conclusion.** It repeats what the
+     * person wrote down, which for allergies and conditions is the whole point
+     * and for anything else would be the app overstepping.
+     */
+    fun emergencyCard(
+        strings: Strings,
+        subjectName: String?,
+        card: Repository.EmergencyCard?,
+        contacts: List<Repository.EmergencyContact>,
+        medications: List<Repository.Medication>,
+    ): String = buildString {
+        val title = strings["readable.card.title"]
+        appendLine(title)
+        appendLine("=".repeat(title.length))
+        appendLine()
+
+        subjectName?.takeIf { it.isNotBlank() }?.let {
+            appendLine(strings("readable.about", "name" to it))
+            appendLine()
+        }
+
+        if (contacts.isNotEmpty()) {
+            appendLine(strings["emergency.group.who"])
+            appendLine("-".repeat(strings["emergency.group.who"].length))
+            contacts.forEach { contact ->
+                appendLine()
+                appendLine(contact.displayName)
+                contact.relationship?.takeIf { it.isNotBlank() }?.let { appendLine(it) }
+                contact.phone?.takeIf { it.isNotBlank() }?.let { appendLine(it) }
+            }
+            appendLine()
+        }
+
+        if (medications.isNotEmpty()) {
+            appendLine(strings["emergency.group.meds"])
+            appendLine("-".repeat(strings["emergency.group.meds"].length))
+            medications.forEach { medication ->
+                appendLine()
+                appendLine(medication.name)
+                listOfNotNull(
+                    medication.doseText?.takeIf { it.isNotBlank() },
+                    medication.purposeText?.takeIf { it.isNotBlank() },
+                ).takeIf { it.isNotEmpty() }?.let { appendLine(it.joinToString(", ")) }
+            }
+            appendLine()
+        }
+
+        val hurry = listOfNotNull(
+            card?.allergies?.takeIf { it.isNotBlank() }
+                ?.let { strings["emergency.allergies"] to it },
+            card?.bloodType?.takeIf { it.isNotBlank() }
+                ?.let { strings["emergency.blood_type"] to it },
+            card?.conditions?.takeIf { it.isNotBlank() }
+                ?.let { strings["emergency.conditions"] to it },
+        )
+        if (hurry.isNotEmpty()) {
+            appendLine(strings["emergency.group.medical"])
+            appendLine("-".repeat(strings["emergency.group.medical"].length))
+            hurry.forEach { (label, value) ->
+                appendLine()
+                appendLine(label)
+                appendLine(value)
+            }
+            appendLine()
+        }
+
+        // The same sentence the app says on every screen it hands somebody.
+        // A stranger reading this has no way to know it is one family's notes
+        // unless it says so.
+        appendLine()
+        appendLine(strings["readable.footer"])
+    }
+
     fun fileName(title: String, isoDate: String, fallback: String): String {
         val cleaned = title.trim()
             .replace(Regex("""[\\/:*?"<>|]"""), " ")
