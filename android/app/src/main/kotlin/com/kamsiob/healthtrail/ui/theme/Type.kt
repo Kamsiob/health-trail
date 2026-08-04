@@ -44,6 +44,17 @@ data class HealthTrailTypography(
     val navLabel: TextStyle,
     /** Eyebrow labels, timestamps, counts, metadata. Exempt from the 13sp floor. */
     val mono: TextStyle,
+    /**
+     * A number at display size, in the big-number component and nowhere else.
+     *
+     * **It carries no tracking, and that is deliberate rather than an
+     * oversight.** The 0.12em on [mono] exists to raise letter distinction at
+     * 11sp, where the label is small and short. At 22sp and above the same
+     * tracking pulls the digits of one number apart until it reads as several
+     * numbers, which is the opposite of what a big number is for. Tabular
+     * figures do the alignment work instead. `DESIGN.md` 5.1.
+     */
+    val monoL: TextStyle,
 )
 
 // The faces, per DESIGN.md section 4.3, bundled rather than requested at
@@ -153,6 +164,14 @@ val HealthTrailType = HealthTrailTypography(
         lineHeight = 16.sp,
         fontWeight = FontWeight.Normal,
         letterSpacing = 0.12.em,
+        fontFeatureSettings = TABULAR_FIGURES,
+    ),
+    monoL = TextStyle(
+        fontFamily = MonoFamily,
+        fontSize = 22.sp,
+        lineHeight = 26.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 0.em,
         fontFeatureSettings = TABULAR_FIGURES,
     ),
 )
