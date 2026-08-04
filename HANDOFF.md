@@ -342,7 +342,7 @@ seeded notebook reporting nothing at all.
 
 **Still true and still waiting, from the previous night.** These are not superseded, they sit behind the list above.
 
-- **The design review queue waits on the owner rather than on work.** Thirty three `needs-design-review` issues. Nothing there is blocked on code.
+- **The design review queue waits on the owner rather than on work.** Thirty five `needs-design-review` issues. **Six of them describe a screen that was rebuilt on 2026-08-03 and each carries a comment saying what changed**, so nothing there sends somebody to review a screen that is gone. Nothing here is blocked on code.
 
 - **The three connections the spec promises and the schema cannot hold: #141.** An incident knows its project, a bill knows the call where it was disputed, a bill knows the standing instruction it broke. All three are additive nullable columns; what needs deciding is whether each is a column or a link table, and getting that wrong costs a second migration. **This is a decision, not a task.**
 
@@ -465,6 +465,13 @@ Verified means checked through the mechanism, not inferred from the code being w
 | Screen reader, with TalkBack actually running | Walked on the Pixel 2026-08-01 with TalkBack enabled, the notebook, Appearance, and the capture form. Traversal order matches visual order. Rows are one stop reading "Care team, nothing yet" rather than two fragments. Fields carry their label. Selection reports as `checked` on chips and options, so a reader user is told which is chosen rather than inferring it from a mark. No unlabeled control. The phone was restored exactly and TalkBack confirmed unbound. D54 |
 | Every screen looked at with the keyboard up | Two defects found that way and nowhere else: the setup button colliding with the last field, and the field clipped mid-box at the scroll boundary |
 | The Unfiled tray | Walked on the Pixel end to end: a call saved with no thread, the waiting card appears on the notebook, the tray suggests "Nursing" from the words in the entry, filing it links the thread and clears the tray in one transaction, and the card disappears |
+| **The component library, section 11** | Built and used rather than described. The tile, the dense row, the hero, the thumbnail, the capped chip group and the disclosure each appear on at least one screen, and each was looked at on the phone with the year five fixture, at font scale 2.0, and in Arabic. **The stat display, the avatar and the segmented control are specified and not built**, and saying so is the difference between a library and a wish list |
+| The icon set, 23 drawings | Rendered on one sheet by `tools/icons/sheet.py`, which reads the paths out of `SectionIcon.kt` rather than holding a copy, at 44dp, 32dp and 20dp. **Both silhouette collisions were invisible in the source and obvious on the sheet.** `docs/icon-set.png` is the current sheet |
+| The capture form's chip cap | Walked on the phone: ten people on the year five notebook show five chips and "Show all 9", the sheet opens with search, and picking from it fills the field. `cappedChips` keeps the chosen answer in the five |
+| The unfiled tray's suggestion | Walked: tapped the suggestion on one card and the notebook's count went 86 to 85 in one tap, where it took two before |
+| Project steps are editable | Walked all four: added a step, edited it, moved it earlier and later, and removed it through the confirmation. The move controls are absent at either end rather than inert |
+| A project's own template | Walked end to end: saved five steps as a template, found it in the library under "Yours", started a project from it, and watched the library go from "Nothing started from this yet" to "1 started from this" with the project linked |
+| Documents render actual images | Walked with the year five fixture after teaching `pack.py` to write page images. **Before that the screen had never rendered one**, because the fixture's attachments were random bytes and every thumbnail fell back to its kind drawing |
 | The press state, everywhere | Measured on the device on three different surfaces: a card row (26,36,43) to (43,50,56), the filled button (127,182,212) to (136,186,214), the capture button (227,177,85) to (228,182,100). `FilledButton` and `TextAction` previously had no press state at all |
 
 **The whole instrumented suite: 277 tests, 0 failures as of 2026-08-03 14:50.** Before that it was **three failures, and this file said zero for a day**: `5ca7368` gave the emergency card its own count string and left `NotebookScreenTest` and `ReaderStopsTest` asserting the old one. D73 has the account and the rule it sets. The older sentence read: 275 tests across 30 classes, 0 failures, run on the connected Pixel 10 Pro XL through `tools/verify.sh --device`, and the app was reinstalled immediately afterward per D56. **98 JVM unit tests, 0 failures**, the newest of which are `EntryHeadingTest`, `EmergencyCardClaimTest` and `MedicationEventKindTest`, all three written against defects the fixture found rather than against code being added. All 11 implemented compliance checks pass, and **lint passes**, which is the step that keeps catching what the habitual checks do not.
@@ -503,7 +510,7 @@ Verified means checked through the mechanism, not inferred from the code being w
 | #18 | Content checks in continuous integration | Ten run. Open for the ones not implementable yet, each named in `run_all.py` with what it waits on |
 | #1 | Phase 0 parent | Closes when its children do |
 
-**In the review queue, waiting on the owner rather than on work.** Twenty two now, and none of them is waiting on anything this project can do: #28 the disclaimer gate, #30 setup, #32 the situation picker, #34 the capture sheet and form, #50 the notebook, #55 the Unfiled tray, #68 the date picker, #81 Today's empty state, #89 Appearance, #111 the trail and care team, #113 the emergency card, #114 medications, #115 Ask next time, #116 care threads, #117 Progress, #118 chapters, #119 appointments, #120 standing instructions, #121 money, #122 documents, #123 projects, and #124 About. Each carries a real device screenshot. **Arabic screenshots are no longer blocked** for any of them.
+**In the review queue, waiting on the owner rather than on work.** Thirty five as of 2026-08-03, and **six of them now describe a screen that no longer exists and carry a comment saying so**: #34, #50, #55, #81, #122 and #123. The newest are #146 a project, #147 the template library, and #148 documents as a gallery. The older list read: twenty two, and none of them is waiting on anything this project can do: #28 the disclaimer gate, #30 setup, #32 the situation picker, #34 the capture sheet and form, #50 the notebook, #55 the Unfiled tray, #68 the date picker, #81 Today's empty state, #89 Appearance, #111 the trail and care team, #113 the emergency card, #114 medications, #115 Ask next time, #116 care threads, #117 Progress, #118 chapters, #119 appointments, #120 standing instructions, #121 money, #122 documents, #123 projects, and #124 About. Each carries a real device screenshot. **Arabic screenshots are no longer blocked** for any of them.
 
 **#125 is a question for the owner, not a task:** should the app open on Today rather than the Notebook? `MASTER_SPEC.md` calls Today the dashboard. Today is now worth opening on, which it was not when the question was first asked.
 
@@ -777,6 +784,12 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 `AGENTS.md` defines four. **Subagents never write anything**, per `CLAUDE.md` rule 8. None was used this session.
 
 ---
+
+## 12a. The front page, corrected 2026-08-03
+
+**`README.md` showed five screens that no longer exist and listed three built things as still being built.** The screenshots are the current ones now and the two lists are true: the digest, universal search, the portable encrypted export, the documents gallery, editable projects and their own templates, and the standing instruction violation record all moved from "still being built" to "can do today".
+
+**The continuous integration check for this only fires on a pull request**, and every increment tonight went straight to `main`, so it never ran. **The rule it protects still applies**: a public front page that undersells a working app is as much a lie as one that oversells it, and this is the class of staleness nobody notices because the person who changed the code is not the person reading the front page.
 
 ## 13. Uncommitted work
 
