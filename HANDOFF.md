@@ -34,25 +34,34 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Step 2 is complete too.** All four bottom-navigation destinations are converted, so **the app reads as one app end to end**, which is what step 2 exists for. #169 through #172 are closed.
 
-**Step 3 is under way, and ten of its screens are closed.** All eleven section screens gained their tab chip and their own heading from `SectionScaffold`, so that pattern cannot drift. **Closed on device verification**: the trail #173, the care team #174, medications #175, progress #176, money #177, documents #178, chapters #181, ask next time #183, appointments #184, and care threads #186.
+**Step 3 is finished except for two, and both are recorded rather than left open-ended.** All eleven section screens carry their tab chip and their own heading from `SectionScaffold`. **Closed on device verification**: the trail #173, the care team #174, medications #175, progress #176, money #177, documents #178, the emergency card #179, search #180, chapters #181, ask next time #183, appointments #184, standing instructions #185, care threads #186, and the unfiled tray #187.
+
+- **#182 tests and results has nothing to convert.** No table in the schema, no query, no screen. It is the section being built for the first time and it needs a schema decision, which is the owner's. The issue says exactly what has to be decided and is labeled `blocked`.
+- **#188 capture is the last one and the biggest**, and it was deliberately not started with under two hours left rather than leaving a half-staged form on the screen people use most. **The issue carries the full analysis**: what the screen is today, what law 3 asks for, the four pieces of work, and what must not be lost. Somebody opening that file starts with the thinking done.
+
+**Step 4 has begun.** #189, one entry, is closed. It found something every step 4 screen inherits: `SectionScaffold` now takes a **heading** in the person's own words, separate from the `title` that names the tab chip. Before that a detail screen had to pass its own words as the title, which put a typed sentence in an 11sp mono chip and again underneath at display weight.
 
 **Every one closed on a sweep, not a spot check.** Each was captured in **dark, at font scale 2.0, and in Arabic**, at `docs/screenshots/sweep-*`. Font scale was recorded before changing and restored every time, along with night mode and the per-app locale.
 
-**The sweep is where the defects were.** Not one of the following was visible in English at font scale 1.0:
+**The sweeps are where the defects were, and not one was visible in English at font scale 1.0:**
 
-- **Joined lines scrambled in Arabic on six screens.** `1.4 0 to 10 · June 26, 2026` rendered as `2026 يونيو to 10 · 26 0 1.4`. Fixed once in `Bidi.join` and applied to all six; `DESIGN.md` section 15 carries the rule so the next joined line inherits it. **#224** is open to hear it with the reader on, because the isolate characters reach the accessibility tree and that has been reasoned about rather than listened to.
-- **The year scrubber wrapped into single digits at font scale 2.0.** The strip and the margin were two fixed numbers that had to agree; they are one function now.
-- **Document captions had their last letter shaved off by the cell's own clip.** Found in Arabic, then found to have been true in English all along.
-- **A long trailing value crushed a row title into a column one character wide.** Possible on every screen using `DenseRow`, so fixed there.
+- **Text the person typed gets rearranged in Arabic.** Joined lines on six screens, then document captions, then doses and allergies on the emergency card: `500 mg, twice a day` rendered as `mg, twice a day 500`. Fixed with `Bidi.isolate` and `Bidi.join`, and **`DESIGN.md` section 15 carries the rule** so the next one inherits it. **`report_bidi_isolation.py` generates the remaining worklist**, 76 candidates, and **#226** tracks the audit. **#224** is open to hear the isolates with the reader on, because they reach the accessibility tree and that has been reasoned about rather than listened to.
+- **The year scrubber wrapped into single digits at font scale 2.0.** The strip and its margin were two fixed numbers that had to agree; one function now.
+- **Document captions lost their last letter to the cell's own clip.** Found in Arabic, then found to have been true in English all along.
+- **A long trailing value crushed a row title into a column one character wide**, which was possible on every screen using `DenseRow`, so it was fixed there.
+- **The emergency card shared a document with no phone numbers on it.** `emergencyContacts` takes a card id and was passed a subject id: a valid id of the wrong thing, so the query matched nothing and the document came out with the medications and the allergies and no contacts. Caught by reading the file the share sheet was about to send.
 
-**The trail is the one that mattered.** It is the screen law 4 was written for and it has all four tools: a sticky month header, an edge scrubber in a reserved margin, a scoped search over 1,630 entries, and pinning. Verified by scrubbing from June 2026 to December 2022 and to December 2024, searching five years for one word, and pinning an entry.
+**The trail is the one that mattered.** It is the screen law 4 was written for and it has all four tools: a sticky month header, an edge scrubber in a reserved margin, a scoped search over 1,630 entries, and pinning.
 
-**Care threads was undrawn**, so it followed rule 12: built from the inventory, screenshot on the device, **#223 opened for review**, listed in `DESIGN.md` section 14, and named here. That is all three places, at the moment it was built.
+**Two undrawn screens followed rule 12** at the moment they were built: care threads (#186, review at **#223**) and standing instructions (#185, review at **#225**). Both are in `DESIGN.md` section 14 and both are named here, which is all three places.
 
-1. **Continue step 3**: #179 the emergency card, #180 search, #182 tests and results, #185 standing instructions, #187 the unfiled tray, #188 capture.
-2. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
+1. **#188 capture**, with the analysis already on the issue.
+2. **Then the rest of step 4**, #190 to #208.
+3. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
 
-**Four things are waiting on the owner and none of them block anything.** #217 and D59 are answered and done. New: **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table for them), **#220** (the trail's filter, which needs a decision about what a person filters by), and **#223** (the care threads review).
+**Six things are waiting on the owner and none of them block anything.** **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table), **#220** (the trail's filter needs a decision about what a person filters by), **#182** (the tests section needs a schema), **#223** and **#225** (the two design reviews).
+
+**One is release-blocking and is not a decision, it is work: #227.** Nothing in the app normalizes text to NFC, which section 8.4 requires. A name typed with a combining accent on one phone and a precomposed one on another is two different people to search and to merge. It was not fixed on the spot because it touches every write path and a half-applied normalization is worse than none.
 
 **THE ARCHIVE runs on its own track and must not be scheduled behind the screens.** #209 through #215, with #9 as the parent.
 
@@ -562,7 +571,15 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 
 ## 13. Uncommitted work
 
-**None.** The trail and everything it dragged with it are on `origin/main`.
+**None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed. Per the memory this project keeps: **an increment ends when `origin/main` has it**, and a local commit is not done.
+
+### The device, as it was left
+
+**The year five fixture is loaded** through the app's own restore screen, which is how `tools/seed.sh` puts it there. If the notebook looks empty, an instrumented test run has cleared it: `tools/seed.sh year5 5 walk-year-five` puts it back in about a minute.
+
+**Every accessibility setting is back where it started**: font scale 1.0, night mode off, and the per-app locale at the system default. Each was recorded before being changed and restored after every sweep, which is the exception `CLAUDE.md` rule 19 grants and its condition.
+
+**Reinstalling the debug build resets the disclaimer gate and the setup flow** but keeps the notebook. That is not a defect anybody has looked into; it is worth knowing because a walk script that does not tap through the gate lands on the wrong screen and reports NOT REACHED.
 
 **What the trail dragged with it, so a cold session is not surprised by the diff:**
 
