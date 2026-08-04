@@ -724,7 +724,8 @@ object ExportContainer {
      * opens `readable/index.html` on a machine with no network. A zero there is
      * a failed export, not a quiet one.
      */
-    private fun readablePages(database: File): Map<String, String> = try {
+    @VisibleForTesting
+    internal fun readablePages(database: File): Map<String, String> = try {
         val fields = ReadableFieldMap.tables
         val rows = ReadableRows.read(database, fields.keys)
         ReadableArchive.render(
