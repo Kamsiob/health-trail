@@ -7,10 +7,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,12 +24,20 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Attachments
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.CARD_SIZE
 import com.kamsiob.healthtrail.ui.components.FILL
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
-import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.FoldRowText
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.ROW_SIZE
+import com.kamsiob.healthtrail.ui.components.ViewOption
+import com.kamsiob.healthtrail.ui.components.ViewToggle
+import com.kamsiob.healthtrail.ui.components.rememberViewChoice
 import com.kamsiob.healthtrail.ui.components.Thumbnail
 import com.kamsiob.healthtrail.ui.components.tileColumns
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
@@ -35,6 +48,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object DocTags {
     const val NAME = "documents"
     const val ADD = "documents_add"
+    const val TOGGLE = "documents_view"
     fun row(id: String) = "document_$id"
 }
 
@@ -74,6 +88,19 @@ fun DocumentsScreen(
     // and "June 25, 2026" lost its year. Found at 2.0 and nowhere else.
     val columns = tileColumns(compact = true)
 
+    val view = rememberViewChoice(section = DocTags.NAME, fallback = VIEW_PICTURES)
+    var openFolders by rememberSaveable { mutableStateOf(emptySet<String>()) }
+
+    // **The two most recently received, as the one thing.** The grid calls them
+    // the two the person reaches for most, and the app has no way to know that:
+    // nothing here records what somebody opened, deliberately, and there is no
+    // pin on a document. Rather than invent a signal, this shows what arrived
+    // most recently, which is what the query already orders by and is honestly
+    // what paperwork usually means. #221 asks the owner whether documents
+    // should carry a pin like an entry does.
+    val recent = documents.take(HERO_COUNT)
+    val rest = documents.drop(HERO_COUNT)
+
     SectionScaffold(
         name = DocTags.NAME,
         title = strings["notebook.section.documents"],
@@ -85,31 +112,130 @@ fun DocumentsScreen(
     ) {
         if (documents.isEmpty()) {
             item {
-                SectionEmpty(name = DocTags.NAME, text = strings["docs.empty"], section = Repository.Section.DOCUMENTS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
+                SectionEmpty(
+                    name = DocTags.NAME,
+                    text = strings["docs.empty"],
+                    section = Repository.Section.DOCUMENTS,
+                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
+                )
                 Spacer(Modifier.height(Space.l))
+                FilledButton(
+                    label = strings["docs.photograph"],
+                    onClick = onAdd,
+                    modifier = Modifier.fillMaxWidth().testTag(DocTags.ADD),
+                )
             }
+            return@SectionScaffold
         }
 
-        // **A gallery, per 11.12, and it was a column of cards each carrying a
-        // 180dp photograph.** This app stores photographs of the person's own
-        // paper, and one per screenful is a list of documents with pictures
-        // attached rather than a place to find a letter by recognizing it.
-        //
-        // **Grouped by year**, which is the coarsest thing every date in this
-        // app is guaranteed to have. A month heading would need the date
-        // rendered at month precision, and plenty of these are known only to
-        // the year, so grouping by month would either invent precision or
-        // scatter half the documents into their own headings.
-        documents.groupBy { it.receivedEdtf?.takeIf { edtf -> edtf.isNotBlank() }?.take(4) }
-            .forEach { (year, inYear) ->
-                item(key = "year_${year ?: "none"}") {
-                    Spacer(Modifier.height(Space.s))
-                    GroupHeaderText(label = year ?: strings["date.unknown"])
-                    Spacer(Modifier.height(Space.headerGap))
-                }
+        item(key = "toggle") {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                ViewToggle(
+                    options = listOf(
+                        ViewOption(VIEW_PICTURES, "docs.view.pictures"),
+                        ViewOption(VIEW_LIST, "docs.view.list"),
+                    ),
+                    selected = view.value,
+                    onSelect = view.onSelect,
+                    modifier = Modifier.testTag(DocTags.TOGGLE),
+                )
+            }
+            Spacer(Modifier.height(Space.cardGap))
+        }
 
-                inYear.chunked(columns).forEachIndexed { rowIndex, row ->
-                    item(key = "row_${year ?: "none"}_$rowIndex") {
+        // **Her actual papers, at a size somebody recognizes them at.** A
+        // filename is a thing to read; a photograph of the insurance card is a
+        // thing to spot. Two across, which is the largest a picture can be while
+        // two of them still fit above the fold.
+        item(key = "recent") {
+            // **One per row once the grid is down to one column.** At font scale
+            // 2.0 the folded grids give way to a single column, per 11.2, and
+            // the pair was still sitting two across: half a screen of picture
+            // beside a caption wrapping to three lines. A person who needs large
+            // text is not asking for a large picture, which is the reasoning
+            // `DocumentCell` already carries, and it applies here too.
+            if (columns == 1) {
+                Column(verticalArrangement = Arrangement.spacedBy(Space.cardGap)) {
+                    recent.forEach { document ->
+                        DocumentCell(
+                            document = document,
+                            attachments = attachments,
+                            stacked = false,
+                            onRemove = { onRemove(document) },
+                            onEdit = { onEdit(document) },
+                        )
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Space.s),
+                ) {
+                    recent.forEach { document ->
+                        DocumentCell(
+                            document = document,
+                            attachments = attachments,
+                            stacked = true,
+                            onRemove = { onRemove(document) },
+                            onEdit = { onEdit(document) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    // Keeps a single document at half width rather than letting
+                    // it swell to fill the row, so the pair reads as a pair
+                    // either way.
+                    if (recent.size == 1) Spacer(Modifier.weight(1f))
+                }
+            }
+            Spacer(Modifier.height(Space.sectionGap))
+        }
+
+        // **Folders as folds, named and counted.** The category is the person's
+        // own word for a pile of paper, and anything they have not filed sits
+        // under one heading at the end rather than being scattered.
+        val folders = rest.groupBy { it.category?.takeIf { name -> name.isNotBlank() } }
+            .toList()
+            .sortedWith(compareBy({ it.first == null }, { it.first ?: "" }))
+
+        for ((category, inFolder) in folders) {
+            val label = category ?: strings["docs.other"]
+            val open = label in openFolders
+
+            item(key = "folder_$label") {
+                FoldRowText(
+                    label = label,
+                    expanded = open,
+                    onToggle = {
+                        openFolders = if (open) openFolders - label else openFolders + label
+                    },
+                    count = inFolder.size.toString(),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+
+            if (!open) continue
+
+            if (view.value == VIEW_LIST) {
+                item(key = "list_$label") {
+                    GroupedSurface {
+                        inFolder.forEachIndexed { index, document ->
+                            DocumentRow(
+                                document = document,
+                                attachments = attachments,
+                                divider = index < inFolder.size - 1,
+                                onRemove = { onRemove(document) },
+                                onEdit = { onEdit(document) },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            } else {
+                inFolder.chunked(columns).forEachIndexed { rowIndex, row ->
+                    item(key = "grid_${label}_$rowIndex") {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(Space.s),
@@ -124,28 +250,67 @@ fun DocumentsScreen(
                                     modifier = Modifier.weight(1f),
                                 )
                             }
-                            // A short last row keeps its columns here, unlike a
-                            // tile grid: a photograph stretched to three times
-                            // its neighbors would read as the important one,
-                            // and this app has no view about which document
-                            // matters most.
                             repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
                         }
-                        Spacer(Modifier.height(Space.sm))
+                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
             }
+        }
 
-        item {
-            Spacer(Modifier.height(Space.s))
-            QuietButton(
-                label = strings["docs.add"],
+        item(key = "add") {
+            Spacer(Modifier.height(Space.m))
+            // **The camera is the filled action**, because photographing is how
+            // paper gets in here at all. Everything else on this screen is
+            // something the person already has.
+            FilledButton(
+                label = strings["docs.photograph"],
                 onClick = onAdd,
                 modifier = Modifier.fillMaxWidth().testTag(DocTags.ADD),
             )
-            Spacer(Modifier.height(Space.l))
         }
     }
+}
+
+/** How many documents lead the screen. Two, which is what the grid draws. */
+private const val HERO_COUNT = 2
+
+const val VIEW_PICTURES = "pictures"
+const val VIEW_LIST = "list"
+
+/**
+ * One document as a dense row, for the compact view.
+ *
+ * **The thumbnail stays.** The compact view is about fitting more on a screen,
+ * not about turning the person's paper back into filenames, which is the thing
+ * this section exists to stop being.
+ */
+@Composable
+private fun DocumentRow(
+    document: Repository.Document,
+    attachments: Attachments,
+    divider: Boolean,
+    onRemove: () -> Unit,
+    onEdit: () -> Unit,
+) {
+    val strings = LocalStrings.current
+    DenseRow(
+        title = Bidi.isolate(document.title),
+        subtitle = document.originalLocation?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
+        leading = {
+            Thumbnail(
+                sha256 = document.sha256,
+                attachments = attachments,
+                section = Repository.Section.DOCUMENTS,
+                size = ROW_SIZE,
+            )
+        },
+        trailing = document.receivedEdtf?.takeIf { it.isNotBlank() }
+            ?.let { EventDateText.render(strings, it) },
+        divider = divider,
+        onClick = onEdit,
+        modifier = Modifier.testTag(DocTags.row(document.id)),
+    )
 }
 
 /**
@@ -184,8 +349,13 @@ private fun DocumentCell(
     val colors = HealthTrail.colors
 
     val caption: @Composable ColumnScope.() -> Unit = {
+        // **Isolated, because these are the person's own words inside a layout
+        // that has a direction.** A Latin title in an Arabic layout is a run
+        // going the other way, and without an isolate it is laid out against
+        // the surrounding direction rather than within its own box. Seen in
+        // Arabic, where the last character of a caption sat on the cell's edge.
         Text(
-            text = document.title,
+            text = Bidi.isolate(document.title),
             style = HealthTrail.type.bodyM,
             color = colors.ink,
         )
@@ -198,7 +368,7 @@ private fun DocumentCell(
         }
         document.originalLocation?.takeIf { it.isNotBlank() }?.let { where ->
             Text(
-                text = where,
+                text = Bidi.isolate(where),
                 style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
@@ -221,7 +391,17 @@ private fun DocumentCell(
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(Space.xs))
-            caption()
+            // **An optical inset against the cell's own clip.** A caption whose
+            // line lands exactly on the cell width had its last letter shaved
+            // off by the rounded clip above: "the county" became "the countv"
+            // and "the original is" lost its s. Text is allowed to paint a
+            // fraction outside its layout box, and an ancestor clip takes that
+            // fraction with it.
+            //
+            // Found in Arabic and then found to have been true in English all
+            // along, which is the second time that has happened on this screen.
+            // A shaved letter is a truncation, and rule 11 rules those out.
+            Column(modifier = Modifier.padding(horizontal = Space.xs), content = caption)
         }
     } else {
         Row(modifier = body, verticalAlignment = Alignment.Top) {
