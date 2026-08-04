@@ -43,10 +43,20 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * what screen 26 of the reference file needs for the rough date and the care
  * thread and which nothing existing could carry.
  *
- * **Selection is never carried by color alone.** A selected chip changes its
- * surface, changes its label to bold, and gains a 2dp ring. That is the section
- * 2.2 rule applied to a control: it stays distinguishable with color vision
- * differences and in a grayscale screenshot.
+ * **Outlined when open, filled when chosen**, per `DESIGN.md` section 7 and
+ * law 2. That is the v4 change: it used to go from one tonal surface to a
+ * slightly bluer tonal surface, which reads as two shades of the same thing
+ * rather than as answered and unanswered.
+ *
+ * **Selection is never carried by color alone.** Outline against fill is a
+ * difference in how much ink is on the screen, not in hue, so it survives any
+ * color vision difference and a grayscale screenshot. The label also goes bold
+ * and inverts. Three signals, none of which is hue on its own.
+ *
+ * **It is never shaped like a button.** A filled chip and a filled button are
+ * both filled, and what tells them apart is that a chip sits in a wrapping row
+ * of its siblings and answers a question, while a button sits alone and does
+ * something. That is why chips are never laid out one to a row.
  *
  * The visual height is 40dp and the touch target is 48dp, reached by
  * `minimumInteractiveComponentSize` rather than by padding the chip out to a
@@ -72,22 +82,32 @@ fun ChoiceChip(
 
     val resting = when {
         !enabled -> colors.sand.copy(alpha = 0.5f)
-        selected -> colors.blueWash
-        else -> colors.sand
+        // **Filled when chosen.** The accent itself, not a wash of it.
+        selected -> colors.blue
+        // **Outlined when open.** The card surface, so the border is what
+        // carries the shape rather than a fill that competes with the chosen one.
+        else -> colors.card
     }
     val labelColor = when {
         !enabled -> colors.ink2
-        selected -> colors.blueDeep
-        else -> colors.ink
+        selected -> colors.onBlue
+        else -> colors.ink2
     }
 
     val surface by pressedSurface(interaction, resting)
     val ring by focusRingAlpha(interaction)
-    // A selected chip always carries its ring and a focused one gains it, so
-    // focusing a chip that is already selected changes nothing rather than
-    // flickering. The ring is one treatment doing two jobs, which is why it is
-    // the same 2dp of `blue` in both cases.
-    val ringAlpha = maxOf(if (selected) 1f else 0f, ring)
+
+    // The border does two jobs and never two at once: at rest it is the open
+    // chip's outline, and focused it is the focus ring. A chosen chip has no
+    // outline of its own, because a fill needs no edge, so focusing it is the
+    // only time it gains one.
+    val borderColor = when {
+        ring > 0f -> colors.blue
+        selected -> Color.Transparent
+        !enabled -> colors.hairline
+        else -> colors.hairlineHeavy
+    }
+    val borderWidth = if (ring > 0f) 2.dp else 1.5.dp
 
     Row(
         modifier = modifier
@@ -95,7 +115,7 @@ fun ChoiceChip(
             .defaultMinSize(minHeight = ChipHeight)
             .clip(Radius.pill)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ringAlpha), Radius.pill)
+            .border(borderWidth, borderColor, Radius.pill)
             .selectable(
                 selected = selected,
                 enabled = enabled,
@@ -147,7 +167,12 @@ fun MoreChip(
     val colors = HealthTrail.colors
     val type = HealthTrail.type
     val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.sand)
+    // **Outlined, never filled**, and that is the v4 correction. It used to
+    // carry a `sand` fill, and once a chosen chip became a filled chip, a
+    // filled anything in a row of chips reads as an answer. This is not an
+    // answer, it is the way to the rest of them, so it takes the open chip's
+    // costume and says what it is with a blue label instead.
+    val surface by pressedSurface(interaction, colors.card)
     val ring by focusRingAlpha(interaction)
 
     Row(
@@ -156,7 +181,11 @@ fun MoreChip(
             .defaultMinSize(minHeight = ChipHeight)
             .clip(Radius.pill)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.pill)
+            .border(
+                width = if (ring > 0f) 2.dp else 1.5.dp,
+                color = if (ring > 0f) colors.blue else colors.blue.copy(alpha = 0.55f),
+                shape = Radius.pill,
+            )
             .clickable(
                 interactionSource = interaction,
                 // The chip's own surface is the press feedback, per 5.14.
