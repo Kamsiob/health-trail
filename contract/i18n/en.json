@@ -664,5 +664,7 @@
   "library.empty": "You have not made any of your own yet. Change a project's steps and save them, and it turns up here.",
   "more.library": "Templates",
   "search.best": "Best match",
-  "search.more": "Everything else"
+  "search.more": "Everything else",
+  "thread.where": "Where it has got to",
+  "thread.earlier": "Earlier on this thread"
 }

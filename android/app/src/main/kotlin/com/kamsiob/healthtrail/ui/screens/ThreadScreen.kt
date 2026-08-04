@@ -8,12 +8,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
@@ -58,6 +63,7 @@ fun ThreadScreen(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val route = colors.threadRoutes[thread.colorIndex % colors.threadRoutes.size]
+    var earlierOpen by rememberSaveable { mutableStateOf(false) }
 
     SectionScaffold(
         name = OneThreadTags.NAME,
@@ -86,11 +92,47 @@ fun ThreadScreen(
             return@SectionScaffold
         }
 
-        entries.forEachIndexed { index, entry ->
+        // **Where it has got to, before the sequence that got it there.** Law 1:
+        // somebody opening a thread wants to know whether it is still going and
+        // when it last moved, and a hundred and seventy four rows at one weight
+        // answers neither. Stated from what is recorded, never interpreted.
+        item(key = "where") {
+            Text(
+                text = strings["thread.where"],
+                style = HealthTrail.type.mono,
+                color = colors.ink2,
+            )
+            Spacer(Modifier.height(Space.xs))
+            // **The state, and not the count.** The count is already the
+            // subtitle two lines above, and putting it here as well made the
+            // hero read "174 things on this one, last written on May 13" under
+            // a subtitle reading "174 things on this one". The same defect this
+            // screen was fixed for an hour ago, reintroduced by the fix.
+            Text(
+                text = entries.firstOrNull()?.occurredEdtf?.takeIf { it.isNotBlank() }
+                    ?.let {
+                        strings("threads.moving", "date" to EventDateText.render(strings, it))
+                    }
+                    ?: strings["threads.quiet"],
+                style = HealthTrail.type.hero,
+                color = colors.ink,
+            )
+            Spacer(Modifier.height(Space.sectionGap))
+        }
+
+        // **The recent run open, the rest behind one door.** The same shape the
+        // trail uses, for the same reason: a thread kept for five years is a
+        // wall, and a wall answers nothing. Nothing is hidden, and the door says
+        // how much is behind it.
+        val recent = entries.take(THREAD_RECENT)
+        val earlier = entries.drop(THREAD_RECENT)
+        val shown = if (earlierOpen) entries else recent
+
+        shown.forEachIndexed { index, entry ->
             item(key = entry.id) {
                 SpineRow(
                     continuesAbove = index > 0,
-                    continuesBelow = index < entries.lastIndex,
+                    continuesBelow = index < shown.lastIndex,
                     node = route,
                     routeColor = route,
                     dash = RouteDash.forIndex(thread.colorIndex),
@@ -140,5 +182,25 @@ fun ThreadScreen(
                 }
             }
         }
+
+        if (earlier.isNotEmpty() && !earlierOpen) {
+            item(key = "earlier") {
+                FoldRow(
+                    labelKey = "thread.earlier",
+                    expanded = false,
+                    onToggle = { earlierOpen = true },
+                    count = earlier.size.toString(),
+                )
+            }
+        }
     }
 }
+
+/**
+ * How much of a thread is open when the screen arrives.
+ *
+ * Twelve, which is a few months of an active thread and a couple of years of a
+ * quiet one. Enough to see how it has been going without being the wall the
+ * fold exists to prevent.
+ */
+private const val THREAD_RECENT = 12

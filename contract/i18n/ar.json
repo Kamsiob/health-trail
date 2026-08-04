@@ -664,5 +664,7 @@
   "library.empty": "لم تصنع أي قالب خاص بك بعد. غيّر خطوات مسار واحفظها، وسيظهر هنا.",
   "more.library": "القوالب",
   "search.best": "أفضل تطابق",
-  "search.more": "كل ما تبقى"
+  "search.more": "كل ما تبقى",
+  "thread.where": "إلى أين وصل",
+  "thread.earlier": "ما سبق في هذا المسار"
 }

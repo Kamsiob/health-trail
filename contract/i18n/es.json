@@ -664,5 +664,7 @@
   "library.empty": "Todavía no ha hecho ninguna suya. Cambie los pasos de un proyecto y guárdelos, y aparecerá aquí.",
   "more.library": "Plantillas",
   "search.best": "La mejor coincidencia",
-  "search.more": "Todo lo demás"
+  "search.more": "Todo lo demás",
+  "thread.where": "Dónde ha llegado",
+  "thread.earlier": "Antes en este hilo"
 }
