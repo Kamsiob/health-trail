@@ -62,18 +62,6 @@ object Space {
      */
     val touchTarget: Dp = 48.dp
 
-    /**
-     * The margin a screen gives up to an edge scrubber.
-     *
-     * **It is reserved rather than overlaid.** The scrubber was first drawn on
-     * top of the list, which looked right with the fixture's short titles and
-     * ran straight through the words the moment a title reached the end of its
-     * line. A strip that sits over the text is not a margin, it is a defect
-     * waiting for somebody's longer sentence.
-     *
-     * Wide enough for the scrubber's own 22dp plus air on both sides.
-     */
-    val railInset: Dp = 30.dp
 
     /**
      * The FAB's own size, and the clearance everything else owes it.

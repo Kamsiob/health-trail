@@ -21,11 +21,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -86,7 +88,7 @@ fun EdgeScrubber(
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .width(ScrubberWidth)
+            .width(railWidth())
             .onSizeChanged { height = it.height }
             .pointerInput(labels.size) {
                 detectVerticalDragGestures(
@@ -138,6 +140,13 @@ fun EdgeScrubber(
                 Text(
                     text = label,
                     style = type.mono,
+                    // **Never wrapped.** At font scale 2.0 a fixed 22dp strip
+                    // broke "26" into a 2 above a 6, and the whole index became
+                    // a column of single digits that read as nothing at all.
+                    // Found on the phone at maximum font scale, which is the
+                    // only place it is visible.
+                    maxLines = 1,
+                    softWrap = false,
                     // **`ink-2`, not `ink-3`.** D92: `ink-3` is non-text only,
                     // at 2.37:1 on paper, and these are words.
                     color = if (current) colors.blueDeep else colors.ink2,
@@ -153,3 +162,19 @@ fun EdgeScrubber(
  * than the width of the digits.
  */
 private val ScrubberWidth = 22.dp
+
+/**
+ * How wide the rail is, and therefore how much margin a screen has to reserve
+ * for it, at the font scale the person is actually using.
+ *
+ * **One definition, used by both the strip and the margin.** They were two
+ * numbers for an hour: a 22dp strip inside a 30dp margin, both fixed, both
+ * correct at font scale 1.0 and both wrong at 2.0, where two mono digits do not
+ * fit in 22dp and the labels wrapped into single digits down the edge.
+ *
+ * Clamped at the top, because past 2.0 an index wide enough for its own text
+ * would be taking a column from the content rather than riding beside it, and
+ * at that point the folds are the way back through the record.
+ */
+@Composable
+fun railWidth(): Dp = ScrubberWidth * LocalDensity.current.fontScale.coerceIn(1f, 2f)

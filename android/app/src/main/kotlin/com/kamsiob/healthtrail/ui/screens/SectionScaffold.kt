@@ -30,6 +30,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.components.TabChipText
+import com.kamsiob.healthtrail.ui.components.railWidth
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -163,7 +164,7 @@ fun SectionScaffold(
                     // The rail gets a margin of its own rather than sitting on
                     // top of the words. Direction aware, so in Arabic the
                     // reserved strip moves to the left with it.
-                    .padding(end = if (rail != null) Space.railInset else 0.dp),
+                    .padding(end = if (rail != null) railWidth() + Space.s else 0.dp),
             ) {
                 item {
                     Spacer(Modifier.height(Space.sm))
