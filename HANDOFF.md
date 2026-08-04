@@ -39,7 +39,13 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 - **#182 tests and results has nothing to convert.** No table in the schema, no query, no screen. It is the section being built for the first time and it needs a schema decision, which is the owner's. The issue says exactly what has to be decided and is labeled `blocked`.
 - **#188 capture is the last one and the biggest**, and it was deliberately not started with under two hours left rather than leaving a half-staged form on the screen people use most. **The issue carries the full analysis**: what the screen is today, what law 3 asks for, the four pieces of work, and what must not be lost. Somebody opening that file starts with the thinking done.
 
-**Step 4 has begun.** #189, one entry, is closed. It found something every step 4 screen inherits: `SectionScaffold` now takes a **heading** in the person's own words, separate from the `title` that names the tab chip. Before that a detail screen had to pass its own words as the title, which put a typed sentence in an 11sp mono chip and again underneath at display weight.
+**Step 4 has begun and five of it are closed**: one entry #189, one person #191, one chapter #193, one care thread #194, and search #180 which belongs to step 3.
+
+**One thing from #189 that every detail screen inherited.** `SectionScaffold` takes a **heading** in the person's own words now, separate from the `title` that names the tab chip. Before that a detail screen had to pass its own words as the title, which put a typed sentence in an 11sp mono chip and again underneath at display weight. **Six screens had that defect** and all six were fixed together: one entry, one person, one medication, one chapter, one care thread, one incident and one project. Each says which section it belongs to and wears its hue.
+
+**The pattern the detail screens keep needing** is the same one the section screens needed: state the answer, then fold the volume. One chapter had 293 entries on screen at one weight; one care thread had 174. Both now lead with where the thing has got to and put the rest behind a door with a count.
+
+**#192 one medication is three quarters done and left open honestly.** The facts, the dose history spine and the emergency card line are all there; what is missing is the questions and incidents connected to it, which is rule 18's other half and needs two repository queries rather than a layout. The issue says exactly which.
 
 **Every one closed on a sweep, not a spot check.** Each was captured in **dark, at font scale 2.0, and in Arabic**, at `docs/screenshots/sweep-*`. Font scale was recorded before changing and restored every time, along with night mode and the per-app locale.
 
@@ -56,8 +62,9 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 **Two undrawn screens followed rule 12** at the moment they were built: care threads (#186, review at **#223**) and standing instructions (#185, review at **#225**). Both are in `DESIGN.md` section 14 and both are named here, which is all three places.
 
 1. **#188 capture**, with the analysis already on the issue.
-2. **Then the rest of step 4**, #190 to #208.
-3. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
+2. **#192's two queries**, which is the smallest genuinely finishable thing on the board.
+3. **Then the rest of step 4**, #190 and #195 to #208.
+4. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
 
 **Six things are waiting on the owner and none of them block anything.** **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table), **#220** (the trail's filter needs a decision about what a person filters by), **#182** (the tests section needs a schema), **#223** and **#225** (the two design reviews).
 
