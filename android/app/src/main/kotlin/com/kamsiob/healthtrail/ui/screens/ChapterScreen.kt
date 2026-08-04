@@ -176,8 +176,8 @@ fun ChapterScreen(
                 SpineRow(
                     continuesAbove = index > 0,
                     continuesBelow = index < detail.entries.lastIndex,
-                    node = colors.blaze,
-                    routeColor = colors.blaze,
+                    node = colors.gold,
+                    routeColor = colors.gold,
                     dash = RouteDash.TRAIL,
                 ) {
                     Column {
@@ -237,7 +237,7 @@ private fun Card(
             .padding(Space.cardPadding),
     ) {
         eyebrow?.let {
-            Text(text = it, style = HealthTrail.type.mono, color = colors.ink3Text)
+            Text(text = it, style = HealthTrail.type.mono, color = colors.ink2)
             Spacer(Modifier.height(Space.xs))
         }
         Text(text = title, style = HealthTrail.type.displayS, color = colors.ink)

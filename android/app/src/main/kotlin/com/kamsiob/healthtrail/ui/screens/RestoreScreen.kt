@@ -129,7 +129,7 @@ fun RestoreScreen(
                         Text(
                             text = problem,
                             style = HealthTrail.type.bodyM,
-                            color = colors.alertText,
+                            color = colors.alertInk,
                             modifier = Modifier.testTag(RestoreTags.PROBLEM),
                         )
                     }
@@ -165,7 +165,7 @@ fun RestoreScreen(
                         // that.
                         text = state.message,
                         style = HealthTrail.type.bodyL,
-                        color = colors.alertText,
+                        color = colors.alertInk,
                         modifier = Modifier.testTag(RestoreTags.PROBLEM),
                     )
                 }
@@ -188,7 +188,7 @@ fun RestoreScreen(
                                 "date" to madeOn(state.manifest.exportedAt),
                             ),
                             style = HealthTrail.type.mono,
-                            color = colors.ink3Text,
+                            color = colors.ink2,
                         )
                         Spacer(Modifier.height(Space.xs))
                         Text(
@@ -205,7 +205,7 @@ fun RestoreScreen(
                     Text(
                         text = strings["restore.warning"],
                         style = HealthTrail.type.bodyM,
-                        color = colors.alertText,
+                        color = colors.alertInk,
                     )
                     Spacer(Modifier.height(Space.l))
                     FilledButton(

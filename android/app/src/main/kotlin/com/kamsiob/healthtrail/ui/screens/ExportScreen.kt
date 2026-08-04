@@ -215,7 +215,7 @@ fun ExportScreen(
             Text(
                 text = strings["export.warning"],
                 style = HealthTrail.type.bodyM,
-                color = colors.alertText,
+                color = colors.alertInk,
             )
 
             Spacer(Modifier.height(Space.l))
@@ -238,7 +238,7 @@ fun ExportScreen(
                 Text(
                     text = status,
                     style = HealthTrail.type.bodyL,
-                    color = if (state == ExportState.FAILED) colors.alertText else colors.ink,
+                    color = if (state == ExportState.FAILED) colors.alertInk else colors.ink,
                     modifier = Modifier.testTag(ExportTags.STATUS),
                 )
             }

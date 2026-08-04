@@ -150,7 +150,7 @@ private fun ProjectRow(
             style = HealthTrail.type.mono,
             // Waiting and stalled are stated, never colored as a problem. The
             // app does not have a view about how a bureaucracy is going.
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
 
@@ -191,7 +191,7 @@ private fun ProjectRow(
                 Text(
                     text = it,
                     style = HealthTrail.type.bodyS,
-                    color = colors.ink3Text,
+                    color = colors.ink2,
                 )
             }
         }

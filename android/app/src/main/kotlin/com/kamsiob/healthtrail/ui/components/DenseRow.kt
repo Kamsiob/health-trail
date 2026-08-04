@@ -82,7 +82,7 @@ fun DenseRow(
     val colors = HealthTrail.colors
     val type = HealthTrail.type
     val interaction = remember { MutableInteractionSource() }
-    val resting = if (selected) colors.blueSoft else Color.Transparent
+    val resting = if (selected) colors.blueWash else Color.Transparent
     val surface by pressedSurface(interaction, resting)
     val ring by focusRingAlpha(interaction)
 
@@ -141,7 +141,7 @@ fun DenseRow(
 
             if (trailing != null) {
                 Spacer(Modifier.width(Space.sm))
-                Text(text = trailing, style = type.mono, color = colors.ink3Text)
+                Text(text = trailing, style = type.mono, color = colors.ink2)
             }
             if (trailingContent != null) {
                 Spacer(Modifier.width(Space.sm))
@@ -174,7 +174,7 @@ fun Hairline(modifier: Modifier = Modifier, inset: Dp = 0.dp) {
             .fillMaxWidth()
             .padding(start = inset)
             .height(1.dp)
-            .background(colors.ink3NonText.copy(alpha = HAIRLINE_ALPHA)),
+            .background(colors.ink3.copy(alpha = HAIRLINE_ALPHA)),
     )
 }
 

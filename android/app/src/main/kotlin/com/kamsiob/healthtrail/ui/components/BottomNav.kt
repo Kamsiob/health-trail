@@ -157,7 +157,7 @@ fun BottomNav(
         // saying it heard you, and the one thing data enters through must say
         // that most of all.
         val captureInteraction = remember { MutableInteractionSource() }
-        val captureSurface by pressedSurface(captureInteraction, colors.blaze)
+        val captureSurface by pressedSurface(captureInteraction, colors.gold)
         Box(
             modifier = Modifier
                 .offset(y = (-16).dp)
@@ -180,13 +180,13 @@ fun BottomNav(
                 modifier = Modifier
                     .size(width = 22.dp, height = 3.dp)
                     .clip(Radius.pill)
-                    .background(colors.onBlaze),
+                    .background(colors.onGold),
             )
             Box(
                 modifier = Modifier
                     .size(width = 3.dp, height = 22.dp)
                     .clip(Radius.pill)
-                    .background(colors.onBlaze),
+                    .background(colors.onGold),
             )
         }
     }

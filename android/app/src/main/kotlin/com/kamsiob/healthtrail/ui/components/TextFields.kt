@@ -87,7 +87,7 @@ fun HealthTrailTextField(
         Text(
             text = label,
             style = type.bodyM,
-            color = if (enabled) colors.ink2 else colors.ink3Text,
+            color = if (enabled) colors.ink2 else colors.ink2,
         )
 
         Spacer(Modifier.height(Space.s))
@@ -111,7 +111,7 @@ fun HealthTrailTextField(
                 enabled = enabled,
                 singleLine = singleLine,
                 interactionSource = interaction,
-                textStyle = type.bodyL.copy(color = if (enabled) colors.ink else colors.ink3Text),
+                textStyle = type.bodyL.copy(color = if (enabled) colors.ink else colors.ink2),
                 cursorBrush = SolidColor(colors.blue),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = keyboardType,
@@ -134,7 +134,7 @@ fun HealthTrailTextField(
                 Text(
                     text = hint,
                     style = type.bodyL,
-                    color = colors.ink3Text,
+                    color = colors.ink2,
                 )
             }
         }

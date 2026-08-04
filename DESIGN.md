@@ -115,7 +115,7 @@ A real ladder, from recessed to raised.
 | `card` | `#FFFFFF` | Raised groups and sheets |
 | `ink` | `#233240` | Primary text |
 | `ink-2` | `#576873` | Secondary text. Corrected from `#5A6B77`, see 4.6 |
-| `ink-3` | `#94A0A9` | **Non-text only**, see 4.6 |
+| `ink-3` | `#94A0A9` | **Non-text only**, see 4.6. Hairlines, dividers, inactive strokes |
 | `hairline` | `rgba(35,50,64,.10)` | Row separators inside a group |
 | `hairline-heavy` | `rgba(35,50,64,.20)` | Chip borders, the view toggle's container |
 
@@ -126,7 +126,7 @@ Unchanged in meaning and never used for anything else. Each carries a deep or in
 | Meaning | Base | Text variant | Wash | Used for |
 |---|---|---|---|---|
 | Action | `blue` `#2E6D8C` | `blue-deep` `#245C77` | `#E2EDF2` | Every action and only actions |
-| The trail and capture | `gold` `#D99D2B` | `gold-ink` `#8A5E10` | `#F5E9CD` | The trail and capture only |
+| The trail and capture | `gold` `#D99D2B` | `gold-ink` `#895D10` | `#F5E9CD` | The trail and capture only |
 | Resolved | `leaf` `#4E8A5C` | `leaf-ink` `#3B6C48` | `#E2EDE1` | Resolved and done only |
 | Attention | `alert` `#B5492E` | `alert-ink` `#9A3C25` | `#F6E2DA` | Emergency, open incidents, disputed |
 
@@ -207,7 +207,9 @@ Muted binder hues for section identity, each with a wash and a text-safe ink. **
 | `blue` `#2F6F8F` measures 4.37:1 on `sand` | `#2E6D8C` | 4.50:1 on `sand` |
 | All six tab hues used as small text, 3.23:1 to 4.56:1 | The ink variants in 4.3 | 4.50:1 to 4.79:1, worst case `teal` on `sand` |
 | `ink-3` `#94A0A9` at 2.37:1 on paper | **Non-text only.** It never renders text | Not applicable |
-| `gold` `#D99D2B` as text at 2.12:1 | `gold-ink` `#8A5E10`. Gold itself never renders text | 4.50:1 on `sand` |
+| `gold` `#D99D2B` as text at 2.12:1 | `gold-ink` `#895D10`. Gold itself never renders text | 4.56:1 on `sand` |
+
+**There are two text levels in this app, not three, and that is a consequence of the floor rather than a style choice.** The previous direction carried a text-safe tertiary alongside `ink-2`. Against warm `sand` at 4.5:1 there is no room for one: anything light enough to read as tertiary fails, and anything that clears the floor is `ink-2` again. **So `ink-3` is non-text only and the third level comes from size and weight**, which is what law 1's scale jump is made of anyway. Every call site that used the old tertiary text token now uses `ink-2`.
 
 **The tab chip is the reason this matters rather than a theoretical concern.** The grid draws it at 8px uppercase mono, which is roughly 11sp at real scale, and it is the first element on every section screen. Drawn in the base hue it fails on all three surfaces. Drawn in the ink variant on its own wash it clears, and it looks the same at arm's length.
 

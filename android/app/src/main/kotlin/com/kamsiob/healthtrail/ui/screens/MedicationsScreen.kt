@@ -129,7 +129,7 @@ private fun MedicationRow(
             Text(
                 text = strings["meds.stopped"],
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
         }
@@ -154,7 +154,7 @@ private fun MedicationRow(
 
         medication.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             Spacer(Modifier.height(Space.xs))
-            Text(text = notes, style = HealthTrail.type.bodyS, color = colors.ink3Text)
+            Text(text = notes, style = HealthTrail.type.bodyS, color = colors.ink2)
         }
 
         // **Only while it is true.** The card itself already drops a stopped
@@ -170,7 +170,7 @@ private fun MedicationRow(
                 Text(
                     text = strings["meds.on_card.badge"],
                     style = HealthTrail.type.mono,
-                    color = colors.alertText,
+                    color = colors.alertInk,
                 )
             }
         }

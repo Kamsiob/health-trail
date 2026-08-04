@@ -558,7 +558,7 @@ private fun OpenRow(item: OpenItem) {
                 Text(
                     text = item.detail,
                     style = HealthTrail.type.mono,
-                    color = colors.ink3Text,
+                    color = colors.ink2,
                 )
             }
         }
@@ -602,7 +602,7 @@ private fun NextAppointment(
         Text(
             text = EventDateText.render(strings, appointment.scheduledEdtf),
             style = HealthTrail.type.mono,
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
         Text(

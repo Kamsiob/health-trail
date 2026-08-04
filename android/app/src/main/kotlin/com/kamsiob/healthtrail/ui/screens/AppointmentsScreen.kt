@@ -157,7 +157,7 @@ private fun AppointmentRow(
         Text(
             text = EventDateText.render(strings, appointment.scheduledEdtf),
             style = HealthTrail.type.mono,
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
 
@@ -174,7 +174,7 @@ private fun AppointmentRow(
 
         appointment.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             Spacer(Modifier.height(Space.xs))
-            Text(text = notes, style = HealthTrail.type.bodyS, color = colors.ink3Text)
+            Text(text = notes, style = HealthTrail.type.bodyS, color = colors.ink2)
         }
     }
 }

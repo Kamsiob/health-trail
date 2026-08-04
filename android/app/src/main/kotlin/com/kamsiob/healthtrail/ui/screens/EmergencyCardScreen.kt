@@ -215,7 +215,7 @@ private fun ContactRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(Radius.card)
-            .background(colors.alertSoft)
+            .background(colors.alertWash)
             .testTag(EmergencyTags.contact(contact.id))
             .padding(Space.cardPadding),
     ) {
@@ -223,7 +223,7 @@ private fun ContactRow(
             Text(
                 text = relationship,
                 style = HealthTrail.type.mono,
-                color = colors.alertText,
+                color = colors.alertInk,
             )
             Spacer(Modifier.height(Space.xs))
         }
@@ -249,7 +249,7 @@ private fun ContactRow(
             Text(
                 text = strings["careteam.no_phone"],
                 style = HealthTrail.type.bodyS,
-                color = colors.alertText,
+                color = colors.alertInk,
             )
         }
     }
@@ -274,7 +274,7 @@ private fun MedicationCardRow(medication: Repository.Medication) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(Radius.card)
-            .background(colors.alertSoft)
+            .background(colors.alertWash)
             .testTag(EmergencyTags.field("med_${medication.id}"))
             .padding(Space.cardPadding),
     ) {
@@ -313,14 +313,14 @@ private fun CardField(entry: CardEntry) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(Radius.card)
-            .background(colors.alertSoft)
+            .background(colors.alertWash)
             .testTag(EmergencyTags.field(entry.key))
             .padding(Space.cardPadding),
     ) {
         Text(
             text = entry.label,
             style = HealthTrail.type.mono,
-            color = colors.alertText,
+            color = colors.alertInk,
         )
         Spacer(Modifier.height(Space.xs))
         Text(

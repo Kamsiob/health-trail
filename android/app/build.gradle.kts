@@ -139,7 +139,7 @@ android {
 run {
     val missing = buildList {
         if (!contractDir.resolve("schema.sql").isFile) add(contractDir.resolve("schema.sql").path)
-        if (!contractDir.resolve("export-format.md").isFile) add(contractDir.resolve("export-format.md").path)
+        if (!contractDir.resolve("EXPORT-FORMAT.md").isFile) add(contractDir.resolve("EXPORT-FORMAT.md").path)
         if (!templatesDataDir.isDirectory) add(templatesDataDir.path)
     }
     if (missing.isNotEmpty()) {
@@ -175,7 +175,7 @@ val copyContractAssets by tasks.registering(Sync::class) {
     description = "Copies contract/schema.sql and templates/data into assets."
 
     from(contractDir.resolve("schema.sql")) { into("contract") }
-    from(contractDir.resolve("export-format.md")) { into("contract") }
+    from(contractDir.resolve("EXPORT-FORMAT.md")) { into("contract") }
     from(templatesDataDir) {
         into("templates")
         include("*.json")

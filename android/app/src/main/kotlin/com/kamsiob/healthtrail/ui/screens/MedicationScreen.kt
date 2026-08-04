@@ -109,7 +109,7 @@ fun MedicationScreen(
                 },
             )
             facts.forEach {
-                Text(text = it, style = HealthTrail.type.mono, color = colors.ink3Text)
+                Text(text = it, style = HealthTrail.type.mono, color = colors.ink2)
                 Spacer(Modifier.height(Space.xs))
             }
 
@@ -174,7 +174,7 @@ fun MedicationScreen(
                                     Text(
                                         text = it,
                                         style = HealthTrail.type.mono,
-                                        color = colors.ink3Text,
+                                        color = colors.ink2,
                                     )
                                     Spacer(Modifier.height(Space.xs))
                                 }
@@ -239,7 +239,7 @@ fun MedicationScreen(
                                 Text(
                                     text = eyebrow,
                                     style = HealthTrail.type.mono,
-                                    color = colors.ink3Text,
+                                    color = colors.ink2,
                                 )
                                 Spacer(Modifier.height(Space.xs))
                             }

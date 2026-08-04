@@ -161,7 +161,7 @@ fun PersonScreen(
                                 Text(
                                     text = EventDateText.render(strings, it),
                                     style = HealthTrail.type.mono,
-                                    color = colors.ink3Text,
+                                    color = colors.ink2,
                                 )
                                 Spacer(Modifier.height(Space.xs))
                             }

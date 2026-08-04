@@ -114,7 +114,7 @@ fun MoneyScreen(
                     Text(
                         text = strings["money.open_total"],
                         style = HealthTrail.type.mono,
-                        color = colors.ink3Text,
+                        color = colors.ink2,
                     )
                     Spacer(Modifier.height(Space.xs))
                     Text(
@@ -180,7 +180,7 @@ private fun BillRow(
             Text(
                 text = EventDateText.render(strings, received),
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
         }
@@ -201,7 +201,7 @@ private fun BillRow(
                 // **One ink for every amount.** A large bill is not colored
                 // differently from a small one: that would be the app saying
                 // something about it.
-                color = if (bill.amountMinor == null) colors.ink3Text else colors.ink,
+                color = if (bill.amountMinor == null) colors.ink2 else colors.ink,
             )
         }
 

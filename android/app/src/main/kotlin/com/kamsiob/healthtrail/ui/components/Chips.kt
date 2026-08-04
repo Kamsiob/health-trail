@@ -72,11 +72,11 @@ fun ChoiceChip(
 
     val resting = when {
         !enabled -> colors.sand.copy(alpha = 0.5f)
-        selected -> colors.blueSoft
+        selected -> colors.blueWash
         else -> colors.sand
     }
     val labelColor = when {
-        !enabled -> colors.ink3Text
+        !enabled -> colors.ink2
         selected -> colors.blueDeep
         else -> colors.ink
     }
@@ -238,7 +238,7 @@ fun ChoiceChipGroup(
         Text(text = label, style = type.bodyM, color = colors.ink2)
         if (aside != null) {
             Spacer(Modifier.height(Space.xs))
-            Text(text = aside, style = type.bodyS, color = colors.ink3Text)
+            Text(text = aside, style = type.bodyS, color = colors.ink2)
         }
         Spacer(Modifier.height(Space.s))
         FlowRow(

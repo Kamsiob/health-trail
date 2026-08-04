@@ -123,7 +123,7 @@ fun Thumbnail(
             // broken image glyph, which keeps the whole grid in one idiom.
             else -> IconTile(
                 section = section,
-                tint = colors.ink3NonText,
+                tint = colors.ink3,
                 background = Color.Transparent,
                 tileSize = size / 2,
                 iconSize = size / 3,

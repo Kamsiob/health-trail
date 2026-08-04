@@ -267,7 +267,7 @@ fun SpineRow(
     modifier: Modifier = Modifier,
     node: Color? = null,
     state: Waypoint = Waypoint.HAPPENED,
-    routeColor: Color = HealthTrail.colors.blaze,
+    routeColor: Color = HealthTrail.colors.gold,
     routeAlpha: Float = Trail.ROUTE_ALPHA,
     dash: RouteDash? = RouteDash.TRAIL,
     /** 0f to 1f, for the draw-in on first appearance. 1f is fully drawn. */
@@ -369,7 +369,7 @@ fun DistanceMarker(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = HealthTrail.type.mono,
-        color = colors.ink3Text,
+        color = colors.ink2,
         modifier = modifier.fillMaxWidth(),
     )
 }

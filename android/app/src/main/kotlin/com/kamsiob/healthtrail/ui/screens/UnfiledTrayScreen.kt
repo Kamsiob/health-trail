@@ -246,7 +246,7 @@ private fun UnfiledRow(
         Text(
             text = EventDateText.render(strings, entry.occurredEdtf),
             style = HealthTrail.type.mono,
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
 
@@ -386,7 +386,7 @@ private fun FileHere(
 ) {
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
-    val resting = if (emphasized) colors.blueSoft else colors.sand
+    val resting = if (emphasized) colors.blueWash else colors.sand
     val surface by pressedSurface(interaction, resting)
     val ring by focusRingAlpha(interaction)
 

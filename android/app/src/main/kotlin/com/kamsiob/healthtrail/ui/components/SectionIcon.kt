@@ -40,7 +40,7 @@ import com.kamsiob.healthtrail.ui.theme.Radius
  * drawn in every locale, and the chevron beside it is the thing that flips.
  *
  * The stroke is held to a 3:1 non-text ratio rather than a text ratio, which is
- * what section 2.3 sets `ink3NonText` aside for, and no icon here is ever the
+ * what section 2.3 sets `ink3` aside for, and no icon here is ever the
  * only thing naming its row: every row carries the section's name in words.
  */
 @Composable

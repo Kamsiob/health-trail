@@ -191,7 +191,7 @@ private fun DocumentCell(
             Text(
                 text = EventDateText.render(strings, received),
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
         }
         document.originalLocation?.takeIf { it.isNotBlank() }?.let { where ->

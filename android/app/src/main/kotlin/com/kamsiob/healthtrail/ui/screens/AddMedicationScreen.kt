@@ -185,7 +185,7 @@ fun AddMedicationScreen(
                 Text(
                     text = strings["meds.on_card.note"],
                     style = HealthTrail.type.bodyS,
-                    color = colors.ink3Text,
+                    color = colors.ink2,
                 )
 
                 Spacer(Modifier.height(Space.xl))

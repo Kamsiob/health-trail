@@ -115,7 +115,7 @@ fun DictateAction(
             )
         },
         enabled = enabled,
-        leading = { MicrophoneGlyph(tint = if (enabled) colors.blue else colors.ink3Text) },
+        leading = { MicrophoneGlyph(tint = if (enabled) colors.blue else colors.ink2) },
         modifier = modifier,
     )
 }

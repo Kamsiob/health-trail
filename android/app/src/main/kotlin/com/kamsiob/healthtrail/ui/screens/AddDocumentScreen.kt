@@ -176,7 +176,7 @@ fun AddDocumentScreen(
                 Text(
                     text = strings["docs.limit_note"],
                     style = HealthTrail.type.bodyS,
-                    color = colors.ink3Text,
+                    color = colors.ink2,
                 )
 
                 // Said only when it happened, and it says plainly that nothing
@@ -187,7 +187,7 @@ fun AddDocumentScreen(
                     Text(
                         text = error,
                         style = HealthTrail.type.bodyM,
-                        color = colors.alertText,
+                        color = colors.alertInk,
                     )
                 }
 

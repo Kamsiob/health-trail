@@ -148,7 +148,7 @@ private fun ReadingRow(reading: Repository.Reading, measure: Repository.Measure)
         Text(
             text = EventDateText.render(strings, reading.occurredEdtf),
             style = HealthTrail.type.mono,
-            color = colors.ink3Text,
+            color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
 
@@ -182,7 +182,7 @@ private fun ReadingRow(reading: Repository.Reading, measure: Repository.Measure)
             Text(
                 text = strings["progress.by_clinician"],
                 style = HealthTrail.type.mono,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
         }
     }

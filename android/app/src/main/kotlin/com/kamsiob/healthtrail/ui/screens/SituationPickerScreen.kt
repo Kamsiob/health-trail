@@ -303,7 +303,7 @@ private fun SituationRow(
             Text(
                 text = situation.burden,
                 style = HealthTrail.type.bodyS,
-                color = colors.ink3Text,
+                color = colors.ink2,
             )
         }
     }

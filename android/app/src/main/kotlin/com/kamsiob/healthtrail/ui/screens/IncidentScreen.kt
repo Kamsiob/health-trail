@@ -178,7 +178,7 @@ private fun IncidentSpineRow(
                     ?.let { EventDateText.render(strings, it) }
                 val eyebrow = listOfNotNull(date, incident.chapterName).joinToString("  ")
                 if (eyebrow.isNotEmpty()) {
-                    Text(eyebrow, style = HealthTrail.type.mono, color = colors.ink3Text)
+                    Text(eyebrow, style = HealthTrail.type.mono, color = colors.ink2)
                     Spacer(Modifier.height(Space.xs))
                 }
 
@@ -198,7 +198,7 @@ private fun IncidentSpineRow(
                         strings("incidents.settled.count", "count" to incident.entryCount)
                     },
                     style = HealthTrail.type.mono,
-                    color = colors.ink3Text,
+                    color = colors.ink2,
                 )
             }
             Spacer(Modifier.height(Space.cardGap))
@@ -298,7 +298,7 @@ fun IncidentScreen(
                             .padding(Space.cardPadding),
                     ) {
                         person.roleLabel?.takeIf { it.isNotBlank() }?.let {
-                            Text(it, style = HealthTrail.type.mono, color = colors.ink3Text)
+                            Text(it, style = HealthTrail.type.mono, color = colors.ink2)
                             Spacer(Modifier.height(Space.xs))
                         }
                         Text(
@@ -378,7 +378,7 @@ fun IncidentScreen(
                             val date = entry.occurredEdtf?.takeIf { it.isNotBlank() }
                                 ?.let { EventDateText.render(strings, it) }
                             if (date != null) {
-                                Text(date, style = HealthTrail.type.mono, color = colors.ink3Text)
+                                Text(date, style = HealthTrail.type.mono, color = colors.ink2)
                                 Spacer(Modifier.height(Space.xs))
                             }
                             entry.title?.takeIf { it.isNotBlank() }?.let {

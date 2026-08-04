@@ -214,7 +214,7 @@ fun EntryScreen(
                         testTag = EntryTags.CHAPTER,
                         onClick = onOpenChapter,
                         leading = {
-                            WaypointDot(color = colors.blaze, state = Waypoint.MILESTONE)
+                            WaypointDot(color = colors.gold, state = Waypoint.MILESTONE)
                         },
                         label = name,
                         note = strings["entry.chapter"],
@@ -331,7 +331,7 @@ private fun LinkRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, style = HealthTrail.type.displayS, color = colors.ink)
             Spacer(Modifier.height(Space.xs))
-            Text(text = note, style = HealthTrail.type.mono, color = colors.ink3Text)
+            Text(text = note, style = HealthTrail.type.mono, color = colors.ink2)
         }
     }
 }

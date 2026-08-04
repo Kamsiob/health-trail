@@ -79,6 +79,18 @@ def parse_theme(text: str, name: str) -> dict:
             end += 1
         for index, color in enumerate(re.findall(r"0x([0-9A-Fa-f]{8})", body[start:end])):
             tokens[f"threadRoute{index}"] = color
+    # The six tab hues, DESIGN.md 4.3. Each is a TabHue(base, ink, wash) written
+    # positionally, so they are read positionally and named here rather than
+    # being left as three anonymous colors.
+    for match in re.finditer(
+        r"(\w+)\s*=\s*TabHue\(\s*Color\(0x([0-9A-Fa-f]{8})\)\s*,\s*"
+        r"Color\(0x([0-9A-Fa-f]{8})\)\s*,\s*Color\(0x([0-9A-Fa-f]{8})\)",
+        body,
+    ):
+        name = match.group(1)
+        tokens[f"{name}Base"] = match.group(2)
+        tokens[f"{name}Ink"] = match.group(3)
+        tokens[f"{name}Wash"] = match.group(4)
     return tokens
 
 
@@ -91,39 +103,36 @@ def pairs_for(theme: dict) -> list:
         ("ink", "paper", TEXT_FLOOR, "primary text on the app background"),
         ("ink", "card", TEXT_FLOOR, "primary text on a card"),
         ("ink", "sand", TEXT_FLOOR, "primary text on a recessed surface"),
+        # ink2 is the only other text level there is. DESIGN.md 4.6: at the 4.5:1
+        # floor against warm sand there is no room for a third, so the app gets
+        # its third level from size and weight instead.
         ("ink2", "paper", TEXT_FLOOR, "secondary text on the app background"),
         ("ink2", "card", TEXT_FLOOR, "secondary text on a card"),
         ("ink2", "sand", TEXT_FLOOR, "secondary text on a recessed surface"),
-        # The corrected tertiary text from DESIGN.md section 2.3.
-        ("ink3Text", "paper", TEXT_FLOOR, "tertiary text on the app background"),
-        ("ink3Text", "card", TEXT_FLOOR, "tertiary text on a card"),
-        ("ink3Text", "sand", TEXT_FLOOR, "tertiary text on a recessed surface"),
         # The single accent, as a link and as a filled button.
         ("blue", "paper", TEXT_FLOOR, "a link on the app background"),
         ("blue", "card", TEXT_FLOOR, "a link on a card"),
+        ("blue", "sand", TEXT_FLOOR, "a link on a recessed surface"),
         ("onBlue", "blue", TEXT_FLOOR, "the label on a filled button"),
-        ("blueDeep", "blueSoft", TEXT_FLOOR, "text in a blue tonal chip"),
-        # Gold text is a separate token from blaze, which never renders text.
-        ("blazeText", "paper", TEXT_FLOOR, "gold text on the app background"),
-        ("blazeText", "card", TEXT_FLOOR, "gold text on a card"),
-        ("blazeText", "blazeSoft", TEXT_FLOOR, "gold text in a gold tonal chip"),
-        # Green means resolved, and leafText is its text form.
-        ("leafText", "paper", TEXT_FLOOR, "green text on the app background"),
-        ("leafText", "card", TEXT_FLOOR, "green text on a card"),
-        ("leafText", "leafSoft", TEXT_FLOOR, "green text in a green tonal chip"),
+        ("blueDeep", "blueWash", TEXT_FLOOR, "text in a blue tonal chip"),
+        # Gold text is a separate token from gold, which never renders text.
+        ("goldInk", "paper", TEXT_FLOOR, "gold text on the app background"),
+        ("goldInk", "card", TEXT_FLOOR, "gold text on a card"),
+        ("goldInk", "sand", TEXT_FLOOR, "a mono eyebrow on a recessed surface"),
+        ("goldInk", "goldWash", TEXT_FLOOR, "gold text in a gold tonal chip"),
+        # Green means resolved, and leafInk is its text form.
+        ("leafInk", "paper", TEXT_FLOOR, "green text on the app background"),
+        ("leafInk", "card", TEXT_FLOOR, "green text on a card"),
+        ("leafInk", "leafWash", TEXT_FLOOR, "green text in a green tonal chip"),
         # Red belongs to the emergency card and the open state.
-        ("alertText", "paper", TEXT_FLOOR, "alert text on the app background"),
-        ("alertText", "card", TEXT_FLOOR, "alert text on a card"),
-        ("alertText", "alertSoft", TEXT_FLOOR, "alert text in a red tonal pill"),
-        # The emergency card puts its cards on alertSoft, and the one action on
-        # them is a call. That is blue text on a red tonal surface, which no
-        # other screen produces and which nothing measured until the card was
-        # built. `ink` is the value on the same surface.
-        ("blue", "alertSoft", TEXT_FLOOR, "the call action on an emergency card row"),
-        ("ink", "alertSoft", TEXT_FLOOR, "a value on an emergency card row"),
+        ("alertInk", "paper", TEXT_FLOOR, "alert text on the app background"),
+        ("alertInk", "card", TEXT_FLOOR, "alert text on a card"),
+        ("alertInk", "alertWash", TEXT_FLOOR, "alert text in a red tonal pill"),
+        ("blue", "alertWash", TEXT_FLOOR, "the call action on an emergency card row"),
+        ("ink", "alertWash", TEXT_FLOOR, "a value on an emergency card row"),
         ("onAlertFill", "alertFill", TEXT_FLOOR, "the emergency card header text"),
         # Controls and meaningful graphics. 3:1, per WCAG 1.4.11.
-        ("onBlaze", "blaze", UI_FLOOR, "the plus glyph on the capture button"),
+        ("onGold", "gold", UI_FLOOR, "the plus glyph on the capture button"),
         ("blue", "card", UI_FLOOR, "the focus outline on a card"),
         ("blue", "paper", UI_FLOOR, "the focus outline on the app background"),
         ("leaf", "card", UI_FLOOR, "a resolved indicator on a card"),
@@ -135,21 +144,34 @@ def pairs_for(theme: dict) -> list:
         # WCAG 1.4.11 covers user interface components and graphical objects
         # required to understand content. A hairline separating two rows is
         # neither: remove it and nothing becomes unreadable. The trail line and
-        # its nodes look like a counterexample, since a node's color carries the
-        # entry type, but DESIGN.md section 2.2 requires that color is never the
-        # only carrier of meaning, so the type is always stated in the entry
-        # beside it. The same holds for a care thread route, which always sits
-        # with the thread's name.
+        # its waypoints look like a counterexample, since a waypoint's color
+        # carries the entry type, but DESIGN.md 4.4 requires that color is never
+        # the only carrier of meaning, so the type is always stated beside it.
         #
         # Holding decoration to a text floor would force the trail to stop being
         # gold, and gold is the whole metaphor. Holding it to nothing and not
         # measuring it would be how the app slowly becomes unreadable. So it is
         # measured, printed, and reviewed by eye on a device.
-        ("ink3NonText", "paper", None, "a hairline rule on the app background"),
-        ("ink3NonText", "card", None, "a hairline rule on a card"),
-        ("blaze", "paper", None, "the trail line and the mark on the app background"),
-        ("blaze", "card", None, "a timeline node on a card"),
+        ("ink3", "paper", None, "a hairline rule on the app background"),
+        ("ink3", "card", None, "a hairline rule on a card"),
+        ("gold", "paper", None, "the trail line and the mark on the app background"),
+        ("gold", "card", None, "a timeline node on a card"),
     ]
+    # The six tab hues, DESIGN.md 4.3.
+    #
+    # The ink variant carries text and is held to the text floor on every surface
+    # it lands on, including its own wash. The base is a shape and is held to the
+    # 3:1 control floor. That split is the whole point of the token: measured on
+    # adoption, all six bases landed between 3.23:1 and 4.56:1 as small text, and
+    # the tab chip is roughly 11sp and is the first element on every section
+    # screen. DECISIONS.md D80.
+    for hue in ("rose", "teal", "slate", "moss", "manila", "stone"):
+        checks.append((f"{hue}Ink", f"{hue}Wash", TEXT_FLOOR, f"{hue} text on its own wash"))
+        checks.append((f"{hue}Ink", "paper", TEXT_FLOOR, f"{hue} text on the app background"))
+        checks.append((f"{hue}Ink", "card", TEXT_FLOOR, f"{hue} text on a card"))
+        checks.append((f"{hue}Ink", "sand", TEXT_FLOOR, f"{hue} text on a recessed surface"))
+        checks.append((f"{hue}Base", "paper", UI_FLOOR, f"a {hue} shape on the app background"))
+        checks.append((f"{hue}Base", "card", UI_FLOOR, f"a {hue} shape on a card"))
     for index in range(4):
         checks.append(
             (f"threadRoute{index}", "paper", None, f"care thread route {index} on the app background")
@@ -192,7 +214,7 @@ def main():
         for failure in failures:
             print(f"  {failure}")
         print(
-            "\nDESIGN.md section 2.3 and section 9. Text under 18sp needs 4.5:1, "
+            "\nDESIGN.md section 4.6 and section 12. Text under 18sp needs 4.5:1, "
             "text at 18sp and above and UI component boundaries need 3:1."
         )
         return 1
