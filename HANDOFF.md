@@ -82,7 +82,15 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **The archive is named `.zip` now**, not `.htx`. A private extension made the file a dead end at the first step of the one procedure the whole two-layer container exists for. D98.
 
-**What is next on this track:** the importer's remaining rules in 8.3 (#211); the failure-mode tests (#212); and the regeneration test (#213), which is the one 8.5 calls the important one. **#209, #210, #214 and #215 are done.**
+**The regeneration test is built and #213 is closed.** Export, open, regenerate the readable copy from the payload, assert byte identical. One assertion over 313 columns across 39 tables. **Proved to fire**: with the renderer made non-deterministic by one appended nanosecond it failed and named the page and the character offset.
+
+**What it does not do yet is written in the file rather than implied by a green run.** It regenerates from the archive's payload, not from a notebook restored onto a cleared install. That difference is the importer.
+
+**#212's failure modes, honestly:** Ordering, Filenames, ZIP64 and Encryption are covered, each with a test that was proved to fire. **Unicode is not implemented at all** and is filed as **#227**, release-blocking: nothing in the app normalizes to NFC and a half-applied normalization is worse than none. Time, Numbers, Absence and the four gigabyte half of Scale are uncovered, and #212 says which and why.
+
+**What is next on this track:** the importer's remaining rules in 8.3 (**#211**), which three other things are now waiting on: the fuller regeneration test, and the Numbers and Absence failure modes, both of which can only be caught on the import side. **#209, #210, #213, #214 and #215 are done.**
+
+**Sixteen checks now**, up from fourteen. The two added tonight are `check_format_spec.py`, which keeps the published specification matching the code, and `check_query_ordering.py`, which found a real ordering defect on its first run. There is also one **report** rather than a gate, `report_bidi_isolation.py`, and the filename says which it is.
 
 **One thing deliberately not done, and it is a judgment call worth the owner's eye.** 8.1 describes the outer layer as holding *exactly three things*, with the whole inner container inside `payload.enc`. What is built is the same privacy property reached a different way: the outer layer carries the public manifest, the README, and everything else encrypted per entry. **Encrypting a four gigabyte container wholesale needs streaming through a cipher to a temp file**, which is a rewrite of the most critical path in the app, and this one is verified end to end. The remaining difference is shape rather than exposure.
 
