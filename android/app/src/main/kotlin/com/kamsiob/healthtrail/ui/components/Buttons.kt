@@ -183,7 +183,18 @@ fun QuietButton(
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.pill)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.pill)
+            // **A visible border at rest, which is the v4 change.** Before, this
+            // drew its border only when focused, so at rest it was a pale
+            // surface with no edge: readable as a button on `paper`, invisible
+            // as one on `card`. Law 2 requires a costume be recognizable without
+            // context, so the outlined pill is outlined all the time. The focus
+            // ring thickens the same border rather than adding a second one, so
+            // a focused control is not two rings.
+            .border(
+                width = if (ring > 0f) 2.dp else 1.5.dp,
+                color = if (ring > 0f) colors.blue else colors.blue.copy(alpha = OUTLINE_ALPHA),
+                shape = Radius.pill,
+            )
             .clickable(
                 enabled = enabled,
                 interactionSource = interaction,
@@ -191,26 +202,46 @@ fun QuietButton(
                 role = Role.Button,
                 onClick = onClick,
             )
-            .padding(horizontal = Space.l, vertical = Space.sm),
+            .padding(horizontal = Space.m, vertical = Space.s),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
+            // **Blue, not ink.** The outlined pill is an action, and blue is
+            // what this app spends on actions and only on actions.
+            color = if (enabled) colors.blue else colors.ink2,
             style = HealthTrail.type.label,
-            color = if (enabled) colors.ink else colors.ink2,
             textAlign = TextAlign.Center,
             modifier = Modifier.defaultMinSize(minHeight = 0.dp),
         )
     }
 }
 
+/** How present the outline is at rest. Enough to read as an edge, not a frame. */
+private const val OUTLINE_ALPHA = 0.55f
+
 /**
- * A text action, per DESIGN.md section 5.4: no container, `blue` label, and
- * still 48dp of touch area regardless of how small the words are.
+ * The same outlined pill, under the name most screens still call it by.
  *
- * Used where an action is genuinely secondary but must not feel discouraged.
- * Skipping setup is the clearest case: it is a real path, not a failure, so it
- * gets full reach and legible weight rather than being tucked away small.
+ * **It used to be a bare text link, and v4 bans those outright.** Law 2: "No
+ * bare text links anywhere." A word in blue with no container is the one
+ * costume a person cannot tell from ordinary emphasis, and this app is used by
+ * somebody tired who should never have to guess whether a thing is tappable.
+ *
+ * **So it is not deprecated, it is corrected.** Changing what it renders fixes
+ * every one of its call sites at once rather than leaving sixty-five screens
+ * carrying a banned costume until each is converted. There is one outlined
+ * action in this app and this is a second name for it, which is a naming
+ * problem rather than the "same pattern in two forms" defect `DESIGN.md` 13.2
+ * warns about: both names produce the same pixels because one calls the other.
+ *
+ * **The name goes as each screen converts**, at which point call sites read
+ * [QuietButton] directly and this is deleted.
+ *
+ * The leading slot is accepted and ignored. An outlined pill is a verb or a
+ * dialable number, and the one thing it never needs is a decorative glyph in
+ * front of the verb. It stays in the signature only so that sixty-five call
+ * sites keep compiling until each is converted.
  */
 @Composable
 fun TextAction(
@@ -218,52 +249,7 @@ fun TextAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    /**
-     * An optional drawing before the words.
-     *
-     * **Never instead of the words.** Section 5.12: an icon is never the only
-     * thing naming what it sits beside, so this slot adds recognition to a
-     * label rather than replacing one. The glyph is decorative and clears its
-     * own semantics, and the label carries the meaning to a reader.
-     */
-    leading: (@Composable () -> Unit)? = null,
+    @Suppress("UNUSED_PARAMETER") leading: (@Composable () -> Unit)? = null,
 ) {
-    val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    // No container at rest, per 5.4, and a faint one under a finger. The 5.14
-    // rule gives that for free: 8% toward `ink` from transparent is a tint
-    // rather than a surface, which is exactly the right weight for an action
-    // that is secondary but must not feel discouraged.
-    val surface by pressedSurface(interaction, Color.Transparent)
-    val ring by focusRingAlpha(interaction)
-
-    Box(
-        modifier = modifier
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.pill)
-            .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.pill)
-            .clickable(
-                enabled = enabled,
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .padding(horizontal = Space.m, vertical = Space.sm),
-        contentAlignment = Alignment.Center,
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (leading != null) {
-                leading()
-                Spacer(Modifier.width(Space.s))
-            }
-            Text(
-                text = label,
-                style = HealthTrail.type.label,
-                color = if (enabled) colors.blue else colors.ink2,
-                textAlign = TextAlign.Center,
-            )
-        }
-    }
+    QuietButton(label = label, onClick = onClick, modifier = modifier, enabled = enabled)
 }
