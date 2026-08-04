@@ -62,7 +62,11 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Proved both ways on the phone**, not asserted. The standalone tool opened a real split archive with no Health Trail: 1,630 live entries in plain sqlite3, 40 attachments, 61 readable pages. Then the app restored the same file and the notebook came back with 1,630 entries.
 
-**What is next on this track:** the full two-layer shape in 8.1, where the inner container becomes a single `payload.enc` rather than per-entry encryption; the importer's remaining rules in 8.3; and the byte-for-byte format specification, #214. **#215 is done.**
+**The two-layer container is built and #209 is closed.** Format version 3. The outer layer is a plain ZIP64 holding exactly `README.txt`, `MANIFEST.json` and `payload.enc`; the inner layer is an ordinary zip holding `README.txt`, `MANIFEST.json`, `CHECKSUMS.txt`, `data/trail.sqlite`, `data/schema.sql`, `readable/` and `attachments/`.
+
+**Proved on a real export, not in a test.** 1,078,387 bytes off the phone, opened by `tools/decrypt/` with no Health Trail anywhere: 106 files, 1,630 entries in plain sqlite3, 40 attachments, 61 readable pages, and the contract's own 1,748 line `schema.sql` travelling with them. The subject's name appears nowhere outside the encryption and neither do the row counts. ZIP64 confirmed at 70,000 entries **on the phone**, because the same test as a desktop unit test proved only the desktop.
+
+**What is next on this track:** the importer's remaining rules in 8.3 (#211); the failure-mode tests (#212); the regeneration test (#213); and the byte-for-byte format specification (#214), which now has more to specify: the frame format is part of it. **#210 and #215 are done.**
 
 **One thing deliberately not done, and it is a judgment call worth the owner's eye.** 8.1 describes the outer layer as holding *exactly three things*, with the whole inner container inside `payload.enc`. What is built is the same privacy property reached a different way: the outer layer carries the public manifest, the README, and everything else encrypted per entry. **Encrypting a four gigabyte container wholesale needs streaming through a cipher to a temp file**, which is a rewrite of the most critical path in the app, and this one is verified end to end. The remaining difference is shape rather than exposure.
 

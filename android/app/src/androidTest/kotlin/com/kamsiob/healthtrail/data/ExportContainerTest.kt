@@ -55,6 +55,7 @@ class ExportContainerTest {
         rowCounts = rowCounts,
         subjectCount = 1,
         exportedAt = 1_753_977_600_000L,
+        schemaSql = "-- the schema this payload was written against\nCREATE TABLE entry (id TEXT);\n",
     )
 
     /**
@@ -71,6 +72,12 @@ class ExportContainerTest {
 
     private fun fakeDatabase(contents: String = "SQLite format 3\u0000 and then some rows"): File =
         File(work, "source.sqlite").apply { writeBytes(contents.toByteArray()) }
+
+    /** An attachment, named by its content hash the way the store names them. */
+    private fun attachment(contents: String): File {
+        val bytes = contents.toByteArray()
+        return File(work, Attachments.sha256(bytes)).apply { writeBytes(bytes) }
+    }
 
     // -- the round trip -----------------------------------------------------
 
@@ -130,7 +137,7 @@ class ExportContainerTest {
         ExportContainer.write(target, source(fakeDatabase()), passphrase = secret)
 
         java.util.zip.ZipInputStream(target.inputStream()).use { zip ->
-            assertEquals(ExportContainer.MANIFEST, zip.nextEntry?.name)
+            assertEquals(ExportContainer.OUTER_MANIFEST, zip.nextEntry?.name)
         }
     }
 
@@ -173,7 +180,7 @@ class ExportContainerTest {
         // unfixable later.
         val target = File(work, "future.htx")
         ZipOutputStream(target.outputStream()).use { zip ->
-            zip.putNextEntry(ZipEntry(ExportContainer.MANIFEST))
+            zip.putNextEntry(ZipEntry(ExportContainer.OUTER_MANIFEST))
             zip.write("""{"format_version": 99}""".toByteArray())
             zip.closeEntry()
         }
@@ -190,26 +197,33 @@ class ExportContainerTest {
 
     @Test
     fun aDamagedDatabaseIsCaughtBeforeAnythingIsTouched() = runBlocking {
+        // **Damaged inside the payload, which is where the record now lives.**
+        // Version 2 could corrupt the archive from outside, because the database
+        // was an entry of the outer zip. In version 3 the only thing out there
+        // is ciphertext, so a test that damages the outer layer is testing the
+        // cipher rather than the corruption check. This rebuilds the inner
+        // container with a manifest that describes rows the payload does not
+        // have, which is what a damaged transfer and a bad disk both look like
+        // by the time the importer sees them.
         val target = File(work, "export.htx")
-        val manifest = ExportContainer.write(target, source(fakeDatabase()), passphrase = secret)
+        ExportContainer.write(target, source(fakeDatabase()), passphrase = secret)
 
-        // Rewrite the archive with the same manifest and different rows, which
-        // is what a damaged transfer produces.
-        val rebuilt = File(work, "damaged.htx")
-        ZipOutputStream(rebuilt.outputStream()).use { zip ->
-            zip.putNextEntry(ZipEntry(ExportContainer.MANIFEST))
-            zip.write(
-                """{"format_version":1,"database":{"sha256":"${manifest.databaseSha256}"}}"""
-                    .toByteArray()
-            )
-            zip.closeEntry()
-            zip.putNextEntry(ZipEntry(ExportContainer.DATABASE))
-            zip.write("not the rows the manifest describes".toByteArray())
-            zip.closeEntry()
+        val damaged = File(work, "damaged.htx")
+        rebuildPayload(target, damaged) { name, bytes ->
+            if (name == ExportContainer.DATABASE) {
+                "SQLite format 3\u0000 but not the rows the manifest describes".toByteArray()
+            } else {
+                bytes
+            }
         }
 
-        val problem = problemFrom(ExportContainer.open(rebuilt, File(work, "staging"), passphrase = secret))
-        assertTrue(problem is ExportContainer.Problem.DatabaseCorrupt)
+        val problem = problemFrom(
+            ExportContainer.open(damaged, File(work, "staging"), passphrase = secret)
+        )
+        assertTrue(
+            "a damaged payload was not caught: $problem",
+            problem is ExportContainer.Problem.DatabaseCorrupt,
+        )
         assertSaysNothingChanged(problem)
     }
 
@@ -247,7 +261,7 @@ class ExportContainerTest {
     fun aManifestWithNoDatabaseIsCaught() = runBlocking {
         val target = File(work, "empty.htx")
         ZipOutputStream(target.outputStream()).use { zip ->
-            zip.putNextEntry(ZipEntry(ExportContainer.MANIFEST))
+            zip.putNextEntry(ZipEntry(ExportContainer.OUTER_MANIFEST))
             zip.write("""{"format_version":1}""".toByteArray())
             zip.closeEntry()
         }
@@ -414,11 +428,31 @@ class ExportContainerTest {
 
     @Test
     fun anUnencryptedExportIsRefusedAndSaysWhatTheFileIs() = runBlocking {
-        // **Written deliberately plain**, which is the one place in the project
-        // that passes null, and it exists so this refusal can be proven rather
-        // than assumed. D67.
+        // **Assembled by hand, because this code cannot write one.** Format
+        // version 3 has nowhere to put an unencrypted record: `payload.enc` is
+        // the only entry data can go in. Version 2 kept a null passphrase path
+        // alive purely so this test could exist, which meant the one thing in
+        // the project that could write a plain copy of somebody's whole record
+        // was kept alive to prove that plain copies are refused.
+        //
+        // Building it here is the stronger test anyway: it proves the refusal
+        // catches a file this app could not have produced, which is the case
+        // that actually matters. D67.
         val target = File(work, "plain.htx")
-        ExportContainer.write(target, source(fakeDatabase()), passphrase = null)
+        java.util.zip.ZipOutputStream(target.outputStream()).use { zip ->
+            zip.putNextEntry(java.util.zip.ZipEntry(ExportContainer.OUTER_MANIFEST))
+            zip.write(
+                (
+                    "{\"format_version\": 2, \"app_version\": \"0.1.0\", " +
+                        "\"platform\": \"android\", \"exported_at\": 1753977600000, " +
+                        "\"encrypted\": false}"
+                    ).toByteArray(),
+            )
+            zip.closeEntry()
+            zip.putNextEntry(java.util.zip.ZipEntry("data.sqlite"))
+            zip.write(fakeDatabase().readBytes())
+            zip.closeEntry()
+        }
 
         val problem = problemFrom(
             ExportContainer.open(target, File(work, "staging"), passphrase = secret)
@@ -473,6 +507,297 @@ class ExportContainerTest {
             )
             assertSaysNothingChanged(problem)
         }
+
+    // -- the two layers format version 3 introduced --------------------------
+
+    @Test
+    fun theOuterLayerHoldsExactlyThreeThings() = runBlocking {
+        // `contract/DATA-CONTRACT.md` 8.1 names them, and "exactly" is the word
+        // that matters: anything else out here is something a person did not
+        // choose to publish sitting beside their encrypted record.
+        val target = File(work, "export.htx")
+        ExportContainer.write(
+            target,
+            source(fakeDatabase(), attachments = listOf(attachment("a photograph"))),
+            passphrase = secret,
+        )
+
+        val names = java.util.zip.ZipInputStream(target.inputStream()).use { zip ->
+            generateSequence { zip.nextEntry }.map { it.name }.toList()
+        }
+        assertEquals(
+            listOf(
+                ExportContainer.OUTER_MANIFEST,
+                ExportContainer.OUTER_README,
+                ExportContainer.PAYLOAD,
+            ),
+            names,
+        )
+    }
+
+    @Test
+    fun theOuterLayerSaysNothingAboutThePerson() = runBlocking {
+        // Row counts alone are a profile. "1,630 entries over six years" says
+        // how ill somebody has been and for how long, to anything that can read
+        // the file without the passphrase.
+        val target = File(work, "export.htx")
+        ExportContainer.write(
+            target,
+            source(fakeDatabase(), rowCounts = mapOf("entry" to 1630, "appointment" to 23)),
+            passphrase = secret,
+        )
+
+        val outside = java.util.zip.ZipInputStream(target.inputStream()).use { zip ->
+            buildString {
+                var entry = zip.nextEntry
+                while (entry != null) {
+                    if (entry.name != ExportContainer.PAYLOAD) {
+                        append(zip.readBytes().decodeToString())
+                    }
+                    zip.closeEntry()
+                    entry = zip.nextEntry
+                }
+            }
+        }
+
+        for (secretish in listOf("row_counts", "1630", "entry\"", "origin_device", "subject")) {
+            assertTrue(
+                "the outer layer leaks $secretish",
+                secretish !in outside,
+            )
+        }
+    }
+
+    @Test
+    fun aPayloadWithItsLastFramesRemovedIsRefusedRatherThanOpenedShort() = runBlocking {
+        // **The failure this format is most afraid of.** Every frame
+        // authenticates on its own, so without the final-frame flag a stream cut
+        // short decrypts perfectly and hands back an archive missing a year of
+        // somebody's record, with nothing anywhere saying so.
+        val target = File(work, "export.htx")
+        // Large enough to be several frames, so there is a middle to cut.
+        // **Bytes that do not compress.** The inner container is deflated, and
+        // the first version of this test filled the database with a repeating
+        // pattern: three megabytes of it became fifteen kilobytes, the payload
+        // was a single frame, and the test failed trying to cut a tail that did
+        // not exist. A hash chain is deterministic and incompressible, which is
+        // both properties this needs.
+        val big = File(work, "big.sqlite").apply {
+            val out = java.io.ByteArrayOutputStream()
+            out.write("SQLite format 3\u0000".toByteArray())
+            var block = "seed".toByteArray()
+            while (out.size() < 3 * ExportCrypto.CHUNK_BYTES) {
+                block = java.security.MessageDigest.getInstance("SHA-256").digest(block)
+                out.write(block)
+            }
+            writeBytes(out.toByteArray())
+        }
+        ExportContainer.write(target, source(big), passphrase = secret)
+
+        // Rebuilt with the payload's tail cut off, so the outer zip stays valid
+        // and only the frames are short. Truncating the file itself would be
+        // caught by the zip layer and would prove nothing about the frames.
+        val entries = java.util.zip.ZipInputStream(target.inputStream()).use { zip ->
+            buildMap<String, ByteArray> {
+                var entry = zip.nextEntry
+                while (entry != null) {
+                    put(entry.name, zip.readBytes())
+                    zip.closeEntry()
+                    entry = zip.nextEntry
+                }
+            }
+        }
+        val cut = File(work, "cut.htx")
+        java.util.zip.ZipOutputStream(cut.outputStream()).use { zip ->
+            entries.forEach { (name, bytes) ->
+                zip.putNextEntry(java.util.zip.ZipEntry(name))
+                zip.write(
+                    if (name == ExportContainer.PAYLOAD) {
+                        bytes.copyOfRange(0, ExportCrypto.CHUNK_BYTES + 100)
+                    } else {
+                        bytes
+                    },
+                )
+                zip.closeEntry()
+            }
+        }
+
+        val problem = problemFrom(
+            ExportContainer.open(cut, File(work, "staging"), passphrase = secret)
+        )
+        assertTrue(
+            "a payload cut short was not refused: ${problem.message}",
+            problem is ExportContainer.Problem.CouldNotDecrypt,
+        )
+    }
+
+    @Test
+    fun theInnerLayerIsAnOrdinaryZipWithTheLayoutTheContractDraws() = runBlocking {
+        val target = File(work, "export.htx")
+        ExportContainer.write(
+            target,
+            source(fakeDatabase(), attachments = listOf(attachment("a photograph"))),
+            passphrase = secret,
+        )
+
+        val opened = ExportContainer.open(target, File(work, "staging"), passphrase = secret)
+        assertTrue("the archive did not open: ${opened.exceptionOrNull()}", opened.isSuccess)
+
+        val inner = innerNames(target)
+        assertTrue("no inner README", ExportContainer.INNER_README in inner)
+        assertTrue("no inner manifest", ExportContainer.INNER_MANIFEST in inner)
+        assertTrue("no checksums", ExportContainer.CHECKSUMS in inner)
+        assertTrue("the database is not at data/trail.sqlite", ExportContainer.DATABASE in inner)
+        assertTrue("the schema does not travel with it", ExportContainer.SCHEMA in inner)
+        assertTrue(
+            "the attachment is not in the inner container",
+            inner.any { it.startsWith(ExportContainer.ATTACHMENTS) },
+        )
+    }
+
+    /**
+     * Rebuilds an archive with the inner container's files passed through a
+     * transform, resealed under the same passphrase.
+     *
+     * **This is what makes a corruption test possible at all now.** Everything
+     * that describes the record is inside the encryption, so damaging it means
+     * opening the payload, changing something, and sealing it again, exactly the
+     * way somebody with the passphrase and the specification could.
+     */
+    private fun rebuildPayload(source: File, target: File, change: (String, ByteArray) -> ByteArray) {
+        val outer = java.util.zip.ZipInputStream(source.inputStream()).use { zip ->
+            buildMap<String, ByteArray> {
+                var entry = zip.nextEntry
+                while (entry != null) {
+                    put(entry.name, zip.readBytes())
+                    zip.closeEntry()
+                    entry = zip.nextEntry
+                }
+            }
+        }
+        val encryption = org.json.JSONObject(
+            outer.getValue(ExportContainer.OUTER_MANIFEST).decodeToString(),
+        ).getJSONObject("encryption")
+        val key = ExportCrypto.derive(
+            passphrase = secret,
+            salt = android.util.Base64.decode(encryption.getString("salt"), android.util.Base64.NO_WRAP),
+            iterations = encryption.getInt("kdf_iterations"),
+            memoryKib = encryption.getInt("kdf_memory_kib"),
+            parallelism = encryption.getInt("kdf_parallelism"),
+        )
+        val prefix = android.util.Base64.decode(
+            encryption.getString("nonce_prefix"), android.util.Base64.NO_WRAP,
+        )
+
+        val plain = unsealByHand(outer.getValue(ExportContainer.PAYLOAD), key, prefix)
+        val rebuiltInner = java.io.ByteArrayOutputStream()
+        ZipOutputStream(rebuiltInner).use { out ->
+            java.util.zip.ZipInputStream(plain.inputStream()).use { zip ->
+                var entry = zip.nextEntry
+                while (entry != null) {
+                    val bytes = zip.readBytes()
+                    out.putNextEntry(ZipEntry(entry.name))
+                    out.write(change(entry.name, bytes))
+                    out.closeEntry()
+                    zip.closeEntry()
+                    entry = zip.nextEntry
+                }
+            }
+        }
+
+        val sealed = java.io.ByteArrayOutputStream()
+        val body = rebuiltInner.toByteArray()
+        val frames = maxOf(1, (body.size + ExportCrypto.CHUNK_BYTES - 1) / ExportCrypto.CHUNK_BYTES)
+        for (index in 0 until frames) {
+            val from = index * ExportCrypto.CHUNK_BYTES
+            val piece = body.copyOfRange(from, minOf(body.size, from + ExportCrypto.CHUNK_BYTES))
+            val frame = ExportCrypto.encrypt(
+                key, ExportCrypto.chunkNonce(prefix, index.toLong()), piece,
+                ExportCrypto.frameAad(index.toLong(), index == frames - 1),
+            )
+            sealed.write(
+                byteArrayOf(
+                    (frame.size ushr 24).toByte(), (frame.size ushr 16).toByte(),
+                    (frame.size ushr 8).toByte(), frame.size.toByte(),
+                ),
+            )
+            sealed.write(frame)
+        }
+        ExportCrypto.wipe(key)
+
+        ZipOutputStream(target.outputStream()).use { zip ->
+            outer.forEach { (name, bytes) ->
+                zip.putNextEntry(ZipEntry(name))
+                zip.write(if (name == ExportContainer.PAYLOAD) sealed.toByteArray() else bytes)
+                zip.closeEntry()
+            }
+        }
+    }
+
+    /** The frames, back into the inner container. The reader's half of the format. */
+    private fun unsealByHand(sealed: ByteArray, key: ByteArray, prefix: ByteArray): ByteArray {
+        val plain = java.io.ByteArrayOutputStream()
+        var at = 0
+        var index = 0L
+        while (at < sealed.size) {
+            val size = ((sealed[at].toInt() and 0xFF) shl 24) or
+                ((sealed[at + 1].toInt() and 0xFF) shl 16) or
+                ((sealed[at + 2].toInt() and 0xFF) shl 8) or
+                (sealed[at + 3].toInt() and 0xFF)
+            at += 4
+            val frame = sealed.copyOfRange(at, at + size)
+            at += size
+            val last = at >= sealed.size
+            plain.write(
+                ExportCrypto.decrypt(
+                    key, ExportCrypto.chunkNonce(prefix, index), frame,
+                    ExportCrypto.frameAad(index, last),
+                ),
+            )
+            index += 1
+        }
+        return plain.toByteArray()
+    }
+
+    /**
+     * The inner container's entry names, by unsealing the payload by hand.
+     *
+     * **Deliberately not through `open`**, which reads the inner zip and deletes
+     * it. This walks the published format the way `tools/decrypt/` does: read
+     * the outer manifest, derive the key from what the file says, then read
+     * frames. If this ever stops working, the standalone tool has stopped
+     * working too, and that is the promise the whole two-layer shape is for.
+     */
+    private fun innerNames(target: File): List<String> {
+        val outer = java.util.zip.ZipInputStream(target.inputStream()).use { zip ->
+            buildMap<String, ByteArray> {
+                var entry = zip.nextEntry
+                while (entry != null) {
+                    put(entry.name, zip.readBytes())
+                    zip.closeEntry()
+                    entry = zip.nextEntry
+                }
+            }
+        }
+        val encryption = org.json.JSONObject(
+            outer.getValue(ExportContainer.OUTER_MANIFEST).decodeToString(),
+        ).getJSONObject("encryption")
+        val key = ExportCrypto.derive(
+            passphrase = secret,
+            salt = android.util.Base64.decode(encryption.getString("salt"), android.util.Base64.NO_WRAP),
+            iterations = encryption.getInt("kdf_iterations"),
+            memoryKib = encryption.getInt("kdf_memory_kib"),
+            parallelism = encryption.getInt("kdf_parallelism"),
+        )
+        val prefix = android.util.Base64.decode(
+            encryption.getString("nonce_prefix"), android.util.Base64.NO_WRAP,
+        )
+        val plain = unsealByHand(outer.getValue(ExportContainer.PAYLOAD), key, prefix)
+        ExportCrypto.wipe(key)
+        return java.util.zip.ZipInputStream(plain.inputStream()).use { zip ->
+            generateSequence { zip.nextEntry }.map { it.name }.toList()
+        }
+    }
 
     private fun problemFrom(result: Result<ExportContainer.Opened>): ExportContainer.Problem {
         val error = result.exceptionOrNull()

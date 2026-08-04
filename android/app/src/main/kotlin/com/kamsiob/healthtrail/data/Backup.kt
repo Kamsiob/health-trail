@@ -91,6 +91,14 @@ object Backup {
                     rowCounts = rowCounts(database.database),
                     subjectCount = countOf(database.database, "subject"),
                     exportedAt = exportedAt,
+                    // **The contract's own schema file, shipped whole.** The
+                    // build copies `contract/schema.sql` into the assets, so
+                    // what travels inside somebody's archive is the real DDL
+                    // with its reasoning in comments rather than a summary of
+                    // it that could drift.
+                    schemaSql = context.assets
+                        .open(com.kamsiob.healthtrail.contract.ContractAssets.SCHEMA_PATH)
+                        .use { it.readBytes().decodeToString() },
                 ),
                 passphrase = passphrase,
             )

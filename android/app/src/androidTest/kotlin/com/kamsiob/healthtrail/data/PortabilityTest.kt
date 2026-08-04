@@ -71,17 +71,25 @@ class PortabilityTest {
             passphrase = "a passphrase for the tests".toCharArray(),
         )
 
-        val header = databaseHeaderIn(target)
-
-        assertFalse(
-            "The payload inside the export is a plain SQLite file, readable by " +
-                "anyone who opens the archive. That is the whole record of " +
-                "somebody's care in the clear, in a file that a backup agent or a " +
-                "cloud sync may copy anywhere. Since format version 2 every export " +
-                "is encrypted and there is no path that writes one without a " +
-                "passphrase. D67.",
-            header.contentEquals(sqliteMagic),
-        )
+        // **Asked of every byte in the outer layer, not of one named entry.**
+        // Version 2 kept the database as an entry of the outer zip, so this
+        // looked for that entry and read its header. Version 3 has no such entry
+        // at all, and a test that goes looking for one now throws instead of
+        // asserting, which is the shape of a check that quietly stops checking.
+        //
+        // What the property actually says is that nothing readable as a database
+        // sits outside the encryption, so that is what is asked: does the magic
+        // appear anywhere in anything a person can read without the passphrase.
+        for ((name, bytes) in outerEntries(target)) {
+            assertFalse(
+                "The export carries a plain SQLite file in $name, readable by " +
+                    "anyone who opens the archive. That is the whole record of " +
+                    "somebody's care in the clear, in a file that a backup agent or " +
+                    "a cloud sync may copy anywhere. Every export is encrypted and " +
+                    "there is no path that writes one without a passphrase. D67.",
+                containsMagic(bytes),
+            )
+        }
     }
 
     /**
@@ -134,16 +142,36 @@ class PortabilityTest {
         )
     }
 
-    private fun databaseHeaderIn(archive: File): ByteArray =
+    /** Everything in the outer layer, which is everything readable without the passphrase. */
+    private fun outerEntries(archive: File): Map<String, ByteArray> =
         ZipInputStream(archive.inputStream().buffered()).use { zip ->
-            var entry = zip.nextEntry
-            while (entry != null) {
-                if (entry.name == ExportContainer.DATABASE) {
-                    return@use zip.readNBytes(sqliteMagic.size)
+            buildMap {
+                var entry = zip.nextEntry
+                while (entry != null) {
+                    put(entry.name, zip.readBytes())
+                    zip.closeEntry()
+                    entry = zip.nextEntry
                 }
-                zip.closeEntry()
-                entry = zip.nextEntry
             }
-            throw AssertionError("the export has no database entry at all")
+        }.also {
+            assertTrue("the export has no entries at all", it.isNotEmpty())
         }
+
+    /**
+     * Whether a SQLite file's opening bytes appear anywhere in these.
+     *
+     * Anywhere rather than at the front, because the question is whether a
+     * database is sitting in the clear, not whether one is sitting in the clear
+     * at a convenient offset.
+     */
+    private fun containsMagic(bytes: ByteArray): Boolean {
+        if (bytes.size < sqliteMagic.size) return false
+        outer@ for (start in 0..bytes.size - sqliteMagic.size) {
+            for (at in sqliteMagic.indices) {
+                if (bytes[start + at] != sqliteMagic[at]) continue@outer
+            }
+            return true
+        }
+        return false
+    }
 }

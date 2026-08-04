@@ -101,14 +101,81 @@ internal object ExportCrypto {
     fun randomNonce(): ByteArray = ByteArray(NONCE_BYTES).also { SecureRandom().nextBytes(it) }
 
     /**
+     * How much plaintext goes into one frame of the payload.
+     *
+     * **The payload is encrypted in frames rather than in one call**, because a
+     * single call needs the whole archive in memory at once and the contract
+     * requires this to work past four gigabytes. A megabyte is large enough that
+     * the per frame overhead is nothing and small enough that the phone never
+     * holds more than a megabyte of somebody's record in the clear.
+     */
+    const val CHUNK_BYTES = 1 shl 20
+
+    /** The random half of a frame nonce. The other eight bytes are the counter. */
+    const val NONCE_PREFIX_BYTES = 4
+
+    fun randomNoncePrefix(): ByteArray =
+        ByteArray(NONCE_PREFIX_BYTES).also { SecureRandom().nextBytes(it) }
+
+    /**
+     * The nonce for one frame: a per file random prefix and a counter.
+     *
+     * **Never random per frame.** Random 96 bit nonces collide at a rate that is
+     * fine for a handful of messages and not fine for the millions of frames a
+     * large archive would have, and a collision under one key breaks GCM
+     * outright. A counter cannot collide within a file, and the prefix is what
+     * keeps two files from sharing a nonce space.
+     */
+    fun chunkNonce(prefix: ByteArray, index: Long): ByteArray {
+        require(prefix.size == NONCE_PREFIX_BYTES) { "the nonce prefix is the wrong size" }
+        val nonce = ByteArray(NONCE_BYTES)
+        prefix.copyInto(nonce)
+        for (byte in 0 until 8) {
+            nonce[NONCE_PREFIX_BYTES + byte] = (index ushr (56 - 8 * byte)).toByte()
+        }
+        return nonce
+    }
+
+    /**
+     * What each frame authenticates besides its own bytes: where it sits and
+     * whether the file ends with it.
+     */
+    fun frameAad(index: Long, last: Boolean): ByteArray {
+        val aad = ByteArray(9)
+        for (byte in 0 until 8) aad[byte] = (index ushr (56 - 8 * byte)).toByte()
+        aad[8] = if (last) 1 else 0
+        return aad
+    }
+
+    /**
      * Encrypts, returning ciphertext with the authentication tag appended.
      *
      * GCM authenticates as well as encrypts, so a file altered by one byte
      * fails to decrypt rather than decrypting into something subtly wrong. For
      * a medical record that distinction is the whole reason to prefer it.
      */
-    fun encrypt(key: ByteArray, nonce: ByteArray, plaintext: ByteArray): ByteArray =
-        cipher(Cipher.ENCRYPT_MODE, key, nonce).doFinal(plaintext)
+    fun encrypt(
+        key: ByteArray,
+        nonce: ByteArray,
+        plaintext: ByteArray,
+        /**
+         * Authenticated but not encrypted, and the payload's frames use it to
+         * carry their own position and whether they are the last.
+         *
+         * **Belt and braces, and this says so rather than overclaiming.** Two
+         * other things already resist the attacks this is aimed at: a frame
+         * moved to another position decrypts under the wrong nonce, because the
+         * nonce carries the counter, and a payload with its tail cut off leaves
+         * a zip whose central directory is gone. Both were probed by removing
+         * this binding and watching the checks stay green.
+         *
+         * It is kept because it costs nothing and because the structural
+         * protection is an accident of what is inside the payload today. The day
+         * something other than a zip goes in there, this is what is left.
+         */
+        aad: ByteArray? = null,
+    ): ByteArray =
+        cipher(Cipher.ENCRYPT_MODE, key, nonce).also { aad?.let(it::updateAAD) }.doFinal(plaintext)
 
     /**
      * Decrypts, or throws.
@@ -119,8 +186,13 @@ internal object ExportCrypto {
      * somebody their file is corrupt when they mistyped is as bad as the
      * reverse.
      */
-    fun decrypt(key: ByteArray, nonce: ByteArray, ciphertext: ByteArray): ByteArray =
-        cipher(Cipher.DECRYPT_MODE, key, nonce).doFinal(ciphertext)
+    fun decrypt(
+        key: ByteArray,
+        nonce: ByteArray,
+        ciphertext: ByteArray,
+        aad: ByteArray? = null,
+    ): ByteArray =
+        cipher(Cipher.DECRYPT_MODE, key, nonce).also { aad?.let(it::updateAAD) }.doFinal(ciphertext)
 
     private fun cipher(mode: Int, key: ByteArray, nonce: ByteArray): Cipher =
         Cipher.getInstance(TRANSFORMATION).apply {

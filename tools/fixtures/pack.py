@@ -38,6 +38,7 @@ Kamsiob, AGPL-3.0.
 import argparse
 import base64
 import hashlib
+import io
 import json
 import os
 import sqlite3
@@ -56,10 +57,19 @@ from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 ROOT = Path(__file__).resolve().parents[2]
 CRYPTO = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/data/ExportCrypto.kt"
 
-FORMAT_VERSION = 2
-MANIFEST = "manifest.json"
-DATABASE = "data.sqlite"
+FORMAT_VERSION = 3
+MANIFEST = "MANIFEST.json"
+README = "README.txt"
+PAYLOAD = "payload.enc"
+INNER_MANIFEST = "MANIFEST.json"
+CHECKSUMS = "CHECKSUMS.txt"
+DATABASE = "data/trail.sqlite"
+SCHEMA = "data/schema.sql"
 ATTACHMENTS = "attachments/"
+
+# The frame size the app writes. Read from the Kotlin below rather than pinned,
+# for the same reason the Argon2 costs are.
+FRAME_HEADER_BYTES = 4
 
 
 def crypto_constants() -> dict:
@@ -72,11 +82,20 @@ def crypto_constants() -> dict:
         "KEY_BITS": None,
         "SALT_BYTES": None,
         "NONCE_BYTES": None,
+        "NONCE_PREFIX_BYTES": None,
+        "CHUNK_BYTES": None,
     }
     for name in wanted:
         for line in text.splitlines():
             if f"const val {name}" in line:
-                wanted[name] = int(line.split("=")[1].strip())
+                value = line.split("=", 1)[1].strip()
+                # `1 shl 20` is Kotlin for a megabyte, and reading it rather
+                # than pinning the number is the point of this whole function.
+                if "shl" in value:
+                    left, right = value.split("shl")
+                    wanted[name] = int(left.strip()) << int(right.strip())
+                else:
+                    wanted[name] = int(value)
                 break
         if wanted[name] is None:
             raise SystemExit(f"could not read {name} from ExportCrypto.kt")
@@ -112,16 +131,37 @@ def subject_count(path: Path) -> int:
         db.close()
 
 
-def nonce_for(name: str, length: int) -> bytes:
-    """A nonce for one attachment, from its content hash.
+def chunk_nonce(prefix: bytes, index: int) -> bytes:
+    """Frame N's nonce: the file's random prefix, then N as eight big-endian bytes.
 
-    The same rule `ExportContainer.nonceFor` uses: the file's name **is** its
-    SHA-256, so it is unique within the archive by construction, which is
-    exactly the property a nonce needs, and the first twelve bytes of the hash
-    of that name give a distinct nonce per file without storing one each in the
-    manifest.
+    The same rule `ExportCrypto.chunkNonce` uses. Never random per frame: random
+    96 bit nonces collide at a rate that is fine for a handful of messages and
+    not fine for the millions of frames a large archive would have, and a
+    collision under one key breaks GCM outright.
     """
-    return hashlib.sha256(name.encode("utf-8")).digest()[:length]
+    return prefix + index.to_bytes(8, "big")
+
+
+def frame_aad(index: int, last: bool) -> bytes:
+    """What a frame authenticates besides itself: where it sits, and whether it ends the file.
+
+    Without the last byte a stream can be cut short and every remaining frame
+    still verifies, so what comes out decrypts perfectly and is missing a year.
+    """
+    return index.to_bytes(8, "big") + (b"\x01" if last else b"\x00")
+
+
+def seal(aes, prefix: bytes, plain: bytes, chunk: int) -> bytes:
+    """The payload, framed and encrypted, exactly as the app writes it."""
+    out = bytearray()
+    frames = max(1, (len(plain) + chunk - 1) // chunk)
+    for index in range(frames):
+        piece = plain[index * chunk:(index + 1) * chunk]
+        sealed = aes.encrypt(
+            chunk_nonce(prefix, index), piece, frame_aad(index, index == frames - 1),
+        )
+        out += len(sealed).to_bytes(FRAME_HEADER_BYTES, "big") + sealed
+    return bytes(out)
 
 
 def filler(row_id: str, size: int) -> bytes:
@@ -235,7 +275,7 @@ def pack(database: Path, target: Path, passphrase: str, exported_at: int) -> Non
 
     constants = crypto_constants()
     salt = os.urandom(constants["SALT_BYTES"])
-    nonce = os.urandom(constants["NONCE_BYTES"])
+    prefix = os.urandom(constants["NONCE_PREFIX_BYTES"])
 
     key = Argon2id(
         salt=salt,
@@ -246,15 +286,6 @@ def pack(database: Path, target: Path, passphrase: str, exported_at: int) -> Non
     ).derive(passphrase.encode("utf-8"))
 
     aes = AESGCM(key)
-    stored = aes.encrypt(nonce, plain, None)
-
-    # **Each attachment gets its own nonce, derived the way the app derives
-    # it.** Reusing one nonce under one key is the mistake that breaks GCM
-    # outright rather than merely weakening it.
-    packed_attachments = [
-        (digest, aes.encrypt(nonce_for(digest, constants["NONCE_BYTES"]), body, None))
-        for digest, body in attachments
-    ]
 
     manifest = {
         "format_version": FORMAT_VERSION,
@@ -273,38 +304,86 @@ def pack(database: Path, target: Path, passphrase: str, exported_at: int) -> Non
             "kdf_memory_kib": constants["MEMORY_KIB"],
             "kdf_parallelism": constants["PARALLELISM"],
             "salt": base64.b64encode(salt).decode("ascii"),
-            "nonce": base64.b64encode(nonce).decode("ascii"),
+            "nonce_prefix": base64.b64encode(prefix).decode("ascii"),
+            "chunk_bytes": constants["CHUNK_BYTES"],
         },
         "database": {
-            # **Hashed as stored**, meaning the ciphertext, which is what the
-            # importer checks before it has a key to decrypt anything with.
-            "sha256": hashlib.sha256(stored).hexdigest(),
-            "byte_size": len(stored),
+            # **Hashed as it sits inside the payload**, which is the plain
+            # database, since version 3 puts the hash inside the encryption.
+            "sha256": hashlib.sha256(plain).hexdigest(),
+            "byte_size": len(plain),
             "schema_version": FORMAT_VERSION,
             "row_counts": row_counts(database),
         },
         "attachments": {
-            "count": len(packed_attachments),
-            "total_bytes": sum(len(b) for _, b in packed_attachments),
+            "count": len(attachments),
+            "total_bytes": sum(len(b) for _, b in attachments),
         },
         "subject_count": subject_count(database),
     }
 
-    # The manifest is written last and stored first, per section 6 of the
-    # format: its hash describes the payload, so the payload has to exist
-    # before it can be true, and a reader has to be able to say what a file is
-    # before it can ask for a passphrase.
+    # -- the inner container, which is an ordinary zip ------------------------
+
+    readme = (
+        "WHAT THIS FILE IS\n\n"
+        "This is a Health Trail archive, written by the fixture generator in\n"
+        "tools/fixtures/. It holds a made up notebook, not anybody's record.\n\n"
+        "The format is specified byte for byte at contract/EXPORT-FORMAT.md and a\n"
+        "tool that opens it is at tools/decrypt/ in the same repository.\n"
+    )
+    schema = (Path(__file__).resolve().parents[2] / "contract" / "schema.sql").read_text()
+
+    inner = io.BytesIO()
+    checksums = {}
+    with zipfile.ZipFile(inner, "w", zipfile.ZIP_DEFLATED) as payload:
+        def put(name: str, body: bytes, method=zipfile.ZIP_DEFLATED) -> None:
+            payload.writestr(name, body, method)
+            checksums[name] = hashlib.sha256(body).hexdigest()
+
+        put(README, readme.encode("ascii"))
+        put(INNER_MANIFEST, json.dumps(manifest, indent=2, sort_keys=True).encode("utf-8"))
+        put(DATABASE, plain, zipfile.ZIP_STORED)
+        put(SCHEMA, schema.encode("utf-8"))
+        for digest, body in attachments:
+            put(ATTACHMENTS + digest, body, zipfile.ZIP_STORED)
+        payload.writestr(
+            CHECKSUMS,
+            "".join(f"{h}  {n}\n" for n, h in sorted(checksums.items())).encode("ascii"),
+        )
+
+    sealed = seal(aes, prefix, inner.getvalue(), constants["CHUNK_BYTES"])
+
+    # -- the outer layer, which says nothing about anybody --------------------
+
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
-        archive.writestr(MANIFEST, json.dumps(manifest, indent=2, sort_keys=True))
-        archive.writestr(DATABASE, stored, zipfile.ZIP_STORED)
-        for digest, body in packed_attachments:
-            archive.writestr(ATTACHMENTS + digest, body, zipfile.ZIP_STORED)
+        archive.writestr(MANIFEST, json.dumps(manifest_public(manifest), indent=2, sort_keys=True))
+        archive.writestr(README, readme)
+        archive.writestr(PAYLOAD, sealed, zipfile.ZIP_STORED)
 
     print(f"{target}  {target.stat().st_size:,} bytes")
     print(f"  {manifest['subject_count']} subject(s), "
           f"{sum(manifest['database']['row_counts'].values()):,} rows")
-    print(f"  {len(packed_attachments)} attachment(s)")
+    print(f"  {len(attachments)} attachment(s)")
     print(f"  open it from More, Restore from a file")
+
+
+def manifest_public(manifest: dict) -> dict:
+    """The outer manifest: the header, and nothing that describes the person.
+
+    `contract/DATA-CONTRACT.md` 8.1 lists what may sit in the clear. Row counts
+    alone are a profile, so the subset is written out here explicitly rather
+    than by deleting keys, which is the direction that fails safe when somebody
+    adds a field to the manifest and forgets this exists.
+    """
+    return {
+        "format_version": manifest["format_version"],
+        "app_version": manifest["app_version"],
+        "platform": manifest["platform"],
+        "schema_version": manifest["database"]["schema_version"],
+        "exported_at": manifest["exported_at"],
+        "encrypted": manifest["encrypted"],
+        "encryption": manifest["encryption"],
+    }
 
 
 def main() -> int:

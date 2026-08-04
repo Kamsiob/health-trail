@@ -382,7 +382,10 @@ class RoundTripTest {
         assertEquals(ExportCrypto.ITERATIONS, parameters.iterations)
         assertEquals(ExportCrypto.MEMORY_KIB, parameters.memoryKib)
         assertTrue("no salt recorded", parameters.salt.isNotEmpty())
-        assertTrue("no nonce recorded", parameters.nonce.isNotEmpty())
+        assertTrue("no nonce prefix recorded", parameters.noncePrefix.isNotEmpty())
+        // Recorded so a reader can size its buffers without guessing, and so a
+        // later build can change the frame size without stranding this file.
+        assertEquals(ExportCrypto.CHUNK_BYTES, parameters.chunkBytes)
     }
 
     @Test
@@ -460,7 +463,7 @@ class RoundTripTest {
         // like the manifest had been encrypted along with the payload.
         val manifestText = java.util.zip.ZipInputStream(archive.inputStream()).use { zip ->
             generateSequence { zip.nextEntry }
-                .firstOrNull { it.name == ExportContainer.MANIFEST }
+                .firstOrNull { it.name == ExportContainer.OUTER_MANIFEST }
                 ?.let { zip.readBytes().decodeToString() }
         }
         assertTrue(

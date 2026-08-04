@@ -45,55 +45,77 @@ object ExportContainer {
     /**
      * The container format this build writes.
      *
-     * **Version 2, and the change is that a passphrase is required.**
+     * **Version 3, and the change is that the container has two layers.**
      *
-     * Version 1 allowed an unencrypted export and offered it plainly, on the
-     * reasoning that it is the person's data and wanting to read it is
-     * reasonable. That reasoning was sound for what version 1 wrote: the
-     * payload was the SQLCipher file as it sat on disk, so an unencrypted
-     * container still held bytes nothing could read without this phone's
-     * Keystore.
+     * Version 2 required a passphrase and encrypted every entry of one zip
+     * separately. That kept the record safe and left the archive readable only
+     * by something that knew the per entry nonce rule, which is a format one
+     * program can open wearing the clothes of a format anyone can.
      *
-     * **Making the export portable changed what an unencrypted one is.** The
-     * payload is now a plain SQLite database, which is exactly what makes it
-     * openable on another machine and is the whole point of D61. An unencrypted
-     * export is therefore a fully readable copy of somebody's entire care
-     * record: every call, every diagnosis in a note, every medication, every
-     * bill, sitting in a folder that a file manager, a backup agent, or a cloud
-     * sync may pick up and copy somewhere the person never chose.
+     * **Version 3 draws the line where `contract/DATA-CONTRACT.md` 8.1 draws
+     * it.** The outer layer is a plain ZIP64 holding exactly three things:
+     * `README.txt`, `MANIFEST.json`, and `payload.enc`. Nothing in it says
+     * anything about the person. The inner layer, once decrypted, is an
+     * ordinary zip with the whole record in it, and it is ordinary on purpose:
+     * a stranger with the passphrase and the published specification gets a
+     * folder, not a puzzle.
      *
-     * The same property that fixed the recovery path is what makes the plain
-     * file dangerous, so the decision that was right at version 1 is wrong at
-     * version 2. **A passphrase is required and there is no way to ask for a
-     * file without one.** D67.
+     * **Nothing released ever wrote version 1 or 2.** Both existed only inside
+     * this project's own development, so version 3 does not carry a reader for
+     * them: what it carries is an honest refusal that says which build wrote the
+     * file. Compatibility with a version nobody has is code that can only ever
+     * be wrong in ways nobody will find. D96.
      *
-     * The importer still reads a version 1 file, because refusing one would
-     * destroy a real backup to make a point. What it refuses is an unencrypted
-     * export of any version, and it says exactly what the file is rather than
-     * failing generically.
+     * The plain-file refusal stands and is now stronger, because an unencrypted
+     * archive cannot be expressed in this format at all: `payload.enc` is the
+     * only place data can go. D67.
      */
-    const val FORMAT_VERSION = 2
-    const val MANIFEST = "manifest.json"
+    const val FORMAT_VERSION = 3
 
     /**
-     * Everything about the archive that would say something about the person.
+     * The three things the outer layer holds, and it holds nothing else.
      *
-     * **Encrypted, because the outer manifest must not describe the record.**
-     * `contract/DATA-CONTRACT.md` section 8.1: nothing in the outer layer
-     * reveals anything about the person or their record, and only the format
-     * version, the app and schema versions, the export timestamp and the key
-     * derivation parameters may sit in the clear.
-     *
-     * Row counts alone are a profile. "23 appointments, 9 chapters, 1,630
-     * entries, 6 years" describes how ill somebody has been and for how long,
-     * to anything that can read the file without the passphrase: a backup
-     * agent, a cloud sync, a file manager preview.
+     * `contract/DATA-CONTRACT.md` 8.1. The names are capitalized because they
+     * are what a person sees when they open the file with an ordinary zip tool,
+     * and a capital README is the fifty year old convention for "start here".
      */
-    const val PRIVATE_MANIFEST = "manifest-private.json"
+    const val OUTER_MANIFEST = "MANIFEST.json"
+    const val OUTER_README = "README.txt"
+    const val PAYLOAD = "payload.enc"
 
-    /** Written for a stranger who found the file. Section 8.1. */
-    const val README = "README.txt"
-    const val DATABASE = "data.sqlite"
+    /**
+     * The inner layout, exactly as 8.1 draws it.
+     *
+     * **The database is `data/trail.sqlite` rather than `data.sqlite`**, which
+     * is a rename version 3 makes deliberately: the inner container groups the
+     * machine copy under `data/` beside the schema it was written against, so
+     * somebody looking at the folder can see that the two belong together.
+     */
+    const val INNER_README = "README.txt"
+    const val INNER_MANIFEST = "MANIFEST.json"
+
+    /**
+     * SHA-256 of every other file in the inner container, one per line.
+     *
+     * **It is not a security measure and does not pretend to be.** It sits
+     * inside the encryption, so anything that could forge it could forge the
+     * files it describes. It is there so somebody who copied this archive across
+     * four machines over ten years can tell which file went bad, in the format
+     * every operating system's checksum tool already speaks.
+     */
+    const val CHECKSUMS = "CHECKSUMS.txt"
+    const val DATABASE = "data/trail.sqlite"
+
+    /**
+     * The schema the payload was written against, as commented DDL.
+     *
+     * **So the database can be understood without this app or its source.** A
+     * SQLite file tells you its columns and nothing about what they mean;
+     * `contract/schema.sql` is written with the reasoning in comments, and it is
+     * shipped here rather than summarized so that what travels with somebody's
+     * archive is the real thing.
+     */
+    const val SCHEMA = "data/schema.sql"
     const val ATTACHMENTS = "attachments/"
 
     /**
@@ -161,7 +183,17 @@ object ExportContainer {
         val memoryKib: Int,
         val parallelism: Int,
         val salt: String,
-        val nonce: String,
+        /**
+         * The random four bytes every frame nonce begins with.
+         *
+         * **Not a whole nonce, because the payload is not one message.** Each
+         * frame's nonce is this prefix followed by its own eight byte counter,
+         * so a file of ten thousand frames uses ten thousand distinct nonces
+         * under one key without carrying ten thousand of them here.
+         */
+        val noncePrefix: String,
+        /** How much plaintext one frame holds, so a reader can size its buffers. */
+        val chunkBytes: Int,
     )
 
     /**
@@ -183,6 +215,17 @@ object ExportContainer {
         val rowCounts: Map<String, Int>,
         val subjectCount: Int,
         val exportedAt: Long,
+        /**
+         * `contract/schema.sql`, as commented DDL, to ship beside the database.
+         *
+         * **Passed in rather than read here**, because this object has no
+         * Android context and should not grow one: it is the format, and the
+         * format does not know where an app keeps its assets. The caller reads
+         * it from `contract/schema.sql` in the assets, which the build copies
+         * from the contract itself, so what travels with somebody's archive is
+         * the real file and not a summary of it.
+         */
+        val schemaSql: String,
     )
 
     /**
@@ -209,18 +252,16 @@ object ExportContainer {
          * is a passphrase in a heap dump, and this one opens the only copy of
          * somebody's records.
          *
-         * **There is no default, and null is not for production.** Passing null
-         * writes a plain readable copy of the whole notebook, which no path a
-         * person can reach is allowed to do since format version 2. It stays
-         * possible only so the container's own tests can build the unencrypted
-         * file that [open] must refuse, and a test that builds one has to say
-         * so at the call site. A defaulted null would make the dangerous case
-         * the one you get by not thinking about it. D67.
+         * **It is not nullable any more.** Version 2 allowed null so the
+         * container's own test could build the unencrypted file that [open] must
+         * refuse. In version 3 an unencrypted archive cannot be expressed at
+         * all, because `payload.enc` is the only place data can go, so the test
+         * assembles a legacy shaped file by hand instead. That is the stronger
+         * test: it proves the refusal catches a file this code could not have
+         * written. D67.
          */
-        passphrase: CharArray?,
+        passphrase: CharArray,
     ): Manifest = withContext(Dispatchers.IO) {
-        val plainDatabase = source.database.readBytes()
-
         // Rendered before the manifest, because the manifest reports how many
         // pages there are and a count written before the pages exist is a claim
         // rather than a fact.
@@ -228,40 +269,97 @@ object ExportContainer {
 
         // Fresh per file. Reusing a nonce under one key is the mistake that
         // breaks GCM outright rather than merely weakening it.
-        val salt = passphrase?.let { ExportCrypto.randomSalt() }
-        val nonce = passphrase?.let { ExportCrypto.randomNonce() }
-        val key = passphrase?.let { ExportCrypto.derive(it, salt!!) }
-        passphrase?.fill('\u0000')
+        val salt = ExportCrypto.randomSalt()
+        val noncePrefix = ExportCrypto.randomNoncePrefix()
+        val key = ExportCrypto.derive(passphrase, salt)
+        passphrase.fill('\u0000')
 
-        val databaseBytes = if (key != null) {
-            ExportCrypto.encrypt(key, nonce!!, plainDatabase)
-        } else {
-            plainDatabase
+        target.parentFile?.mkdirs()
+
+        // **The inner container is built on disk, not in memory.** It holds the
+        // database and every attachment, which is gigabytes on a real notebook,
+        // and the whole reason the payload is framed is that this must work at
+        // that size. Staged beside the target so it lands on the same volume.
+        val staged = File(target.parentFile, "${target.name}.building")
+        val manifest: Manifest
+        try {
+            manifest = buildInner(staged, source, readable, salt, noncePrefix)
+
+            ZipOutputStream(target.outputStream().buffered()).use { zip ->
+                // **The manifest first in the file**, so a reader can learn the
+                // format version and the key derivation parameters from the
+                // front of a stream without seeking, which is what lets a tool
+                // read a very large archive without holding it.
+                zip.putNextEntry(ZipEntry(OUTER_MANIFEST))
+                zip.write(manifest.toPublicJson().toString(2).toByteArray())
+                zip.closeEntry()
+
+                // **Written for a stranger who found this file and has the
+                // passphrase.** Section 8.1. ASCII only, no markup, because it
+                // has to be readable by whatever opens a text file in ten years.
+                zip.putNextEntry(ZipEntry(OUTER_README))
+                zip.write(readmeText(manifest).toByteArray(Charsets.US_ASCII))
+                zip.closeEntry()
+
+                // **Stored rather than deflated.** The payload is ciphertext,
+                // which does not compress, so deflating it costs time to make it
+                // very slightly larger. Its own entries were compressed inside.
+                val payload = ZipEntry(PAYLOAD).apply { method = ZipEntry.STORED }
+                sealPayload(zip, payload, staged, key, noncePrefix)
+            }
+        } finally {
+            // The staged inner container is the whole record in the clear. It
+            // does not outlive this function on any path, including a failure.
+            staged.delete()
+            ExportCrypto.wipe(key)
         }
+        manifest
+    }
+
+    /**
+     * Builds the inner container: the layout 8.1 draws, as an ordinary zip.
+     *
+     * **Ordinary is the requirement, not an implementation detail.** Somebody
+     * with the passphrase and the published format gets a folder they can read
+     * with tools that already exist, which is what "openable by someone who does
+     * not have this app" means in practice.
+     *
+     * The manifest is written into the inner container in full, counts and all,
+     * because everything in here is inside the encryption. The outer one is the
+     * same object with the describing half left out.
+     */
+    private fun buildInner(
+        staged: File,
+        source: Source,
+        readable: Map<String, String>,
+        salt: ByteArray,
+        noncePrefix: ByteArray,
+    ): Manifest {
+        val plainDatabase = source.database.readBytes()
         val manifest = Manifest(
             formatVersion = FORMAT_VERSION,
             appVersion = source.appVersion,
             platform = "android",
             exportedAt = source.exportedAt,
             originDevice = source.originDevice,
-            encrypted = key != null,
-            encryption = key?.let {
-                Encryption(
-                    algorithm = "AES-256-GCM",
-                    kdf = "Argon2id",
-                    iterations = ExportCrypto.ITERATIONS,
-                    memoryKib = ExportCrypto.MEMORY_KIB,
-                    parallelism = ExportCrypto.PARALLELISM,
-                    salt = base64(salt!!),
-                    nonce = base64(nonce!!),
-                )
-            },
-            // **Hashed as stored**, meaning the ciphertext when encrypted. The
-            // hash exists so a reader can tell a truncated file from a whole
-            // one before asking for a passphrase, which it could not do if the
-            // hash described bytes it cannot yet see.
-            databaseSha256 = Attachments.sha256(databaseBytes),
-            databaseBytes = databaseBytes.size.toLong(),
+            encrypted = true,
+            encryption = Encryption(
+                algorithm = "AES-256-GCM",
+                kdf = "Argon2id",
+                iterations = ExportCrypto.ITERATIONS,
+                memoryKib = ExportCrypto.MEMORY_KIB,
+                parallelism = ExportCrypto.PARALLELISM,
+                salt = base64(salt),
+                noncePrefix = base64(noncePrefix),
+                chunkBytes = ExportCrypto.CHUNK_BYTES,
+            ),
+            // **Hashed as it sits inside the payload**, which is the plain
+            // database. In version 2 this hashed the ciphertext so a reader
+            // could check a file before asking for a passphrase; now the hash
+            // lives inside the encryption anyway, so it describes the thing
+            // somebody actually wants checked.
+            databaseSha256 = Attachments.sha256(plainDatabase),
+            databaseBytes = plainDatabase.size.toLong(),
             rowCounts = source.rowCounts,
             attachmentCount = source.attachments.size,
             attachmentBytes = source.attachments.sumOf { it.length() },
@@ -269,85 +367,154 @@ object ExportContainer {
             readablePages = readable.size,
         )
 
-        target.parentFile?.mkdirs()
-        ZipOutputStream(target.outputStream().buffered()).use { zip ->
-            zip.putNextEntry(ZipEntry(MANIFEST))
-            zip.write(manifest.toPublicJson().toString(2).toByteArray())
-            zip.closeEntry()
+        // Every file's hash, gathered as it is written, for CHECKSUMS.txt.
+        val checksums = sortedMapOf<String, String>()
 
-            // **Written for a stranger who found this file and has the
-            // passphrase.** Section 8.1. ASCII only, no markup, because it has
-            // to be readable by whatever opens a text file in ten years.
-            zip.putNextEntry(ZipEntry(README))
-            zip.write(readmeText(manifest).toByteArray(Charsets.US_ASCII))
-            zip.closeEntry()
-
-            // Everything that would describe the person goes inside the
-            // encryption, per section 8.1.
-            zip.putNextEntry(ZipEntry(PRIVATE_MANIFEST))
-            val privateBytes = manifest.toPrivateJson().toString(2).toByteArray()
-            zip.write(
-                if (key != null) {
-                    ExportCrypto.encrypt(key, nonceFor(PRIVATE_MANIFEST), privateBytes)
-                } else {
-                    privateBytes
-                },
-            )
-            zip.closeEntry()
-
-            zip.putNextEntry(ZipEntry(DATABASE))
-            zip.write(databaseBytes)
-            zip.closeEntry()
-
-            // **The readable copy, rendered from the same staged database the
-            // payload carries**, so the two halves of the archive cannot
-            // disagree. An archive whose readable copy said something different
-            // from its SQLite would be the silent partial correctness section 8
-            // opens by calling worse than an honest failure.
-            //
-            // It is written from the plain file before encryption, and it goes
-            // inside the encrypted payload with everything else, because it is
-            // the person's whole record in prose and is if anything more
-            // sensitive than the database.
-            readable.forEach { (path, html) ->
-                zip.putNextEntry(ZipEntry(READABLE + path))
-                val bytes = html.toByteArray(Charsets.UTF_8)
-                if (key != null) {
-                    // **Encrypted like everything else, and this was wrong once.**
-                    // The first version wrote these pages in the clear, which put
-                    // the person's entire record in prose into a file anything
-                    // with access to the folder could read. That is worse than
-                    // the plain database D67 removed, because prose needs no
-                    // tooling at all: a file manager preview would show it.
-                    //
-                    // A nonce derived from the page's own path, which is unique
-                    // within the archive, so every page gets a distinct nonce
-                    // under one key without the manifest carrying one per page.
-                    zip.write(ExportCrypto.encrypt(key, nonceFor(READABLE + path), bytes))
-                } else {
-                    zip.write(bytes)
-                }
+        ZipOutputStream(staged.outputStream().buffered()).use { zip ->
+            fun put(name: String, bytes: ByteArray) {
+                zip.putNextEntry(ZipEntry(name))
+                zip.write(bytes)
                 zip.closeEntry()
+                checksums[name] = Attachments.sha256(bytes)
+            }
+
+            put(INNER_README, innerReadmeText(manifest).toByteArray(Charsets.US_ASCII))
+            put(INNER_MANIFEST, manifest.toFullJson().toString(2).toByteArray())
+            put(DATABASE, plainDatabase)
+            put(SCHEMA, source.schemaSql.toByteArray(Charsets.UTF_8))
+
+            // **Rendered from the same staged database the payload carries**, so
+            // the two halves of the archive cannot disagree. An archive whose
+            // readable copy said something different from its SQLite would be
+            // the silent partial correctness section 8 opens by calling worse
+            // than an honest failure.
+            readable.forEach { (path, html) ->
+                put(READABLE + path, html.toByteArray(Charsets.UTF_8))
             }
 
             source.attachments.forEach { file ->
-                zip.putNextEntry(ZipEntry(ATTACHMENTS + file.name))
-                if (key != null) {
-                    // The same key, a nonce derived per attachment from the
-                    // file's own name, which is its content hash and therefore
-                    // unique within the archive. Deriving rather than storing
-                    // keeps the manifest a fixed size regardless of how many
-                    // attachments there are.
-                    zip.write(ExportCrypto.encrypt(key, nonceFor(file.name), file.readBytes()))
-                } else {
-                    file.inputStream().buffered().use { it.copyTo(zip) }
-                }
-                zip.closeEntry()
+                put(ATTACHMENTS + file.name, file.readBytes())
             }
+
+            // Last, because it describes everything above it. Not in its own
+            // list, for the same reason a checksum file never checksums itself.
+            zip.putNextEntry(ZipEntry(CHECKSUMS))
+            zip.write(checksumText(checksums).toByteArray(Charsets.US_ASCII))
+            zip.closeEntry()
         }
-        key?.let { ExportCrypto.wipe(it) }
-        manifest
+        return manifest
     }
+
+    /**
+     * Encrypts the staged inner container into `payload.enc`, a frame at a time.
+     *
+     * **Framed rather than sealed in one call**, because one call needs the
+     * whole archive in memory and the contract requires this to work past four
+     * gigabytes. Each frame is a four byte big-endian length followed by that
+     * many bytes of ciphertext with its tag.
+     *
+     * **Each frame authenticates its own position and whether it is the last**,
+     * through the additional data. Without that, frames verify individually and
+     * a stream can be cut short, reordered, or have frames dropped from the
+     * middle, and what comes out decrypts perfectly and is missing a year of
+     * somebody's record. That failure is silent, which makes it the worst kind
+     * this format could have.
+     */
+    private fun sealPayload(
+        zip: ZipOutputStream,
+        entry: ZipEntry,
+        staged: File,
+        key: ByteArray,
+        noncePrefix: ByteArray,
+    ) {
+        // **Sealed to a file first, then copied into the archive.** A stored zip
+        // entry has to declare its size and CRC before its bytes, and the only
+        // honest ways to know those are to hold the whole payload in memory or
+        // to write it once and measure it. On a notebook with four gigabytes of
+        // photographs the first is not available, so it is written out and
+        // streamed in, and neither the plaintext nor the ciphertext is ever held
+        // whole.
+        val sealed = File(staged.parentFile, "${staged.name}.enc")
+        val crc = java.util.zip.CRC32()
+        try {
+            val buffer = ByteArray(ExportCrypto.CHUNK_BYTES)
+            sealed.outputStream().buffered().use { out ->
+                staged.inputStream().buffered().use { input ->
+                    var index = 0L
+                    var filled = fill(input, buffer)
+                    do {
+                        // Read ahead by one frame, because a frame cannot say it
+                        // is the last until something has tried to read past it.
+                        val plain = buffer.copyOf(filled)
+                        val next = ByteArray(ExportCrypto.CHUNK_BYTES)
+                        val nextFilled = fill(input, next)
+                        val last = nextFilled == 0
+                        val frame = ExportCrypto.encrypt(
+                            key = key,
+                            nonce = ExportCrypto.chunkNonce(noncePrefix, index),
+                            plaintext = plain,
+                            aad = ExportCrypto.frameAad(index, last),
+                        )
+                        val header = frameHeader(frame.size)
+                        out.write(header)
+                        out.write(frame)
+                        crc.update(header)
+                        crc.update(frame)
+                        if (last) break
+                        next.copyInto(buffer)
+                        filled = nextFilled
+                        index += 1
+                    } while (true)
+                }
+            }
+
+            entry.size = sealed.length()
+            entry.compressedSize = sealed.length()
+            entry.crc = crc.value
+            zip.putNextEntry(entry)
+            sealed.inputStream().buffered().use { it.copyTo(zip) }
+            zip.closeEntry()
+        } finally {
+            sealed.delete()
+        }
+    }
+
+    /**
+     * Fills a buffer as far as the stream allows, returning how much it got.
+     *
+     * **A single `read` is allowed to return less than it was asked for**, and a
+     * framed format that treats a short read as the end of the stream writes a
+     * truncated archive on the day the storage is slow. Reading until the buffer
+     * is full or the stream is done is the only correct way to frame.
+     */
+    private fun fill(input: java.io.InputStream, buffer: ByteArray): Int {
+        var filled = 0
+        while (filled < buffer.size) {
+            val read = input.read(buffer, filled, buffer.size - filled)
+            if (read < 0) break
+            filled += read
+        }
+        return filled
+    }
+
+    /** A frame's four byte big-endian length, ahead of its ciphertext. */
+    private fun frameHeader(size: Int): ByteArray = byteArrayOf(
+        (size ushr 24).toByte(),
+        (size ushr 16).toByte(),
+        (size ushr 8).toByte(),
+        size.toByte(),
+    )
+
+    /** How many bytes a frame spends saying how long it is. */
+    private const val FRAME_HEADER_BYTES = 4
+
+    /**
+     * `CHECKSUMS.txt`, in the format every checksum tool already reads: the
+     * hash, two spaces, the path. Sorted, so two exports of one database
+     * produce the same file and 8.5's regeneration test can compare them.
+     */
+    private fun checksumText(checksums: Map<String, String>): String =
+        checksums.entries.joinToString("\n", postfix = "\n") { "${it.value}  ${it.key}" }
 
     /**
      * A nonce for one attachment, from its content hash.
@@ -403,7 +570,16 @@ object ExportContainer {
                 appendLine("  memory       " + encryption.memoryKib + " KiB")
                 appendLine("  parallelism  " + encryption.parallelism)
                 appendLine("The contents are then decrypted with " + encryption.algorithm + ".")
-                appendLine("The salt and nonce are in manifest.json beside this file.")
+                appendLine("The salt and the nonce prefix are in MANIFEST.json beside this file.")
+                appendLine()
+                appendLine("payload.enc is not one encrypted block. It is a run of frames, each")
+                appendLine("a four byte big-endian length followed by that many bytes of")
+                appendLine("ciphertext and its tag. Frame number N uses the nonce prefix")
+                appendLine("followed by N as eight big-endian bytes, and authenticates those")
+                appendLine("same eight bytes plus one byte that is 1 on the last frame and 0")
+                appendLine("otherwise. That last byte is what makes a truncated file fail")
+                appendLine("rather than open short. Each frame holds " + encryption.chunkBytes)
+                appendLine("bytes of the archive, except the last.")
                 appendLine()
             }
             appendLine("The format is specified byte for byte at:")
@@ -418,11 +594,18 @@ object ExportContainer {
             appendLine()
             appendLine("ONCE IT IS OPEN")
             appendLine()
+            appendLine("What comes out of payload.enc is an ordinary zip file. Inside it:")
+            appendLine()
+            appendLine("  README.txt          this again, from the inside")
+            appendLine("  MANIFEST.json       what the archive holds, in full")
+            appendLine("  CHECKSUMS.txt       SHA-256 of every file above, one per line")
+            appendLine("  data/trail.sqlite   the record, which any SQLite tool reads")
+            appendLine("  data/schema.sql     what every table and column in it means")
+            appendLine("  readable/           the record as ordinary web pages")
+            appendLine("  attachments/        the original photographs and documents")
+            appendLine()
             appendLine("Open readable/index.html in any web browser. That folder is the whole")
             appendLine("record as ordinary pages and needs no software and no internet at all.")
-            appendLine()
-            appendLine("The same record is also in data.sqlite, which any SQLite tool reads,")
-            appendLine("and the original photographs and documents are in attachments/.")
             appendLine()
             appendLine("WHAT THIS IS NOT")
             appendLine()
@@ -431,10 +614,16 @@ object ExportContainer {
         }
     }
 
-    private fun nonceFor(name: String): ByteArray =
-        java.security.MessageDigest.getInstance("SHA-256")
-            .digest(name.toByteArray())
-            .copyOf(ExportCrypto.NONCE_BYTES)
+    /**
+     * The README that travels inside the payload.
+     *
+     * **The same text, deliberately.** Two files with the same name and
+     * different words is how a reader learns not to trust either. The inner copy
+     * exists so that a folder somebody extracted years ago, long separated from
+     * the zip it came out of, still says what it is and where the format is
+     * written down.
+     */
+    private fun innerReadmeText(manifest: Manifest): String = readmeText(manifest)
 
     /**
      * The readable copy's pages, keyed by their path inside `readable/`.
@@ -594,31 +783,32 @@ object ExportContainer {
     ): Result<Opened> = withContext(Dispatchers.IO) {
         staging.mkdirs()
 
-        var manifestJson: JSONObject? = null
-        var privateManifest: ByteArray? = null
-        val attachments = mutableListOf<File>()
-        val database = File(staging, DATABASE)
+        // -- the outer layer, which says nothing about the person -------------
+
+        var outerJson: JSONObject? = null
+        var sawPayload = false
+        val sealed = File(staging, "payload.enc")
 
         try {
             ZipInputStream(file.inputStream().buffered()).use { zip ->
                 var entry: ZipEntry? = zip.nextEntry
                 while (entry != null) {
-                    when {
-                        entry.name == MANIFEST -> manifestJson = JSONObject(zip.readText())
-                        entry.name == PRIVATE_MANIFEST -> privateManifest = zip.readBytes()
-                        entry.name == DATABASE -> database.outputStream().use { zip.copyTo(it) }
-                        entry.name.startsWith(ATTACHMENTS) && !entry.isDirectory -> {
-                            val out = File(staging, entry.name.removePrefix(ATTACHMENTS))
-                            out.parentFile?.mkdirs()
-                            out.outputStream().use { zip.copyTo(it) }
-                            attachments += out
+                    when (entry.name) {
+                        OUTER_MANIFEST -> outerJson = JSONObject(zip.readText())
+                        PAYLOAD -> {
+                            sealed.outputStream().buffered().use { zip.copyTo(it) }
+                            sawPayload = true
                         }
+                        // Version 2's shape, kept only so its refusal below can
+                        // name what the file is. Nothing reads these.
+                        "manifest.json" -> outerJson = JSONObject(zip.readText())
                     }
                     zip.closeEntry()
                     entry = zip.nextEntry
                 }
             }
-        } catch (t: Throwable) {
+        } catch (_: Throwable) {
+            passphrase?.fill('\u0000')
             return@withContext failure(
                 Problem.NotAContainer(
                     "This file could not be opened as a Health Trail export. " +
@@ -627,58 +817,37 @@ object ExportContainer {
             )
         }
 
-        val json = manifestJson ?: return@withContext failure(
-            Problem.NoManifest(
-                "This file has no manifest, so there is no way to tell what it holds. " +
-                    "Health Trail exports always carry one."
+        val json = outerJson ?: run {
+            passphrase?.fill('\u0000')
+            return@withContext failure(
+                Problem.NoManifest(
+                    "This file has no manifest, so there is no way to tell what it holds. " +
+                        "Health Trail exports always carry one."
+                )
             )
-        )
+        }
 
-        // Built from the public half only, so the version and the key
-        // derivation are readable before a passphrase exists. The counts are
-        // zero here and are filled in from the encrypted half once the key is
-        // derived, which is why `manifest` is rebuilt at the end.
-        val manifest = Manifest.from(json)
-        var storedDatabaseHash: String? = null
+        val outer = Manifest.from(json)
 
         // Read before anything else, and refuse a version we do not understand
         // rather than guessing. This costs nothing now and is unfixable later.
-        if (manifest.formatVersion > FORMAT_VERSION) {
+        if (outer.formatVersion > FORMAT_VERSION) {
+            passphrase?.fill('\u0000')
             return@withContext failure(
                 Problem.FromTheFuture(
-                    manifest.formatVersion,
+                    outer.formatVersion,
                     "This export was written by a newer version of Health Trail. " +
-                        "It is format ${manifest.formatVersion} and this app understands " +
+                        "It is format ${outer.formatVersion} and this app understands " +
                         "up to $FORMAT_VERSION. Update the app and try again.",
                 )
             )
         }
 
-        if (!database.isFile) {
-            return@withContext failure(
-                Problem.DatabaseMissing("This export has a manifest but no records in it.")
-            )
-        }
-
-        // **The hash check moved after decryption**, because the hash now lives
-        // in the encrypted half of the manifest. Section 8.1: a hash of the
-        // ciphertext is a fingerprint of one specific file, and leaving it in
-        // the clear would let somebody match two copies of one person's archive
-        // across two places without opening either.
-        //
-        // Truncation is still caught either way: GCM authenticates, so a short
-        // file fails its tag. The hash check is kept so a damaged file still
-        // gets its own sentence rather than being reported as a possible wrong
-        // passphrase.
-
-        // **An unencrypted export is refused, whatever version wrote it.**
-        //
-        // A version 1 file that carries a passphrase is still a real backup and
-        // is still read, because refusing one would destroy somebody's only
-        // recovery path in order to make a point about a format number. What is
-        // refused is the plain file, and it is refused by what it is rather
-        // than by what wrote it, so a hand assembled one is caught too. D67.
-        if (!manifest.encrypted) {
+        // **An unencrypted export is refused by what it is, not by what wrote
+        // it**, so a hand assembled one is caught too. D67. This is checked
+        // before the version, because what matters about such a file is that it
+        // is a readable copy of somebody's record, not which build made it.
+        if (!outer.encrypted) {
             passphrase?.fill('\u0000')
             return@withContext failure(
                 Problem.NotEncrypted(
@@ -693,94 +862,179 @@ object ExportContainer {
             )
         }
 
-        // Decrypted after the hash check and before the attachment checks,
-        // because the hash describes the bytes as stored and the attachment
-        // hashes describe them as written. Doing it in the other order would
-        // fail every attachment on a perfectly good encrypted file.
-        run {
-            val parameters = manifest.encryption ?: return@withContext failure(
+        if (outer.formatVersion < FORMAT_VERSION || !sawPayload) {
+            passphrase?.fill('\u0000')
+            return@withContext failure(
+                Problem.NotPortable(
+                    "This export was written by a development build of Health Trail, " +
+                        "before the archive was split into a plain outer layer and an " +
+                        "encrypted payload. No released version wrote one, so this app has " +
+                        "no reader for it. Nothing was changed."
+                )
+            )
+        }
+
+        val parameters = outer.encryption ?: run {
+            passphrase?.fill('\u0000')
+            return@withContext failure(
                 Problem.CouldNotDecrypt(
                     "This export says it is encrypted but does not record how, so there " +
                         "is no way to open it. Nothing was changed."
                 )
             )
-            val offered = passphrase ?: return@withContext failure(
-                Problem.PassphraseNeeded(
-                    "This export is encrypted. It needs the passphrase that was chosen " +
-                        "when it was made. There is no way to recover it if it is lost."
+        }
+        val offered = passphrase ?: return@withContext failure(
+            Problem.PassphraseNeeded(
+                "This export is encrypted. It needs the passphrase that was chosen " +
+                    "when it was made. There is no way to recover it if it is lost."
+            )
+        )
+
+        // -- the payload ------------------------------------------------------
+
+        val key = ExportCrypto.derive(
+            passphrase = offered,
+            salt = unbase64(parameters.salt),
+            iterations = parameters.iterations,
+            memoryKib = parameters.memoryKib,
+            parallelism = parameters.parallelism,
+        )
+        offered.fill('\u0000')
+
+        val inner = File(staging, "payload.zip")
+        try {
+            unsealPayload(sealed, inner, key, unbase64(parameters.noncePrefix))
+        } catch (_: Throwable) {
+            ExportCrypto.wipe(key)
+            inner.delete()
+            sealed.delete()
+            return@withContext failure(
+                Problem.CouldNotDecrypt(
+                    "This export could not be opened with that passphrase. Either the " +
+                        "passphrase is wrong or the file has been altered since it was " +
+                        "made, and there is no way to tell which from here. Nothing " +
+                        "was changed."
                 )
             )
+        } finally {
+            ExportCrypto.wipe(key)
+            sealed.delete()
+        }
 
-            val key = ExportCrypto.derive(
-                passphrase = offered,
-                salt = unbase64(parameters.salt),
-                iterations = parameters.iterations,
-                memoryKib = parameters.memoryKib,
-                parallelism = parameters.parallelism,
-            )
-            offered.fill('\u0000')
+        // -- the inner layer, which is an ordinary zip -------------------------
 
-            try {
-                val nonce = unbase64(parameters.nonce)
+        val database = File(staging, "trail.sqlite")
+        val attachments = mutableListOf<File>()
+        var innerJson: JSONObject? = null
+        var checksums: Map<String, String> = emptyMap()
+        val actual = sortedMapOf<String, String>()
 
-                // **The private half of the manifest first.** It carries the
-                // payload hash, so the hash check below needs it, and it is
-                // also the cheapest thing to decrypt: a wrong passphrase fails
-                // here in milliseconds rather than after a four gigabyte
-                // payload has been through the cipher.
-                privateManifest?.let { sealed ->
-                    val opened = JSONObject(
-                        ExportCrypto.decrypt(key, nonceFor(PRIVATE_MANIFEST), sealed)
-                            .decodeToString(),
-                    )
-                    for (field in opened.keys()) json.put(field, opened.get(field))
+        try {
+            ZipInputStream(inner.inputStream().buffered()).use { zip ->
+                var entry: ZipEntry? = zip.nextEntry
+                while (entry != null) {
+                    if (!entry.isDirectory) {
+                        val bytes = zip.readBytes()
+                        when {
+                            entry.name == INNER_MANIFEST ->
+                                innerJson = JSONObject(bytes.decodeToString())
+                            entry.name == CHECKSUMS ->
+                                checksums = parseChecksums(bytes.decodeToString())
+                            entry.name == DATABASE -> database.writeBytes(bytes)
+                            entry.name.startsWith(ATTACHMENTS) -> {
+                                val out = File(staging, entry.name.removePrefix(ATTACHMENTS))
+                                out.parentFile?.mkdirs()
+                                out.writeBytes(bytes)
+                                attachments += out
+                            }
+                        }
+                        if (entry.name != CHECKSUMS) {
+                            actual[entry.name] = Attachments.sha256(bytes)
+                        }
+                    }
+                    zip.closeEntry()
+                    entry = zip.nextEntry
                 }
-
-                val stored = database.readBytes()
-                database.writeBytes(ExportCrypto.decrypt(key, nonce, stored))
-                storedDatabaseHash = Attachments.sha256(stored)
-                attachments.forEach {
-                    it.writeBytes(ExportCrypto.decrypt(key, nonceFor(it.name), it.readBytes()))
-                }
-            } catch (_: Throwable) {
-                return@withContext failure(
-                    Problem.CouldNotDecrypt(
-                        "This export could not be opened with that passphrase. Either the " +
-                            "passphrase is wrong or the file has been altered since it was " +
-                            "made, and there is no way to tell which from here. Nothing " +
-                            "was changed."
-                    )
-                )
-            } finally {
-                ExportCrypto.wipe(key)
             }
+        } catch (_: Throwable) {
+            inner.delete()
+            return@withContext failure(
+                Problem.NotAContainer(
+                    "This export opened with that passphrase, so the passphrase is right, " +
+                        "and what came out is not a Health Trail archive. The file has " +
+                        "been altered since it was made. Nothing was changed."
+                )
+            )
+        } finally {
+            inner.delete()
+        }
 
-            // **What came out has to be a database.** An export written before
-            // 2026-08-02 decrypts perfectly and yields a SQLCipher file keyed
-            // to the phone that wrote it, which nothing else can open. Without
-            // this it fails two checks later as "damaged", sending somebody to
-            // hunt a corruption that is not there, on the one file standing
-            // between them and losing the record. D61 and D67.
-            if (!isSqlite(database.readBytes())) {
+        val manifest = innerJson?.let { Manifest.from(it) } ?: return@withContext failure(
+            Problem.NoManifest(
+                "This export opened with that passphrase and has no manifest inside it, " +
+                    "so there is no way to tell what it holds. Nothing was changed."
+            )
+        )
+
+        if (!database.isFile) {
+            return@withContext failure(
+                Problem.DatabaseMissing("This export has a manifest but no records in it.")
+            )
+        }
+
+        // **Every file checked against CHECKSUMS.txt, not only the database.**
+        // The readable copy is the half a person actually reads, and an archive
+        // that reported its database sound while its prose had rotted would be
+        // exactly the partial correctness section 8 opens by refusing.
+        checksums.forEach { (name, expectedHash) ->
+            val got = actual[name]
+            if (got == null) {
                 return@withContext failure(
-                    Problem.NotPortable(
-                        "This export opened with that passphrase, so the passphrase is " +
-                            "right and the file is not damaged. It was written by a " +
-                            "version of Health Trail whose exports could only be opened " +
-                            "by the phone that made them. If that phone still works, open " +
-                            "it there and save a new export, which will be readable " +
-                            "anywhere. Nothing was changed."
+                    Problem.DatabaseCorrupt(
+                        "This export is missing $name, which its own list of contents says " +
+                            "it should have. The file was probably damaged in transit. " +
+                            "Nothing was changed."
                     )
+                )
+            }
+            if (got != expectedHash) {
+                return@withContext failure(
+                    if (name.startsWith(ATTACHMENTS)) {
+                        Problem.AttachmentCorrupt(
+                            name.removePrefix(ATTACHMENTS),
+                            "One of the attached files is damaged. Nothing was changed.",
+                        )
+                    } else {
+                        Problem.DatabaseCorrupt(
+                            "Part of this export does not match what its own list of " +
+                                "contents says it should be: $name. The file was probably " +
+                                "damaged in transit. Nothing was changed."
+                        )
+                    }
                 )
             }
         }
 
-        // **Rebuilt from the merged manifest.** The public half gave the version
-        // and the key derivation; the private half gave the counts, the hash,
-        // and everything else the restore screen shows before it writes.
-        val opened = Manifest.from(json)
+        // **What came out has to be a database.** An export written before
+        // 2026-08-02 decrypts perfectly and yields a SQLCipher file keyed to the
+        // phone that wrote it, which nothing else can open. Without this it fails
+        // two checks later as "damaged", sending somebody to hunt a corruption
+        // that is not there, on the one file standing between them and losing the
+        // record. D61 and D67.
+        if (!isSqlite(database.readBytes())) {
+            return@withContext failure(
+                Problem.NotPortable(
+                    "This export opened with that passphrase, so the passphrase is " +
+                        "right and the file is not damaged. It was written by a " +
+                        "version of Health Trail whose exports could only be opened " +
+                        "by the phone that made them. If that phone still works, open " +
+                        "it there and save a new export, which will be readable " +
+                        "anywhere. Nothing was changed."
+                )
+            )
+        }
 
-        if (storedDatabaseHash != null && storedDatabaseHash != opened.databaseSha256) {
+        if (Attachments.sha256(database.readBytes()) != manifest.databaseSha256) {
             return@withContext failure(
                 Problem.DatabaseCorrupt(
                     "The records in this export do not match what its manifest says they " +
@@ -807,15 +1061,93 @@ object ExportContainer {
 
         // The payload is a plain SQLite file, which is what makes it portable,
         // and that is also what makes these last two checks possible at all.
-        // While the archive carried a device keyed SQLCipher file there was no
-        // way to look inside one without the key that could not travel.
         if (expected != null) {
             inspect(database, attachments.map { it.name }.toSet(), expected)
                 ?.let { return@withContext failure<Opened>(it) }
         }
 
-        Result.success(Opened(opened, database, attachments))
+        Result.success(Opened(manifest, database, attachments))
     }
+
+    /**
+     * Decrypts `payload.enc` back into the inner container, a frame at a time.
+     *
+     * **A frame that says it is the last has to be the last.** The additional
+     * data binds each frame's index and its finality into its tag, so a stream
+     * that has been cut short, reordered, or had frames lifted out of the middle
+     * fails here rather than producing a shorter archive that opens perfectly.
+     *
+     * Throws on any failure, including a wrong passphrase, and the caller says
+     * so without claiming to know which it was.
+     */
+    private fun unsealPayload(
+        sealed: File,
+        target: File,
+        key: ByteArray,
+        noncePrefix: ByteArray,
+    ) {
+        sealed.inputStream().buffered().use { input ->
+            target.outputStream().buffered().use { out ->
+                var index = 0L
+                var finished = false
+                while (true) {
+                    val header = ByteArray(FRAME_HEADER_BYTES)
+                    val got = fill(input, header)
+                    if (got == 0) break
+                    check(!finished) { "the payload continues past the frame that said it ended" }
+                    check(got == FRAME_HEADER_BYTES) { "the payload ends inside a frame header" }
+                    val size = ((header[0].toInt() and 0xFF) shl 24) or
+                        ((header[1].toInt() and 0xFF) shl 16) or
+                        ((header[2].toInt() and 0xFF) shl 8) or
+                        (header[3].toInt() and 0xFF)
+                    check(size in 1..MAX_FRAME_BYTES) { "the payload declares an impossible frame" }
+                    val frame = ByteArray(size)
+                    check(fill(input, frame) == size) { "the payload ends inside a frame" }
+
+                    // **Which frame this is decided by trying**, because only the
+                    // tag knows whether this one was written as the last. A frame
+                    // that verifies as final is final; one that verifies as
+                    // ordinary is not; one that verifies as neither is a wrong
+                    // passphrase or an altered file, which is the same exception.
+                    val plain = try {
+                        ExportCrypto.decrypt(
+                            key, ExportCrypto.chunkNonce(noncePrefix, index), frame,
+                            ExportCrypto.frameAad(index, last = false),
+                        )
+                    } catch (_: Throwable) {
+                        finished = true
+                        ExportCrypto.decrypt(
+                            key, ExportCrypto.chunkNonce(noncePrefix, index), frame,
+                            ExportCrypto.frameAad(index, last = true),
+                        )
+                    }
+                    out.write(plain)
+                    index += 1
+                }
+                check(finished) { "the payload has no final frame, so it was cut short" }
+            }
+        }
+    }
+
+    /**
+     * The largest frame this reader will allocate for.
+     *
+     * **A length prefix read from a file is an instruction from whoever wrote
+     * the file**, and one that says four gigabytes is how a reader is made to
+     * exhaust memory before it has authenticated anything. The writer's frames
+     * are a megabyte plus a tag; this allows generously more and refuses the
+     * rest.
+     */
+    private const val MAX_FRAME_BYTES = 64 shl 20
+
+    /** Reads `CHECKSUMS.txt` back into a map of path to hash. */
+    private fun parseChecksums(text: String): Map<String, String> =
+        text.lineSequence()
+            .mapNotNull { line ->
+                val at = line.indexOf("  ")
+                if (at <= 0) null else line.substring(at + 2) to line.substring(0, at)
+            }
+            .toMap()
 
     /**
      * The sixteen byte header every plain SQLite file begins with.
@@ -989,7 +1321,8 @@ object ExportContainer {
                     put("kdf_memory_kib", it.memoryKib)
                     put("kdf_parallelism", it.parallelism)
                     put("salt", it.salt)
-                    put("nonce", it.nonce)
+                    put("nonce_prefix", it.noncePrefix)
+                    put("chunk_bytes", it.chunkBytes)
                 },
             )
         }
@@ -1008,6 +1341,17 @@ object ExportContainer {
      * otherwise let somebody match two copies of one person's archive across
      * two places without opening either.
      */
+    /**
+     * The manifest as it appears inside the payload: everything, counts and all.
+     *
+     * **The outer one is this with the describing half left out**, rather than
+     * the other way around, so there is one definition of what an archive knows
+     * about itself and the public copy is visibly a subset of it.
+     */
+    private fun Manifest.toFullJson(): JSONObject = toPublicJson().apply {
+        for (field in toPrivateJson().keys()) put(field, toPrivateJson().get(field))
+    }
+
     private fun Manifest.toPrivateJson(): JSONObject = JSONObject().apply {
         put("origin_device", originDevice)
         put(
@@ -1066,7 +1410,8 @@ internal fun ExportContainer.Manifest.Companion.from(json: JSONObject): ExportCo
                 memoryKib = it.optInt("kdf_memory_kib"),
                 parallelism = it.optInt("kdf_parallelism"),
                 salt = it.optString("salt"),
-                nonce = it.optString("nonce"),
+                noncePrefix = it.optString("nonce_prefix"),
+                chunkBytes = it.optInt("chunk_bytes"),
             )
         },
         databaseSha256 = database.optString("sha256"),

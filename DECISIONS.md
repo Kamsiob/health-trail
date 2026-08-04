@@ -1928,6 +1928,26 @@ Rule 15: uniform weight is not neutral. `DESIGN.md` 15.1 records the departure f
 
 **This is D90's pattern applied to a column rather than to a content rule.** A default value on a model is a small convenience that reads as a lie the moment a second reader exists. Where a field must be answered, make the compiler ask.
 
+### D96. Format version 3 carries no reader for versions 1 and 2
+
+**2026-08-04, building the two-layer container.** The archive is now what 8.1 draws: an outer plain ZIP64 holding exactly `README.txt`, `MANIFEST.json` and `payload.enc`, and an inner ordinary zip holding the record. That is not a change one reader can straddle: version 2 put the database and every attachment in the outer zip and encrypted them entry by entry, and version 3 has nothing out there but ciphertext.
+
+**Nothing released ever wrote version 1 or 2.** Both existed only inside this project's own development. Carrying a reader for a version nobody holds is code on the most safety-critical path in the app that can only ever be wrong in ways nobody will find, and it would have to be kept correct forever by people who have never seen a file it reads.
+
+What version 3 carries instead is **an honest refusal that says which build wrote the file** and that nothing was changed. If a version 2 file ever turns up, `contract/EXPORT-FORMAT.md` and this repository's history are enough to write a reader for it, which is the same promise the format makes to everybody else.
+
+**The one archive of mine that this stranded was regenerated in five minutes.** That is the whole cost, and it is worth saying plainly, because the argument would be entirely different if a single person outside this machine held one.
+
+### D97. The payload is framed, and the frame format is part of the published spec
+
+**2026-08-04.** `payload.enc` is not one AES-GCM message. A single call needs the whole archive in memory at both ends, and the contract requires the container to work past four gigabytes, which a phone cannot hold.
+
+So the payload is a run of frames: four bytes of big-endian length, then that many bytes of ciphertext with its tag. Frame N uses a nonce of the file's four random bytes followed by N as eight big-endian bytes, and authenticates those eight bytes plus one more that is 1 on the last frame and 0 on every other.
+
+**A counter rather than a random nonce per frame**, because random 96 bit nonces collide at a rate that is fine for a handful of messages and not fine for the millions of frames a large archive would have, and a collision under one key breaks GCM outright.
+
+**The index and the final flag are belt and braces, and the code says so.** Two probes proved it: removing the final-frame check still refused a truncated file, because the zip inside the payload has its central directory at the end; unbinding the index on both sides still refused a reordered file, because the nonce already carries the position. They are kept because they cost nothing and because the structural protection is an accident of what is inside the payload today. **The point of recording this is that the first two versions of that comment claimed credit for the wrong mechanism**, which is how a test comes to be trusted for a reason that is not true.
+
 ---
 
 ## BLOCKED

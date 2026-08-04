@@ -25,11 +25,29 @@ libraries are installed.
 WHAT IT DOES
 
 Reads the archive, asks for your passphrase, derives the key with Argon2id using
-the parameters recorded inside the file itself, decrypts the payload and every
-attachment with AES-256-GCM, and writes the result into a folder you name.
+the parameters recorded inside the file itself, decrypts `payload.enc` with
+AES-256-GCM, and unpacks what comes out into a folder you name.
+
+The archive has two layers on purpose. The outer one is a plain zip holding
+three things and saying nothing about anybody: a README, a manifest with the
+key derivation parameters, and the encrypted payload. The inner one, once
+decrypted, is an ordinary zip with the whole record in it.
 
 Then open `readable/index.html` in any browser. That folder is the record in
 plain HTML and needs no software at all.
+
+WHY THE PAYLOAD IS IN FRAMES
+
+An archive can be gigabytes, and encrypting it as one block would mean holding
+all of it in memory at both ends. So `payload.enc` is a run of frames: four
+bytes of big-endian length, then that many bytes of ciphertext with its tag.
+
+Frame N uses a nonce of the manifest's four byte prefix followed by N as eight
+big-endian bytes, and authenticates those same eight bytes plus one more that is
+1 on the last frame and 0 on every other. **That last byte is why a truncated
+file fails instead of opening short.** Without it every frame still verifies on
+its own, so a file with its tail cut off would decrypt perfectly and be missing
+a year of somebody's record, silently.
 
 WHY THE PARAMETERS COME FROM THE FILE
 
@@ -52,20 +70,31 @@ mistyped is as bad as the reverse.
 from __future__ import annotations
 
 import getpass
+import io
 import json
 import os
 import sys
 import zipfile
 from pathlib import Path
 
-MANIFEST = "manifest.json"
-PRIVATE_MANIFEST = "manifest-private.json"
+MANIFEST = "MANIFEST.json"
 README = "README.txt"
-DATABASE = "data.sqlite"
-ATTACHMENTS = "attachments/"
+PAYLOAD = "payload.enc"
+
+INNER_MANIFEST = "MANIFEST.json"
+CHECKSUMS = "CHECKSUMS.txt"
+DATABASE = "data/trail.sqlite"
 READABLE = "readable/"
 
-SUPPORTED_FORMATS = (2,)
+SUPPORTED_FORMATS = (3,)
+
+# Four bytes of big-endian length ahead of each frame's ciphertext.
+FRAME_HEADER_BYTES = 4
+
+# A length prefix is an instruction from whoever wrote the file. One that says
+# four gigabytes is how a reader is made to exhaust memory before it has
+# authenticated anything.
+MAX_FRAME_BYTES = 64 << 20
 
 
 def fail(message: str) -> None:
@@ -172,6 +201,79 @@ def attachment_nonce(name: str) -> bytes:
     return hashlib.sha256(name.encode("utf-8")).digest()[:12]
 
 
+def unseal(AESGCM, key: bytes, prefix: bytes, sealed: bytes) -> bytes:
+    """The payload's frames, back into the inner container."""
+    aead = AESGCM(key)
+    out = bytearray()
+    at = 0
+    index = 0
+    finished = False
+    while at < len(sealed):
+        if finished:
+            fail("This archive continues past the frame that says it ends.")
+        if at + FRAME_HEADER_BYTES > len(sealed):
+            fail("This archive ends in the middle of a frame header.")
+        size = int.from_bytes(sealed[at:at + FRAME_HEADER_BYTES], "big")
+        at += FRAME_HEADER_BYTES
+        if not 0 < size <= MAX_FRAME_BYTES or at + size > len(sealed):
+            fail("This archive declares a frame that is not there. It is damaged.")
+        frame = sealed[at:at + size]
+        at += size
+        nonce = prefix + index.to_bytes(8, "big")
+        try:
+            out += aead.decrypt(nonce, frame, index.to_bytes(8, "big") + b"\x00")
+        except Exception:
+            try:
+                out += aead.decrypt(nonce, frame, index.to_bytes(8, "big") + b"\x01")
+                finished = True
+            except Exception:
+                fail(
+                    "Could not decrypt the record.\n\n"
+                    "Either the passphrase is not the one this archive was made with,\n"
+                    "or the file has been altered since it was made. There is no way to\n"
+                    "tell which from here: the check that failed cannot distinguish them.\n\n"
+                    "If you are sure of the passphrase, try a different copy of the file."
+                )
+        index += 1
+    if not finished:
+        fail(
+            "This archive has no final frame, so it was cut short somewhere.\n"
+            "Some of it may be readable, but this tool will not hand you a partial\n"
+            "record and call it whole. Try another copy of the file."
+        )
+    return bytes(out)
+
+
+def check_contents(out: Path) -> None:
+    """Every file against CHECKSUMS.txt, and say plainly what does not match."""
+    listing = out / CHECKSUMS
+    if not listing.is_file():
+        return
+    import hashlib
+
+    bad = []
+    for line in listing.read_text().splitlines():
+        parts = line.split("  ", 1)
+        if len(parts) != 2:
+            continue
+        expected, name = parts
+        target = out / name
+        if not target.is_file():
+            bad.append(f"{name} is missing")
+            continue
+        got = hashlib.sha256(target.read_bytes()).hexdigest()
+        if got != expected:
+            bad.append(f"{name} does not match its checksum")
+    if bad:
+        print()
+        print("Some files do not match the archive's own list of contents:")
+        for problem in bad:
+            print(f"  {problem}")
+        print()
+        print("They were still written out, so you can look at them. The rest of")
+        print("the archive is unaffected.")
+
+
 def main() -> int:
     if len(sys.argv) != 3:
         print(__doc__)
@@ -193,9 +295,9 @@ def main() -> int:
         if written:
             print(f"Written by Health Trail {written}")
         # Nothing about the person is readable yet, by design. The counts live
-        # in the encrypted half of the manifest so that a backup agent, a cloud
-        # sync, or a file manager preview learns nothing from the file sitting
-        # in a folder. contract/DATA-CONTRACT.md 8.1.
+        # inside the payload so that a backup agent, a cloud sync, or a file
+        # manager preview learns nothing from the file sitting in a folder.
+        # contract/DATA-CONTRACT.md 8.1.
         print()
 
         passphrase = getpass.getpass("Passphrase: ")
@@ -204,66 +306,30 @@ def main() -> int:
 
         import base64
 
-        nonce = base64.b64decode(manifest["encryption"]["nonce"])
+        prefix = base64.b64decode(manifest["encryption"]["nonce_prefix"])
 
-        out.mkdir(parents=True, exist_ok=True)
-        (out / MANIFEST).write_bytes(archive.read(MANIFEST))
-        if README in archive.namelist():
-            (out / README).write_bytes(archive.read(README))
-
-        # The private half of the manifest, which is where the counts live.
-        # Decrypted first because it is the cheapest thing in the archive: a
-        # wrong passphrase fails here in milliseconds rather than after a large
-        # payload has been through the cipher.
-        if PRIVATE_MANIFEST in archive.namelist():
-            private = json.loads(
-                decrypt_entry(
-                    AESGCM, key, attachment_nonce(PRIVATE_MANIFEST),
-                    archive.read(PRIVATE_MANIFEST), "the archive's own description",
-                ).decode("utf-8")
+        if PAYLOAD not in archive.namelist():
+            fail(
+                f"This archive has no {PAYLOAD}, so there is nothing in it to open.\n"
+                "It may have been written by a different program."
             )
-            (out / PRIVATE_MANIFEST).write_text(json.dumps(private, indent=2))
-            counts = private.get("database", {}).get("row_counts", {})
-            if counts:
-                total = sum(int(v) for v in counts.values())
-                print(f"{total} records across {len(counts)} kinds")
-            pages = private.get("readable", {}).get("pages")
-            if pages:
-                print(f"{pages} readable pages")
-            print()
 
-        payload = decrypt_entry(
-            AESGCM, key, nonce, archive.read(DATABASE), "the record"
-        )
-        (out / DATABASE).write_bytes(payload)
-        print(f"Wrote {DATABASE} ({len(payload):,} bytes)")
+        print("Decrypting.")
+        inner = unseal(AESGCM, key, prefix, archive.read(PAYLOAD))
 
-        pages = 0
-        files = 0
-        for name in sorted(archive.namelist()):
-            if name in (MANIFEST, DATABASE, PRIVATE_MANIFEST, README) or name.endswith("/"):
-                continue
-            data = archive.read(name)
-            if name.startswith(ATTACHMENTS):
-                base = name[len(ATTACHMENTS):]
-                data = decrypt_entry(
-                    AESGCM, key, attachment_nonce(base), data, f"attachment {base}"
-                )
-                files += 1
-            elif name.startswith(READABLE):
-                # Encrypted like the payload and the attachments. A readable page
-                # is the person's record in prose and needs no tooling to read,
-                # so it is if anything more sensitive than the database.
-                data = decrypt_entry(AESGCM, key, attachment_nonce(name), data, name)
-                pages += 1
-            destination = out / name
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_bytes(data)
+    out.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(io.BytesIO(inner)) as payload:
+        payload.extractall(out)
+        names = [n for n in payload.namelist() if not n.endswith("/")]
 
-        print(f"Wrote {files} attachments and {pages} readable pages")
+    pages = sum(1 for n in names if n.startswith(READABLE))
+    files = sum(1 for n in names if n.startswith("attachments/"))
+    print(f"Wrote {len(names)} files: {pages} readable pages and {files} attachments")
+
+    check_contents(out)
 
     print()
-    print(f"Done. Open this in any browser, with no internet connection:")
+    print("Done. Open this in any browser, with no internet connection:")
     print(f"    {(out / READABLE / 'index.html').resolve()}")
     return 0
 
