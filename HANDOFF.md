@@ -32,11 +32,14 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Step 1 is complete as of 2026-08-03.** Every token in both themes, the type scale with all three faces verified per locale, the geometry, and **all sixteen components in the inventory**. `#149` through `#168` are closed.
 
-1. **Step 2, #169 to #172: the four bottom-navigation destinations.** Today, the Notebook, Projects, More. This comes next so the app reads as one app end to end at the earliest possible moment.
-2. **Then step 3, #173 to #188**, the section screens, in the order the default situation template surfaces them.
-3. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
+**Step 2 is complete too.** All four bottom-navigation destinations are converted, so **the app reads as one app end to end**, which is what step 2 exists for. #169 through #172 are closed.
+
+1. **Next: step 3, #173 to #188**, the section screens, in the order the default situation template surfaces them.
+2. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
 
 **THE ARCHIVE runs on its own track and must not be scheduled behind the screens.** #209 through #215, with #9 as the parent. Move to it if the visual track blocks.
+
+**One cross-cutting defect is filed and not fixed: #218.** Removal on every list row is long-press-only across **seventeen screens**, which law 2 bans. It is not a bare gesture, it declares a reader action, so a screen reader user can remove a row and a sighted person who does not know the gesture cannot. The v4 answer is already in section 9: removal belongs on the thing's own detail screen. It needs one answer across all seventeen, which is why it is its own issue rather than half done inside a screen conversion.
 
 **What step 1 left behind, all of it verified on the phone at both themes:** the tab chip, fold row, wash band, avatar, chart card, round card, month grid, view toggle, pinned group, sticky header, edge scrubber, corner FAB, four-tab bar, the two action costumes, the chip costume, and the spine's fourth waypoint state.
 

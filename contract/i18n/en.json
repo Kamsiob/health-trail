@@ -512,6 +512,7 @@
   "search.nomatch.next": "Try fewer words, or part of a name. Searching looks at what was written, not at what it means.",
   "search.untitled": "No title",
   "more.search": "Search the notebook",
+  "more.subtitle": "Search, templates, your notebook as a file, and what this app is.",
   "section.back.more": "Back to More",
   "today.open.group": "Still open",
   "today.also_waiting": "Also waiting",

@@ -11,6 +11,10 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.ShellTags
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.wholeAppHue
+import com.kamsiob.healthtrail.ui.components.TabChip
+import com.kamsiob.healthtrail.ui.components.GroupedRows
+import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -58,8 +62,18 @@ fun MoreScreen(
         choice = choice,
         onChoose = onChoose,
         modifier = modifier,
-        footer = {
-            MoreBelowAppearance(
+        // **More is titled More.** It used to render Appearance directly,
+        // because Appearance was the only thing in it and a list with one entry
+        // is a tap the person pays for nothing. There are five destinations in
+        // it now, so a person tapping "More" and landing on a screen headed
+        // "Appearance" is the app showing its own structure, which is rule 20.
+        titleKey = "nav.more",
+        subtitleKey = "more.subtitle",
+        tab = { TabChip(hue = wholeAppHue(), labelKey = "nav.more") },
+        // **Above the theme, because these are what somebody opens More to
+        // reach.** The theme is changed once; search and export are not.
+        header = {
+            MoreDestinations(
                 onAbout = onAbout,
                 onExport = onExport,
                 onRestore = onRestore,
@@ -67,6 +81,7 @@ fun MoreScreen(
                 onLibrary = onLibrary,
             )
         },
+        footer = { ComingHere() },
     )
 }
 
@@ -79,7 +94,7 @@ fun MoreScreen(
  * and it may not keep saying so once it has.
  */
 @Composable
-private fun MoreBelowAppearance(
+private fun MoreDestinations(
     onAbout: () -> Unit,
     onExport: () -> Unit,
     onRestore: () -> Unit,
@@ -88,46 +103,49 @@ private fun MoreBelowAppearance(
 ) {
     val strings = LocalStrings.current
 
+    // **Destinations, so rows with chevrons rather than outlined pills.**
+    //
+    // These were five full width outlined buttons, and every one of them opens
+    // a screen. Law 2 gives that costume to a row ending in a chevron, and
+    // gives the outlined pill to a smaller action that does something now,
+    // "always a verb or a dialable number". Five pills that all navigate taught
+    // the person the wrong thing about what a pill does, on the one screen
+    // whose whole content is places to go.
+    //
+    // `DESIGN.md` section 14 says More follows the notebook, and this is what
+    // that means: a grouped surface of doors.
+    //
+    // **The order is by how often somebody reaches for it**, which is why
+    // search leads: `MASTER_SPEC.md` 4.8 puts it here and at the top of Today,
+    // and of these it is the one reached weekly rather than once.
+    val destinations = listOf(
+        Destination(strings["more.search"], onSearch, MoreTags.SEARCH),
+        Destination(strings["more.library"], onLibrary, MoreTags.LIBRARY),
+        Destination(strings["more.export"], onExport, MoreTags.EXPORT),
+        Destination(strings["more.restore"], onRestore, MoreTags.RESTORE),
+        Destination(strings["more.about"], onAbout, MoreTags.ABOUT),
+    )
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(Modifier.height(Space.sectionGap))
-        // **First, above export and restore.** `MASTER_SPEC.md` 4.8 puts search
-        // in More and also at the top of Today, and of the three things here it
-        // is the one somebody reaches for weekly rather than once.
-        QuietButton(
-            label = strings["more.search"],
-            onClick = onSearch,
-            modifier = Modifier.fillMaxWidth().testTag(MoreTags.SEARCH),
-        )
-        Spacer(Modifier.height(Space.cardGap))
-        // **The templates, and what each one has produced.** The owner's word
-        // for what this had to become is state: a menu of sixteen processes
-        // says nothing about a person's notebook.
-        QuietButton(
-            label = strings["more.library"],
-            onClick = onLibrary,
-            modifier = Modifier.fillMaxWidth().testTag(MoreTags.LIBRARY),
-        )
-        Spacer(Modifier.height(Space.cardGap))
-        QuietButton(
-            label = strings["more.export"],
-            onClick = onExport,
-            modifier = Modifier.fillMaxWidth().testTag(MoreTags.EXPORT),
-        )
-        Spacer(Modifier.height(Space.cardGap))
-        QuietButton(
-            label = strings["more.restore"],
-            onClick = onRestore,
-            modifier = Modifier.fillMaxWidth().testTag(MoreTags.RESTORE),
-        )
-        Spacer(Modifier.height(Space.cardGap))
-        QuietButton(
-            label = strings["more.about"],
-            onClick = onAbout,
-            modifier = Modifier.fillMaxWidth().testTag(MoreTags.ABOUT),
-        )
-        ComingHere()
+        GroupedRows(items = destinations) { destination, isLast ->
+            DenseRow(
+                title = destination.label,
+                chevron = true,
+                divider = !isLast,
+                onClick = destination.onOpen,
+                modifier = Modifier.testTag(destination.testTag),
+            )
+        }
     }
 }
+
+/** One place More can take you. */
+private data class Destination(
+    val label: String,
+    val onOpen: () -> Unit,
+    val testTag: String,
+)
 
 @Composable
 private fun ComingHere() {

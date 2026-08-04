@@ -33,6 +33,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.Hairline
+import com.kamsiob.healthtrail.ui.components.fabScrollClearance
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -76,6 +79,18 @@ fun AppearanceScreen(
      * a screen that ends and a screen that stops.
      */
     footer: @Composable () -> Unit = {},
+    /**
+     * What the surrounding destination wants **above** the theme group.
+     *
+     * More uses it for its destinations, which are what a person opens More to
+     * reach. The theme sits under them because it is changed once and the
+     * destinations are used weekly.
+     */
+    header: @Composable () -> Unit = {},
+    /** The destination's own title, so More says More rather than Appearance. */
+    titleKey: String = "appearance.title",
+    subtitleKey: String = "appearance.subtitle",
+    tab: @Composable () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -90,59 +105,74 @@ fun AppearanceScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = Space.screenHorizontal),
         ) {
-            Spacer(Modifier.height(Space.l))
-            Text(
-                text = strings["appearance.title"],
-                style = HealthTrail.type.displayL,
-                color = colors.ink,
-            )
+            Spacer(Modifier.height(Space.sm))
+            tab()
             Spacer(Modifier.height(Space.s))
             Text(
-                text = strings["appearance.subtitle"],
+                text = strings[titleKey],
+                style = HealthTrail.type.displayM,
+                color = colors.ink,
+            )
+            Spacer(Modifier.height(Space.xs))
+            Text(
+                text = strings[subtitleKey],
                 style = HealthTrail.type.bodyM,
                 color = colors.ink2,
             )
-            Spacer(Modifier.height(Space.l))
 
+            header()
+
+            Spacer(Modifier.height(Space.sectionGap))
             GroupHeader(labelKey = "appearance.group")
             Spacer(Modifier.height(Space.m))
 
-            ThemeChoice.entries.forEachIndexed { index, option ->
-                Option(
-                    choice = option,
-                    selected = option == choice,
-                    onClick = { onChoose(option) },
-                )
-                if (index < ThemeChoice.entries.lastIndex) {
-                    Spacer(Modifier.height(Space.cardGap))
+            // **One grouped surface, not three cards.** Three separate cards
+            // for one question is a fourth pattern on a screen that already has
+            // grouped rows above it, and law 2 has no costume for "card that is
+            // one of three answers". It is a radio group, so it is one group.
+            //
+            // It is not chips, which law 2 gives to short answers: each option
+            // carries a line explaining what it does, and a chip that needs a
+            // sentence under it is a row.
+            GroupedSurface {
+                ThemeChoice.entries.forEachIndexed { index, option ->
+                    Option(
+                        choice = option,
+                        selected = option == choice,
+                        onClick = { onChoose(option) },
+                        isLast = index == ThemeChoice.entries.lastIndex,
+                    )
                 }
             }
 
             footer()
 
-            // Clearance for the capture button, which overlaps the navigation
-            // bar and would otherwise sit on the last row.
-            Spacer(Modifier.height(Space.xxl + Space.l))
+            // Clearance for the corner FAB, from the token rather than from
+            // arithmetic on the screen. D81.
+            Spacer(Modifier.height(fabScrollClearance))
         }
     }
 }
 
 @Composable
-private fun Option(choice: ThemeChoice, selected: Boolean, onClick: () -> Unit) {
+private fun Option(choice: ThemeChoice, selected: Boolean, onClick: () -> Unit, isLast: Boolean) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
+    // A Column so the row can carry the group's hairline under it, which is
+    // what makes three options one surface rather than three.
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, colors.card)
     val ring by focusRingAlpha(interaction)
 
+    Column(modifier = Modifier.fillMaxWidth()) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.card)
+            .clip(Radius.tile)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
             .clickable(
                 interactionSource = interaction,
                 // The row's own surface is the answer to the touch, per section
@@ -185,6 +215,8 @@ private fun Option(choice: ThemeChoice, selected: Boolean, onClick: () -> Unit) 
                     .background(colors.blueDeep),
             )
         }
+    }
+        if (!isLast) Hairline(inset = Space.cardPadding, end = Space.cardPadding)
     }
 }
 
