@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 /**
- * The export container, per `contract/export-format.md`.
+ * The export container, per `contract/EXPORT-FORMAT.md`.
  *
  * **The governing rule is one sentence:** anything the app can store, the
  * export contains and the import restores. A feature that stores something the

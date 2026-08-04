@@ -1,5 +1,7 @@
 {
   "app_meta": {
+    "notRendered": "Application state, not the person's record.",
+    "order": [],
     "columns": {
       "key": {
         "notRendered": "Application state, not the person's record."
@@ -10,10 +12,24 @@
       "updated_at": {
         "notRendered": "Application state, not the person's record."
       }
-    },
-    "notRendered": "Application state, not the person's record."
+    }
   },
   "appointment": {
+    "order": [
+      "id",
+      "subject_id",
+      "title",
+      "person_id",
+      "organization_id",
+      "chapter_id",
+      "scheduled_edtf",
+      "scheduled_zone",
+      "location_note",
+      "notes",
+      "attended_edtf",
+      "attended_zone",
+      "outcome_note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -93,6 +109,19 @@
     }
   },
   "attachment": {
+    "order": [
+      "id",
+      "sha256",
+      "original_filename",
+      "mime_type",
+      "byte_size",
+      "document_id",
+      "entry_id",
+      "bill_id",
+      "project_id",
+      "measurement_id",
+      "caption"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -151,6 +180,24 @@
     }
   },
   "bill": {
+    "order": [
+      "id",
+      "subject_id",
+      "description",
+      "organization_id",
+      "chapter_id",
+      "amount_minor",
+      "currency",
+      "received_edtf",
+      "received_zone",
+      "due_edtf",
+      "due_zone",
+      "state",
+      "state_note",
+      "paid_edtf",
+      "paid_zone",
+      "notes"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -246,6 +293,15 @@
     }
   },
   "call_detail": {
+    "order": [
+      "id",
+      "entry_id",
+      "direction",
+      "number_called",
+      "reached",
+      "duration_minutes",
+      "outcome"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -288,6 +344,20 @@
     }
   },
   "care_thread": {
+    "order": [
+      "id",
+      "subject_id",
+      "label",
+      "template_id",
+      "color_index",
+      "started_edtf",
+      "started_zone",
+      "ended_edtf",
+      "ended_zone",
+      "end_note",
+      "notes",
+      "sort_index"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -362,6 +432,7 @@
     }
   },
   "change_log": {
+    "order": [],
     "columns": {
       "seq": {
         "notRendered": "The change log travels in the payload and is rendered as its own page rather than field by field. See readable/changes.html."
@@ -387,6 +458,22 @@
     }
   },
   "chapter": {
+    "order": [
+      "id",
+      "subject_id",
+      "name",
+      "kind",
+      "organization_id",
+      "started_edtf",
+      "started_zone",
+      "ended_edtf",
+      "ended_zone",
+      "reason",
+      "transferred_from_chapter_id",
+      "transfer_note",
+      "notes",
+      "sort_index"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -468,6 +555,8 @@
     }
   },
   "conflict_log": {
+    "notRendered": "Rendered by the importer's own conflict report, section 8.3, not by the archive's readable copy.",
+    "order": [],
     "columns": {
       "seq": {
         "notRendered": "Rendered by the importer's own conflict report, section 8.3, not by the archive's readable copy."
@@ -496,10 +585,18 @@
       "seen_at": {
         "notRendered": "Rendered by the importer's own conflict report, section 8.3, not by the archive's readable copy."
       }
-    },
-    "notRendered": "Rendered by the importer's own conflict report, section 8.3, not by the archive's readable copy."
+    }
   },
   "cost_entry": {
+    "order": [
+      "id",
+      "cost_sheet_id",
+      "description",
+      "amount_minor",
+      "occurred_edtf",
+      "occurred_zone",
+      "bill_id"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -551,6 +648,14 @@
     }
   },
   "cost_sheet": {
+    "order": [
+      "id",
+      "subject_id",
+      "name",
+      "chapter_id",
+      "currency",
+      "notes"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -591,6 +696,13 @@
     }
   },
   "custom_template": {
+    "order": [
+      "id",
+      "kind",
+      "derived_from_id",
+      "name",
+      "body_json"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -627,6 +739,8 @@
     }
   },
   "device": {
+    "notRendered": "Device identity for sync.",
+    "order": [],
     "columns": {
       "id": {
         "notRendered": "Device identity for sync."
@@ -643,10 +757,22 @@
       "last_seq_in": {
         "notRendered": "Device identity for sync."
       }
-    },
-    "notRendered": "Device identity for sync."
+    }
   },
   "document": {
+    "order": [
+      "id",
+      "subject_id",
+      "title",
+      "category",
+      "chapter_id",
+      "entry_id",
+      "project_id",
+      "received_edtf",
+      "received_zone",
+      "original_location",
+      "notes"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -712,6 +838,19 @@
     }
   },
   "emergency_card": {
+    "order": [
+      "id",
+      "subject_id",
+      "allergies",
+      "blood_type",
+      "conditions",
+      "resuscitation_status",
+      "resuscitation_document_location",
+      "decision_maker_person_id",
+      "decision_maker_document_location",
+      "insurance_note",
+      "other_notes"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -767,6 +906,15 @@
     }
   },
   "emergency_contact": {
+    "order": [
+      "id",
+      "emergency_card_id",
+      "person_id",
+      "display_name",
+      "phone",
+      "relationship",
+      "sort_index"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -810,6 +958,20 @@
     }
   },
   "entry": {
+    "order": [
+      "id",
+      "subject_id",
+      "kind",
+      "occurred_edtf",
+      "occurred_zone",
+      "title",
+      "body",
+      "chapter_id",
+      "incident_id",
+      "is_unfiled",
+      "suggested_home",
+      "pinned_at"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -877,6 +1039,12 @@
     }
   },
   "entry_person": {
+    "order": [
+      "id",
+      "entry_id",
+      "person_id",
+      "involvement"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -911,6 +1079,11 @@
     }
   },
   "entry_thread": {
+    "order": [
+      "id",
+      "entry_id",
+      "thread_id"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -942,6 +1115,18 @@
     }
   },
   "incident": {
+    "order": [
+      "id",
+      "subject_id",
+      "title",
+      "description",
+      "chapter_id",
+      "reported_edtf",
+      "reported_zone",
+      "resolved_at",
+      "resolution_note",
+      "shift_note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1002,6 +1187,16 @@
     }
   },
   "instruction_violation": {
+    "order": [
+      "id",
+      "instruction_id",
+      "occurred_edtf",
+      "occurred_zone",
+      "entry_id",
+      "incident_id",
+      "bill_id",
+      "note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1058,6 +1253,15 @@
     }
   },
   "link": {
+    "order": [
+      "id",
+      "source_table",
+      "source_id",
+      "target_table",
+      "target_id",
+      "relation",
+      "note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1101,6 +1305,19 @@
     }
   },
   "measure": {
+    "order": [
+      "id",
+      "subject_id",
+      "name",
+      "preset_id",
+      "unit",
+      "style",
+      "gap_tolerance",
+      "advice_risk",
+      "show_medication_markers",
+      "notes",
+      "sort_index"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1156,6 +1373,20 @@
     }
   },
   "measurement": {
+    "order": [
+      "id",
+      "measure_id",
+      "entry_id",
+      "chapter_id",
+      "occurred_edtf",
+      "occurred_zone",
+      "value_number",
+      "value_text",
+      "unit",
+      "reported_by_person_id",
+      "source",
+      "note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1224,6 +1455,21 @@
     }
   },
   "medication": {
+    "order": [
+      "id",
+      "subject_id",
+      "name",
+      "dose_text",
+      "purpose_text",
+      "prescriber_person_id",
+      "started_edtf",
+      "started_zone",
+      "stopped_edtf",
+      "stopped_zone",
+      "stop_reason",
+      "notes",
+      "on_emergency_card"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1301,6 +1547,17 @@
     }
   },
   "medication_event": {
+    "order": [
+      "id",
+      "medication_id",
+      "entry_id",
+      "chapter_id",
+      "kind",
+      "occurred_edtf",
+      "occurred_zone",
+      "dose_text",
+      "note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1359,6 +1616,14 @@
     }
   },
   "medication_flag": {
+    "order": [
+      "id",
+      "medication_id",
+      "raised_edtf",
+      "raised_zone",
+      "raised_with_person_id",
+      "note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1407,6 +1672,16 @@
     }
   },
   "milestone": {
+    "order": [
+      "id",
+      "subject_id",
+      "label",
+      "occurred_edtf",
+      "occurred_zone",
+      "chapter_id",
+      "measure_id",
+      "note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1462,6 +1737,15 @@
     }
   },
   "organization": {
+    "order": [
+      "id",
+      "name",
+      "kind",
+      "phone",
+      "address",
+      "notes",
+      "archived_at"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1503,6 +1787,19 @@
     }
   },
   "person": {
+    "order": [
+      "id",
+      "subject_id",
+      "display_name",
+      "role_label",
+      "role_template_id",
+      "organization_id",
+      "phone",
+      "email",
+      "shift_note",
+      "notes",
+      "archived_at"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1559,6 +1856,12 @@
     }
   },
   "person_chapter": {
+    "order": [
+      "id",
+      "person_id",
+      "chapter_id",
+      "role_label"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1593,6 +1896,21 @@
     }
   },
   "project": {
+    "order": [
+      "id",
+      "subject_id",
+      "name",
+      "template_id",
+      "chapter_id",
+      "status",
+      "waiting_on",
+      "waiting_since",
+      "started_edtf",
+      "started_zone",
+      "finished_edtf",
+      "finished_zone",
+      "notes"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1671,6 +1989,12 @@
     }
   },
   "project_person": {
+    "order": [
+      "id",
+      "project_id",
+      "person_id",
+      "role_label"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1705,6 +2029,15 @@
     }
   },
   "project_step": {
+    "order": [
+      "id",
+      "project_id",
+      "text",
+      "sort_index",
+      "completed_edtf",
+      "completed_zone",
+      "note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1755,6 +2088,19 @@
     }
   },
   "question": {
+    "order": [
+      "id",
+      "subject_id",
+      "text",
+      "person_id",
+      "role_label",
+      "entry_id",
+      "medication_id",
+      "asked_edtf",
+      "asked_zone",
+      "asked_at_appointment_id",
+      "answer_text"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1821,6 +2167,8 @@
     }
   },
   "schema_migration": {
+    "notRendered": "Migration bookkeeping. Which schema versions this database has been through, which the importer reads and a reader has no use for.",
+    "order": [],
     "columns": {
       "version": {
         "notRendered": "Migration bookkeeping. Which schema versions this database has been through, which the importer reads and a reader has no use for."
@@ -1831,10 +2179,27 @@
       "note": {
         "notRendered": "Migration bookkeeping. Which schema versions this database has been through, which the importer reads and a reader has no use for."
       }
-    },
-    "notRendered": "Migration bookkeeping. Which schema versions this database has been through, which the importer reads and a reader has no use for."
+    }
   },
   "standing_instruction": {
+    "order": [
+      "id",
+      "subject_id",
+      "template_id",
+      "name",
+      "wording",
+      "tag",
+      "chapter_id",
+      "given_to_person_id",
+      "given_edtf",
+      "given_zone",
+      "acknowledged_edtf",
+      "acknowledged_zone",
+      "acknowledged_how",
+      "ended_edtf",
+      "ended_zone",
+      "notes"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1931,6 +2296,18 @@
     }
   },
   "subject": {
+    "order": [
+      "id",
+      "display_name",
+      "relationship",
+      "born_edtf",
+      "born_zone",
+      "situation_template_id",
+      "notes",
+      "is_active",
+      "closed_at",
+      "closed_note"
+    ],
     "columns": {
       "id": {
         "render": "id",
@@ -1990,6 +2367,15 @@
     }
   },
   "visit_detail": {
+    "order": [
+      "id",
+      "entry_id",
+      "arrived_edtf",
+      "arrived_zone",
+      "left_edtf",
+      "left_zone",
+      "location_note"
+    ],
     "columns": {
       "id": {
         "render": "id",

@@ -71,7 +71,7 @@ object Backup {
         // not have. See `PortabilityTest`.
         //
         // What protects the contents is the container's own passphrase, chosen
-        // by the person, which is what `contract/export-format.md` always said.
+        // by the person, which is what `contract/EXPORT-FORMAT.md` always said.
         // **Since format version 2 there is no export that declines it**, D67,
         // because a portable payload and an optional passphrase together mean
         // the whole record in the clear.
@@ -271,7 +271,7 @@ object Backup {
      * Recomputes every derived date range from the EDTF string beside it.
      *
      * **Run on import, and this is a requirement of the format rather than a
-     * precaution.** `contract/export-format.md` says the `_edtf` column round
+     * precaution.** `contract/EXPORT-FORMAT.md` says the `_edtf` column round
      * trips byte for byte and the `_start` and `_end` columns are recomputed on
      * the other side rather than trusted from the file.
      *

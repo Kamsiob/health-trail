@@ -40,7 +40,7 @@ enum class ExportState { READY, WORKING, DONE, FAILED }
  * Exporting the notebook.
  *
  * **This file is the only recovery path from key loss**, per D24, which makes
- * it the most consequential thing the app writes. `contract/export-format.md`
+ * it the most consequential thing the app writes. `contract/EXPORT-FORMAT.md`
  * section 4 specifies what this screen has to say, and it says it in those
  * words: if the passphrase is lost the file cannot be recovered, there is no
  * server, no recovery code, and no backdoor. **Before the person commits, not

@@ -17,7 +17,7 @@ import org.junit.runner.RunWith
 /**
  * The export container, and the files that must fail cleanly.
  *
- * `contract/export-format.md` section 7 lists eight files that each have to
+ * `contract/EXPORT-FORMAT.md` section 7 lists eight files that each have to
  * change nothing and name what was wrong. **A generic failure is not enough
  * here.** The person is holding what may be the only copy of a year of their
  * mother's care, and "could not import" tells them nothing about whether to

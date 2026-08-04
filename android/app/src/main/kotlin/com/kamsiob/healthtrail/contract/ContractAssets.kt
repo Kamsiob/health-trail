@@ -20,7 +20,16 @@ import org.json.JSONObject
 object ContractAssets {
 
     const val SCHEMA_PATH = "contract/schema.sql"
-    const val EXPORT_FORMAT_PATH = "contract/export-format.md"
+    const val EXPORT_FORMAT_PATH = "contract/EXPORT-FORMAT.md"
+
+    /**
+     * Which of the schema's columns the archive's readable copy renders.
+     *
+     * `contract/DATA-CONTRACT.md` 8.5. In `/contract` rather than here because
+     * the web version renders the same archive from the same decisions, and two
+     * copies of this would drift within weeks.
+     */
+    const val READABLE_FIELDS_PATH = "contract/readable-fields.json"
 
     private val TEMPLATE_FILES = listOf(
         "templates/situations.json",
