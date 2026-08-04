@@ -127,7 +127,11 @@ object Readable {
         appendLine(strings["prep.questions"])
         appendLine("-".repeat(strings["prep.questions"].length))
         if (prep.questions.isEmpty()) {
-            appendLine(strings["prep.questions.empty"])
+            // **Not the screen's words.** The screen tells the person where
+            // questions come from, which is a sentence about this app. This
+            // document is read by a sibling three states away who does not have
+            // it, so it says the plain fact and nothing about where to type.
+            appendLine(strings["readable.questions.none"])
         } else {
             prep.questions.forEachIndexed { index, question ->
                 val who = question.roleLabel?.takeIf { it.isNotBlank() }?.let { " ($it)" } ?: ""

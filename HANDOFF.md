@@ -41,7 +41,9 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 - **#182 tests and results has nothing to convert.** No table in the schema, no query, no screen. It is the section being built for the first time and it needs a schema decision, which is the owner's. The issue says exactly what has to be decided and is labeled `blocked`.
 - **#188 capture is built.** It is a staged conversation now: three questions, one on screen at a time, dots saying which, a skip that is always visible, and save live from stage one. The fifteen second path law 3 is written around is type one sentence and save, without ever seeing stages two or three.
 
-**Step 4 has begun and eight of it are closed**: one entry #189, one incident and the incidents list #190, one person #191, one medication #192, one chapter #193, one care thread #194, one document #195, and one bill #196.
+**Step 4 has begun and nine of it are closed**: one entry #189, one incident and the incidents list #190, one person #191, one medication #192, one chapter #193, one care thread #194, one document #195, one bill #196, and one appointment and its prep sheet #197.
+
+**One appointment turned out to be one screen, not two.** Section 14 listed "One appointment" and "The prep sheet" separately, and the app already opened the prep sheet when a row was tapped, so the other would have been a detail screen whose only content was a link to the screen the row already opened. They are one row in section 14 now, and D99 says why. **When two undrawn screens are two names for the same question, build one.**
 
 **Two detail screens did not exist at all: one bill and one document.** Tapping either opened the form that edits it, which is the app answering "tell me about this" with "change this". For documents that is the section whose whole point is holding the person's own paper, and nothing in the app ever showed a piece of it at a size somebody could read.
 
@@ -65,14 +67,23 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **The trail is the one that mattered.** It is the screen law 4 was written for and it has all four tools: a sticky month header, an edge scrubber in a reserved margin, a scoped search over 1,630 entries, and pinning.
 
-**Two undrawn screens followed rule 12** at the moment they were built: care threads (#186, review at **#223**) and standing instructions (#185, review at **#225**). Both are in `DESIGN.md` section 14 and both are named here, which is all three places.
+**Three undrawn screens followed rule 12** at the moment they were built: care threads (#186, review at **#223**), standing instructions (#185, review at **#225**), and one appointment with its prep sheet (#197, review at **#232**). All three are in `DESIGN.md` section 14 and all three are named here, which is all three places.
 
-1. **The rest of step 4**, #197 to #208.
+**Two things found on the prep sheet that are not only the prep sheet's.**
+
+- **`removableByLongPress` was the only modifier the app had for a tappable card**, so every screen that needed one reached for it and passed an empty `onLongPress` to switch the removal off. The gesture went quiet, the words did not: a reader announces the **tap** as "remove" and offers a long press called "remove" that runs nothing. `Modifier.openableByTap` in `Press.kt` is the missing component, and **#231** carries the five screens still doing it.
+- **Opening an entry from a detail screen closed the screen underneath it**, so backing out of a change landed on the appointments list rather than the sheet the person was standing on. Fixed for the prep sheet, and the entry's own back handler is now registered last so it wins. **Chapter, thread, and person still do it**, and they are in #231's neighborhood rather than filed, so check them when you touch one.
+
+**The calendar hand-off cost three attempts and none of them were time zones.** An appointment on November 27 opened the calendar app on the 26th. An all day event's end is exclusive and none was being sent, so the calendar received a day of zero length and drew the day before. `CalendarHandoffTest` covers it now. **The screen said November 27 the whole time**, which is the shape of every defect that only exists inside somebody else's app after the person has tapped.
+
+1. **The rest of step 4**, #198 to #208.
 2. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
 
 **Nine things are waiting on the owner and none of them block anything.** **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table), **#220** (the trail's filter needs a decision about what a person filters by), **#182** (the tests section needs a schema before it can be built at all), **#230** (an incident cannot say which medication it was about, which rule 18 argues it should), and **#223** and **#225** (the two design reviews).
 
-**Two fixture defects are filed and both are the same shape**: something built and wired that the generated notebook never exercises, so nobody looks at it. **#219** leaves every chapter open, so eight places all read as current. **#229** never links a question to a medication, so a path that exists end to end has never rendered.
+**Three fixture defects are filed. Two are the same shape**: something built and wired that the generated notebook never exercises, so nobody looks at it. **#219** leaves every chapter open, so eight places all read as current. **#229** never links a question to a medication, so a path that exists end to end has never rendered.
+
+**#233 is a different shape and worth reading.** The generator writes `_start`, `_end`, and `_zone` directly rather than deriving them from the EDTF, so it produced a day-precision appointment whose instant is 10am. The app itself could never write that row, which means the fixture cannot exercise the path the app actually uses, and an appointment on today's date would flip from "coming up" to "already happened" at ten in the morning.
 
 **One is release-blocking and is not a decision, it is work: #227.** Nothing in the app normalizes text to NFC, which section 8.4 requires. A name typed with a combining accent on one phone and a precomposed one on another is two different people to search and to merge. It was not fixed on the spot because it touches every write path and a half-applied normalization is worse than none.
 

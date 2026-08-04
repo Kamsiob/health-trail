@@ -54,9 +54,10 @@ object ApptTags {
  * useful place for it is with the things still ahead rather than filed away
  * with what is finished.
  *
- * The prep sheet of `MASTER_SPEC.md` section 4.3, which gathers the questions
- * waiting for that person and a change summary, is Phase 2 and is not built.
- * This is the list underneath it.
+ * **Tapping one opens its prep sheet**, which is `PrepScreen` and which is also
+ * the appointment's own detail screen. `MASTER_SPEC.md` 4.3: the questions
+ * waiting for that person and a change summary composed from real entries. This
+ * is the list underneath it.
  */
 @Composable
 fun AppointmentsScreen(

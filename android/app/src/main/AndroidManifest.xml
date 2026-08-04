@@ -24,14 +24,28 @@
       HANDOFF section 8 says to run the verifier rather than the checks anybody
       happens to remember.
 
-      **This is the whole list, and it stays that way.** Declaring a query is
-      declaring what this app is allowed to notice about the phone, and this app
-      is entitled to notice exactly one thing: whether anything can turn speech
-      into text.
+      **The list is two entries and every one of them is a control that hides
+      itself.** Declaring a query is declaring what this app is allowed to
+      notice about the phone, so nothing goes in here to enable a feature. Each
+      one is here because rule 11 forbids showing a control that would do
+      nothing, and the only way to know it would do nothing is to ask.
+
+      One: whether anything can turn speech into text, for `DictateAction`.
+
+      Two: whether anything can take a new calendar event, for the hand-off in
+      `DESIGN.md` 9.1. **That is one event, offered, one way, with nothing read
+      back**, and it stays that way: this asks whether a calendar app exists and
+      never for permission to read one. No calendar permission is requested here
+      or anywhere, and `ACTION_INSERT` needs none, because it opens that app's
+      own new event screen and writes nothing.
     -->
     <queries>
         <intent>
             <action android:name="android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.INSERT" />
+            <data android:mimeType="vnd.android.cursor.dir/event" />
         </intent>
     </queries>
 

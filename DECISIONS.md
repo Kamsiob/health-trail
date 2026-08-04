@@ -1958,6 +1958,32 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **The restore picker never filtered on extension**, so nothing had to change to keep reading older files.
 
+### D99. One appointment is its prep sheet, and there is no second screen
+
+**2026-08-04, building #197.** Section 14 listed "One appointment" and "The prep sheet" as two undrawn screens. The app already opened the prep sheet when a row was tapped, so building the other would have produced a detail screen whose only content was a link to the screen the row already opened.
+
+**Two screens is the version that asks the person to understand the app's filing.** Rule 20: the complexity lives in the code, never on the screen. What somebody wants from an appointment is when it is and what to walk in carrying, and those are one screen. The date and where it is moved up onto the sheet, which is what "one appointment" was going to hold, and the two rows in section 14 became one.
+
+### D100. The prep questions are grouped by who answers them, and are rows rather than cards
+
+**2026-08-04, looking at it on the phone.** They were eight cards on a spine, each carrying its own role label in mono, so "Charge nurse" appeared three times down one column and the whole fold was a wall of white. A spine also implies a sequence, and questions to ask are not in an order.
+
+**Rule 22 decides the component from the shape of the content.** A question is one sentence, which is a row. A card is for three or more lines somebody actually reads, and using one for a sentence is exactly what makes eight of them indistinguishable.
+
+**Screen 21 had already solved this**, for the same content in a bigger room: grouped by role, largest group open, the rest folded and counted. The prep sheet uses that composition rather than a second answer, so the two screens read as siblings. **A pattern that appears twice in two different forms is a defect**, and this was on its way to being one.
+
+**The changes kept the spine.** They are chronological, which is the one thing on the screen that genuinely is a sequence.
+
+### D101. The calendar hand-off sends the name, the day, and where, and never the notes
+
+**2026-08-04, building the hand-off `DESIGN.md` 9.1 asks for.** An appointment carries notes, and putting them in the event would have been the easier thing and would have looked more helpful.
+
+**A calendar is, on most phones, the one thing on the device that syncs to an account by default.** The notes on an appointment are the care record. Rule 23 filters on safe, private, and compatible **before** it asks what is easiest, and this fails the second filter, so it never reached the question.
+
+**`ACTION_INSERT` rather than a write.** It opens the calendar app's own new event screen already filled in and creates nothing until the person saves it there, so they see exactly what is going across before it goes. No calendar permission is requested, here or anywhere.
+
+**Nothing is offered where nothing can be kept.** A date coarser than a day is not an event, and handing "sometime in March" over as March 1st would invent a precision nobody gave, which is rule 17. A phone that cannot take an event shows no action rather than one that fails on the tap, which needed a second `<queries>` entry in the manifest and is the whole reason that list grew.
+
 ---
 
 ## BLOCKED

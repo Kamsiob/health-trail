@@ -557,11 +557,17 @@ fun NotebookShell(
     // screen above the notebook once.
     BackHandler(enabled = libraryOpen && openProject == null) { libraryOpen = false }
     BackHandler(enabled = openIncident != null) { openIncident = null }
-    BackHandler(enabled = openEntry != null) { openEntry = null }
     BackHandler(enabled = openPerson != null) { openPerson = null }
     BackHandler(enabled = openPrepFor != null) { openPrepFor = null }
     BackHandler(enabled = openThread != null) { openThread = null }
     BackHandler(enabled = openChapter != null) { openChapter = null }
+    // **The entry sits on top of whatever opened it, so its way back is
+    // registered last.** The dispatcher hands the press to the most recently
+    // added enabled callback, so an entry opened from a prep sheet with this
+    // declared earlier would have closed the sheet underneath and left the
+    // entry on screen. Every screen that can open an entry belongs above this
+    // line.
+    BackHandler(enabled = openEntry != null) { openEntry = null }
     BackHandler(enabled = openMedication != null) { openMedication = null }
     BackHandler(enabled = recordingChangeTo != null) { recordingChangeTo = null }
     BackHandler(enabled = recordingViolationFor != null) { recordingViolationFor = null }
@@ -1729,7 +1735,11 @@ fun NotebookShell(
             prep?.takeIf { it.appointment.id == appointmentId }?.let { sheet ->
                 PrepScreen(
                     prep = sheet,
-                    onOpenEntry = { openPrepFor = null; openEntry = it.id },
+                    // **The sheet stays open underneath.** Somebody reading a
+                    // change and coming back had been dropped on the
+                    // appointments list, which is two taps to get back to the
+                    // place they were already standing. Rule 18.
+                    onOpenEntry = { openEntry = it.id },
                     onShare = { sharingPrep = sheet },
                     onWriteUp = {
                         // The ordinary capture form, so what comes out is an

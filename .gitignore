@@ -72,3 +72,6 @@ Thumbs.db
 # A copy of the public website page. It carries site navigation naming other
 # products, and a stale copy of a live page drifts from it besides.
 health-trail.html
+
+# Kotlin build session scratch, written by the Gradle plugin.
+android/.kotlin/

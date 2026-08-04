@@ -390,6 +390,12 @@ The agenda and month views are **drawn only from appointments recorded in this a
 
 A single appointment offers to hand itself to the phone's own calendar app: one event, user-initiated, one way, **with nothing read back.**
 
+**What travels is what makes an event, and nothing else: the name, the day, and where.** The notes stay in the notebook. A calendar is, on most phones, the one thing on the device that syncs to an account by default, and the notes on an appointment are the care record. Rule 23 filters on safe, private, and compatible before it asks what is easiest.
+
+**The offer only appears where it can be kept.** A date coarser than a day is not an event, and handing "sometime in March" over as March 1st would invent a precision nobody gave. A phone with nothing that can take an event shows no action at all rather than one that fails when tapped.
+
+**`ACTION_INSERT` writes nothing.** It opens the calendar app's own new-event screen already filled in, and nothing exists until the person saves it there, so they see exactly what is going across before it goes.
+
 ### 9.2 Dates
 
 The storage model is `contract/DATA-CONTRACT.md`, and the whole point is that none of it reaches the screen.
@@ -565,8 +571,8 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 | Care threads, the list | 12 Medications | Peers with state, folded when ended. **Built 2026-08-04**, #186, review at #223 |
 | One document | 09 One entry | The paper itself, then where the original lives |
 | One bill | 09 One entry | The amount, its state, and what it is linked to |
-| One appointment | 09 One entry | The facts, then the prep, then the calendar hand-off |
-| The prep sheet | 15 One project | A sequence the person walks in a room |
+| One appointment | 09 One entry | The facts, then the prep, then the calendar hand-off. **Built 2026-08-04**, #197, review at #232 |
+| The prep sheet | 15 One project | The same screen. One appointment **is** its prep sheet, and building two would have been two answers to one question. The spine went to the changes, which are a sequence; the questions took screen 21's grouping, which is the shape they actually have |
 | One question set | 21 Fifty questions | The pinned group, opened |
 | One test round | 20 Tests and results | The round card, opened |
 | One test's history | 24 Tracking one thing | A chart of one thing over time |

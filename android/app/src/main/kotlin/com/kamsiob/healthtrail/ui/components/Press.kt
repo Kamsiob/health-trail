@@ -2,16 +2,25 @@ package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
+import com.kamsiob.healthtrail.ui.theme.Radius
 
 /**
  * The press state, per `DESIGN.md` section 5.14. One treatment, used by
@@ -77,6 +86,48 @@ fun focusRingAlpha(interaction: InteractionSource): State<Float> {
         animationSpec = LocalMotion.current.quick(),
         label = "focus",
     )
+}
+
+/**
+ * A card that opens something, and does nothing else.
+ *
+ * **The plain case, which had no component and so kept borrowing the wrong
+ * one.** `removableByLongPress` was reached for whenever a card needed to be
+ * tappable, with an empty removal lambda passed in to switch the removal off.
+ * The gesture went quiet; the words did not. A reader still announced the tap
+ * action with whatever label was handed over, which on the prep sheet was
+ * "remove", and still offered a long press labeled "remove" that ran an empty
+ * function. Rule 11: a control that says it does something and does nothing is
+ * not finished.
+ *
+ * **It carries the surface as well as the gesture**, because 5.14 says every
+ * tappable thing answers a finger and the only way to make that automatic is to
+ * put the resting color and the press in the same place. The caller clips
+ * first and does not set its own background.
+ *
+ * @param label what a reader says the tap does, in the person's language and as
+ *   a verb: "Open this entry", never the name of the thing being opened.
+ */
+@Composable
+fun Modifier.openableByTap(
+    label: String,
+    onTap: () -> Unit,
+    resting: Color = HealthTrail.colors.card,
+): Modifier {
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, resting)
+    val ring by focusRingAlpha(interaction)
+
+    return this
+        .background(surface)
+        .border(2.dp, HealthTrail.colors.blue.copy(alpha = ring), Radius.card)
+        .clickable(
+            interactionSource = interaction,
+            indication = null,
+            onClickLabel = label,
+            role = Role.Button,
+            onClick = onTap,
+        )
 }
 
 /**

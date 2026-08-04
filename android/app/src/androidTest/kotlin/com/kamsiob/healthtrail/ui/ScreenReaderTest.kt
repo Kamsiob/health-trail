@@ -8,6 +8,8 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.isRoot
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
@@ -65,6 +67,7 @@ import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
+import com.kamsiob.healthtrail.ui.screens.PrepTags
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.SetupScreen
 import com.kamsiob.healthtrail.ui.screens.SituationPickerScreen
@@ -986,11 +989,30 @@ class ScreenReaderTest {
                         locationNote = "The day room",
                         notes = null,
                     ),
+                    // **Two roles, so both halves are on screen.** The largest
+                    // group leads open and the rest arrive as folds, and a
+                    // fixture with one role would only ever exercise the first.
                     questions = listOf(
                         Repository.Question(
                             id = "q1",
                             text = "Why was the dressing schedule changed?",
                             roleLabel = "Charge nurse",
+                            entryId = null,
+                            askedEdtf = null,
+                            answerText = null,
+                        ),
+                        Repository.Question(
+                            id = "q2",
+                            text = "Who authorized the room move?",
+                            roleLabel = "Charge nurse",
+                            entryId = null,
+                            askedEdtf = null,
+                            answerText = null,
+                        ),
+                        Repository.Question(
+                            id = "q3",
+                            text = "Can she have the window bed?",
+                            roleLabel = "Social worker",
                             entryId = null,
                             askedEdtf = null,
                             answerText = null,
@@ -1018,6 +1040,11 @@ class ScreenReaderTest {
                 onBack = {},
             )
         }
+        // **The changes arrive folded, so opening it is part of the test.**
+        // Asserting on the sheet as it lands would have checked everything
+        // except the card that opens an entry, which is the one control here
+        // that was announcing the wrong verb until 2026-08-04.
+        compose.onNodeWithTag(PrepTags.CHANGES_FOLD).performClick()
         assertEverythingIsLabeled("a prep sheet")
     }
 
