@@ -250,6 +250,8 @@ payload.enc     the encrypted archive described below
 
 **Nothing in the outer layer reveals anything about the person or their record.** The outer `MANIFEST.json` carries **only**: format version, app version, schema version, export timestamp, the encryption algorithm, the key derivation function, and every Argon2id parameter needed to derive the key again in ten years. **No names, no counts, no dates of care, and no locale that would narrow down who this is.**
 
+**The export timestamp stays, and the filename stays human-recognizable.** Decided under `CLAUDE.md` rule 23 and recorded as D86. Removing the date would **protect nothing**, because the filename already carries it, while costing the person the ability to tell six backups apart. And 8.6 requires that nothing is written before the person sees what a file holds, which a file whose date is unreadable until after decryption cannot satisfy. **An export timestamp is a fact about the file. A date of care is a fact about the person.** That distinction is what the outer layer is drawn around.
+
 **The outer `README.txt` is written for a stranger who found this file and has the passphrase.** It states what the file is, that the contents are encrypted, exactly which algorithm and parameters were used, where the format is documented, and **how to decrypt it without this app**. It states plainly that **a lost passphrase means the archive is unrecoverable, with no server, no backdoor, and no recovery path anywhere.** It names `tools/decrypt/` and gives its repository path.
 
 #### The inner layer

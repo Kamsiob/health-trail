@@ -4,7 +4,7 @@
 
 If you are a session with no memory, this file plus `git log` and the issue board is everything you need.
 
-**Last rewritten:** 2026-08-03, at the end of the step zero that adopted design direction v4.
+**Last rewritten:** 2026-08-03, at the end of step zero, then updated with the owner's standing principle, `CLAUDE.md` rule 23 and D86, and the scheduling correction that moves the dark theme into step 1, D87.
 
 ---
 
@@ -18,11 +18,14 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 ### Pick this up first, in this order
 
+**Step 1 now covers both themes.** D87: #152, the dark theme, moved into step 1 alongside #149, and **step 1 does not complete until every token, light and dark, exists and is verified on the device at both themes.** Converting screens against a light-only token set gives every converted screen a deferred second review, which is the half-converted state step 1 exists to prevent.
+
 1. **#150, the font gate, before anything visual.** Screenshot a screen carrying all three faces, confirm the letterforms by eye, and record the confirmation here. **This app has already shipped multiple sessions of visual review that were invalid because a face had silently fallen back to the system typeface.** It is a gate, not a checkbox, `DESIGN.md` 5.2.
 2. **#149, the token set**, measured. Nothing else in the conversion starts until the theme matches `DESIGN.md` sections 4.1 to 4.3.
-3. **#151, shape and rhythm**, then **#153 to #168**, the component inventory. Eleven components do not exist at all; five need real rebuilds.
-4. **Only then #169 to #172**, the four bottom-navigation destinations, so the app reads as one app end to end at the earliest possible moment.
-5. **Then #173 to #188** section screens, then **#189 to #208** detail screens, sheets, onboarding, settings, and edge states.
+3. **#152, the dark theme**, whose derivation is already done and published in D87. Only the values, the contrast run, and the color vision screenshots remain.
+4. **#151, shape and rhythm**, then **#153 to #168**, the component inventory. Eleven components do not exist at all; five need real rebuilds.
+5. **Only then #169 to #172**, the four bottom-navigation destinations, so the app reads as one app end to end at the earliest possible moment.
+6. **Then #173 to #188** section screens, then **#189 to #208** detail screens, sheets, onboarding, settings, and edge states.
 
 **`ORDER OF WORK` is not a suggestion.** A half-converted app is worse than either version and it makes review impossible.
 
@@ -87,9 +90,11 @@ Two base tokens moved for the same reason: `ink-2` to `#576873` and `blue` to `#
 
 ## 3. What is deliberately not claimed
 
-**The dark theme is not converted, and saying otherwise would be the error D29 records, which this project has already made twice.**
+**The dark theme is derived but not yet built, and saying otherwise would be the error D29 records, which this project has already made twice.**
 
-The derivation stands unchanged, as the owner's direction requires. **The values do not**, because every one was derived from the previous light ladder and that ladder is gone. The six tab hues have no dark counterpart at all, because the tab pack did not exist before. **#152** is the re-derivation, measured rather than calculated, and until it lands the dark theme is unconverted and is described that way everywhere.
+**The derivation is done and published**, D87 and `DESIGN.md` 4.5: the full dark surface ladder and all six tab hues with washes and ink variants, with both measured tables. **What has not happened is putting the values in `Color.kt` and looking at them on the phone.** Until that, the dark theme is unbuilt and is described that way everywhere.
+
+**One finding from doing it is worth carrying forward.** A first derivation that optimized each hue against its own wash alone produced six hues that **collapsed under red-green color vision deficiency**, rose against stone at 2.8 CIEDE2000 under simulated deuteranopia, which is the same color. **Lightness is what survives red-green CVD.** The hues keep their angles, which is the owner's mapping, and are spread across a 48 to 78 percent lightness band, giving a minimum separation of 10.8 across normal vision, protanopia, and deuteranopia. **The tables are the floor, not the verification**: the color vision screenshots still have to be looked at.
 
 **No screen has been converted.** The documents describe where the app is going. The app itself is still entirely on the old direction, and every screen still on it is visible as an open issue, which is what `ORDER OF WORK` step 5 asks for.
 

@@ -1679,6 +1679,111 @@ Today showed no digest at all when nothing had changed since the last visit. The
 
 ---
 
+## 2026-08-03, later the same day
+
+### D86. When more than one answer is defensible, take the easiest one for the person
+
+**Decision, an owner standing principle, now `CLAUDE.md` rule 23.** When a design or implementation question has more than one defensible answer, choose the one that is easiest for the person using the app, **provided that choice is safe, private, and compatible.**
+
+**Those three are the filter, not a tiebreaker applied afterward.** If an easier option fails any of the three, it is out, and the question is decided among what remains. The order matters: this is not "pick the easy one and then check," it is "eliminate on safety, privacy, and compatibility, then pick the easiest of what is left."
+
+**Its limit is written into the rule itself.** It resolves open questions. **It does not reopen closed ones**, and it is never a justification for weakening the content rules, the data contract, D67, or anything else already decided. A future session reaching for this principle to argue for a plain export, a target range, or a softer tombstone rule is misreading it.
+
+**Why this needed saying.** Most of the hard calls in this app are between two answers that are both defensible, and without a stated tiebreak they get decided by whichever is easier to build. That is a bias toward the implementer and away from a person standing in a hallway. Naming the principle moves the default.
+
+**Applied immediately to the one open question in THE ARCHIVE.** The export date **stays in the outer `MANIFEST.json`**, and the archive filename **stays human-recognizable**.
+
+The question was whether the outer layer leaks anything by carrying a date. It does not, on the filter: the filename already carries the date, so removing it from the manifest **protects nothing** while costing the person the ability to tell six backups apart. And **the import screen needs it**, because `contract/DATA-CONTRACT.md` 8.6 requires that nothing is written before the person sees what the file holds, and a file whose date is unreadable until after decryption cannot be described before it is opened. Easiest for the person, and it fails none of the three.
+
+**What the outer layer still must not carry** is unchanged: no names, no counts, no dates of care, and no locale that would narrow down who this is. **An export timestamp is a fact about the file. A date of care is a fact about the person.** That distinction is the whole of it.
+
+### D87. The dark theme moves into ORDER OF WORK step 1, and the dark tab hues are derived here
+
+**Decision, an owner scheduling correction.** #152 moves into step 1 alongside #149. **Step 1 does not complete until every token, light and dark, including all six tab hues with their washes and ink variants, exists and is verified on the device at both themes. No screen conversion begins before that.**
+
+**The reasoning, which is the half worth keeping.** The direction requires every screen to be reviewed at both themes. Converting screens against a light-only token set means **every converted screen carries a deferred second review**, which is exactly the half-converted state step 1 exists to prevent. Deferring the dark theme does not save the work, it only moves it and multiplies it by the number of screens.
+
+**The derivation stands unchanged**, per the direction: surfaces lighter as they come forward, elevation carried by surface lightness rather than shadow, no shadow at all, gold and red keeping their exact meanings, never black.
+
+**The dark surface ladder**, derived against the v4 light ladder:
+
+| Token | Hex | Note |
+|---|---|---|
+| `paper` | `#141C23` | Never black. Black smears on OLED during scroll and is harsh in a dark room, which is when this theme gets used |
+| `card` | `#1C262E` | One step forward |
+| `sand` | `#25313A` | Recessed reads **lighter** on dark, the opposite of light theme, which is correct for dark surfaces |
+| `ink` | `#E8EDF1` | 14.60:1 on paper. Never pure white |
+| `ink-2` | `#AFBCC5` | 8.87:1 on paper, 6.85:1 on sand |
+| `ink-3` | `#6E7C85` | Non-text only, as in light |
+
+**The two constraints the owner set for the dark tab hues, and both are met.**
+
+#### Table one: each hue against its own dark wash and the surfaces
+
+| Hue | Base, shapes | Ink, text | Wash | ink on wash | ink on paper | base on paper |
+|---|---|---|---|---|---|---|
+| `rose` | `#C79B8A` | `#B98E7E` | `#2F1D16` | 5.53 | 5.93 | 6.95 |
+| `teal` | `#A0CFC8` | `#6CADA2` | `#172E2A` | 5.57 | 6.67 | 10.04 |
+| `slate` | `#6789AD` | `#829BB5` | `#1B222A` | 5.58 | 5.99 | 4.72 |
+| `moss` | `#CFD8B6` | `#9BAA6E` | `#282D18` | 5.66 | 6.86 | 11.60 |
+| `manila` | `#D1A761` | `#C39A55` | `#312614` | 5.69 | 6.62 | 7.71 |
+| `stone` | `#9F8856` | `#AA976E` | `#2A251B` | 5.34 | 6.03 | 5.02 |
+
+**Every ink clears 4.5:1 against its own wash and against all three surfaces. Every base clears 3:1 as a shape.** The floor is the same one section 12 of `DESIGN.md` sets, unchanged.
+
+#### Table two: each hue against every other hue, CIEDE2000
+
+**And this is where the first derivation failed, which is why it is recorded rather than quietly fixed.** A first pass that derived each hue independently, optimizing only for contrast against its own wash, produced six hues that were fine in isolation and **collapsed under red-green color vision deficiency**: rose against stone measured **2.8** under simulated deuteranopia, moss against stone 3.5, and moss against manila 4.9 under protanopia. **At those values they are the same color.**
+
+**The fix is lightness, because lightness is what survives red-green CVD.** The six hues keep their hue angles exactly, which is the owner's mapping and not mine to re-derive, and are separated along lightness across a 48 to 78 percent band. A wider band scored no better and cost hue identity: at 84 percent lightness teal stops reading as teal.
+
+**Normal vision**| | rose | teal | slate | moss | manila | stone |
+|---|---|---|---|---|---|---|
+| **rose** | . | 34.6 | 31.3 | 27.9 | 16.3 | 17.7 |
+| **teal** | 34.6 | . | 26.7 | 14.6 | 30.1 | 30.5 |
+| **slate** | 31.3 | 26.7 | . | 37.5 | 39.6 | 37.3 |
+| **moss** | 27.9 | 14.6 | 37.5 | . | 20.4 | 24.4 |
+| **manila** | 16.3 | 30.1 | 39.6 | 20.4 | . | 12.3 |
+| **stone** | 17.7 | 30.5 | 37.3 | 24.4 | 12.3 | . |
+
+Worst pair: **manila against stone, 12.3**
+
+**Simulated protanopia**
+
+| | rose | teal | slate | moss | manila | stone |
+|---|---|---|---|---|---|---|
+| **rose** | . | 14.7 | 26.9 | 14.4 | 13.3 | 12.2 |
+| **teal** | 14.7 | . | 24.4 | 11.7 | 22.7 | 26.1 |
+| **slate** | 26.9 | 24.4 | . | 35.8 | 40.2 | 35.4 |
+| **moss** | 14.4 | 11.7 | 35.8 | . | 15.8 | 22.9 |
+| **manila** | 13.3 | 22.7 | 40.2 | 15.8 | . | 11.3 |
+| **stone** | 12.2 | 26.1 | 35.4 | 22.9 | 11.3 | . |
+
+Worst pair: **manila against stone, 11.3**
+
+**Simulated deuteranopia**
+
+| | rose | teal | slate | moss | manila | stone |
+|---|---|---|---|---|---|---|
+| **rose** | . | 17.5 | 32.5 | 11.5 | 11.4 | 10.8 |
+| **teal** | 17.5 | . | 23.1 | 15.7 | 26.1 | 27.0 |
+| **slate** | 32.5 | 23.1 | . | 37.5 | 43.5 | 36.8 |
+| **moss** | 11.5 | 15.7 | 37.5 | . | 14.6 | 21.2 |
+| **manila** | 11.4 | 26.1 | 43.5 | 14.6 | . | 12.3 |
+| **stone** | 10.8 | 27.0 | 36.8 | 21.2 | 12.3 | . |
+
+Worst pair: **rose against stone, 10.8**
+
+Minimum across all three: **10.8**
+
+**Minimum separation across all three vision models is 10.8**, up from 2.8. Every pair is distinguishable, including under both simulated deficiencies.
+
+**What this does not claim.** CIEDE2000 on simulated colors is arithmetic, not eyesight. **The tables are the floor, not the verification.** #152 closes only after simulated protanopia and deuteranopia screenshots of the notebook screen are captured at both themes and looked at, per the owner's instruction. **A number that says two colors differ is not the same as a person being able to tell them apart on a phone in a dark room.**
+
+**And the rule that makes this survivable either way**, `DESIGN.md` 4.4: **color is never the only carrier of meaning.** Every tab chip carries its section name in text. A person who cannot separate manila from stone reads the word, exactly as intended. The hue separation is what makes the binder scannable; it is not what makes it usable.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 

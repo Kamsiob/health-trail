@@ -6,7 +6,7 @@ This document is the binding source of truth for every visual, motion, and copy 
 
 **`reference/concept-review.pdf` is a historical record of the concept review. It is not the visual reference and its screens no longer describe this app.** It is kept because the sequence and the voice in it are still useful reading. Nothing is built from it.
 
-**Adopted 2026-08-03: design direction v4, which supersedes the direction this document previously carried.** This is a replacement rather than a layer. Where the old direction and this one disagree, this one wins, and the paragraphs describing the replaced patterns were deleted rather than kept as history. What survived is named in section 18. The decision and everything it forced are recorded in `DECISIONS.md` as D76 through D85.
+**Adopted 2026-08-03: design direction v4, which supersedes the direction this document previously carried.** This is a replacement rather than a layer. Where the old direction and this one disagree, this one wins, and the paragraphs describing the replaced patterns were deleted rather than kept as history. What survived is named in section 18. The decision and everything it forced are recorded in `DECISIONS.md` as D76 through D87.
 
 Two things this direction does not override and cannot. `contract/DATA-CONTRACT.md` governs the data. The content rules that keep this app non-medical govern the copy: no advice, no interpretation, no normal or target ranges, no thresholds, no arrows, no color-coded values, no educational content. Any tension between a visual idea and either of those resolves against the visual idea.
 
@@ -165,11 +165,35 @@ Muted binder hues for section identity, each with a wash and a text-safe ink. **
 
 ### 4.5 Dark theme
 
-**The derivation stands unchanged from the previous direction and is not re-litigated here.** A trail map at dusk, not an inverted document. Surfaces get lighter as they come forward, elevation is carried by surface lightness rather than by shadow, no shadow at all, and gold and red keep their exact meanings. Never black, which smears on OLED during scroll and is harsh in a dark room, which is when this theme gets used.
+**The derivation stands unchanged from the previous direction and is not re-litigated.** A trail map at dusk, not an inverted document. Surfaces get lighter as they come forward, elevation is carried by surface lightness rather than by shadow, there is no shadow at all, and gold and red keep their exact meanings. **Never black**, which smears on OLED during scroll and is harsh in a dark room, which is when this theme gets used.
 
-**What does have to change is the concrete values, because they were derived from the previous light ladder and that ladder is gone.** The dark theme is re-derived against section 4.1 and section 4.3, measured rather than calculated, and every tab hue needs a dark counterpart it never had. **Until that is done and measured, the dark theme is not converted**, and saying otherwise would be the error D29 records. This is tracked as its own issue and gates the same audits every screen does.
+**The values were re-derived against the v4 ladder on 2026-08-03**, because the previous ones came from a light ladder that no longer exists, and because the six tab hues had no dark counterpart at all. D87 carries the full derivation and both measured tables.
 
-The one rule that carries forward without re-derivation: **the capture button stays gold in both themes**, and its glyph is not white. White on gold measures 2.38:1, well under the 3:1 a control needs. The fill stays gold, which is what carries the meaning, and the glyph darkens to `#2B1D06`, which measures 6.88:1. This is the one control the app cannot afford to have anyone miss.
+| Token | Hex | Note |
+|---|---|---|
+| `paper` | `#141C23` | App background |
+| `card` | `#1C262E` | Raised groups and sheets |
+| `sand` | `#25313A` | **Recessed reads lighter on dark**, the opposite of light theme, which is correct for dark surfaces |
+| `ink` | `#E8EDF1` | 14.60:1 on paper. Never pure white |
+| `ink-2` | `#AFBCC5` | 8.87:1 on paper, 6.85:1 on sand |
+| `ink-3` | `#6E7C85` | **Non-text only**, as in light |
+
+**The tab pack in dark**, base for shapes, ink for text, wash for its own backgrounds:
+
+| Hue | Base | Ink | Wash | ink on wash | base on paper |
+|---|---|---|---|---|---|
+| `rose` | `#C79B8A` | `#B98E7E` | `#2F1D16` | 5.53 | 6.95 |
+| `teal` | `#A0CFC8` | `#6CADA2` | `#172E2A` | 5.57 | 10.04 |
+| `slate` | `#6789AD` | `#829BB5` | `#1B222A` | 5.58 | 4.72 |
+| `moss` | `#CFD8B6` | `#9BAA6E` | `#282D18` | 5.66 | 11.60 |
+| `manila` | `#D1A761` | `#C39A55` | `#312614` | 5.69 | 7.71 |
+| `stone` | `#9F8856` | `#AA976E` | `#2A251B` | 5.34 | 5.02 |
+
+**The six hues are separated along lightness, not only along hue, and that is deliberate.** A first derivation optimized each hue against its own wash alone and produced six colors that **collapsed under red-green color vision deficiency**: rose against stone measured 2.8 under simulated deuteranopia, which is the same color. **Lightness is what survives red-green CVD**, so the hues keep their angles exactly, which is the owner's mapping, and spread across a 48 to 78 percent lightness band. **Minimum pairwise separation is now 10.8 CIEDE2000 across normal vision, protanopia, and deuteranopia.** A wider band scored no better and cost hue identity.
+
+**The tables are the floor, not the verification.** Simulated protanopia and deuteranopia screenshots of the notebook screen at both themes are captured and looked at before the dark theme is called done. **A number saying two colors differ is not a person telling them apart on a phone in a dark room.**
+
+**The capture button stays gold in both themes**, and its glyph is not white. White on gold measures 2.38:1, well under the 3:1 a control needs. The fill stays gold, which is what carries the meaning, and the glyph darkens to `#2B1D06`, which measures 6.88:1. This is the one control the app cannot afford to have anyone miss.
 
 ### 4.6 Contrast, measured
 
@@ -631,6 +655,8 @@ Checked rather than remembered, in this order.
 ### 16.5 Retroactive, per `CLAUDE.md` rule 14
 
 **Everything in this document applies to every screen already built, not only to new ones.** A codebase where the standard changed halfway through is a codebase with two standards. Every screen still on the old direction after the token pass is tracked as an open issue, so at any moment it is visible exactly what remains unconverted.
+
+**Step 1 covers both themes, and no screen conversion begins before it completes.** D87. Every token, light and dark, including all six tab hues with their washes and ink variants, exists and is verified on the device at both themes first. **Converting screens against a light-only token set gives every converted screen a deferred second review**, which is the half-converted state step 1 exists to prevent. It does not save the work, it multiplies it by the number of screens.
 
 ---
 
