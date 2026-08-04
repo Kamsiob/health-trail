@@ -619,6 +619,8 @@ Recorded here per section 19, rather than left for a later session to find and m
 
 **Screen 08, the trail.** The grid draws a "Filter" control and a pin toggle in the header beside the search field. Neither is built. The filter is real work with its own question, which is what a person filters by (kind, thread, unfiled) and whether that survives leaving the screen; it is filed rather than guessed at. The pin toggle in the header would be a second way to reach a set the pinned group already shows at the top of the same screen.
 
+**Screen 13, Progress.** The grid draws the measures under the hero as chevron rows. A chevron means a screen opens, per law 2, and the per-measure history screen is #199 and does not exist yet. A chevron pointing at nothing is the dead end rule 18 forbids, so until that screen exists the rows are a choice: tapping one makes it the hero, which is the adaptive layout working rather than a substitute for it.
+
 **Screen 08, the pin itself.** The grid implies the pin is something you do from the trail. It is done from the entry instead. Built on the row first, it put a second target on every one of sixteen hundred rows to serve a decision somebody makes a handful of times, and on the phone ten pin buttons down one screen were the loudest thing on it, which inverts rule 15. The row keeps the mark as state.
 
 ---

@@ -158,7 +158,23 @@ fun DenseRow(
 
             if (trailing != null) {
                 Spacer(Modifier.width(Space.sm))
-                Text(text = trailing, style = type.mono, color = colors.ink2)
+                // **Weighted, so it cannot take the whole row.** An unweighted
+                // trailing measures first with unbounded width, which leaves the
+                // title's weighted column its minimum: on Progress a long
+                // trailing value squeezed "How she seemed" into a column one
+                // character wide, reading vertically down the screen. Found on
+                // the phone, and it had been possible on every screen that uses
+                // this row.
+                //
+                // `fill = false` so a short date still sits at its natural width
+                // against the end edge rather than being padded out to half the
+                // row.
+                Text(
+                    text = trailing,
+                    style = type.mono,
+                    color = colors.ink2,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
             }
             if (trailingContent != null) {
                 Spacer(Modifier.width(Space.sm))

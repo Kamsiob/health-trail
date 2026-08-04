@@ -1431,6 +1431,9 @@ fun NotebookShell(
                 Repository.Section.PROGRESS -> ProgressScreen(
                     measures = measures,
                     readings = readings,
+                    // The measurement form, which is a real destination rather
+                    // than a stub: it is the same screen capture opens.
+                    onAddReading = { capturing = CaptureKind.MEASUREMENT },
                     onBack = { openSection = null },
                 )
 

@@ -558,6 +558,7 @@ class ScreenReaderTest {
                     // add extra lines to a row.
                     Repository.Reading("r2", "me1", 151.5, null, "lb", null, null, "After dialysis", "clinician"),
                 ),
+                onAddReading = {},
                 onBack = {},
             )
         }
