@@ -15,6 +15,13 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -24,6 +31,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object ApptTags {
     const val NAME = "appointments"
     const val ADD = "appointments_add"
+    const val PAST_FOLD = "appointments_past_fold"
     fun row(id: String) = "appointment_$id"
 }
 
@@ -74,6 +82,8 @@ fun AppointmentsScreen(
         it.scheduledStart != null && it.scheduledStart < todayMillis
     }
 
+    var pastOpen by rememberSaveable { mutableStateOf(false) }
+
     SectionScaffold(
         name = ApptTags.NAME,
         title = strings["notebook.section.appointments"],
@@ -90,38 +100,52 @@ fun AppointmentsScreen(
             }
         }
 
+        // **The next one leads and what has happened folds.** Grid screen 22
+        // and law 1: the question a person opens this screen with is "what is
+        // next", so that is the one thing, and thirty one past appointments are
+        // the record rather than the job.
         if (upcoming.isNotEmpty()) {
             item {
-                GroupHeader(labelKey = "appts.group.upcoming")
-                Spacer(Modifier.height(Space.headerGap))
-            }
-            for (appointment in upcoming) {
-                item(key = appointment.id) {
-                    AppointmentRow(
-                        appointment = appointment,
-                        onRemove = { onRemove(appointment) },
-                        onOpen = { onOpen(appointment) },
-                    )
-                    Spacer(Modifier.height(Space.cardGap))
+                GroupedSurface {
+                    upcoming.forEachIndexed { index, appointment ->
+                        AppointmentRow(
+                            appointment = appointment,
+                            onRemove = { onRemove(appointment) },
+                            onOpen = { onOpen(appointment) },
+                            isLast = index == upcoming.lastIndex,
+                        )
+                    }
                 }
+                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
         if (past.isNotEmpty()) {
             item {
-                Spacer(Modifier.height(Space.s))
-                GroupHeader(labelKey = "appts.group.past")
-                Spacer(Modifier.height(Space.headerGap))
+                FoldRow(
+                    labelKey = "appts.group.past",
+                    expanded = pastOpen,
+                    onToggle = { pastOpen = !pastOpen },
+                    count = past.size.toString(),
+                    modifier = Modifier.testTag(ApptTags.PAST_FOLD),
+                )
+                Spacer(Modifier.height(Space.cardGap))
             }
-            // Most recent first, which is the reverse of upcoming and is what
-            // somebody looking back actually wants.
-            for (appointment in past.reversed()) {
-                item(key = appointment.id) {
-                    AppointmentRow(
-                        appointment = appointment,
-                        onRemove = { onRemove(appointment) },
-                        onOpen = { onOpen(appointment) },
-                    )
+            if (pastOpen) {
+                item {
+                    GroupedSurface {
+                        // Most recent first, which is the reverse of upcoming
+                        // and is what somebody looking back actually wants.
+                        val recent = past.reversed()
+                        recent.forEachIndexed { index, appointment ->
+                            AppointmentRow(
+                                appointment = appointment,
+                                onRemove = { onRemove(appointment) },
+                                onOpen = { onOpen(appointment) },
+                                isLast = index == recent.lastIndex,
+                            )
+                        }
+                    }
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
@@ -143,40 +167,25 @@ private fun AppointmentRow(
     appointment: Repository.Appointment,
     onRemove: () -> Unit,
     onOpen: () -> Unit,
+    isLast: Boolean,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
 
-    Column(
+    // **The date is the trailing value**, because it is what somebody scans a
+    // list of appointments by, and it is data so it is Mono and tabular. Where
+    // it is and any note become the second line.
+    DenseRow(
+        title = appointment.title,
+        subtitle = listOfNotNull(
+            appointment.locationNote?.takeIf { it.isNotBlank() },
+            appointment.notes?.takeIf { it.isNotBlank() },
+        ).joinToString(" · ").takeIf { it.isNotBlank() },
+        trailing = EventDateText.render(strings, appointment.scheduledEdtf),
+        chevron = true,
+        divider = !isLast,
+        onClick = onOpen,
         modifier = Modifier
-            .fillMaxWidth()
-            .clip(Radius.card)
-            .background(colors.card)
             .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
-            .testTag(ApptTags.row(appointment.id))
-            .padding(Space.cardPadding),
-    ) {
-        Text(
-            text = EventDateText.render(strings, appointment.scheduledEdtf),
-            style = HealthTrail.type.mono,
-            color = colors.ink2,
-        )
-        Spacer(Modifier.height(Space.xs))
-
-        Text(
-            text = appointment.title,
-            style = HealthTrail.type.displayS,
-            color = colors.ink,
-        )
-
-        appointment.locationNote?.takeIf { it.isNotBlank() }?.let { where ->
-            Spacer(Modifier.height(Space.xs))
-            Text(text = where, style = HealthTrail.type.bodyM, color = colors.ink2)
-        }
-
-        appointment.notes?.takeIf { it.isNotBlank() }?.let { notes ->
-            Spacer(Modifier.height(Space.xs))
-            Text(text = notes, style = HealthTrail.type.bodyS, color = colors.ink2)
-        }
-    }
+            .testTag(ApptTags.row(appointment.id)),
+    )
 }
