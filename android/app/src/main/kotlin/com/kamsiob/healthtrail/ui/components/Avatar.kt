@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,11 +67,30 @@ fun Avatar(
             .clearAndSetSemantics { },
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = initialsOf(name),
-            style = HealthTrail.type.label,
-            color = foreground,
-        )
+        // **Sized to the circle, not to the system font.** The circle is a
+        // fixed 32, 40 or 56dp because it is a mark rather than words, and at
+        // font scale 2.0 two initials no longer fitted: "AR" rendered as "A",
+        // so Angela Reyes and Angela Ruiz became the same mark and nobody
+        // could have known. Found on the incident screen at 2.0.
+        //
+        // **`fontScale = 1f` on the density**, which pins this one piece of
+        // text while every real word on the screen still scales. That is the
+        // exception rule 11's "no truncation" earns here: the alternative is a
+        // circle that grows until three of them fill a row.
+        CompositionLocalProvider(
+            LocalDensity provides Density(
+                density = LocalDensity.current.density,
+                fontScale = 1f,
+            ),
+        ) {
+            Text(
+                text = initialsOf(name),
+                style = HealthTrail.type.label,
+                color = foreground,
+                maxLines = 1,
+                softWrap = false,
+            )
+        }
     }
 }
 

@@ -24,6 +24,10 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.Avatar
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.SpineRow
@@ -288,34 +292,35 @@ fun IncidentScreen(
                 GroupHeader(labelKey = "incident.people")
                 Spacer(Modifier.height(Space.headerGap))
             }
-            people.forEach { person ->
-                item(key = "p_${person.id}") {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .semantics(mergeDescendants = true) { }
-                            .clip(Radius.card)
-                            .background(colors.card)
-                            .removableByLongPress(
-                                label = strings["remove.hint"],
-                                onLongPress = {},
-                                onTap = { onOpenPerson(person) },
-                            )
-                            .testTag(IncidentTags.person(person.id))
-                            .padding(Space.cardPadding),
-                    ) {
-                        person.roleLabel?.takeIf { it.isNotBlank() }?.let {
-                            Text(it, style = HealthTrail.type.mono, color = colors.ink2)
-                            Spacer(Modifier.height(Space.xs))
-                        }
-                        Text(
-                            person.displayName,
-                            style = HealthTrail.type.displayS,
-                            color = colors.ink,
+            // **Dense rows in one surface, and they were three cards.** Rule
+            // 22: a card is for something with three or more lines somebody
+            // reads, and a name with a role is two lines they scan. Three cards
+            // for three people took half the screen above the thing the screen
+            // is actually about, which is what happened and what happened next.
+            //
+            // The same shape the care team uses, with the same initials, so a
+            // person looks the same wherever they appear.
+            item(key = "people") {
+                GroupedSurface {
+                    people.forEachIndexed { index, person ->
+                        DenseRow(
+                            title = Bidi.isolate(person.displayName),
+                            subtitle = person.roleLabel?.takeIf { it.isNotBlank() }
+                                ?.let { Bidi.isolate(it) },
+                            leading = {
+                                Avatar(
+                                    name = person.displayName,
+                                    hue = hueFor(Repository.Section.CARE_TEAM),
+                                )
+                            },
+                            chevron = true,
+                            divider = index < people.size - 1,
+                            onClick = { onOpenPerson(person) },
+                            modifier = Modifier.testTag(IncidentTags.person(person.id)),
                         )
                     }
-                    Spacer(Modifier.height(Space.cardGap))
                 }
+                Spacer(Modifier.height(Space.cardGap))
             }
             item { Spacer(Modifier.height(Space.s)) }
         }
@@ -438,11 +443,32 @@ fun IncidentScreen(
 
         item {
             Spacer(Modifier.height(Space.sectionGap))
-            QuietButton(
-                label = strings["incident.add"],
-                onClick = onAdd,
-                modifier = Modifier.fillMaxWidth().testTag(IncidentTags.ADD),
-            )
+
+            // **Adding what happened next is the filled action, and marking it
+            // answered was.** Somebody opens an open incident because something
+            // else has happened and they want it written down; marking it
+            // answered is what they do once, at the end, and it was carrying
+            // the screen's only accent for every visit before that one.
+            //
+            // Law 2 allows one filled action and it belongs on the reason the
+            // screen gets opened. Answering and sharing are doors, not
+            // competition, which is what the issue says in those words.
+            if (incident.isOpen) {
+                FilledButton(
+                    label = strings["incident.add"],
+                    onClick = onAdd,
+                    modifier = Modifier.fillMaxWidth().testTag(IncidentTags.ADD),
+                )
+            } else {
+                // **Once it is answered, adding is no longer the point.** The
+                // record stays open to additions, because an answer can turn
+                // out not to hold, but it stops being what the screen is for.
+                QuietButton(
+                    label = strings["incident.add"],
+                    onClick = onAdd,
+                    modifier = Modifier.fillMaxWidth().testTag(IncidentTags.ADD),
+                )
+            }
             Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["readable.share"],
@@ -451,7 +477,7 @@ fun IncidentScreen(
             )
             Spacer(Modifier.height(Space.cardGap))
             if (incident.isOpen) {
-                FilledButton(
+                QuietButton(
                     label = strings["incident.resolve"],
                     onClick = onResolve,
                     modifier = Modifier.fillMaxWidth().testTag(IncidentTags.RESOLVE),
