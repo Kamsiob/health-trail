@@ -35,9 +35,10 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 1. **Done: #149, the token set, both themes**, landed on `main` at `189b7b6`. `Color.kt` carries the v4 surfaces, semantics, and all six tab hues as base, ink, and wash, in light and dark. **The old token names are gone rather than aliased** and all 560 call sites moved with them. `check_contrast.py` passes 154 pairs across both themes.
 2. **Still open: #150**, for the Arabic and Chinese re-confirmation. The Latin faces are confirmed above.
 3. **Still open: #152**, for the color vision screenshots only. **The dark values are in and measured; what is missing is eyes.** Nothing on screen carries a tab hue yet, because the notebook still draws the old sand icon tiles, so the CVD check is gated on #153.
-4. **Next: #151, shape and rhythm**, then **#153 to #168**, the component inventory. Eleven components do not exist at all; five need real rebuilds. **#153, the tab chip, unblocks the #152 verification**, so it is worth taking early.
-5. **Only then #169 to #172**, the four bottom-navigation destinations, so the app reads as one app end to end at the earliest possible moment.
-6. **Then #173 to #188** section screens, then **#189 to #208** detail screens, sheets, onboarding, settings, and edge states.
+4. **Done: #151 shape and rhythm, and #153 the tab chip.** `Dimens.kt` carries the v4 geometry, including the FAB clearance tokens D81 requires and a 46dp row minimum held separately from the 48dp touch floor so density can never quietly eat the target. `hueFor` maps every section to its hue in one place and the notebook draws each icon in its own wash.
+5. **Next: the rest of the inventory, #154 to #168.** Ten components still do not exist: the fold row, the wash band, the avatar, the chart card, the round card, the agenda and month grid, the view toggle, the pin marker and pinned group, the sticky section header, and the edge scrubber. Four rebuilds remain: the two action costumes, the chip, the spine, the FAB with its bloom menu, and the bottom navigation.
+6. **Then #169 to #172**, the four bottom-navigation destinations, so the app reads as one app end to end at the earliest possible moment.
+7. **Then #173 to #188** section screens, then **#189 to #208** detail screens, sheets, onboarding, settings, and edge states.
 
 **`ORDER OF WORK` is not a suggestion.** A half-converted app is worse than either version and it makes review impossible.
 
@@ -106,7 +107,15 @@ Two base tokens moved for the same reason: `ink-2` to `#576873` and `blue` to `#
 
 **The derivation is done and published**, D87 and `DESIGN.md` 4.5: the full dark surface ladder and all six tab hues with washes and ink variants, with both measured tables. **What has not happened is putting the values in `Color.kt` and looking at them on the phone.** Until that, the dark theme is unbuilt and is described that way everywhere.
 
-**One finding from doing it is worth carrying forward.** A first derivation that optimized each hue against its own wash alone produced six hues that **collapsed under red-green color vision deficiency**, rose against stone at 2.8 CIEDE2000 under simulated deuteranopia, which is the same color. **Lightness is what survives red-green CVD.** The hues keep their angles, which is the owner's mapping, and are spread across a 48 to 78 percent lightness band, giving a minimum separation of 10.8 across normal vision, protanopia, and deuteranopia. **The tables are the floor, not the verification**: the color vision screenshots still have to be looked at.
+**The color vision verification is done, and it found something the arithmetic did not.** Simulated protanopia and deuteranopia over the real screenshots at both themes, committed in `docs/screenshots/`. **Dark holds at 10.8 CIEDE2000. Light does not**: rose against moss measures **2.4** under deuteranopia, which is the same color, and six sections visibly collapse into one olive-tan family.
+
+**The cause is structural rather than an oversight.** A light-theme shape sits on near-white surfaces so the 3:1 floor caps it between 41 and 53 percent lightness; a dark-theme shape may run to 84. **Dark has twice the room, and lightness is what survives red-green CVD.**
+
+**It is not fixed, deliberately.** The worst pair is between two hues the owner drew, and restyling five of his hues quietly is the class of change this project keeps getting caught by. **D88 and #217** carry the numbers, the measured 7.6 ceiling, and three options, with a recommendation. **It is a quality gap and not an accessibility failure**, because every tile and tab sits with its section's name in text.
+
+**One gap left inside #152:** the ink variants were derived for contrast against their own wash and have not been through the CVD optimization the bases have. The notebook icons draw in `ink`, so the screenshots partly test the unoptimized half.
+
+**One finding from the derivation is worth carrying forward.** A first derivation that optimized each hue against its own wash alone produced six hues that **collapsed under red-green color vision deficiency**, rose against stone at 2.8 CIEDE2000 under simulated deuteranopia, which is the same color. **Lightness is what survives red-green CVD.** The hues keep their angles, which is the owner's mapping, and are spread across a 48 to 78 percent lightness band, giving a minimum separation of 10.8 across normal vision, protanopia, and deuteranopia. **The tables are the floor, not the verification**: the color vision screenshots still have to be looked at.
 
 **No screen has been converted.** The documents describe where the app is going. The app itself is still entirely on the old direction, and every screen still on it is visible as an open issue, which is what `ORDER OF WORK` step 5 asks for.
 
