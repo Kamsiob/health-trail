@@ -276,6 +276,19 @@ internal object ReadableArchive {
             // own, so it is not printed twice.
             "dateZone" -> ""
 
+            // **A flag reads as a word.** SQLite stores it as 0 or 1, and a
+            // reader handed a column of noughts learns nothing: "Still waiting
+            // to be filed: 0" is a sentence with no meaning outside a database.
+            //
+            // A missing flag is not the same as a false one and does not become
+            // "no". Section 8.2 keeps null, empty and zero as three different
+            // things, and a flag nobody set is not a flag somebody cleared.
+            "boolean" -> when (row[column]) {
+                null, "" -> ReadablePage.notRecorded(label)
+                "0" -> ReadablePage.field(label, "no")
+                else -> ReadablePage.field(label, "yes")
+            }
+
             "link" -> {
                 val target = row[column]
                 if (target.isNullOrBlank()) {

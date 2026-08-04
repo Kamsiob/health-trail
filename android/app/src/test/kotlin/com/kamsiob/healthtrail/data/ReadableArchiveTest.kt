@@ -266,6 +266,52 @@ class ReadableArchiveTest {
     }
 
     @Test
+    fun `a flag reads as a word rather than as a digit`() {
+        // Found on a real five year export: "Still waiting to be filed: 0" is a
+        // sentence with no meaning outside a database. SQLite stores a flag as
+        // 0 or 1 and a reader handed a column of noughts learns nothing.
+        val flagged = mapOf(
+            "entry" to ReadableArchive.TableFields(
+                listOf("id" to "id", "is_unfiled" to "boolean"),
+            ),
+        )
+        fun render(value: String?) = ReadableArchive.render(
+            ReadableArchive.Source(
+                tables = mapOf("entry" to listOf(mapOf(
+                    "id" to "e1", "is_unfiled" to value, "occurred_edtf" to "2026-01-01",
+                ))),
+                lang = "en", dir = "ltr", subjectName = "R",
+            ),
+            flagged,
+        ).getValue("entry-2026.html")
+
+        assertTrue(render("1").contains(">yes<"))
+        assertTrue(render("0").contains(">no<"))
+        assertFalse(render("0").contains(">0<"))
+    }
+
+    @Test
+    fun `a flag nobody set is not a flag somebody cleared`() {
+        // Section 8.2 keeps null, empty and zero as three different things.
+        val flagged = mapOf(
+            "entry" to ReadableArchive.TableFields(
+                listOf("id" to "id", "is_unfiled" to "boolean"),
+            ),
+        )
+        val html = ReadableArchive.render(
+            ReadableArchive.Source(
+                tables = mapOf("entry" to listOf(mapOf(
+                    "id" to "e1", "is_unfiled" to null, "occurred_edtf" to "2026-01-01",
+                ))),
+                lang = "en", dir = "ltr", subjectName = "R",
+            ),
+            flagged,
+        ).getValue("entry-2026.html")
+        assertTrue(html.contains("not recorded"))
+        assertFalse(html.contains(">no<"))
+    }
+
+    @Test
     fun `the front page says plainly that this is not a clinical record`() {
         // Rule 2 and section 8.2: the readable copy carries the app's own
         // content rules. A document that looks official and is not is worse

@@ -1028,7 +1028,8 @@
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "is_unfiled": {
-        "render": "value"
+        "render": "boolean",
+        "note": "A flag. SQLite stores it as 0 or 1, and a reader handed a column of noughts learns nothing. Rendered as yes or no."
       },
       "suggested_home": {
         "render": "value"
@@ -2356,7 +2357,8 @@
         "render": "value"
       },
       "is_active": {
-        "render": "value"
+        "render": "boolean",
+        "note": "A flag. SQLite stores it as 0 or 1, and a reader handed a column of noughts learns nothing. Rendered as yes or no."
       },
       "closed_at": {
         "render": "value"
