@@ -70,6 +70,7 @@ fun CareThreadsScreen(
         subtitle = strings["threads.subtitle"],
         onBack = onBack,
         modifier = modifier,
+        section = Repository.Section.THREADS,
     ) {
         if (threads.isEmpty()) {
             item { SectionEmpty(name = ThreadTags.NAME, text = strings["threads.empty"], section = Repository.Section.THREADS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }

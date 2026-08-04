@@ -22,6 +22,9 @@ import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.components.wholeAppHue
+import com.kamsiob.healthtrail.ui.components.TabChipText
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -78,6 +81,19 @@ fun SectionScaffold(
      * lie the person only notices by being surprised.
      */
     backLabelKey: String = LocalSectionBackKey.current,
+    /**
+     * Which section this is, so the screen can wear its own tab.
+     *
+     * **The tab chip is the first element on every section screen**, per
+     * `DESIGN.md` law 2 and 4.3, and it is the single element that makes the app
+     * read as a binder rather than as a list of screens. It lives here rather
+     * than on each screen so that all twelve get it the same way and none can
+     * quietly differ.
+     *
+     * Null for a screen that belongs to no section, which then wears gold and
+     * the base ladder instead, per 4.3.
+     */
+    section: Repository.Section? = null,
     content: LazyListScope.() -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -96,15 +112,24 @@ fun SectionScaffold(
                     .padding(horizontal = Space.screenHorizontal),
             ) {
                 item {
-                    Spacer(Modifier.height(Space.l))
-                    Text(text = title, style = HealthTrail.type.displayL, color = colors.ink)
+                    Spacer(Modifier.height(Space.sm))
+                    TabChipText(
+                        hue = section?.let { hueFor(it) } ?: wholeAppHue(),
+                        label = title,
+                    )
                     Spacer(Modifier.height(Space.s))
+                    // Display M rather than the largest type in the app. Under
+                    // v4 the hero is the one thing on the screen, and a section
+                    // title is furniture: it says where you are, and what
+                    // matters is what is under it.
+                    Text(text = title, style = HealthTrail.type.displayM, color = colors.ink)
+                    Spacer(Modifier.height(Space.xs))
                     Text(
                         text = subtitle,
                         style = HealthTrail.type.bodyM,
                         color = colors.ink2,
                     )
-                    Spacer(Modifier.height(Space.l))
+                    Spacer(Modifier.height(Space.cardGap))
                 }
 
                 content()

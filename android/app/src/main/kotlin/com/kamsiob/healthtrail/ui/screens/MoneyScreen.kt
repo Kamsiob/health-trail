@@ -90,6 +90,7 @@ fun MoneyScreen(
         subtitle = strings["money.subtitle"],
         onBack = onBack,
         modifier = modifier,
+        section = Repository.Section.MONEY,
     ) {
         if (bills.isEmpty()) {
             item {

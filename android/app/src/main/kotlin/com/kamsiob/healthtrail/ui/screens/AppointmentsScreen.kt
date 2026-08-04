@@ -80,6 +80,7 @@ fun AppointmentsScreen(
         subtitle = strings["appts.subtitle"],
         onBack = onBack,
         modifier = modifier,
+        section = Repository.Section.APPOINTMENTS,
     ) {
         if (appointments.isEmpty()) {
             item {

@@ -72,6 +72,7 @@ fun ChaptersScreen(
         subtitle = strings["chapters.subtitle"],
         onBack = onBack,
         modifier = modifier,
+        section = Repository.Section.CHAPTERS,
     ) {
         if (chapters.isEmpty()) {
             item { SectionEmpty(name = ChapterTags.NAME, text = strings["chapters.empty"], section = Repository.Section.CHAPTERS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }

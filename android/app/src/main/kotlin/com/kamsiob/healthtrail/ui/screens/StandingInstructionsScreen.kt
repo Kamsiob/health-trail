@@ -80,6 +80,7 @@ fun StandingInstructionsScreen(
         subtitle = strings["instructions.subtitle"],
         onBack = onBack,
         modifier = modifier,
+        section = Repository.Section.STANDING_INSTRUCTIONS,
     ) {
         if (instructions.isEmpty()) {
             item {

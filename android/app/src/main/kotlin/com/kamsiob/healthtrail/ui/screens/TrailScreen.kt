@@ -154,6 +154,7 @@ fun TrailScreen(
         subtitle = strings["trail.subtitle"],
         onBack = onBack,
         modifier = modifier,
+        section = Repository.Section.TRAIL,
     ) {
         if (entries.isEmpty()) {
             item { SectionEmpty(name = TrailTags.NAME, text = strings["trail.empty"], section = Repository.Section.TRAIL, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }

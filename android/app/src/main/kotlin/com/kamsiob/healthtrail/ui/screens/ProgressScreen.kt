@@ -72,6 +72,7 @@ fun ProgressScreen(
         subtitle = strings["progress.subtitle"],
         onBack = onBack,
         modifier = modifier,
+        section = Repository.Section.PROGRESS,
     ) {
         if (measures.isEmpty()) {
             item { SectionEmpty(name = ProgressTags.NAME, text = strings["progress.empty"], section = Repository.Section.PROGRESS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }

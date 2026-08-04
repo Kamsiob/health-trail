@@ -80,6 +80,7 @@ fun DocumentsScreen(
         subtitle = strings["docs.subtitle"],
         onBack = onBack,
         modifier = modifier,
+        section = Repository.Section.DOCUMENTS,
     ) {
         if (documents.isEmpty()) {
             item {
