@@ -18,15 +18,15 @@ import org.json.JSONObject
  * export does not carry silently loses records on device migration, which for
  * this audience is the worst failure the app can have.
  *
- * An ordinary zip with a `.htx` extension. The extension exists so the file is
- * recognizable and so nobody opens it expecting a document. **It stays an
- * ordinary zip on purpose:** in ten years somebody should be able to open it
- * with whatever they have.
+ * **An ordinary zip, named `.zip`.** The old `.htx` extension made the file
+ * recognizable and made it a dead end: somebody who copies their archive to a
+ * laptop and double clicks it gets nothing, on the first step of the one
+ * procedure this whole container exists to make possible. D98.
  *
  * ```
- * manifest.json      always first, always unencrypted
- * data.sqlite        the whole database, tombstones included
- * attachments/       one file per attachment, named by its content hash
+ * MANIFEST.json      the header, in the clear, and it says nothing about anybody
+ * README.txt         how to open this without this app
+ * payload.enc        everything else, framed and encrypted
  * ```
  *
  * **The manifest is first and never encrypted** because an importer has to be

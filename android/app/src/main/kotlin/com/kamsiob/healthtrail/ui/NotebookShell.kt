@@ -2594,11 +2594,18 @@ private data class Removal(
  *
  * The shape `contract/EXPORT-FORMAT.md` section 1 specifies, so a person with
  * several of these can tell them apart by name alone.
+ *
+ * **`.zip`, not `.htx`.** A private extension made the file recognizable and
+ * made it a dead end: somebody who copies their archive to a laptop and double
+ * clicks it gets nothing, on the first step of the one procedure the whole
+ * two-layer container exists to make possible. The outer layer is a plain zip
+ * precisely so that any machine can open it, and the extension is what tells
+ * the machine that. D98.
  */
 private fun exportFileName(): String {
     val now = java.time.LocalDateTime.now()
     val stamp = now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"))
-    return "healthtrail-export-$stamp.htx"
+    return "healthtrail-export-$stamp.zip"
 }
 
 private val SECTION_ORDER = listOf(
