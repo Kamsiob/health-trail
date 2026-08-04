@@ -28,6 +28,16 @@ package com.kamsiob.healthtrail.i18n
  * **Invisible, and it stays that way.** These are formatting characters with no
  * width. They never reach the readable copy in an archive or the export, both of
  * which build their own text from the same data rather than from these strings.
+ *
+ * **They do reach the accessibility tree, and that is stated rather than
+ * assumed.** Dumping the semantics of a screen using this shows the characters
+ * present in the node text. Both are Unicode `Cf`, default ignorable by the
+ * standard, which is precisely the category a text to speech engine and a
+ * braille display are specified to skip, and Android's own `BidiFormatter`
+ * emits them into text that goes to the same places. **It has not been heard
+ * with the reader on**, which is what #224 is for. It is kept meanwhile because
+ * the alternative is a certain defect for anybody reading right to left, rather
+ * than a documented uncertainty for anybody using a reader.
  */
 object Bidi {
 
