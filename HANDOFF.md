@@ -12,10 +12,10 @@
 
 Everything below is verified rather than asserted, as of 2026-08-04:
 
-- `origin/main` is at `050ac27` and the working tree is clean.
+- The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **16 repository checks pass** (`python3 tools/checks/run_all.py`).
-- **297 instrumented tests pass**, last full run 2026-08-04 against `c99bff5`.
-- The phone holds the month six fixture, font scale 1.0, night mode off, per-app locale at the system default.
+- **297 instrumented tests pass**, last full run 2026-08-04 against `c99bff5`. Nothing since has been run on the device, which is what section 2 is about.
+- The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
 **Take these in this order.**
 
