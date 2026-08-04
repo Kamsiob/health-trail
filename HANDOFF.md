@@ -34,15 +34,25 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Step 2 is complete too.** All four bottom-navigation destinations are converted, so **the app reads as one app end to end**, which is what step 2 exists for. #169 through #172 are closed.
 
-**Step 3 is under way, and seven of its screens are closed.** All eleven section screens gained their tab chip and their own heading from `SectionScaffold`, so that pattern cannot drift. **Closed on device verification**: the care team #174, medications #175, money #177, chapters #181, ask next time #183, appointments #184, and the trail #173.
+**Step 3 is under way, and ten of its screens are closed.** All eleven section screens gained their tab chip and their own heading from `SectionScaffold`, so that pattern cannot drift. **Closed on device verification**: the trail #173, the care team #174, medications #175, progress #176, money #177, documents #178, chapters #181, ask next time #183, appointments #184, and care threads #186.
 
-**They closed on a sweep, not on a spot check.** Each of the six section screens was captured in dark, at font scale 2.0, and in Arabic, at `docs/screenshots/sweep-*`. Nothing clipped at 2.0, the mirroring holds throughout, and the folds recede in dark rather than shouting. Font scale was recorded before changing and restored, along with night mode and the per-app locale.
+**Every one closed on a sweep, not a spot check.** Each was captured in **dark, at font scale 2.0, and in Arabic**, at `docs/screenshots/sweep-*`. Font scale was recorded before changing and restored every time, along with night mode and the per-app locale.
 
-**The trail is the one that mattered.** It is the screen law 4 was written for, and it now has all four tools: a sticky month header, an edge scrubber down a reserved margin, a scoped search over 1,630 entries, and pinning. Verified on the phone by scrubbing from June 2026 to December 2022 and to December 2024, searching five years for a word and getting six results, and pinning an entry and finding it above time itself. **Not yet seen in dark, at 2.0, or in Arabic**, which is why #173 is the one step 3 issue closed on a light-only pass, recorded here rather than left implied: it needs the same sweep the other six had.
+**The sweep is where the defects were.** Not one of the following was visible in English at font scale 1.0:
 
-1. **Sweep the trail** in dark, at 2.0, and in Arabic, the same way the other six were done. It is the only screen closed without one.
-2. **Continue step 3**, which is now #176 progress, #178 documents, #179 the emergency card, #180 search, #182 tests and results, #185 standing instructions, #186 care threads, #187 the unfiled tray, and #188 capture.
-3. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
+- **Joined lines scrambled in Arabic on six screens.** `1.4 0 to 10 · June 26, 2026` rendered as `2026 يونيو to 10 · 26 0 1.4`. Fixed once in `Bidi.join` and applied to all six; `DESIGN.md` section 15 carries the rule so the next joined line inherits it. **#224** is open to hear it with the reader on, because the isolate characters reach the accessibility tree and that has been reasoned about rather than listened to.
+- **The year scrubber wrapped into single digits at font scale 2.0.** The strip and the margin were two fixed numbers that had to agree; they are one function now.
+- **Document captions had their last letter shaved off by the cell's own clip.** Found in Arabic, then found to have been true in English all along.
+- **A long trailing value crushed a row title into a column one character wide.** Possible on every screen using `DenseRow`, so fixed there.
+
+**The trail is the one that mattered.** It is the screen law 4 was written for and it has all four tools: a sticky month header, an edge scrubber in a reserved margin, a scoped search over 1,630 entries, and pinning. Verified by scrubbing from June 2026 to December 2022 and to December 2024, searching five years for one word, and pinning an entry.
+
+**Care threads was undrawn**, so it followed rule 12: built from the inventory, screenshot on the device, **#223 opened for review**, listed in `DESIGN.md` section 14, and named here. That is all three places, at the moment it was built.
+
+1. **Continue step 3**: #179 the emergency card, #180 search, #182 tests and results, #185 standing instructions, #187 the unfiled tray, #188 capture.
+2. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
+
+**Four things are waiting on the owner and none of them block anything.** #217 and D59 are answered and done. New: **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table for them), **#220** (the trail's filter, which needs a decision about what a person filters by), and **#223** (the care threads review).
 
 **THE ARCHIVE runs on its own track and must not be scheduled behind the screens.** #209 through #215, with #9 as the parent.
 
@@ -68,7 +78,11 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **The passphrase gets its hint**, which was 8.1's last unbuilt line. Optional, in the outer manifest in the clear, with the screen saying plainly that anyone holding the file can read it, and the field's own microcopy teaching the safe answer rather than scolding the unsafe one. It is printed in `README.txt` immediately above the sentence about the passphrase being unrecoverable, which is where somebody looking for it will be.
 
-**What is next on this track:** the importer's remaining rules in 8.3 (#211); the failure-mode tests (#212); the regeneration test (#213); and the byte-for-byte format specification (#214), which now has more to specify: the frame format is part of it. **#210 and #215 are done.**
+**The format is published and a check keeps it true.** `contract/EXPORT-FORMAT.md` is the version 3 container specified rather than described, #214 closed. `check_format_spec.py` reads the constants out of the Kotlin and asserts the document states them, and it is check fifteen. **Proved to fire, and its first version did not deserve to be trusted**: changing the frame size in the code alone was caught, renaming the database in the spec's own layout block was not, because the fence pattern ran from one fence past the next.
+
+**The archive is named `.zip` now**, not `.htx`. A private extension made the file a dead end at the first step of the one procedure the whole two-layer container exists for. D98.
+
+**What is next on this track:** the importer's remaining rules in 8.3 (#211); the failure-mode tests (#212); and the regeneration test (#213), which is the one 8.5 calls the important one. **#209, #210, #214 and #215 are done.**
 
 **One thing deliberately not done, and it is a judgment call worth the owner's eye.** 8.1 describes the outer layer as holding *exactly three things*, with the whole inner container inside `payload.enc`. What is built is the same privacy property reached a different way: the outer layer carries the public manifest, the README, and everything else encrypted per entry. **Encrypting a four gigabyte container wholesale needs streaming through a cipher to a temp file**, which is a rewrite of the most critical path in the app, and this one is verified end to end. The remaining difference is shape rather than exposure.
 
