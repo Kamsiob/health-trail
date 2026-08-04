@@ -49,7 +49,15 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 - **The readable copy is in the archive**, and proved end to end on the phone. A real export off the year five notebook: 3.6 MB, 103 entries, the manifest, the payload, 40 attachments, and **61 readable pages covering 2021 to 2026**. The index names the person, states the range, counts every section, and says plainly it is somebody's own notes and not a clinical record. No `http`, no `script`, no `link` tag anywhere in a real page.
 - **The field map is generated at build time**, not parsed at runtime, so the field order is fixed before the code runs rather than resting on a JSON parser preserving object key order, which the format does not guarantee.
 
-**What is next on this track:** the two-layer container in 8.1, then the importer in 8.3, then `tools/decrypt/` and the byte-for-byte format spec, #214 and #215.
+- **The standalone decryptor ships**, `tools/decrypt/`, with a README written for somebody who does not write software. It is checked on every run: an archive is packed by `pack.py` and opened by `decrypt.py`, **including one written at a deliberately different Argon2id cost**, so a tool with the parameters hard coded fails.
+- **The outer layer stops describing the person.** It was carrying row counts per table, attachment counts, subject count, page count and the device UUID in the clear. All of that moved into an encrypted `manifest-private.json`. A real export's outer manifest now has seven fields and none is a count, a device, a hash, or a date of care.
+- **`README.txt` sits in the clear for a stranger who found the file**, in ASCII, naming the exact Argon2id costs, the cipher, where the format is documented, and where the tool is. It names nobody.
+
+**Proved both ways on the phone**, not asserted. The standalone tool opened a real split archive with no Health Trail: 1,630 live entries in plain sqlite3, 40 attachments, 61 readable pages. Then the app restored the same file and the notebook came back with 1,630 entries.
+
+**What is next on this track:** the full two-layer shape in 8.1, where the inner container becomes a single `payload.enc` rather than per-entry encryption; the importer's remaining rules in 8.3; and the byte-for-byte format specification, #214. **#215 is done.**
+
+**One thing deliberately not done, and it is a judgment call worth the owner's eye.** 8.1 describes the outer layer as holding *exactly three things*, with the whole inner container inside `payload.enc`. What is built is the same privacy property reached a different way: the outer layer carries the public manifest, the README, and everything else encrypted per entry. **Encrypting a four gigabyte container wholesale needs streaming through a cipher to a temp file**, which is a rewrite of the most critical path in the app, and this one is verified end to end. The remaining difference is shape rather than exposure.
 
 **One defect this found, and it is the kind only the device finds.** A real export page read "Still waiting to be filed: 0", which is a sentence with no meaning outside a database. Flags render as words now.
 
