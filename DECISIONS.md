@@ -1984,6 +1984,18 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **Nothing is offered where nothing can be kept.** A date coarser than a day is not an event, and handing "sometime in March" over as March 1st would invent a precision nobody gave, which is rule 17. A phone that cannot take an event shows no action rather than one that fails on the tap, which needed a second `<queries>` entry in the manifest and is the whole reason that list grew.
 
+### D102. A project leads with its next step, and the controls that describe it sit underneath
+
+**2026-08-04, building #198 and looking at it on the phone.** Five status chips and an empty "who you are waiting on" field were the first things on the screen and took a third of the fold. Under them sat four identical cards, one of which was the answer, and nothing said which.
+
+**The loudest thing on a screen about what to do next was a control for describing it.** The chips and the field are the same controls and they have not changed: they moved below the steps, because the steps answer the question and those record the answer.
+
+**The next step is the first one nobody has marked done, and it wears the weight.** Hero type, more padding, and a mono eyebrow saying "Next". **The difference is size and space, never color**, per section 9: a step tinted to mean "do this one" says nothing in grayscale and nothing to anybody who cannot separate the hue.
+
+**It stays on the spine rather than being lifted above it.** Repeating it as a hero over a list that also contains it would be the same sentence in two places, and the spine is what shows where in a process somebody actually is.
+
+**What is done folds with its count, and nothing is hidden.** "Already done, 2" is a count of what is in the fold, which is what every other fold in this app says, and it is a different sentence from "2 of 5", which rule 13 rules out. One tap brings all of it back, because what has already been sent is exactly what somebody is asked about on the phone.
+
 ---
 
 ## BLOCKED

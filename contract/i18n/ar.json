@@ -653,6 +653,8 @@
   "projects.step.remove": "إزالة هذه الخطوة",
   "projects.next": "التالي: {step}",
   "projects.nothing_left": "لم يبق شيء في هذا المسار.",
+  "projects.next.label": "التالي",
+  "projects.done_fold": "تم بالفعل",
   "projects.blank": "البدء بدون قالب",
   "projects.blank.aside": "لشيء لا تغطيه القائمة أعلاه. تضيف الخطوات بنفسك.",
   "projects.name": "بماذا تسميه",

@@ -41,6 +41,7 @@ import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectDetailTags
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
@@ -1113,6 +1114,11 @@ class ScreenReaderTest {
                 onBack = {},
             )
         }
+        // **What is done arrives folded, so opening it is part of the test.**
+        // Asserting on the screen as it lands would check the step that is
+        // still to do and never the one behind the fold, and putting a step
+        // back is as ordinary as marking it done.
+        compose.onNodeWithTag(ProjectDetailTags.DONE_FOLD).performClick()
         assertEverythingIsLabeled("a project")
     }
 

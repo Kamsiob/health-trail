@@ -41,7 +41,7 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 - **#182 tests and results has nothing to convert.** No table in the schema, no query, no screen. It is the section being built for the first time and it needs a schema decision, which is the owner's. The issue says exactly what has to be decided and is labeled `blocked`.
 - **#188 capture is built.** It is a staged conversation now: three questions, one on screen at a time, dots saying which, a skip that is always visible, and save live from stage one. The fifteen second path law 3 is written around is type one sentence and save, without ever seeing stages two or three.
 
-**Step 4 has begun and nine of it are closed**: one entry #189, one incident and the incidents list #190, one person #191, one medication #192, one chapter #193, one care thread #194, one document #195, one bill #196, and one appointment and its prep sheet #197.
+**Step 4 has begun and ten of it are closed**: one entry #189, one incident and the incidents list #190, one person #191, one medication #192, one chapter #193, one care thread #194, one document #195, one bill #196, one appointment and its prep sheet #197, and one project and its steps #198.
 
 **One appointment turned out to be one screen, not two.** Section 14 listed "One appointment" and "The prep sheet" separately, and the app already opened the prep sheet when a row was tapped, so the other would have been a detail screen whose only content was a link to the screen the row already opened. They are one row in section 14 now, and D99 says why. **When two undrawn screens are two names for the same question, build one.**
 
@@ -50,6 +50,8 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 **Check the remaining detail screens for the same thing.** A row whose only behavior is edit is a screen nobody built, and both of these also had links the schema already carried and nothing read: a bill and a document each know their chapter, and a chapter could list them while they could not name it.
 
 **One thing from #189 that every detail screen inherited.** `SectionScaffold` takes a **heading** in the person's own words now, separate from the `title` that names the tab chip. Before that a detail screen had to pass its own words as the title, which put a typed sentence in an 11sp mono chip and again underneath at display weight. **Six screens had that defect** and all six were fixed together: one entry, one person, one medication, one chapter, one care thread, one incident and one project. Each says which section it belongs to and wears its hue.
+
+**A third thing the detail screens keep needing: check what is at the top.** One project opened with five status chips and an empty text field taking a third of the fold, above four identical step cards, one of which was the answer. The controls that describe a thing are not the thing. They moved under the steps and the next step took hero weight, D102.
 
 **The detail screens keep needing two things.** State the answer, then fold the volume: one chapter had 293 entries on screen at one weight and one care thread had 174, and both now lead with where the thing has got to. And **check what is carrying the accent**: one incident had its filled action on marking it answered, which is the thing somebody does once at the end, rather than on adding what happened next, which is why the screen gets opened at all.
 
@@ -76,7 +78,7 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **The calendar hand-off cost three attempts and none of them were time zones.** An appointment on November 27 opened the calendar app on the 26th. An all day event's end is exclusive and none was being sent, so the calendar received a day of zero length and drew the day before. `CalendarHandoffTest` covers it now. **The screen said November 27 the whole time**, which is the shape of every defect that only exists inside somebody else's app after the person has tapped.
 
-1. **The rest of step 4**, #198 to #208.
+1. **The rest of step 4**, #199 to #208.
 2. **The isolate audit, #226**, which has a generated worklist and needs Arabic on the device.
 
 **Nine things are waiting on the owner and none of them block anything.** **#221** (a document can be filed into a folder and nothing in the app can put one there), **#222** (the contract says view preferences travel and the schema has no table), **#220** (the trail's filter needs a decision about what a person filters by), **#182** (the tests section needs a schema before it can be built at all), **#230** (an incident cannot say which medication it was about, which rule 18 argues it should), and **#223** and **#225** (the two design reviews).

@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +47,8 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.ConfirmRemoveSheet
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -73,6 +76,8 @@ object ProjectDetailTags {
     const val STEP_SAVE = "project_step_save"
     const val STEP_REMOVE = "project_step_remove"
     const val NO_STEPS = "project_no_steps"
+    const val DONE_FOLD = "project_done_fold"
+    const val NEXT = "project_next"
     const val SAVE_TEMPLATE = "project_save_template"
     const val SAVED_TEMPLATE = "project_saved_template"
 }
@@ -126,6 +131,13 @@ fun ProjectDetailScreen(
     // Which step's sheet is open, and null for the one that adds a new step.
     var editing by remember(project.id) { mutableStateOf<Editing?>(null) }
     var removing by remember(project.id) { mutableStateOf<Repository.ProjectStep?>(null) }
+    var doneOpen by rememberSaveable(project.id) { mutableStateOf(false) }
+
+    // **What is left, and what is behind.** The next step is the first thing
+    // nobody has marked done, which is law 1 for this screen: somebody opening
+    // a project is asking what to do next, not how far along they are.
+    val done = steps.filter { it.isDone }
+    val remaining = steps.filterNot { it.isDone }
 
     SectionScaffold(
         name = ProjectDetailTags.NAME,
@@ -171,7 +183,160 @@ fun ProjectDetailScreen(
         backLabelKey = "section.back.projects",
         modifier = modifier,
     ) {
+        // **A spine, because a project is a sequence.** 11.11 and 11.12: a
+        // chapter list, an incident thread, a milestone arc and a project's
+        // steps are one shape seen four times, and this was the fourth one
+        // still drawn as a list of checkboxes.
+        //
+        // **The line is continuous rather than dashed**, per 5.2, because these
+        // steps are the person's actual path through a process rather than a
+        // filter over entries.
+        // **What is already done folds, with its count.** It is the record and
+        // it is not the job: somebody opening a project needs the next thing,
+        // and eleven finished steps above it push that off the fold. Nothing is
+        // hidden, because what has already been sent is exactly what somebody
+        // is asked about on the phone, and one tap brings it all back.
+        //
+        // **It is a count of steps, not a score.** "Already done, 2" says what
+        // is in the fold, which is what every other fold in this app says. Rule
+        // 13 rules out "2 of 5", and that is a different sentence.
+        if (done.isNotEmpty()) {
+            item {
+                FoldRow(
+                    labelKey = "projects.done_fold",
+                    expanded = doneOpen,
+                    onToggle = { doneOpen = !doneOpen },
+                    count = done.size.toString(),
+                    modifier = Modifier.testTag(ProjectDetailTags.DONE_FOLD),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+
+            if (doneOpen) {
+                itemsIndexed(done, key = { _, step -> "done_${step.id}" }) { index, step ->
+                    SpineRow(
+                        continuesAbove = index > 0,
+                        continuesBelow = index < done.lastIndex,
+                        node = colors.blue,
+                        // Filled, per 5.2.1: the shape carries the state, and a
+                        // step that happened is a waypoint that happened.
+                        state = Waypoint.HAPPENED,
+                        dash = null,
+                    ) {
+                        Column(modifier = Modifier.padding(bottom = Space.s)) {
+                            StepRow(
+                                step = step,
+                                onToggle = { onToggleStep(step) },
+                                onEdit = { editing = Editing.Existing(step) },
+                                onRemove = { removing = step },
+                            )
+                        }
+                    }
+                }
+                item { Spacer(Modifier.height(Space.s)) }
+            }
+        }
+
+        // **The next step is the one thing, and it is the first one left.** It
+        // wears an eyebrow saying so and its words are at hero weight, which is
+        // the whole difference between this screen and the four identical cards
+        // it was: the fourth card down was the answer and nothing said so.
+        //
+        // **It stays on the spine.** Lifting it out and repeating it above
+        // would have been the same sentence in two places, and the spine is
+        // what shows where in the process the person actually is.
+        // **The eyebrow sits at the margin, not in the spine's content column.**
+        // Inside the row it started where the card starts, so its rule began 48dp
+        // in while every other heading on the screen began at the edge, and the
+        // screen read as though one section had slipped.
+        if (remaining.isNotEmpty()) {
+            item {
+                GroupHeader(labelKey = "projects.next.label")
+                Spacer(Modifier.height(Space.headerGap))
+            }
+        }
+
+        itemsIndexed(remaining, key = { _, step -> step.id }) { index, step ->
+            val isNext = index == 0
+            SpineRow(
+                continuesAbove = index > 0 || (done.isNotEmpty() && doneOpen),
+                continuesBelow = index < remaining.lastIndex,
+                node = colors.blue,
+                // **Hollow for not yet**, per 5.2.1: a step nobody has started
+                // reads as "not yet" rather than as a failure. No strikethrough
+                // anywhere, which is the checklist idiom this screen is getting
+                // out of.
+                state = Waypoint.UPCOMING,
+                dash = null,
+            ) {
+                // **The gap between steps lives inside the row, not between
+                // rows.** A spacer between two `SpineRow`s has no gutter in it,
+                // so the line stopped at the bottom of each card and started
+                // again at the top of the next, and a continuous route rendered
+                // as a dashed one. It looked deliberate, which is why it needed
+                // looking at rather than reading.
+                Column(modifier = Modifier.padding(bottom = if (isNext) Space.m else Space.s)) {
+                    StepRow(
+                        step = step,
+                        onToggle = { onToggleStep(step) },
+                        onEdit = { editing = Editing.Existing(step) },
+                        onRemove = { removing = step },
+                        lead = isNext,
+                    )
+                }
+            }
+        }
+
+        // **Nothing left to do is a state and it is said out loud.** A project
+        // whose steps are all done otherwise showed a fold and then nothing,
+        // which is the blank area rule 11 rules out.
+        if (remaining.isEmpty() && steps.isNotEmpty()) {
+            item {
+                // Air above it, because with the fold open it otherwise sat
+                // directly under the last step and read as a caption on it
+                // rather than as a statement about the whole list.
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = strings["projects.nothing_left"],
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink2,
+                    modifier = Modifier.testTag(ProjectDetailTags.NEXT),
+                )
+            }
+        }
+
+        // **A project with no steps has an empty state, per 5.10.** A blank
+        // project made from nothing starts here, and "Add a step" alone above
+        // two thirds of an empty screen is the blank area rule 11 rules out.
+        // The drawing is the projects icon on the shared trail ground, per
+        // 5.17, so the empty screen is already teaching the shape the person
+        // will navigate by.
+        if (steps.isEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.NO_STEPS),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Spacer(Modifier.height(Space.l))
+                    EmptyDrawing(section = Repository.Section.PROJECTS)
+                    Spacer(Modifier.height(Space.m))
+                    Text(
+                        text = strings["projects.no_steps"],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
+
+        // **Where it stands sits under the steps, not over them.** Five status
+        // chips and an empty field were the first thing on the screen and took
+        // a third of the fold, so the loudest thing on a screen about what to
+        // do next was a control for describing it. They are the same controls,
+        // moved: the steps answer the question, and this records the answer.
         item {
+            Spacer(Modifier.height(Space.sectionGap))
             ChoiceChipGroup(label = strings["money.state"]) {
                 STATUSES.forEach { status ->
                     ChoiceChip(
@@ -208,82 +373,22 @@ fun ProjectDetailScreen(
                     modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.SAVE_WAITING),
                 )
             }
-
-            Spacer(Modifier.height(Space.l))
-        }
-
-        // **A spine, because a project is a sequence.** 11.11 and 11.12: a
-        // chapter list, an incident thread, a milestone arc and a project's
-        // steps are one shape seen four times, and this was the fourth one
-        // still drawn as a list of checkboxes.
-        //
-        // **The line is continuous rather than dashed**, per 5.2, because these
-        // steps are the person's actual path through a process rather than a
-        // filter over entries.
-        itemsIndexed(steps, key = { _, step -> step.id }) { index, step ->
-            SpineRow(
-                continuesAbove = index > 0,
-                continuesBelow = index < steps.lastIndex,
-                node = colors.blue,
-                // **Filled for done and hollow for not yet**, per 5.2.1, which
-                // is the whole point: the shape carries the state and a step
-                // nobody has started reads as "not yet" rather than as a
-                // failure. No strikethrough, which is the checklist idiom this
-                // screen is getting out of.
-                state = if (step.isDone) Waypoint.HAPPENED else Waypoint.UPCOMING,
-                dash = null,
-            ) {
-                // **The gap between steps lives inside the row, not between
-                // rows.** A spacer between two `SpineRow`s has no gutter in it,
-                // so the line stopped at the bottom of each card and started
-                // again at the top of the next, and a continuous route rendered
-                // as a dashed one. It looked deliberate, which is why it needed
-                // looking at rather than reading.
-                Column(modifier = Modifier.padding(bottom = Space.s)) {
-                    StepRow(
-                        step = step,
-                        onToggle = { onToggleStep(step) },
-                        onEdit = { editing = Editing.Existing(step) },
-                        onRemove = { removing = step },
-                    )
-                }
-            }
-        }
-
-        // **A project with no steps has an empty state, per 5.10.** A blank
-        // project made from nothing starts here, and "Add a step" alone above
-        // two thirds of an empty screen is the blank area rule 11 rules out.
-        // The drawing is the projects icon on the shared trail ground, per
-        // 5.17, so the empty screen is already teaching the shape the person
-        // will navigate by.
-        if (steps.isEmpty()) {
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.NO_STEPS),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Spacer(Modifier.height(Space.l))
-                    EmptyDrawing(section = Repository.Section.PROJECTS)
-                    Spacer(Modifier.height(Space.m))
-                    Text(
-                        text = strings["projects.no_steps"],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.ink2,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            }
         }
 
         item {
-            Spacer(Modifier.height(Space.m))
+            Spacer(Modifier.height(Space.sectionGap))
             // **Adding a step is the control this screen never had**, and
             // `MASTER_SPEC.md` 4.10 has required it since Phase 0. It sits
             // after the steps because that is where a new one goes.
-            TextAction(
+            // **Adding a step outranks saving a template, and read as the
+            // smaller of the two.** They were two pills of different widths,
+            // ragged against the left edge, with the rarer action wider than
+            // the common one. Adding a step is what somebody does while they
+            // are still learning the process, which is most of the time.
+            QuietButton(
                 label = strings["projects.add_step"],
                 onClick = { editing = Editing.New },
-                modifier = Modifier.testTag(ProjectDetailTags.ADD_STEP),
+                modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.ADD_STEP),
             )
 
             // **Saving these steps as the person's own template**, which is
@@ -395,6 +500,14 @@ private fun StepRow(
     onToggle: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
+    /**
+     * The next step, which is the one thing on this screen.
+     *
+     * **The difference is size and space, not color.** Section 9: color alone
+     * carries no meaning, and a step tinted to mean "do this one" would say
+     * nothing in grayscale and nothing to anybody who cannot separate the hue.
+     */
+    lead: Boolean = false,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -426,20 +539,31 @@ private fun StepRow(
                 interactionSource = interaction,
                 indication = null,
                 role = Role.Checkbox,
+                // **A reader is told what the tap does, in words.** Without
+                // this it announced "double tap to activate" on a row whose
+                // activation marks a step done or puts it back, which are
+                // opposite things and neither of them was said.
+                onClickLabel = strings[
+                    if (step.isDone) "projects.step.undone" else "projects.step.done"
+                ],
                 onClick = onToggle,
                 onLongClick = onEdit,
             )
             .testTag(ProjectDetailTags.step(step.id))
-            .padding(Space.cardPadding),
+            .padding(if (lead) Space.l else Space.cardPadding),
     ) {
         Text(
-            text = step.text,
-            style = HealthTrail.type.bodyL,
+            text = Bidi.isolate(step.text),
+            style = if (lead) HealthTrail.type.hero else HealthTrail.type.bodyL,
             color = if (step.isDone) colors.ink2 else colors.ink,
         )
         step.note?.takeIf { it.isNotBlank() }?.let { note ->
             Spacer(Modifier.height(Space.xs))
-            Text(text = note, style = HealthTrail.type.bodyM, color = colors.ink2)
+            Text(
+                text = Bidi.isolate(note),
+                style = if (lead) HealthTrail.type.bodyL else HealthTrail.type.bodyM,
+                color = colors.ink2,
+            )
         }
     }
 }

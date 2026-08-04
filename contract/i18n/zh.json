@@ -653,6 +653,8 @@
   "projects.step.remove": "删除这个步骤",
   "projects.next": "接下来：{step}",
   "projects.nothing_left": "这条已经没有剩下的了。",
+  "projects.next.label": "下一步",
+  "projects.done_fold": "已经做完",
   "projects.blank": "不用模板，直接开始",
   "projects.blank.aside": "用于上面列表没有涵盖的事情。步骤由你自己添加。",
   "projects.name": "叫它什么",

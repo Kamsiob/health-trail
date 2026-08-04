@@ -653,6 +653,8 @@
   "projects.step.remove": "Quitar este paso",
   "projects.next": "Siguiente: {step}",
   "projects.nothing_left": "No queda nada en este.",
+  "projects.next.label": "Siguiente",
+  "projects.done_fold": "Ya hecho",
   "projects.blank": "Empezar sin plantilla",
   "projects.blank.aside": "Para algo que la lista de arriba no cubre. Usted agrega los pasos.",
   "projects.name": "Cómo llamarlo",

@@ -653,6 +653,8 @@
   "projects.step.remove": "Remove this step",
   "projects.next": "Next: {step}",
   "projects.nothing_left": "Nothing left on this one.",
+  "projects.next.label": "Next",
+  "projects.done_fold": "Already done",
   "projects.blank": "Start with no template",
   "projects.blank.aside": "For something the list above does not cover. You add the steps yourself.",
   "projects.name": "What to call it",
