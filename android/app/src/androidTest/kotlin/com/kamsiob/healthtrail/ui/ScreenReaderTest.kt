@@ -639,7 +639,7 @@ class ScreenReaderTest {
                     Repository.Bill("b3", "Pharmacy", 31000, "USD", "paid", null, "2026-07-30", null),
                 ),
                 onRemove = {},
-                onEdit = {},
+                onOpen = {},
                 onAdd = {},
                 onBack = {},
             )

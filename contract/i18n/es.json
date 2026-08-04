@@ -386,6 +386,7 @@
   "medication.event.resumed": "Se reanudó",
   "medication.event.noted": "Algo anotado",
   "section.back.medications": "Volver a los medicamentos",
+  "section.back.money": "Volver a los gastos",
   "meds.empty": "Todavía no hay nada anotado. Un nombre por sí solo ya vale la pena.",
   "meds.add": "Añadir un medicamento",
   "meds.add.title": "Añadir un medicamento",
@@ -670,5 +671,11 @@
   "search.best": "La mejor coincidencia",
   "search.more": "Todo lo demás",
   "thread.where": "Dónde ha llegado",
-  "thread.earlier": "Antes en este hilo"
+  "thread.earlier": "Antes en este hilo",
+  "bill.received": "Recibida",
+  "bill.due": "Vence",
+  "bill.from": "Enviada por",
+  "bill.where": "De dónde viene",
+  "bill.edit": "Cambiar lo que usted escribió",
+  "bill.nothing": "Todavía no hay un importe anotado"
 }

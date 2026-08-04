@@ -386,6 +386,7 @@
   "medication.event.resumed": "重新开始",
   "medication.event.noted": "记下的一件事",
   "section.back.medications": "返回用药",
+  "section.back.money": "返回费用",
   "meds.empty": "还没有记录。只写下名称也有价值。",
   "meds.add": "添加药物",
   "meds.add.title": "添加药物",
@@ -670,5 +671,11 @@
   "search.best": "最匹配",
   "search.more": "其余全部",
   "thread.where": "进展到哪里",
-  "thread.earlier": "这条线索的更早内容"
+  "thread.earlier": "这条线索的更早内容",
+  "bill.received": "收到",
+  "bill.due": "到期",
+  "bill.from": "寄件方",
+  "bill.where": "来自哪里",
+  "bill.edit": "修改您写的内容",
+  "bill.nothing": "还没有记下金额"
 }

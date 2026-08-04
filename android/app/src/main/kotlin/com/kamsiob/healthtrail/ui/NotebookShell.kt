@@ -45,6 +45,7 @@ import com.kamsiob.healthtrail.ui.components.Share
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
+import com.kamsiob.healthtrail.ui.screens.BillScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationEventDraft
 import com.kamsiob.healthtrail.ui.screens.MedicationEventScreen
@@ -285,6 +286,8 @@ fun NotebookShell(
     var pinningEntry by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     /** True while the emergency card is on its way to the share sheet. */
     var sharingCard by remember { mutableStateOf(false) }
+    /** The bill whose own screen is open, or null. */
+    var openBill by remember { mutableStateOf<Repository.Bill?>(null) }
     /** The incident waiting to be turned into a document and handed to the share sheet. */
     var sharingIncident by remember { mutableStateOf<Repository.Incident?>(null) }
     /** The prep sheet waiting to become a document. */
@@ -1415,7 +1418,7 @@ fun NotebookShell(
                     onRemove = { bill ->
                         removing = Removal(Repository.Section.MONEY, bill.id, bill.description)
                     },
-                    onEdit = { bill -> editingBill = bill; addingBill = true },
+                    onOpen = { bill -> openBill = bill },
                     onAdd = { editingBill = null; addingBill = true },
                     onBack = { openSection = null },
                 )
@@ -1752,6 +1755,23 @@ fun NotebookShell(
                 onOpenEntry = { openPerson = null; openEntry = it.id },
                 onBack = { openPerson = null },
                 backLabelKey = "section.back.careteam",
+            )
+        }
+
+        // **A bill's own screen, which nothing could reach until 2026-08-04.**
+        // Tapping a bill opened the editor, so the place it came out of and who
+        // sent it had nowhere to appear.
+        openBill?.let { current ->
+            val fresh = bills.firstOrNull { it.id == current.id } ?: current
+            BillScreen(
+                bill = fresh,
+                onEdit = { editingBill = fresh; addingBill = true },
+                onOpenChapter = { chapterId ->
+                    openBill = null
+                    openChapter = chapters.firstOrNull { it.id == chapterId }
+                    if (openChapter == null) openSection = Repository.Section.CHAPTERS
+                },
+                onBack = { openBill = null },
             )
         }
 

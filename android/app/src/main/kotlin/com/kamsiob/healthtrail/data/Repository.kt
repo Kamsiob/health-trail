@@ -2022,6 +2022,13 @@ class Repository private constructor(
         val stateNote: String?,
         val receivedEdtf: String?,
         val notes: String?,
+        /** When it is due, which is the thing that makes a bill urgent or not. */
+        val dueEdtf: String? = null,
+        /** The place this bill came out of, so it can be opened from here. */
+        val chapterId: String? = null,
+        val chapterName: String? = null,
+        /** Who sent it, carried so a bill can say so without a second query. */
+        val organizationName: String? = null,
     ) {
         /**
          * Whether this is still hanging over somebody.
@@ -2035,9 +2042,13 @@ class Repository private constructor(
     /** Every bill, most recently received first. */
     suspend fun bills(subjectId: String): List<Bill> = withContext(Dispatchers.IO) {
         db().database.rawQuery(
-            "SELECT id, description, amount_minor, currency, state, state_note, " +
-                "received_edtf, notes FROM live_bill WHERE subject_id = ? " +
-                "ORDER BY received_start IS NULL, received_start DESC, created_at DESC",
+            "SELECT b.id, b.description, b.amount_minor, b.currency, b.state, " +
+                "b.state_note, b.received_edtf, b.notes, b.due_edtf, b.chapter_id, " +
+                "c.name, o.name FROM live_bill b " +
+                "LEFT JOIN live_chapter c ON c.id = b.chapter_id " +
+                "LEFT JOIN live_organization o ON o.id = b.organization_id " +
+                "WHERE b.subject_id = ? " +
+                "ORDER BY b.received_start IS NULL, b.received_start DESC, b.created_at DESC",
             arrayOf(subjectId),
         ).use { cursor ->
             buildList {
@@ -2052,6 +2063,10 @@ class Repository private constructor(
                             stateNote = cursor.getString(5),
                             receivedEdtf = cursor.getString(6),
                             notes = cursor.getString(7),
+                            dueEdtf = cursor.getString(8),
+                            chapterId = cursor.getString(9),
+                            chapterName = cursor.getString(10),
+                            organizationName = cursor.getString(11),
                         ),
                     )
                 }

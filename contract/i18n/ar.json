@@ -386,6 +386,7 @@
   "medication.event.resumed": "استُؤنف",
   "medication.event.noted": "ملاحظة مسجلة",
   "section.back.medications": "العودة إلى الأدوية",
+  "section.back.money": "العودة إلى المصاريف",
   "meds.empty": "لا يوجد شيء مدوّن بعد. الاسم وحده يستحق التسجيل.",
   "meds.add": "إضافة دواء",
   "meds.add.title": "إضافة دواء",
@@ -670,5 +671,11 @@
   "search.best": "أفضل تطابق",
   "search.more": "كل ما تبقى",
   "thread.where": "إلى أين وصل",
-  "thread.earlier": "ما سبق في هذا المسار"
+  "thread.earlier": "ما سبق في هذا المسار",
+  "bill.received": "وصلت",
+  "bill.due": "مستحقة",
+  "bill.from": "أرسلها",
+  "bill.where": "من أين جاءت",
+  "bill.edit": "غيّر ما كتبته",
+  "bill.nothing": "لم يُدوَّن مبلغ بعد"
 }

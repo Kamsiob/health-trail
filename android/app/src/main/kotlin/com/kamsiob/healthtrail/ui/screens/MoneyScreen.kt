@@ -84,7 +84,14 @@ private val STATE_ORDER = listOf(
 fun MoneyScreen(
     bills: List<Repository.Bill>,
     onRemove: (Repository.Bill) -> Unit,
-    onEdit: (Repository.Bill) -> Unit,
+    /**
+     * Opens the bill itself.
+     *
+     * **The row used to open the form that edits it**, which is the app
+     * answering "tell me about this" with "change this". Changing it is one tap
+     * further on, from the bill's own screen.
+     */
+    onOpen: (Repository.Bill) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -156,7 +163,7 @@ fun MoneyScreen(
                             BillRow(
                                 bill = bill,
                                 onRemove = { onRemove(bill) },
-                                onEdit = { onEdit(bill) },
+                                onEdit = { onOpen(bill) },
                                 isLast = row == inState.lastIndex,
                             )
                         }
@@ -192,7 +199,7 @@ fun MoneyScreen(
                                 BillRow(
                                     bill = bill,
                                     onRemove = { onRemove(bill) },
-                                    onEdit = { onEdit(bill) },
+                                    onEdit = { onOpen(bill) },
                                     isLast = row == inState.lastIndex,
                                 )
                             }

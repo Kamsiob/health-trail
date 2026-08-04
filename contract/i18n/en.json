@@ -386,6 +386,7 @@
   "medication.event.resumed": "Started again",
   "medication.event.noted": "Something noted",
   "section.back.medications": "Back to medications",
+  "section.back.money": "Back to money",
   "meds.empty": "Nothing written down yet. A name on its own is worth having.",
   "meds.add": "Add a medication",
   "meds.add.title": "Add a medication",
@@ -670,5 +671,11 @@
   "search.best": "Best match",
   "search.more": "Everything else",
   "thread.where": "Where it has got to",
-  "thread.earlier": "Earlier on this thread"
+  "thread.earlier": "Earlier on this thread",
+  "bill.received": "Received",
+  "bill.due": "Due",
+  "bill.from": "Sent by",
+  "bill.where": "Where this came from",
+  "bill.edit": "Change what you wrote",
+  "bill.nothing": "No amount written down yet"
 }
