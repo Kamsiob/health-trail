@@ -1,0 +1,65 @@
+package com.kamsiob.healthtrail.ui.theme
+
+import androidx.compose.runtime.Composable
+import com.kamsiob.healthtrail.data.Repository
+
+/**
+ * Which tab hue each section wears. `DESIGN.md` section 4.3.
+ *
+ * **This mapping is an owner decision and is not to be re-derived.** Five hues
+ * come from the grid file and `stone` was added in v4 because the grid draws no
+ * standing instructions screen and the section needs an identity, `DECISIONS.md`
+ * D79. A section added later inherits the hue of the section it most resembles
+ * in kind, and that choice is recorded in `DESIGN.md` with its reasoning rather
+ * than made here and left for somebody to find.
+ *
+ * **Tabs are identity, never state.** A hue says which section you are in. It
+ * never reports that something is open, overdue, or unread.
+ *
+ * **Whole-app surfaces get no section hue.** Today, the trail, filing, projects,
+ * search, and onboarding belong to no section and use gold with the base ladder.
+ * The two of those that appear in [Repository.Section] are handled here so that
+ * a caller cannot accidentally give one a section identity it does not have.
+ */
+@Composable
+fun hueFor(section: Repository.Section): TabHue {
+    val colors = HealthTrail.colors
+    return when (section) {
+        // People and chapters. A chapter is a place a person was, which is the
+        // same kind of thing as the people who were there.
+        Repository.Section.CARE_TEAM,
+        Repository.Section.CHAPTERS,
+        -> colors.rose
+
+        // Medications, tests, and questions. All three are things asked of, or
+        // received from, the clinical side.
+        Repository.Section.MEDICATIONS,
+        Repository.Section.ASK_NEXT_TIME,
+        -> colors.teal
+
+        Repository.Section.APPOINTMENTS -> colors.slate
+
+        // Progress and care threads. Both are things followed over time.
+        Repository.Section.PROGRESS,
+        Repository.Section.THREADS,
+        -> colors.moss
+
+        // Documents and money. Both are paper.
+        Repository.Section.DOCUMENTS,
+        Repository.Section.MONEY,
+        -> colors.manila
+
+        Repository.Section.STANDING_INSTRUCTIONS -> colors.stone
+
+        // Whole-app surfaces. The trail and projects belong to no section, and
+        // the emergency card is the one screen that is neither a section nor
+        // gold: it is alert, because that is what it is for, and alert is the
+        // only semantic color allowed to act as an identity anywhere in the app.
+        Repository.Section.TRAIL,
+        Repository.Section.PROJECTS,
+        -> TabHue(base = colors.gold, ink = colors.goldInk, wash = colors.goldWash)
+
+        Repository.Section.EMERGENCY_CARD ->
+            TabHue(base = colors.alert, ink = colors.alertInk, wash = colors.alertWash)
+    }
+}
