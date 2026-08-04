@@ -30,19 +30,15 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 ### Pick this up first, in this order
 
-**Step 1 now covers both themes.** D87: #152, the dark theme, moved into step 1 alongside #149, and **step 1 does not complete until every token, light and dark, exists and is verified on the device at both themes.** Converting screens against a light-only token set gives every converted screen a deferred second review, which is the half-converted state step 1 exists to prevent.
+**Step 1 is complete as of 2026-08-03.** Every token in both themes, the type scale with all three faces verified per locale, the geometry, and **all sixteen components in the inventory**. `#149` through `#168` are closed.
 
-1. **Done: #149, the token set, both themes**, landed on `main` at `189b7b6`. `Color.kt` carries the v4 surfaces, semantics, and all six tab hues as base, ink, and wash, in light and dark. **The old token names are gone rather than aliased** and all 560 call sites moved with them. `check_contrast.py` passes 154 pairs across both themes.
-2. **Still open: #150**, for the Arabic and Chinese re-confirmation. The Latin faces are confirmed above.
-3. **Still open: #152**, for the color vision screenshots only. **The dark values are in and measured; what is missing is eyes.** Nothing on screen carries a tab hue yet, because the notebook still draws the old sand icon tiles, so the CVD check is gated on #153.
-4. **Done: #151 shape and rhythm, and #153 the tab chip.** `Dimens.kt` carries the v4 geometry, including the FAB clearance tokens D81 requires and a 46dp row minimum held separately from the 48dp touch floor so density can never quietly eat the target. `hueFor` maps every section to its hue in one place and the notebook draws each icon in its own wash.
-5. **Done: most of the inventory.** Built and landed: the tab chip, the fold row, the wash band, the avatar, the chart card, the view toggle, the pinned group, the sticky header, the corner FAB, the four-tab bar, and the outlined action costume. **Six remain: #158 the round card, #159 the agenda and month grid, #163 the edge scrubber, #165 the chip, #166 the spine.**
-6. **Then #169 to #172**, the four bottom-navigation destinations.
-7. **Then #173 to #188** section screens, then **#189 to #208** detail screens, sheets, onboarding, settings, and edge states.
+1. **Step 2, #169 to #172: the four bottom-navigation destinations.** Today, the Notebook, Projects, More. This comes next so the app reads as one app end to end at the earliest possible moment.
+2. **Then step 3, #173 to #188**, the section screens, in the order the default situation template surfaces them.
+3. **Then step 4, #189 to #208**, detail screens, sheets, onboarding, settings, and every error, empty, and edge state.
 
-**`ORDER OF WORK` is not a suggestion.** A half-converted app is worse than either version and it makes review impossible.
+**THE ARCHIVE runs on its own track and must not be scheduled behind the screens.** #209 through #215, with #9 as the parent. Move to it if the visual track blocks.
 
-**THE ARCHIVE runs on its own track and does not wait for any of this.** #209 through #215, plus the parent #9. Its two screens are built in step 4 with everything else, but the container, the readable copy, the importer, and the tests are independent of screen work and must not be scheduled behind it.
+**What step 1 left behind, all of it verified on the phone at both themes:** the tab chip, fold row, wash band, avatar, chart card, round card, month grid, view toggle, pinned group, sticky header, edge scrubber, corner FAB, four-tab bar, the two action costumes, the chip costume, and the spine's fourth waypoint state.
 
 ---
 
