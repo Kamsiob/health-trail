@@ -381,6 +381,7 @@
   "meds.on_card.note": "البطاقة هي ما يقرأه أحدهم على عجل، لذا تحمل الأهم لا كل شيء.",
   "meds.on_card.badge": "على بطاقة الطوارئ",
   "meds.stopped": "متوقف",
+  "meds.stopped.fold": "موقوفة، محفوظة دائمًا",
   "emergency.group.meds": "ما يتناوله",
   "meds.on_card.chip": "على البطاقة",
   "questions.subtitle": "أشياء تسألها عندما تسنح الفرصة. تبقى هنا حتى تقول إنك سألتها.",

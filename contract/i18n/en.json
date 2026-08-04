@@ -381,6 +381,7 @@
   "meds.on_card.note": "The card is the one somebody reads in a hurry, so it holds what matters most rather than everything.",
   "meds.on_card.badge": "On the emergency card",
   "meds.stopped": "Stopped",
+  "meds.stopped.fold": "Stopped, kept forever",
   "emergency.group.meds": "What they take",
   "meds.on_card.chip": "On the card",
   "questions.subtitle": "Things to ask when you get the chance. They stay here until you say they were asked.",

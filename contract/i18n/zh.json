@@ -381,6 +381,7 @@
   "meds.on_card.note": "卡片是别人匆忙中要看的，所以只放最重要的，而不是全部。",
   "meds.on_card.badge": "已在紧急信息卡上",
   "meds.stopped": "已停用",
+  "meds.stopped.fold": "已停用，永久保留",
   "emergency.group.meds": "正在服用",
   "meds.on_card.chip": "放入卡片",
   "questions.subtitle": "有机会时要问的问题。在您标记为已问之前，它们会一直留在这里。",
