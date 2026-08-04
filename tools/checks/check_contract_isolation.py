@@ -57,6 +57,11 @@ SCHEMA_ALLOWED = {
     # schema and asserts the archive's field map covers it, which is the
     # opposite of a second copy. contract/DATA-CONTRACT.md 8.5.
     "tools/checks/check_readable_coverage.py",
+    # Builds a three column throwaway database in a temp directory so the
+    # standalone decryptor has an archive to open. It is not a schema the app
+    # could ever load: nothing copies it, nothing packages it, and it is deleted
+    # when the check returns. contract/DATA-CONTRACT.md 8.1.
+    "tools/checks/check_decrypt_tool.py",
 }
 
 # Test sources are exempt as a category rather than file by file.
