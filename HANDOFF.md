@@ -4,17 +4,19 @@
 
 If you are a session with no memory, this file plus `git log` and the issue board is everything you need.
 
-**Last rewritten:** 2026-08-03, at the end of step zero, then updated with the owner's standing principle, `CLAUDE.md` rule 23 and D86, and the scheduling correction that moves the dark theme into step 1, D87.
+**Last rewritten:** 2026-08-04, at the end of the overnight run that converted step 3 and began step 4.
 
 ---
 
 ## 0. The headline, and it is the only thing you need to act on
 
-**Design direction v4 is adopted. It supersedes the design this app was built on. No screen has been converted yet.**
+**Design direction v4 is adopted, and most of the app is now built in it.** Steps 1 and 2 are complete, step 3 is complete but for two screens that are recorded below, and step 4 has begun.
 
 The whole visual and experience direction changed: new tokens, new type scale, a new component inventory, a new interaction grammar, and a new method for undrawn screens. `reference/screen-grid.html` **is now the v4 grid** and the old one is gone from the working tree. `DESIGN.md` was rewritten rather than patched.
 
-**Everything the owner sent is now in the repository and on the board.** That was the point of step zero: the prompt that started this run is redundant, and a session starting cold from this file alone can do the work.
+**Everything the owner sent is in the repository and on the board.** The prompts that started these runs are redundant, and a session starting cold from this file alone can do the work.
+
+**The state as of 2026-08-04, all verified rather than asserted:** 16 repository checks pass, the unit tests pass, **291 instrumented tests pass**, the working tree is clean and `origin/main` has everything. The phone holds the year five fixture, sits on the notebook, and its font scale, night mode and per-app locale are exactly as they were found.
 
 ### The font gate, confirmed 2026-08-03
 
