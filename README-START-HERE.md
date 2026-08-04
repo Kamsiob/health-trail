@@ -1,8 +1,19 @@
 # Health Trail: project folder
 
-Unzip this as one folder. It is the working folder for building Health Trail by Kamsiob, a local-first care notebook for the family member who is the point person for someone else's care.
+Health Trail by Kamsiob, a local-first care notebook for the family member who is the point person for someone else's care.
 
-This folder is complete and ready to hand to Claude Code. The kickoff prompt is kept separately, outside this folder. Launch Claude Code in this folder and paste it.
+---
+
+## Picking up the work? Read two files and stop
+
+1. **`CLAUDE.md`**, which is loaded automatically anyway. Twenty-three rules, one page.
+2. **`HANDOFF.md`**, which is the current state and says what to do next in order. About three thousand words.
+
+**That is enough to start.** Everything else in this folder is reference, and reading it front to back costs most of a context window for material you probably do not need today. Open the rest when a specific question sends you there, which is what the table in `HANDOFF.md` section 9 is for.
+
+**Do not read `docs/RUN-LOG.md` to orient.** It is history, it is long, and nothing in it is the current state.
+
+The reading order further down is for **somebody meeting this project for the first time**, not for a session continuing the work.
 
 ---
 
@@ -45,6 +56,16 @@ templates/                   the finished template catalog. 57 templates as JSON
                              embeds, plus a readable catalog published separately under
                              CC BY-SA 4.0. Has its own README and SCHEMA.
 
+HANDOFF.md                   the current state of the work and what to do next. Read
+                             this every session. Rewritten to current truth, never
+                             appended to.
+
+DECISIONS.md                 every decision and why, D1 through D102, plus the BLOCKED
+                             section for anything only the owner can resolve.
+
+docs/RUN-LOG.md              history. How things came to be and what proved them.
+                             Never read this to orient yourself.
+
 reference/screen-grid.html   the visual reference. 27 approved screens plus the sitemap.
                              Open it in a browser. This is what the app looks like.
 
@@ -55,7 +76,9 @@ SESSION-HANDOFF-PROMPTS.txt  the before and after pair for handing a dying sessi
                              fresh one.
 ```
 
-## Reading order
+## Reading order, for a first encounter only
+
+**Not for a session continuing the work.** See the top of this file.
 
 1. `MASTER_SPEC.md`
 2. `contract/DATA-CONTRACT.md`

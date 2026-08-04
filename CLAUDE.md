@@ -33,6 +33,6 @@ This file is deliberately short. It is loaded automatically every session and it
 
 ## Where everything is
 
-`README-START-HERE.md` maps the folder. `MASTER_SPEC.md` is the features and the phase plan. `contract/DATA-CONTRACT.md` is the schema and export format. `DESIGN.md` plus `reference/screen-grid.html` is what it looks like. `TESTING-PERSONAS.md` is how it gets tested. `AGENTS.md` is delegation. `RUN-SAFETY.md` is how a long unattended run stays safe. `PROJECT-DELTAS.md` overrides `kamsiob-project-template.md`.
+`README-START-HERE.md` maps the folder. **`docs/RUN-LOG.md` is history and is never read to orient**: `HANDOFF.md` is the current state and it is the short one. `MASTER_SPEC.md` is the features and the phase plan. `contract/DATA-CONTRACT.md` is the schema and export format. `DESIGN.md` plus `reference/screen-grid.html` is what it looks like. `TESTING-PERSONAS.md` is how it gets tested. `AGENTS.md` is delegation. `RUN-SAFETY.md` is how a long unattended run stays safe. `PROJECT-DELTAS.md` overrides `kamsiob-project-template.md`.
 
 Precedence: verified code, then HANDOFF.md, then DECISIONS.md, then the data contract for data questions, then DESIGN.md for visual questions, then RUN-SAFETY.md and AGENTS.md for how-to-work questions, then PROJECT-DELTAS.md, then MASTER_SPEC.md, then the template.

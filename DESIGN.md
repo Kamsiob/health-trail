@@ -576,8 +576,8 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 | One question set | 21 Fifty questions | The pinned group, opened |
 | One test round | 20 Tests and results | The round card, opened |
 | One test's history | 24 Tracking one thing | A chart of one thing over time |
-| Month review | 08 The trail | A period of the trail, composed |
-| The milestone arc | 19 Chapters | A spine of milestones with gold rings |
+| Month review | 08 The trail | A period of the trail, composed, every line tapping through to its source. **Not started.** The second half of #200 |
+| The milestone arc | 19 Chapters | A spine of milestones with gold rings. **Built 2026-08-04**, #200, and it is where the app first became able to read or write a milestone at all: the table shipped in the schema and nothing touched it, #234. Reached from the chapters list, because there is no thirteenth section. **Review issue still owed**, per 13.4 |
 | Projects, the list | 12 Medications | Peers with state, active first |
 | Starting a project | 23 Track something new | A grouped, searchable picker |
 | The template library | 23 Track something new | Same picker shape, the person's own first |
