@@ -289,6 +289,31 @@ internal object ReadableArchive {
                 else -> ReadablePage.field(label, "yes")
             }
 
+            // **The one link that leaves the page, and it goes nowhere near a
+            // network.** `contract/DATA-CONTRACT.md` 8.2 requires every
+            // attachment referenced by a relative path into `../attachments/`
+            // and never as base64. The file's name **is** its SHA-256, so this
+            // column is the checksum and the path at once.
+            //
+            // The index page has promised since it was written that "the links
+            // here point straight at them". It was not true: a real export
+            // carried forty photographs and zero references to them, so a person
+            // reading the prose had no way to know a picture of that letter
+            // existed. Found by unsealing an archive and grepping it.
+            "attachment" -> {
+                val digest = row[column]
+                if (digest.isNullOrBlank()) {
+                    ReadablePage.notRecorded(label)
+                } else {
+                    // **`ReadablePage.attachment` existed and nothing called
+                    // it.** It was written when the page shell was, for exactly
+                    // this, and the pages have been shipping without a single
+                    // link since. A helper nobody calls is not a feature.
+                    "<div class=\"f\"><dt>${ReadablePage.escape(label)}</dt>" +
+                        "<dd>${ReadablePage.attachment(digest, digest)}</dd></div>"
+                }
+            }
+
             "link" -> {
                 val target = row[column]
                 if (target.isNullOrBlank()) {

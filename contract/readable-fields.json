@@ -143,7 +143,8 @@
         "notRendered": "Row bookkeeping for sync."
       },
       "sha256": {
-        "render": "value"
+        "render": "attachment",
+        "note": "Section 8.2: attachments are referenced by relative path into ../attachments/, never base64. The file's name is its own SHA-256, so this column is both the checksum and the path, and it renders as a link a browser follows with no internet connection."
       },
       "original_filename": {
         "render": "value"
