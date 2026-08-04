@@ -590,7 +590,9 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 - **Two were the same thing** reached through the medication journey.
 - **One was a test tag that went missing in a redesign.** The notebook's counts carried a tag while the front door was tiles; the v4 conversion made it dense rows and the tag stayed with the tile, so three tests looked for a node that no longer existed with no way to know why. `DenseRow` can tag its subtitle now.
 
-**Run `:app:connectedDebugAndroidTest` after any run that changes a screen.** It takes about six minutes and it is the only thing that would have caught these.
+**All 291 pass as of the end of this run.** Confirmed by a full run after the fixes, not by rerunning the two classes that had been red.
+
+**Run `:app:connectedDebugAndroidTest` after any run that changes a screen.** It takes about six minutes and it is the only thing that would have caught these. **It uninstalls the app and takes the notebook with it**, so `tools/seed.sh year5 5 walk-year-five` afterward.
 
 ### The device, as it was left
 
