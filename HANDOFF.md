@@ -16,14 +16,26 @@ The whole visual and experience direction changed: new tokens, new type scale, a
 
 **Everything the owner sent is now in the repository and on the board.** That was the point of step zero: the prompt that started this run is redundant, and a session starting cold from this file alone can do the work.
 
+### The font gate, confirmed 2026-08-03
+
+**`DESIGN.md` 5.2 requires this be recorded here before any screen work, and it is a gate rather than a checkbox**, because this app has already shipped multiple sessions of visual review that were invalid because a face had silently fallen back to the system typeface.
+
+**Confirmed on the device**, `docs/screenshots/v4-tokens-notebook-light.png`, notebook screen, year five fixture, letterforms checked by eye:
+
+- **Bricolage Grotesque** renders the title "Notebook" and every tile name. The tight display tracking and the distinctive `k` and `g` are visible, not a system substitute.
+- **Atkinson Hyperlegible** renders the subtitle "Twelve places that never move." Its wide apertures and unambiguous `l` are visible.
+- **JetBrains Mono** renders every count: "9 items", "1,630 items", and the "NEEDS YOU" eyebrow. Digits are tabular and the column aligns.
+
+**Nothing has fallen back.** Re-confirm this after any change to the font pipeline, and per locale, per `DESIGN.md` 5.3. **Arabic and Chinese are not re-confirmed under v4 yet** and are part of #150.
+
 ### Pick this up first, in this order
 
 **Step 1 now covers both themes.** D87: #152, the dark theme, moved into step 1 alongside #149, and **step 1 does not complete until every token, light and dark, exists and is verified on the device at both themes.** Converting screens against a light-only token set gives every converted screen a deferred second review, which is the half-converted state step 1 exists to prevent.
 
-1. **#150, the font gate, before anything visual.** Screenshot a screen carrying all three faces, confirm the letterforms by eye, and record the confirmation here. **This app has already shipped multiple sessions of visual review that were invalid because a face had silently fallen back to the system typeface.** It is a gate, not a checkbox, `DESIGN.md` 5.2.
-2. **#149, the token set**, measured. Nothing else in the conversion starts until the theme matches `DESIGN.md` sections 4.1 to 4.3.
-3. **#152, the dark theme**, whose derivation is already done and published in D87. Only the values, the contrast run, and the color vision screenshots remain.
-4. **#151, shape and rhythm**, then **#153 to #168**, the component inventory. Eleven components do not exist at all; five need real rebuilds.
+1. **Done: #149, the token set, both themes**, landed on `main` at `189b7b6`. `Color.kt` carries the v4 surfaces, semantics, and all six tab hues as base, ink, and wash, in light and dark. **The old token names are gone rather than aliased** and all 560 call sites moved with them. `check_contrast.py` passes 154 pairs across both themes.
+2. **Still open: #150**, for the Arabic and Chinese re-confirmation. The Latin faces are confirmed above.
+3. **Still open: #152**, for the color vision screenshots only. **The dark values are in and measured; what is missing is eyes.** Nothing on screen carries a tab hue yet, because the notebook still draws the old sand icon tiles, so the CVD check is gated on #153.
+4. **Next: #151, shape and rhythm**, then **#153 to #168**, the component inventory. Eleven components do not exist at all; five need real rebuilds. **#153, the tab chip, unblocks the #152 verification**, so it is worth taking early.
 5. **Only then #169 to #172**, the four bottom-navigation destinations, so the app reads as one app end to end at the earliest possible moment.
 6. **Then #173 to #188** section screens, then **#189 to #208** detail screens, sheets, onboarding, settings, and edge states.
 
