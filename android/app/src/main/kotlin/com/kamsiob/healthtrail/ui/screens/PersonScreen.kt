@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.FilledButton
@@ -70,7 +71,14 @@ fun PersonScreen(
 
     SectionScaffold(
         name = PersonTags.NAME,
-        title = person.displayName.ifBlank { strings["person.unnamed"] },
+        // **The chip says where you are, the heading says what you came for.**
+        // This passed the record's own words as the title, which put them in an
+        // 11sp mono chip and again underneath at display weight: the same label
+        // in two slots, which section 1 bans. #189 gave the scaffold a heading
+        // for exactly this, and every detail screen inherits it.
+        title = strings["notebook.section.care_team"],
+        heading = Bidi.isolate(person.displayName.ifBlank { strings["person.unnamed"] }),
+        section = Repository.Section.CARE_TEAM,
         subtitle = person.roleLabel?.takeIf { it.isNotBlank() }
             ?: strings["person.norole"],
         onBack = onBack,

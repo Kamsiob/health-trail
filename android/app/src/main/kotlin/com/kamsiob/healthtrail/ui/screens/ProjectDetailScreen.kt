@@ -39,6 +39,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
@@ -128,7 +129,13 @@ fun ProjectDetailScreen(
 
     SectionScaffold(
         name = ProjectDetailTags.NAME,
-        title = project.name,
+        // **The chip says where you are, the heading says what you came for.**
+        // This passed the record's own words as the title, which put them in an
+        // 11sp mono chip and again underneath at display weight: the same label
+        // in two slots, which section 1 bans. #189 gave the scaffold a heading
+        // for exactly this, and every detail screen inherits it.
+        title = strings["notebook.section.projects"],
+        heading = Bidi.isolate(project.name),
         // **The provenance, and it used to say "2 of 5 steps done".**
         //
         // That is a completion count on the person's own work, which rule 13

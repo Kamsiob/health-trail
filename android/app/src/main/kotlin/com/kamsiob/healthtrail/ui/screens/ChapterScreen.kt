@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -61,7 +62,14 @@ fun ChapterScreen(
 
     SectionScaffold(
         name = ChapterTags2.NAME,
-        title = chapter.name,
+        // **The chip says where you are, the heading says what you came for.**
+        // This passed the record's own words as the title, which put them in an
+        // 11sp mono chip and again underneath at display weight: the same label
+        // in two slots, which section 1 bans. #189 gave the scaffold a heading
+        // for exactly this, and every detail screen inherits it.
+        title = strings["notebook.section.chapters"],
+        heading = Bidi.isolate(chapter.name),
+        section = Repository.Section.CHAPTERS,
         subtitle = chapter.startedEdtf?.takeIf { it.isNotBlank() }
             ?.let { started ->
                 val from = EventDateText.render(strings, started)

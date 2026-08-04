@@ -77,7 +77,14 @@ fun MedicationScreen(
 
     SectionScaffold(
         name = MedicationTags.NAME,
-        title = Bidi.isolate(medication.name),
+        // **The chip says where you are, the heading says what you came for.**
+        // This passed the record's own words as the title, which put them in an
+        // 11sp mono chip and again underneath at display weight: the same label
+        // in two slots, which section 1 bans. #189 gave the scaffold a heading
+        // for exactly this, and every detail screen inherits it.
+        title = strings["notebook.section.medications"],
+        heading = Bidi.isolate(medication.name),
+        section = Repository.Section.MEDICATIONS,
         subtitle = medication.doseText?.takeIf { it.isNotBlank() }
             ?: strings["medication.nodose"],
         onBack = onBack,
