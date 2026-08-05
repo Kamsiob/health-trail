@@ -15,7 +15,7 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`).
 - **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **356 instrumented tests pass**, last full run 2026-08-05 after the three project shapes landed.
+- **356 instrumented tests pass**, last full run 2026-08-05 after Today's card field landed.
 - The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
 **Take these in this order.**
@@ -128,6 +128,26 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **`Repository.projectCards` is three queries for the whole list**, not three per project. Fifteen projects would otherwise cost forty-five round trips to draw the screen the tab opens on.
 - **The next step line only prints when the card would otherwise say nothing.** It was right while a project was a checklist; under the grid a card answers two things, and printing a third under them is three lines competing where the grid draws one.
 - **`projects.subtitle` was corrected in place**, in all four catalogs. It described a project as "a list of steps and a note of who you are waiting on", which is the checklist the grid supersedes.
+
+## 2.5 Today has a lead slot and a card field, and it is on the phone
+
+**`TodayFieldScreen`, with `TodayCard` and `CardSize`.** The lead spans the width at the top and the field is a two-column grid under it, with small taking one column and wide and tall taking two. Every card wears its section's hue from the tab pack and carries a corner chevron, and **each one opens the section its answer lives in**, because a door that does nothing on press reads as broken.
+
+**Seen at both themes, at font scale 2.0, and in Arabic.** `docs/screenshots/today-field-dark.png`, `today-field-light.png`, `today-field-max-font.png`, `today-field-arabic.png`. The grid mirrors: the small cards swap sides, the chevrons flip, the capture button moves to the start edge, and the English catalog stays isolated inside the Arabic layout.
+
+**The lead is singular by construction, not by convention.** It comes from `Repository.TodayLayout`, which has nowhere to put zero or two.
+
+**`Repository.todayAnswers` answers every card in one pass**, and each answer is computed under its own guard. That is not tidiness: two of these queries named columns that do not exist, `question.resolved_at` and `milestone.title`, and under the shell's single catch **every card on the surface said "Nothing waiting" at once**, which is the app asserting something false about somebody's record.
+
+**A card with no answer is absent from the map rather than holding an empty one**, and the screen says so differently. Empty means the record has nothing to say; absent means the question was never asked. Filling the gap with an empty answer is what made the digest in the lead slot claim nothing was waiting on a notebook holding 182 entries.
+
+**The digest uses the summary the app already had**, computed once in the shell, rather than a second digest written for this surface.
+
+**Three things are not done and one of them matters most:**
+
+1. **#305: nothing applies a starting hand.** `setTodayLayout` has no caller, so a real notebook has no layout and the shell falls back to the previous Today screen. **That fallback is deliberate and temporary**, because an empty new surface is exactly the blank canvas 21.5 rules out. The old screen is frozen while it stands in, not extended, and its ledger row goes in when the fallback comes out.
+2. **Edit mode does not exist**, #271. Nothing can be added, removed, resized, promoted, or reordered from the screen; the repository can do all of it and is tested.
+3. **The source-closed rung does not look different yet.** A card pointing at a finished project renders its name and does not say so.
 
 **The latest word can be read but the app cannot write it, and that is #303.** `Repository.latestWordFor` reads it through the `link` table, which is what 8.1's generic connection table is for. **Nothing outside the fixture writes that link**, so on a real notebook the third answer is permanently absent. The fixture writes it so the card can be built and seen, which is deliberately not a fix.
 

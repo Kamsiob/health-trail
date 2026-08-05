@@ -4899,6 +4899,229 @@ class Repository private constructor(
             )
         }
 
+    /**
+     * The answer one card shows, already counted but not yet worded.
+     *
+     * **The words are the screen's**, from the catalog, in the person's own
+     * language. What comes out of here is what the record says: a number, a
+     * name, a date. `DESIGN.md` 21.2: a card is a named deterministic question
+     * asked of the record, and nothing here interprets the answer.
+     */
+    data class TodayAnswer(
+        /** The count, where the question is "how many". Null when it is not. */
+        val count: Int? = null,
+        /** The thing itself, where the question is "which one". */
+        val title: String? = null,
+        /** When it is, or where it came from. Already an EDTF string. */
+        val whenEdtf: String? = null,
+        /** A second line the card shows at wide and tall. */
+        val detail: String? = null,
+    ) {
+        /** Whether the record has anything to say. The none-yet rung, 21.4. */
+        val isEmpty: Boolean get() = (count ?: 0) == 0 && title.isNullOrBlank()
+    }
+
+    /**
+     * Every card's answer, in one pass. `DESIGN.md` 21.2.
+     *
+     * **Queries run when Today gains focus and after any save**, which is what
+     * makes the surface a pull model rather than something that watches the
+     * person. This is that pass.
+     *
+     * **A type with no answer here is a card that would render blank**, so it
+     * is better to have none: every one of the seventeen in 21.7 is answered,
+     * and a card whose source is gone answers its source-closed rung rather
+     * than disappearing.
+     */
+    suspend fun todayAnswers(subjectId: String): Map<String, TodayAnswer> =
+        withContext(Dispatchers.IO) {
+            val database = db().database
+
+            // **One card's failure is one card's failure.** These queries ran
+            // in a single block under the shell's own catch, so one column name
+            // that did not exist made every card on Today say "Nothing waiting"
+            // at once, which is the app asserting something false about
+            // somebody's record rather than failing visibly. A card with no
+            // answer is absent from this map and says so; it does not claim the
+            // record is empty.
+            val answers = mutableMapOf<String, TodayAnswer>()
+            fun put(key: String, compute: () -> TodayAnswer) {
+                runCatching(compute).getOrNull()?.let { answers[key] = it }
+            }
+
+            fun one(sql: String, vararg args: String): Pair<String?, String?>? =
+                database.rawQuery(sql, arrayOf(*args)).use {
+                    if (it.moveToFirst()) it.getString(0) to it.getString(1) else null
+                }
+
+            fun countOf(sql: String, vararg args: String): Int =
+                database.rawQuery(sql, arrayOf(*args)).use {
+                    if (it.moveToFirst()) it.getInt(0) else 0
+                }
+
+            val now = System.currentTimeMillis()
+
+            // The next dated thing. **Only what has not happened**, because a
+            // card called next up that shows last week is answering a different
+            // question than the one it names.
+            put("next_up") {
+                val next = one(
+                    "SELECT title, scheduled_edtf FROM live_appointment " +
+                        "WHERE subject_id = ? AND scheduled_start >= ? " +
+                        "ORDER BY scheduled_start LIMIT 1",
+                    subjectId, now.toString(),
+                )
+                TodayAnswer(title = next?.first, whenEdtf = next?.second)
+            }
+
+            put("medications") { TodayAnswer(
+                count = countOf(
+                    "SELECT COUNT(*) FROM live_medication WHERE subject_id = ? " +
+                        "AND stopped_edtf IS NULL",
+                    subjectId,
+                ),
+            ) }
+            // Counted here rather than through the section's own suspend
+            // helpers, so every answer in this pass runs on one connection
+            // inside one guard. The predicates are the same ones those helpers
+            // use, and `check_query_ordering.py` holds both to the live views.
+            put("incidents") {
+                TodayAnswer(
+                    count = countOf(
+                        "SELECT COUNT(*) FROM live_incident WHERE subject_id = ? " +
+                            "AND resolved_at IS NULL",
+                        subjectId,
+                    ),
+                )
+            }
+            put("unfiled") {
+                TodayAnswer(
+                    count = countOf(
+                        "SELECT COUNT(*) FROM live_entry WHERE subject_id = ? " +
+                            "AND is_unfiled = 1",
+                        subjectId,
+                    ),
+                )
+            }
+            put("money") { TodayAnswer(
+                count = countOf(
+                    "SELECT COUNT(*) FROM live_bill WHERE subject_id = ? " +
+                        "AND state NOT IN ('paid', 'closed')",
+                    subjectId,
+                ),
+            ) }
+            put("care_team") { TodayAnswer(
+                count = countOf(
+                    "SELECT COUNT(*) FROM live_person WHERE subject_id = ? " +
+                        "AND archived_at IS NULL",
+                    subjectId,
+                ),
+            ) }
+            put("recent_documents") { TodayAnswer(
+                count = countOf(
+                    "SELECT COUNT(*) FROM live_document WHERE subject_id = ?", subjectId,
+                ),
+            ) }
+            put("standing_instructions") { TodayAnswer(
+                count = countOf(
+                    "SELECT COUNT(*) FROM live_standing_instruction WHERE subject_id = ?",
+                    subjectId,
+                ),
+            ) }
+            // Open means unanswered. `question` has `answer_text` and no
+            // `resolved_at`, and asking for one that is not there throws.
+            put("ask_next_time") { TodayAnswer(
+                count = countOf(
+                    "SELECT COUNT(*) FROM live_question WHERE subject_id = ? " +
+                        "AND answer_text IS NULL",
+                    subjectId,
+                ),
+            ) }
+            put("emergency_card") { TodayAnswer(
+                // **No question, on purpose**, 21.7. This card is pure access:
+                // one tap to the hand-over screen. Its count is whether there
+                // is one to hand over at all.
+                count = countOf(
+                    "SELECT COUNT(*) FROM live_emergency_card WHERE subject_id = ?", subjectId,
+                ),
+            ) }
+
+            put("milestones") {
+                val latest = one(
+                    // `label`, not `title`. A milestone is labeled rather than
+                    // titled, and the wrong name throws rather than returning
+                    // nothing, which is worse: the shell's catch turned it into
+                    // every card on Today saying "Nothing waiting" at once.
+                    "SELECT label, occurred_edtf FROM live_milestone WHERE subject_id = ? " +
+                        "ORDER BY occurred_start DESC LIMIT 1",
+                    subjectId,
+                )
+                TodayAnswer(title = latest?.first, whenEdtf = latest?.second)
+            }
+
+            put("trail_lately") {
+                TodayAnswer(
+                    count = countOf(
+                        "SELECT COUNT(*) FROM live_entry WHERE subject_id = ?", subjectId,
+                    ),
+                    title = one(
+                        "SELECT coalesce(title, body), occurred_edtf FROM live_entry " +
+                            "WHERE subject_id = ? ORDER BY occurred_start DESC LIMIT 1",
+                        subjectId,
+                    )?.first,
+                )
+            }
+
+            answers
+        }
+
+    /**
+     * The answer for a card that points at something, which the map cannot hold.
+     *
+     * A measure card and a project card are one per source, so their answers
+     * belong to the instance rather than to the type.
+     */
+    suspend fun todayAnswerForSource(
+        cardType: String,
+        sourceTable: String?,
+        sourceId: String?,
+    ): TodayAnswer? = withContext(Dispatchers.IO) {
+        if (sourceId == null) return@withContext null
+        val database = db().database
+        when (cardType) {
+            "measure" -> database.rawQuery(
+                "SELECT m.name, v.value_text, v.occurred_edtf FROM live_measure m " +
+                    "LEFT JOIN live_measurement v ON v.measure_id = m.id " +
+                    "WHERE m.id = ? ORDER BY v.occurred_start DESC LIMIT 1",
+                arrayOf(sourceId),
+            ).use {
+                if (!it.moveToFirst()) null
+                else TodayAnswer(
+                    title = it.getString(0),
+                    detail = it.getString(1),
+                    whenEdtf = it.getString(2),
+                )
+            }
+
+            "project_standing", "project_date", "project_steps" -> database.rawQuery(
+                // **The base table, deliberately.** A card pointing at a
+                // tombstoned project renders its source-closed rung, 21.4, and
+                // it can only do that if it can still read the name.
+                // allow-base-table: the source-closed rung is the whole point.
+                "SELECT name, deleted_at FROM project WHERE id = ?",
+                arrayOf(sourceId),
+            ).use {
+                if (!it.moveToFirst()) null
+                else TodayAnswer(
+                    title = it.getString(0),
+                    detail = if (it.isNull(1)) null else "closed",
+                )
+            }
+
+            else -> null
+        }
+    }
+
     // -- what a person arranged on Today ------------------------------------
     //
     // contract/DATA-CONTRACT.md 8.7 and DESIGN.md 21. **The trust model of this

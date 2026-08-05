@@ -129,6 +129,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.screens.CoachStep
 import com.kamsiob.healthtrail.ui.screens.LocalSectionBackKey
 import com.kamsiob.healthtrail.ui.screens.TemplateLibraryScreen
+import com.kamsiob.healthtrail.ui.screens.TodayFieldScreen
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -269,6 +270,10 @@ fun NotebookShell(
     var projectPapers by remember { mutableStateOf<List<Repository.ProjectPaper>>(emptyList()) }
     var projectCards by remember {
         mutableStateOf<Map<String, Repository.ProjectCard>>(emptyMap())
+    }
+    var todayLayout by remember { mutableStateOf<Repository.TodayLayout?>(null) }
+    var todayAnswers by remember {
+        mutableStateOf<Map<String, Repository.TodayAnswer>>(emptyMap())
     }
     var togglingStep by remember { mutableStateOf<Repository.ProjectStep?>(null) }
     var settingProjectStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -552,6 +557,24 @@ fun NotebookShell(
             // The mini road and the two answers, for every project at once
             // rather than three queries each. DESIGN.md 20.5 screen 2.
             projectCards = subject?.let { repository.projectCards(it.id) }.orEmpty()
+            // **Every card's answer in one pass, on focus and after a save.**
+            // 21.2: the surface pulls, and nothing here watches the person.
+            todayLayout = subject?.let { repository.todayLayout(it.id) }
+            todayAnswers = subject?.let { current ->
+                val byType = repository.todayAnswers(current.id)
+                // **A card with no answer is absent from this map**, not
+                // present holding an empty one. An empty answer means the
+                // record has nothing to say; an absent one means the question
+                // was never asked. Filling the gap with an empty answer made
+                // every unanswered card claim "Nothing waiting", including the
+                // digest in the lead slot on a notebook holding 182 entries.
+                todayLayout?.all.orEmpty().mapNotNull { card ->
+                    val answer = repository.todayAnswerForSource(
+                        card.type, card.sourceTable, card.sourceId,
+                    ) ?: byType[card.type]
+                    answer?.let { card.id to it }
+                }.toMap()
+            }.orEmpty()
             projectTemplates = TemplateCatalog.projects(context)
             ownTemplates = repository.ownTemplates("project")
             // Kept in step with the list, so a step ticked on the detail screen
@@ -746,7 +769,40 @@ fun NotebookShell(
                     // Today's empty state is a finished screen, per #78 and
                     // persona P1. What is not built is the digest, and the
                     // screen says so itself rather than standing in for it.
-                    Destination.TODAY -> TodayScreen(
+                    // **The Today the person arranged, when there is one.**
+                    // DESIGN.md 21. `todayLayout` is null only before a starting
+                    // hand has been applied, and nothing applies one yet: the
+                    // situation template's hand belongs to onboarding and is
+                    // #305. Until that lands a real notebook has no layout, so
+                    // the previous Today still answers rather than the surface
+                    // being blank, which is the one thing 21.5 rules out.
+                    //
+                    // **The old screen is not extended while it is here**, per
+                    // the freeze rule. It is called and nothing more.
+                    Destination.TODAY -> todayLayout?.let { layout ->
+                        TodayFieldScreen(
+                            layout = layout,
+                            answers = todayAnswers,
+                            // **Every card is a door**, 21.2, and a door
+                            // that does nothing on press reads as broken. Each
+                            // one opens the section its answer lives in, which
+                            // is where the person would go to see the whole of
+                            // it. A project card opens the project itself.
+                            digest = digest,
+                            onOpen = { card ->
+                                val project = card.sourceId
+                                    ?.takeIf { card.sourceTable == "project" }
+                                    ?.let { id -> projects.firstOrNull { it.id == id } }
+                                if (project != null) {
+                                    destination = Destination.PROJECTS
+                                    openProject = project
+                                } else {
+                                    sectionForCard(card.type)?.let { openSection = it }
+                                }
+                                revision += 1
+                            },
+                        )
+                    } ?: TodayScreen(
                         openQuestions = questions.count { it.isOpen },
                         // Projects sitting on somebody else. The status and the
                         // named person are separate answers, so either counts.
@@ -3190,4 +3246,26 @@ private fun coachingSteps(
             onOpen = onCapture,
         ).takeIf { empty(Repository.Section.TRAIL) },
     )
+}
+
+/**
+ * Where a card's answer lives, so tapping it opens the whole of it.
+ *
+ * `DESIGN.md` 21.2: the answer renders and the card is a door to where the
+ * answer lives. **Null for a card whose home is not one of the sections**, and
+ * those are handled by the caller rather than being sent somewhere close enough.
+ */
+private fun sectionForCard(type: String): Repository.Section? = when (type) {
+    "next_up" -> Repository.Section.APPOINTMENTS
+    "medications" -> Repository.Section.MEDICATIONS
+    "ask_next_time" -> Repository.Section.ASK_NEXT_TIME
+    "measure", "milestones" -> Repository.Section.PROGRESS
+    "money" -> Repository.Section.MONEY
+    "recent_documents" -> Repository.Section.DOCUMENTS
+    "care_team" -> Repository.Section.CARE_TEAM
+    "standing_instructions" -> Repository.Section.STANDING_INSTRUCTIONS
+    "emergency_card" -> Repository.Section.EMERGENCY_CARD
+    "trail_lately", "digest", "unfiled" -> Repository.Section.TRAIL
+    "incidents" -> Repository.Section.TRAIL
+    else -> null
 }
