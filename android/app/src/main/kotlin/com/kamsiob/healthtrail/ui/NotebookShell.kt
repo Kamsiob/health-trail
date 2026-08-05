@@ -103,6 +103,8 @@ import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
+import com.kamsiob.healthtrail.ui.screens.StepEditSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectPreviewSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
@@ -334,6 +336,10 @@ fun NotebookShell(
     var editingStep by remember { mutableStateOf<Triple<String, String, String?>?>(null) }
     var movingStep by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     var removingStep by remember { mutableStateOf<String?>(null) }
+    /** The starting steps being changed, 20.5 screen 18. */
+    var stepsOpen by remember { mutableStateOf(false) }
+    /** The one step whose sheet is open. */
+    var stepUnderEdit by remember { mutableStateOf<Repository.ProjectStep?>(null) }
     var creatingOwnProject by remember { mutableStateOf<String?>(null) }
     var ownTemplates by remember {
         mutableStateOf<List<Repository.OwnTemplate>>(emptyList())
@@ -1591,7 +1597,37 @@ fun NotebookShell(
         }
 
         val currentProject = openProject
-        if (currentProject != null && setupOpen) {
+        if (currentProject != null && setupOpen && stepsOpen) {
+            ProjectStepsScreen(
+                projectName = currentProject.name,
+                steps = projectSteps,
+                onAdd = { addingStep = currentProject.id to it },
+                onOpen = { stepUnderEdit = it },
+                onBack = { stepsOpen = false },
+            )
+
+            stepUnderEdit?.let { step ->
+                val index = projectSteps.indexOfFirst { it.id == step.id }
+                StepEditSheet(
+                    step = step,
+                    canMoveEarlier = index > 0,
+                    canMoveLater = index >= 0 && index < projectSteps.lastIndex,
+                    onSave = { text, note ->
+                        editingStep = Triple(step.id, text, note)
+                        stepUnderEdit = null
+                    },
+                    onMove = { earlier ->
+                        movingStep = step.id to earlier
+                        stepUnderEdit = null
+                    },
+                    onRemove = {
+                        removingStep = step.id
+                        stepUnderEdit = null
+                    },
+                    onDismiss = { stepUnderEdit = null },
+                )
+            }
+        } else if (currentProject != null && setupOpen) {
             ProjectSetupScreen(
                 project = currentProject,
                 stages = projectStages,
@@ -1603,6 +1639,7 @@ fun NotebookShell(
                 },
                 onSetLead = { settingLead = currentProject.id to it },
                 onSetStatus = { settingStatus = currentProject.id to it },
+                onOpenSteps = { stepsOpen = true },
                 onBack = { setupOpen = false },
             )
         } else if (currentProject != null) {
@@ -1692,7 +1729,11 @@ fun NotebookShell(
                 // **Rule 18 both ways.** The entry already knows the project;
                 // this is the project opening the entry.
                 onOpenEntryById = { openEntry = it },
-                onBack = { openProject = null },
+                onBack = {
+                    openProject = null
+                    setupOpen = false
+                    stepsOpen = false
+                },
             )
         }
 

@@ -24,6 +24,7 @@ object ProjectSetupTags {
     const val NAME = "project-setup"
     const val LEAD = "project-setup-lead"
     const val STATUS = "project-setup-status"
+    const val STEPS = "project-setup-steps"
     fun lead(value: String) = "project-setup-lead-$value"
     fun status(value: String) = "project-setup-status-$value"
 }
@@ -55,6 +56,7 @@ fun ProjectSetupScreen(
     dateKinds: List<String>,
     onSetLead: (String) -> Unit,
     onSetStatus: (String) -> Unit,
+    onOpenSteps: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     /** What the template it came from is called, where this build still has it. */
@@ -127,9 +129,18 @@ fun ProjectSetupScreen(
                         .ifBlank { strings["project.setup.nothing_yet"] },
                     subtitleMaxLines = 2,
                 )
+                // **A door, not a line.** 20.5 screen 18 draws this with a
+                // chevron, and adding, editing, reordering and removing a step
+                // all went with the superseded detail screen: the repository
+                // has kept every one of those calls with nothing reachable
+                // making them. A screen that says everything is changeable and
+                // offers no way to change it is the promise without the thing.
                 DenseRow(
                     title = strings["project.setup.steps"],
                     subtitle = strings("projects.step_count", "count" to steps.size),
+                    chevron = true,
+                    onClick = onOpenSteps,
+                    modifier = Modifier.testTag(ProjectSetupTags.STEPS),
                 )
                 DenseRow(
                     title = strings["project.setup.papers"],

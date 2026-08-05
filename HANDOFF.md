@@ -172,6 +172,20 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **358 instrumented tests pass**, up from 356. Both new assertions were proved by breaking the screen on purpose and putting it back from a scratchpad copy, per section 7. Seen on the phone at both themes, at font scale 2.0, and in Arabic: `project-clusters-light`, `project-clusters-dark`, `project-clusters-2x-dark`, `project-clusters-rtl-dark`.
 
+### 2.33 The starting steps can be changed again
+
+**Part of #291.** `addProjectStep`, `updateProjectStep`, `moveProjectStep` and `deleteProjectStep` have been in the repository since Phase 0 with nothing reachable calling them since `ProjectDetailScreen` was superseded. The setup screen said everything the template decided was changeable and offered no way to change any of it, which is the promise without the thing.
+
+- **`ProjectStepsScreen` is behind setup's Starting steps row**, which is a door with a chevron now rather than a line, the way 20.5 screen 18 draws it.
+- **`StepEditSheet` is what a row opens**, carrying the text, the note, move earlier, move later and remove. **One sheet rather than three controls per row**: three targets repeated down a list fails section 9 at font scale 1.0 and falls apart at 2.0. A control that would do nothing is not drawn, so the first step is offered no way to move earlier.
+- **The list clusters by area the same way the project does**, so the list somebody edits is the list they read.
+- **`project.step.handled_by` said "Me is handling this".** It was already wrong in the spoken description on the project home and the editor put it on screen where it could be seen. It is "Handled by {who}" in all four catalogs now.
+- **The way back says "Back to setup"**, because that is where it goes.
+
+**Still owed on #291:** stages, usual papers and date kinds are still read-only lines. The repository has `addProjectStage`, `addProjectPaper` and `addProjectDateKind` and no rename or remove for any of them, so those three need repository work before their editors.
+
+**373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
 ### 2.34 Starting a project shows what a template is before it creates anything
 
 **#276 and #277 are built and seen.** Choosing a template used to create the project, its road, its steps, its papers and its date chips on one tap of a row, so the first time anybody saw what a template meant was on a project that already existed. **Nothing is created until Create now.**
