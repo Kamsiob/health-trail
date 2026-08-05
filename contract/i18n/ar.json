@@ -856,5 +856,6 @@
   "project.stage.move.lead": "إلى أين وصل؟ التاريخ هو اليوم ما لم تغيّره، والمراحل السابقة تحتفظ بتواريخها.",
   "project.stage.reached": "وصلت في {date}",
   "project.stage.not_reached": "ليس بعد",
-  "project.stage.save": "اكتبها"
+  "project.stage.save": "اكتبها",
+  "project.fold.trail": "ما قيل"
 }

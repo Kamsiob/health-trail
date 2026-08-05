@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DateRow
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
@@ -42,6 +43,7 @@ object ProjectHomeTags {
     const val LOG_CALL = "project-home-log-call"
     const val SETUP = "project-home-setup"
     const val MOVE_STAGE = "project-home-move-stage"
+    const val TRAIL = "project-home-trail"
 }
 
 /**
@@ -100,6 +102,15 @@ fun ProjectHomeScreen(
     onMoveStage: () -> Unit = {},
     steps: List<Repository.ProjectStep> = emptyList(),
     papers: List<Repository.ProjectPaper> = emptyList(),
+    /**
+     * Everything written down about this project, most recent first.
+     *
+     * **Rule 18 in the other direction.** Without this a person who logged six
+     * calls can see one of them, which makes the record look like a setting
+     * rather than a record.
+     */
+    entries: List<Repository.TrailEntry> = emptyList(),
+    onOpenEntryById: (String) -> Unit = {},
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
 ) {
     // **Open from the start on the busy stretch**, where the steps are the
@@ -107,6 +118,7 @@ fun ProjectHomeScreen(
     // answer. The person's own toggle wins from the first tap.
     var stepsOpen by rememberSaveable(project.id) { mutableStateOf(project.lead == "steps") }
     var papersOpen by rememberSaveable(project.id) { mutableStateOf(false) }
+    var trailOpen by rememberSaveable(project.id) { mutableStateOf(false) }
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val type = HealthTrail.type
@@ -340,6 +352,40 @@ fun ProjectHomeScreen(
         // **The counts are counts, never scores.** "Steps 6" says what is in the
         // fold, which is what every other fold in this app says, and rule 13
         // rules out "2 of 6".
+        // **Everything said about this project, folded and counted.** The
+        // latest word is above; this is the rest of it, and 20.5 screen 11 puts
+        // the project's own trail here. It folds because a project two years
+        // old has two hundred of these and the three answers stay first.
+        if (entries.isNotEmpty()) {
+            item {
+                FoldRow(
+                    labelKey = "project.fold.trail",
+                    expanded = trailOpen,
+                    onToggle = { trailOpen = !trailOpen },
+                    count = entries.size.toString(),
+                    modifier = Modifier.testTag(ProjectHomeTags.TRAIL),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+            if (trailOpen) {
+                items(entries, key = { it.id }) { entry ->
+                    DenseRow(
+                        title = Bidi.isolate(
+                            entry.body?.takeIf { it.isNotBlank() }
+                                ?: entry.title.orEmpty(),
+                        ),
+                        subtitle = Bidi.join(
+                            entry.title?.takeIf { !entry.body.isNullOrBlank() },
+                            entry.occurredEdtf?.let { EventDateText.render(strings, it) },
+                        ),
+                        subtitleMaxLines = 2,
+                        onClick = { onOpenEntryById(entry.id) },
+                    )
+                }
+                item { Spacer(Modifier.height(Space.cardGap)) }
+            }
+        }
+
         // Only when the steps are not the lead, or the busy stretch would
         // draw the same cluster twice.
         if (steps.isNotEmpty() && project.lead != "steps") {

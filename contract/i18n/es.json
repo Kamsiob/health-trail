@@ -856,5 +856,6 @@
   "project.stage.move.lead": "¿A qué punto llegó? La fecha es hoy salvo que la cambie, y las etapas anteriores conservan sus fechas.",
   "project.stage.reached": "Alcanzada el {date}",
   "project.stage.not_reached": "Todavía no",
-  "project.stage.save": "Anotarlo"
+  "project.stage.save": "Anotarlo",
+  "project.fold.trail": "Lo que se dijo"
 }

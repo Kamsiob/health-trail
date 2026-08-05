@@ -856,5 +856,6 @@
   "project.stage.move.lead": "进展到哪一步了？除非你修改，日期就是今天，之前的阶段保留原有日期。",
   "project.stage.reached": "{date} 到达",
   "project.stage.not_reached": "尚未",
-  "project.stage.save": "记下来"
+  "project.stage.save": "记下来",
+  "project.fold.trail": "记下的话"
 }

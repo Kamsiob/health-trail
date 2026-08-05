@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.i18n
 import android.app.LocaleManager
 import android.os.Build
 import android.os.LocaleList
+import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.After
@@ -55,11 +56,45 @@ class AppLanguageTest {
         before?.let { manager?.applicationLocales = it }
     }
 
+    /**
+     * Sets the app's language and waits for it to actually be set.
+     *
+     * **Setting `applicationLocales` is asynchronous**, and reading on the next
+     * line reads whatever the previous test left behind. That is not a
+     * hypothetical: this class asserted that Japanese falls back to English and
+     * twice got Spanish, which is what the test before it had chosen. It passed
+     * in isolation both times, which is the worst way for a test to be wrong.
+     *
+     * **Waiting for the value to come back, rather than for the answer.** The
+     * loop confirms the system took the tag; what the app then resolves it to
+     * is what the test is actually about, and polling for that would make the
+     * assertion prove itself. #306.
+     */
     private fun choose(tag: String): Strings {
         val locales = manager ?: error("no LocaleManager")
         if (before == null) before = locales.applicationLocales
-        locales.applicationLocales = LocaleList.forLanguageTags(tag)
+        val wanted = LocaleList.forLanguageTags(tag)
+        locales.applicationLocales = wanted
+
+        val giveUpAt = SystemClock.uptimeMillis() + SETTLE_MILLIS
+        while (locales.applicationLocales != wanted && SystemClock.uptimeMillis() < giveUpAt) {
+            SystemClock.sleep(20)
+        }
+        assertEquals(
+            "the system never took the language this test asked for, so whatever " +
+                "it asserts next is about the language the test before it chose",
+            wanted,
+            locales.applicationLocales,
+        )
         return Strings.load(context)
+    }
+
+    private companion object {
+        /**
+         * Long enough for a real phone under a full suite, short enough that a
+         * genuine failure is a failure rather than a hang.
+         */
+        const val SETTLE_MILLIS = 3_000L
     }
 
     @Test

@@ -856,5 +856,6 @@
   "project.stage.move.lead": "Where has it got to? The date is today unless you change it, and the stages before it keep the dates they already had.",
   "project.stage.reached": "Reached {date}",
   "project.stage.not_reached": "Not yet",
-  "project.stage.save": "Write it down"
+  "project.stage.save": "Write it down",
+  "project.fold.trail": "What was said"
 }

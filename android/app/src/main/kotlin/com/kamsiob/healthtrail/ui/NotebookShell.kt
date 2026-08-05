@@ -293,6 +293,9 @@ fun NotebookShell(
         mutableStateOf<Quadruple<String, String, Edtf.Date, String>?>(null)
     }
     var projectDateKinds by remember { mutableStateOf<List<String>>(emptyList()) }
+    var projectEntries by remember {
+        mutableStateOf<List<Repository.TrailEntry>>(emptyList())
+    }
     var savingStanding by remember {
         mutableStateOf<Triple<String, String, String>?>(null)
     }
@@ -626,6 +629,7 @@ fun NotebookShell(
             projectStanding = projectStandingHistory.firstOrNull()
             projectNextDate = openProject?.let { repository.leadingProjectDate(it.id) }
             projectLatestWord = openProject?.let { repository.latestWordFor(it.id) }
+            projectEntries = openProject?.let { repository.entriesAbout(it.id) }.orEmpty()
             projectPapers = openProject?.let { repository.projectPapers(it.id) }.orEmpty()
             projectDateKinds =
                 openProject?.let { repository.projectDateKinds(it.id) }.orEmpty()
@@ -1671,6 +1675,10 @@ fun NotebookShell(
                 onLogCall = { loggingCallOn = currentProject },
                 onOpenSetup = { setupOpen = true },
                 onMoveStage = { movingStageOn = currentProject },
+                entries = projectEntries,
+                // **Rule 18 both ways.** The entry already knows the project;
+                // this is the project opening the entry.
+                onOpenEntryById = { openEntry = it },
                 onBack = { openProject = null },
             )
         }

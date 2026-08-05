@@ -4749,6 +4749,59 @@ class Repository private constructor(
         }
     }
 
+    /**
+     * Everything written down about this project, most recent first.
+     *
+     * **Rule 18 in the other direction.** The entry knows the project because
+     * something wrote the link; this is the project showing the entry back, and
+     * without it a person who logged six calls can see one of them.
+     *
+     * Ordered by when it happened rather than when it was written, for the same
+     * reason [latestWordFor] is: somebody catching up records three calls in one
+     * evening and the order that matters is the order they happened in.
+     */
+    suspend fun entriesAbout(projectId: String): List<TrailEntry> =
+        withContext(Dispatchers.IO) {
+            val ids = db().database.rawQuery(
+                "SELECT CASE WHEN source_table = 'entry' THEN source_id ELSE target_id END " +
+                    "FROM live_link " +
+                    "WHERE (source_table = 'entry' AND target_table = 'project' AND target_id = ?) " +
+                    "   OR (source_table = 'project' AND target_table = 'entry' AND source_id = ?) " +
+                    "ORDER BY created_at DESC",
+                arrayOf(projectId, projectId),
+            ).use { cursor ->
+                buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
+            }
+            if (ids.isEmpty()) return@withContext emptyList()
+
+            val marks = ids.joinToString(", ") { "?" }
+            db().database.rawQuery(
+                "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, " +
+                    "is_unfiled, pinned_at FROM live_entry WHERE id IN ($marks) " +
+                    "ORDER BY occurred_start DESC, created_at DESC",
+                ids.toTypedArray(),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            TrailEntry(
+                                id = cursor.getString(0),
+                                kind = cursor.getString(1),
+                                title = cursor.getString(2),
+                                body = cursor.getString(3),
+                                occurredEdtf = cursor.getString(4),
+                                occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                                createdAt = cursor.getLong(6),
+                                isUnfiled = cursor.getInt(7) == 1,
+                                threads = emptyList(),
+                                pinnedAt = if (cursor.isNull(8)) null else cursor.getLong(8),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
     /** Connects an entry to a project, so each can show the other. Rule 18. */
     suspend fun linkEntryToProject(entryId: String, projectId: String): String = insert(
         "link",

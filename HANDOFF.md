@@ -150,7 +150,11 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **Every piece of project data can now be written from the app**: where it stands, a date with its source, the latest word with its link, the shape, the status, and the road. **What is still read-only** is the stages, steps, papers and date kinds as lists, which is #291's remainder.
 
-**A second flaky test, #306.** `AppLanguageTest`'s fallback test said Japanese fell back to Spanish, once, in a full run. It passes in isolation, the device locale was `en-US`, and the next full run was clean. It is almost certainly racing an asynchronous locale change. **#302 is the other one.** Two tests that fail at random is where a suite starts teaching people to rerun rather than look.
+**The project shows everything said about it**, #284's fold: "What was said" with a count, opening onto every linked entry most recent first, each a door. **Rule 18 is satisfied both ways** for the project-to-entry link now; before this a person who logged six calls could see one of them.
+
+**#306 was fixed rather than filed and left.** `AppLanguageTest` asserted Japanese falls back to English and twice got Spanish, which is what the test before it had chosen: setting `applicationLocales` is asynchronous and the next line read whatever was still in place. It now waits for the system to report the language it asked for, **and waits for the request rather than for the answer**, because polling until the expected result appears would make the assertion prove itself. Three runs of the class and a full suite, clean.
+
+**#302 is still open**, and it is the other flaky one: `BackJourneyTest` failed once in a full suite and passed the next run.
 
 **The review this owes under rule 12 is #304**, and it lists what was deliberately left out and the three things I am unsure about.
 
