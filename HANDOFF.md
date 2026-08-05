@@ -15,7 +15,7 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`).
 - **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **353 instrumented tests pass**, last full run 2026-08-05 after the #262 template defaults landed.
+- **356 instrumented tests pass**, last full run 2026-08-05 after the three project shapes landed.
 - The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
 **Take these in this order.**
@@ -111,6 +111,14 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 **A third was found in the semantics tree and is invisible in any screenshot.** `Bidi.join` isolates every part it is given, so passing it a part that was already isolated nests the marks, and passing it a joined string nests them three deep. The rule is: **raw parts into `Bidi.join`, never pre-isolated ones.**
 
 **The review this owes under rule 12 is #304**, and it lists what was deliberately left out and the three things I am unsure about.
+
+**All three shapes are built and all three have been seen**, #278, #279 and #280's home screens. **The shape is only the order of the same components**, which is 20.3's whole claim, so `Repository.Project` carries `lead` and the screen orders itself from it. The long road opens with where it stands, the closing window with the countdown at `monoL`, the busy stretch with the steps cluster already open above the answers. `ProjectHomeScreenTest` asserts the vertical order for each, because every shape shows the same four things and a wrong order still looks like a finished screen. Screenshots: `project-home-*`, `project-window-dark`, `project-busy-dark`.
+
+**The fixture's project content is matched to its projects now.** The stages, date kinds, papers, standing entries and office words were each written once in a generic order and indexed by project position, which put an appeal's stages and an appeal deadline on a power of attorney. **A fixture that puts the wrong words on a screen makes a correct screen look broken**, and every one of those was found by opening it rather than by reading it.
+
+**The first three projects cover all three shapes on purpose.** `PROJECT_STATES` puts the fourth and fifth in done and abandoned, which fold away, so a shape assigned to one of those is a shape nobody looking at the fixture will ever open.
+
+**356 instrumented tests pass**, up from 353.
 
 **The latest word can be read but the app cannot write it, and that is #303.** `Repository.latestWordFor` reads it through the `link` table, which is what 8.1's generic connection table is for. **Nothing outside the fixture writes that link**, so on a real notebook the third answer is permanently absent. The fixture writes it so the card can be built and seen, which is deliberately not a fix.
 

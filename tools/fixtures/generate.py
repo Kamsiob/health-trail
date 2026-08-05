@@ -1494,16 +1494,34 @@ PROJECT_STATES = ["active", "waiting", "stalled", "done", "abandoned"]
 # Which of the three answers each project opens with, DESIGN.md 20.3. All three
 # are here because two of the three project home screens cannot be looked at on
 # the phone otherwise.
-PROJECT_LEADS = ["standing", "date", "steps", "standing", "date"]
+# Everything below is indexed by a project's position in PROJECTS, and each list
+# is written in that order.
+#
+# **They were written generically once and it showed on the phone**: the power
+# of attorney had an appeal's stages, an appeal deadline as its date kind, and a
+# denial letter among its papers. Every one of those is a true sentence about
+# some project and a wrong one about that project, and a fixture that puts the
+# wrong words on a screen makes a correct screen look broken. Same defect as
+# OFFICE_WORDS had, found the same way.
 
-# The road each one runs along. Taken from the built-in bundles in 20.4, so what
-# the fixture draws is what a template would actually have produced.
+# Which of the three answers each project opens with, DESIGN.md 20.3. All three
+# are here because two of the three project home screens cannot be looked at on
+# the phone otherwise.
+# **The first three have to cover all three shapes**, because PROJECT_STATES
+# puts the fourth and fifth in done and abandoned, which fold away on the
+# projects screen. A shape that only exists on a finished project is a shape
+# nobody looking at the fixture will ever open.
+PROJECT_LEADS = ["standing", "steps", "date", "steps", "standing"]
+
+# The road each one runs along, taken from the built-in bundles in 20.4 where
+# the project matches one, so what the fixture draws is what a template would
+# actually have produced.
 PROJECT_STAGES = [
     ["Applied", "In review", "Decision"],
+    ["Prepared", "Signed", "Sent to them", "Accepted"],
     ["Decision received", "Preparing", "Submitted", "Answered"],
-    ["Date set", "Arranging", "Home"],
-    ["Asked", "Waiting", "Arranged"],
-    ["Started", "Underway"],
+    ["Date set", "Sorting", "Cleared"],
+    ["Asked around", "On a list"],
 ]
 
 # Whose hands it has been in, and what was happening there. **Stated as fact and
@@ -1515,28 +1533,29 @@ STANDING = [
         ("The county", "waiting on the bank statements"),
     ],
     [
+        ("The bank", "checking the copy we sent"),
+        ("The bank's legal team", "reviewing it"),
+    ],
+    [
         ("The insurer", "reviewing the appeal"),
-        ("The review board", "scheduled to look at it"),
+        ("The review panel", "scheduled for the second Thursday"),
     ],
+    [("The facility", "holding the boxes in the storage room")],
     [
-        ("The discharge planner", "arranging the equipment"),
-        ("The medical supply company", "delivering the bed"),
-    ],
-    [("The facility business office", "looking into the charge")],
-    [
-        ("Us", "gathering what they asked for"),
-        ("The attorney's office", "preparing the filing"),
+        ("Us", "calling around"),
+        ("The practice", "adding her to the spring round"),
     ],
 ]
 
 # The kinds of date each situation tends to have, offered as chips when a date
-# is recorded, 20.4. Never a closed set: a date of a kind not listed is allowed.
+# is recorded, 20.4. Never a closed set: recording a date of a kind not listed
+# here is allowed.
 PROJECT_DATE_KINDS = [
     ["Filing deadline", "Decision expected", "Renewal"],
+    ["Sent", "Response expected"],
     ["Appeal deadline", "Hearing", "Answer expected"],
-    ["Discharge date", "Delivery", "First visit"],
-    ["Statement due", "Payment due"],
-    ["Filing deadline", "Court date"],
+    ["Room must be clear", "Collection"],
+    ["Asked", "Visit expected"],
 ]
 
 # Days from the end of the history, so a negative one has already passed and a
@@ -1551,19 +1570,19 @@ PROJECT_DATE_KINDS = [
 # the same day, and moving HISTORY_ENDS forward fixes both at once.
 PROJECT_DATE_OFFSETS = [
     [(-34, "the letter of March 5"), (UPCOMING_DAYS - 40, "the letter of March 5")],
-    [(-6, "the notice they sent"), (UPCOMING_DAYS, "the notice they sent")],
-    [(UPCOMING_DAYS + 20, "the discharge planner, by phone")],
-    [(-12, "the statement")],
-    [(-58, "the first letter"), (UPCOMING_DAYS - 10, "the attorney's office, by phone")],
+    [(-6, "the receipt"), (UPCOMING_DAYS, "the clerk, by phone")],
+    [(UPCOMING_DAYS + 20, "the notice they sent")],
+    [(-12, "the facility, by phone")],
+    [(-58, "the first call"), (UPCOMING_DAYS - 10, "the practice, by phone")],
 ]
 
 # The papers each one usually needs, as named placeholders, 20.4.
 PROJECT_PAPERS = [
     ["The application", "Proof of income", "Bank statements", "The award letter"],
-    ["The denial letter", "The appeal form", "The doctor's letter"],
-    ["The discharge summary", "The equipment order"],
-    ["The itemized bill", "What we sent back"],
-    ["The signed form", "The filing receipt"],
+    ["The signed original", "The certified copy", "Their acknowledgment"],
+    ["The assessment", "The appeal form", "The doctor's letter"],
+    ["The inventory", "The storage receipt"],
+    ["The referral", "The visit note"],
 ]
 
 # What each office actually said, in the order it was said, oldest first.
@@ -1608,7 +1627,11 @@ STEP_CLUSTERS = ["The house", "The ride", "Equipment", "The paperwork"]
 
 # Who said they would handle a step. **A label and never an identity**, D108:
 # no account, no address, and nothing that leaves the device.
-HANDLERS = ["My brother", "The discharge planner", "Me", "My sister"]
+#
+# Kept to people a family would name on any project rather than to a role that
+# belongs to one kind of process: "The discharge planner" was in this list and
+# turned up handling a step on a power of attorney.
+HANDLERS = ["My brother", "Me", "My sister", "The office"]
 
 PROJECTS = [
     "Medicaid application",

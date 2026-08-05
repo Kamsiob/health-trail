@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.height
@@ -33,6 +34,7 @@ object ProjectHomeTags {
     const val STANDING = "project-home-standing"
     const val DATE = "project-home-date"
     const val LATEST = "project-home-latest"
+    const val STEPS = "project-home-steps"
 }
 
 /**
@@ -81,7 +83,10 @@ fun ProjectHomeScreen(
     papers: List<Repository.ProjectPaper> = emptyList(),
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
 ) {
-    var stepsOpen by rememberSaveable(project.id) { mutableStateOf(false) }
+    // **Open from the start on the busy stretch**, where the steps are the
+    // lead, and closed everywhere else, where they are volume behind the
+    // answer. The person's own toggle wins from the first tap.
+    var stepsOpen by rememberSaveable(project.id) { mutableStateOf(project.lead == "steps") }
     var papersOpen by rememberSaveable(project.id) { mutableStateOf(false) }
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -115,8 +120,16 @@ fun ProjectHomeScreen(
             }
         }
 
-        // **Where it stands, which is the lead on the long road.**
-        item {
+        // **The three answers, in the order this project's shape puts them.**
+        // DESIGN.md 20.3. The components and their meanings do not change:
+        // only the order does, which is what keeps somebody who has learned one
+        // project able to read the next one.
+        //
+        // The lead is drawn at its own weight; the other two follow as rows.
+        // **The date is the only one that changes size**, because a countdown
+        // that leads is the thing the closing window is for and a countdown
+        // under a lead must not out-shout it.
+        val standingBlock: @Composable () -> Unit = {
             if (standing != null) {
                 StandingCard(
                     eyebrow = strings["project.where_it_stands"],
@@ -134,12 +147,9 @@ fun ProjectHomeScreen(
                     modifier = Modifier.testTag(ProjectHomeTags.STANDING),
                 )
             }
-            Spacer(Modifier.height(Space.cardGap))
         }
 
-        // **The next date.** D113 picks it: the soonest that has not passed, and
-        // the most recent when they all have.
-        item {
+        val dateBlock: @Composable () -> Unit = {
             if (nextDate != null && countdown != null && dateKind != null) {
                 DateRow(
                     countdown = countdown,
@@ -154,6 +164,7 @@ fun ProjectHomeScreen(
                     ),
                     onOpen = onOpenDate,
                     openLabel = strings["project.open_date"],
+                    prominent = project.lead == "date",
                     modifier = Modifier.testTag(ProjectHomeTags.DATE),
                 )
             } else {
@@ -166,12 +177,9 @@ fun ProjectHomeScreen(
                         .padding(horizontal = Space.xs, vertical = Space.s),
                 )
             }
-            Spacer(Modifier.height(Space.cardGap))
         }
 
-        // **The latest word.** Absent until something has been recorded, and on
-        // a real notebook that is always, until #303 lands.
-        item {
+        val latestBlock: @Composable () -> Unit = {
             if (latestWord != null && !latestWord.body.isNullOrBlank()) {
                 LatestWordCard(
                     eyebrow = strings["project.latest_word"],
@@ -196,7 +204,56 @@ fun ProjectHomeScreen(
                         .padding(horizontal = Space.xs, vertical = Space.s),
                 )
             }
-            Spacer(Modifier.height(Space.sectionGap))
+        }
+
+        // **The steps lead on the busy stretch.** Two intense weeks of small
+        // parallel arrangements is a screen somebody opens to see what is left,
+        // not to read a sentence about an office, so the cluster sits above the
+        // other two answers and starts open. On the other two shapes the steps
+        // are volume behind the answer and fold away below.
+        val stepsBlock: @Composable () -> Unit = {
+            Column(modifier = Modifier.testTag(ProjectHomeTags.STEPS)) {
+                FoldRow(
+                    labelKey = "project.fold.steps",
+                    expanded = stepsOpen,
+                    onToggle = { stepsOpen = !stepsOpen },
+                    count = steps.size.toString(),
+                )
+                if (stepsOpen) {
+                    Spacer(Modifier.height(Space.cardGap))
+                    steps.forEach { step ->
+                        StepRow(
+                            text = step.text,
+                            done = step.isDone,
+                            handler = step.handlerLabel,
+                            onToggle = { onToggleStep(step) },
+                            description = stepDescription(step, strings),
+                        )
+                    }
+                }
+            }
+        }
+
+        val order: List<@Composable () -> Unit> = when (project.lead) {
+            "date" -> listOf(dateBlock, standingBlock, latestBlock)
+            "steps" -> listOfNotNull(
+                if (steps.isNotEmpty()) stepsBlock else null,
+                standingBlock,
+                dateBlock,
+                latestBlock,
+            )
+            else -> listOf(standingBlock, dateBlock, latestBlock)
+        }
+
+        order.forEachIndexed { index, block ->
+            item {
+                block()
+                Spacer(
+                    Modifier.height(
+                        if (index == order.lastIndex) Space.sectionGap else Space.cardGap,
+                    ),
+                )
+            }
         }
 
         // **Everything else, folded and counted.** DESIGN.md 20.5 screen 5: the
@@ -207,7 +264,9 @@ fun ProjectHomeScreen(
         // **The counts are counts, never scores.** "Steps 6" says what is in the
         // fold, which is what every other fold in this app says, and rule 13
         // rules out "2 of 6".
-        if (steps.isNotEmpty()) {
+        // Only when the steps are not the lead, or the busy stretch would
+        // draw the same cluster twice.
+        if (steps.isNotEmpty() && project.lead != "steps") {
             item {
                 FoldRow(
                     labelKey = "project.fold.steps",

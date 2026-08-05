@@ -1516,6 +1516,16 @@ class Repository private constructor(
          * far behind they are.
          */
         val nextStep: String?,
+        /**
+         * Which of the three answers this project opens with. `DESIGN.md` 20.3.
+         *
+         * **It is the shape**, and the shape is only the order of the same
+         * components: the long road leads with where it stands, the closing
+         * window with the next date, the busy stretch with the steps. One
+         * grammar, three arrangements, so somebody who has learned one project
+         * can read the next one.
+         */
+        val lead: String = "standing",
     ) {
         val isFinished: Boolean get() = status == "done" || status == "abandoned"
     }
@@ -1554,12 +1564,12 @@ class Repository private constructor(
                 "COUNT(s.id), COUNT(s.completed_edtf), " +
                 "(SELECT n.text FROM live_project_step n " +
                 "  WHERE n.project_id = p.id AND n.completed_edtf IS NULL " +
-                "  ORDER BY n.sort_index, n.created_at LIMIT 1) " +
+                "  ORDER BY n.sort_index, n.created_at LIMIT 1), p.lead " +
                 "FROM live_project p " +
                 "LEFT JOIN live_project_step s ON s.project_id = p.id " +
                 "WHERE p.subject_id = ? " +
                 "GROUP BY p.id, p.name, p.template_id, p.status, p.waiting_on, " +
-                "p.notes, p.created_at " +
+                "p.notes, p.created_at, p.lead " +
                 "ORDER BY p.status IN ('done', 'abandoned'), p.created_at DESC",
             arrayOf(subjectId),
         ).use { cursor ->
@@ -1576,6 +1586,7 @@ class Repository private constructor(
                             stepCount = cursor.getInt(6),
                             doneCount = cursor.getInt(7),
                             nextStep = cursor.getString(8),
+                            lead = cursor.getString(9),
                         ),
                     )
                 }
