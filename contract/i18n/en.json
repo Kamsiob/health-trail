@@ -802,5 +802,15 @@
   "today.edit.up.short": "Up",
   "today.edit.down.short": "Down",
   "today.edit.remove.short": "Remove",
-  "today.card.source_closed": "Closed. Still here until you remove it."
+  "today.card.source_closed": "Closed. Still here until you remove it.",
+  "today.add": "Add a card",
+  "today.add.title": "What would you like on Today?",
+  "today.add.lead": "Each one answers one question about what you have written down. Add as many as you like, and take any of them off again.",
+  "today.add.none": "Everything is already on Today.",
+  "today.add.this": "Add {name}",
+  "today.add.back": "Back to Today",
+  "today.card.project_standing.long": "Where it stands",
+  "today.card.project_date.long": "The next date",
+  "today.card.project_steps.long": "Steps",
+  "today.card.measure.long": "The latest value"
 }

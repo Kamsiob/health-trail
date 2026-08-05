@@ -802,5 +802,15 @@
   "today.edit.up.short": "أعلى",
   "today.edit.down.short": "أسفل",
   "today.edit.remove.short": "أزل",
-  "today.card.source_closed": "أُغلقت. تبقى هنا حتى تزيلها."
+  "today.card.source_closed": "أُغلقت. تبقى هنا حتى تزيلها.",
+  "today.add": "أضف بطاقة",
+  "today.add.title": "ماذا تريد أن ترى في اليوم؟",
+  "today.add.lead": "كل واحدة تجيب على سؤال واحد عما كتبته. أضف ما تشاء، وأزل أياً منها متى شئت.",
+  "today.add.none": "كل شيء موجود بالفعل في اليوم.",
+  "today.add.this": "أضف {name}",
+  "today.add.back": "العودة إلى اليوم",
+  "today.card.project_standing.long": "أين وصل الأمر",
+  "today.card.project_date.long": "التاريخ القادم",
+  "today.card.project_steps.long": "الخطوات",
+  "today.card.measure.long": "آخر قيمة"
 }

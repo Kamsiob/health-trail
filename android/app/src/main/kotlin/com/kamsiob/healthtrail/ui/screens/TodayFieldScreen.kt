@@ -51,6 +51,7 @@ object TodayFieldTags {
     const val LEAD = "today-lead"
     const val EDIT = "today-edit"
     const val DONE = "today-done"
+    const val ADD = "today-add"
     fun card(id: String) = "today-card-$id"
 }
 
@@ -89,6 +90,13 @@ fun TodayFieldScreen(
      */
     onSave: (List<Repository.TodayCard>) -> Unit = {},
     /**
+     * Opens the gallery, handing it the cards already on the draft.
+     *
+     * **The draft rather than the saved layout**, so a card added and then a
+     * card removed in the same edit do not fight over what is already there.
+     */
+    onAddCard: (List<Repository.TodayCard>) -> Unit = {},
+    /**
      * What changed since the person was last here.
      *
      * **The same summary the app already had**, computed once in the shell and
@@ -109,6 +117,11 @@ fun TodayFieldScreen(
     // **The staged layout.** Held here while editing and written once, so a
     // person can move three cards and change their mind about all of them.
     var draft by remember(layout, editing) { mutableStateOf(layout.all) }
+
+    // **Adding a card writes immediately and comes back through the layout**,
+    // rather than being staged like a move. A person who taps Add expects the
+    // card to be there; staging it would mean the gallery's Add did nothing
+    // visible until Done, which is the opposite of what that button says.
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         LazyVerticalGrid(
@@ -133,6 +146,12 @@ fun TodayFieldScreen(
                         TabChip(hue = wholeAppHue(), labelKey = "today.tab")
                         Spacer(Modifier.weight(1f))
                         if (editing) {
+                            TextAction(
+                                label = strings["today.add"],
+                                onClick = { onAddCard(draft) },
+                                modifier = Modifier.testTag(TodayFieldTags.ADD),
+                            )
+                            Spacer(Modifier.width(Space.s))
                             TextAction(
                                 label = strings["today.edit.cancel"],
                                 onClick = { editing = false },
