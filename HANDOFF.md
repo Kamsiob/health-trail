@@ -120,6 +120,15 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **356 instrumented tests pass**, up from 353.
 
+### 2.4 The projects list carries the mini road
+
+**`ProjectsScreen` is converted to the grid's screen 2**, #275. Each card is its status, its name, its mini road, and one line answering where it stands and the next date. Screenshot: `docs/screenshots/projects-list-dark.png`.
+
+- **The mini road draws no labels.** Three mono words under a card in a list is noise, and the road's shape already says where the thing is. The reader gets the whole sentence, the same one the project's own screen gives.
+- **`Repository.projectCards` is three queries for the whole list**, not three per project. Fifteen projects would otherwise cost forty-five round trips to draw the screen the tab opens on.
+- **The next step line only prints when the card would otherwise say nothing.** It was right while a project was a checklist; under the grid a card answers two things, and printing a third under them is three lines competing where the grid draws one.
+- **`projects.subtitle` was corrected in place**, in all four catalogs. It described a project as "a list of steps and a note of who you are waiting on", which is the checklist the grid supersedes.
+
 **The latest word can be read but the app cannot write it, and that is #303.** `Repository.latestWordFor` reads it through the `link` table, which is what 8.1's generic connection table is for. **Nothing outside the fixture writes that link**, so on a real notebook the third answer is permanently absent. The fixture writes it so the card can be built and seen, which is deliberately not a fix.
 
 **A reference number has nowhere to live, and that is the owner's call.** The grid draws one on the latest word and calls it first-class; `call_detail` has no column for it. **Nothing was changed**: rule 3, and the WHAT BECOMES DATA amendment does not mention reference numbers. `LatestWordCard` takes it as an optional parameter and draws nothing without it. #303 states the decision.

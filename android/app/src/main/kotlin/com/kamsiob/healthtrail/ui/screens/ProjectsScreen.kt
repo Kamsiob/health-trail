@@ -23,6 +23,9 @@ import com.kamsiob.healthtrail.ui.components.fabScrollClearance
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.components.TabChip
 import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.RoadSize
+import com.kamsiob.healthtrail.ui.components.RoadStage
+import com.kamsiob.healthtrail.ui.components.RoadStrip
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,6 +74,16 @@ fun ProjectsScreen(
     onRemove: (Repository.Project) -> Unit,
     onStart: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * The mini road and the two answers, per project. `DESIGN.md` 20.5 screen 2.
+     *
+     * **Empty for a project the caller has nothing for**, and the card then
+     * draws what it has. A card with no road is a project whose stages were all
+     * removed, which law 5 allows, and it is not an error.
+     */
+    cards: Map<String, Repository.ProjectCard> = emptyMap(),
+    /** The countdown for a project, already composed by the caller. */
+    countdown: (Repository.Project) -> String? = { null },
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -131,6 +144,8 @@ fun ProjectsScreen(
                 item(key = project.id) {
                     ProjectRow(
                         project = project,
+                        card = cards[project.id],
+                        countdown = countdown(project),
                         onOpen = { onOpen(project) },
                         onRemove = { onRemove(project) },
                     )
@@ -154,6 +169,8 @@ fun ProjectsScreen(
                         item(key = project.id) {
                             ProjectRow(
                                 project = project,
+                                card = cards[project.id],
+                                countdown = countdown(project),
                                 onOpen = { onOpen(project) },
                                 onRemove = { onRemove(project) },
                             )
@@ -184,6 +201,8 @@ private fun ProjectRow(
     project: Repository.Project,
     onOpen: () -> Unit,
     onRemove: () -> Unit,
+    card: Repository.ProjectCard? = null,
+    countdown: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -212,26 +231,53 @@ private fun ProjectRow(
             color = if (project.isFinished) colors.ink2 else colors.ink,
         )
 
-        project.waitingOn?.takeIf { it.isNotBlank() }?.let { who ->
-            Spacer(Modifier.height(Space.xs))
+        // **The mini road, which is what makes a card read as a project.**
+        // DESIGN.md 20.5 screen 2 and 20.6. Bare, no labels at this size: three
+        // mono words under a card in a list is noise, and the road's shape
+        // already says where the thing is. The reader gets the sentence.
+        val stages = card?.stages.orEmpty()
+        if (stages.size >= 2) {
+            Spacer(Modifier.height(Space.s))
+            RoadStrip(
+                stages = stages.map { RoadStage(name = it.name, reached = it.isReached) },
+                description = roadSentence(project.name, stages, strings),
+                size = RoadSize.MINI,
+                showLabels = false,
+            )
+        }
+
+        // **Where it stands and the next date, at a glance**, which is what the
+        // grid asks a card to answer. One line, because a card in a list is
+        // scanned rather than read, and the project's own screen is one tap
+        // away for the rest.
+        val glance = Bidi.join(
+            card?.holder,
+            countdown,
+            project.waitingOn?.takeIf { it.isNotBlank() && card?.holder == null },
+        )
+        if (glance.isNotBlank()) {
+            Spacer(Modifier.height(Space.s))
             Text(
-                text = strings("projects.waiting_on", "who" to who),
+                text = glance,
                 style = HealthTrail.type.bodyM,
                 color = colors.ink2,
             )
         }
 
-        // **What is next, rather than how far behind you are.**
+        // **What is next, and only when the card would otherwise say nothing.**
         //
         // This row said "2 of 5 steps done" until 2026-08-03, which is a
         // completion count on the person's own work and is what rule 13 rules
-        // out. It was also the least useful thing the row could say: somebody
-        // scanning five long processes wants to know what to do next.
+        // out. It became the next step instead, which was right while a project
+        // was a checklist.
         //
-        // **A project with nothing left says so and does not say it twice.** A
-        // finished one already carries "Done" in its own eyebrow, so the line
-        // is only worth printing where the steps ran out before the status did.
-        if (project.stepCount > 0) {
+        // **Under the Projects grid a card answers where it stands and the next
+        // date**, 20.5 screen 2, and printing the next step under those two
+        // makes three lines competing where the grid draws one. So it prints
+        // only when there is neither: a project nobody has said anything about
+        // and that has no date is a real state, and the card should still say
+        // something rather than being a title and a road.
+        if (project.stepCount > 0 && glance.isBlank()) {
             val next = project.nextStep
             val line = when {
                 next != null -> strings("projects.next", "step" to next)
@@ -247,5 +293,30 @@ private fun ProjectRow(
                 )
             }
         }
+    }
+}
+
+/**
+ * The road as one sentence, for a reader.
+ *
+ * The same shape the project's own screen uses, so the card and the screen it
+ * opens say the same thing about where the project is.
+ */
+private fun roadSentence(
+    name: String,
+    stages: List<Repository.ProjectStage>,
+    strings: com.kamsiob.healthtrail.i18n.Strings,
+): String {
+    val current = stages.indexOfLast { it.isReached }
+    return if (current < 0) {
+        strings("project.road.not_started", "name" to name, "total" to stages.size)
+    } else {
+        strings(
+            "project.road.at",
+            "name" to name,
+            "position" to current + 1,
+            "total" to stages.size,
+            "stage" to stages[current].name,
+        )
     }
 }

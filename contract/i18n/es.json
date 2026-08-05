@@ -522,7 +522,7 @@
   "docs.photograph": "Fotografiar un documento",
   "docs.recent": "Lo más reciente",
   "appts.edit.title": "Cambiar lo que anotó",
-  "projects.subtitle": "Los procesos largos: solicitudes, apelaciones, peticiones. Cada uno es una lista de pasos y una nota de a quién está esperando.",
+  "projects.subtitle": "Los procesos largos: solicitudes, apelaciones, peticiones. Cada uno dice en qué punto está, la próxima fecha y lo último que dijeron.",
   "projects.tab": "Trámites",
   "projects.finished": "Terminados",
   "projects.empty": "Nada iniciado. Son las gestiones que llevan meses y una docena de llamadas, y la aplicación mantiene el hilo.",

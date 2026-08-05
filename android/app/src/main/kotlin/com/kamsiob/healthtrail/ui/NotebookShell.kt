@@ -267,6 +267,9 @@ fun NotebookShell(
     var projectNextDate by remember { mutableStateOf<Repository.ProjectDate?>(null) }
     var projectLatestWord by remember { mutableStateOf<Repository.TrailEntry?>(null) }
     var projectPapers by remember { mutableStateOf<List<Repository.ProjectPaper>>(emptyList()) }
+    var projectCards by remember {
+        mutableStateOf<Map<String, Repository.ProjectCard>>(emptyMap())
+    }
     var togglingStep by remember { mutableStateOf<Repository.ProjectStep?>(null) }
     var settingProjectStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     var settingWaitingOn by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -546,6 +549,9 @@ fun NotebookShell(
             bills = subject?.let { repository.bills(it.id) }.orEmpty()
             documents = subject?.let { repository.documents(it.id) }.orEmpty()
             projects = subject?.let { repository.projects(it.id) }.orEmpty()
+            // The mini road and the two answers, for every project at once
+            // rather than three queries each. DESIGN.md 20.5 screen 2.
+            projectCards = subject?.let { repository.projectCards(it.id) }.orEmpty()
             projectTemplates = TemplateCatalog.projects(context)
             ownTemplates = repository.ownTemplates("project")
             // Kept in step with the list, so a step ticked on the detail screen
@@ -810,6 +816,21 @@ fun NotebookShell(
                             )
                         },
                         onStart = { startingProject = true },
+                        cards = projectCards,
+                        // **The same sentence the project's own screen uses**,
+                        // composed in one place, so a card and the screen it
+                        // opens can never word the same date differently.
+                        countdown = { project ->
+                            projectCards[project.id]?.nextDate?.dueStart?.let { due ->
+                                val days = java.time.Duration
+                                    .ofMillis(due - System.currentTimeMillis()).toDays()
+                                when {
+                                    days == 0L -> strings["project.countdown.today"]
+                                    days > 0 -> strings("project.countdown.days", "count" to days)
+                                    else -> strings("project.countdown.passed", "count" to -days)
+                                }
+                            }
+                        },
                     )
                     // More is no longer entirely unbuilt. Appearance is
                     // real; everything else in it still says so plainly.

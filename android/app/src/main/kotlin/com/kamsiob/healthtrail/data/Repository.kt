@@ -4399,6 +4399,97 @@ class Repository private constructor(
         val isFilled: Boolean get() = documentId != null
     }
 
+    /**
+     * What a project's card on the list needs, for every project at once.
+     *
+     * `DESIGN.md` 20.5 screen 2: each card carries its mini road and answers
+     * where it stands and the next date at a glance.
+     *
+     * **Three queries rather than three per project.** A person with fifteen
+     * projects would otherwise cost forty-five round trips to draw one screen,
+     * and this is the screen the Projects tab opens on.
+     */
+    data class ProjectCard(
+        val stages: List<ProjectStage>,
+        val holder: String?,
+        val nextDate: ProjectDate?,
+    )
+
+    suspend fun projectCards(
+        subjectId: String,
+        now: Long = System.currentTimeMillis(),
+    ): Map<String, ProjectCard> = withContext(Dispatchers.IO) {
+        val database = db().database
+
+        val stages = mutableMapOf<String, MutableList<ProjectStage>>()
+        database.rawQuery(
+            "SELECT s.project_id, s.id, s.name, s.sort_index, s.entered_edtf, s.entered_start " +
+                "FROM live_project_stage s JOIN live_project p ON p.id = s.project_id " +
+                "WHERE p.subject_id = ? ORDER BY s.project_id, s.sort_index, s.created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                stages.getOrPut(cursor.getString(0)) { mutableListOf() }.add(
+                    ProjectStage(
+                        id = cursor.getString(1),
+                        name = cursor.getString(2),
+                        sortIndex = cursor.getInt(3),
+                        enteredEdtf = cursor.getString(4),
+                        enteredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                    ),
+                )
+            }
+        }
+
+        // The most recent standing per project. Ordered so the first row seen
+        // for a project is its current one, and the rest are skipped.
+        val holders = mutableMapOf<String, String>()
+        database.rawQuery(
+            "SELECT t.project_id, t.holder_label FROM live_project_standing t " +
+                "JOIN live_project p ON p.id = t.project_id WHERE p.subject_id = ? " +
+                "ORDER BY t.project_id, t.since_start DESC, t.created_at DESC",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                holders.putIfAbsent(cursor.getString(0), cursor.getString(1))
+            }
+        }
+
+        val dates = mutableMapOf<String, MutableList<ProjectDate>>()
+        database.rawQuery(
+            "SELECT d.project_id, d.id, d.kind, d.due_edtf, d.due_start, d.source_note, " +
+                "d.source_document_id, d.source_entry_id FROM live_project_date d " +
+                "JOIN live_project p ON p.id = d.project_id WHERE p.subject_id = ? " +
+                "ORDER BY d.project_id, d.due_start, d.created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                dates.getOrPut(cursor.getString(0)) { mutableListOf() }.add(
+                    ProjectDate(
+                        id = cursor.getString(1),
+                        kind = cursor.getString(2),
+                        dueEdtf = cursor.getString(3),
+                        dueStart = if (cursor.isNull(4)) null else cursor.getLong(4),
+                        sourceNote = cursor.getString(5),
+                        sourceDocumentId = cursor.getString(6),
+                        sourceEntryId = cursor.getString(7),
+                    ),
+                )
+            }
+        }
+
+        (stages.keys + holders.keys + dates.keys).associateWith { projectId ->
+            val theirs = dates[projectId].orEmpty().filter { it.dueStart != null }
+            ProjectCard(
+                stages = stages[projectId].orEmpty(),
+                holder = holders[projectId],
+                // The same rule the project's own screen uses, D113, so the
+                // card and the screen it opens can never disagree.
+                nextDate = theirs.firstOrNull { it.dueStart!! >= now } ?: theirs.lastOrNull(),
+            )
+        }
+    }
+
     /** The stages of one project, in road order. */
     suspend fun projectStages(projectId: String): List<ProjectStage> =
         withContext(Dispatchers.IO) {
