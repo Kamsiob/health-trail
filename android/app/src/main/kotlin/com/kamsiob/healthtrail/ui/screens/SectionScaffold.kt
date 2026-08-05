@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
@@ -60,6 +61,7 @@ object SectionTags {
     const val BACK = "section_back"
     fun root(name: String) = "section_root_$name"
     fun empty(name: String) = "section_empty_$name"
+    fun emptyAction(name: String) = "section_empty_action_$name"
 }
 
 /**
@@ -273,6 +275,27 @@ fun SectionEmpty(
      */
     modifier: Modifier = Modifier,
     section: Repository.Section? = null,
+    /**
+     * One line above the paragraph, saying what this place is for.
+     *
+     * **Rule 15: something has to lead.** A drawing over one gray paragraph is
+     * uniform weight, and uniform weight pushes the sorting onto the reader.
+     * Where a section has a sentence worth reading first, it goes here and
+     * takes the size, and the paragraph below it recedes.
+     *
+     * Null keeps the older shape, which is right where the paragraph is the
+     * whole thought and a headline would only restate it.
+     */
+    lead: String? = null,
+    /**
+     * The one thing to do from here, if there is one.
+     *
+     * **Outlined, never filled.** Every screen that passes this also carries a
+     * capture control, and two filled actions on an otherwise empty screen is
+     * the competition section 10.8 is about.
+     */
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
@@ -284,12 +307,29 @@ fun SectionEmpty(
     ) {
         EmptyDrawing(section = section)
         Spacer(Modifier.height(Space.l))
+        if (lead != null) {
+            Text(
+                text = lead,
+                style = HealthTrail.type.displayS,
+                color = HealthTrail.colors.ink,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(Space.s))
+        }
         Text(
             text = text,
             style = HealthTrail.type.bodyL,
             color = HealthTrail.colors.ink2,
             textAlign = TextAlign.Center,
         )
+        if (actionLabel != null && onAction != null) {
+            Spacer(Modifier.height(Space.l))
+            QuietButton(
+                label = actionLabel,
+                onClick = onAction,
+                modifier = Modifier.testTag(SectionTags.emptyAction(name)),
+            )
+        }
     }
 }
 
@@ -300,3 +340,14 @@ fun SectionEmpty(
  * and a block centered in the full height would sit visibly low. Section 5.10.
  */
 const val EMPTY_HEIGHT_FRACTION = 0.62f
+
+/**
+ * The same, for an empty state that carries a lead and an action rather than
+ * one line, and whose screen drops its subtitle while empty.
+ *
+ * **A taller block needs more room to center in, not less.** At the section
+ * fraction it settled into the upper half and left the bottom third blank,
+ * which rule 11 rules out and which reads as a screen that did not finish
+ * loading.
+ */
+const val EMPTY_HEIGHT_TALL = 0.82f

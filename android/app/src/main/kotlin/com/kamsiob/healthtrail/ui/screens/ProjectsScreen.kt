@@ -38,7 +38,10 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object ProjectTags {
     const val ROOT = "projects_root"
     const val START = "projects_start"
-    const val EMPTY = "projects_empty"
+    /** The screen's own name, which is also what its empty block is tagged by. */
+    const val NAME = "projects"
+    const val EMPTY = "section_empty_projects"
+    const val EMPTY_START = "section_empty_action_projects"
     const val FINISHED_FOLD = "projects_finished_fold"
     fun row(id: String) = "project_$id"
 }
@@ -108,24 +111,50 @@ fun ProjectsScreen(
                     style = HealthTrail.type.displayM,
                     color = colors.ink,
                 )
-                Spacer(Modifier.height(Space.xs))
-                Text(
-                    text = strings["projects.subtitle"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
-                )
+                // **The subtitle describes the rows, so it goes when there
+                // are none.** It says what each project answers, which is
+                // nothing a person can act on before the first one exists, and
+                // it opened with the same four words as the empty state's own
+                // lead. Two headings saying "the long processes" one above the
+                // other is the screen repeating itself at the one moment it has
+                // the reader's whole attention.
+                if (projects.isNotEmpty()) {
+                    Spacer(Modifier.height(Space.xs))
+                    Text(
+                        text = strings["projects.subtitle"],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
+                    )
+                }
                 Spacer(Modifier.height(Space.cardGap))
             }
 
             if (projects.isEmpty()) {
                 item {
-                    Text(
+                    // **A warm invitation and never a blank**, 20.5 screen 01.
+                    // This was one gray paragraph under the subtitle with the
+                    // rest of the screen empty below it, which is the shape
+                    // 5.17 already solved everywhere else in the app. It uses
+                    // that solution rather than a second one, with the line
+                    // that says what this place is for taking the size.
+                    //
+                    // **No section drawing, because projects are not one of the
+                    // twelve.** The trail map ground alone is what 5.17
+                    // prescribes for a place outside the sections.
+                    SectionEmpty(
+                        name = ProjectTags.NAME,
+                        lead = strings["projects.empty.lead"],
                         text = strings["projects.empty"],
-                        style = HealthTrail.type.bodyL,
-                        color = colors.ink2,
-                        modifier = Modifier.testTag(ProjectTags.EMPTY),
+                        actionLabel = strings["projects.start.long"],
+                        onAction = onStart,
+                        // **More of the height than a section's empty state
+                        // gets**, because this one dropped its subtitle and
+                        // carries three things rather than one. At 0.62 the
+                        // block sat in the upper half with the bottom third of
+                        // the screen blank under it, which reads as a screen
+                        // that failed to load. Measured by looking at it.
+                        modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_TALL),
                     )
-                    Spacer(Modifier.height(Space.l))
                 }
             }
 
@@ -180,7 +209,10 @@ fun ProjectsScreen(
                 }
             }
 
-            item {
+            // **Not while the screen is empty.** The empty state already
+            // carries this action, at the place the eye lands, and repeating it
+            // under a screen with nothing on it is the same control twice.
+            if (projects.isNotEmpty()) item {
                 Spacer(Modifier.height(Space.s))
                 QuietButton(
                     label = strings["projects.start"],

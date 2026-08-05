@@ -172,6 +172,18 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **358 instrumented tests pass**, up from 356. Both new assertions were proved by breaking the screen on purpose and putting it back from a scratchpad copy, per section 7. Seen on the phone at both themes, at font scale 2.0, and in Arabic: `project-clusters-light`, `project-clusters-dark`, `project-clusters-2x-dark`, `project-clusters-rtl-dark`.
 
+### 2.35 The projects tab before the first project
+
+**#274 is built and seen.** It was one gray paragraph under the subtitle with the rest of the screen blank below it, which is exactly the shape 5.17 already solved for every other empty screen in the app. It uses that solution now: the trail map ground, the line that says what this place is for at `displayS`, the paragraph under it, and the one thing to do.
+
+- **`SectionEmpty` grew a lead and an action rather than a second empty state being written.** Seventeen screens call it and none of them changed: both parameters default to null. **Where a section's empty state is one line and a drawing, that is still what it is.**
+- **The subtitle goes while the list is empty.** It describes what each row answers, which nothing on an empty screen does, and it opened with the same four words as the empty state's own lead. The screen said "the long processes" twice, one line above the other.
+- **The bottom Start button goes too.** The empty state carries the action at the place the eye lands, and the two together were one control drawn twice on a screen with nothing else on it.
+- **`EMPTY_HEIGHT_TALL` is 0.82 against the sections' 0.62.** A taller block needs more room to center in: at the section fraction this sat in the upper half with the bottom third blank, which reads as a screen that failed to load. Found by looking at it, twice.
+- **No section drawing**, because projects are not one of the twelve. The ground alone is what 5.17 prescribes for a place outside the sections.
+
+**Seen on the phone at both themes, at font scale 2.0, and in Arabic**, from a genuinely empty notebook reached through onboarding rather than by clearing a table: `projects-empty-light`, `projects-empty-dark`, `projects-empty-2x-dark`, `projects-empty-rtl-dark`. **362 instrumented tests pass**, up from 358, and both new guards were proved by breaking them.
+
 ### 2.4 The projects list carries the mini road
 
 **`ProjectsScreen` is converted to the grid's screen 2**, #275. Each card is its status, its name, its mini road, and one line answering where it stands and the next date. Screenshot: `docs/screenshots/projects-list-dark.png`.
