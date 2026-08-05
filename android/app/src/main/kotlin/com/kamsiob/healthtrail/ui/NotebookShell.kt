@@ -98,6 +98,7 @@ import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectSetupScreen
+import com.kamsiob.healthtrail.ui.screens.StageSheet
 import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
@@ -281,6 +282,8 @@ fun NotebookShell(
     var addingDateTo by remember { mutableStateOf<Repository.Project?>(null) }
     var loggingCallOn by remember { mutableStateOf<Repository.Project?>(null) }
     var setupOpen by rememberSaveable { mutableStateOf(false) }
+    var movingStageOn by remember { mutableStateOf<Repository.Project?>(null) }
+    var movingStage by remember { mutableStateOf<Pair<String, String>?>(null) }
     var settingLead by remember { mutableStateOf<Pair<String, String>?>(null) }
     var settingStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     var savingCall by remember {
@@ -1403,6 +1406,36 @@ fun NotebookShell(
             AboutScreen(onBack = { aboutOpen = false })
         }
 
+        movingStageOn?.let { project ->
+            StageSheet(
+                stages = projectStages,
+                // **The last stage reached**, derived rather than read from
+                // project.current_stage_id, so the sheet and the road strip can
+                // never disagree about where the project is: the strip derives
+                // it the same way.
+                currentStageId = projectStages.lastOrNull { it.isReached }?.id,
+                onPick = { stage ->
+                    movingStage = project.id to stage.id
+                    movingStageOn = null
+                },
+                onDismiss = { movingStageOn = null },
+            )
+        }
+
+        movingStage?.let { (projectId, stageId) ->
+            LaunchedEffect(projectId, stageId) {
+                repository.moveProjectToStage(
+                    projectId = projectId,
+                    stageId = stageId,
+                    // Today, like every other thing this surface records after
+                    // a phone call. Editable from the stage afterward.
+                    reached = Edtf.day(java.time.LocalDate.now()),
+                )
+                movingStage = null
+                revision += 1
+            }
+        }
+
         loggingCallOn?.let { project ->
             LogCallSheet(
                 projectName = project.name,
@@ -1637,6 +1670,7 @@ fun NotebookShell(
                 onAddDate = { addingDateTo = currentProject },
                 onLogCall = { loggingCallOn = currentProject },
                 onOpenSetup = { setupOpen = true },
+                onMoveStage = { movingStageOn = currentProject },
                 onBack = { openProject = null },
             )
         }

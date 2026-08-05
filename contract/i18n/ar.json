@@ -850,5 +850,11 @@
   "project.setup.status": "حالة المعاملة",
   "project.setup.status.note": "علّقها أو أغلقها من هنا. لا يُفقد شيء في الحالتين.",
   "project.setup.nothing_yet": "لا شيء بعد",
-  "section.back.project": "العودة إلى المعاملة"
+  "section.back.project": "العودة إلى المعاملة",
+  "project.stage.move": "تغيّر المسار",
+  "project.stage.move.short": "انقلها",
+  "project.stage.move.lead": "إلى أين وصل؟ التاريخ هو اليوم ما لم تغيّره، والمراحل السابقة تحتفظ بتواريخها.",
+  "project.stage.reached": "وصلت في {date}",
+  "project.stage.not_reached": "ليس بعد",
+  "project.stage.save": "اكتبها"
 }

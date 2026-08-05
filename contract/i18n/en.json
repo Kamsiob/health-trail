@@ -850,5 +850,11 @@
   "project.setup.status": "Where this project is",
   "project.setup.status.note": "Put it on hold or close it from here. Nothing is lost either way.",
   "project.setup.nothing_yet": "None yet",
-  "section.back.project": "Back to the project"
+  "section.back.project": "Back to the project",
+  "project.stage.move": "The road turned",
+  "project.stage.move.short": "Move it along",
+  "project.stage.move.lead": "Where has it got to? The date is today unless you change it, and the stages before it keep the dates they already had.",
+  "project.stage.reached": "Reached {date}",
+  "project.stage.not_reached": "Not yet",
+  "project.stage.save": "Write it down"
 }

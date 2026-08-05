@@ -850,5 +850,11 @@
   "project.setup.status": "Estado del trámite",
   "project.setup.status.note": "Póngalo en pausa o ciérrelo desde aquí. No se pierde nada en ningún caso.",
   "project.setup.nothing_yet": "Ninguna todavía",
-  "section.back.project": "Volver al trámite"
+  "section.back.project": "Volver al trámite",
+  "project.stage.move": "El camino cambió",
+  "project.stage.move.short": "Avanzar",
+  "project.stage.move.lead": "¿A qué punto llegó? La fecha es hoy salvo que la cambie, y las etapas anteriores conservan sus fechas.",
+  "project.stage.reached": "Alcanzada el {date}",
+  "project.stage.not_reached": "Todavía no",
+  "project.stage.save": "Anotarlo"
 }

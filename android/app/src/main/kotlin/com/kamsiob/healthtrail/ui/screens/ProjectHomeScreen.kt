@@ -41,6 +41,7 @@ object ProjectHomeTags {
     const val ADD_DATE = "project-home-add-date"
     const val LOG_CALL = "project-home-log-call"
     const val SETUP = "project-home-setup"
+    const val MOVE_STAGE = "project-home-move-stage"
 }
 
 /**
@@ -95,6 +96,8 @@ fun ProjectHomeScreen(
     onLogCall: () -> Unit = {},
     /** Opens the project's setup, where everything the template decided lives. */
     onOpenSetup: () -> Unit = {},
+    /** Opens the sheet that moves the project along its road. 20.5 screen 12. */
+    onMoveStage: () -> Unit = {},
     steps: List<Repository.ProjectStep> = emptyList(),
     papers: List<Repository.ProjectPaper> = emptyList(),
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
@@ -131,6 +134,16 @@ fun ProjectHomeScreen(
                     description = roadDescription(project.name, stages, strings),
                     size = RoadSize.FULL,
                     modifier = Modifier.testTag(ProjectHomeTags.ROAD),
+                )
+                // **The road is bare and its control is beside it**, 20.6. The
+                // strip itself does nothing on touch, so the way to move along
+                // it is an outlined action rather than a tappable waypoint,
+                // which would make an information graphic look like a picker.
+                Spacer(Modifier.height(Space.s))
+                QuietButton(
+                    label = strings["project.stage.move.short"],
+                    onClick = onMoveStage,
+                    modifier = Modifier.testTag(ProjectHomeTags.MOVE_STAGE),
                 )
                 Spacer(Modifier.height(Space.sectionGap))
             }

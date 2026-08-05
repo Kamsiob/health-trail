@@ -850,5 +850,11 @@
   "project.setup.status": "事务状态",
   "project.setup.status.note": "可以在这里暂停或结束。两种情况都不会丢失任何内容。",
   "project.setup.nothing_yet": "尚无",
-  "section.back.project": "返回该事务"
+  "section.back.project": "返回该事务",
+  "project.stage.move": "进展有了变化",
+  "project.stage.move.short": "推进",
+  "project.stage.move.lead": "进展到哪一步了？除非你修改，日期就是今天，之前的阶段保留原有日期。",
+  "project.stage.reached": "{date} 到达",
+  "project.stage.not_reached": "尚未",
+  "project.stage.save": "记下来"
 }

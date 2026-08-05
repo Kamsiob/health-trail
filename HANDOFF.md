@@ -140,6 +140,16 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **The way back names the project, not the projects list.** It said the list at first, which is the small lie somebody only notices by being surprised.
 - **The four rows are read-only summaries.** Editing stages, steps, papers and date kinds one by one is not built, and the grid draws chevrons on them.
 
+**The road can advance now**, #285's sheet. `moveProjectToStage` had existed since the schema landed and nothing called it, so a project sat on whatever stage it started on forever. `docs/screenshots/project-stage-sheet-light.png` and `project-road-turned-light.png`.
+
+- **Every stage is offered, not only the next one.** These processes skip stages and go backward, and a control that only moves forward one step is wrong the first time something unusual happens, which on these processes is most of the time.
+- **A stage already reached keeps its first arrival date**, so a road that turns back does not erase that it had ever been there.
+- **The current stage is derived from what has been reached**, the same way the road strip derives it, so the sheet and the strip cannot disagree.
+- **The road strip stays bare**, 20.6. The control sits beside it rather than making the waypoints tappable, which would turn an information graphic into a picker.
+- Proved on the phone: moved a project to Decision and watched two waypoints fill and the reader say "Stage 3 of 3".
+
+**Every piece of project data can now be written from the app**: where it stands, a date with its source, the latest word with its link, the shape, the status, and the road. **What is still read-only** is the stages, steps, papers and date kinds as lists, which is #291's remainder.
+
 **A second flaky test, #306.** `AppLanguageTest`'s fallback test said Japanese fell back to Spanish, once, in a full run. It passes in isolation, the device locale was `en-US`, and the next full run was clean. It is almost certainly racing an asynchronous locale change. **#302 is the other one.** Two tests that fail at random is where a suite starts teaching people to rerun rather than look.
 
 **The review this owes under rule 12 is #304**, and it lists what was deliberately left out and the three things I am unsure about.
