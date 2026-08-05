@@ -834,5 +834,21 @@
   "project.log_call.who": "Who did you speak to?",
   "project.log_call.who.hint": "A name and their role, if you got one",
   "project.log_call.words.hint": "It is with the nurse reviewer. Call back after the 15th.",
-  "project.log_call.save": "Write it down"
+  "project.log_call.save": "Write it down",
+  "project.setup": "Project setup",
+  "project.setup.open": "Setup",
+  "project.setup.from_template": "from the {name} template",
+  "project.setup.from_nothing": "started from nothing",
+  "project.setup.lead": "What leads the screen",
+  "project.setup.lead.note": "The first thing this project shows",
+  "project.setup.stages": "Stages",
+  "project.setup.steps": "Starting steps",
+  "project.setup.papers": "Usual papers",
+  "project.setup.kinds": "Date kinds",
+  "project.setup.papers.count": "{count, plural, one {1 placeholder} other {# placeholders}}, {filled} filled",
+  "project.setup.never_changes": "Changing this project never changes the template it came from.",
+  "project.setup.status": "Where this project is",
+  "project.setup.status.note": "Put it on hold or close it from here. Nothing is lost either way.",
+  "project.setup.nothing_yet": "None yet",
+  "section.back.project": "Back to the project"
 }

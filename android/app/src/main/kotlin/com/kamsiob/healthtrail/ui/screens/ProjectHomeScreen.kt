@@ -19,6 +19,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DateRow
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.LatestWordCard
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
@@ -39,6 +40,7 @@ object ProjectHomeTags {
     const val UPDATE_STANDING = "project-home-update-standing"
     const val ADD_DATE = "project-home-add-date"
     const val LOG_CALL = "project-home-log-call"
+    const val SETUP = "project-home-setup"
 }
 
 /**
@@ -91,6 +93,8 @@ fun ProjectHomeScreen(
     onAddDate: () -> Unit = {},
     /** Opens the sheet that logs a call, already knowing which project. */
     onLogCall: () -> Unit = {},
+    /** Opens the project's setup, where everything the template decided lives. */
+    onOpenSetup: () -> Unit = {},
     steps: List<Repository.ProjectStep> = emptyList(),
     papers: List<Repository.ProjectPaper> = emptyList(),
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
@@ -376,7 +380,18 @@ fun ProjectHomeScreen(
             }
         }
 
-        item { Spacer(Modifier.height(Space.sectionGap)) }
+        // **The way to everything the template decided.** 20.5 screen 18 and
+        // law 5: it sits last because it is the least often needed and the
+        // most reassuring to know is there.
+        item {
+            FoldRowText(
+                label = strings["project.setup.open"],
+                expanded = false,
+                onToggle = onOpenSetup,
+                modifier = Modifier.testTag(ProjectHomeTags.SETUP),
+            )
+            Spacer(Modifier.height(Space.sectionGap))
+        }
     }
 }
 

@@ -97,6 +97,7 @@ import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectSetupScreen
 import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
@@ -279,6 +280,9 @@ fun NotebookShell(
     var updatingStanding by remember { mutableStateOf<Repository.Project?>(null) }
     var addingDateTo by remember { mutableStateOf<Repository.Project?>(null) }
     var loggingCallOn by remember { mutableStateOf<Repository.Project?>(null) }
+    var setupOpen by rememberSaveable { mutableStateOf(false) }
+    var settingLead by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var settingStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     var savingCall by remember {
         mutableStateOf<Triple<String, String, String>?>(null)
     }
@@ -675,7 +679,12 @@ fun NotebookShell(
     // would close the review out from under it and leave the chapter standing.
     // Every door on the review screen is registered below.
     BackHandler(enabled = reviewMonth != null) { reviewMonth = null; review = null }
-    BackHandler(enabled = openProject != null) { openProject = null }
+    // Setup sits on top of the project, so back closes it first. Depth stops
+    // at level three, per the grid's own navigation model.
+    BackHandler(enabled = setupOpen) { setupOpen = false }
+    BackHandler(enabled = openProject != null && !setupOpen) {
+        openProject = null
+    }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
     BackHandler(enabled = searchOpen) { searchOpen = false }
     BackHandler(enabled = incidentsOpen && openIncident == null) { incidentsOpen = false }
@@ -902,7 +911,7 @@ fun NotebookShell(
                     )
                     Destination.PROJECTS -> ProjectsScreen(
                         projects = projects,
-                        onOpen = { openProject = it; revision += 1 },
+                        onOpen = { openProject = it; setupOpen = false; revision += 1 },
                         onRemove = { project ->
                             removing = Removal(
                                 Repository.Section.PROJECTS, project.id, project.name,
@@ -1508,8 +1517,45 @@ fun NotebookShell(
             )
         }
 
+        settingLead?.let { (projectId, lead) ->
+            LaunchedEffect(projectId, lead) {
+                repository.setProjectLead(projectId, lead)
+                settingLead = null
+                revision += 1
+            }
+        }
+
+        settingStatus?.let { (projectId, status) ->
+            LaunchedEffect(projectId, status) {
+                // **The waiting-on note is left exactly as it was.** Changing
+                // the status is not a reason to forget who somebody was told to
+                // wait for, and the old screen cleared it on every change.
+                repository.setProjectStatus(
+                    projectId = projectId,
+                    status = status,
+                    waitingOn = projects.firstOrNull { it.id == projectId }?.waitingOn,
+                )
+                settingStatus = null
+                revision += 1
+            }
+        }
+
         val currentProject = openProject
-        if (currentProject != null) {
+        if (currentProject != null && setupOpen) {
+            ProjectSetupScreen(
+                project = currentProject,
+                stages = projectStages,
+                steps = projectSteps,
+                papers = projectPapers,
+                dateKinds = projectDateKinds,
+                templateName = currentProject.templateId?.let { id ->
+                    projectTemplates.firstOrNull { it.id == id }?.name
+                },
+                onSetLead = { settingLead = currentProject.id to it },
+                onSetStatus = { settingStatus = currentProject.id to it },
+                onBack = { setupOpen = false },
+            )
+        } else if (currentProject != null) {
             // **The screen the Projects grid draws**, DESIGN.md 20.5 screen 5.
             //
             // The old ProjectDetailScreen is superseded by it and is frozen
@@ -1590,6 +1636,7 @@ fun NotebookShell(
                 onUpdateStanding = { updatingStanding = currentProject },
                 onAddDate = { addingDateTo = currentProject },
                 onLogCall = { loggingCallOn = currentProject },
+                onOpenSetup = { setupOpen = true },
                 onBack = { openProject = null },
             )
         }

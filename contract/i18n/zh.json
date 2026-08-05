@@ -834,5 +834,21 @@
   "project.log_call.who": "你和谁通话？",
   "project.log_call.who.hint": "如果知道的话，姓名和职务",
   "project.log_call.words.hint": "在护士审核员那里。15号之后再打来。",
-  "project.log_call.save": "记下来"
+  "project.log_call.save": "记下来",
+  "project.setup": "事务设置",
+  "project.setup.open": "设置",
+  "project.setup.from_template": "来自模板 {name}",
+  "project.setup.from_nothing": "从零开始",
+  "project.setup.lead": "屏幕以什么开头",
+  "project.setup.lead.note": "这个事务首先显示的内容",
+  "project.setup.stages": "阶段",
+  "project.setup.steps": "起始步骤",
+  "project.setup.papers": "常用文件",
+  "project.setup.kinds": "日期类型",
+  "project.setup.papers.count": "{count, plural, other {# 个占位}}，已填 {filled}",
+  "project.setup.never_changes": "修改这个事务不会改变它所来自的模板。",
+  "project.setup.status": "事务状态",
+  "project.setup.status.note": "可以在这里暂停或结束。两种情况都不会丢失任何内容。",
+  "project.setup.nothing_yet": "尚无",
+  "section.back.project": "返回该事务"
 }

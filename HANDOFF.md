@@ -21,7 +21,7 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **Take these in this order.**
 
-1. **A new design direction arrived on 2026-08-04 and step zero is done.** Section 2 is the whole of it. **#262 is done as data work and nothing is drawn yet.** Section 2.1 is the whole of it. **The next build is the components and screens**, #263 onward.
+1. **A new design direction arrived on 2026-08-04 and both surfaces are largely built to it.** Section 2 is the whole of it: the data work, the five components, all three project shapes, the projects list, Today's lead slot and card field, edit mode, the gallery, and the three project sheets. **What is left is named at the end of each subsection.**
 2. **#200, #201 and #202 are done and closed**, and sections 3 to 5 say what came out of them.
 3. **The rest of step 4 of the v4 conversion is untouched**: #203 through #208, in number order, **except take #208 last**. These are not affected by the new grids.
    - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape. **Take it last.**
@@ -132,6 +132,15 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - Proved on the phone: logged a call, and the latest word card became it, dated today, with "Denise, intake caseworker" beside the date.
 
 **The nested isolate defect appeared a third time** and was fixed at the call site again, not at the source. **Making `Bidi.isolate` idempotent was tried and reverted**: a joined run like `⁨a⁩ · ⁨b⁩` also starts with the isolate and ends with the pop, so the guard would have stopped wrapping compound runs as a unit, which changes how they lay out inside an RTL sentence. That is a real behavior change across every screen and it was not verifiable in one sitting. **The rule stays: raw parts into `Bidi.join`, never something already joined.**
+
+**The project's setup screen is built and seen**, #291, and it is law 5 made concrete: the shape as three chips, what the template decided with what it has become, and the status. `docs/screenshots/project-setup-light.png` and `project-shape-changed-light.png`.
+
+- **Changing the shape reorders the project home with no penalty**, proved by tapping a chip and watching the countdown take the lead. There is no confirmation, because asking whether somebody is sure would invent a consequence that does not exist.
+- **Status is back**, which the frozen `ProjectDetailScreen` used to carry, and **the waiting-on note is left alone** when it changes: the old screen cleared it on every status change, which threw away who somebody had been told to wait for.
+- **The way back names the project, not the projects list.** It said the list at first, which is the small lie somebody only notices by being surprised.
+- **The four rows are read-only summaries.** Editing stages, steps, papers and date kinds one by one is not built, and the grid draws chevrons on them.
+
+**A second flaky test, #306.** `AppLanguageTest`'s fallback test said Japanese fell back to Spanish, once, in a full run. It passes in isolation, the device locale was `en-US`, and the next full run was clean. It is almost certainly racing an asynchronous locale change. **#302 is the other one.** Two tests that fail at random is where a suite starts teaching people to rerun rather than look.
 
 **The review this owes under rule 12 is #304**, and it lists what was deliberately left out and the three things I am unsure about.
 

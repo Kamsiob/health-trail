@@ -834,5 +834,21 @@
   "project.log_call.who": "¿Con quién habló?",
   "project.log_call.who.hint": "Un nombre y su función, si lo obtuvo",
   "project.log_call.words.hint": "Está con la enfermera revisora. Vuelva a llamar después del 15.",
-  "project.log_call.save": "Anotarlo"
+  "project.log_call.save": "Anotarlo",
+  "project.setup": "Configuración",
+  "project.setup.open": "Configuración",
+  "project.setup.from_template": "de la plantilla {name}",
+  "project.setup.from_nothing": "empezado desde cero",
+  "project.setup.lead": "Qué encabeza la pantalla",
+  "project.setup.lead.note": "Lo primero que muestra este trámite",
+  "project.setup.stages": "Etapas",
+  "project.setup.steps": "Pasos iniciales",
+  "project.setup.papers": "Documentos habituales",
+  "project.setup.kinds": "Tipos de fecha",
+  "project.setup.papers.count": "{count, plural, one {1 espacio} other {# espacios}}, {filled} con documento",
+  "project.setup.never_changes": "Cambiar este trámite nunca cambia la plantilla de la que salió.",
+  "project.setup.status": "Estado del trámite",
+  "project.setup.status.note": "Póngalo en pausa o ciérrelo desde aquí. No se pierde nada en ningún caso.",
+  "project.setup.nothing_yet": "Ninguna todavía",
+  "section.back.project": "Volver al trámite"
 }
