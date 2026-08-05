@@ -92,7 +92,15 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **`startProject` applies all five in one transaction**, and it applied only the steps before, so a project started from a template had no road, no chips and no papers.
 - **A person's own template carries the whole shape now too.** `saveProjectAsTemplate` wrote only the steps, so somebody who shaped a project over months and saved it got the checklist back and nothing else. Bodies written by older builds have none of the new keys and fall back to empty, which is what those templates actually held.
 
-**#262 is done apart from device verification.** Nothing is drawn yet: no screen renders a road, a card, or a lead slot, so the surfaces cannot be looked at. **That is the next work and it is #263 onward**, not a remainder of #262.
+**#262 is done apart from device verification.** **That is the next work and it is #263 onward**, not a remainder of #262.
+
+### 2.2 The five Projects components exist and have not been seen
+
+**Built and compiling**, #263 through #268: `RoadStrip`, `StandingCard`, `DateRow`, `LatestWordCard`, `StepRow`, `ReferenceLine`. Each carries its when-to-use and when-not-to-use, per section 19.
+
+**None of them is on a screen, so none has been looked at on the phone and no issue is closed.** The next step is the project home screen, which uses all six at once, and the components are verified there rather than in a gallery.
+
+**One thing found while building them.** The grid draws several small labels in the faintest tone it has, and `ink3` is 2.37:1, which D92 makes non-text. **Those are `ink2` in the app.** A stage the project has not reached still has to be legible: it is where the thing is going.
 
 **353 instrumented tests pass**, up from 349.
 

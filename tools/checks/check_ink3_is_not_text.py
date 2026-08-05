@@ -32,16 +32,41 @@ SOURCE = ROOT / "android/app/src/main/kotlin"
 # the defect. Everything else that takes an ink3 is drawing a shape.
 TEXT_COMPOSABLES = ("Text(", "BasicText(", "AnnotatedString(")
 
-# How far past the opening call to look for the color argument. A Text( call in
-# this codebase is never longer than this, and scanning further would start
-# picking up the next sibling composable.
-WINDOW = 900
+# How far past the opening call to look for the color argument.
+#
+# **Measured against code with the comments already blanked**, so it is a
+# bound on a call rather than on a call plus whatever was written about it.
+# The largest Text call in this codebase is well under this, and scanning
+# further would start picking up the next sibling composable.
+WINDOW = 1200
+
+
+LINE_COMMENT = re.compile(r"//[^\n]*")
+BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
+
+
+def code_only(source: str) -> str:
+    """The file with every comment blanked, character for character.
+
+    **Blanked rather than removed**, so every offset still points where it
+    did and a failure names the real line.
+
+    This runs over the whole file before any scanning, not over one call
+    afterward. Doing it per call is not enough: the window below is a fixed
+    number of characters, and a Text call carrying a long comment fills that
+    window with prose before reaching its own color argument, so the check
+    passes on a call that is genuinely wrong. **That is exactly what
+    happened**, and it passed silently, which is the worst way for a checker
+    to be wrong.
+    """
+    source = BLOCK_COMMENT.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), source)
+    return LINE_COMMENT.sub(lambda m: " " * len(m.group(0)), source)
 
 
 def offenders() -> list[str]:
     found: list[str] = []
     for path in sorted(SOURCE.rglob("*.kt")):
-        source = path.read_text(encoding="utf-8")
+        source = code_only(path.read_text(encoding="utf-8"))
         for call in TEXT_COMPOSABLES:
             for match in re.finditer(re.escape(call), source):
                 window = source[match.start(): match.start() + WINDOW]
@@ -57,7 +82,20 @@ def offenders() -> list[str]:
                             end = index
                             break
                 body = window[:end]
-                if re.search(r"\bcolor\s*=\s*[A-Za-z.]*\bink3\b", body):
+                # **Anywhere in the call, not only as a direct assignment.**
+                # The first version matched `color = colors.ink3` and missed
+                # `color = when { ... else -> colors.ink3 }`, which is how a
+                # label that changes with state is written and therefore the
+                # most likely place for this defect. RoadStrip shipped that
+                # exact shape past this check on 2026-08-05.
+                #
+                # **Comments are stripped first**, and that is not optional:
+                # the first widened version failed on the comment written to
+                # explain why ink3 was not being used there. That is the #216
+                # shape, in a checker widened in the same hour to fix a
+                # different instance of it, and it is the reason this file
+                # now matches code rather than text.
+                if re.search(r"\bink3\b", body):
                     line = source[: match.start()].count("\n") + 1
                     rel = path.relative_to(ROOT)
                     found.append(f"  {rel}:{line}: {call.rstrip('(')} drawn in ink3")
