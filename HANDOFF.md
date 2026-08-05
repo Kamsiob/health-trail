@@ -16,7 +16,8 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`).
 - **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
 - **356 instrumented tests pass**, last full run 2026-08-05 after Today's card field landed.
-- The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
+- **The phone was unplugged on 2026-08-05 at the owner's request, at a clean point.** It was left installed, with the month six fixture restored through the app's own importer, font scale 1.0, night mode on, animation scale unset, no per-app locale, and TalkBack off. Every one of those was checked against the value it had at the start of the run, not assumed. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
+- **`connectedAndroidTest` uninstalls the app every time it runs**, and that bit three times in this run: a seed against a phone with no app fails with one word, and the next thing you look at is the launcher. Reinstall and reseed after every suite.
 
 **Take these in this order.**
 
