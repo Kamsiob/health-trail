@@ -820,5 +820,12 @@
   "project.standing.what": "What is happening there?",
   "project.standing.what.hint": "Reviewing it, waiting on the bank statement",
   "project.standing.save": "Write it down",
-  "project.standing.lead": "Since when is optional. The date is today unless you change it."
+  "project.standing.lead": "Since when is optional. The date is today unless you change it.",
+  "project.date.add": "Write down a date",
+  "project.date.kind": "What kind of date?",
+  "project.date.kind.hint": "Filing deadline, hearing, decision expected",
+  "project.date.source": "Where did it come from?",
+  "project.date.source.hint": "The letter of March 5, the clerk by phone",
+  "project.date.lead": "Writing down where the date came from is what makes it usable a year from now.",
+  "project.date.save": "Write it down"
 }

@@ -820,5 +820,12 @@
   "project.standing.what": "那边在做什么？",
   "project.standing.what.hint": "正在审核，在等银行对账单",
   "project.standing.save": "记下来",
-  "project.standing.lead": "起始时间可以不填。除非你修改，日期就是今天。"
+  "project.standing.lead": "起始时间可以不填。除非你修改，日期就是今天。",
+  "project.date.add": "记下一个日期",
+  "project.date.kind": "什么日期？",
+  "project.date.kind.hint": "申请截止日、听证会、预计决定",
+  "project.date.source": "它来自哪里？",
+  "project.date.source.hint": "3月5日的信、办事员电话告知",
+  "project.date.lead": "记下日期的来源，才能让它在一年后依然有用。",
+  "project.date.save": "记下来"
 }

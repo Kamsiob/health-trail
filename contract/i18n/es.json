@@ -820,5 +820,12 @@
   "project.standing.what": "¿Qué está pasando ahí?",
   "project.standing.what.hint": "Revisándolo, esperando el extracto del banco",
   "project.standing.save": "Anotarlo",
-  "project.standing.lead": "Desde cuándo es opcional. La fecha es hoy salvo que la cambie."
+  "project.standing.lead": "Desde cuándo es opcional. La fecha es hoy salvo que la cambie.",
+  "project.date.add": "Anotar una fecha",
+  "project.date.kind": "¿Qué tipo de fecha?",
+  "project.date.kind.hint": "Fecha límite, audiencia, decisión esperada",
+  "project.date.source": "¿De dónde salió?",
+  "project.date.source.hint": "La carta del 5 de marzo, el empleado por teléfono",
+  "project.date.lead": "Anotar de dónde salió la fecha es lo que la hace útil dentro de un año.",
+  "project.date.save": "Anotarla"
 }

@@ -118,6 +118,12 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **Partial saves.** Somebody who knows only that it is with the county can write that and nothing else.
 - Proved on the phone: saved, and the card's date became today.
 
+**A project date can be written down now**, with where it came from on the same sheet. `docs/screenshots/project-date-sheet-light.png`. The kind is chips from the project's own date kinds and free text besides; the date carries whatever precision the person gave it; the source may wait, because somebody who has a deadline but has not written down which letter it came off should not lose the deadline over it.
+
+**The action is offered whether or not there is already a date.** It appeared only on the empty state at first, and a project with a filing deadline still gets a hearing date: an action that shows only on an empty screen is one nobody finds twice.
+
+**D113 was seen working end to end.** Writing an August date onto a project whose only date was in October moved the card to the August one, because the screen leads with the soonest that has not passed and nothing had to be told which date mattered.
+
 **The review this owes under rule 12 is #304**, and it lists what was deliberately left out and the three things I am unsure about.
 
 **All three shapes are built and all three have been seen**, #278, #279 and #280's home screens. **The shape is only the order of the same components**, which is 20.3's whole claim, so `Repository.Project` carries `lead` and the screen orders itself from it. The long road opens with where it stands, the closing window with the countdown at `monoL`, the busy stretch with the steps cluster already open above the answers. `ProjectHomeScreenTest` asserts the vertical order for each, because every shape shows the same four things and a wrong order still looks like a finished screen. Screenshots: `project-home-*`, `project-window-dark`, `project-busy-dark`.

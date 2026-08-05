@@ -97,6 +97,7 @@ import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
@@ -275,6 +276,11 @@ fun NotebookShell(
         mutableStateOf<List<Repository.ProjectStanding>>(emptyList())
     }
     var updatingStanding by remember { mutableStateOf<Repository.Project?>(null) }
+    var addingDateTo by remember { mutableStateOf<Repository.Project?>(null) }
+    var savingDate by remember {
+        mutableStateOf<Quadruple<String, String, Edtf.Date, String>?>(null)
+    }
+    var projectDateKinds by remember { mutableStateOf<List<String>>(emptyList()) }
     var savingStanding by remember {
         mutableStateOf<Triple<String, String, String>?>(null)
     }
@@ -609,6 +615,8 @@ fun NotebookShell(
             projectNextDate = openProject?.let { repository.leadingProjectDate(it.id) }
             projectLatestWord = openProject?.let { repository.latestWordFor(it.id) }
             projectPapers = openProject?.let { repository.projectPapers(it.id) }.orEmpty()
+            projectDateKinds =
+                openProject?.let { repository.projectDateKinds(it.id) }.orEmpty()
             instructionCatalog = TemplateCatalog.instructions(context)
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
@@ -1381,6 +1389,30 @@ fun NotebookShell(
             AboutScreen(onBack = { aboutOpen = false })
         }
 
+        addingDateTo?.let { project ->
+            ProjectDateSheet(
+                kinds = projectDateKinds,
+                onSave = { kind, due, source ->
+                    savingDate = Quadruple(project.id, kind, due, source)
+                    addingDateTo = null
+                },
+                onDismiss = { addingDateTo = null },
+            )
+        }
+
+        savingDate?.let { (projectId, kind, due, source) ->
+            LaunchedEffect(projectId, kind, due, source) {
+                repository.addProjectDate(
+                    projectId = projectId,
+                    kind = kind,
+                    due = due,
+                    sourceNote = source.ifBlank { null },
+                )
+                savingDate = null
+                revision += 1
+            }
+        }
+
         updatingStanding?.let { project ->
             StandingSheet(
                 // The project's own people, which is what the grid means by
@@ -1505,6 +1537,7 @@ fun NotebookShell(
                 papers = projectPapers,
                 onToggleStep = { togglingStep = it },
                 onUpdateStanding = { updatingStanding = currentProject },
+                onAddDate = { addingDateTo = currentProject },
                 onBack = { openProject = null },
             )
         }
@@ -3459,3 +3492,11 @@ private fun cardOffers(
 
     return plain + perMeasure + perProject
 }
+
+/** Four things travelling together, which Kotlin has no name for. */
+private data class Quadruple<A, B, C, D>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+)

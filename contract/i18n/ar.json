@@ -820,5 +820,12 @@
   "project.standing.what": "ماذا يحدث هناك؟",
   "project.standing.what.hint": "قيد المراجعة، بانتظار كشف الحساب",
   "project.standing.save": "اكتبها",
-  "project.standing.lead": "منذ متى اختياري. التاريخ هو اليوم ما لم تغيّره."
+  "project.standing.lead": "منذ متى اختياري. التاريخ هو اليوم ما لم تغيّره.",
+  "project.date.add": "اكتب تاريخاً",
+  "project.date.kind": "أي نوع من التواريخ؟",
+  "project.date.kind.hint": "موعد التقديم، جلسة، القرار المتوقع",
+  "project.date.source": "من أين جاء؟",
+  "project.date.source.hint": "خطاب 5 مارس، الموظف عبر الهاتف",
+  "project.date.lead": "كتابة مصدر التاريخ هو ما يجعله مفيداً بعد عام.",
+  "project.date.save": "اكتبه"
 }

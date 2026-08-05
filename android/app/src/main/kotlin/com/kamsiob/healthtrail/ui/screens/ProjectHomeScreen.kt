@@ -37,6 +37,7 @@ object ProjectHomeTags {
     const val LATEST = "project-home-latest"
     const val STEPS = "project-home-steps"
     const val UPDATE_STANDING = "project-home-update-standing"
+    const val ADD_DATE = "project-home-add-date"
 }
 
 /**
@@ -83,6 +84,8 @@ fun ProjectHomeScreen(
     onOpenEntry: () -> Unit = {},
     /** Opens the sheet that records where it stands. 20.5 screen 8. */
     onUpdateStanding: () -> Unit = {},
+    /** Opens the sheet that writes down a date, with where it came from. */
+    onAddDate: () -> Unit = {},
     steps: List<Repository.ProjectStep> = emptyList(),
     papers: List<Repository.ProjectPaper> = emptyList(),
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
@@ -172,6 +175,7 @@ fun ProjectHomeScreen(
         }
 
         val dateBlock: @Composable () -> Unit = {
+            Column {
             if (nextDate != null && countdown != null && dateKind != null) {
                 DateRow(
                     countdown = countdown,
@@ -190,6 +194,9 @@ fun ProjectHomeScreen(
                     modifier = Modifier.testTag(ProjectHomeTags.DATE),
                 )
             } else {
+                // **The none-yet rung names its one action**, 21.4. A project
+                // with no date written down is an ordinary state, and the card
+                // says what would go here rather than only that nothing does.
                 Text(
                     text = strings["project.date.none"],
                     style = type.bodyS,
@@ -198,6 +205,16 @@ fun ProjectHomeScreen(
                         .testTag(ProjectHomeTags.DATE)
                         .padding(horizontal = Space.xs, vertical = Space.s),
                 )
+            }
+            // **Always offered, not only when there are none.** A project with
+            // a filing deadline still gets a hearing date, and an action that
+            // appears only on an empty screen is an action nobody finds twice.
+            Spacer(Modifier.height(Space.s))
+            QuietButton(
+                label = strings["project.date.add"],
+                onClick = onAddDate,
+                modifier = Modifier.testTag(ProjectHomeTags.ADD_DATE),
+            )
             }
         }
 
