@@ -769,7 +769,7 @@ What carries families through is a complete record: every call with a name, a da
 |---|---|---|
 | **The long road** | Where it stands | Benefits and waiver applications, guardianship, a placement waitlist. Months between events. The trail folds by stage and the quiet stretches are drawn honestly: "23 days pass" |
 | **The closing window** | The next date | Appeals, disputes, anything with a filing deadline. Under the countdown, what the file still needs before that date, each item there or **not yet** |
-| **The busy stretch** | The steps | Discharge planning, a move, getting the house ready. Two intense weeks of small parallel arrangements. Steps clustered by area with an arranged count, each able to carry who is handling it. The one date everything converges on sits above |
+| **The busy stretch** | The steps | Discharge planning, a move, getting the house ready. Two intense weeks of small parallel arrangements. Steps clustered by area, each area headed with how many steps are in it and each step able to carry who is handling it. The one date everything converges on sits above |
 
 **The shape is a default, never a cage.** It is one control on the project's setup screen and changes with no penalty.
 
@@ -793,7 +793,9 @@ What carries families through is a complete record: every call with a name, a da
 4. **Starting one, 3 of 3, the setup shown.** The template's five defaults previewed before anything exists. **Nothing is applied until Create.** This screen is the template system made visible.
 5. **The long road**, led by where it stands.
 6. **The closing window**, led by the next date, with what the file still needs beneath it.
-7. **The busy stretch**, led by the steps, clustered with arranged counts and handler tags.
+7. **The busy stretch**, led by the steps, clustered by area with a count of what is in each, and handler tags.
+
+   The grid draws each cluster's count as `1 OF 3`, one done of three. **This draws how many steps are in the area instead**, because rule 13 rules out a completion count on the person's own work and the projects list already lost the same phrasing for the same reason. The difference is recorded in `DECISIONS.md` D116 and is the owner's to settle either way.
 8. **Updating where it stands.** A one-stage sheet. Whose hands is chips drawn from the project's people; the date defaults to today. **Logging a call offers this automatically when things changed hands.**
 9. **Logging a call, from inside the project.** Pre-answered with the project as a chosen chip. **The name and reference number are first-class**, because they are what makes the record usable later.
 10. **One call, the whole record.** Every connection as a door, one outlined Edit.
@@ -920,7 +922,7 @@ Every card declares **one query** over the same single database. Queries run whe
 | Ask next time | Teal | Small, Wide | What is saved to ask, and for whom? |
 | A project: where it stands | Gold | Wide | Whose hands, since when? |
 | A project: the next date | Gold | Small | How many days to the date that matters? |
-| A project: steps | Gold | Wide | How far along are the clusters? Counts only |
+| A project: steps | Gold | Wide | What is in each cluster? Counts only |
 | Incidents | Alert | Small | How many are open? **The one card where alert appears**, because that is alert's locked meaning |
 | Money | Manila | Small, Wide | What is unresolved? Amounts only at wide, right-aligned |
 | Unfiled | Gold | Small | Is anything waiting to be filed? |

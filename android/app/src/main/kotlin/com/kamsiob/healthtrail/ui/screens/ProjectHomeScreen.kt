@@ -21,6 +21,7 @@ import com.kamsiob.healthtrail.ui.components.DateRow
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.FoldRowText
+import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.LatestWordCard
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
@@ -309,7 +310,61 @@ fun ProjectHomeScreen(
                 )
                 if (stepsOpen) {
                     Spacer(Modifier.height(Space.cardGap))
-                    steps.forEach { step ->
+                    // **Clustered by area on the busy stretch**, 20.3. Two
+                    // intense weeks of small parallel arrangements is not one
+                    // list: the house, the ride and the equipment are different
+                    // errands with different people, and a flat list of
+                    // nineteen makes somebody re-sort them in their head every
+                    // time they open it.
+                    //
+                    // **Steps with no area keep their own group at the end**,
+                    // because a step nobody has filed is still a step and
+                    // hiding it until it is tidy would be the app asking to be
+                    // organized before it will help.
+                    val clustered = steps.groupBy { it.cluster?.takeIf { c -> c.isNotBlank() } }
+                    val named = clustered.filterKeys { it != null }
+                    val loose = clustered[null].orEmpty()
+
+                    for ((position, entry) in named.entries.withIndex()) {
+                        val (area, inArea) = entry
+                        // **The room goes above the label, not below it.** A
+                        // heading belongs to the rows under it, so the gap that
+                        // separates one area from the next sits before the
+                        // heading. Trailing it instead left every label tight to
+                        // the block it named and loose from its own rows.
+                        if (position > 0) Spacer(Modifier.height(Space.m))
+                        GroupHeaderText(
+                            // **Raw, because the header isolates it itself.**
+                            // Isolating here too nests the marks, which is the
+                            // same defect three other screens had.
+                            label = area.orEmpty(),
+                            // **A count of what is in the group and nothing
+                            // else.** The grid draws "1 OF 3" here; rule 13
+                            // rules out a completion count on the person's own
+                            // work, and that conflict is the owner's to settle.
+                            // Until then this says what every other count in
+                            // the app says. DECISIONS.md D116.
+                            count = inArea.size.toString(),
+                            countDescription = strings(
+                                "projects.step_count",
+                                "count" to inArea.size,
+                            ),
+                        )
+                        Spacer(Modifier.height(Space.xs))
+                        inArea.forEach { step ->
+                            StepRow(
+                                text = step.text,
+                                done = step.isDone,
+                                handler = step.handlerLabel,
+                                onToggle = { onToggleStep(step) },
+                                description = stepDescription(step, strings),
+                            )
+                        }
+                    }
+                    if (named.isNotEmpty() && loose.isNotEmpty()) {
+                        Spacer(Modifier.height(Space.m))
+                    }
+                    loose.forEach { step ->
                         StepRow(
                             text = step.text,
                             done = step.isDone,

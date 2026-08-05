@@ -1061,7 +1061,13 @@ class Generator:
             #
             # A stalled project is deliberately part way: that is what stalled
             # means, and it is the state a family actually sits in.
-            total = self.rng.randrange(2, 7)
+            # **The busy stretch is actually busy.** Two intense weeks of small
+            # parallel arrangements is what the shape is for, and a fixture that
+            # gave it three steps meant the clustering in 20.3 was never seen
+            # doing anything: three areas holding one row each. The other two
+            # shapes keep the short list, because their weight is the standing
+            # and the date rather than the steps.
+            total = self.rng.randrange(7, 11) if lead == "steps" else self.rng.randrange(2, 7)
             done_through = {
                 "done": total,
                 "active": self.rng.randrange(1, max(2, total)),
@@ -1089,7 +1095,7 @@ class Generator:
                 # them, which is also what the screens expect: null is the
                 # normal state on the other two.
                 if lead == "steps":
-                    values["cluster"] = STEP_CLUSTERS[step % len(STEP_CLUSTERS)]
+                    values["cluster"] = STEP_AREAS[step % len(STEP_AREAS)]
                     if step % 3 == 0:
                         values["handler_label"] = HANDLERS[
                             (index + step) % len(HANDLERS)
@@ -1622,8 +1628,30 @@ OFFICE_WORDS = [
     ],
 ]
 
-# The areas a busy stretch clusters its steps under, 20.3.
-STEP_CLUSTERS = ["The house", "The ride", "Equipment", "The paperwork"]
+# The area each step in PROJECT_STEPS belongs to, 20.3, indexed alongside it.
+#
+# **Parallel to the steps and never round robin.** This was four discharge areas
+# handed out by position, which put "The house", "The ride" and "Equipment" over
+# three steps of a power of attorney, each cluster holding exactly one row. It
+# read as nonsense on the phone and it was: the areas belonged to a hospital
+# discharge and the steps belonged to an office process. The same defect the
+# handler list already had, fixed the same way.
+#
+# Indexed with the step, the clusters come out uneven and real, which is what a
+# busy stretch actually looks like: several calls, a couple of pieces of paper,
+# and one thing somebody else is waiting on.
+STEP_AREAS = [
+    "The phone calls",   # Call and ask what form it is
+    "The paperwork",     # Get the form
+    "What they need",    # Find the last three bank statements
+    "The paperwork",     # Send it certified
+    "The phone calls",   # Follow up after two weeks
+    "The phone calls",   # Ask for it in writing
+    "The paperwork",     # Check what the deadline actually is
+    "What they need",    # Get a copy of the last letter they sent
+    "The phone calls",   # Ask who is handling it now
+    "The phone calls",   # Confirm they received it
+]
 
 # Who said they would handle a step. **A label and never an identity**, D108:
 # no account, no address, and nothing that leaves the device.
@@ -1668,7 +1696,15 @@ PROJECT_STEPS = [
     "Send it certified",
     "Follow up after two weeks",
     "Ask for it in writing",
+    "Check what the deadline actually is",
+    "Get a copy of the last letter they sent",
+    "Ask who is handling it now",
+    "Confirm they received it",
 ]
+
+# The two lists are read by the same index, so a step added without its area
+# would silently take somebody else's.
+assert len(STEP_AREAS) == len(PROJECT_STEPS), "every step needs its area"
 
 DOCUMENTS = [
     "Discharge summary",

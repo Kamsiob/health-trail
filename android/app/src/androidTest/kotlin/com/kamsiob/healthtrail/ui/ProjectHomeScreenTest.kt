@@ -4,9 +4,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
@@ -84,7 +86,7 @@ class ProjectHomeScreenTest {
         Repository.ProjectStep("x2", "Gather the statements", null, null, "The paperwork", null),
     )
 
-    private fun show(lead: String) {
+    private fun show(lead: String, steps: List<Repository.ProjectStep> = this.steps) {
         compose.setContent {
             CompositionLocalProvider(
                 LocalStrings provides Strings.load(context, Locale.ENGLISH),
@@ -111,6 +113,10 @@ class ProjectHomeScreenTest {
 
     private fun topOf(tag: String): Float =
         compose.onNodeWithTag(tag).fetchSemanticsNode().positionInRoot.y
+
+    /** The same, for a heading the catalog cannot name: it is composed from data. */
+    private fun topOfText(text: String): Float =
+        compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
 
     /**
      * Every shape shows all three answers.
@@ -163,5 +169,68 @@ class ProjectHomeScreenTest {
             "where it stands came before the steps on the busy stretch",
             topOf(ProjectHomeTags.STEPS) < topOf(ProjectHomeTags.STANDING),
         )
+    }
+
+    /**
+     * The busy stretch groups its steps by area, with a count of what is there.
+     *
+     * `DESIGN.md` 20.3. **The count is how many steps are in the area and never
+     * how many are done**, rule 13: this screen does not measure the person's
+     * own work, and the grid's "1 OF 3" is the one thing in the drawing that
+     * this does not draw. `DECISIONS.md` D116.
+     *
+     * **A step nobody has filed keeps its place.** It runs after the named
+     * areas without a heading of its own, because hiding it until it was tidy
+     * would be the app asking to be organized before it would help.
+     */
+    @Test
+    fun theBusyStretchGroupsItsStepsByArea() {
+        show(
+            "steps",
+            listOf(
+                Repository.ProjectStep("g1", "Call them", null, null, "The phone calls", null),
+                Repository.ProjectStep("g2", "Get the form", null, null, "The paperwork", null),
+                Repository.ProjectStep("g3", "Send it certified", null, null, "The paperwork", null),
+                Repository.ProjectStep("g4", "Ask in writing", null, null, null, null),
+            ),
+        )
+
+        // Composed the way the header composes it, isolate marks and all. A
+        // test that compared the bare words passed for months while the screen
+        // rendered something else, which is how SituationPickerTest broke.
+        val calls = Bidi.join("THE PHONE CALLS", "1")
+        val paperwork = Bidi.join("THE PAPERWORK", "2")
+        compose.onNodeWithText(calls).assertIsDisplayed()
+        compose.onNodeWithText(paperwork).assertIsDisplayed()
+
+        assertTrue(
+            "the areas ran in the order the steps came in",
+            topOfText(calls) < topOfText(paperwork),
+        )
+    }
+
+    /**
+     * A project whose steps have no areas gets no headings.
+     *
+     * A heading over the whole list says nothing that the list does not already
+     * say, and inventing one would be decoration standing in for hierarchy,
+     * rule 15.
+     */
+    @Test
+    fun stepsWithNoAreaGetNoHeadings() {
+        show(
+            "steps",
+            listOf(
+                Repository.ProjectStep("n1", "Call them", null, null, null, null),
+                Repository.ProjectStep("n2", "Get the form", null, null, "", null),
+            ),
+        )
+
+        compose.onNodeWithTag(ProjectHomeTags.STEPS).assertIsDisplayed()
+        // A blank area is not an area. Were the guard dropped, the empty string
+        // would become a group of its own and draw a heading with no words in
+        // it, which is the placeholder rule 11 rules out.
+        compose.onNodeWithText(Bidi.join("", "1")).assertDoesNotExist()
+        compose.onNodeWithText(Bidi.join("", "2")).assertDoesNotExist()
     }
 }

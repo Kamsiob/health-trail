@@ -164,7 +164,13 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **The first three projects cover all three shapes on purpose.** `PROJECT_STATES` puts the fourth and fifth in done and abandoned, which fold away, so a shape assigned to one of those is a shape nobody looking at the fixture will ever open.
 
-**356 instrumented tests pass**, up from 353.
+**The busy stretch clusters its steps by area**, which closes #280. Each area is a mono eyebrow with a count of how many steps are in it and a hairline out to the end edge, the same `GroupHeaderText` the trail heads its months with, and a step nobody has filed keeps its place in a run after the named areas rather than being hidden until it is tidy.
+
+**The count says how many steps are there, not how many are done.** The grid draws `1 OF 3`, which is a completion count, and rule 13 rules that out in its own words. The screen shows the plain count instead and **`DECISIONS.md` D116 puts the difference in front of the owner**, because the grid supersedes `DESIGN.md` for this surface and rule 13 is a hard rule that the adoption did not name. One line in `ProjectHomeScreen` changes it if he meant the drawing literally.
+
+**Two fixture defects came out of building it, both the same shape as one already fixed.** Four hospital discharge areas were handed out round robin to any steps led project, so "The house", "The ride" and "Equipment" sat over three steps of a power of attorney with one row under each. Areas are indexed alongside the steps now. And a steps led project generated two to six steps, so **the busy stretch was never busy and the clustering had nothing to cluster**: it generates seven to ten. Both were invisible until the screen was opened.
+
+**358 instrumented tests pass**, up from 356. Both new assertions were proved by breaking the screen on purpose and putting it back from a scratchpad copy, per section 7. Seen on the phone at both themes, at font scale 2.0, and in Arabic: `project-clusters-light`, `project-clusters-dark`, `project-clusters-2x-dark`, `project-clusters-rtl-dark`.
 
 ### 2.4 The projects list carries the mini road
 
@@ -337,6 +343,8 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 **A defect can live entirely inside somebody else's app.** The calendar hand-off put a November 27 appointment on the 26th, and the screen said November 27 the whole time. It cost three attempts and none of the causes was time zones.
 
 **A probe that edits a real file has to be restored by copy, never by git.** Proving a checker catches what it claims means breaking something on purpose and putting it back. On 2026-08-05 that was put back with `git checkout -- templates/data/projects.json`, which is a destructive command rule 6 bans by name, and it discarded an hour of uncommitted work on the same file rather than the probe. **Copy the file into the scratchpad first and copy it back**, or commit before probing. Nothing was lost permanently because the change was scripted and was regenerated, which was luck rather than a safeguard. **This is what B5 exists to prevent and it is the first time the missing guard has cost anything.**
+
+**`installDebug` clears this app's data on this phone.** Twice in a row an install was followed by the app opening at "Before you start" with an empty notebook. **Every device check is install, then `tools/seed.sh`, then navigate**, and a screenshot taken straight after an install is a screenshot of onboarding.
 
 **Distrust a negative result from a tool that cannot say what it did not examine.** This has now happened five times in one night and twice since. A "not found" from `walk.sh` usually means the thing is below the fold or the label differs in that locale.
 

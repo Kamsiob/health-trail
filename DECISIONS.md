@@ -2147,6 +2147,16 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **A hand is applied only when there is no layout.** A person whose care setting changes later keeps the desk they arranged. 21.8's promise that the app never rearranges Today is not suspended because somebody moved to a different facility.
 
+### D116. The area count on a project's steps says how many are there, not how many are done, and the difference is the owner's to settle
+
+**2026-08-05, building #280.** The Projects grid draws each cluster of steps with a heading and a count in the form `1 OF 3`. That is a completion count: three steps in this area, one of them finished. **Rule 13 rules out exactly that**, in its own words, no progress meters on the person's own diligence, and the same phrasing was already removed once from the projects list, where every row read "0 of N steps done" and a column of zeroes read as a scorecard.
+
+**The two cannot both be honored, so this took the narrower one.** The heading says how many steps are in the area and nothing about how many are behind. "THE PAPERWORK · 3" is what every other count in the app says: the number of things that are there. Somebody scanning still learns what they came for, which area holds the most work, without the screen telling them how they are doing at it.
+
+**This is recorded rather than settled.** The owner adopted the grid as superseding `DESIGN.md` and `MASTER_SPEC.md` for this surface, and the grid draws `1 OF 3`. Rule 13 is a hard rule in `CLAUDE.md` and the adoption did not name it. **Overriding a hard rule is not the agent's call and neither is overriding the drawing**, so the screen ships on the reading that keeps both defensible: it shows a count, and the count is not a score. If the owner meant the completion count literally, `GroupHeaderText` already takes the string and one line in `ProjectHomeScreen` changes it.
+
+**Two things fell out of building it.** The fixture handed four hospital discharge areas round robin to whatever project was steps led, which put "The house", "The ride" and "Equipment" over three steps of a power of attorney, one row under each heading. Areas are now indexed alongside the steps themselves, and the steps led shape generates seven to ten steps rather than two to six, because a busy stretch with three steps never exercised the clustering at all. This is the same defect the handler list had and it was fixed the same way.
+
 ---
 
 ## BLOCKED

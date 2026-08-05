@@ -11,7 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -57,16 +60,45 @@ fun GroupHeader(labelKey: String, modifier: Modifier = Modifier) {
  * would drift the moment either was touched.
  */
 @Composable
-fun GroupHeaderText(label: String, modifier: Modifier = Modifier) {
+fun GroupHeaderText(
+    label: String,
+    modifier: Modifier = Modifier,
+    /**
+     * How many rows are under this heading.
+     *
+     * **A count of what is in the group and never a completion count.** Rule 13
+     * rules out measuring the person's own work, so this says how many things
+     * are here in the same words every other count in the app uses.
+     */
+    count: String? = null,
+    /**
+     * The count as a sentence, for the reader. "3" beside a word announces as
+     * "Equipment 3", which is not what it means. Section 9: what is read aloud
+     * says the same thing the screen says.
+     */
+    countDescription: String? = null,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
+    // **The count joins the label rather than sitting beside it.** The label
+    // carries no layout weight so a long one wraps, and a separate count Text
+    // after it would be the thing squeezed off the end edge in the longest
+    // language. Joined, it wraps with the words it belongs to.
+    val shown = Bidi.join(label.uppercase(strings.locale), count)
+
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                if (countDescription != null) {
+                    contentDescription = Bidi.join(label, countDescription)
+                }
+            },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = label.uppercase(strings.locale),
+            text = shown,
             style = HealthTrail.type.mono,
             color = colors.ink2,
         )
