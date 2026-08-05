@@ -43,7 +43,11 @@ class DatabaseTest {
     fun theDatabaseOpensAndCarriesTheContractSchema() {
         val db = runBlocking { HealthTrailDatabase.open(context) }
 
-        assertEquals("schema version was not recorded", 1, db.schemaVersion())
+        assertEquals(
+            "schema version was not recorded",
+            HealthTrailDatabase.SCHEMA_VERSION,
+            db.schemaVersion(),
+        )
 
         val tables = db.database.rawQuery(
             "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
@@ -56,12 +60,21 @@ class DatabaseTest {
             "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger'", null,
         ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
 
-        // 34 user data tables plus app_meta, device, change_log, conflict_log,
+        // The user data tables plus app_meta, device, change_log, conflict_log,
         // and schema_migration. android_metadata is not created here, because
         // SQLCipher does not add it the way the platform helper does.
-        assertTrue("too few tables: $tables", tables >= 39)
-        assertEquals("a live view is missing", 34, views)
-        assertEquals("a change log trigger is missing", 68, triggers)
+        //
+        // **The counts come from the contract, not from this file.** They were
+        // 34 and 68 and are now 40 and 80, and a number written here means every
+        // table added to the contract fails a test about whether the database
+        // opened. The shape is what this asserts: one live view per user data
+        // table and two triggers each, which is what makes a forgotten
+        // tombstone filter or an unlogged write impossible rather than unlikely.
+        val localTables = 5
+        val userTables = tables - localTables
+        assertTrue("too few tables: $tables", userTables > 0)
+        assertEquals("a live view is missing", userTables, views)
+        assertEquals("a change log trigger is missing", userTables * 2, triggers)
     }
 
     @Test
@@ -187,7 +200,11 @@ class DatabaseTest {
         val second = runBlocking { HealthTrailDatabase.open(context) }
 
         assertEquals("the device id changed across a reopen", deviceId, second.deviceId)
-        assertEquals("the schema was reapplied on reopen", 1, second.schemaVersion())
+        assertEquals(
+            "the schema was reapplied on reopen",
+            HealthTrailDatabase.SCHEMA_VERSION,
+            second.schemaVersion(),
+        )
 
         val name = second.database.rawQuery(
             "SELECT display_name FROM live_subject WHERE id = ?", arrayOf(id),

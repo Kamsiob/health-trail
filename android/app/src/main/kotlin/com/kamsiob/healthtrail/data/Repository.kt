@@ -605,6 +605,58 @@ class Repository private constructor(
         }
 
     /**
+     * One column of one row, read past the live view.
+     *
+     * **For tests only.** It exists for assertions the app itself must never be
+     * able to make: that a removed card is a tombstone rather than a deleted
+     * row, and that a column holds what was written rather than what a data
+     * class chose to expose.
+     */
+    suspend fun columnForTest(table: String, rowId: String, column: String): String? =
+        withContext(Dispatchers.IO) {
+            // allow-base-table: several callers assert on a tombstoned row,
+            // which a live view hides by definition.
+            db().database.rawQuery(
+                "SELECT $column FROM $table WHERE id = ?",
+                arrayOf(rowId),
+            ).use { if (it.moveToFirst() && !it.isNull(0)) it.getString(0) else null }
+        }
+
+    /**
+     * Leaves a Today layout with no lead at all.
+     *
+     * **For tests only, and it produces a state the app cannot.** Every write
+     * path keeps exactly one lead and the database refuses a second, so the only
+     * way to prove that the reader reports a broken layout rather than quietly
+     * promoting the first card is to break one on purpose.
+     *
+     * That distinction matters: a reader that repairs silently is a reader that
+     * hides the defect, and the repair itself would be the app deciding what
+     * belongs at the top of somebody's screen.
+     */
+    suspend fun clearEveryLeadForTest(subjectId: String) = withContext(Dispatchers.IO) {
+        db().database.execSQL(
+            "UPDATE today_card SET is_lead = 0 WHERE subject_id = ?",
+            arrayOf<Any?>(subjectId),
+        )
+    }
+
+    /**
+     * Tombstones a row without going through the screen that owns it.
+     *
+     * **For tests only.** It is how the source-closed rung of the states ladder
+     * is produced: a project goes away underneath a card that points at it, and
+     * the card has to be kept rather than dropped. 8.7.
+     */
+    suspend fun tombstoneForTest(table: String, rowId: String) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        db().database.execSQL(
+            "UPDATE $table SET deleted_at = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(now, now, rowId),
+        )
+    }
+
+    /**
      * How many entries the change log holds.
      *
      * For tests. The app never counts the log: what it will read is "everything
@@ -1474,7 +1526,24 @@ class Repository private constructor(
         val text: String,
         val completedEdtf: String?,
         val note: String?,
+        /**
+         * The area this step belongs to on the busy stretch, or null.
+         *
+         * `DESIGN.md` 20.3: steps clustered by area with an arranged count. Null
+         * is the normal state on the other two shapes.
+         */
+        val cluster: String? = null,
+        /**
+         * Who said they would handle it. **A label and never an identity**, D108.
+         */
+        val handlerLabel: String? = null,
     ) {
+        /**
+         * Done, which the busy stretch calls arranged.
+         *
+         * One truth with two names on two screens, rather than two columns that
+         * disagree by year two.
+         */
         val isDone: Boolean get() = !completedEdtf.isNullOrBlank()
     }
 
@@ -1518,7 +1587,8 @@ class Repository private constructor(
     suspend fun projectSteps(projectId: String): List<ProjectStep> =
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
-                "SELECT id, text, completed_edtf, note FROM live_project_step " +
+                "SELECT id, text, completed_edtf, note, cluster, handler_label " +
+                    "FROM live_project_step " +
                     "WHERE project_id = ? ORDER BY sort_index, created_at",
                 arrayOf(projectId),
             ).use { cursor ->
@@ -1530,6 +1600,8 @@ class Repository private constructor(
                                 text = cursor.getString(1),
                                 completedEdtf = cursor.getString(2),
                                 note = cursor.getString(3),
+                                cluster = cursor.getString(4),
+                                handlerLabel = cursor.getString(5),
                             ),
                         )
                     }
@@ -4160,6 +4232,720 @@ class Repository private constructor(
             "bill_id" to billId,
         ) + dateColumns("occurred", occurred),
     )
+
+    // -- the shape a person gave a project ----------------------------------
+    //
+    // contract/DATA-CONTRACT.md 8.7 and DESIGN.md 20. **Every project screen
+    // answers one of exactly three questions**, 20.1: where it stands, the next
+    // date, and the latest word. The first two are read from here. The third is
+    // the trail, which this layer already holds.
+    //
+    // **Nothing here advises, scores, or colors by urgency**, 20.7. A date is a
+    // number and where it came from. An elapsed count is a fact drawn from what
+    // was recorded, never a judgment about it.
+
+    /** One named stretch of a project's road. */
+    data class ProjectStage(
+        val id: String,
+        val name: String,
+        val sortIndex: Int,
+        /** When the project reached this stage, or null for one never reached. */
+        val enteredEdtf: String?,
+        val enteredStart: Long?,
+    ) {
+        val isReached: Boolean get() = enteredEdtf != null
+    }
+
+    /**
+     * Whose hands a project is in, since when, and what is happening there.
+     *
+     * **The elapsed count is not here**, deliberately. It is a rendering of
+     * `sinceStart` against today, and today changes while the screen is open. A
+     * number stored on a row is a number that goes stale in the database.
+     */
+    data class ProjectStanding(
+        val id: String,
+        val holderLabel: String,
+        val personId: String?,
+        val organizationId: String?,
+        val activity: String?,
+        val sinceEdtf: String?,
+        val sinceStart: Long?,
+        val entryId: String?,
+        val note: String?,
+    )
+
+    /** A date taken off a real paper or out of a real call, with its source. */
+    data class ProjectDate(
+        val id: String,
+        val kind: String,
+        val dueEdtf: String?,
+        val dueStart: Long?,
+        val sourceNote: String?,
+        val sourceDocumentId: String?,
+        val sourceEntryId: String?,
+    )
+
+    /** A paper the project needs. Empty means not yet, never missing. */
+    data class ProjectPaper(
+        val id: String,
+        val name: String,
+        val sortIndex: Int,
+        val direction: String?,
+        val documentId: String?,
+    ) {
+        val isFilled: Boolean get() = documentId != null
+    }
+
+    /** The stages of one project, in road order. */
+    suspend fun projectStages(projectId: String): List<ProjectStage> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, name, sort_index, entered_edtf, entered_start " +
+                    "FROM live_project_stage WHERE project_id = ? " +
+                    "ORDER BY sort_index, created_at",
+                arrayOf(projectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            ProjectStage(
+                                id = cursor.getString(0),
+                                name = cursor.getString(1),
+                                sortIndex = cursor.getInt(2),
+                                enteredEdtf = cursor.getString(3),
+                                enteredStart = if (cursor.isNull(4)) null else cursor.getLong(4),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /** Adds a stage to the end of the road. */
+    suspend fun addProjectStage(projectId: String, name: String): String =
+        withContext(Dispatchers.IO) {
+            val next = db().database.rawQuery(
+                "SELECT coalesce(MAX(sort_index), -1) + 1 FROM live_project_stage " +
+                    "WHERE project_id = ?",
+                arrayOf(projectId),
+            ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+            insertRow(
+                "project_stage",
+                mapOf("project_id" to projectId, "name" to name, "sort_index" to next),
+            )
+        }
+
+    /**
+     * Moves a project onto a stage, and records when it got there.
+     *
+     * **Both writes or neither.** The project's pointer and the stage's own
+     * arrival date are one fact stated twice, and a half-applied move is a road
+     * whose current stage was never reached.
+     *
+     * **A stage already reached keeps its original date.** Roads turn back:
+     * an application returns to In review after more was asked for. Overwriting
+     * the first arrival would erase that it had ever been there, and the trail
+     * carries the sequence.
+     */
+    suspend fun moveProjectToStage(projectId: String, stageId: String, reached: Edtf.Date) =
+        withContext(Dispatchers.IO) {
+            val database = db().database
+            database.beginTransaction()
+            try {
+                val now = System.currentTimeMillis()
+                val alreadyReached = database.rawQuery(
+                    "SELECT entered_edtf FROM live_project_stage WHERE id = ?",
+                    arrayOf(stageId),
+                ).use { it.moveToFirst() && !it.isNull(0) }
+
+                if (!alreadyReached) {
+                    val dates = dateColumns("entered", reached)
+                    database.execSQL(
+                        "UPDATE project_stage SET entered_edtf = ?, entered_zone = ?, " +
+                            "entered_start = ?, entered_end = ?, updated_at = ?, " +
+                            "rev = rev + 1 WHERE id = ?",
+                        arrayOf(
+                            dates["entered_edtf"], dates["entered_zone"],
+                            dates["entered_start"], dates["entered_end"], now, stageId,
+                        ),
+                    )
+                }
+                database.execSQL(
+                    "UPDATE project SET current_stage_id = ?, updated_at = ?, " +
+                        "rev = rev + 1 WHERE id = ?",
+                    arrayOf<Any?>(stageId, now, projectId),
+                )
+                database.setTransactionSuccessful()
+            } finally {
+                database.endTransaction()
+            }
+        }
+
+    /**
+     * Where the project stands now, or null when nobody has said yet.
+     *
+     * The most recent by the date it began, and by when it was written down
+     * where two share a date. **Null is a real answer** and the screen says so
+     * plainly rather than filling the space.
+     */
+    suspend fun projectStanding(projectId: String): ProjectStanding? =
+        withContext(Dispatchers.IO) {
+            projectStandingHistory(projectId).firstOrNull()
+        }
+
+    /** Every time the project changed hands, most recent first. */
+    suspend fun projectStandingHistory(projectId: String): List<ProjectStanding> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, holder_label, person_id, organization_id, activity, " +
+                    "since_edtf, since_start, entry_id, note " +
+                    "FROM live_project_standing WHERE project_id = ? " +
+                    "ORDER BY since_start DESC, created_at DESC",
+                arrayOf(projectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            ProjectStanding(
+                                id = cursor.getString(0),
+                                holderLabel = cursor.getString(1),
+                                personId = cursor.getString(2),
+                                organizationId = cursor.getString(3),
+                                activity = cursor.getString(4),
+                                sinceEdtf = cursor.getString(5),
+                                sinceStart = if (cursor.isNull(6)) null else cursor.getLong(6),
+                                entryId = cursor.getString(7),
+                                note = cursor.getString(8),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /**
+     * Records that the project changed hands.
+     *
+     * A new row rather than an edit of the last one, because where it stood
+     * three months ago is part of the record. `DESIGN.md` 20.5 screen 8: logging
+     * a call offers this automatically when things changed hands, which is why
+     * [entryId] is here.
+     */
+    suspend fun addProjectStanding(
+        projectId: String,
+        holderLabel: String,
+        since: Edtf.Date,
+        activity: String? = null,
+        personId: String? = null,
+        organizationId: String? = null,
+        entryId: String? = null,
+        note: String? = null,
+    ): String = insert(
+        "project_standing",
+        mapOf(
+            "project_id" to projectId,
+            "holder_label" to holderLabel,
+            "person_id" to personId,
+            "organization_id" to organizationId,
+            "activity" to activity?.ifBlank { null },
+            "entry_id" to entryId,
+            "note" to note?.ifBlank { null },
+        ) + dateColumns("since", since),
+    )
+
+    /** Every date this project holds, soonest first. */
+    suspend fun projectDates(projectId: String): List<ProjectDate> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, kind, due_edtf, due_start, source_note, " +
+                    "source_document_id, source_entry_id " +
+                    "FROM live_project_date WHERE project_id = ? " +
+                    "ORDER BY due_start, created_at",
+                arrayOf(projectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            ProjectDate(
+                                id = cursor.getString(0),
+                                kind = cursor.getString(1),
+                                dueEdtf = cursor.getString(2),
+                                dueStart = if (cursor.isNull(3)) null else cursor.getLong(3),
+                                sourceNote = cursor.getString(4),
+                                sourceDocumentId = cursor.getString(5),
+                                sourceEntryId = cursor.getString(6),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    /**
+     * The date a project screen leads with, or null when it has none.
+     *
+     * **The soonest that has not passed, and the most recent when they all
+     * have.** D113: no column marks one date as the important one, because a
+     * person recording a hearing date should not also have to tell the app that
+     * a hearing matters, and a marked date stays marked after it passes.
+     *
+     * [now] is a parameter rather than read here, so a test can state what today
+     * is instead of arranging for it.
+     */
+    suspend fun leadingProjectDate(
+        projectId: String,
+        now: Long = System.currentTimeMillis(),
+    ): ProjectDate? {
+        val dates = projectDates(projectId).filter { it.dueStart != null }
+        return dates.firstOrNull { it.dueStart!! >= now } ?: dates.lastOrNull()
+    }
+
+    /** Records a date, with where it was taken from. */
+    suspend fun addProjectDate(
+        projectId: String,
+        kind: String,
+        due: Edtf.Date,
+        sourceNote: String? = null,
+        sourceDocumentId: String? = null,
+        sourceEntryId: String? = null,
+    ): String = insert(
+        "project_date",
+        mapOf(
+            "project_id" to projectId,
+            "kind" to kind,
+            "source_note" to sourceNote?.ifBlank { null },
+            "source_document_id" to sourceDocumentId,
+            "source_entry_id" to sourceEntryId,
+        ) + dateColumns("due", due),
+    )
+
+    /** The kinds of date this project offers as chips. Never a closed set. */
+    suspend fun projectDateKinds(projectId: String): List<String> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT label FROM live_project_date_kind WHERE project_id = ? " +
+                    "ORDER BY sort_index, created_at",
+                arrayOf(projectId),
+            ).use { cursor ->
+                buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
+            }
+        }
+
+    suspend fun addProjectDateKind(projectId: String, label: String): String =
+        withContext(Dispatchers.IO) {
+            val next = db().database.rawQuery(
+                "SELECT coalesce(MAX(sort_index), -1) + 1 FROM live_project_date_kind " +
+                    "WHERE project_id = ?",
+                arrayOf(projectId),
+            ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+            insertRow(
+                "project_date_kind",
+                mapOf("project_id" to projectId, "label" to label, "sort_index" to next),
+            )
+        }
+
+    /** The papers this project needs, filled and not yet, in order. */
+    suspend fun projectPapers(projectId: String): List<ProjectPaper> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, name, sort_index, direction, document_id " +
+                    "FROM live_project_paper WHERE project_id = ? " +
+                    "ORDER BY sort_index, created_at",
+                arrayOf(projectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            ProjectPaper(
+                                id = cursor.getString(0),
+                                name = cursor.getString(1),
+                                sortIndex = cursor.getInt(2),
+                                direction = cursor.getString(3),
+                                documentId = cursor.getString(4),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    suspend fun addProjectPaper(
+        projectId: String,
+        name: String,
+        direction: String? = null,
+        documentId: String? = null,
+    ): String = withContext(Dispatchers.IO) {
+        val next = db().database.rawQuery(
+            "SELECT coalesce(MAX(sort_index), -1) + 1 FROM live_project_paper " +
+                "WHERE project_id = ?",
+            arrayOf(projectId),
+        ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+        insertRow(
+            "project_paper",
+            mapOf(
+                "project_id" to projectId,
+                "name" to name,
+                "sort_index" to next,
+                "direction" to direction,
+                "document_id" to documentId,
+            ),
+        )
+    }
+
+    /** Fills a paper placeholder with the document that arrived for it. */
+    suspend fun fillProjectPaper(paperId: String, documentId: String, direction: String?) =
+        withContext(Dispatchers.IO) {
+            val now = System.currentTimeMillis()
+            db().database.execSQL(
+                "UPDATE project_paper SET document_id = ?, direction = coalesce(?, direction), " +
+                    "updated_at = ?, rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(documentId, direction, now, paperId),
+            )
+        }
+
+    /**
+     * Which of the three answers this project opens with.
+     *
+     * **One control, changed with no penalty**, 20.3: the shape is a default and
+     * never a cage.
+     */
+    suspend fun setProjectLead(projectId: String, lead: String) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        db().database.execSQL(
+            "UPDATE project SET lead = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(lead, now, projectId),
+        )
+    }
+
+    /** Writes who said they would handle a step, and which area it belongs to. */
+    suspend fun setProjectStepHandling(stepId: String, cluster: String?, handlerLabel: String?) =
+        withContext(Dispatchers.IO) {
+            val now = System.currentTimeMillis()
+            db().database.execSQL(
+                "UPDATE project_step SET cluster = ?, handler_label = ?, updated_at = ?, " +
+                    "rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(
+                    cluster?.ifBlank { null },
+                    handlerLabel?.ifBlank { null },
+                    now,
+                    stepId,
+                ),
+            )
+        }
+
+    // -- what a person arranged on Today ------------------------------------
+    //
+    // contract/DATA-CONTRACT.md 8.7 and DESIGN.md 21. **The trust model of this
+    // surface lives in this section**, so it is worth saying what it is before
+    // any of the functions: the app never rearranges Today, promotes a card,
+    // injects one, or removes one. **Nothing below is called by data changing.**
+    // Every function here is reached from the person's own hand in edit mode,
+    // or from the situation template at onboarding, and there is deliberately
+    // no function that reorders by relevance, recency, or urgency, because a
+    // surface that quietly reorders itself is one nobody can trust to still be
+    // where they left it.
+
+    /** One card on Today, as the person placed it. */
+    data class TodayCard(
+        val id: String,
+        val type: String,
+        val size: String,
+        val sortIndex: Int,
+        val isLead: Boolean,
+        /**
+         * What this card points at, where it points at something.
+         *
+         * A pair rather than a typed id, because a card can point at a measure,
+         * a project, or a person. **It is kept even when it no longer resolves**,
+         * per 8.7: the card renders its source-closed rung and stays until the
+         * person's own hand removes it.
+         */
+        val sourceTable: String?,
+        val sourceId: String?,
+    )
+
+    /**
+     * The whole surface: exactly one lead, and the field under it in order.
+     *
+     * **The lead is not nullable and that is the point.** `DESIGN.md` 21.1:
+     * there is never zero and never two. Two is refused by the database, by the
+     * partial unique index `ux_today_card_lead`. Zero is refused here, by this
+     * type having nowhere to put the absence.
+     */
+    data class TodayLayout(
+        val lead: TodayCard,
+        val field: List<TodayCard>,
+    ) {
+        // `this.field` and not `field`, which inside a property accessor means
+        // the backing field of `all` rather than the property below it. The
+        // design calls this the card field, 21.1, so the name is kept and the
+        // reference is qualified.
+        val all: List<TodayCard> get() = listOf(lead) + this.field
+    }
+
+    private fun readTodayCard(cursor: android.database.Cursor) = TodayCard(
+        id = cursor.getString(0),
+        type = cursor.getString(1),
+        size = cursor.getString(2),
+        sortIndex = cursor.getInt(3),
+        isLead = cursor.getInt(4) == 1,
+        sourceTable = cursor.getString(5),
+        sourceId = cursor.getString(6),
+    )
+
+    /**
+     * Today as the person left it, or null when nothing has been arranged yet.
+     *
+     * **Null means the layout has not been created**, which happens only before
+     * onboarding applies a situation template. It does not mean an empty
+     * dashboard, because nobody ever sees one: 21.5, defaults beat blank
+     * canvases.
+     *
+     * A layout with cards but no lead is a broken layout rather than an empty
+     * one, and this returns null for it rather than inventing a lead by picking
+     * the first card. **Inventing one would be the app arranging Today**, which
+     * is the one thing this surface must never do, and it would hide the defect
+     * that produced it.
+     */
+    suspend fun todayLayout(subjectId: String): TodayLayout? = withContext(Dispatchers.IO) {
+        val cards = db().database.rawQuery(
+            "SELECT id, card_type, size, sort_index, is_lead, source_table, source_id " +
+                "FROM live_today_card WHERE subject_id = ? " +
+                "ORDER BY is_lead DESC, sort_index, created_at",
+            arrayOf(subjectId),
+        ).use { cursor ->
+            buildList { while (cursor.moveToNext()) add(readTodayCard(cursor)) }
+        }
+        val lead = cards.firstOrNull { it.isLead } ?: return@withContext null
+        TodayLayout(lead = lead, field = cards.filterNot { it.isLead })
+    }
+
+    /**
+     * Writes a whole starting hand, replacing anything already there.
+     *
+     * **This is the only function that writes more than one card**, and it is
+     * called at onboarding, when the situation template's starting hand is
+     * applied. `DESIGN.md` 21.5: the template default is a starting hand and is
+     * editable from the first minute without penalty.
+     *
+     * The first card in [cards] takes the lead. **All of it in one transaction**,
+     * because a half-applied layout is a Today with two leads or none, and the
+     * database would refuse the first of those halfway through.
+     */
+    suspend fun setTodayLayout(
+        subjectId: String,
+        cards: List<Pair<String, String>>,
+        sources: Map<Int, Pair<String, String>> = emptyMap(),
+    ): Int = withContext(Dispatchers.IO) {
+        require(cards.isNotEmpty()) {
+            "A starting hand with no cards would be a blank Today, which 21.5 rules out."
+        }
+        val database = db().database
+        database.beginTransaction()
+        try {
+            val now = System.currentTimeMillis()
+            // Tombstoned, never deleted, per rule 3. The old arrangement stays
+            // in the record and in the change log.
+            database.execSQL(
+                "UPDATE today_card SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE subject_id = ? AND deleted_at IS NULL",
+                arrayOf<Any?>(now, now, subjectId),
+            )
+            cards.forEachIndexed { index, (type, size) ->
+                val source = sources[index]
+                insertRow(
+                    "today_card",
+                    mapOf(
+                        "subject_id" to subjectId,
+                        "card_type" to type,
+                        "size" to size,
+                        "sort_index" to index,
+                        "is_lead" to if (index == 0) 1 else 0,
+                        "source_table" to source?.first,
+                        "source_id" to source?.second,
+                    ),
+                )
+            }
+            database.setTransactionSuccessful()
+            cards.size
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    /**
+     * Adds one card to the end of the field.
+     *
+     * **The end, and never the lead.** Adding a card is reached from the gallery
+     * in 21.6 screen 6, where the person chose a card to have, not a card to put
+     * at the top. Promoting is its own deliberate act.
+     */
+    suspend fun addTodayCard(
+        subjectId: String,
+        type: String,
+        size: String = "small",
+        sourceTable: String? = null,
+        sourceId: String? = null,
+    ): String = withContext(Dispatchers.IO) {
+        val next = db().database.rawQuery(
+            "SELECT coalesce(MAX(sort_index), -1) + 1 FROM live_today_card WHERE subject_id = ?",
+            arrayOf(subjectId),
+        ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+
+        insertRow(
+            "today_card",
+            mapOf(
+                "subject_id" to subjectId,
+                "card_type" to type,
+                "size" to size,
+                "sort_index" to next,
+                "is_lead" to 0,
+                "source_table" to sourceTable,
+                "source_id" to sourceId,
+            ),
+        )
+    }
+
+    /**
+     * Removes a card from the field.
+     *
+     * **The lead cannot be removed and this refuses rather than improvises.**
+     * Removing it would leave zero, and the alternative, quietly promoting
+     * whatever was next, is the app deciding what belongs at the top of
+     * somebody's screen. Edit mode shows no remove dot on the lead, so this path
+     * is not reachable by hand; it returns false rather than throwing, because a
+     * caller that gets here has a bug and the person should not lose the screen
+     * over it.
+     */
+    suspend fun removeTodayCard(cardId: String): Boolean = withContext(Dispatchers.IO) {
+        val isLead = db().database.rawQuery(
+            "SELECT is_lead FROM live_today_card WHERE id = ?",
+            arrayOf(cardId),
+        ).use { if (it.moveToFirst()) it.getInt(0) == 1 else return@withContext false }
+        if (isLead) return@withContext false
+
+        val now = System.currentTimeMillis()
+        db().database.execSQL(
+            "UPDATE today_card SET deleted_at = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(now, now, cardId),
+        )
+        true
+    }
+
+    /** Changes one card's size. 21.3: growing reveals more of the same answer. */
+    suspend fun setTodayCardSize(cardId: String, size: String) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        db().database.execSQL(
+            "UPDATE today_card SET size = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(size, now, cardId),
+        )
+    }
+
+    /**
+     * Puts a card in the lead, and the old lead back into the field.
+     *
+     * **The demotion is half of the operation, not a consequence of it.** 21.1:
+     * promoting demotes the previous lead into the field, and there is never
+     * zero and never two. The database refuses two, so the order matters: the
+     * old lead is cleared first, in the same transaction, or the insert of the
+     * second lead fails against `ux_today_card_lead`.
+     *
+     * **The demoted card goes to the top of the field rather than the end**,
+     * because it was at the top a second ago and the person is watching it move.
+     * A card that vanished from the top and reappeared at the bottom of a long
+     * scroll reads as lost.
+     */
+    suspend fun promoteTodayCardToLead(cardId: String): Boolean = withContext(Dispatchers.IO) {
+        val database = db().database
+        database.beginTransaction()
+        try {
+            val subjectId = database.rawQuery(
+                "SELECT subject_id FROM live_today_card WHERE id = ? AND is_lead = 0",
+                arrayOf(cardId),
+            ).use {
+                if (it.moveToFirst()) it.getString(0) else return@withContext false
+            }
+
+            val now = System.currentTimeMillis()
+            val lowest = database.rawQuery(
+                "SELECT coalesce(MIN(sort_index), 0) - 1 FROM live_today_card " +
+                    "WHERE subject_id = ? AND is_lead = 0",
+                arrayOf(subjectId),
+            ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+
+            database.execSQL(
+                "UPDATE today_card SET is_lead = 0, sort_index = ?, updated_at = ?, " +
+                    "rev = rev + 1 WHERE subject_id = ? AND is_lead = 1 AND deleted_at IS NULL",
+                arrayOf<Any?>(lowest, now, subjectId),
+            )
+            database.execSQL(
+                "UPDATE today_card SET is_lead = 1, updated_at = ?, rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(now, cardId),
+            )
+            database.setTransactionSuccessful()
+            true
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    /**
+     * Moves a field card one place earlier or later.
+     *
+     * **This is the accessible reorder path**, 21.6 screen 7: Move up and Move
+     * down exist so reordering works one-handed, with the reader on, and with
+     * switch access. Drag is the shortcut, never the only way.
+     *
+     * A swap with the neighbor rather than a renumbering, for the reason
+     * `moveProjectStep` gives: one move should cost two rows in the change log
+     * rather than every card on the screen.
+     *
+     * **The lead does not take part.** It is not in the field, so moving the top
+     * field card up does nothing rather than displacing the lead.
+     */
+    suspend fun moveTodayCard(cardId: String, earlier: Boolean): Boolean =
+        withContext(Dispatchers.IO) {
+            val database = db().database
+            database.beginTransaction()
+            try {
+                val here = database.rawQuery(
+                    "SELECT subject_id, sort_index FROM live_today_card " +
+                        "WHERE id = ? AND is_lead = 0",
+                    arrayOf(cardId),
+                ).use {
+                    if (it.moveToFirst()) it.getString(0) to it.getInt(1) else null
+                } ?: return@withContext false
+
+                val (subjectId, index) = here
+                val comparison = if (earlier) "<" else ">"
+                val direction = if (earlier) "DESC" else "ASC"
+                val neighbor = database.rawQuery(
+                    "SELECT id, sort_index FROM live_today_card " +
+                        "WHERE subject_id = ? AND is_lead = 0 AND sort_index $comparison ? " +
+                        "ORDER BY sort_index $direction LIMIT 1",
+                    arrayOf(subjectId, index.toString()),
+                ).use {
+                    if (it.moveToFirst()) it.getString(0) to it.getInt(1) else null
+                } ?: return@withContext false
+
+                val now = System.currentTimeMillis()
+                database.execSQL(
+                    "UPDATE today_card SET sort_index = ?, updated_at = ?, rev = rev + 1 " +
+                        "WHERE id = ?",
+                    arrayOf<Any?>(neighbor.second, now, cardId),
+                )
+                database.execSQL(
+                    "UPDATE today_card SET sort_index = ?, updated_at = ?, rev = rev + 1 " +
+                        "WHERE id = ?",
+                    arrayOf<Any?>(index, now, neighbor.first),
+                )
+                database.setTransactionSuccessful()
+                true
+            } finally {
+                database.endTransaction()
+            }
+        }
 
     companion object {
         /**

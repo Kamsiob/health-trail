@@ -82,19 +82,36 @@ class FoundationSmokeTest {
 
         assertNull("the schema failed to execute: ${facts.error}", facts.error)
 
-        // 34 user data tables, plus app_meta, device, change_log, conflict_log,
+        // 40 user data tables, plus app_meta, device, change_log, conflict_log,
         // and schema_migration, plus android_metadata which the platform adds to
         // every database it creates.
-        assertEquals("unexpected table count", 40, facts.tables)
+        //
+        // **Counted from contract/schema.sql rather than written down here.**
+        // These were 40, 34 and 68 and are now 46, 40 and 80, and a number in
+        // this file means every table added to the contract fails a smoke test
+        // for a reason that has nothing to do with whether SQLite on this phone
+        // can execute the schema, which is what this test is about. That every
+        // table has its view and both triggers is check_schema.py's job, and it
+        // holds the whole contract to it rather than counting.
+        val schema = ContractAssets.readSchema(context)
+        fun declared(what: String) =
+            Regex(what, RegexOption.IGNORE_CASE).findAll(schema).count()
 
-        // One live view per user data table, and that is what makes it hard to
-        // query without filtering tombstones.
-        assertEquals("unexpected view count", 34, facts.views)
+        val localTables = 5
+        val platformTables = 1
+        assertEquals(
+            "unexpected table count",
+            declared("CREATE TABLE") + platformTables,
+            facts.tables,
+        )
+        assertEquals("unexpected view count", declared("CREATE VIEW"), facts.views)
+        assertEquals("unexpected trigger count", declared("CREATE TRIGGER"), facts.triggers)
 
-        // Two change log triggers per user data table. If this number drops, a
-        // table has been added without them and writes to it are invisible to a
-        // future sync and to the Today digest.
-        assertEquals("unexpected trigger count", 68, facts.triggers)
+        // And the shape those numbers are meant to express, which a count alone
+        // does not: one live view per user data table, and two triggers each.
+        val userTables = facts.tables - localTables - platformTables
+        assertEquals("a table is missing its live view", userTables, facts.views)
+        assertEquals("a table is missing a change log trigger", userTables * 2, facts.triggers)
     }
 
     @Test

@@ -15,7 +15,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`).
 - **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **332 instrumented tests pass**, last full run 2026-08-04 after #202 landed.
+- **349 instrumented tests pass**, last full run 2026-08-05 after the #262 repository layer landed.
 - The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
 **Take these in this order.**
@@ -64,14 +64,24 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 **The migration is real and is proved against a version 1 database**, not against today's. `Migrations.steps` has its first entry; `Step.apply` now receives the contract schema text alongside the database, so an additive step replays `contract/schema.sql` rather than carrying a second copy of six table definitions that would drift. `MigrationTest` builds a hand-written version 1 database and asserts the tables arrive, the columns arrive, and the project and its step survive with nothing invented in the new columns.
 
-**All 17 checks pass, 167 unit tests pass, lint is clean.** The instrumented suite has **not** been run against this yet.
+**The repository layer is built too**, and the trust model is tested rather than asserted. `ArrangementTest` is 16 tests covering the part a screenshot cannot show: the lead is singular, promoting demotes, the lead cannot be removed, removal is a tombstone, the layout does not reorder itself between reads, a broken layout is reported rather than repaired quietly, and a card pointing at a tombstoned project keeps its reference.
+
+**Three test accessors were added and are named so nobody reaches for them by accident**: `columnForTest`, `clearEveryLeadForTest`, and `tombstoneForTest`. The middle one exists to produce a state the app cannot, which is the only way to prove the reader reports a broken layout instead of inventing a lead.
+
+**349 instrumented tests pass**, up from 332. **All 17 checks pass, 167 unit tests pass, lint is clean.**
+
+**Four tests were failing for reasons worth knowing.**
+
+- **`SituationPickerTest` was broken by `11c5a4e` and nothing caught it**, because the instrumented suite was last run before that commit. The picker renders every catalog subtitle through `Bidi.isolate`, so the rendered string carries U+2068 and U+2069 and no longer equals the bare catalog string the test compared against. **Found by opening the app and reading the screen**, not by reading the code: `tools/walk.sh see` prints the isolate marks. The test now compares against `Bidi.isolate(subtitle)`, which is what the screen actually draws. **#226's worklist will keep producing this**, so expect it.
+- **`BackJourneyTest` was broken by the new `ArrangementTest`**, four classes later, with nothing to connect them: the new test did not close the repository in an `@After`, and the repository is a singleton over the one real database. Every other data test here closes it. It does now.
+- **Three counts were written down in tests and are now counted from the contract**: the table, view and trigger counts in `FoundationSmokeTest` and `DatabaseTest`, and the trigger count in `SchemaStatementSplitTest`. A number in a test file means every table added to the contract fails a test for a reason that has nothing to do with what the test is about. **They assert the shape now instead**: one live view per user data table, two triggers each.
+- **`MigrationTest`'s synthetic steps sat at a fixed version 2**, which stopped running the moment `CURRENT` reached 2, so three tests passed while proving nothing. They are at `CURRENT + 1` now.
 
 **What is left of #262, in order:**
 
-1. **`Repository` reads and writes for the six tables.** Nothing in the app can create a card or a stage yet.
-2. **The fixture writers**, so every rung of every card's states ladder can actually be produced on the device. `check_fixtures.py` holds ids to the real catalog, so this is where the states ladder audit becomes possible at all.
-3. **The archive round trip proved on the device**, per 8.5. Export and readable rendering are schema-driven and pick the tables up automatically; that is the reason to trust them, not the reason to skip the test.
-4. **The built-in project templates gain the five defaults.** `templates/data/projects.json` has `steps` and `roles` and needs `stages`, `lead`, `papers`, and `date_kinds` on all sixteen. This is content work in the app's voice.
+1. **The fixture writers**, so every rung of every card's states ladder can actually be produced on the device. `check_fixtures.py` holds ids to the real catalog, so this is where the states ladder audit becomes possible at all.
+2. **The archive round trip proved on the device**, per 8.5. Export and readable rendering are schema-driven and pick the tables up automatically; that is the reason to trust them, not the reason to skip the test.
+3. **The built-in project templates gain the five defaults.** `templates/data/projects.json` has `steps` and `roles` and needs `stages`, `lead`, `papers`, and `date_kinds` on all sixteen. This is content work in the app's voice.
 
 **Two checkers were fixed rather than worked around while doing this**, D114, and **#216 is closed by it**.
 

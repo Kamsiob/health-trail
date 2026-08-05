@@ -352,6 +352,93 @@ class SchemaCheck:
             )
         db.close()
 
+    def check_lead_slot_is_singular(self):
+        """The Today lead slot is singular by construction, not by discipline.
+
+        `DESIGN.md` 21.1: Today always has exactly one lead slot, and there is
+        never zero and never two. **Two is refused here**, by the partial unique
+        index `ux_today_card_lead`, so that it is a property of the file rather
+        than a promise a screen keeps. Zero is the application's to prevent,
+        because a database cannot require a row to exist.
+
+        Exercised rather than read, for the same reason the change log behavior
+        is: an index that exists is not the same as an index that refuses.
+        """
+        db = sqlite3.connect(":memory:")
+        db.executescript(self.sql)
+        db.execute("PRAGMA foreign_keys = ON")
+        db.execute(
+            "INSERT INTO app_meta (key, value, updated_at) VALUES ('device_id', 'dev-a', 1)"
+        )
+        db.execute(
+            "INSERT INTO subject (id, created_at, updated_at, origin_device, rev, "
+            "display_name) VALUES ('s1', 1, 1, 'dev-a', 1, 'Mum')"
+        )
+
+        def card(row_id, card_type, is_lead, index):
+            db.execute(
+                "INSERT INTO today_card (id, created_at, updated_at, origin_device, rev, "
+                "subject_id, card_type, size, sort_index, is_lead) "
+                "VALUES (?, 1, 1, 'dev-a', 1, 's1', ?, 'small', ?, ?)",
+                (row_id, card_type, index, is_lead),
+            )
+
+        card("c1", "digest", 1, 0)
+        card("c2", "next_up", 0, 1)
+
+        try:
+            card("c3", "incidents", 1, 2)
+            self.fail(
+                "today_card accepted a second lead for one subject. The lead slot is "
+                "singular by construction, DESIGN.md 21.1, and a screen that has to "
+                "remember that is a screen that forgets it once, quietly."
+            )
+        except sqlite3.IntegrityError:
+            pass
+
+        # A tombstoned lead must not block the next one, or a card could never
+        # be promoted again after the layout was replaced.
+        db.execute("UPDATE today_card SET deleted_at = 2, updated_at = 2, rev = 2 WHERE id = 'c1'")
+        try:
+            card("c4", "measure", 1, 3)
+        except sqlite3.IntegrityError:
+            self.fail(
+                "a tombstoned lead still blocks a new one, so a layout could never be "
+                "replaced. The index must be filtered on deleted_at IS NULL."
+            )
+
+        # Two subjects each have their own lead, which is what makes the index
+        # per subject rather than global.
+        db.execute(
+            "INSERT INTO subject (id, created_at, updated_at, origin_device, rev, "
+            "display_name) VALUES ('s2', 1, 1, 'dev-a', 1, 'Dad')"
+        )
+        try:
+            db.execute(
+                "INSERT INTO today_card (id, created_at, updated_at, origin_device, rev, "
+                "subject_id, card_type, size, sort_index, is_lead) "
+                "VALUES ('c5', 1, 1, 'dev-a', 1, 's2', 'digest', 'small', 0, 1)"
+            )
+        except sqlite3.IntegrityError:
+            self.fail(
+                "a second subject could not have its own lead. The uniqueness is per "
+                "subject, not across the notebook."
+            )
+
+        # A card outside the catalog does not exist, DESIGN.md 21.7, so the
+        # database refuses one rather than rendering a blank where a card should
+        # be.
+        try:
+            card("c6", "horoscope", 0, 4)
+            self.fail(
+                "today_card accepted a card type outside the seventeen in DESIGN.md "
+                "21.7. Anything not in the catalog does not exist as a card."
+            )
+        except sqlite3.IntegrityError:
+            pass
+
+        db.close()
+
     # -- run ---------------------------------------------------------------
 
     def run(self):
@@ -369,6 +456,7 @@ class SchemaCheck:
         retention = self.check_retention_documented()
         self.check_change_log_behavior()
         self.check_same_transaction()
+        self.check_lead_slot_is_singular()
 
         if self.failures:
             print(f"Schema check failed. {len(self.failures)} problems.\n")
@@ -387,8 +475,9 @@ class SchemaCheck:
         print(
             "  Behavior verified: insert logs 'insert', update logs 'update', setting "
             "deleted_at logs 'delete', undelete logs 'update', the live view hides a "
-            "tombstone while the base table keeps it, and a failing log write rolls "
-            "the data write back with it."
+            "tombstone while the base table keeps it, a failing log write rolls "
+            "the data write back with it, and the Today lead slot refuses a second "
+            "lead while allowing one per subject."
         )
         return 0
 

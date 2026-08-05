@@ -103,13 +103,19 @@ class MigrationTest {
         addSubject("Ruth")
         Migrations.run(db, schemaSql).getOrThrow()
 
-        val step = Migrations.Step(2, "adds a column nothing reads yet") { database, _ ->
+        // **Above CURRENT, not at a fixed 2.** The database under test was
+        // created from today's schema and is stamped at CURRENT, so a synthetic
+        // step at or below that never runs, and a test whose step never runs
+        // passes while proving nothing.
+        val next = Migrations.CURRENT + 1
+        val step = Migrations.Step(next, "adds a column nothing reads yet") { database, _ ->
             database.execSQL("ALTER TABLE subject ADD COLUMN nickname TEXT")
         }
 
-        val at = Migrations.run(db, schemaSql, target = 2, available = listOf(step)).getOrThrow()
+        val at = Migrations.run(db, schemaSql, target = next, available = listOf(step))
+            .getOrThrow()
 
-        assertEquals(2, at)
+        assertEquals(next, at)
         assertEquals("the upgrade lost rows", 2, rows())
         // And the rows are the same rows, not two new empty ones.
         db.rawQuery("SELECT display_name FROM live_subject ORDER BY display_name", null).use {
@@ -123,7 +129,8 @@ class MigrationTest {
         addSubject("Margaret")
         Migrations.run(db, schemaSql).getOrThrow()
 
-        val doomed = Migrations.Step(2, "writes and then fails") { database, _ ->
+        val next = Migrations.CURRENT + 1
+        val doomed = Migrations.Step(next, "writes and then fails") { database, _ ->
             database.execSQL(
                 "INSERT INTO subject (id, created_at, updated_at, origin_device, rev, " +
                     "display_name) VALUES ('ghost', 1, 1, 'test', 1, 'Ghost')"
@@ -131,12 +138,16 @@ class MigrationTest {
             error("the migration could not finish")
         }
 
-        val result = Migrations.run(db, schemaSql, target = 2, available = listOf(doomed))
+        val result = Migrations.run(db, schemaSql, target = next, available = listOf(doomed))
 
         assertTrue("a failing step reported success", result.isFailure)
         assertTrue(result.exceptionOrNull() is Migrations.Failed)
         assertEquals("the failed step left rows behind", 1, rows())
-        assertEquals("the version moved despite the failure", 1, Migrations.versionOf(db))
+        assertEquals(
+            "the version moved despite the failure",
+            Migrations.CURRENT,
+            Migrations.versionOf(db),
+        )
     }
 
     @Test
@@ -145,9 +156,10 @@ class MigrationTest {
         // will not open and their notebook is the only copy. It has to say
         // plainly that the records are still there.
         Migrations.run(db, schemaSql).getOrThrow()
-        val doomed = Migrations.Step(2, "fails") { _, _ -> error("nope") }
+        val next = Migrations.CURRENT + 1
+        val doomed = Migrations.Step(next, "fails") { _, _ -> error("nope") }
 
-        val message = Migrations.run(db, schemaSql, target = 2, available = listOf(doomed))
+        val message = Migrations.run(db, schemaSql, target = next, available = listOf(doomed))
             .exceptionOrNull()!!.message!!
 
         assertTrue("it does not say nothing was lost: $message", "nothing was lost" in message)
@@ -173,18 +185,20 @@ class MigrationTest {
     fun stepsApplyInOrderAndOnlyOnce() {
         Migrations.run(db, schemaSql).getOrThrow()
         val applied = mutableListOf<Int>()
+        val first = Migrations.CURRENT + 1
+        val second = Migrations.CURRENT + 2
         val steps = listOf(
-            Migrations.Step(3, "third") { _, _ -> applied += 3 },
-            Migrations.Step(2, "second") { _, _ -> applied += 2 },
+            Migrations.Step(second, "second") { _, _ -> applied += second },
+            Migrations.Step(first, "first") { _, _ -> applied += first },
         )
 
-        Migrations.run(db, schemaSql, target = 3, available = steps).getOrThrow()
-        assertEquals(listOf(2, 3), applied)
+        Migrations.run(db, schemaSql, target = second, available = steps).getOrThrow()
+        assertEquals(listOf(first, second), applied)
 
         // Running again applies nothing, which is what makes it safe to call on
         // every open rather than only on an upgrade.
-        Migrations.run(db, schemaSql, target = 3, available = steps).getOrThrow()
-        assertEquals(listOf(2, 3), applied)
+        Migrations.run(db, schemaSql, target = second, available = steps).getOrThrow()
+        assertEquals(listOf(first, second), applied)
     }
 
     @Test

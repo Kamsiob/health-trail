@@ -12,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.screens.SituationPickerScreen
@@ -146,7 +147,12 @@ class SituationPickerTest {
         catalog.all.filter { it.subtitle.isNotBlank() }.forEach { situation ->
             compose.onNodeWithTag(SituationPickerTags.LIST)
                 .performScrollToKey(situation.id)
-            compose.onNodeWithText(situation.subtitle).assertIsDisplayed()
+            // **Isolated, because that is what the screen actually renders.**
+            // The catalog is English inside a layout that may be right to left,
+            // #62, so every template name and subtitle goes through
+            // `Bidi.isolate` and carries U+2068 and U+2069. Comparing against
+            // the bare catalog string asserts a screen this app does not draw.
+            compose.onNodeWithText(Bidi.isolate(situation.subtitle)).assertIsDisplayed()
         }
     }
 
