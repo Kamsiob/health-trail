@@ -29,10 +29,10 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * can tell whether it was written down off a letter, said on the phone, or
  * guessed. A date with no source still renders, and it simply says less.
  *
- * **The countdown is a number and never an alarm**, 20.7. It is mono and
- * tabular so a column of them lines up, it carries the ordinary ink color at
- * every value, and a date that has passed says so in plain words: "passed 6 days
- * ago". **There is no urgency color and no red at any distance from the date**,
+ * **The countdown is a number and never an alarm**, 20.7. It carries the
+ * ordinary ink color at every value, and a date that has passed says so in plain
+ * words: "passed 6 days ago". **There is no urgency color and no red at any
+ * distance from the date**,
  * because coloring by nearness would be the app performing urgency at somebody
  * who already knows, which is exactly what section 22 bans.
  *
@@ -70,6 +70,20 @@ fun DateRow(
      * a placeholder.
      */
     source: String? = null,
+    /**
+     * Whether this date is the thing the screen leads with.
+     *
+     * **This is law 1 made a parameter.** On the closing window the countdown
+     * is the lead and is drawn at `monoL`, which the grid draws large on
+     * purpose. Everywhere else it sits under a lead and takes `bodyL`.
+     *
+     * Seen on the phone: at `monoL` under a standing card, "72 days" at 22sp
+     * beat "The county" at 18sp, so the screen led with the date on a project
+     * whose whole shape is that it leads with where it stands. **Two things
+     * were competing and the wrong one was winning**, which is the defect law 1
+     * exists to prevent, and it is invisible until it is on a phone.
+     */
+    prominent: Boolean = false,
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
@@ -85,10 +99,10 @@ fun DateRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            // Tabular and mono so a column of these lines up, and isolated so a
-            // Latin number inside an Arabic layout keeps its own direction.
+            // Isolated, so a Latin number inside an Arabic layout keeps its own
+            // direction rather than being pulled into the sentence beside it.
             text = Bidi.isolate(countdown),
-            style = type.monoL,
+            style = if (prominent) type.monoL else type.bodyL,
             color = colors.ink,
             maxLines = 1,
         )

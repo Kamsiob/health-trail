@@ -98,7 +98,19 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **Built and compiling**, #263 through #268: `RoadStrip`, `StandingCard`, `DateRow`, `LatestWordCard`, `StepRow`, `ReferenceLine`. Each carries its when-to-use and when-not-to-use, per section 19.
 
-**None of them is on a screen, so none has been looked at on the phone and no issue is closed.** The next step is the project home screen, which uses all six at once, and the components are verified there rather than in a gallery.
+**Five of the six are now on a screen and have been looked at**, on the project home. `ReferenceLine` has not: nothing has a reference number to render, which is the owner decision in #303.
+
+### 2.3 The long road project home is built and seen
+
+**`ProjectHomeScreen`, #278**, the grid's screen 05. The three answers in order, then steps and papers folded and counted. Verified on the phone at both themes, at font scale 2.0, and in Arabic. Screenshots are `project-home-dark`, `project-home-light`, `project-steps`, `project-max-font`, `project-arabic`.
+
+**`ProjectDetailScreen` is superseded and frozen**, with its row in `docs/REMOVAL-LEDGER.md`. It carried real work the new screen does not do yet: adding, editing, moving and removing a step, setting the status and what the project is waiting on, and saving as a template. **None of it is lost and none of it is bridged by extending the frozen file**; it belongs to the busy stretch and the setup screen, #280 and #291.
+
+**Two defects were found by looking at it rather than by reading it.** The countdown at 22sp beat the holder at 18sp, so a project whose whole shape is that it leads with where it stands was led by its date; `DateRow` gained `prominent` and only the closing window draws the number large. And the step checkbox was a glyph in a fixed box, so at font scale 2.0 the tick was cut in half and read as a damaged control, on the setting this audience is most likely to be using. It is drawn now. **Neither is visible at font scale 1.0 in English.**
+
+**A third was found in the semantics tree and is invisible in any screenshot.** `Bidi.join` isolates every part it is given, so passing it a part that was already isolated nests the marks, and passing it a joined string nests them three deep. The rule is: **raw parts into `Bidi.join`, never pre-isolated ones.**
+
+**The review this owes under rule 12 is #304**, and it lists what was deliberately left out and the three things I am unsure about.
 
 **The latest word can be read but the app cannot write it, and that is #303.** `Repository.latestWordFor` reads it through the `link` table, which is what 8.1's generic connection table is for. **Nothing outside the fixture writes that link**, so on a real notebook the third answer is permanently absent. The fixture writes it so the card can be built and seen, which is deliberately not a fix.
 

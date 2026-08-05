@@ -32,6 +32,7 @@ import com.kamsiob.healthtrail.data.LastVisit
 import com.kamsiob.healthtrail.data.Repository
 import java.time.LocalDate
 import com.kamsiob.healthtrail.data.TemplateCatalog
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.CaptureFab
@@ -95,7 +96,7 @@ import com.kamsiob.healthtrail.ui.screens.AnswerSheet
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
-import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
@@ -124,6 +125,7 @@ import com.kamsiob.healthtrail.ui.screens.labelKey
 import com.kamsiob.healthtrail.ui.screens.kindNameKey
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.screens.CoachStep
 import com.kamsiob.healthtrail.ui.screens.LocalSectionBackKey
 import com.kamsiob.healthtrail.ui.screens.TemplateLibraryScreen
@@ -260,6 +262,11 @@ fun NotebookShell(
     // The project being looked at, and its steps.
     var openProject by remember { mutableStateOf<Repository.Project?>(null) }
     var projectSteps by remember { mutableStateOf<List<Repository.ProjectStep>>(emptyList()) }
+    var projectStages by remember { mutableStateOf<List<Repository.ProjectStage>>(emptyList()) }
+    var projectStanding by remember { mutableStateOf<Repository.ProjectStanding?>(null) }
+    var projectNextDate by remember { mutableStateOf<Repository.ProjectDate?>(null) }
+    var projectLatestWord by remember { mutableStateOf<Repository.TrailEntry?>(null) }
+    var projectPapers by remember { mutableStateOf<List<Repository.ProjectPaper>>(emptyList()) }
     var togglingStep by remember { mutableStateOf<Repository.ProjectStep?>(null) }
     var settingProjectStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     var settingWaitingOn by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -547,6 +554,14 @@ fun NotebookShell(
                 projects.firstOrNull { it.id == current.id }
             }
             projectSteps = openProject?.let { repository.projectSteps(it.id) }.orEmpty()
+            // The shape the person gave this project, loaded with it. Each
+            // is one of the three answers in DESIGN.md 20.1, or the road
+            // that says it is a project at all.
+            projectStages = openProject?.let { repository.projectStages(it.id) }.orEmpty()
+            projectStanding = openProject?.let { repository.projectStanding(it.id) }
+            projectNextDate = openProject?.let { repository.leadingProjectDate(it.id) }
+            projectLatestWord = openProject?.let { repository.latestWordFor(it.id) }
+            projectPapers = openProject?.let { repository.projectPapers(it.id) }.orEmpty()
             instructionCatalog = TemplateCatalog.instructions(context)
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
@@ -1267,27 +1282,70 @@ fun NotebookShell(
 
         val currentProject = openProject
         if (currentProject != null) {
-            ProjectDetailScreen(
+            // **The screen the Projects grid draws**, DESIGN.md 20.5 screen 5.
+            //
+            // The old ProjectDetailScreen is superseded by it and is frozen
+            // rather than deleted, per D112 and the row in
+            // docs/REMOVAL-LEDGER.md: never called, extended, fixed, or
+            // translated.
+            val zone = java.time.ZoneId.systemDefault()
+            val now = System.currentTimeMillis()
+
+            // **Composed here rather than inside the screen**, so the screen
+            // does no arithmetic on a date and every sentence comes from the
+            // catalog in the person's own language.
+            val daysToDate = projectNextDate?.dueStart?.let { due ->
+                java.time.Duration.ofMillis(due - now).toDays()
+            }
+            val countdownText = when {
+                daysToDate == null -> null
+                daysToDate == 0L -> strings["project.countdown.today"]
+                daysToDate > 0 -> strings(
+                    "project.countdown.days",
+                    // A Number, not its text. ICU refuses a String for a
+                    // plural argument, and the refusal is a crash rather
+                    // than a wrong word.
+                    "count" to daysToDate,
+                )
+                else -> strings(
+                    "project.countdown.passed",
+                    "count" to -daysToDate,
+                )
+            }
+            // **Raw parts into Bidi.join, never pre-isolated ones.** join
+            // isolates each part itself, so an isolated part comes out wrapped
+            // twice and a joined string passed into another join comes out
+            // wrapped three deep. Seen in the semantics tree on the phone as
+            // U+2068 U+2068 U+2068 Renewal, which no screenshot would show.
+            val dateKindText = projectNextDate?.kind
+            val dateWhenText = projectNextDate?.let {
+                EventDateText.render(strings, it.dueEdtf)
+            }
+            val standingSinceText = projectStanding?.let { standing ->
+                Bidi.join(
+                    standing.activity,
+                    standing.sinceEdtf?.let { EventDateText.render(strings, it) },
+                )
+            }
+            val attributionText = projectLatestWord?.let { entry ->
+                EventDateText.render(strings, entry.occurredEdtf)
+            }
+
+            ProjectHomeScreen(
                 project = currentProject,
+                stages = projectStages,
+                standing = projectStanding,
+                nextDate = projectNextDate,
+                latestWord = projectLatestWord,
+                countdown = countdownText,
+                dateKind = dateKindText,
+                dateWhen = dateWhenText,
+                standingSince = standingSinceText,
+                attribution = attributionText,
                 steps = projectSteps,
+                papers = projectPapers,
                 onToggleStep = { togglingStep = it },
-                onSetStatus = { status -> settingProjectStatus = currentProject.id to status },
-                onSetWaitingOn = { who -> settingWaitingOn = currentProject.id to who },
                 onBack = { openProject = null },
-                // **The template's own name, looked up rather than stored.**
-                // `project.template_id` is the catalog id, and the person needs
-                // the words. A project whose template is not in this build's
-                // catalog, which an export from a later version can produce,
-                // shows no provenance line rather than an id.
-                templateName = currentProject.templateId?.let { id ->
-                    projectTemplates.firstOrNull { it.id == id }?.name
-                },
-                onAddStep = { text -> addingStep = currentProject.id to text },
-                onEditStep = { id, text, note -> editingStep = Triple(id, text, note) },
-                onMoveStep = { id, earlier -> movingStep = id to earlier },
-                onRemoveStep = { step -> removingStep = step.id },
-                onSaveAsTemplate = { savingTemplate = currentProject },
-                savedAsTemplate = currentProject.id in savedTemplates,
             )
         }
 

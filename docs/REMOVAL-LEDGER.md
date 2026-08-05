@@ -22,11 +22,14 @@
 
 | What | Superseded by | When | State |
 |---|---|---|---|
-| Nothing yet | | | |
+| `ui/screens/ProjectDetailScreen.kt` | `ui/screens/ProjectHomeScreen.kt` | 2026-08-05 | Frozen. Not called: `NotebookShell` opens the new screen. |
+| `ProjectDetailTags`, and the tests that use them | The new screen's own tags | 2026-08-05 | Frozen with the screen. |
 
-**The first rows arrive when the Today and Projects conversions begin.** The adoption on 2026-08-04 was documentation only: no application code was written, so nothing has been superseded in fact yet. What it makes obsolete, and what will appear here as each conversion lands:
+**The Projects conversion has begun and its first row is above.** What else it makes obsolete, and what will appear here as each conversion lands:
 
 - **The current Today dashboard**, superseded by `reference/today-grid.html` and `DESIGN.md` section 21. Today becomes a lead slot plus a field of card instances the person arranges.
-- **The current checklist Projects**, superseded by `reference/projects-grid.html` and `DESIGN.md` section 20. A project becomes three answers with three shapes, and the checklist survives as one of the three rather than as the whole.
+- **The rest of the checklist Projects**, superseded by `reference/projects-grid.html` and `DESIGN.md` section 20. A project becomes three answers with three shapes, and the checklist survives as one of the three rather than as the whole.
+
+**On the frozen project screen specifically.** It carried real work that the new screen does not do yet: adding, editing, moving and removing a step, setting the status, setting what the project is waiting on, and saving the project as a template. **None of that is deleted and none of it is lost.** It is reached from the busy stretch and the project's setup screen in the new grid, which are #280 and #291, and until those land the new home screen shows the three answers and does not offer those actions. **The frozen file is not extended to bridge the gap**, which is the whole point of freezing it.
 
 **A row is added at the moment the code is frozen, not at a phase gate**, which is the same discipline rule 12 applies to design reviews and for the same reason.

@@ -18,8 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -93,28 +95,49 @@ fun StepRow(
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // **The box and its mark are drawn, not set in type.**
+        //
+        // The mark was a "✓" in a Text inside a fixed 16dp box. Text scales with
+        // the font setting and the box does not, so at font scale 2.0 the glyph
+        // was cut in half: a checkbox that reads as damaged rather than as
+        // ticked, on the setting the people this app is for are most likely to
+        // be using. Found on the phone at 2.0, invisible at 1.0.
+        //
+        // **A mark rather than only a fill**, section 9, so it survives
+        // grayscale and every color vision difference.
         Box(
             modifier = Modifier
-                .size(16.dp)
-                .clip(RoundedCornerShape(5.dp))
-                .background(if (done) colors.leaf else Color.Transparent)
-                .border(
-                    width = 1.8.dp,
-                    color = if (done) colors.leaf else colors.hairlineHeavy,
-                    shape = RoundedCornerShape(5.dp),
-                ),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (done) {
-                // A mark rather than only a fill, so it survives grayscale and
-                // every color vision difference. Section 9.
-                Text(
-                    text = "✓",
-                    style = type.mono,
-                    color = colors.paper,
-                )
-            }
-        }
+                .size(18.dp)
+                .drawBehind {
+                    val corner = androidx.compose.ui.geometry.CornerRadius(5.dp.toPx())
+                    if (done) {
+                        drawRoundRect(color = colors.leaf, cornerRadius = corner)
+                        val stroke = 2.dp.toPx()
+                        val w = size.width
+                        val h = size.height
+                        drawLine(
+                            color = colors.paper,
+                            start = Offset(w * 0.24f, h * 0.52f),
+                            end = Offset(w * 0.44f, h * 0.72f),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round,
+                        )
+                        drawLine(
+                            color = colors.paper,
+                            start = Offset(w * 0.44f, h * 0.72f),
+                            end = Offset(w * 0.76f, h * 0.30f),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round,
+                        )
+                    } else {
+                        drawRoundRect(
+                            color = colors.hairlineHeavy,
+                            cornerRadius = corner,
+                            style = Stroke(width = 1.8.dp.toPx()),
+                        )
+                    }
+                },
+        )
 
         Text(
             text = Bidi.isolate(text),
