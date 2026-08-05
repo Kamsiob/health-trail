@@ -813,5 +813,12 @@
   "today.card.project_date.long": "التاريخ القادم",
   "today.card.project_steps.long": "الخطوات",
   "today.card.measure.long": "آخر قيمة",
-  "today.edit.lead.short": "للأعلى"
+  "today.edit.lead.short": "للأعلى",
+  "project.standing.update": "حدّث أين وصل الأمر",
+  "project.standing.who": "في يد من هو الآن؟",
+  "project.standing.who.hint": "المقاطعة، شركة التأمين، أخي",
+  "project.standing.what": "ماذا يحدث هناك؟",
+  "project.standing.what.hint": "قيد المراجعة، بانتظار كشف الحساب",
+  "project.standing.save": "اكتبها",
+  "project.standing.lead": "منذ متى اختياري. التاريخ هو اليوم ما لم تغيّره."
 }

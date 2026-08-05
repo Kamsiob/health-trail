@@ -97,6 +97,7 @@ import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
+import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
@@ -270,6 +271,13 @@ fun NotebookShell(
     var projectNextDate by remember { mutableStateOf<Repository.ProjectDate?>(null) }
     var projectLatestWord by remember { mutableStateOf<Repository.TrailEntry?>(null) }
     var projectPapers by remember { mutableStateOf<List<Repository.ProjectPaper>>(emptyList()) }
+    var projectStandingHistory by remember {
+        mutableStateOf<List<Repository.ProjectStanding>>(emptyList())
+    }
+    var updatingStanding by remember { mutableStateOf<Repository.Project?>(null) }
+    var savingStanding by remember {
+        mutableStateOf<Triple<String, String, String>?>(null)
+    }
     var projectCards by remember {
         mutableStateOf<Map<String, Repository.ProjectCard>>(emptyMap())
     }
@@ -595,7 +603,9 @@ fun NotebookShell(
             // is one of the three answers in DESIGN.md 20.1, or the road
             // that says it is a project at all.
             projectStages = openProject?.let { repository.projectStages(it.id) }.orEmpty()
-            projectStanding = openProject?.let { repository.projectStanding(it.id) }
+            projectStandingHistory =
+                openProject?.let { repository.projectStandingHistory(it.id) }.orEmpty()
+            projectStanding = projectStandingHistory.firstOrNull()
             projectNextDate = openProject?.let { repository.leadingProjectDate(it.id) }
             projectLatestWord = openProject?.let { repository.latestWordFor(it.id) }
             projectPapers = openProject?.let { repository.projectPapers(it.id) }.orEmpty()
@@ -1371,6 +1381,42 @@ fun NotebookShell(
             AboutScreen(onBack = { aboutOpen = false })
         }
 
+        updatingStanding?.let { project ->
+            StandingSheet(
+                // The project's own people, which is what the grid means by
+                // chips drawn from the project's people.
+                // **Whose hands it has been in before, most recent first.**
+                // The grid says chips drawn from the project's people; these
+                // are the people this project actually has, which is what
+                // somebody already wrote down rather than a roster they would
+                // have to have filled in first.
+                people = projectStandingHistory.map { it.holderLabel }.distinct(),
+                previous = projectStanding,
+                onSave = { holder, activity ->
+                    savingStanding = Triple(project.id, holder, activity)
+                    updatingStanding = null
+                },
+                onDismiss = { updatingStanding = null },
+            )
+        }
+
+        savingStanding?.let { (projectId, holder, activity) ->
+            LaunchedEffect(projectId, holder, activity) {
+                repository.addProjectStanding(
+                    projectId = projectId,
+                    holderLabel = holder,
+                    // **Today, and not asked for.** A person recording this
+                    // five minutes after the call knows when it happened, and
+                    // asking them to confirm it is a question with one answer.
+                    // It stays editable from the entry itself, rule 17.
+                    since = Edtf.day(java.time.LocalDate.now()),
+                    activity = activity.ifBlank { null },
+                )
+                savingStanding = null
+                revision += 1
+            }
+        }
+
         addingCardTo?.let { onScreen ->
             AddCardSheet(
                 offers = cardOffers(onScreen, measures, projects, todayAnswers, strings),
@@ -1458,6 +1504,7 @@ fun NotebookShell(
                 steps = projectSteps,
                 papers = projectPapers,
                 onToggleStep = { togglingStep = it },
+                onUpdateStanding = { updatingStanding = currentProject },
                 onBack = { openProject = null },
             )
         }

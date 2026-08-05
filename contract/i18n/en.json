@@ -813,5 +813,12 @@
   "today.card.project_date.long": "The next date",
   "today.card.project_steps.long": "Steps",
   "today.card.measure.long": "The latest value",
-  "today.edit.lead.short": "To top"
+  "today.edit.lead.short": "To top",
+  "project.standing.update": "Update where it stands",
+  "project.standing.who": "Whose hands is it in?",
+  "project.standing.who.hint": "The county, the insurer, my brother",
+  "project.standing.what": "What is happening there?",
+  "project.standing.what.hint": "Reviewing it, waiting on the bank statement",
+  "project.standing.save": "Write it down",
+  "project.standing.lead": "Since when is optional. The date is today unless you change it."
 }

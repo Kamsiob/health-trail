@@ -813,5 +813,12 @@
   "today.card.project_date.long": "下一个日期",
   "today.card.project_steps.long": "步骤",
   "today.card.measure.long": "最新数值",
-  "today.edit.lead.short": "置顶"
+  "today.edit.lead.short": "置顶",
+  "project.standing.update": "更新目前进展",
+  "project.standing.who": "现在在谁手里？",
+  "project.standing.who.hint": "县里、保险公司、我弟弟",
+  "project.standing.what": "那边在做什么？",
+  "project.standing.what.hint": "正在审核，在等银行对账单",
+  "project.standing.save": "记下来",
+  "project.standing.lead": "起始时间可以不填。除非你修改，日期就是今天。"
 }

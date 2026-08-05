@@ -110,6 +110,14 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **A third was found in the semantics tree and is invisible in any screenshot.** `Bidi.join` isolates every part it is given, so passing it a part that was already isolated nests the marks, and passing it a joined string nests them three deep. The rule is: **raw parts into `Bidi.join`, never pre-isolated ones.**
 
+**Where a project stands can be recorded now**, #281. The standing card carries an outlined "Update where it stands", and the none-yet rung carries the same one, so a project nobody has said anything about names its one action rather than only saying nothing is known. `docs/screenshots/project-standing-sheet-light.png`.
+
+- **A one-stage sheet**, because this is what somebody does in a corridor right after a call.
+- **The chips are the project's own history**, the holders it has actually been with, most recent first. There is no project people roster to draw from, and asking somebody to fill one in first would be the app charging admission for a sentence.
+- **Since when is today and is not asked for.** A person recording this five minutes after the call knows when it happened. It stays editable from the entry, rule 17.
+- **Partial saves.** Somebody who knows only that it is with the county can write that and nothing else.
+- Proved on the phone: saved, and the card's date became today.
+
 **The review this owes under rule 12 is #304**, and it lists what was deliberately left out and the three things I am unsure about.
 
 **All three shapes are built and all three have been seen**, #278, #279 and #280's home screens. **The shape is only the order of the same components**, which is 20.3's whole claim, so `Repository.Project` carries `lead` and the screen orders itself from it. The long road opens with where it stands, the closing window with the countdown at `monoL`, the busy stretch with the steps cluster already open above the answers. `ProjectHomeScreenTest` asserts the vertical order for each, because every shape shows the same four things and a wrong order still looks like a finished screen. Screenshots: `project-home-*`, `project-window-dark`, `project-busy-dark`.

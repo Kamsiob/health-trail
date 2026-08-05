@@ -22,6 +22,7 @@ import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.LatestWordCard
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RoadStrip
 import com.kamsiob.healthtrail.ui.components.StandingCard
 import com.kamsiob.healthtrail.ui.components.StepRow
@@ -35,6 +36,7 @@ object ProjectHomeTags {
     const val DATE = "project-home-date"
     const val LATEST = "project-home-latest"
     const val STEPS = "project-home-steps"
+    const val UPDATE_STANDING = "project-home-update-standing"
 }
 
 /**
@@ -79,6 +81,8 @@ fun ProjectHomeScreen(
     attribution: String? = null,
     onOpenDate: () -> Unit = {},
     onOpenEntry: () -> Unit = {},
+    /** Opens the sheet that records where it stands. 20.5 screen 8. */
+    onUpdateStanding: () -> Unit = {},
     steps: List<Repository.ProjectStep> = emptyList(),
     papers: List<Repository.ProjectPaper> = emptyList(),
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
@@ -136,6 +140,15 @@ fun ProjectHomeScreen(
                     holder = Bidi.isolate(standing.holderLabel),
                     since = standingSince,
                     modifier = Modifier.testTag(ProjectHomeTags.STANDING),
+                    // **An outlined pill, and a verb**, 20.6. It records what
+                    // somebody was told; it does not suggest chasing anybody.
+                    actions = {
+                        QuietButton(
+                            label = strings["project.standing.update"],
+                            onClick = onUpdateStanding,
+                            modifier = Modifier.testTag(ProjectHomeTags.UPDATE_STANDING),
+                        )
+                    },
                 )
             } else {
                 // **A calm state, never a scold.** It says what would go here
@@ -145,6 +158,15 @@ fun ProjectHomeScreen(
                     holder = strings["project.stands.none"],
                     since = strings["project.stands.none.note"],
                     modifier = Modifier.testTag(ProjectHomeTags.STANDING),
+                    // **The none-yet rung names its one action**, 21.4's rule
+                    // applied here: a calm state that says what would go in it.
+                    actions = {
+                        QuietButton(
+                            label = strings["project.standing.update"],
+                            onClick = onUpdateStanding,
+                            modifier = Modifier.testTag(ProjectHomeTags.UPDATE_STANDING),
+                        )
+                    },
                 )
             }
         }
