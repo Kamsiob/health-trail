@@ -182,7 +182,11 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **`project.step.handled_by` said "Me is handling this".** It was already wrong in the spoken description on the project home and the editor put it on screen where it could be seen. It is "Handled by {who}" in all four catalogs now.
 - **The way back says "Back to setup"**, because that is where it goes.
 
-**Still owed on #291:** stages, usual papers and date kinds are still read-only lines. The repository has `addProjectStage`, `addProjectPaper` and `addProjectDateKind` and no rename or remove for any of them, so those three need repository work before their editors.
+**Still owed on #291:** stages, usual papers and date kinds are still read-only lines.
+
+**The stages half of that is unblocked.** `renameProjectStage`, `moveProjectStage` and `removeProjectStage` exist and are covered by `RoadEditTest`. The one that needed thinking about is removal: `RoadStrip` works out where a project is from the stages themselves, so a project left pointing at a removed stage draws as having reached nothing, and the road would say the application had never been filed. Removal moves the project back to the last stage before it that was actually reached, in the same transaction, and to no stage at all where there is none. **The editor is not built yet**, so nothing reachable calls any of the three.
+
+Usual papers and date kinds still have add and nothing else.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
 

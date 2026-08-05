@@ -4572,6 +4572,128 @@ class Repository private constructor(
         }
 
     /**
+     * Renames a stage without touching when it was reached.
+     *
+     * **The arrival is a fact and the name is a label.** Somebody who calls a
+     * stage "In review" and later decides it is really "With the reviewer" has
+     * not changed when the project got there, and a rename that cleared the
+     * date would quietly rewrite the road's own history.
+     */
+    suspend fun renameProjectStage(stageId: String, name: String) =
+        withContext(Dispatchers.IO) {
+            val now = System.currentTimeMillis()
+            db().database.execSQL(
+                "UPDATE project_stage SET name = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(name, now, stageId),
+            )
+        }
+
+    /**
+     * Reorders a stage against its neighbor, the way a step reorders.
+     *
+     * **The road is the person's, law 5.** A template that guessed the order of
+     * a process wrong is a template, not a verdict, and these processes vary by
+     * state and by office.
+     */
+    suspend fun moveProjectStage(stageId: String, earlier: Boolean) =
+        withContext(Dispatchers.IO) {
+            val database = db().database
+            database.beginTransaction()
+            try {
+                val here = database.rawQuery(
+                    "SELECT project_id, sort_index FROM live_project_stage WHERE id = ?",
+                    arrayOf(stageId),
+                ).use {
+                    if (it.moveToFirst()) it.getString(0) to it.getInt(1) else null
+                } ?: return@withContext
+
+                val (projectId, index) = here
+                val comparison = if (earlier) "<" else ">"
+                val direction = if (earlier) "DESC" else "ASC"
+                val neighbor = database.rawQuery(
+                    "SELECT id, sort_index FROM live_project_stage " +
+                        "WHERE project_id = ? AND sort_index $comparison ? " +
+                        "ORDER BY sort_index $direction LIMIT 1",
+                    arrayOf(projectId, index.toString()),
+                ).use {
+                    if (it.moveToFirst()) it.getString(0) to it.getInt(1) else null
+                } ?: return@withContext
+
+                val now = System.currentTimeMillis()
+                database.execSQL(
+                    "UPDATE project_stage SET sort_index = ?, updated_at = ?, " +
+                        "rev = rev + 1 WHERE id = ?",
+                    arrayOf<Any?>(neighbor.second, now, stageId),
+                )
+                database.execSQL(
+                    "UPDATE project_stage SET sort_index = ?, updated_at = ?, " +
+                        "rev = rev + 1 WHERE id = ?",
+                    arrayOf<Any?>(index, now, neighbor.first),
+                )
+                database.setTransactionSuccessful()
+            } finally {
+                database.endTransaction()
+            }
+        }
+
+    /**
+     * Removes a stage, and moves the project off it if that is where it stood.
+     *
+     * **Both or neither.** A project pointing at a stage that is no longer on
+     * its road is a road that cannot be drawn: `RoadStrip` computes where the
+     * project is from the stages themselves, and a dangling pointer would show
+     * a project as having reached nothing. The project falls back to the last
+     * stage before the removed one that had been reached, which is where it
+     * actually got to.
+     *
+     * A tombstone like every other deletion, per rule 3.
+     */
+    suspend fun removeProjectStage(stageId: String) = withContext(Dispatchers.IO) {
+        val database = db().database
+        database.beginTransaction()
+        try {
+            val here = database.rawQuery(
+                "SELECT project_id, sort_index FROM live_project_stage WHERE id = ?",
+                arrayOf(stageId),
+            ).use {
+                if (it.moveToFirst()) it.getString(0) to it.getInt(1) else null
+            } ?: return@withContext
+            val (projectId, index) = here
+
+            val now = System.currentTimeMillis()
+            database.execSQL(
+                "UPDATE project_stage SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(now, now, stageId),
+            )
+
+            val standingHere = database.rawQuery(
+                "SELECT current_stage_id FROM live_project WHERE id = ?",
+                arrayOf(projectId),
+            ).use { if (it.moveToFirst() && !it.isNull(0)) it.getString(0) else null }
+
+            if (standingHere == stageId) {
+                val fallback = database.rawQuery(
+                    "SELECT id FROM live_project_stage " +
+                        "WHERE project_id = ? AND sort_index < ? AND entered_edtf IS NOT NULL " +
+                        "ORDER BY sort_index DESC LIMIT 1",
+                    arrayOf(projectId, index.toString()),
+                ).use { if (it.moveToFirst()) it.getString(0) else null }
+
+                database.execSQL(
+                    "UPDATE project SET current_stage_id = ?, updated_at = ?, rev = rev + 1 " +
+                        "WHERE id = ?",
+                    arrayOf<Any?>(fallback, now, projectId),
+                )
+            }
+            database.setTransactionSuccessful()
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    /**
      * Moves a project onto a stage, and records when it got there.
      *
      * **Both writes or neither.** The project's pointer and the stage's own
