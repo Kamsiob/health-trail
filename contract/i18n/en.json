@@ -812,5 +812,6 @@
   "today.card.project_standing.long": "Where it stands",
   "today.card.project_date.long": "The next date",
   "today.card.project_steps.long": "Steps",
-  "today.card.measure.long": "The latest value"
+  "today.card.measure.long": "The latest value",
+  "today.edit.lead.short": "To top"
 }

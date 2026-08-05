@@ -812,5 +812,6 @@
   "today.card.project_standing.long": "目前进展",
   "today.card.project_date.long": "下一个日期",
   "today.card.project_steps.long": "步骤",
-  "today.card.measure.long": "最新数值"
+  "today.card.measure.long": "最新数值",
+  "today.edit.lead.short": "置顶"
 }

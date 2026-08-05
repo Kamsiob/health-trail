@@ -224,6 +224,9 @@ fun TodayFieldScreen(
                             draft = draft.toMutableList().apply { removeAt(index) }
                         }
                     },
+                    onPromote = {
+                        draft = draft.toMutableList().apply { add(0, removeAt(index)) }
+                    },
                 )
             }
 
@@ -247,6 +250,7 @@ private fun CardFor(
     onMove: (earlier: Boolean) -> Unit = {},
     onResize: (String) -> Unit = {},
     onRemove: () -> Unit = {},
+    onPromote: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -361,6 +365,18 @@ private fun CardFor(
                             label = strings["today.edit.down.short"],
                             spoken = strings("today.edit.down", "name" to tab),
                             onClick = { onMove(false) },
+                        )
+                    }
+                    if (canMoveUp) {
+                        // **Promoting to the lead is its own action**, 21.1,
+                        // because reaching the top by tapping Move up eleven
+                        // times is not the same offer. Promoting demotes the
+                        // card that was there back into the field, which is
+                        // what moving to position zero does.
+                        EditAction(
+                            label = strings["today.edit.lead.short"],
+                            spoken = strings("today.edit.lead", "name" to tab),
+                            onClick = onPromote,
                         )
                     }
                     if (canMoveUp) {

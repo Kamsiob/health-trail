@@ -171,9 +171,9 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **Adding writes immediately** rather than being staged like a move, because a person who taps Add expects the card to be there.
 - Proved end to end: added the weight card and found it at the end of Today.
 
-**What is left on Today:**
+**Promoting a card to the lead is built and seen.** It is its own action, per 21.1, because reaching the top by tapping Move up eleven times is not the same offer, and **promoting demotes the card that was there back into the field**. Proved on the phone: promoted the medications card, saved, force stopped the app, and it came back leading with the digest directly under it. `docs/screenshots/today-promoted-light.png`.
 
-1. **Promote to lead** is not offered. Reordering to the top is the same thing today, and `promoteTodayCardToLead` exists and is tested.
+**What is left on Today:** Reordering to the top is the same thing today, and `promoteTodayCardToLead` exists and is tested.
 
 **The fallback to the previous Today is still in the shell** and now only fires for a notebook made before this landed. It comes out with #271, and `ProjectDetailScreen`'s ledger row is the model for what goes in `docs/REMOVAL-LEDGER.md` at that moment.
 

@@ -812,5 +812,6 @@
   "today.card.project_standing.long": "En qué punto está",
   "today.card.project_date.long": "La próxima fecha",
   "today.card.project_steps.long": "Pasos",
-  "today.card.measure.long": "El último valor"
+  "today.card.measure.long": "El último valor",
+  "today.edit.lead.short": "Al inicio"
 }

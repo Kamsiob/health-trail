@@ -812,5 +812,6 @@
   "today.card.project_standing.long": "أين وصل الأمر",
   "today.card.project_date.long": "التاريخ القادم",
   "today.card.project_steps.long": "الخطوات",
-  "today.card.measure.long": "آخر قيمة"
+  "today.card.measure.long": "آخر قيمة",
+  "today.edit.lead.short": "للأعلى"
 }
