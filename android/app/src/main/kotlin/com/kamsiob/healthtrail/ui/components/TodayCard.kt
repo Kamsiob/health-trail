@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -83,6 +84,21 @@ fun TodayCard(
     openLabel: String,
     size: CardSize,
     modifier: Modifier = Modifier,
+    /**
+     * Whether the card speaks as one node.
+     *
+     * **True while it is only a door**, which is almost always: a card that
+     * announced its tab, its number, its line and its chevron as four stops
+     * would make somebody listen to four things to learn one.
+     *
+     * **False in edit mode**, and that is not a preference. `clearAndSetSemantics`
+     * clears every descendant, so the Move up, Move down and Remove controls
+     * inside the card were unreachable by a screen reader and by switch access:
+     * the accessible reorder path 21.6 exists to provide did not exist. Found by
+     * trying to drive the controls from a semantics dump and finding nothing
+     * there.
+     */
+    speaksAsOneNode: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
@@ -100,7 +116,13 @@ fun TodayCard(
             .defaultMinSize(minHeight = minHeight)
             .clip(RoundedCornerShape(15.dp))
             .openableByTap(label = openLabel, onTap = onOpen)
-            .clearAndSetSemantics { contentDescription = description },
+            .then(
+                if (speaksAsOneNode) {
+                    Modifier.clearAndSetSemantics { contentDescription = description }
+                } else {
+                    Modifier.semantics { contentDescription = description }
+                },
+            ),
     ) {
         Column(modifier = Modifier.padding(Space.sm)) {
             Text(

@@ -272,6 +272,9 @@ fun NotebookShell(
         mutableStateOf<Map<String, Repository.ProjectCard>>(emptyMap())
     }
     var todayLayout by remember { mutableStateOf<Repository.TodayLayout?>(null) }
+    var savingLayout by remember {
+        mutableStateOf<List<Repository.TodayCard>?>(null)
+    }
     var todayAnswers by remember {
         mutableStateOf<Map<String, Repository.TodayAnswer>>(emptyMap())
     }
@@ -789,6 +792,11 @@ fun NotebookShell(
                             // is where the person would go to see the whole of
                             // it. A project card opens the project itself.
                             digest = digest,
+                            // **One write, from Done.** The screen holds every
+                            // change while editing so a person can move three
+                            // cards and change their mind about all of them,
+                            // and nothing saves behind their back. 21.6.
+                            onSave = { cards -> savingLayout = cards },
                             onOpen = { card ->
                                 val project = card.sourceId
                                     ?.takeIf { card.sourceTable == "project" }
@@ -1548,6 +1556,29 @@ fun NotebookShell(
                 applyingSituation = null
                 chosenSituation = null
                 situationOpen = false
+                revision += 1
+            }
+        }
+
+        savingLayout?.let { cards ->
+            LaunchedEffect(cards) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    repository.setTodayLayout(
+                        subjectId = subject.id,
+                        cards = cards.map { it.type to it.size },
+                        // **The sources travel with the cards.** A card that
+                        // points at one project must still point at it after a
+                        // reorder, and 8.7 keeps a source that no longer
+                        // resolves rather than dropping the card.
+                        sources = cards.withIndex().mapNotNull { (index, card) ->
+                            val table = card.sourceTable
+                            val id = card.sourceId
+                            if (table != null && id != null) index to (table to id) else null
+                        }.toMap(),
+                    )
+                }
+                savingLayout = null
                 revision += 1
             }
         }

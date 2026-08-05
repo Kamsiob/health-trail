@@ -787,5 +787,19 @@
   "today.card.nothing": "لا شيء ينتظر",
   "today.card.unread": "تعذرت قراءة هذه",
   "today.card.digest.new": "{count, plural, other {# أشياء جديدة منذ آخر زيارة}}",
-  "today.card.digest.quiet": "لا جديد منذ آخر زيارة"
+  "today.card.digest.quiet": "لا جديد منذ آخر زيارة",
+  "today.edit": "تحرير",
+  "today.edit.done": "تم",
+  "today.edit.cancel": "إلغاء",
+  "today.edit.remove": "أزل {name}",
+  "today.edit.up": "حرك {name} لأعلى",
+  "today.edit.down": "حرك {name} لأسفل",
+  "today.edit.lead": "ضع {name} في الأعلى",
+  "today.edit.size.small": "صغيرة",
+  "today.edit.size.wide": "عريضة",
+  "today.edit.size.tall": "طويلة",
+  "today.edit.hint": "حرك أي بطاقة أو غير حجمها أو أزلها. لا يُحفظ شيء حتى تضغط تم.",
+  "today.edit.up.short": "أعلى",
+  "today.edit.down.short": "أسفل",
+  "today.edit.remove.short": "أزل"
 }

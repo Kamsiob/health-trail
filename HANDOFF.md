@@ -150,10 +150,24 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **A hand is applied only when there is no layout**, so a person whose care setting changes later keeps the desk they arranged.
 - **A zero is not rendered.** A large 0 above "Nothing waiting" says the same thing twice, and at that weight it reads as a score on somebody who has just started.
 
-**Two things are still not done:**
+**Edit mode is built and works on the phone**, #271, apart from adding a card. `docs/screenshots/today-editing-light.png`.
 
-1. **Edit mode does not exist**, #271. Nothing can be added, removed, resized, promoted, or reordered from the screen; the repository can do all of it and is tested.
+- **Entered by a visible Edit button**, per 21.6 screen 5. Touch and hold is not the only path, because it is not a path at all yet.
+- **Staged.** Every change is held in the screen and written once, from Done, so a person can move three cards and change their mind about all of them. Cancel discards.
+- **Move up, Move down, Remove, and three size chips per card.** Proved on the device: moving a card and tapping Done survives a full app restart.
+- **The lead cannot be removed and cannot move up**, so there is never zero.
+
+**Three defects came out of building it, and two of them are accessibility defects a screenshot cannot show.**
+
+1. **The edit controls were unreachable by a screen reader.** `TodayCard` cleared all descendant semantics so it would speak as one node, which is right for a card that is only a door and wrong the moment it holds controls: Move up and Move down are the accessible reorder path 21.6 asks for, and they did not exist for the people who need them most. The card stops speaking as one node while editing. **Found by trying to drive the controls from a semantics dump and finding nothing there.**
+2. **"Move Medications down" wrapped to one letter per line** on a half-width card and stretched it to four times its height. The visible word is Up, Down, Remove; the reader still hears which card it moves.
+3. **The isolate marks nested again**, in code written four commits after the same defect was fixed on the project screen. `Bidi.join` isolates every part it is given.
+
+**What is left on Today:**
+
+1. **Adding a card**, #272: the gallery grouped by section, each entry previewing its small size with real current data.
 2. **The source-closed rung does not look different yet.** A card pointing at a finished project renders its name and does not say so.
+3. **Promote to lead** is not offered. Reordering to the top is the same thing today, and `promoteTodayCardToLead` exists and is tested.
 
 **The fallback to the previous Today is still in the shell** and now only fires for a notebook made before this landed. It comes out with #271, and `ProjectDetailScreen`'s ledger row is the model for what goes in `docs/REMOVAL-LEDGER.md` at that moment.
 

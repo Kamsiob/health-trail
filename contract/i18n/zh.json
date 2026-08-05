@@ -787,5 +787,19 @@
   "today.card.nothing": "没有待处理的事",
   "today.card.unread": "这一项无法读取",
   "today.card.digest.new": "{count, plural, other {自上次以来有 # 项新内容}}",
-  "today.card.digest.quiet": "自上次以来没有新内容"
+  "today.card.digest.quiet": "自上次以来没有新内容",
+  "today.edit": "编辑",
+  "today.edit.done": "完成",
+  "today.edit.cancel": "取消",
+  "today.edit.remove": "移除{name}",
+  "today.edit.up": "上移{name}",
+  "today.edit.down": "下移{name}",
+  "today.edit.lead": "把{name}放到最上面",
+  "today.edit.size.small": "小",
+  "today.edit.size.wide": "宽",
+  "today.edit.size.tall": "高",
+  "today.edit.hint": "移动、调整大小或移除任何卡片。点击完成之前不会保存。",
+  "today.edit.up.short": "上移",
+  "today.edit.down.short": "下移",
+  "today.edit.remove.short": "移除"
 }

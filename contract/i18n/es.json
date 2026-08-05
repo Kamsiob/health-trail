@@ -787,5 +787,19 @@
   "today.card.nothing": "Nada pendiente",
   "today.card.unread": "Esta no se pudo leer",
   "today.card.digest.new": "{count, plural, one {1 cosa nueva desde su última visita} other {# cosas nuevas desde su última visita}}",
-  "today.card.digest.quiet": "Nada nuevo desde su última visita"
+  "today.card.digest.quiet": "Nada nuevo desde su última visita",
+  "today.edit": "Editar",
+  "today.edit.done": "Listo",
+  "today.edit.cancel": "Cancelar",
+  "today.edit.remove": "Quitar {name}",
+  "today.edit.up": "Subir {name}",
+  "today.edit.down": "Bajar {name}",
+  "today.edit.lead": "Poner {name} arriba",
+  "today.edit.size.small": "Pequeña",
+  "today.edit.size.wide": "Ancha",
+  "today.edit.size.tall": "Alta",
+  "today.edit.hint": "Mueva, redimensione o quite cualquier tarjeta. Nada se guarda hasta que toque Listo.",
+  "today.edit.up.short": "Subir",
+  "today.edit.down.short": "Bajar",
+  "today.edit.remove.short": "Quitar"
 }

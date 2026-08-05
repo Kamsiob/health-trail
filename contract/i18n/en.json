@@ -787,5 +787,19 @@
   "today.card.nothing": "Nothing waiting",
   "today.card.unread": "This one could not be read",
   "today.card.digest.new": "{count, plural, one {1 new thing since you were last here} other {# new things since you were last here}}",
-  "today.card.digest.quiet": "Nothing new since you were last here"
+  "today.card.digest.quiet": "Nothing new since you were last here",
+  "today.edit": "Edit",
+  "today.edit.done": "Done",
+  "today.edit.cancel": "Cancel",
+  "today.edit.remove": "Remove {name}",
+  "today.edit.up": "Move {name} up",
+  "today.edit.down": "Move {name} down",
+  "today.edit.lead": "Put {name} at the top",
+  "today.edit.size.small": "Small",
+  "today.edit.size.wide": "Wide",
+  "today.edit.size.tall": "Tall",
+  "today.edit.hint": "Move, resize, or remove any card. Nothing is saved until you tap Done.",
+  "today.edit.up.short": "Up",
+  "today.edit.down.short": "Down",
+  "today.edit.remove.short": "Remove"
 }

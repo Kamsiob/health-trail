@@ -1,9 +1,26 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import com.kamsiob.healthtrail.ui.components.TextAction
+import com.kamsiob.healthtrail.ui.theme.Radius
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -32,6 +49,8 @@ import com.kamsiob.healthtrail.ui.theme.hueFor
 object TodayFieldTags {
     const val ROOT = "today-field"
     const val LEAD = "today-lead"
+    const val EDIT = "today-edit"
+    const val DONE = "today-done"
     fun card(id: String) = "today-card-$id"
 }
 
@@ -63,6 +82,13 @@ fun TodayFieldScreen(
     onOpen: (Repository.TodayCard) -> Unit,
     modifier: Modifier = Modifier,
     /**
+     * Saves a rearranged layout, in the order given, the first card leading.
+     *
+     * **Called once, from Done.** 21.6 screen 5: nothing saves behind your
+     * back, so every change in edit mode is held here and written in one go.
+     */
+    onSave: (List<Repository.TodayCard>) -> Unit = {},
+    /**
      * What changed since the person was last here.
      *
      * **The same summary the app already had**, computed once in the shell and
@@ -74,6 +100,15 @@ fun TodayFieldScreen(
 ) {
     val colors = HealthTrail.colors
     val strings = LocalStrings.current
+
+    // **Edit mode is entered by a visible button**, 21.6 screen 5. Touch and
+    // hold is a shortcut and never the only path, because a gesture nobody is
+    // told about is a feature that does not exist for most people.
+    var editing by rememberSaveable { mutableStateOf(false) }
+
+    // **The staged layout.** Held here while editing and written once, so a
+    // person can move three cards and change their mind about all of them.
+    var draft by remember(layout, editing) { mutableStateOf(layout.all) }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         LazyVerticalGrid(
@@ -89,39 +124,87 @@ fun TodayFieldScreen(
             item(span = { GridItemSpan(2) }) {
                 Column {
                     Spacer(Modifier.height(Space.sm))
-                    // Today belongs to no section, so gold and the base ladder,
-                    // per 4.3.
-                    TabChip(hue = wholeAppHue(), labelKey = "today.tab")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        // Today belongs to no section, so gold and the base
+                        // ladder, per 4.3.
+                        TabChip(hue = wholeAppHue(), labelKey = "today.tab")
+                        Spacer(Modifier.weight(1f))
+                        if (editing) {
+                            TextAction(
+                                label = strings["today.edit.cancel"],
+                                onClick = { editing = false },
+                            )
+                            Spacer(Modifier.width(Space.s))
+                            TextAction(
+                                label = strings["today.edit.done"],
+                                onClick = {
+                                    onSave(draft)
+                                    editing = false
+                                },
+                                modifier = Modifier.testTag(TodayFieldTags.DONE),
+                            )
+                        } else {
+                            TextAction(
+                                label = strings["today.edit"],
+                                onClick = { editing = true },
+                                modifier = Modifier.testTag(TodayFieldTags.EDIT),
+                            )
+                        }
+                    }
+                    if (editing) {
+                        Text(
+                            text = strings["today.edit.hint"],
+                            style = HealthTrail.type.bodyS,
+                            color = colors.ink2,
+                            modifier = Modifier.padding(top = Space.xs),
+                        )
+                    }
                     Spacer(Modifier.height(Space.s))
                 }
             }
 
-            // **The lead, at its own weight and always exactly one.**
-            item(span = { GridItemSpan(2) }) {
-                CardFor(
-                    card = layout.lead,
-                    answer = answers[layout.lead.id]
-                        ?: digestAnswer(layout.lead, digest, strings),
-                    size = CardSize.WIDE,
-                    onOpen = onOpen,
-                    modifier = Modifier.testTag(TodayFieldTags.LEAD),
-                )
-            }
+            val shown = if (editing) draft else layout.all
 
             items(
-                count = layout.field.size,
-                key = { layout.field[it].id },
+                count = shown.size,
+                key = { shown[it].id },
                 span = { index ->
-                    GridItemSpan(if (layout.field[index].size == "small") 1 else 2)
+                    // **The first card always spans**, editing or not: it is
+                    // the lead, and the lead is never half a screen wide.
+                    GridItemSpan(if (index > 0 && shown[index].size == "small") 1 else 2)
                 },
             ) { index ->
-                val card = layout.field[index]
+                val card = shown[index]
+                val isLead = index == 0
                 CardFor(
                     card = card,
                     answer = answers[card.id] ?: digestAnswer(card, digest, strings),
-                    size = CardSize.of(card.size),
+                    size = if (isLead) CardSize.WIDE else CardSize.of(card.size),
                     onOpen = onOpen,
-                    modifier = Modifier.testTag(TodayFieldTags.card(card.id)),
+                    modifier = Modifier.testTag(
+                        if (isLead) TodayFieldTags.LEAD else TodayFieldTags.card(card.id),
+                    ),
+                    editing = editing,
+                    canMoveUp = index > 0,
+                    canMoveDown = index < shown.lastIndex,
+                    onMove = { earlier ->
+                        val to = if (earlier) index - 1 else index + 1
+                        draft = draft.toMutableList().apply { add(to, removeAt(index)) }
+                    },
+                    onResize = { size ->
+                        draft = draft.toMutableList()
+                            .also { it[index] = it[index].copy(size = size) }
+                    },
+                    onRemove = {
+                        // **The lead cannot be removed**, because there is
+                        // never zero. Edit mode does not offer it.
+                        if (!isLead) {
+                            draft = draft.toMutableList().apply { removeAt(index) }
+                        }
+                    },
                 )
             }
 
@@ -139,22 +222,34 @@ private fun CardFor(
     size: CardSize,
     onOpen: (Repository.TodayCard) -> Unit,
     modifier: Modifier = Modifier,
+    editing: Boolean = false,
+    canMoveUp: Boolean = false,
+    canMoveDown: Boolean = false,
+    onMove: (earlier: Boolean) -> Unit = {},
+    onResize: (String) -> Unit = {},
+    onRemove: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
     val tab = strings["today.card.${card.type}"]
-    val sentence = sentenceFor(card, answer, strings)
 
     TodayCard(
         tab = tab,
         hue = hueForCard(card.type),
-        description = Bidi.join(tab, sentence),
+        // **Raw parts, joined once.** Bidi.join isolates every part it is
+        // given, so handing it a string that was already joined wraps the whole
+        // thing again and the marks nest. The same defect was fixed on the
+        // project screen four commits ago and written straight back in here.
+        description = Bidi.join(listOf(tab) + answerParts(answer, strings)),
         onOpen = { onOpen(card) },
         openLabel = strings("today.card.open", "name" to tab),
         size = size,
         modifier = modifier,
+        // In edit mode the card holds controls, and a node that speaks as one
+        // thing would swallow them.
+        speaksAsOneNode = !editing,
     ) {
         // **The answer, and the same answer at every size.** 21.3: growing a
         // card reveals more of the same answer and never a new kind of content.
@@ -199,6 +294,60 @@ private fun CardFor(
                 color = colors.ink2,
             )
         }
+        // **The controls, and only while editing.** 21.6 screen 7 gives Move
+        // up and Move down as the accessible reorder path, so reordering works
+        // one-handed, with the reader on, and with switch access. Drag is a
+        // shortcut on top of this, never instead of it.
+        if (editing) {
+            Column(modifier = Modifier.padding(top = Space.s)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+                    for (option in listOf("small", "wide", "tall")) {
+                        SizeChip(
+                            label = strings["today.edit.size.$option"],
+                            selected = card.size == option,
+                            onClick = { onResize(option) },
+                        )
+                    }
+                }
+                // **The word is short and the sentence is the reader's.**
+                // "Move Medications down" is a correct sentence and it is far
+                // too long for a half width card: it wrapped to one letter per
+                // line and stretched the card to four times its height. Seen on
+                // the phone. The visible word is Up, Down, Remove; the reader
+                // still hears which card it moves, which is the part that
+                // matters when you cannot see the card it is sitting on.
+                Row(
+                    modifier = Modifier.padding(top = Space.xs),
+                    horizontalArrangement = Arrangement.spacedBy(Space.s),
+                ) {
+                    if (canMoveUp) {
+                        EditAction(
+                            label = strings["today.edit.up.short"],
+                            spoken = strings("today.edit.up", "name" to tab),
+                            onClick = { onMove(true) },
+                        )
+                    }
+                    if (canMoveDown) {
+                        EditAction(
+                            label = strings["today.edit.down.short"],
+                            spoken = strings("today.edit.down", "name" to tab),
+                            onClick = { onMove(false) },
+                        )
+                    }
+                    if (canMoveUp) {
+                        // **Only a card that is not the lead can be removed**,
+                        // because there is never zero, and the lead is the one
+                        // card that cannot move up.
+                        EditAction(
+                            label = strings["today.edit.remove.short"],
+                            spoken = strings("today.edit.remove", "name" to tab),
+                            onClick = onRemove,
+                        )
+                    }
+                }
+            }
+        }
+
         // The second line appears at wide and tall only, per 21.3: at small the
         // card carries one answer and one line of context, and that line is the
         // answer's own.
@@ -223,15 +372,14 @@ private fun CardFor(
  * number, the line and the chevron separately would make somebody listen to
  * three things to learn one.
  */
-private fun sentenceFor(
-    card: Repository.TodayCard,
+private fun answerParts(
     answer: Repository.TodayAnswer?,
     strings: Strings,
-): String = when {
-    answer == null -> strings["today.card.unread"]
-    answer.isEmpty -> strings["today.card.nothing"]
-    else -> Bidi.join(
-        answer.count?.toString(),
+): List<String?> = when {
+    answer == null -> listOf(strings["today.card.unread"])
+    answer.isEmpty -> listOf(strings["today.card.nothing"])
+    else -> listOf(
+        answer.count?.takeIf { it > 0 }?.toString(),
         answer.title,
         answer.detail,
     )
@@ -286,5 +434,50 @@ private fun digestAnswer(
         } else {
             strings["today.card.digest.quiet"]
         },
+    )
+}
+
+/**
+ * One of the three sizes, as a chip. `DESIGN.md` 21.6 screen 5.
+ *
+ * **Selected is a fill and not only a color**, per section 9, so it survives
+ * grayscale and every color vision difference.
+ */
+@Composable
+private fun SizeChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val colors = HealthTrail.colors
+    Text(
+        text = label,
+        style = HealthTrail.type.mono,
+        color = if (selected) colors.paper else colors.ink2,
+        modifier = Modifier
+            .clip(Radius.pill)
+            .background(if (selected) colors.ink else colors.sand)
+            .clickable(onClickLabel = label, role = Role.Button, onClick = onClick)
+            .padding(horizontal = Space.s, vertical = Space.xs),
+    )
+}
+
+/**
+ * One edit control: a short word to look at, a whole sentence to hear.
+ *
+ * **Both are needed and they are not the same string.** A card in the field is
+ * half a screen wide, so a label naming the card does not fit; a reader moving
+ * through eight of these hears "Up" eight times and learns nothing. The word is
+ * for the eye and [spoken] is for the ear.
+ */
+@Composable
+private fun EditAction(label: String, spoken: String, onClick: () -> Unit) {
+    val colors = HealthTrail.colors
+    Text(
+        text = label,
+        style = HealthTrail.type.mono,
+        color = colors.blueDeep,
+        maxLines = 1,
+        modifier = Modifier
+            .clip(Radius.pill)
+            .clickable(onClickLabel = spoken, role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = spoken }
+            .padding(horizontal = Space.s, vertical = Space.s),
     )
 }
