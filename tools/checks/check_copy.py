@@ -59,12 +59,29 @@ EN_DASH = "–"
 
 # British spellings and their American forms. Word boundary anchored on the left
 # so "colour" matches inside "colours" and "coloured" without matching "color".
+#
+# **Most entries are prefixes on purpose**, because the British form inflects:
+# "organis" has to reach "organise", "organising" and "organisation", and a
+# right-hand \b would catch none of them.
+#
+# **The cost of that is a substring matching inside a word that is already
+# American**, which is #216: "programmer" is correctly spelled and contains
+# "programme", and the check called it British. The fix is not a blanket right
+# anchor, which would break every inflecting entry above. It is a negative
+# lookahead on the specific entries where a real American word continues past
+# the prefix, and each one names the word it is protecting.
+#
+# **A checker whose failures are mostly false teaches people to route around
+# it**, which is worse than not having the checker. So when this fires on
+# something correct, the entry gets a lookahead here rather than the sentence
+# getting reworded.
 BRITISH = {
     r"colou r?".replace(" ", ""): "color",
     r"honou r?".replace(" ", ""): "honor",
     r"behaviou r?".replace(" ", ""): "behavior",
     r"favou r?".replace(" ", ""): "favor",
-    r"organis": "organiz",
+    # Not "organism" or "organist", both American and both plausible here.
+    r"organis(?![mt])": "organiz",
     r"recognis": "recogniz",
     r"initialis": "initializ",
     r"normalis": "normaliz",
@@ -93,7 +110,8 @@ BRITISH = {
     r"fulfilment": "fulfillment",
     r"instalment": "installment",
     r"practise": "practice",
-    r"programme": "program",
+    # Not "programmer" or "programmed", both correct American spellings. #216.
+    r"programme(?![rd])": "program",
     r"\bstorey\b": "story",
     r"sceptic": "skeptic",
     r"\bmoustache\b": "mustache",
@@ -189,9 +207,19 @@ def check_spelling(path, relative, problems):
         lines = path.read_text(encoding="utf-8").splitlines()
     except UnicodeDecodeError:
         return
+    is_markdown = path.suffix.lower() == ".md"
     for number, line in enumerate(lines, start=1):
         # URLs and file paths legitimately carry any spelling.
         stripped = re.sub(r"https?://\S+", "", line)
+        # So does anything in backticks in a document, because backticks mark a
+        # token being quoted rather than a word being written: an identifier, a
+        # path, or a regular expression. A decision entry explaining why the
+        # pattern is `organis(?![mt])` is not written in British English, and
+        # rewording it to satisfy this check would lose the only part of the
+        # entry a reader needs. Fenced blocks are left in scope on purpose,
+        # since copy inside one is still copy.
+        if is_markdown:
+            stripped = re.sub(r"`[^`\n]*`", "", stripped)
         for pattern, american in BRITISH_RE:
             match = pattern.search(stripped)
             if match:

@@ -20,7 +20,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 **Take these in this order.**
 
-1. **A new design direction arrived on 2026-08-04 and step zero is done.** Section 2 is the whole of it. **The next build is #262, the data contract work**, because everything on both new surfaces stores something.
+1. **A new design direction arrived on 2026-08-04 and step zero is done.** Section 2 is the whole of it. **#262, the data contract work, is underway and its schema half has landed.** Section 2.1 says exactly where it stands and what is left of it.
 2. **#200, #201 and #202 are done and closed**, and sections 3 to 5 say what came out of them.
 3. **The rest of step 4 of the v4 conversion is untouched**: #203 through #208, in number order, **except take #208 last**. These are not affected by the new grids.
    - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape. **Take it last.**
@@ -49,6 +49,31 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 **Fifty-nine issues are open for the work**, #243 through #301. The two parents are **#243 Today** and **#244 Projects**. Under them: 28 screen issues, 17 card issues each carrying its full states ladder as acceptance criteria, 11 component issues, the data contract work at **#262**, and the two provisional template hands at **#273**.
 
 **Take #262 first.** Everything on both surfaces stores something, and building screens against a contract that does not exist yet is the order that produces a second migration.
+
+### 2.1 #262, the schema half: landed
+
+**The database now holds what a person arranges.** `contract/schema.sql` is at **version 2** and `HealthTrailDatabase.SCHEMA_VERSION` moved with it.
+
+**Six new tables**, each with its live view, both change log triggers, and its indexes: `today_card`, `project_stage`, `project_standing`, `project_date`, `project_date_kind`, `project_paper`. **Four new columns**: `project.lead`, `project.current_stage_id`, `project_step.cluster`, `project_step.handler_label`.
+
+**Three things in it are worth knowing before touching either surface.**
+
+- **The lead slot is singular in the database, not only on the screen.** A partial unique index, `ux_today_card_lead`, refuses a second lead per subject. Zero is the application's to prevent, because a database cannot require a row to exist. It is the schema's first `CREATE UNIQUE INDEX`.
+- **`today_card.source_table` and `source_id` are deliberately not foreign keys.** 8.7 requires that a card whose source is gone is kept rather than dropped, and a foreign key would make import the thing that quietly edited somebody's desk.
+- **No column marks a project's important date.** The screen leads with the soonest date that has not passed, and the most recent one when they all have. D113 says why, and what that gives up.
+
+**The migration is real and is proved against a version 1 database**, not against today's. `Migrations.steps` has its first entry; `Step.apply` now receives the contract schema text alongside the database, so an additive step replays `contract/schema.sql` rather than carrying a second copy of six table definitions that would drift. `MigrationTest` builds a hand-written version 1 database and asserts the tables arrive, the columns arrive, and the project and its step survive with nothing invented in the new columns.
+
+**All 17 checks pass, 167 unit tests pass, lint is clean.** The instrumented suite has **not** been run against this yet.
+
+**What is left of #262, in order:**
+
+1. **`Repository` reads and writes for the six tables.** Nothing in the app can create a card or a stage yet.
+2. **The fixture writers**, so every rung of every card's states ladder can actually be produced on the device. `check_fixtures.py` holds ids to the real catalog, so this is where the states ladder audit becomes possible at all.
+3. **The archive round trip proved on the device**, per 8.5. Export and readable rendering are schema-driven and pick the tables up automatically; that is the reason to trust them, not the reason to skip the test.
+4. **The built-in project templates gain the five defaults.** `templates/data/projects.json` has `steps` and `roles` and needs `stages`, `lead`, `papers`, and `date_kinds` on all sixteen. This is content work in the app's voice.
+
+**Two checkers were fixed rather than worked around while doing this**, D114, and **#216 is closed by it**.
 
 **Seven things are resolved provisionally, to the drawn default, and are meant to be revisited in one sitting after the owner tests on the phone.** D111 lists them together. **Two template default hands, hospital and rehab, were drafted rather than deferred and are not final.**
 

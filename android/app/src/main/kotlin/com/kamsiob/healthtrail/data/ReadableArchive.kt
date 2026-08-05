@@ -89,6 +89,13 @@ internal object ReadableArchive {
         "cost_sheet", "custom_template", "attachment", "link",
         "person_chapter", "entry_thread", "entry_person", "project_person",
         "call_detail", "visit_detail",
+        // The project's own shape and the arranged Today, per 8.7. These are
+        // rosters, not streams: a project has a handful of stages and a person
+        // has a screenful of cards, so splitting either by year would scatter a
+        // short list across five pages and lose the order, which is the part of
+        // it that carries meaning.
+        "project_stage", "project_standing", "project_date", "project_date_kind",
+        "project_paper", "today_card",
     )
 
     /**
@@ -411,6 +418,12 @@ internal object ReadableArchive {
         "project_person" to "Who each project involved",
         "call_detail" to "Details of calls",
         "visit_detail" to "Details of visits",
+        "project_stage" to "The stages of each project",
+        "project_standing" to "Where each project stood, and since when",
+        "project_date" to "Dates each project had, and where they came from",
+        "project_date_kind" to "The kinds of date each project keeps",
+        "project_paper" to "Papers each project needed",
+        "today_card" to "How Today was arranged",
     )
 
     private val COLUMNS = mapOf(
@@ -450,5 +463,29 @@ internal object ReadableArchive {
         "entry_id" to "Entry",
         "reported_by_person_id" to "Reported by",
         "source" to "Where it came from",
+        "holder_label" to "Whose hands",
+        "activity" to "What was happening",
+        "since_edtf" to "Since",
+        "entered_edtf" to "Reached",
+        "due_edtf" to "The date",
+        "source_note" to "Taken from",
+        "source_document_id" to "The paper it came from",
+        "source_entry_id" to "The entry it came from",
+        "current_stage_id" to "Where it stands",
+        "lead" to "What this project opens with",
+        "cluster" to "Which area",
+        "handler_label" to "Who is handling it",
+        "direction" to "Sent or received",
+        "document_id" to "The paper",
+        "project_id" to "Project",
+        "person_id" to "Person",
+        "card_type" to "Which card",
+        "size" to "Its size",
+        "sort_index" to "Its place in the order",
+        "is_lead" to "Held the top of the screen",
+        "source_table" to "What it pointed at",
+        "source_id" to "The reference it pointed at",
+        "label" to "Label",
+        "name" to "Name",
     )
 }

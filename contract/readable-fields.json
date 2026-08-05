@@ -1911,7 +1911,9 @@
       "started_zone",
       "finished_edtf",
       "finished_zone",
-      "notes"
+      "notes",
+      "lead",
+      "current_stage_id"
     ],
     "columns": {
       "id": {
@@ -1987,6 +1989,14 @@
       },
       "notes": {
         "render": "value"
+      },
+      "lead": {
+        "render": "value",
+        "note": "Which of the three answers this project opens with, which is the shape the person gave it. DESIGN.md 20.3."
+      },
+      "current_stage_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       }
     }
   },
@@ -2038,7 +2048,9 @@
       "sort_index",
       "completed_edtf",
       "completed_zone",
-      "note"
+      "note",
+      "cluster",
+      "handler_label"
     ],
     "columns": {
       "id": {
@@ -2086,6 +2098,13 @@
       },
       "note": {
         "render": "value"
+      },
+      "cluster": {
+        "render": "value"
+      },
+      "handler_label": {
+        "render": "value",
+        "note": "Who said they would handle it, as a label the person wrote down. Never an identity: no account and no address, per D108."
       }
     }
   },
@@ -2433,6 +2452,346 @@
       },
       "location_note": {
         "render": "value"
+      }
+    }
+  },
+  "project_stage": {
+    "order": [
+      "id",
+      "project_id",
+      "name",
+      "sort_index",
+      "entered_edtf",
+      "entered_zone"
+    ],
+    "columns": {
+      "id": {
+        "render": "id",
+        "note": "Section 8.2: every entry prints its id, and it is the same id as in data/trail.sqlite, so a person can move between the two halves of the archive by hand."
+      },
+      "created_at": {
+        "notRendered": "Row bookkeeping, not a claim about the world. When something happened is the event date, and that is rendered. contract/DATA-CONTRACT.md section 3."
+      },
+      "updated_at": {
+        "notRendered": "Row bookkeeping. The archive is a record of care, not an edit history; the change log carries edits."
+      },
+      "deleted_at": {
+        "notRendered": "A tombstone. A deleted row is absent from the readable copy by definition, and printing the fact that something was deleted would put back what the person removed."
+      },
+      "origin_device": {
+        "notRendered": "Which device wrote the row. Meaningless to a reader and a small privacy leak in a document meant to be handed to somebody."
+      },
+      "rev": {
+        "notRendered": "Row bookkeeping for sync."
+      },
+      "project_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "name": {
+        "render": "value"
+      },
+      "sort_index": {
+        "render": "value"
+      },
+      "entered_edtf": {
+        "render": "date",
+        "note": "At exactly the precision the person expressed, never finer. DESIGN.md 9.2."
+      },
+      "entered_zone": {
+        "render": "dateZone",
+        "note": "Rendered as part of its own date rather than on its own: section 8.2 requires the local reading plus the UTC offset, which this supplies."
+      },
+      "entered_start": {
+        "notRendered": "Derived index, recomputed from the EDTF string on import rather than trusted from the file. contract/DATA-CONTRACT.md section 3.1. The EDTF column is what renders."
+      },
+      "entered_end": {
+        "notRendered": "Derived index, recomputed from the EDTF string on import rather than trusted from the file. contract/DATA-CONTRACT.md section 3.1. The EDTF column is what renders."
+      }
+    }
+  },
+  "project_standing": {
+    "order": [
+      "id",
+      "project_id",
+      "holder_label",
+      "person_id",
+      "organization_id",
+      "activity",
+      "since_edtf",
+      "since_zone",
+      "entry_id",
+      "note"
+    ],
+    "columns": {
+      "id": {
+        "render": "id",
+        "note": "Section 8.2: every entry prints its id, and it is the same id as in data/trail.sqlite, so a person can move between the two halves of the archive by hand."
+      },
+      "created_at": {
+        "notRendered": "Row bookkeeping, not a claim about the world. When something happened is the event date, and that is rendered. contract/DATA-CONTRACT.md section 3."
+      },
+      "updated_at": {
+        "notRendered": "Row bookkeeping. The archive is a record of care, not an edit history; the change log carries edits."
+      },
+      "deleted_at": {
+        "notRendered": "A tombstone. A deleted row is absent from the readable copy by definition, and printing the fact that something was deleted would put back what the person removed."
+      },
+      "origin_device": {
+        "notRendered": "Which device wrote the row. Meaningless to a reader and a small privacy leak in a document meant to be handed to somebody."
+      },
+      "rev": {
+        "notRendered": "Row bookkeeping for sync."
+      },
+      "project_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "holder_label": {
+        "render": "value"
+      },
+      "person_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "organization_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "activity": {
+        "render": "value"
+      },
+      "since_edtf": {
+        "render": "date",
+        "note": "At exactly the precision the person expressed, never finer. DESIGN.md 9.2."
+      },
+      "since_zone": {
+        "render": "dateZone",
+        "note": "Rendered as part of its own date rather than on its own: section 8.2 requires the local reading plus the UTC offset, which this supplies."
+      },
+      "since_start": {
+        "notRendered": "Derived index, recomputed from the EDTF string on import rather than trusted from the file. contract/DATA-CONTRACT.md section 3.1. The EDTF column is what renders."
+      },
+      "since_end": {
+        "notRendered": "Derived index, recomputed from the EDTF string on import rather than trusted from the file. contract/DATA-CONTRACT.md section 3.1. The EDTF column is what renders."
+      },
+      "entry_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "note": {
+        "render": "value"
+      }
+    }
+  },
+  "project_date": {
+    "order": [
+      "id",
+      "project_id",
+      "kind",
+      "due_edtf",
+      "due_zone",
+      "source_note",
+      "source_document_id",
+      "source_entry_id"
+    ],
+    "columns": {
+      "id": {
+        "render": "id",
+        "note": "Section 8.2: every entry prints its id, and it is the same id as in data/trail.sqlite, so a person can move between the two halves of the archive by hand."
+      },
+      "created_at": {
+        "notRendered": "Row bookkeeping, not a claim about the world. When something happened is the event date, and that is rendered. contract/DATA-CONTRACT.md section 3."
+      },
+      "updated_at": {
+        "notRendered": "Row bookkeeping. The archive is a record of care, not an edit history; the change log carries edits."
+      },
+      "deleted_at": {
+        "notRendered": "A tombstone. A deleted row is absent from the readable copy by definition, and printing the fact that something was deleted would put back what the person removed."
+      },
+      "origin_device": {
+        "notRendered": "Which device wrote the row. Meaningless to a reader and a small privacy leak in a document meant to be handed to somebody."
+      },
+      "rev": {
+        "notRendered": "Row bookkeeping for sync."
+      },
+      "project_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "kind": {
+        "render": "value"
+      },
+      "due_edtf": {
+        "render": "date",
+        "note": "At exactly the precision the person expressed, never finer. DESIGN.md 9.2."
+      },
+      "due_zone": {
+        "render": "dateZone",
+        "note": "Rendered as part of its own date rather than on its own: section 8.2 requires the local reading plus the UTC offset, which this supplies."
+      },
+      "due_start": {
+        "notRendered": "Derived index, recomputed from the EDTF string on import rather than trusted from the file. contract/DATA-CONTRACT.md section 3.1. The EDTF column is what renders."
+      },
+      "due_end": {
+        "notRendered": "Derived index, recomputed from the EDTF string on import rather than trusted from the file. contract/DATA-CONTRACT.md section 3.1. The EDTF column is what renders."
+      },
+      "source_note": {
+        "render": "value",
+        "note": "Where the date was taken from, in the person's own words. It is the half of the date that makes it usable a year later, so it renders beside the date rather than being treated as a note."
+      },
+      "source_document_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "source_entry_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      }
+    }
+  },
+  "project_date_kind": {
+    "order": [
+      "id",
+      "project_id",
+      "label",
+      "sort_index"
+    ],
+    "columns": {
+      "id": {
+        "render": "id",
+        "note": "Section 8.2: every entry prints its id, and it is the same id as in data/trail.sqlite, so a person can move between the two halves of the archive by hand."
+      },
+      "created_at": {
+        "notRendered": "Row bookkeeping, not a claim about the world. When something happened is the event date, and that is rendered. contract/DATA-CONTRACT.md section 3."
+      },
+      "updated_at": {
+        "notRendered": "Row bookkeeping. The archive is a record of care, not an edit history; the change log carries edits."
+      },
+      "deleted_at": {
+        "notRendered": "A tombstone. A deleted row is absent from the readable copy by definition, and printing the fact that something was deleted would put back what the person removed."
+      },
+      "origin_device": {
+        "notRendered": "Which device wrote the row. Meaningless to a reader and a small privacy leak in a document meant to be handed to somebody."
+      },
+      "rev": {
+        "notRendered": "Row bookkeeping for sync."
+      },
+      "project_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "label": {
+        "render": "value"
+      },
+      "sort_index": {
+        "render": "value"
+      }
+    }
+  },
+  "project_paper": {
+    "order": [
+      "id",
+      "project_id",
+      "name",
+      "sort_index",
+      "direction",
+      "document_id"
+    ],
+    "columns": {
+      "id": {
+        "render": "id",
+        "note": "Section 8.2: every entry prints its id, and it is the same id as in data/trail.sqlite, so a person can move between the two halves of the archive by hand."
+      },
+      "created_at": {
+        "notRendered": "Row bookkeeping, not a claim about the world. When something happened is the event date, and that is rendered. contract/DATA-CONTRACT.md section 3."
+      },
+      "updated_at": {
+        "notRendered": "Row bookkeeping. The archive is a record of care, not an edit history; the change log carries edits."
+      },
+      "deleted_at": {
+        "notRendered": "A tombstone. A deleted row is absent from the readable copy by definition, and printing the fact that something was deleted would put back what the person removed."
+      },
+      "origin_device": {
+        "notRendered": "Which device wrote the row. Meaningless to a reader and a small privacy leak in a document meant to be handed to somebody."
+      },
+      "rev": {
+        "notRendered": "Row bookkeeping for sync."
+      },
+      "project_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "name": {
+        "render": "value"
+      },
+      "sort_index": {
+        "render": "value"
+      },
+      "direction": {
+        "render": "value",
+        "note": "What they sent or what you sent. Empty is a real state and reads as not yet."
+      },
+      "document_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      }
+    }
+  },
+  "today_card": {
+    "order": [
+      "id",
+      "subject_id",
+      "card_type",
+      "size",
+      "sort_index",
+      "is_lead",
+      "source_table",
+      "source_id"
+    ],
+    "columns": {
+      "id": {
+        "render": "id",
+        "note": "Section 8.2: every entry prints its id, and it is the same id as in data/trail.sqlite, so a person can move between the two halves of the archive by hand."
+      },
+      "created_at": {
+        "notRendered": "Row bookkeeping, not a claim about the world. When something happened is the event date, and that is rendered. contract/DATA-CONTRACT.md section 3."
+      },
+      "updated_at": {
+        "notRendered": "Row bookkeeping. The archive is a record of care, not an edit history; the change log carries edits."
+      },
+      "deleted_at": {
+        "notRendered": "A tombstone. A deleted row is absent from the readable copy by definition, and printing the fact that something was deleted would put back what the person removed."
+      },
+      "origin_device": {
+        "notRendered": "Which device wrote the row. Meaningless to a reader and a small privacy leak in a document meant to be handed to somebody."
+      },
+      "rev": {
+        "notRendered": "Row bookkeeping for sync."
+      },
+      "subject_id": {
+        "render": "link",
+        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+      },
+      "card_type": {
+        "render": "value"
+      },
+      "size": {
+        "render": "value"
+      },
+      "sort_index": {
+        "render": "value"
+      },
+      "is_lead": {
+        "render": "boolean"
+      },
+      "source_table": {
+        "render": "value",
+        "note": "Which table the card points at. It renders as the plain table name beside the id, because a reader restoring by hand needs to know where to look and the pair is meaningless split up."
+      },
+      "source_id": {
+        "render": "value",
+        "note": "Deliberately rendered as the raw id rather than as a link, because a source that no longer resolves is kept rather than dropped, per 8.7, and a link renderer has nothing to point at. The id is what survives."
       }
     }
   }

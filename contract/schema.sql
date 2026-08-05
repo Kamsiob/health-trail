@@ -975,10 +975,155 @@ CREATE TABLE IF NOT EXISTS project (
   finished_zone  TEXT,
   finished_start INTEGER,
   finished_end   INTEGER,
-  notes         TEXT
+  notes         TEXT,
+
+  -- Which of the three answers this project's home screen opens with, per
+  -- DESIGN.md 20.1 and 20.3. It is the project's shape: 'standing' is the long
+  -- road, 'date' is the closing window, 'steps' is the busy stretch. A template
+  -- sets it once and the person changes it from setup with no penalty, so it is
+  -- a default and never a cage.
+  lead          TEXT NOT NULL DEFAULT 'standing' CHECK (lead IN (
+                  'standing', 'date', 'steps'
+                )),
+  -- Where the project stands on its own road. Null means the stages exist and
+  -- none has been entered yet, which is a real state and not an error.
+  current_stage_id TEXT REFERENCES project_stage (id)
 );
 
 CREATE INDEX IF NOT EXISTS ix_project_subject ON project (subject_id, status) WHERE deleted_at IS NULL;
+
+-- The named stretches of one project's road, drawn as the road strip. These
+-- are copied from the template at setup and are the project's own from that
+-- moment: renaming a stage here never touches the template it came from, and
+-- editing the template never reaches back into a project already underway.
+--
+-- entered_* is when the project reached this stage, which is what "23 days so
+-- far" is counted from. A stage never entered has it null.
+CREATE TABLE IF NOT EXISTS project_stage (
+  id            TEXT    NOT NULL PRIMARY KEY,
+  created_at    INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  deleted_at    INTEGER,
+  origin_device TEXT    NOT NULL,
+  rev           INTEGER NOT NULL DEFAULT 1,
+
+  project_id    TEXT    NOT NULL REFERENCES project (id),
+  name          TEXT    NOT NULL,
+  sort_index    INTEGER NOT NULL DEFAULT 0,
+  entered_edtf  TEXT,
+  entered_zone  TEXT,
+  entered_start INTEGER,
+  entered_end   INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS ix_project_stage_project ON project_stage (project_id, sort_index);
+
+-- Whose hands the project is in, since when, and what is happening there. One
+-- row per time it changed hands, so the screen states the current one and the
+-- trail can show the whole sequence.
+--
+-- holder_label is a label the person wrote down, not an identity. person_id and
+-- organization_id are filled where the record already knows who is meant, and
+-- both being null is normal: "the county" is often all anybody is told.
+CREATE TABLE IF NOT EXISTS project_standing (
+  id            TEXT    NOT NULL PRIMARY KEY,
+  created_at    INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  deleted_at    INTEGER,
+  origin_device TEXT    NOT NULL,
+  rev           INTEGER NOT NULL DEFAULT 1,
+
+  project_id      TEXT  NOT NULL REFERENCES project (id),
+  holder_label    TEXT  NOT NULL,
+  person_id       TEXT  REFERENCES person (id),
+  organization_id TEXT  REFERENCES organization (id),
+  -- What is happening in those hands, in the person's own words or the
+  -- office's: "reviewing it", "waiting on the bank statement". Never a judgment
+  -- and never generated.
+  activity        TEXT,
+  since_edtf      TEXT,
+  since_zone      TEXT,
+  since_start     INTEGER,
+  since_end       INTEGER,
+  -- The call or letter this was learned from, where there was one.
+  entry_id        TEXT  REFERENCES entry (id),
+  note            TEXT
+);
+
+CREATE INDEX IF NOT EXISTS ix_project_standing_project ON project_standing (project_id, since_start);
+
+-- A date the person took off a real paper or out of a real call, with where it
+-- came from. The source is the whole point: "Apr 12, from the letter of Mar 5"
+-- is usable months later and a bare Apr 12 is not.
+--
+-- There is no column marking one date as the important one. The date a screen
+-- leads with is the soonest one that has not passed, and the most recent one
+-- when they all have, which is deterministic and asks the person to decide
+-- nothing. See DECISIONS.md D113.
+CREATE TABLE IF NOT EXISTS project_date (
+  id            TEXT    NOT NULL PRIMARY KEY,
+  created_at    INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  deleted_at    INTEGER,
+  origin_device TEXT    NOT NULL,
+  rev           INTEGER NOT NULL DEFAULT 1,
+
+  project_id    TEXT    NOT NULL REFERENCES project (id),
+  -- The kind of date this is, as a label: "Filing deadline", "Hearing".
+  -- Offered as chips from project_date_kind and freely typed over.
+  kind          TEXT    NOT NULL,
+  due_edtf      TEXT,
+  due_zone      TEXT,
+  due_start     INTEGER,
+  due_end       INTEGER,
+  -- Where the date was taken from, as the person would say it out loud.
+  source_note   TEXT,
+  source_document_id TEXT REFERENCES document (id),
+  source_entry_id    TEXT REFERENCES entry (id)
+);
+
+CREATE INDEX IF NOT EXISTS ix_project_date_project ON project_date (project_id, due_start);
+
+-- The kinds of date this project tends to have, copied from the template at
+-- setup and editable after. They are the chips offered when a date is recorded,
+-- and nothing more: recording a date of a kind not listed here is allowed.
+CREATE TABLE IF NOT EXISTS project_date_kind (
+  id            TEXT    NOT NULL PRIMARY KEY,
+  created_at    INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  deleted_at    INTEGER,
+  origin_device TEXT    NOT NULL,
+  rev           INTEGER NOT NULL DEFAULT 1,
+
+  project_id    TEXT    NOT NULL REFERENCES project (id),
+  label         TEXT    NOT NULL,
+  sort_index    INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS ix_project_date_kind_project ON project_date_kind (project_id, sort_index);
+
+-- The papers this project usually needs, as named placeholders. A placeholder
+-- with no document_id is empty, and an empty one reads "not yet" rather than as
+-- something missing.
+--
+-- direction carries the one distinction that matters on the papers screen: what
+-- they sent and what you sent. Null means the placeholder is not yet either.
+CREATE TABLE IF NOT EXISTS project_paper (
+  id            TEXT    NOT NULL PRIMARY KEY,
+  created_at    INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  deleted_at    INTEGER,
+  origin_device TEXT    NOT NULL,
+  rev           INTEGER NOT NULL DEFAULT 1,
+
+  project_id    TEXT    NOT NULL REFERENCES project (id),
+  name          TEXT    NOT NULL,
+  sort_index    INTEGER NOT NULL DEFAULT 0,
+  direction     TEXT    CHECK (direction IN ('received', 'sent')),
+  document_id   TEXT    REFERENCES document (id)
+);
+
+CREATE INDEX IF NOT EXISTS ix_project_paper_project ON project_paper (project_id, sort_index);
 
 CREATE TABLE IF NOT EXISTS project_step (
   id            TEXT    NOT NULL PRIMARY KEY,
@@ -991,11 +1136,22 @@ CREATE TABLE IF NOT EXISTS project_step (
   project_id    TEXT    NOT NULL REFERENCES project (id),
   text          TEXT    NOT NULL,
   sort_index    INTEGER NOT NULL DEFAULT 0,
+  -- Completed is what the busy stretch calls arranged. One column, because two
+  -- names for one truth is two columns that disagree by year two.
   completed_edtf  TEXT,
   completed_zone  TEXT,
   completed_start INTEGER,
   completed_end   INTEGER,
-  note          TEXT
+  note          TEXT,
+
+  -- The area this step belongs to, on the busy stretch: "The house", "The
+  -- ride", "Equipment". Null means the step is not clustered, which is the
+  -- normal state on the other two shapes.
+  cluster       TEXT,
+  -- Who said they would handle it, as a label. DESIGN.md 20.6 and D108: a tag
+  -- is a label and never an identity. No account, no address, no notification,
+  -- no second user, and nothing about it leaves the device.
+  handler_label TEXT
 );
 
 CREATE INDEX IF NOT EXISTS ix_project_step_project ON project_step (project_id, sort_index);
@@ -1081,6 +1237,57 @@ CREATE TABLE IF NOT EXISTS custom_template (
   body_json     TEXT    NOT NULL
 );
 
+-- What the person arranged on Today, which is record and not preference.
+-- contract/DATA-CONTRACT.md 8.7, D110.
+--
+-- One row per card on the surface, in sort_index order, with exactly one of
+-- them holding the lead. A person's arranged Today is something they made, and
+-- if it does not survive the new phone the app has quietly decided that what
+-- somebody built is less real than what they typed.
+--
+-- source_table and source_id name what a card points at where it points at
+-- something: which measure, which project, which person. They are deliberately
+-- not foreign keys. A card whose source is closed or gone renders its
+-- source-closed state and stays until the person's own hand removes it, per
+-- 8.7, and a foreign key would make import the thing that quietly edited
+-- somebody's desk.
+CREATE TABLE IF NOT EXISTS today_card (
+  id            TEXT    NOT NULL PRIMARY KEY,
+  created_at    INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  deleted_at    INTEGER,
+  origin_device TEXT    NOT NULL,
+  rev           INTEGER NOT NULL DEFAULT 1,
+
+  subject_id    TEXT    NOT NULL REFERENCES subject (id),
+  -- The seventeen types in DESIGN.md 21.7, and nothing else. A card outside the
+  -- catalog does not exist, so the database refuses one rather than rendering a
+  -- blank where a card should be.
+  card_type     TEXT    NOT NULL CHECK (card_type IN (
+                  'digest', 'next_up', 'medications', 'measure', 'milestones',
+                  'ask_next_time', 'project_standing', 'project_date',
+                  'project_steps', 'incidents', 'money', 'unfiled',
+                  'emergency_card', 'care_team', 'trail_lately',
+                  'recent_documents', 'standing_instructions'
+                )),
+  size          TEXT    NOT NULL DEFAULT 'small' CHECK (size IN (
+                  'small', 'wide', 'tall'
+                )),
+  sort_index    INTEGER NOT NULL DEFAULT 0,
+  is_lead       INTEGER NOT NULL DEFAULT 0 CHECK (is_lead IN (0, 1)),
+  source_table  TEXT,
+  source_id     TEXT
+);
+
+CREATE INDEX IF NOT EXISTS ix_today_card_subject ON today_card (subject_id, sort_index) WHERE deleted_at IS NULL;
+
+-- The law that says the lead slot is singular by construction, made a property
+-- of the database rather than a promise the screen keeps. DESIGN.md 21.1: there
+-- is never zero and never two. Two is refused here. Zero is the application's
+-- to prevent, because a database cannot require a row to exist.
+CREATE UNIQUE INDEX IF NOT EXISTS ux_today_card_lead ON today_card (subject_id)
+  WHERE is_lead = 1 AND deleted_at IS NULL;
+
 -- The generic connection table. Strong relationships above are foreign keys.
 -- This carries the rest, which is what makes "one tap assembles everything
 -- connected to this" a single query rather than a union of thirty.
@@ -1145,6 +1352,12 @@ CREATE VIEW IF NOT EXISTS live_instruction_violation AS SELECT * FROM instructio
 CREATE VIEW IF NOT EXISTS live_project               AS SELECT * FROM project               WHERE deleted_at IS NULL;
 CREATE VIEW IF NOT EXISTS live_project_step          AS SELECT * FROM project_step          WHERE deleted_at IS NULL;
 CREATE VIEW IF NOT EXISTS live_project_person        AS SELECT * FROM project_person        WHERE deleted_at IS NULL;
+CREATE VIEW IF NOT EXISTS live_project_stage         AS SELECT * FROM project_stage         WHERE deleted_at IS NULL;
+CREATE VIEW IF NOT EXISTS live_project_standing      AS SELECT * FROM project_standing      WHERE deleted_at IS NULL;
+CREATE VIEW IF NOT EXISTS live_project_date          AS SELECT * FROM project_date          WHERE deleted_at IS NULL;
+CREATE VIEW IF NOT EXISTS live_project_date_kind     AS SELECT * FROM project_date_kind     WHERE deleted_at IS NULL;
+CREATE VIEW IF NOT EXISTS live_project_paper         AS SELECT * FROM project_paper         WHERE deleted_at IS NULL;
+CREATE VIEW IF NOT EXISTS live_today_card            AS SELECT * FROM today_card            WHERE deleted_at IS NULL;
 CREATE VIEW IF NOT EXISTS live_emergency_card        AS SELECT * FROM emergency_card        WHERE deleted_at IS NULL;
 CREATE VIEW IF NOT EXISTS live_emergency_contact     AS SELECT * FROM emergency_contact     WHERE deleted_at IS NULL;
 CREATE VIEW IF NOT EXISTS live_custom_template       AS SELECT * FROM custom_template       WHERE deleted_at IS NULL;
@@ -1741,6 +1954,108 @@ CREATE TRIGGER IF NOT EXISTS trg_link_update AFTER UPDATE ON link
 BEGIN
   INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
   VALUES ('link', NEW.id,
+          CASE WHEN OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL
+               THEN 'delete' ELSE 'update' END,
+          NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_stage_insert AFTER INSERT ON project_stage
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_stage', NEW.id, 'insert', NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_stage_update AFTER UPDATE ON project_stage
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_stage', NEW.id,
+          CASE WHEN OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL
+               THEN 'delete' ELSE 'update' END,
+          NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_standing_insert AFTER INSERT ON project_standing
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_standing', NEW.id, 'insert', NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_standing_update AFTER UPDATE ON project_standing
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_standing', NEW.id,
+          CASE WHEN OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL
+               THEN 'delete' ELSE 'update' END,
+          NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_date_insert AFTER INSERT ON project_date
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_date', NEW.id, 'insert', NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_date_update AFTER UPDATE ON project_date
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_date', NEW.id,
+          CASE WHEN OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL
+               THEN 'delete' ELSE 'update' END,
+          NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_date_kind_insert AFTER INSERT ON project_date_kind
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_date_kind', NEW.id, 'insert', NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_date_kind_update AFTER UPDATE ON project_date_kind
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_date_kind', NEW.id,
+          CASE WHEN OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL
+               THEN 'delete' ELSE 'update' END,
+          NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_paper_insert AFTER INSERT ON project_paper
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_paper', NEW.id, 'insert', NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_project_paper_update AFTER UPDATE ON project_paper
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('project_paper', NEW.id,
+          CASE WHEN OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL
+               THEN 'delete' ELSE 'update' END,
+          NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_today_card_insert AFTER INSERT ON today_card
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('today_card', NEW.id, 'insert', NEW.rev, NEW.updated_at,
+          COALESCE((SELECT value FROM app_meta WHERE key = 'device_id'), 'unknown-device'));
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_today_card_update AFTER UPDATE ON today_card
+BEGIN
+  INSERT INTO change_log (table_name, row_id, op, rev, changed_at, device_id)
+  VALUES ('today_card', NEW.id,
           CASE WHEN OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL
                THEN 'delete' ELSE 'update' END,
           NEW.rev, NEW.updated_at,

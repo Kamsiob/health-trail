@@ -33,8 +33,14 @@ class SchemaStatementSplitTest {
         val statements = ContractAssets.splitStatements(schema)
         val triggers = statements.filter { it.contains("CREATE TRIGGER", ignoreCase = true) }
 
-        // 34 user data tables, two triggers each.
-        assertEquals("wrong number of trigger statements", 68, triggers.size)
+        // Two triggers per user data table, counted from the schema rather than
+        // written down here. The number was 68 and is 80, and a hardcoded count
+        // means every table added to the contract fails this test for a reason
+        // that has nothing to do with splitting, which is what this test is
+        // about. That every table has both triggers is check_schema.py's job.
+        val declared = Regex("""CREATE TRIGGER""", RegexOption.IGNORE_CASE)
+            .findAll(schema).count()
+        assertEquals("the splitter lost or invented a trigger", declared, triggers.size)
 
         for (trigger in triggers) {
             assertTrue(
@@ -58,7 +64,11 @@ class SchemaStatementSplitTest {
         assertTrue("the splitter produced nothing", statements.isNotEmpty())
 
         val recognized = listOf(
-            "CREATE TABLE", "CREATE VIEW", "CREATE TRIGGER", "CREATE INDEX", "PRAGMA",
+            "CREATE TABLE", "CREATE VIEW", "CREATE TRIGGER", "CREATE INDEX",
+            // The lead slot's uniqueness is a partial unique index, which is the
+            // first of its kind in the schema. DESIGN.md 21.1.
+            "CREATE UNIQUE INDEX",
+            "PRAGMA",
         )
         for (statement in statements) {
             val head = statement.lineSequence()

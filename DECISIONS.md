@@ -2113,6 +2113,30 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **`docs/REMOVAL-LEDGER.md` did not exist and was created by this adoption.** The instruction referred to it as the existing deferral rule, and the rule was being followed in practice without a file to record it in. It now has one, and every row says what was superseded, by what, and when.
 
+### D113. The date a project screen leads with is the soonest one that has not passed, and no column marks it
+
+**2026-08-04, building #262.** The closing window leads with the next date, `DESIGN.md` 20.3, and a project may hold several dates at once: a filing deadline, a hearing, a date a letter must be answered by. Something has to decide which one the screen opens with.
+
+**Two ways were available.** A column on `project_date` marking one row as the important one, set by the person. Or a deterministic rule with no column at all.
+
+**Ruled: the rule, and there is no column.** The date the screen leads with is **the soonest one that has not passed**, and **the most recent one when they all have**. Both halves are ordered by the same `due_start` index the table already carries.
+
+**Why.** Rule 23: among defensible answers, take the one that is easiest for the person, where it is safe, private, and compatible. All three hold either way, so the question is decided on ease, and a flag is a control somebody has to find, understand, and maintain in order to see a correct screen. **A person recording a hearing date should not also have to tell the app that a hearing matters.** It is also the answer that cannot go stale: a marked date stays marked after it passes, and then the screen leads with something that already happened, which is the failure the states ladder calls "passed" and would be showing for no reason.
+
+**What this gives up, stated plainly.** A person cannot pin an unusual date to the top. If that turns out to matter on the device, the fix is a column and this decision is revisited; it is not revisited to make a screen easier to write.
+
+### D114. Two checkers were matching prose rather than code, and both were fixed rather than worked around
+
+**2026-08-04, building #262.** Two checks failed on text that was correct, and both failures were the same shape as **#216**: matching a substring where a word was meant, or matching inside a comment where code was meant.
+
+**`check_contract_isolation.py` rejected a comment.** The comment explained why a migration needs `ALTER TABLE`, and in explaining it wrote the words `the CREATE TABLE above`. The check searched the whole file including comments, so it read an explanation of a rule as a violation of it. **It now blanks comments before searching**, keeping the offsets so a failure still names a real line.
+
+**It was strengthened in the same pass rather than only relaxed.** It previously said nothing about `ALTER TABLE` or `DROP TABLE`, which is the other way the two platforms drift: a column that exists on one device and not another, with `contract/schema.sql` describing neither. **Those now fail everywhere except `Migrations.kt`**, which is exempted for alterations only. A `CREATE TABLE` there still fails, which is the point: a migration replays the contract and never redeclares it. Both directions were proved with a probe file rather than assumed from a passing run.
+
+**`check_copy.py` rejected "programmer", which is #216 itself**, filed on 2026-08-04 and hit again the same day by the sentence describing it. The entry `programme` matched inside the correctly spelled American word. **The fix is not a blanket right-hand word boundary**, which would break every entry that is a prefix on purpose: `organis` has to reach `organise`, `organising` and `organisation`. It is a negative lookahead on the two entries where a real American word continues past the prefix, `programme(?![rd])` and `organis(?![mt])`, each naming the word it protects. **`organism` and `organist` were not failing yet and would have**, in an app about health.
+
+**The rule this writes down.** When a checker fires on something correct, the checker is changed and the sentence is not. A checker whose failures are mostly false is one people learn to route around, and then it is worse than not having it. **#216 is closed by this.**
+
 ---
 
 ## BLOCKED

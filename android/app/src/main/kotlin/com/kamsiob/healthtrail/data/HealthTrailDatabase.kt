@@ -39,7 +39,13 @@ class HealthTrailDatabase private constructor(
          * protect. So a migration that cannot run is a bug to fix, not a reason
          * to start over.
          */
-        const val SCHEMA_VERSION = 1
+        /**
+         * What `contract/schema.sql` currently describes.
+         *
+         * 2, since 2026-08-04: the Today layout and the project shapes became
+         * record, per `contract/DATA-CONTRACT.md` 8.7 and D110.
+         */
+        const val SCHEMA_VERSION = 2
 
         @Volatile
         private var instance: HealthTrailDatabase? = null
@@ -111,7 +117,7 @@ class HealthTrailDatabase private constructor(
                 // open so a database left at an older version by any path,
                 // including an import, is brought forward rather than read
                 // through a schema that does not describe it.
-                Migrations.run(database).getOrElse { problem ->
+                Migrations.run(database, ContractAssets.readSchema(context)).getOrElse { problem ->
                     database.close()
                     throw problem
                 }

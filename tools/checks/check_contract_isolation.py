@@ -42,6 +42,43 @@ SCHEMA_DECLARATION = re.compile(
     r"\bCREATE\s+(?:TABLE|VIEW|TRIGGER|INDEX)\b", re.IGNORECASE
 )
 
+# Changing the shape of a table the contract owns. Not a second copy, but the
+# other way the two platforms drift: a column that exists on one device and not
+# on another, with contract/schema.sql describing neither.
+#
+# A migration is the one place this is legitimate, because ALTER TABLE has no
+# IF NOT EXISTS and replaying the schema therefore cannot add a column to a
+# table that already exists.
+SCHEMA_ALTERATION = re.compile(
+    r"\bALTER\s+TABLE\b|\bDROP\s+(?:TABLE|VIEW|TRIGGER|INDEX)\b", re.IGNORECASE
+)
+
+# Where altering a contract table is legitimate. One entry, and it should stay
+# that way: everywhere else, a column arrives by being added to
+# contract/schema.sql and replayed.
+#
+# **This exempts alterations only.** A CREATE TABLE in this file still fails,
+# which is the point: a migration replays the contract, it never redeclares it.
+ALTERATION_ALLOWED = {
+    "android/app/src/main/kotlin/com/kamsiob/healthtrail/data/Migrations.kt",
+}
+
+# Comment openers, by the languages this repository actually holds. Stripped
+# before the search so the check matches declarations rather than discussion of
+# them.
+#
+# **This is the #216 shape and it has now cost time twice.** A checker that
+# matches inside prose is a checker whose failures are mostly false, and the
+# thing that gets learned from a mostly-false checker is to route around it.
+# check_copy.py rejected "programmer" for containing a British spelling; this
+# one rejected a comment explaining why ALTER TABLE was needed, because the
+# explanation contained the words "the CREATE TABLE above".
+LINE_COMMENT = re.compile(r"(?<!:)//[^\n]*|--[^\n]*|(?<!\S)#[^\n]*")
+BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
+
+# An inline code span in a document. Not a fenced block, which stays in scope.
+INLINE_CODE = re.compile(r"`[^`\n]*`")
+
 # Where a schema declaration is legitimate outside /contract. Kept deliberately
 # short. Every entry is a file that talks about the schema rather than defining
 # one, and adding to this list should feel like a decision.
@@ -147,14 +184,39 @@ def main():
         except UnicodeDecodeError:
             continue
         outside += 1
-        match = SCHEMA_DECLARATION.search(text)
+
+        # Blank the comments rather than removing them, so every offset still
+        # points at the line it came from and the message names a real line.
+        code = BLOCK_COMMENT.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
+        code = LINE_COMMENT.sub(lambda m: " " * len(m.group(0)), code)
+        # In a document, a token in backticks is being named rather than
+        # declared. A decision entry saying that a CREATE TABLE in the migration
+        # still fails is describing this check, not defeating it. **Fenced
+        # blocks stay in scope**, because a schema pasted into a document is the
+        # second copy this check exists to find.
+        if path.suffix.lower() == ".md":
+            code = INLINE_CODE.sub(lambda m: " " * len(m.group(0)), code)
+
+        match = SCHEMA_DECLARATION.search(code)
         if match:
-            line = text[: match.start()].count("\n") + 1
+            line = code[: match.start()].count("\n") + 1
             problems.append(
                 f"{relative}:{line}: a schema declaration outside /contract. "
                 f"The schema lives in contract/schema.sql and is copied in at "
                 f"build time. A second copy is what makes the two platforms drift."
             )
+
+        if relative not in ALTERATION_ALLOWED:
+            match = SCHEMA_ALTERATION.search(code)
+            if match:
+                line = code[: match.start()].count("\n") + 1
+                problems.append(
+                    f"{relative}:{line}: alters or drops a table the contract owns. "
+                    f"A column arrives by being added to contract/schema.sql and "
+                    f"replayed, so that both platforms and the archive see it. The "
+                    f"one exception is a migration step, because ALTER TABLE has no "
+                    f"IF NOT EXISTS."
+                )
 
     if problems:
         print(f"Contract isolation check failed. {len(problems)} problems.\n")

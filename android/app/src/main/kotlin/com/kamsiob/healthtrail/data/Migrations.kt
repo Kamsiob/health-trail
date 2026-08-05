@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.data
 
+import com.kamsiob.healthtrail.contract.ContractAssets
 import net.zetetic.database.sqlcipher.SQLiteDatabase
 
 /**
@@ -40,21 +41,95 @@ internal object Migrations {
      * [apply] runs inside a transaction the caller owns, so a step that throws
      * takes everything it did with it and the database stays on the version it
      * was.
+     *
+     * It is handed the contract schema text alongside the database, so a step
+     * that only adds objects can replay `contract/schema.sql` rather than
+     * carrying a second copy of the definitions it needs. Two copies of a table
+     * definition drift, and the drift is silent until an export is short a
+     * column.
      */
     data class Step(
         val version: Int,
         val note: String,
-        val apply: (SQLiteDatabase) -> Unit,
+        val apply: (SQLiteDatabase, String) -> Unit,
     )
 
     /**
      * Every step above the baseline, in order.
      *
-     * Empty, and that is correct: nothing has changed since version 1. The
-     * first real entry goes here, and `CURRENT` goes up in the same commit as
-     * the change to `contract/schema.sql` that made it necessary.
+     * Each one goes up in the same commit as the change to
+     * `contract/schema.sql` that made it necessary, along with `CURRENT`.
      */
-    val steps: List<Step> = emptyList()
+    val steps: List<Step> = listOf(
+        Step(
+            version = 2,
+            note = "What a person arranges becomes record: the Today layout and the project shapes",
+        ) { database, schemaSql ->
+            // contract/DATA-CONTRACT.md 8.7, D110. Purely additive: six new
+            // tables with their views and triggers, and four new columns on two
+            // existing tables. No existing row is rewritten and no existing
+            // column changes meaning, which is why this runs on a notebook
+            // holding years of somebody's record without touching a word of it.
+            addEveryMissingObject(database, schemaSql)
+
+            // The four columns are the exception. ALTER TABLE has no
+            // IF NOT EXISTS, and the CREATE TABLE above is skipped on a table
+            // that already exists, so the columns it gained are not applied by
+            // replaying it. Each is nullable or defaulted, so every project
+            // already in the notebook gets a correct value without being read:
+            // an existing project leads with where it stands, which is the
+            // shape the old screen had.
+            listOf(
+                "ALTER TABLE project ADD COLUMN lead TEXT NOT NULL DEFAULT 'standing'",
+                "ALTER TABLE project ADD COLUMN current_stage_id TEXT REFERENCES project_stage (id)",
+                "ALTER TABLE project_step ADD COLUMN cluster TEXT",
+                "ALTER TABLE project_step ADD COLUMN handler_label TEXT",
+            ).forEach { statement ->
+                val words = statement.split(" ")
+                if (!hasColumn(database, table = words[2], column = words[5])) {
+                    database.execSQL(statement)
+                }
+            }
+        },
+    )
+
+    /**
+     * Replays `contract/schema.sql`, which adds what is missing and nothing else.
+     *
+     * Every table, view, index and trigger in that file is declared
+     * `IF NOT EXISTS`, so running it against a database that already has most of
+     * them creates only the new ones. That is what lets an additive migration
+     * name its objects once, in the contract, rather than keeping a second copy
+     * here that drifts from it.
+     *
+     * **Pragmas are skipped rather than routed.** `PRAGMA journal_mode` returns
+     * a row, which `execSQL` refuses, and it cannot run inside a transaction at
+     * all. A migration step is always inside one. The pragmas in the schema
+     * configure a connection rather than describe it, and the app has already
+     * applied them by the time any of this runs.
+     */
+    private fun addEveryMissingObject(database: SQLiteDatabase, schemaSql: String) {
+        ContractAssets.splitStatements(schemaSql)
+            .filterNot { it.trimStart().startsWith("PRAGMA", ignoreCase = true) }
+            .forEach { database.execSQL(it) }
+    }
+
+    /**
+     * Whether a column is already on a table.
+     *
+     * A version 1 database created before this step has none of the four; one
+     * created from today's `schema.sql` has all four and is still stamped at the
+     * baseline until this runs. Adding a column twice throws and takes the whole
+     * step with it, so this check is what makes the step safe against either.
+     */
+    private fun hasColumn(database: SQLiteDatabase, table: String, column: String): Boolean =
+        // allow-base-table: reads the shape of a table, never its rows, so
+        // there are no tombstones here to leak.
+        database.rawQuery("PRAGMA table_info($table)", null).use { cursor ->
+            val nameColumn = cursor.getColumnIndexOrThrow("name")
+            generateSequence { if (cursor.moveToNext()) cursor.getString(nameColumn) else null }
+                .any { it == column }
+        }
 
     /** The highest version applied to this database, or zero for one never stamped. */
     fun versionOf(database: SQLiteDatabase): Int =
@@ -85,6 +160,7 @@ internal object Migrations {
      */
     fun run(
         database: SQLiteDatabase,
+        schemaSql: String,
         target: Int = CURRENT,
         available: List<Step> = steps,
     ): Result<Int> {
@@ -108,7 +184,7 @@ internal object Migrations {
             .forEach { step ->
                 database.beginTransaction()
                 try {
-                    step.apply(database)
+                    step.apply(database, schemaSql)
                     stamp(database, step.version, step.note)
                     database.setTransactionSuccessful()
                     at = step.version
