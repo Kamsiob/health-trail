@@ -801,5 +801,6 @@
   "today.edit.hint": "Move, resize, or remove any card. Nothing is saved until you tap Done.",
   "today.edit.up.short": "Up",
   "today.edit.down.short": "Down",
-  "today.edit.remove.short": "Remove"
+  "today.edit.remove.short": "Remove",
+  "today.card.source_closed": "Closed. Still here until you remove it."
 }

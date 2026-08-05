@@ -801,5 +801,6 @@
   "today.edit.hint": "حرك أي بطاقة أو غير حجمها أو أزلها. لا يُحفظ شيء حتى تضغط تم.",
   "today.edit.up.short": "أعلى",
   "today.edit.down.short": "أسفل",
-  "today.edit.remove.short": "أزل"
+  "today.edit.remove.short": "أزل",
+  "today.card.source_closed": "أُغلقت. تبقى هنا حتى تزيلها."
 }

@@ -274,6 +274,16 @@ private fun CardFor(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+        // **The source-closed rung**, 21.4. It says so plainly and keeps
+        // working as a door, and the card stays until the person's own hand
+        // removes it.
+        if (answer?.sourceClosed == true) {
+            Text(
+                text = strings["today.card.source_closed"],
+                style = type.bodyS,
+                color = colors.ink2,
+            )
+        }
         if (answer == null) {
             // **Not the same thing as nothing waiting.** A card whose question
             // could not be asked has not learned that the record is empty, and
@@ -285,7 +295,7 @@ private fun CardFor(
                 style = type.bodyS,
                 color = colors.ink2,
             )
-        } else if (answer.isEmpty) {
+        } else if (answer.isEmpty && !answer.sourceClosed) {
             // **A calm state, never a scold**, 21.4. Quiet is allowed to be
             // good news, and this says so rather than leaving a hole.
             Text(
@@ -377,6 +387,7 @@ private fun answerParts(
     strings: Strings,
 ): List<String?> = when {
     answer == null -> listOf(strings["today.card.unread"])
+    answer.sourceClosed -> listOf(answer.title, strings["today.card.source_closed"])
     answer.isEmpty -> listOf(strings["today.card.nothing"])
     else -> listOf(
         answer.count?.takeIf { it > 0 }?.toString(),

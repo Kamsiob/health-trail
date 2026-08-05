@@ -163,11 +163,12 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 2. **"Move Medications down" wrapped to one letter per line** on a half-width card and stretched it to four times its height. The visible word is Up, Down, Remove; the reader still hears which card it moves.
 3. **The isolate marks nested again**, in code written four commits after the same defect was fixed on the project screen. `Bidi.join` isolates every part it is given.
 
+**The source-closed rung is built and seen.** A card pointing at a finished or removed project says "Closed. Still here until you remove it." and keeps working as a door. `docs/screenshots/today-source-closed-light.png`. **Closed means finished or removed**, both of which are states the person put the project in, and neither is a reason for the app to take a card off their screen. A project that is gone entirely, which an import can produce, keeps its card too.
+
 **What is left on Today:**
 
 1. **Adding a card**, #272: the gallery grouped by section, each entry previewing its small size with real current data.
-2. **The source-closed rung does not look different yet.** A card pointing at a finished project renders its name and does not say so.
-3. **Promote to lead** is not offered. Reordering to the top is the same thing today, and `promoteTodayCardToLead` exists and is tested.
+2. **Promote to lead** is not offered. Reordering to the top is the same thing today, and `promoteTodayCardToLead` exists and is tested.
 
 **The fallback to the previous Today is still in the shell** and now only fires for a notebook made before this landed. It comes out with #271, and `ProjectDetailScreen`'s ledger row is the model for what goes in `docs/REMOVAL-LEDGER.md` at that moment.
 

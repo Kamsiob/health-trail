@@ -4958,6 +4958,18 @@ class Repository private constructor(
         val whenEdtf: String? = null,
         /** A second line the card shows at wide and tall. */
         val detail: String? = null,
+        /**
+         * Whether what this card points at is closed or gone.
+         *
+         * **The source-closed rung**, `DESIGN.md` 21.4. A card pointing at a
+         * finished project says so and keeps working as a door, and it is
+         * removed only by the person's hand. **Never by the app**, per 8.7:
+         * dropping it would be the file quietly editing somebody's desk.
+         *
+         * A boolean rather than a sentence, because the sentence belongs in the
+         * catalog in the person's own language.
+         */
+        val sourceClosed: Boolean = false,
     ) {
         /** Whether the record has anything to say. The none-yet rung, 21.4. */
         val isEmpty: Boolean get() = (count ?: 0) == 0 && title.isNullOrBlank()
@@ -5150,14 +5162,24 @@ class Repository private constructor(
                 // tombstoned project renders its source-closed rung, 21.4, and
                 // it can only do that if it can still read the name.
                 // allow-base-table: the source-closed rung is the whole point.
-                "SELECT name, deleted_at FROM project WHERE id = ?",
+                "SELECT name, deleted_at, status FROM project WHERE id = ?",
                 arrayOf(sourceId),
             ).use {
-                if (!it.moveToFirst()) null
-                else TodayAnswer(
-                    title = it.getString(0),
-                    detail = if (it.isNull(1)) null else "closed",
-                )
+                if (!it.moveToFirst()) {
+                    // **The project is gone entirely**, which an import from a
+                    // notebook that had it can produce. The card is kept and
+                    // says it cannot reach what it points at.
+                    TodayAnswer(sourceClosed = true)
+                } else {
+                    TodayAnswer(
+                        title = it.getString(0),
+                        // Closed means finished or removed. Both are states the
+                        // person put the project in, and neither is a reason for
+                        // the app to take the card off their screen.
+                        sourceClosed = !it.isNull(1) ||
+                            it.getString(2) in setOf("done", "abandoned"),
+                    )
+                }
             }
 
             else -> null

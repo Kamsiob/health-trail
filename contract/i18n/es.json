@@ -801,5 +801,6 @@
   "today.edit.hint": "Mueva, redimensione o quite cualquier tarjeta. Nada se guarda hasta que toque Listo.",
   "today.edit.up.short": "Subir",
   "today.edit.down.short": "Bajar",
-  "today.edit.remove.short": "Quitar"
+  "today.edit.remove.short": "Quitar",
+  "today.card.source_closed": "Cerrado. Sigue aquí hasta que lo quite."
 }

@@ -801,5 +801,6 @@
   "today.edit.hint": "移动、调整大小或移除任何卡片。点击完成之前不会保存。",
   "today.edit.up.short": "上移",
   "today.edit.down.short": "下移",
-  "today.edit.remove.short": "移除"
+  "today.edit.remove.short": "移除",
+  "today.card.source_closed": "已结束。在你移除之前它会留在这里。"
 }
