@@ -32,6 +32,7 @@ One entry per care setting.
 | `folded` | array of section ids | Sections collapsed until the person opens them. Not hidden. |
 | `roles` | array of `{id, label}` | Contact role slots to offer when adding a person. Suggestions, not a fixed list. |
 | `threads` | array of `{id, label}` | Care threads offered as toggles at setup. The person picks which are actually running. |
+| `starting_hand` | array of `{type, size}` | **The Today this setting ships**, `DESIGN.md` 21.5. Nobody ever sees a blank Today, and a person facing a blank dashboard and forty options builds nothing, so every situation carries a complete starting layout. **The first card takes the lead**, and it is always the digest. `type` is one of the seventeen in 21.7 and `size` is `small`, `wide`, or `tall`, both held by `check_templates.py`. **A card that points at one measure or one project cannot be in a hand**: at onboarding there are neither, so it would render with nothing to answer. **A starting hand and nothing more**: editable from the first minute, and the app never rearranges it afterward. |
 | `checklist` | array of strings | First days checklist. Administrative actions only. |
 | `documents` | array of strings | Document slots to create, each expecting a photo and a note about where the original lives. |
 | `burden` | string | One sentence naming what is hard about this setting. Use it as supporting text at setup, so the person feels understood rather than processed. |

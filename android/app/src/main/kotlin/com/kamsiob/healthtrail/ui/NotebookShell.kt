@@ -1534,6 +1534,10 @@ fun NotebookShell(
                         // because the address changed would be the app deciding
                         // a concern is over.
                         threads = change.situation.threads.map { it.id to it.label },
+                        // **The Today this setting ships**, DESIGN.md 21.5, and
+                        // only when there is not one already: a person whose
+                        // care setting changed keeps the desk they arranged.
+                        startingHand = change.situation.startingHand,
                     )
                     // **The move, not just a new name.** A chapter boundary
                     // that starts a place without ending the one before it

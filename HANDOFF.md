@@ -143,11 +143,19 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **The digest uses the summary the app already had**, computed once in the shell, rather than a second digest written for this surface.
 
-**Three things are not done and one of them matters most:**
+**All fourteen situations ship a starting hand, #305, and a brand new notebook lands on the new Today.** Verified by clearing the app and walking onboarding: choosing Nursing home produced its eight cards, every one saying "Nothing waiting" without a single zero or scold. `docs/screenshots/today-fresh-dark.png`.
 
-1. **#305: nothing applies a starting hand.** `setTodayLayout` has no caller, so a real notebook has no layout and the shell falls back to the previous Today screen. **That fallback is deliberate and temporary**, because an empty new surface is exactly the blank canvas 21.5 rules out. The old screen is frozen while it stands in, not extended, and its ledger row goes in when the fallback comes out.
-2. **Edit mode does not exist**, #271. Nothing can be added, removed, resized, promoted, or reordered from the screen; the repository can do all of it and is tested.
-3. **The source-closed rung does not look different yet.** A card pointing at a finished project renders its name and does not say so.
+- **A card that names a source is never in a hand**, D115. The grid's home care hand lists a measure; at onboarding there is no measure to point at, so it would render with nothing to answer on the first screen a person ever sees. `check_templates.py` refuses one.
+- **Skipping the picker gets `Repository.defaultStartingHand`**, because skipping is a real answer and not a request for an empty screen.
+- **A hand is applied only when there is no layout**, so a person whose care setting changes later keeps the desk they arranged.
+- **A zero is not rendered.** A large 0 above "Nothing waiting" says the same thing twice, and at that weight it reads as a score on somebody who has just started.
+
+**Two things are still not done:**
+
+1. **Edit mode does not exist**, #271. Nothing can be added, removed, resized, promoted, or reordered from the screen; the repository can do all of it and is tested.
+2. **The source-closed rung does not look different yet.** A card pointing at a finished project renders its name and does not say so.
+
+**The fallback to the previous Today is still in the shell** and now only fires for a notebook made before this landed. It comes out with #271, and `ProjectDetailScreen`'s ledger row is the model for what goes in `docs/REMOVAL-LEDGER.md` at that moment.
 
 **The latest word can be read but the app cannot write it, and that is #303.** `Repository.latestWordFor` reads it through the `link` table, which is what 8.1's generic connection table is for. **Nothing outside the fixture writes that link**, so on a real notebook the third answer is permanently absent. The fixture writes it so the card can be built and seen, which is deliberately not a fix.
 

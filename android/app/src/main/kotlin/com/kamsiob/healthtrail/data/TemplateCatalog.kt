@@ -39,6 +39,16 @@ object TemplateCatalog {
         val threads: List<Thread>,
         /** Contact roles to offer when adding a person. Suggestions, not a fixed list. */
         val roles: List<String>,
+        /**
+         * The Today this situation ships, as pairs of card type and size.
+         *
+         * **Nobody ever sees a blank Today**, `DESIGN.md` 21.5, and this is law
+         * 5 doing that work. The first card takes the lead.
+         *
+         * **A starting hand and nothing more.** It is editable from the first
+         * minute without penalty, and the app never rearranges it afterward.
+         */
+        val startingHand: List<Pair<String, String>> = emptyList(),
         /** First days checklist. Administrative actions only. */
         val checklist: List<String>,
         /** Document slots, each expecting a photo and a note on where the original lives. */
@@ -93,6 +103,7 @@ object TemplateCatalog {
                         group = item.optString("group"),
                         threads = item.optJSONArray("threads").toThreads(),
                         roles = item.optJSONArray("roles").toLabels(),
+                        startingHand = item.optJSONArray("starting_hand").toCards(),
                         checklist = item.optJSONArray("checklist").toStrings(),
                         documents = item.optJSONArray("documents").toStrings(),
                         forward = item.optJSONArray("forward").toStrings(),
@@ -326,6 +337,14 @@ object TemplateCatalog {
     private fun org.json.JSONArray?.toLabels(): List<String> {
         if (this == null) return emptyList()
         return (0 until length()).map { getJSONObject(it).getString("label") }
+    }
+
+    private fun org.json.JSONArray?.toCards(): List<Pair<String, String>> {
+        if (this == null) return emptyList()
+        return (0 until length()).map {
+            val card = getJSONObject(it)
+            card.getString("type") to card.optString("size", "small")
+        }
     }
 
     private fun org.json.JSONArray?.toStrings(): List<String> {

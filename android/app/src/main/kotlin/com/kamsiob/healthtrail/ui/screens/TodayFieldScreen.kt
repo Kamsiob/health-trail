@@ -158,7 +158,11 @@ private fun CardFor(
     ) {
         // **The answer, and the same answer at every size.** 21.3: growing a
         // card reveals more of the same answer and never a new kind of content.
-        val count = answer?.count
+        // **A zero is not an answer worth shouting.** Rendering the number
+        // whatever it was put a large 0 directly above "Nothing waiting", which
+        // says the same thing twice and, at that weight, reads as a score on a
+        // person who has just started. The empty rung is the sentence alone.
+        val count = answer?.count?.takeIf { it > 0 }
         if (count != null && answer.title == null) {
             Text(
                 text = Bidi.isolate(count.toString()),

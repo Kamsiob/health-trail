@@ -328,16 +328,58 @@ class Repository private constructor(
      * can rename, reorder, or delete any of it, and reapplying a different
      * template later never destroys what is already here.
      */
+    /**
+     * The Today for somebody who did not pick a setting.
+     *
+     * **Skipping is a real answer**, per rule 13 and the situation picker's own
+     * copy, so it cannot produce the blank dashboard 21.5 rules out. This is the
+     * smallest hand that is useful in every setting: what the record says today,
+     * the next dated thing, what is on the list, what is saved to ask, and the
+     * card that exists to be handed to a paramedic.
+     *
+     * **It is a starting hand like any other**, editable from the first minute,
+     * and nothing here is inferred from watching anybody.
+     */
+    val defaultStartingHand: List<Pair<String, String>> = listOf(
+        "digest" to "wide",
+        "next_up" to "small",
+        "medications" to "small",
+        "ask_next_time" to "small",
+        "emergency_card" to "small",
+    )
+
+    /** Gives a subject the default hand, for a person who picked no setting. */
+    suspend fun applyDefaultStartingHand(subjectId: String) {
+        if (todayLayout(subjectId) == null) {
+            setTodayLayout(subjectId, defaultStartingHand)
+        }
+    }
+
     suspend fun applySituation(
         subjectId: String,
         templateId: String,
         threads: List<Pair<String, String>>,
+        /**
+         * The Today this situation ships, as pairs of card type and size.
+         *
+         * **Applied only when the person has no layout yet.** A situation
+         * changing later must not throw away the desk somebody spent months
+         * arranging, and 21.8's promise that the app never rearranges Today is
+         * not suspended because the care setting changed.
+         *
+         * Empty for a caller with nothing to apply, which then leaves whatever
+         * is there alone.
+         */
+        startingHand: List<Pair<String, String>> = emptyList(),
     ) = withContext(Dispatchers.IO) {
         db().database.execSQL(
             "UPDATE subject SET situation_template_id = ?, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ?",
             arrayOf<Any>(templateId, System.currentTimeMillis(), subjectId),
         )
+        if (startingHand.isNotEmpty() && todayLayout(subjectId) == null) {
+            setTodayLayout(subjectId, startingHand)
+        }
         threads.forEachIndexed { index, (threadTemplateId, label) ->
             insert(
                 "care_thread",

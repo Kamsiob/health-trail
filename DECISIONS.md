@@ -2137,6 +2137,16 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **The rule this writes down.** When a checker fires on something correct, the checker is changed and the sentence is not. A checker whose failures are mostly false is one people learn to route around, and then it is worse than not having it. **#216 is closed by this.**
 
+### D115. A starting hand never contains a card that points at something, and skipping the picker still gets one
+
+**2026-08-05, building #305.** `DESIGN.md` 21.5 says nobody ever sees a blank Today and that the situation template chosen at onboarding ships a complete starting layout. Two things had to be decided to make that true.
+
+**A card that names a source cannot be in a hand.** The grid's own home care hand lists a measure, and `measure`, `project_standing`, `project_date` and `project_steps` each point at one specific measure or project. **At onboarding there are neither**, so such a card would render with nothing to answer on the first screen a person ever sees. They are excluded from every hand and `check_templates.py` refuses one. **The person adds a measure card the moment they track something**, which is the first moment it can answer anything, and a project card when they start a project.
+
+**Skipping the picker gets a hand too.** Skipping is a real answer, per rule 13 and the picker's own copy, and it must not produce the blank dashboard 21.5 rules out. `Repository.defaultStartingHand` is the smallest hand useful in every setting: what the record says today, the next dated thing, what is on the list, what is saved to ask, and the card that exists to be handed to a paramedic.
+
+**A hand is applied only when there is no layout.** A person whose care setting changes later keeps the desk they arranged. 21.8's promise that the app never rearranges Today is not suspended because somebody moved to a different facility.
+
 ---
 
 ## BLOCKED

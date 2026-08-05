@@ -171,8 +171,25 @@ fun AppRoot(
                         // A notebook with no situation template still works.
                         // Every section exists and nothing is missing, so this
                         // is a real answer rather than a postponement.
-                        onSkip = { state = RootState.Ready(current.repository) },
+                        //
+                        // **And it still gets a Today.** 21.5: nobody ever sees
+                        // a blank one, and somebody who declined to name their
+                        // setting has declined to name their setting, not asked
+                        // for an empty screen.
+                        onSkip = {
+                            state = RootState.SkippingSituation(
+                                current.repository, current.subjectId,
+                            )
+                        },
                     )
+                }
+            }
+
+            is RootState.SkippingSituation -> {
+                OpeningScreen()
+                LaunchedEffect(Unit) {
+                    current.repository.applyDefaultStartingHand(current.subjectId)
+                    state = RootState.Ready(current.repository)
                 }
             }
 
@@ -183,6 +200,11 @@ fun AppRoot(
                         subjectId = current.subjectId,
                         templateId = current.situation.id,
                         threads = current.situation.threads.map { it.id to it.label },
+                        // **The Today this setting ships.** DESIGN.md 21.5:
+                        // nobody ever sees a blank Today, and a person facing a
+                        // blank dashboard and forty options builds nothing. It
+                        // is a starting hand, editable from the first minute.
+                        startingHand = current.situation.startingHand,
                     )
                     state = RootState.Ready(current.repository)
                 }
@@ -208,6 +230,17 @@ private sealed interface RootState {
         val repository: Repository,
         val subjectId: String,
         val situation: TemplateCatalog.Situation,
+    ) : RootState
+
+    /**
+     * The person declined to name a setting, and still gets a Today.
+     *
+     * A state of its own rather than a call from the button, because applying a
+     * layout is a suspend write and a callback is not a coroutine scope.
+     */
+    data class SkippingSituation(
+        val repository: Repository,
+        val subjectId: String,
     ) : RootState
     data class Accepting(val repository: Repository) : RootState
     data class Ready(val repository: Repository) : RootState

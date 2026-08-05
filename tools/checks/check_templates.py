@@ -50,7 +50,30 @@ VALID_TAGS = {"federal", "request"}
 SITUATION_REQUIRED = [
     "id", "name", "subtitle", "phase", "forward", "folded", "roles",
     "threads", "checklist", "documents", "burden",
+    # **Nobody ever sees a blank Today**, DESIGN.md 21.5, so every situation
+    # ships a complete starting layout. A template without one produces a
+    # person with no Today at all.
+    "starting_hand",
 ]
+
+# The seventeen in DESIGN.md 21.7, and nothing else. The database refuses any
+# other value outright, so a typo here is a starting hand that cannot be applied.
+CARD_TYPES = (
+    "digest", "next_up", "medications", "measure", "milestones", "ask_next_time",
+    "project_standing", "project_date", "project_steps", "incidents", "money",
+    "unfiled", "emergency_card", "care_team", "trail_lately", "recent_documents",
+    "standing_instructions",
+)
+
+CARD_SIZES = ("small", "wide", "tall")
+
+# **Cards that cannot be in a starting hand**, because they point at something
+# that does not exist yet when the hand is applied. A measure card names one
+# measure and a project card names one project, and at onboarding there are
+# neither. The grid's own home care hand lists a measure; it is left out here
+# and the person adds it the moment they track something, which is the first
+# moment it can answer anything. D115.
+NEEDS_A_SOURCE = ("measure", "project_standing", "project_date", "project_steps")
 PROJECT_REQUIRED = [
     "id", "name", "subtitle", "category", "phase", "roles", "steps", "documents",
     "waiting_on_prompts", "failure_points", "timeline_shape",
@@ -239,7 +262,55 @@ class Validator:
                 for entry in item.get(key, []):
                     if not isinstance(entry, dict) or "id" not in entry or "label" not in entry:
                         self.fail(where, f"{key} entry is not an object with id and label: {entry!r}")
+            self.starting_hand(where, item)
             self.content_safety(where, item)
+
+    def starting_hand(self, where, item):
+        """The Today this situation ships. `DESIGN.md` 21.5.
+
+        **Nobody ever sees a blank Today**, so a situation without a complete
+        starting layout produces a person with no Today at all.
+        """
+        hand = item.get("starting_hand", [])
+        if not isinstance(hand, list) or not hand:
+            self.fail(where, "starting_hand is empty, so this situation produces a blank Today")
+            return
+
+        for card in hand:
+            if not isinstance(card, dict):
+                self.fail(where, f"starting_hand entry is not an object: {card!r}")
+                continue
+            if card.get("type") not in CARD_TYPES:
+                self.fail(
+                    where,
+                    f"starting_hand has card type {card.get('type')!r}, which is not one "
+                    f"of the seventeen in DESIGN.md 21.7",
+                )
+            if card.get("size") not in CARD_SIZES:
+                self.fail(
+                    where,
+                    f"starting_hand card {card.get('type')!r} has size "
+                    f"{card.get('size')!r}, expected one of {', '.join(CARD_SIZES)}",
+                )
+            if card.get("type") in NEEDS_A_SOURCE:
+                self.fail(
+                    where,
+                    f"starting_hand includes {card.get('type')!r}, which points at one "
+                    f"measure or one project. At onboarding there are neither, so the "
+                    f"card would render with nothing to answer.",
+                )
+
+        if hand[0].get("type") != "digest":
+            self.fail(
+                where,
+                f"starting_hand leads with {hand[0].get('type')!r}. The digest is the "
+                f"default lead in every template, DESIGN.md 21.7, and the person promotes "
+                f"something else the moment they want to.",
+            )
+
+        types = [card.get("type") for card in hand if isinstance(card, dict)]
+        if len(set(types)) != len(types):
+            self.fail(where, "starting_hand names the same card twice")
 
     def projects(self):
         data = json.loads((DATA / "projects.json").read_text(encoding="utf-8"))

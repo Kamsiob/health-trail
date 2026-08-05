@@ -71,6 +71,40 @@
           "label": "Social services"
         }
       ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "incidents",
+          "size": "small"
+        },
+        {
+          "type": "standing_instructions",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "money",
+          "size": "small"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
+        }
+      ],
       "checklist": [
         "Write down the direct phone number for the unit, not just the main line",
         "Ask for the current medication list and keep a copy",
@@ -157,6 +191,32 @@
           "label": "Discharge planning"
         }
       ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "milestones",
+          "size": "small"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
+        }
+      ],
       "checklist": [
         "Ask how long the stay is expected to last and write down the answer",
         "Get the therapy schedule and write it down",
@@ -241,6 +301,32 @@
           "label": "Discharge planning"
         }
       ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "milestones",
+          "size": "small"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
+        }
+      ],
       "checklist": [
         "Ask how many hours of therapy happen each day",
         "Ask when the team meets about the case and whether family can attend",
@@ -320,6 +406,32 @@
         {
           "id": "discharge_planning",
           "label": "Discharge planning"
+        }
+      ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "incidents",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
         }
       ],
       "checklist": [
@@ -407,6 +519,32 @@
           "label": "Safety at home"
         }
       ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "medications",
+          "size": "small"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
+        },
+        {
+          "type": "standing_instructions",
+          "size": "small"
+        }
+      ],
       "checklist": [
         "Write down every doctor and the pharmacy in one place",
         "Write down which hospital to go to and why",
@@ -488,6 +626,36 @@
         {
           "id": "doctor_coordination",
           "label": "Coordination with the doctor"
+        }
+      ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "medications",
+          "size": "small"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "standing_instructions",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
         }
       ],
       "checklist": [
@@ -572,6 +740,36 @@
         {
           "id": "housekeeping",
           "label": "Housekeeping and laundry"
+        }
+      ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "medications",
+          "size": "small"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "money",
+          "size": "small"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
         }
       ],
       "checklist": [
@@ -660,6 +858,32 @@
           "label": "Safety and wandering"
         }
       ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "standing_instructions",
+          "size": "small"
+        },
+        {
+          "type": "incidents",
+          "size": "small"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
+        }
+      ],
       "checklist": [
         "Write down the unit direct number and the after hours number",
         "Find out who the memory care director and family liaison are",
@@ -743,6 +967,32 @@
         {
           "id": "bereavement",
           "label": "Bereavement support"
+        }
+      ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "medications",
+          "size": "small"
+        },
+        {
+          "type": "standing_instructions",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
+        },
+        {
+          "type": "trail_lately",
+          "size": "tall"
         }
       ],
       "checklist": [
@@ -832,6 +1082,28 @@
           "label": "Kidney doctor visits"
         }
       ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "medications",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
+        }
+      ],
       "checklist": [
         "Write down the clinic number and the scheduling number",
         "Write down the treatment days and the shift time",
@@ -916,6 +1188,32 @@
           "label": "Financial and insurance"
         }
       ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "medications",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "recent_documents",
+          "size": "small"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
+        }
+      ],
       "checklist": [
         "Save the navigator's number and the clinic number",
         "Get the treatment calendar and write down the cycle dates",
@@ -998,6 +1296,32 @@
         {
           "id": "procedures",
           "label": "Procedures and appointments"
+        }
+      ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "medications",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
         }
       ],
       "checklist": [
@@ -1085,6 +1409,32 @@
           "label": "Moving between places"
         }
       ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "milestones",
+          "size": "small"
+        },
+        {
+          "type": "medications",
+          "size": "small"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "ask_next_time",
+          "size": "small"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
+        }
+      ],
       "checklist": [
         "Save the case manager's number",
         "Write down each therapy lead and their days",
@@ -1167,6 +1517,36 @@
         {
           "id": "respite",
           "label": "Respite and support"
+        }
+      ],
+      "starting_hand": [
+        {
+          "type": "digest",
+          "size": "wide"
+        },
+        {
+          "type": "standing_instructions",
+          "size": "small"
+        },
+        {
+          "type": "medications",
+          "size": "small"
+        },
+        {
+          "type": "incidents",
+          "size": "small"
+        },
+        {
+          "type": "next_up",
+          "size": "small"
+        },
+        {
+          "type": "care_team",
+          "size": "wide"
+        },
+        {
+          "type": "emergency_card",
+          "size": "small"
         }
       ],
       "checklist": [
