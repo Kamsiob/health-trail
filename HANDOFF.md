@@ -15,12 +15,12 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`).
 - **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **325 instrumented tests pass**, last full run 2026-08-04 after #201 landed.
+- **332 instrumented tests pass**, last full run 2026-08-04 after #202 landed.
 - The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
 **Take these in this order.**
 
-1. **#200 and #201 are done and closed**, and sections 3 and 4 say what came out of them. **#202 is in flight and section 2 says what is left: the sweep, the tests, and two review issues.**
+1. **#200, #201 and #202 are done and closed**, and sections 2 to 4 say what came out of them.
 2. **The rest of step 4**, #201 through #208, in number order, **except take #208 last**. Each was scoped on 2026-08-04 and the two with gaps carry a comment saying so:
    - **#202** is half a conversion and half a build. "Change of situation" does not exist anywhere, and whoever takes it has to decide first whether changing the situation is a chapter boundary in the data or only in the words.
    - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape.
@@ -33,15 +33,21 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 2. #202 is in flight
+## 2. What #202 landed
 
-**Both halves are built and used on the phone in light.** What is left is the sweep at dark, font scale 2.0 and Arabic, the instrumented tests, and the two review issues.
+**Both halves are built, swept, tested and closed.** Both themes, font scale 2.0, and Arabic, on the phone. Reviews at **#241** and **#242**, and `DESIGN.md` section 14 carries both rows.
 
 **The picker is converted**: the setting each group leads with keeps its card and its burden line, and the rest are dense rows in a grouped surface. Fourteen cards was three and a half screenfuls on the first screen after the disclaimer.
 
 **Change of situation is new and it had no door at all.** The picker ran once during setup and was then unreachable forever, so a family whose care moved could not tell the app and could not even see which setting they had. It is now a destination in More. The screen states the boundary plainly and offers a chapter, and **the boundary is made rather than only stated**: `moveToChapter` ends the open chapter today and starts the new one today, because starting a second without ending the first left two places somebody was in at once.
 
 **Two things it said that were not true, both found by looking at it:** "Right now" showed the setting the person had just picked, before anything was written, and the chapter field carried a mono header saying the same three words as its own label.
+
+**The picker's rows lost their grouped surface, and that was the component's own rule rather than a compromise.** Section 7: not around a list long enough to scroll, where the rows should be full bleed so the scroll is not a slab moving under a window. It also restored **one lazy item per setting**, which is what the picker's test needs to reach all fourteen by key, and batching a group into one item had broken exactly that. The trap is in section 10 of this file and was walked into anyway.
+
+**The English catalog reordered itself in Arabic**, on a screen nobody had isolated: every sentence's full stop jumped to the front of its last line, ".your own" rather than "your own.". Fixed on the picker. **#226's worklist is the rest of this**, and it is worth taking seriously.
+
+**332 instrumented tests pass**, up from 325. **One flake seen once and not since**: `RoundTripTest.unknownSurvivesAsUnknownRatherThanAsNullOrToday` failed with "attempt to write a readonly database" inside `Backup.recomputeRanges`, then passed on the next run with no change. Not investigated, and recorded here rather than forgotten.
 
 **A missing catalog key crashed the app on opening**, and nothing caught it: the four catalogs agreed with each other, seventeen checks passed, the Kotlin compiled and lint was clean, because nothing compared the literals in the code against the catalog. **`check_string_keys.py` now does**, and it was proved against the real crash rather than assumed.
 

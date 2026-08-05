@@ -29,10 +29,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.TemplateCatalog
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -140,8 +140,13 @@ fun SituationPickerScreen(
             if (situations.posture.generalGuide.isNotBlank()) {
                 Spacer(Modifier.height(Space.sm))
                 // Verbatim from the catalog. Not paraphrased, not shortened.
+                // **Isolated, because the catalog is English until #62 and this
+                // is an Arabic layout.** Without it the sentence's own full
+                // stop is moved to the front of its last line: ".your own"
+                // rather than "your own.". Section 15, and it is the exact
+                // failure that rule was written for.
                 Text(
-                    text = situations.posture.generalGuide,
+                    text = Bidi.isolate(situations.posture.generalGuide),
                     style = HealthTrail.type.bodyS,
                     color = colors.ink2,
                 )
@@ -177,25 +182,36 @@ fun SituationPickerScreen(
                     // only the leading one carries a third line worth reading.
                     // The hierarchy inside each group survives, and it is now
                     // carried by shape rather than by length alone.
-                    item(key = "lead_$id") {
+                    item(key = inGroup.first().id) {
                         SituationCard(
                             situation = inGroup.first(),
                             onClick = { onChoose(inGroup.first()) },
                         )
                         Spacer(Modifier.height(Space.cardGap))
                     }
+                    // **One lazy item per setting, and no surface around the
+                    // run.** `GroupedSurface`'s own rule: not around a list long
+                    // enough to scroll, where the rows should be full bleed with
+                    // hairlines so the scroll is not a slab moving under a
+                    // window. Fourteen settings is that list.
+                    //
+                    // **It is also what makes every one of them reachable.** The
+                    // test scrolls this list by each setting's own id, which is
+                    // the only reliable way to reach a lazy row, and batching a
+                    // group into one item took those keys away. The trap is
+                    // documented in `HANDOFF.md` and it was walked into anyway.
                     val rest = inGroup.drop(1)
+                    rest.forEachIndexed { index, situation ->
+                        item(key = situation.id) {
+                            SituationRow(
+                                situation = situation,
+                                divider = index < rest.lastIndex,
+                                onClick = { onChoose(situation) },
+                            )
+                        }
+                    }
                     if (rest.isNotEmpty()) {
-                        item(key = "rest_$id") {
-                            GroupedSurface {
-                                rest.forEachIndexed { index, situation ->
-                                    SituationRow(
-                                        situation = situation,
-                                        divider = index < rest.lastIndex,
-                                        onClick = { onChoose(situation) },
-                                    )
-                                }
-                            }
+                        item(key = "rest_gap_$id") {
                             Spacer(Modifier.height(Space.cardGap))
                         }
                     }
@@ -210,17 +226,14 @@ fun SituationPickerScreen(
                 }.sortedBy { it.phase }
                 if (ungrouped.isNotEmpty()) {
                     item(key = "ungrouped_gap") { Spacer(Modifier.height(Space.sectionGap)) }
-                    item(key = "ungrouped") {
-                        GroupedSurface {
-                            ungrouped.forEachIndexed { index, situation ->
-                                SituationRow(
-                                    situation = situation,
-                                    divider = index < ungrouped.lastIndex,
-                                    onClick = { onChoose(situation) },
-                                )
-                            }
+                    ungrouped.forEachIndexed { index, situation ->
+                        item(key = situation.id) {
+                            SituationRow(
+                                situation = situation,
+                                divider = index < ungrouped.lastIndex,
+                                onClick = { onChoose(situation) },
+                            )
                         }
-                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
 
@@ -277,8 +290,8 @@ private fun SituationRow(
     onClick: () -> Unit,
 ) {
     DenseRow(
-        title = situation.name,
-        subtitle = situation.subtitle.takeIf { it.isNotBlank() },
+        title = Bidi.isolate(situation.name),
+        subtitle = situation.subtitle.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
         subtitleMaxLines = Int.MAX_VALUE,
         divider = divider,
         onClick = onClick,
@@ -338,14 +351,14 @@ private fun SituationCard(
             .padding(Space.cardPadding),
     ) {
         Text(
-            text = situation.name,
+            text = Bidi.isolate(situation.name),
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
         if (situation.subtitle.isNotBlank()) {
             Spacer(Modifier.height(Space.xs))
             Text(
-                text = situation.subtitle,
+                text = Bidi.isolate(situation.subtitle),
                 style = HealthTrail.type.bodyM,
                 color = colors.ink2,
             )
@@ -353,7 +366,7 @@ private fun SituationCard(
         if (situation.burden.isNotBlank() && situation.phase == MOST_COMMON) {
             Spacer(Modifier.height(Space.s))
             Text(
-                text = situation.burden,
+                text = Bidi.isolate(situation.burden),
                 style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )

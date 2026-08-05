@@ -20,6 +20,7 @@ import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.CaptureFab
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.ChangeSituationScreen
 import com.kamsiob.healthtrail.ui.screens.MilestonesScreen
 import com.kamsiob.healthtrail.ui.screens.TemplateLibraryScreen
 import com.kamsiob.healthtrail.ui.screens.MonthReviewScreen
@@ -627,6 +628,44 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("the milestone arc")
+    }
+
+    /**
+     * How the notebook is set up, in both states: before a different setting is
+     * picked, and after, when the chapter field and the filled action appear.
+     */
+    @Test
+    fun changingHowTheNotebookIsSetUpLabelsEverything() {
+        val situations = runBlocking { TemplateCatalog.situations(context) }
+        compose.show {
+            ChangeSituationScreen(
+                current = situations.all.first(),
+                chosen = situations.all.last(),
+                onOpenPicker = {},
+                onApply = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("changing how the notebook is set up")
+    }
+
+    /**
+     * The same screen before anybody has opened the picker, which is the state
+     * most people meet: they came to check which setting they picked.
+     */
+    @Test
+    fun howTheNotebookIsSetUpLabelsEverythingBeforeAnyChange() {
+        val situations = runBlocking { TemplateCatalog.situations(context) }
+        compose.show {
+            ChangeSituationScreen(
+                current = situations.all.first(),
+                chosen = null,
+                onOpenPicker = {},
+                onApply = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("how the notebook is set up")
     }
 
     /**

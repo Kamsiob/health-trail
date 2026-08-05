@@ -588,8 +588,8 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 | Import and restore | 07 Filing | Show what the file holds before writing anything |
 | The disclaimer gate | 05 Capture stage 1 | One question, one action, nothing else reachable |
 | Setup | 05 Capture stage 1 | Staged conversation, skip always visible |
-| The situation picker | 23 Track something new | Grouped and searchable, one tap to choose |
-| Change of situation | 19 Chapters | A chapter boundary, stated plainly |
+| The situation picker | 23 Track something new | Grouped and searchable, one tap to choose. **Converted 2026-08-04**, #202. The setting each group leads with keeps its card and its burden line; the rest are dense rows on paper. **No surface around the run**, per section 7's own rule about a list long enough to scroll, and **one lazy item per setting**, because the picker's test reaches every one of the fourteen by its own key and batching a group took those keys away. **No search and no folds**: fourteen rows is under two screenfuls, and this is the first screen after the disclaimer, where hiding an option behind a tap is the opposite of what it is for. Review at #242 |
+| Change of situation | 19 Chapters | A chapter boundary, stated plainly. **Built 2026-08-04**, #202, and it had no door at all: the picker ran once during setup and was then unreachable, against law 5's promise that all of it is changeable afterward from one screen. It is a destination in More now. **The boundary is made rather than only stated**: `moveToChapter` ends the open chapter today and starts the new one today, because starting a second without ending the first left two places somebody was in at once. The chapter is offered and never made for them. Review at #241 |
 | More | 03 Notebook | Destinations, so tiles and folds |
 | Appearance and settings | 03 Notebook | Destinations and toggles, grouped |
 | About | 09 One entry | Bare information, one door out |
