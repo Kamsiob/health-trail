@@ -827,5 +827,12 @@
   "project.date.source": "¿De dónde salió?",
   "project.date.source.hint": "La carta del 5 de marzo, el empleado por teléfono",
   "project.date.lead": "Anotar de dónde salió la fecha es lo que la hace útil dentro de un año.",
-  "project.date.save": "Anotarla"
+  "project.date.save": "Anotarla",
+  "project.log_call": "Registrar una llamada",
+  "project.log_call.title": "¿Qué le dijeron?",
+  "project.log_call.lead": "Sus palabras, lo más cerca que pueda. Esto es lo que leerá al empezar la próxima llamada.",
+  "project.log_call.who": "¿Con quién habló?",
+  "project.log_call.who.hint": "Un nombre y su función, si lo obtuvo",
+  "project.log_call.words.hint": "Está con la enfermera revisora. Vuelva a llamar después del 15.",
+  "project.log_call.save": "Anotarlo"
 }

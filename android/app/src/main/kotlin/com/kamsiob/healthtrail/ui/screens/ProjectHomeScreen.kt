@@ -38,6 +38,7 @@ object ProjectHomeTags {
     const val STEPS = "project-home-steps"
     const val UPDATE_STANDING = "project-home-update-standing"
     const val ADD_DATE = "project-home-add-date"
+    const val LOG_CALL = "project-home-log-call"
 }
 
 /**
@@ -78,14 +79,18 @@ fun ProjectHomeScreen(
     dateWhen: String? = null,
     /** How long it has stood where it stands, composed by the caller. */
     standingSince: String? = null,
-    /** Who said the latest word and when, composed by the caller. */
-    attribution: String? = null,
+    /** Who said the latest word, raw. Null where nobody was named. */
+    attributionWho: String? = null,
+    /** When it was said, already rendered at its own precision. Raw. */
+    attributionWhen: String? = null,
     onOpenDate: () -> Unit = {},
     onOpenEntry: () -> Unit = {},
     /** Opens the sheet that records where it stands. 20.5 screen 8. */
     onUpdateStanding: () -> Unit = {},
     /** Opens the sheet that writes down a date, with where it came from. */
     onAddDate: () -> Unit = {},
+    /** Opens the sheet that logs a call, already knowing which project. */
+    onLogCall: () -> Unit = {},
     steps: List<Repository.ProjectStep> = emptyList(),
     papers: List<Repository.ProjectPaper> = emptyList(),
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
@@ -219,15 +224,19 @@ fun ProjectHomeScreen(
         }
 
         val latestBlock: @Composable () -> Unit = {
+            Column {
             if (latestWord != null && !latestWord.body.isNullOrBlank()) {
                 LatestWordCard(
                     eyebrow = strings["project.latest_word"],
                     words = latestWord.body,
-                    attribution = attribution.orEmpty(),
+                    // Both built from the same raw parts, so neither is a
+                    // joined string handed back into a join.
+                    attribution = Bidi.join(attributionWho, attributionWhen),
                     description = Bidi.join(
                         strings["project.latest_word"],
                         latestWord.body,
-                        attribution,
+                        attributionWho,
+                        attributionWhen,
                     ),
                     onOpen = onOpenEntry,
                     openLabel = strings["project.open_entry"],
@@ -242,6 +251,17 @@ fun ProjectHomeScreen(
                         .testTag(ProjectHomeTags.LATEST)
                         .padding(horizontal = Space.xs, vertical = Space.s),
                 )
+            }
+            // **Always offered.** The latest word is the thing that changes
+            // most often on a long process, and an action that appears only
+            // when there is nothing recorded would be gone the moment it
+            // started being useful.
+            Spacer(Modifier.height(Space.s))
+            QuietButton(
+                label = strings["project.log_call"],
+                onClick = onLogCall,
+                modifier = Modifier.testTag(ProjectHomeTags.LOG_CALL),
+            )
             }
         }
 

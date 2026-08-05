@@ -97,6 +97,7 @@ import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
+import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
@@ -277,6 +278,10 @@ fun NotebookShell(
     }
     var updatingStanding by remember { mutableStateOf<Repository.Project?>(null) }
     var addingDateTo by remember { mutableStateOf<Repository.Project?>(null) }
+    var loggingCallOn by remember { mutableStateOf<Repository.Project?>(null) }
+    var savingCall by remember {
+        mutableStateOf<Triple<String, String, String>?>(null)
+    }
     var savingDate by remember {
         mutableStateOf<Quadruple<String, String, Edtf.Date, String>?>(null)
     }
@@ -1389,6 +1394,38 @@ fun NotebookShell(
             AboutScreen(onBack = { aboutOpen = false })
         }
 
+        loggingCallOn?.let { project ->
+            LogCallSheet(
+                projectName = project.name,
+                onSave = { who, words ->
+                    savingCall = Triple(project.id, who, words)
+                    loggingCallOn = null
+                },
+                onDismiss = { loggingCallOn = null },
+            )
+        }
+
+        savingCall?.let { (projectId, who, words) ->
+            LaunchedEffect(projectId, who, words) {
+                val subject = repository.activeSubject()
+                if (subject != null) {
+                    // **The entry and the link, both.** An entry nobody
+                    // connected to the project is not something anybody said
+                    // about the project, and the whole reason this sheet lives
+                    // on the project screen is that it already knows which one.
+                    val entryId = repository.createEntry(
+                        subjectId = subject.id,
+                        kind = "call",
+                        title = who.ifBlank { null },
+                        body = words,
+                    )
+                    repository.linkEntryToProject(entryId, projectId)
+                }
+                savingCall = null
+                revision += 1
+            }
+        }
+
         addingDateTo?.let { project ->
             ProjectDateSheet(
                 kinds = projectDateKinds,
@@ -1518,8 +1555,21 @@ fun NotebookShell(
                     standing.sinceEdtf?.let { EventDateText.render(strings, it) },
                 )
             }
-            val attributionText = projectLatestWord?.let { entry ->
-                EventDateText.render(strings, entry.occurredEdtf)
+            // **Who said it and when, as two raw parts**, 20.1. The date
+            // alone is half the attribution, and the half that is missing is
+            // the one somebody needs when they call back and are asked who they
+            // spoke to. Null where nobody was named, which is ordinary: plenty
+            // of calls are answered by whoever picked up.
+            //
+            // **Two parts rather than one joined string**, because Bidi.join
+            // isolates whatever it is handed, and handing it something already
+            // joined nests the marks. That has now happened three times in
+            // three days, each time in code written by somebody who had just
+            // fixed it elsewhere, and it is invisible outside the semantics
+            // tree.
+            val attributionWho = projectLatestWord?.title
+            val attributionWhen = projectLatestWord?.let {
+                EventDateText.render(strings, it.occurredEdtf)
             }
 
             ProjectHomeScreen(
@@ -1532,12 +1582,14 @@ fun NotebookShell(
                 dateKind = dateKindText,
                 dateWhen = dateWhenText,
                 standingSince = standingSinceText,
-                attribution = attributionText,
+                attributionWho = attributionWho,
+                attributionWhen = attributionWhen,
                 steps = projectSteps,
                 papers = projectPapers,
                 onToggleStep = { togglingStep = it },
                 onUpdateStanding = { updatingStanding = currentProject },
                 onAddDate = { addingDateTo = currentProject },
+                onLogCall = { loggingCallOn = currentProject },
                 onBack = { openProject = null },
             )
         }

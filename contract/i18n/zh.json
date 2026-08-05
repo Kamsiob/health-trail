@@ -827,5 +827,12 @@
   "project.date.source": "它来自哪里？",
   "project.date.source.hint": "3月5日的信、办事员电话告知",
   "project.date.lead": "记下日期的来源，才能让它在一年后依然有用。",
-  "project.date.save": "记下来"
+  "project.date.save": "记下来",
+  "project.log_call": "记录一通电话",
+  "project.log_call.title": "他们说了什么？",
+  "project.log_call.lead": "尽量记下他们的原话。下次打电话开头时你会读到这些。",
+  "project.log_call.who": "你和谁通话？",
+  "project.log_call.who.hint": "如果知道的话，姓名和职务",
+  "project.log_call.words.hint": "在护士审核员那里。15号之后再打来。",
+  "project.log_call.save": "记下来"
 }

@@ -827,5 +827,12 @@
   "project.date.source": "من أين جاء؟",
   "project.date.source.hint": "خطاب 5 مارس، الموظف عبر الهاتف",
   "project.date.lead": "كتابة مصدر التاريخ هو ما يجعله مفيداً بعد عام.",
-  "project.date.save": "اكتبه"
+  "project.date.save": "اكتبه",
+  "project.log_call": "سجّل مكالمة",
+  "project.log_call.title": "ماذا قالوا؟",
+  "project.log_call.lead": "كلماتهم، بأقرب ما تستطيع. هذا ما ستقرأه في بداية المكالمة القادمة.",
+  "project.log_call.who": "مع من تحدثت؟",
+  "project.log_call.who.hint": "اسم ودوره، إن عرفته",
+  "project.log_call.words.hint": "هي لدى الممرضة المراجِعة. عاود الاتصال بعد الخامس عشر.",
+  "project.log_call.save": "اكتبها"
 }

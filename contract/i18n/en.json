@@ -827,5 +827,12 @@
   "project.date.source": "Where did it come from?",
   "project.date.source.hint": "The letter of March 5, the clerk by phone",
   "project.date.lead": "Writing down where the date came from is what makes it usable a year from now.",
-  "project.date.save": "Write it down"
+  "project.date.save": "Write it down",
+  "project.log_call": "Log a call",
+  "project.log_call.title": "What did they say?",
+  "project.log_call.lead": "Their words, as close as you can get them. This is what you will read back at the start of the next call.",
+  "project.log_call.who": "Who did you speak to?",
+  "project.log_call.who.hint": "A name and their role, if you got one",
+  "project.log_call.words.hint": "It is with the nurse reviewer. Call back after the 15th.",
+  "project.log_call.save": "Write it down"
 }

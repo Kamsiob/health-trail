@@ -124,6 +124,14 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **D113 was seen working end to end.** Writing an August date onto a project whose only date was in October moved the card to the August one, because the screen leads with the soonest that has not passed and nothing had to be told which date mattered.
 
+**A call can be logged from inside the project**, which is what makes the third answer writable, and it writes the entry and the link together. `docs/screenshots/project-log-call-light.png` and `project-after-call-light.png`. **This closes the app-side half of #303**: the read path existed and nothing wrote the link, so on a real notebook the latest word was permanently absent. **The reference number half of #303 is still the owner's**, and `ReferenceLine` still has never rendered with real data.
+
+- **Pre-answered with the project**, and the project's name is shown back so nobody logs a call against the wrong process.
+- **The attribution names who said it**, not only when. The date alone is the half a person does not need when they call back and are asked who they spoke to.
+- Proved on the phone: logged a call, and the latest word card became it, dated today, with "Denise, intake caseworker" beside the date.
+
+**The nested isolate defect appeared a third time** and was fixed at the call site again, not at the source. **Making `Bidi.isolate` idempotent was tried and reverted**: a joined run like `⁨a⁩ · ⁨b⁩` also starts with the isolate and ends with the pop, so the guard would have stopped wrapping compound runs as a unit, which changes how they lay out inside an RTL sentence. That is a real behavior change across every screen and it was not verifiable in one sitting. **The rule stays: raw parts into `Bidi.join`, never something already joined.**
+
 **The review this owes under rule 12 is #304**, and it lists what was deliberately left out and the three things I am unsure about.
 
 **All three shapes are built and all three have been seen**, #278, #279 and #280's home screens. **The shape is only the order of the same components**, which is 20.3's whole claim, so `Repository.Project` carries `lead` and the screen orders itself from it. The long road opens with where it stands, the closing window with the countdown at `monoL`, the busy stretch with the steps cluster already open above the answers. `ProjectHomeScreenTest` asserts the vertical order for each, because every shape shows the same four things and a wrong order still looks like a finished screen. Screenshots: `project-home-*`, `project-window-dark`, `project-busy-dark`.
