@@ -168,7 +168,7 @@ class Generator:
         self.incidents(db, subject_id, chapters, people)
         self.bills(db, subject_id, chapters)
         self.instructions(db, subject_id, chapters)
-        self.projects(db, subject_id)
+        projects = self.projects(db, subject_id)
         self.documents(db, subject_id, chapters)
         self.awkward(db, subject_id, chapters, threads)
         # **Last, because it works over every entry that exists.** It ran
@@ -181,6 +181,7 @@ class Generator:
         # After documents, because a paper placeholder points at one, and after
         # projects, because it points at those. Same reason `involve` is last.
         self.fill_project_papers(db)
+        self.connect_entries_to_projects(db, subject_id, projects)
         # Last of all, because a card points at a measure, a project or a
         # person, and every one of them has to exist before the card names it.
         self.today_layout(db, subject_id)
@@ -217,6 +218,60 @@ class Generator:
                 "UPDATE project_paper SET document_id = ? WHERE id = ?",
                 (documents[position % len(documents)], paper_id),
             )
+
+    def connect_entries_to_projects(self, db, subject_id, projects):
+        """The latest word: what somebody actually said about this project.
+
+        `DESIGN.md` 20.1, the third of the three answers. **An entry has no
+        `project_id` column and does not need one**: the generic `link` table is
+        what carries this, and adding a column would be a schema change nobody
+        approved.
+
+        **Without these rows the third answer can never render**, which is the
+        same defect as every other one this file has had: a feature built, and a
+        fixture that never produces what it reads.
+
+        **These are written rather than borrowed from the entries already
+        there.** Linking whichever calls happened to be most recent produced
+        "She was sitting up and knew who I was" as the latest word on a waiver
+        application, which is a true sentence about a good afternoon and says
+        nothing about the application. The latest word is what an office said,
+        in the office's own flat words, and a fixture that shows the wrong kind
+        of sentence there makes a correct screen look broken.
+
+        Calls, because the latest word is almost always something said on the
+        phone.
+        """
+        for index, project_id in enumerate(projects):
+            said = OFFICE_WORDS[index % len(OFFICE_WORDS)]
+            for turn, words in enumerate(said):
+                # Spread back from the end of the history, so the last one is
+                # genuinely the latest and the ones behind it are a history.
+                day = max(0, self.days - 1 - (len(said) - 1 - turn) * 26)
+                entry_id = self.row(
+                    db,
+                    "entry",
+                    {
+                        "subject_id": subject_id,
+                        "kind": "call",
+                        "title": None,
+                        "body": words,
+                        **self.edtf_day(day),
+                    },
+                    day=day,
+                )
+                self.row(
+                    db,
+                    "link",
+                    {
+                        "source_table": "entry",
+                        "source_id": entry_id,
+                        "target_table": "project",
+                        "target_id": project_id,
+                        "relation": "about",
+                    },
+                    day=day,
+                )
 
     def today_layout(self, db, subject_id):
         """The arranged Today, as a situation template would have set it.
@@ -966,7 +1021,14 @@ class Generator:
                 )
 
     def projects(self, db, subject_id):
-        """Projects at various stages, including the ones nobody finished."""
+        """Projects at various stages, including the ones nobody finished.
+
+        Returns the ids in the order they were made, so what an office said
+        can be matched to the project it was said about. Ordering by id
+        later does not work: ids are hashes and sort arbitrarily, which put
+        the billing office's words on the power of attorney.
+        """
+        made = []
         for index in range(max(len(PROJECT_STATES), self.scaled(FULL["projects"]))):
             state = PROJECT_STATES[index % len(PROJECT_STATES)]
             # **Which of the three answers this one opens with.** All three
@@ -1035,6 +1097,8 @@ class Generator:
                 self.row(db, "project_step", values, day=day)
 
             self.project_shape(db, project_id, index, day, lead, state)
+            made.append(project_id)
+        return made
 
     def project_shape(self, db, project_id, index, day, lead, state):
         """The road, where it stands, the dates, the papers, and the date kinds.
@@ -1500,6 +1564,43 @@ PROJECT_PAPERS = [
     ["The discharge summary", "The equipment order"],
     ["The itemized bill", "What we sent back"],
     ["The signed form", "The filing receipt"],
+]
+
+# What each office actually said, in the order it was said, oldest first.
+#
+# **The office's own flat words**, DESIGN.md 20.1 and 22. Nobody here is an
+# adversary and nothing is performed: a caseworker says where the file is, a
+# clerk says what is missing, and none of it is framed as a setback or a win.
+# These are the sentences a person repeats at the start of the next call, which
+# is the whole reason the latest word is one of the three answers.
+OFFICE_WORDS = [
+    # Medicaid application
+    [
+        "They have the application. It goes to a nurse reviewer next.",
+        "It is with the nurse reviewer. You should hear something within two weeks.",
+        "Still with the reviewer. They said to call back after the 15th.",
+    ],
+    # Get the power of attorney recognized
+    [
+        "They will not accept the copy. It has to be the one with the raised seal.",
+        "The seal copy was received. It goes to their legal team.",
+        "Legal has accepted it. The account should show it in a few days.",
+    ],
+    # Appeal the level of care assessment
+    [
+        "The appeal was received. They will write to us either way.",
+        "It is scheduled for the panel on the second Thursday.",
+    ],
+    # Move her belongings out of the old room
+    [
+        "The room has to be cleared by the end of the month.",
+        "They can hold the boxes in the storage room for a week if we need it.",
+    ],
+    # Find a dentist who will come to the facility
+    [
+        "That practice stopped visiting facilities last year.",
+        "This one does visit. They are taking names for the spring round.",
+    ],
 ]
 
 # The areas a busy stretch clusters its steps under, 20.3.

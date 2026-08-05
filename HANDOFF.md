@@ -100,6 +100,10 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **None of them is on a screen, so none has been looked at on the phone and no issue is closed.** The next step is the project home screen, which uses all six at once, and the components are verified there rather than in a gallery.
 
+**The latest word can be read but the app cannot write it, and that is #303.** `Repository.latestWordFor` reads it through the `link` table, which is what 8.1's generic connection table is for. **Nothing outside the fixture writes that link**, so on a real notebook the third answer is permanently absent. The fixture writes it so the card can be built and seen, which is deliberately not a fix.
+
+**A reference number has nowhere to live, and that is the owner's call.** The grid draws one on the latest word and calls it first-class; `call_detail` has no column for it. **Nothing was changed**: rule 3, and the WHAT BECOMES DATA amendment does not mention reference numbers. `LatestWordCard` takes it as an optional parameter and draws nothing without it. #303 states the decision.
+
 **One thing found while building them.** The grid draws several small labels in the faintest tone it has, and `ink3` is 2.37:1, which D92 makes non-text. **Those are `ink2` in the app.** A stage the project has not reached still has to be legible: it is where the thing is going.
 
 **353 instrumented tests pass**, up from 349.

@@ -4545,6 +4545,78 @@ class Repository private constructor(
         ) + dateColumns("since", since),
     )
 
+    /**
+     * The most recent thing anybody said about this project.
+     *
+     * `DESIGN.md` 20.1, the third of the three answers: what the office, the
+     * insurer or the facility last said, which is the sentence a person repeats
+     * at the start of every call.
+     *
+     * **Read through the `link` table, which is what it is for.** An entry has
+     * no `project_id` column and does not need one: 8.1's generic connection
+     * table carries exactly this kind of relationship, and adding a column for
+     * it would be a schema change nobody has approved.
+     *
+     * **Both directions are accepted.** A link written from the entry and a
+     * link written from the project mean the same thing to a person, and a
+     * screen that showed the latest word only when the row happened to be
+     * written one way round would be a dead end wearing a disguise, rule 18.
+     *
+     * Null is a real answer and stays null: **nothing here invents a latest
+     * word from the trail at large.** An entry that was never connected to this
+     * project is not something anybody said about this project.
+     */
+    suspend fun latestWordFor(projectId: String): TrailEntry? = withContext(Dispatchers.IO) {
+        val entryId = db().database.rawQuery(
+            "SELECT CASE WHEN source_table = 'entry' THEN source_id ELSE target_id END " +
+                "FROM live_link " +
+                "WHERE (source_table = 'entry' AND target_table = 'project' AND target_id = ?) " +
+                "   OR (source_table = 'project' AND target_table = 'entry' AND source_id = ?) " +
+                "ORDER BY created_at DESC",
+            arrayOf(projectId, projectId),
+        ).use { cursor ->
+            buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
+        }
+        if (entryId.isEmpty()) return@withContext null
+
+        // Ordered by when it happened rather than by when the link was written,
+        // because somebody catching up records three calls in one evening and
+        // the latest word is the last one that happened, not the last one typed.
+        val marks = entryId.joinToString(", ") { "?" }
+        db().database.rawQuery(
+            "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, " +
+                "is_unfiled, pinned_at FROM live_entry WHERE id IN ($marks) " +
+                "ORDER BY occurred_start DESC, created_at DESC LIMIT 1",
+            entryId.toTypedArray(),
+        ).use { cursor ->
+            if (!cursor.moveToFirst()) return@use null
+            TrailEntry(
+                id = cursor.getString(0),
+                kind = cursor.getString(1),
+                title = cursor.getString(2),
+                body = cursor.getString(3),
+                occurredEdtf = cursor.getString(4),
+                occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                createdAt = cursor.getLong(6),
+                isUnfiled = cursor.getInt(7) == 1,
+                threads = emptyList(),
+                pinnedAt = if (cursor.isNull(8)) null else cursor.getLong(8),
+            )
+        }
+    }
+
+    /** Connects an entry to a project, so each can show the other. Rule 18. */
+    suspend fun linkEntryToProject(entryId: String, projectId: String): String = insert(
+        "link",
+        mapOf(
+            "source_table" to "entry",
+            "source_id" to entryId,
+            "target_table" to "project",
+            "target_id" to projectId,
+            "relation" to "about",
+        ),
+    )
+
     /** Every date this project holds, soonest first. */
     suspend fun projectDates(projectId: String): List<ProjectDate> =
         withContext(Dispatchers.IO) {
