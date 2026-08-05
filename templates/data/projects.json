@@ -16,11 +16,26 @@
       "phase": 2,
       "state_variance": true,
       "roles": [
-        { "id": "caseworker", "label": "Assigned caseworker" },
-        { "id": "medicaid_office", "label": "Local Medicaid office" },
-        { "id": "facility_billing", "label": "Facility business office" },
-        { "id": "elder_law", "label": "Elder law attorney, if you use one" },
-        { "id": "bank", "label": "Bank contact for statements" }
+        {
+          "id": "caseworker",
+          "label": "Assigned caseworker"
+        },
+        {
+          "id": "medicaid_office",
+          "label": "Local Medicaid office"
+        },
+        {
+          "id": "facility_billing",
+          "label": "Facility business office"
+        },
+        {
+          "id": "elder_law",
+          "label": "Elder law attorney, if you use one"
+        },
+        {
+          "id": "bank",
+          "label": "Bank contact for statements"
+        }
       ],
       "steps": [
         "Find out which program you are applying to and get the right form",
@@ -37,6 +52,18 @@
         "Ask what the decision deadline is and write it down",
         "If it is denied, write down the appeal deadline immediately",
         "Keep a copy of everything you send and everything you receive"
+      ],
+      "lead": "standing",
+      "stages": [
+        "Gathering",
+        "Applied",
+        "In review",
+        "Decision"
+      ],
+      "date_kinds": [
+        "Filing deadline",
+        "Decision expected",
+        "Redetermination"
       ],
       "documents": [
         "Application form",
@@ -68,11 +95,26 @@
       "phase": 2,
       "state_variance": true,
       "roles": [
-        { "id": "caseworker", "label": "Waiver caseworker" },
-        { "id": "aging_agency", "label": "Area agency on aging" },
-        { "id": "assessor", "label": "Person who does the needs assessment" },
-        { "id": "managed_care", "label": "Managed care contact, if there is one" },
-        { "id": "elder_law", "label": "Elder law attorney, if you use one" }
+        {
+          "id": "caseworker",
+          "label": "Waiver caseworker"
+        },
+        {
+          "id": "aging_agency",
+          "label": "Area agency on aging"
+        },
+        {
+          "id": "assessor",
+          "label": "Person who does the needs assessment"
+        },
+        {
+          "id": "managed_care",
+          "label": "Managed care contact, if there is one"
+        },
+        {
+          "id": "elder_law",
+          "label": "Elder law attorney, if you use one"
+        }
       ],
       "steps": [
         "Find out which waiver programs exist where you live",
@@ -89,6 +131,19 @@
         "Answer every document request and log the date",
         "Ask how often you need to confirm you are still waiting",
         "Note the reassessment schedule once services start"
+      ],
+      "lead": "standing",
+      "stages": [
+        "Gathering",
+        "Applied",
+        "Assessment",
+        "On the list",
+        "Services started"
+      ],
+      "date_kinds": [
+        "Assessment",
+        "Decision expected",
+        "Renewal"
       ],
       "documents": [
         "Application form",
@@ -118,10 +173,22 @@
       "category": "challenge",
       "phase": 1,
       "roles": [
-        { "id": "review_org", "label": "Your regional Medicare quality review organization" },
-        { "id": "case_manager", "label": "Case manager at the hospital or facility" },
-        { "id": "doctor", "label": "Treating doctor" },
-        { "id": "insurance_counselor", "label": "Free state insurance counseling program" }
+        {
+          "id": "review_org",
+          "label": "Your regional Medicare quality review organization"
+        },
+        {
+          "id": "case_manager",
+          "label": "Case manager at the hospital or facility"
+        },
+        {
+          "id": "doctor",
+          "label": "Treating doctor"
+        },
+        {
+          "id": "insurance_counselor",
+          "label": "Free state insurance counseling program"
+        }
       ],
       "steps": [
         "Find the written notice and read it all the way through",
@@ -137,6 +204,18 @@
         "Ask when a decision will come and how it will arrive",
         "If it is denied, ask what the next level of appeal is and the deadline",
         "Keep copies of every notice and every submission"
+      ],
+      "lead": "date",
+      "stages": [
+        "Notice received",
+        "Appeal filed",
+        "Under review",
+        "Decision"
+      ],
+      "date_kinds": [
+        "Appeal deadline",
+        "Decision expected",
+        "Next level deadline"
       ],
       "documents": [
         "The notice you received",
@@ -166,11 +245,26 @@
       "phase": 3,
       "state_variance": true,
       "roles": [
-        { "id": "member_services", "label": "Insurance member services" },
-        { "id": "appeals_dept", "label": "Insurance appeals department" },
-        { "id": "provider_office", "label": "Office of the doctor who ordered it" },
-        { "id": "employer_benefits", "label": "Employer benefits contact, if it is a work plan" },
-        { "id": "state_regulator", "label": "State insurance department" }
+        {
+          "id": "member_services",
+          "label": "Insurance member services"
+        },
+        {
+          "id": "appeals_dept",
+          "label": "Insurance appeals department"
+        },
+        {
+          "id": "provider_office",
+          "label": "Office of the doctor who ordered it"
+        },
+        {
+          "id": "employer_benefits",
+          "label": "Employer benefits contact, if it is a work plan"
+        },
+        {
+          "id": "state_regulator",
+          "label": "State insurance department"
+        }
       ],
       "steps": [
         "Get the denial letter and find the stated reason",
@@ -185,6 +279,18 @@
         "Ask when the decision is due",
         "If it is denied again, ask about an outside review and the deadline",
         "Keep copies of everything"
+      ],
+      "lead": "date",
+      "stages": [
+        "Denial received",
+        "Preparing",
+        "Submitted",
+        "Answered"
+      ],
+      "date_kinds": [
+        "Appeal deadline",
+        "Decision expected",
+        "External review deadline"
       ],
       "documents": [
         "Denial letter",
@@ -213,11 +319,26 @@
       "category": "moving",
       "phase": 1,
       "roles": [
-        { "id": "discharge_planner", "label": "Discharge planner or case manager" },
-        { "id": "social_worker", "label": "Social worker" },
-        { "id": "doctor", "label": "Doctor in charge" },
-        { "id": "home_health", "label": "Home health or equipment coordinator" },
-        { "id": "review_org", "label": "Your regional Medicare quality review organization" }
+        {
+          "id": "discharge_planner",
+          "label": "Discharge planner or case manager"
+        },
+        {
+          "id": "social_worker",
+          "label": "Social worker"
+        },
+        {
+          "id": "doctor",
+          "label": "Doctor in charge"
+        },
+        {
+          "id": "home_health",
+          "label": "Home health or equipment coordinator"
+        },
+        {
+          "id": "review_org",
+          "label": "Your regional Medicare quality review organization"
+        }
       ],
       "steps": [
         "Write down who to call with questions after discharge",
@@ -232,6 +353,18 @@
         "Write down every follow up appointment and who makes them",
         "Ask what problems to watch for and exactly who to call about each",
         "Write down who to contact if the discharge feels too soon"
+      ],
+      "lead": "steps",
+      "stages": [
+        "Date set",
+        "Arranging",
+        "Home"
+      ],
+      "date_kinds": [
+        "Discharge date",
+        "Equipment delivery",
+        "First home visit",
+        "Follow up appointment"
       ],
       "documents": [
         "Written discharge instructions",
@@ -260,9 +393,18 @@
       "category": "papers",
       "phase": 1,
       "roles": [
-        { "id": "records_dept", "label": "Medical records department" },
-        { "id": "facility_admin", "label": "Facility administrator, if you get stuck" },
-        { "id": "federal_privacy_office", "label": "Federal health privacy office, for complaints" }
+        {
+          "id": "records_dept",
+          "label": "Medical records department"
+        },
+        {
+          "id": "facility_admin",
+          "label": "Facility administrator, if you get stuck"
+        },
+        {
+          "id": "federal_privacy_office",
+          "label": "Federal health privacy office, for complaints"
+        }
       ],
       "steps": [
         "Figure out exactly who holds the records you want",
@@ -277,6 +419,17 @@
         "Note you do not have to explain why you want them",
         "If they will not respond, write down the complaint option and the date you filed",
         "Keep a copy of the request, the responses, and everything you receive"
+      ],
+      "lead": "standing",
+      "stages": [
+        "Requested",
+        "In process",
+        "Received"
+      ],
+      "date_kinds": [
+        "Request sent",
+        "Response due",
+        "Received"
       ],
       "documents": [
         "Your written request",
@@ -307,10 +460,22 @@
       "category": "challenge",
       "phase": 2,
       "roles": [
-        { "id": "ombudsman", "label": "Long term care ombudsman" },
-        { "id": "state_agency", "label": "State agency that inspects facilities" },
-        { "id": "adult_protective", "label": "Adult protective services, for suspected abuse" },
-        { "id": "administrator", "label": "Facility administrator" }
+        {
+          "id": "ombudsman",
+          "label": "Long term care ombudsman"
+        },
+        {
+          "id": "state_agency",
+          "label": "State agency that inspects facilities"
+        },
+        {
+          "id": "adult_protective",
+          "label": "Adult protective services, for suspected abuse"
+        },
+        {
+          "id": "administrator",
+          "label": "Facility administrator"
+        }
       ],
       "steps": [
         "Write down what happened with dates, times, and the names of everyone involved",
@@ -325,6 +490,18 @@
         "Ask when to expect contact and from whom",
         "Follow up on the date they gave you",
         "Write down the outcome and anything the facility was told to fix"
+      ],
+      "lead": "standing",
+      "stages": [
+        "Written down",
+        "Reported",
+        "Being looked into",
+        "Answered"
+      ],
+      "date_kinds": [
+        "Reported",
+        "Response expected",
+        "Follow up"
       ],
       "documents": [
         "Your written account of what happened",
@@ -353,10 +530,22 @@
       "category": "paying",
       "phase": 3,
       "roles": [
-        { "id": "benefits_office", "label": "Local Social Security office" },
-        { "id": "advocate", "label": "Disability advocate or attorney, if you use one" },
-        { "id": "doctors", "label": "Doctors who will provide records" },
-        { "id": "personal_contacts", "label": "Two people who know the situation well" }
+        {
+          "id": "benefits_office",
+          "label": "Local Social Security office"
+        },
+        {
+          "id": "advocate",
+          "label": "Disability advocate or attorney, if you use one"
+        },
+        {
+          "id": "doctors",
+          "label": "Doctors who will provide records"
+        },
+        {
+          "id": "personal_contacts",
+          "label": "Two people who know the situation well"
+        }
       ],
       "steps": [
         "Find out which program applies and get the starter materials",
@@ -371,6 +560,19 @@
         "Ask when a decision is expected",
         "If it is denied, write down the appeal deadline the same day",
         "Keep copies of everything, including the denial"
+      ],
+      "lead": "standing",
+      "stages": [
+        "Gathering",
+        "Applied",
+        "In review",
+        "Decision"
+      ],
+      "date_kinds": [
+        "Filing deadline",
+        "Decision expected",
+        "Appeal deadline",
+        "Exam date"
       ],
       "documents": [
         "Identification and social security number",
@@ -399,10 +601,22 @@
       "category": "paying",
       "phase": 3,
       "roles": [
-        { "id": "caregiver_support", "label": "Veterans caregiver support team" },
-        { "id": "support_line", "label": "Caregiver support phone line" },
-        { "id": "service_officer", "label": "Veterans service officer" },
-        { "id": "va_doctor", "label": "The veteran's doctor" }
+        {
+          "id": "caregiver_support",
+          "label": "Veterans caregiver support team"
+        },
+        {
+          "id": "support_line",
+          "label": "Caregiver support phone line"
+        },
+        {
+          "id": "service_officer",
+          "label": "Veterans service officer"
+        },
+        {
+          "id": "va_doctor",
+          "label": "The veteran's doctor"
+        }
       ],
       "steps": [
         "Find out which programs the situation might qualify for",
@@ -418,6 +632,18 @@
         "Complete any in home assessment that is scheduled",
         "Get the decision in writing",
         "If it is denied, ask what review options exist and the deadline"
+      ],
+      "lead": "standing",
+      "stages": [
+        "Gathering",
+        "Applied",
+        "In review",
+        "Decision"
+      ],
+      "date_kinds": [
+        "Filing deadline",
+        "Decision expected",
+        "Exam date"
       ],
       "documents": [
         "Application forms",
@@ -447,10 +673,22 @@
       "phase": 3,
       "state_variance": true,
       "roles": [
-        { "id": "court_clerk", "label": "Probate or family court clerk" },
-        { "id": "attorney", "label": "Attorney" },
-        { "id": "evaluator", "label": "Court appointed evaluator or examining doctor" },
-        { "id": "court_investigator", "label": "Court investigator" }
+        {
+          "id": "court_clerk",
+          "label": "Probate or family court clerk"
+        },
+        {
+          "id": "attorney",
+          "label": "Attorney"
+        },
+        {
+          "id": "evaluator",
+          "label": "Court appointed evaluator or examining doctor"
+        },
+        {
+          "id": "court_investigator",
+          "label": "Court investigator"
+        }
       ],
       "steps": [
         "Understand that this is a court process and it works differently in every state",
@@ -465,6 +703,19 @@
         "Attend the hearing",
         "Get a copy of the court order",
         "Write down what reports you must file afterward and when they are due"
+      ],
+      "lead": "standing",
+      "stages": [
+        "Preparing",
+        "Filed",
+        "Hearing set",
+        "Order issued"
+      ],
+      "date_kinds": [
+        "Filing date",
+        "Hearing",
+        "Order date",
+        "Annual report due"
       ],
       "documents": [
         "Petition and court forms",
@@ -495,10 +746,22 @@
       "phase": 1,
       "state_variance": true,
       "roles": [
-        { "id": "attorney", "label": "Attorney, if you use one" },
-        { "id": "notary", "label": "Notary" },
-        { "id": "primary_doctor", "label": "Primary doctor, for medical orders" },
-        { "id": "named_agent", "label": "The person being named to decide" }
+        {
+          "id": "attorney",
+          "label": "Attorney, if you use one"
+        },
+        {
+          "id": "notary",
+          "label": "Notary"
+        },
+        {
+          "id": "primary_doctor",
+          "label": "Primary doctor, for medical orders"
+        },
+        {
+          "id": "named_agent",
+          "label": "The person being named to decide"
+        }
       ],
       "steps": [
         "Learn which documents exist and what each one does",
@@ -513,6 +776,17 @@
         "Ask the doctor about signed medical orders if the situation is serious",
         "Put all of it on the emergency card",
         "Review after any major change in health"
+      ],
+      "lead": "steps",
+      "stages": [
+        "Deciding",
+        "Drafting",
+        "Signed",
+        "Copies shared"
+      ],
+      "date_kinds": [
+        "Appointment to sign",
+        "Review date"
       ],
       "documents": [
         "Money decision document",
@@ -543,9 +817,18 @@
       "category": "papers",
       "phase": 2,
       "roles": [
-        { "id": "hr", "label": "Human resources at your employer" },
-        { "id": "provider", "label": "The doctor who will complete the form" },
-        { "id": "labor_dept", "label": "Federal labor department, if there is a problem" }
+        {
+          "id": "hr",
+          "label": "Human resources at your employer"
+        },
+        {
+          "id": "provider",
+          "label": "The doctor who will complete the form"
+        },
+        {
+          "id": "labor_dept",
+          "label": "Federal labor department, if there is a problem"
+        }
       ],
       "steps": [
         "Check whether your employer and your own work history qualify",
@@ -560,6 +843,19 @@
         "Keep your own log of every hour used",
         "Confirm in writing what was approved and for how long",
         "Ask what happens when the leave runs out"
+      ],
+      "lead": "date",
+      "stages": [
+        "Asked",
+        "Paperwork in",
+        "Approved",
+        "Leave underway"
+      ],
+      "date_kinds": [
+        "Request due",
+        "Certification due",
+        "Leave starts",
+        "Leave ends"
       ],
       "documents": [
         "Your written request",
@@ -588,10 +884,22 @@
       "phase": 3,
       "state_variance": true,
       "roles": [
-        { "id": "current_case_manager", "label": "Case manager where they are now" },
-        { "id": "receiving_admissions", "label": "Admissions at the new place" },
-        { "id": "insurance", "label": "Insurance or coverage contact" },
-        { "id": "transport", "label": "Transport service" }
+        {
+          "id": "current_case_manager",
+          "label": "Case manager where they are now"
+        },
+        {
+          "id": "receiving_admissions",
+          "label": "Admissions at the new place"
+        },
+        {
+          "id": "insurance",
+          "label": "Insurance or coverage contact"
+        },
+        {
+          "id": "transport",
+          "label": "Transport service"
+        }
       ],
       "steps": [
         "Write down the reason for the move and what you want instead",
@@ -606,6 +914,18 @@
         "Write down the new room number, floor, and direct phone",
         "Rebuild the contact list for the new place",
         "Keep copies of the transfer paperwork"
+      ],
+      "lead": "steps",
+      "stages": [
+        "Looking",
+        "Chosen",
+        "Arranging",
+        "Moved"
+      ],
+      "date_kinds": [
+        "Move date",
+        "Bed available",
+        "Last day at the old place"
       ],
       "documents": [
         "Transfer summary",
@@ -635,10 +955,22 @@
       "phase": 2,
       "state_variance": true,
       "roles": [
-        { "id": "ombudsman", "label": "Long term care ombudsman" },
-        { "id": "state_hearings", "label": "State office that handles these appeals" },
-        { "id": "administrator", "label": "Facility administrator" },
-        { "id": "legal_aid", "label": "Legal aid or attorney" }
+        {
+          "id": "ombudsman",
+          "label": "Long term care ombudsman"
+        },
+        {
+          "id": "state_hearings",
+          "label": "State office that handles these appeals"
+        },
+        {
+          "id": "administrator",
+          "label": "Facility administrator"
+        },
+        {
+          "id": "legal_aid",
+          "label": "Legal aid or attorney"
+        }
       ],
       "steps": [
         "Get the notice in writing and read it carefully",
@@ -654,6 +986,18 @@
         "Prepare for the hearing and ask the ombudsman what to expect",
         "If they are in the hospital, ask about the right to come back to their bed",
         "Keep copies of everything"
+      ],
+      "lead": "date",
+      "stages": [
+        "Notice received",
+        "Appeal filed",
+        "Under review",
+        "Answered"
+      ],
+      "date_kinds": [
+        "Appeal deadline",
+        "Decision expected",
+        "Discharge date"
       ],
       "documents": [
         "The discharge notice",
@@ -686,10 +1030,22 @@
       "phase": 2,
       "state_variance": true,
       "roles": [
-        { "id": "caseworker", "label": "Medicaid caseworker" },
-        { "id": "elder_law", "label": "Elder law attorney or Medicaid planner" },
-        { "id": "bank", "label": "Bank" },
-        { "id": "facility_billing", "label": "Facility business office" }
+        {
+          "id": "caseworker",
+          "label": "Medicaid caseworker"
+        },
+        {
+          "id": "elder_law",
+          "label": "Elder law attorney or Medicaid planner"
+        },
+        {
+          "id": "bank",
+          "label": "Bank"
+        },
+        {
+          "id": "facility_billing",
+          "label": "Facility business office"
+        }
       ],
       "steps": [
         "Ask exactly how many years of records the state wants",
@@ -704,6 +1060,17 @@
         "Consider a consultation with someone who does this professionally",
         "Submit the documentation together, not piece by piece",
         "Keep a copy of everything you handed over"
+      ],
+      "lead": "steps",
+      "stages": [
+        "Listing",
+        "Gathering",
+        "Submitted",
+        "Accepted"
+      ],
+      "date_kinds": [
+        "Documents due",
+        "Decision expected"
       ],
       "documents": [
         "Bank statements for the full lookback period",
@@ -734,10 +1101,22 @@
       "category": "paying",
       "phase": 3,
       "roles": [
-        { "id": "provider_billing", "label": "Billing office where the care happened" },
-        { "id": "insurance", "label": "Insurance member services" },
-        { "id": "insurance_counselor", "label": "Free state insurance counseling program" },
-        { "id": "state_regulator", "label": "State insurance department" }
+        {
+          "id": "provider_billing",
+          "label": "Billing office where the care happened"
+        },
+        {
+          "id": "insurance",
+          "label": "Insurance member services"
+        },
+        {
+          "id": "insurance_counselor",
+          "label": "Free state insurance counseling program"
+        },
+        {
+          "id": "state_regulator",
+          "label": "State insurance department"
+        }
       ],
       "steps": [
         "Collect every bill and every insurance statement in one place",
@@ -752,6 +1131,18 @@
         "Write down the payment deadline so a dispute does not become a late payment",
         "Ask whether a payment plan is available if the balance is real",
         "Keep copies of everything"
+      ],
+      "lead": "steps",
+      "stages": [
+        "Collecting",
+        "Comparing",
+        "Questions sent",
+        "Settled"
+      ],
+      "date_kinds": [
+        "Statement date",
+        "Payment due",
+        "Response expected"
       ],
       "documents": [
         "Bills",

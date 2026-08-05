@@ -4,23 +4,23 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-04.
+**Last rewritten:** 2026-08-05.
 
 ---
 
 ## 1. Where to start
 
-Everything below is verified rather than asserted, as of 2026-08-04:
+Everything below is verified rather than asserted, as of 2026-08-05:
 
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`).
 - **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **349 instrumented tests pass**, last full run 2026-08-05 after the #262 repository layer landed.
+- **353 instrumented tests pass**, last full run 2026-08-05 after the #262 template defaults landed.
 - The phone was left with the month six fixture, font scale 1.0, night mode off, and the per-app locale at the system default. **It has been unplugged since**, so confirm it is attached before planning any device work: `adb devices`.
 
 **Take these in this order.**
 
-1. **A new design direction arrived on 2026-08-04 and step zero is done.** Section 2 is the whole of it. **#262, the data contract work, is underway and its schema half has landed.** Section 2.1 says exactly where it stands and what is left of it.
+1. **A new design direction arrived on 2026-08-04 and step zero is done.** Section 2 is the whole of it. **#262 is done as data work and nothing is drawn yet.** Section 2.1 is the whole of it. **The next build is the components and screens**, #263 onward.
 2. **#200, #201 and #202 are done and closed**, and sections 3 to 5 say what came out of them.
 3. **The rest of step 4 of the v4 conversion is untouched**: #203 through #208, in number order, **except take #208 last**. These are not affected by the new grids.
    - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape. **Take it last.**
@@ -50,7 +50,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 **Take #262 first.** Everything on both surfaces stores something, and building screens against a contract that does not exist yet is the order that produces a second migration.
 
-### 2.1 #262, the schema half: landed
+### 2.1 #262, the data work: landed, not yet seen on a screen
 
 **The database now holds what a person arranges.** `contract/schema.sql` is at **version 2** and `HealthTrailDatabase.SCHEMA_VERSION` moved with it.
 
@@ -85,9 +85,16 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 - **`check_fixtures.py` now fails if any of it stops being written**, including if the dates stop falling on both sides of today. **Each new assertion was proved by breaking the generator on purpose**, not by watching the check pass.
 - **`RegenerationTest`'s notebook now contains the arrangement**, so export, import, and re-rendering the readable copy byte-identically actually covers these tables. It did not before, and it would have kept passing.
 
-**What is left of #262:**
+**All sixteen templates carry the five defaults, and starting one applies all five.**
 
-1. **The built-in project templates gain the five defaults.** `templates/data/projects.json` has `steps` and `roles` and needs `stages`, `lead`, `papers`, and `date_kinds` on all sixteen. This is content work in the app's voice, and it is the last piece.
+- **Only three fields were actually missing.** `steps` was already the starting steps and `documents` was already the usual papers, so they are used as those rather than duplicated. The new fields are `lead`, `stages` and `date_kinds`. `templates/SCHEMA.md` says which field is which default.
+- **`check_templates.py` holds them**: `lead` to the same closed set the schema's CHECK enforces, `stages` to at least two, `date_kinds` to non-empty. Proved by breaking the data on purpose.
+- **`startProject` applies all five in one transaction**, and it applied only the steps before, so a project started from a template had no road, no chips and no papers.
+- **A person's own template carries the whole shape now too.** `saveProjectAsTemplate` wrote only the steps, so somebody who shaped a project over months and saved it got the checklist back and nothing else. Bodies written by older builds have none of the new keys and fall back to empty, which is what those templates actually held.
+
+**#262 is done apart from device verification.** Nothing is drawn yet: no screen renders a road, a card, or a lead slot, so the surfaces cannot be looked at. **That is the next work and it is #263 onward**, not a remainder of #262.
+
+**353 instrumented tests pass**, up from 349.
 
 **Two checkers were fixed rather than worked around while doing this**, D114, and **#216 is closed by it**.
 
@@ -193,6 +200,8 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 **A screen added to the shell is a screen the instrumented suite has to be told about, and "checks pass" does not mean the suite compiles.** `ScreenReaderTest` had been broken since `050ac27`: the arc added a parameter to `ChaptersScreen` and nothing recompiled the test source, so the whole suite could not build for a day while `run_all.py` and `compileDebugKotlin` both reported clean. **`compileDebugAndroidTestKotlin` is not in the main compile path.** Run `tools/verify.sh`, which is the only runner that reaches all of it.
 
 **A defect can live entirely inside somebody else's app.** The calendar hand-off put a November 27 appointment on the 26th, and the screen said November 27 the whole time. It cost three attempts and none of the causes was time zones.
+
+**A probe that edits a real file has to be restored by copy, never by git.** Proving a checker catches what it claims means breaking something on purpose and putting it back. On 2026-08-05 that was put back with `git checkout -- templates/data/projects.json`, which is a destructive command rule 6 bans by name, and it discarded an hour of uncommitted work on the same file rather than the probe. **Copy the file into the scratchpad first and copy it back**, or commit before probing. Nothing was lost permanently because the change was scripted and was regenerated, which was luck rather than a safeguard. **This is what B5 exists to prevent and it is the first time the missing guard has cost anything.**
 
 **Distrust a negative result from a tool that cannot say what it did not examine.** This has now happened five times in one night and twice since. A "not found" from `walk.sh` usually means the thing is below the fold or the label differs in that locale.
 

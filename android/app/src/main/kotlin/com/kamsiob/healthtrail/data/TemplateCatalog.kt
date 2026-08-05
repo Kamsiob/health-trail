@@ -252,7 +252,42 @@ object TemplateCatalog {
         val category: String,
         val stateVariance: Boolean,
         val roles: List<String>,
+        /**
+         * The starting steps, the third of the five template defaults.
+         *
+         * **Suggestions of structure, not instructions to act**, `DESIGN.md`
+         * 20.4: every one can be deleted and the app never says do this now.
+         */
         val steps: List<String>,
+        /**
+         * Which of the three answers a project from this template opens with,
+         * and therefore which of the three shapes it takes. One of `standing`,
+         * `date`, `steps`, held to that set by `check_templates.py` and refused
+         * by the schema's own CHECK otherwise.
+         *
+         * **A default and never a cage**, 20.3: it is one control on the
+         * project's setup screen and changes with no penalty.
+         */
+        // **The defaults on these four match the reader's own fallbacks**, so a
+        // template built in a test reads the same as one built from a body that
+        // predates the field. They do not make the shape optional in the data:
+        // check_templates.py requires all three of lead, stages and date_kinds
+        // on every one of the sixteen, and the schema's CHECK refuses an unknown
+        // lead outright.
+        val lead: String = "standing",
+        /** The named stretches of the road, drawn as the road strip. 20.4. */
+        val stages: List<String> = emptyList(),
+        /** The kinds of date this situation tends to have, offered as chips. */
+        val dateKinds: List<String> = emptyList(),
+        /**
+         * The usual papers, as named placeholders, empty until filled.
+         *
+         * **An empty placeholder reads "not yet", never as an error.** This is
+         * the `documents` list in the data, which was already the usual papers
+         * before the grid named it one of the five defaults, so there is one
+         * list rather than two that drift.
+         */
+        val papers: List<String> = emptyList(),
     )
 
     suspend fun projects(context: Context): List<ProjectTemplate> =
@@ -272,6 +307,10 @@ object TemplateCatalog {
                     stateVariance = item.optBoolean("state_variance", false),
                     roles = item.optJSONArray("roles").toLabels(),
                     steps = item.optJSONArray("steps").toStrings(),
+                    lead = item.optString("lead", "standing"),
+                    stages = item.optJSONArray("stages").toStrings(),
+                    dateKinds = item.optJSONArray("date_kinds").toStrings(),
+                    papers = item.optJSONArray("documents").toStrings(),
                 )
             }
         }

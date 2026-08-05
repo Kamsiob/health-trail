@@ -54,7 +54,18 @@ SITUATION_REQUIRED = [
 PROJECT_REQUIRED = [
     "id", "name", "subtitle", "category", "phase", "roles", "steps", "documents",
     "waiting_on_prompts", "failure_points", "timeline_shape",
+    # The five template defaults, DESIGN.md 20.4. Three of them are these; the
+    # other two are `steps`, which is the starting steps, and `documents`, which
+    # is the usual papers. **A project template is a bundle of five defaults,
+    # nothing more and nothing less**, so a template missing one of them
+    # produces a project the grid cannot draw.
+    "lead", "stages", "date_kinds",
 ]
+
+# Which of the three answers a project opens with, DESIGN.md 20.1 and 20.3.
+# Closed, for the same reason `category` is: the database CHECK refuses anything
+# else, so a typo here is a template that cannot start a project at all.
+PROJECT_LEADS = ("standing", "date", "steps")
 
 # What the person is trying to do, which is how the picker groups the sixteen.
 # **Closed rather than free text**, because a category the app has no label for
@@ -247,6 +258,34 @@ class Validator:
                     where,
                     f"category is {item.get('category')!r}, expected one of "
                     f"{', '.join(PROJECT_CATEGORIES)}",
+                )
+            if item.get("lead") not in PROJECT_LEADS:
+                self.fail(
+                    where,
+                    f"lead is {item.get('lead')!r}, expected one of "
+                    f"{', '.join(PROJECT_LEADS)}. It is which of the three answers "
+                    f"in DESIGN.md 20.1 the project opens with, and the schema's "
+                    f"CHECK refuses anything else.",
+                )
+            # **A road with one stage is not a road.** The blank bundle is
+            # allowed one, per 20.4, but a built-in that describes a real
+            # process has stretches, and the road strip has nothing to draw
+            # without them.
+            stages = item.get("stages", [])
+            if not isinstance(stages, list) or len(stages) < 2:
+                self.fail(
+                    where,
+                    f"stages is {stages!r}. A built-in process needs at least two, "
+                    f"or the road strip has a single waypoint and says nothing.",
+                )
+            if len(set(stages)) != len(stages):
+                self.fail(where, f"two stages share a name: {stages!r}")
+            kinds = item.get("date_kinds", [])
+            if not isinstance(kinds, list) or not kinds:
+                self.fail(
+                    where,
+                    "date_kinds is empty, so recording a date on this project "
+                    "offers no chips at all.",
                 )
             for entry in item.get("roles", []):
                 if not isinstance(entry, dict) or "id" not in entry or "label" not in entry:

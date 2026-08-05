@@ -50,8 +50,11 @@ One entry per long bureaucratic process.
 | `id`, `name`, `subtitle`, `phase` | | As above. |
 | `category` | one of `paying`, `challenge`, `moving`, `papers` | **What the person is trying to do**, which is how the picker groups them. Not what kind of office it involves and not which law it sits under: somebody looking for a process is thinking "they cut her off and I want to appeal it", not "this is a Medicare matter". The four are named in the locale catalogs under `projects.category.*` and the picker keeps them in the order listed here. **Not the same as `phase`**, which is build order and never reaches a screen. |
 | `roles` | array of `{id, label}` | Contacts specific to this project, kept separate from the medical care team. |
-| `steps` | array of strings | Becomes the project checklist, each item marked complete or not. Order is a suggestion. |
-| `documents` | array of strings | Documents to gather for this project. |
+| `steps` | array of strings | **The starting steps**, the third of the five defaults. A short editable list of what people in this situation usually gather or arrange. **Suggestions of structure, not instructions to act**: every one can be deleted, and the app never says do this now. Order is a suggestion. |
+| `lead` | one of `standing`, `date`, `steps` | **Which of the three answers the project opens with**, `DESIGN.md` 20.1 and 20.3, and therefore which of the three shapes it takes: the long road, the closing window, or the busy stretch. **A default and never a cage**: it is one control on the project's setup screen and changes with no penalty. Closed, because the schema's own CHECK refuses anything else. |
+| `stages` | array of strings | **The named stretches of the road**, drawn as the road strip. At least two, because a road with one waypoint says nothing. Copied onto the project at setup, after which they can be renamed, added to, or removed and the road redraws. |
+| `date_kinds` | array of strings | **The kinds of date this situation tends to have**, offered as chips when a date is recorded. Never a closed set: recording a date of a kind not listed here is allowed. |
+| `documents` | array of strings | **The usual papers**, the fifth default. Named placeholders, empty until filled. **An empty placeholder reads "not yet", never as an error.** |
 | `waiting_on_prompts` | array of strings | Offered as choices for the project's "waiting on" field, since these processes stall on other people constantly. |
 | `failure_points` | array of strings | Where this usually goes wrong. Display as context, never as a warning banner. |
 | `timeline_shape` | string | Honest expectation setting in plain words. Deliberately vague: no fixed day counts, since they vary and go stale. |

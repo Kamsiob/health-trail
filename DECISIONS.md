@@ -2150,6 +2150,8 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 
 **How certain this is.** Certain. The guard writes a line to `~/.claude/health-trail-guard.log` for every command it inspects, whether it blocks it or lets it through. A fresh session ran five ordinary commands and the log gained nothing. The script itself was run by hand in the same minutes and worked correctly. D64 has the full account.
 
+**It has now cost something, on 2026-08-05.** A session proving that a checker catches what it claims broke `templates/data/projects.json` on purpose and put it back with `git checkout -- templates/data/projects.json`. That is a destructive command rule 6 bans by name, it ran without being questioned, and it discarded an hour of uncommitted work on that same file rather than only the probe. **Nothing was lost permanently because the change happened to be scripted and was regenerated**, which is luck and not a safeguard: the same command against a hand-edited file would have destroyed it. Every previous entry here said the guard's absence had not cost anything yet. That is no longer true, and it is the strongest argument for installing it that this file has.
+
 **Why the agent cannot do it.** Claude Code refused the edit. It declines to let a session modify its own hooks, which is right, and it was not worked around. That protection is also what makes this an owner job.
 
 **What you need to do.** Two small steps, both in your own Claude Code configuration rather than in this repository.

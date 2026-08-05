@@ -1625,6 +1625,10 @@ class Repository private constructor(
         templateId: String,
         name: String,
         steps: List<String>,
+        lead: String = "standing",
+        stages: List<String> = emptyList(),
+        dateKinds: List<String> = emptyList(),
+        papers: List<String> = emptyList(),
     ): String = withContext(Dispatchers.IO) {
         val database = db().database
         database.beginTransaction()
@@ -1636,6 +1640,7 @@ class Repository private constructor(
                     "name" to name,
                     "template_id" to templateId,
                     "status" to "active",
+                    "lead" to lead,
                 ) + dateColumns("started", Edtf.day(LocalDate.now())),
             )
             steps.forEachIndexed { index, text ->
@@ -1644,6 +1649,49 @@ class Repository private constructor(
                     mapOf(
                         "project_id" to projectId,
                         "text" to text,
+                        "sort_index" to index,
+                    ),
+                )
+            }
+            // **The other four defaults, copied in the same transaction.**
+            // DESIGN.md 20.4: a project template is a bundle of five defaults,
+            // nothing more and nothing less, and every one is visible, editable
+            // and removable after setup.
+            //
+            // **Copied, with no live link back.** Editing this project never
+            // touches the template, and updating the template never touches a
+            // project already underway. That is the whole reason these are rows
+            // here rather than a template id somebody reads through later.
+            //
+            // **No stage is entered.** A project that has just been created has
+            // not reached anything yet, and `current_stage_id` stays null, which
+            // is a real state and reads as "not yet" rather than as an error.
+            stages.forEachIndexed { index, stage ->
+                insertRow(
+                    "project_stage",
+                    mapOf(
+                        "project_id" to projectId,
+                        "name" to stage,
+                        "sort_index" to index,
+                    ),
+                )
+            }
+            dateKinds.forEachIndexed { index, label ->
+                insertRow(
+                    "project_date_kind",
+                    mapOf(
+                        "project_id" to projectId,
+                        "label" to label,
+                        "sort_index" to index,
+                    ),
+                )
+            }
+            papers.forEachIndexed { index, paper ->
+                insertRow(
+                    "project_paper",
+                    mapOf(
+                        "project_id" to projectId,
+                        "name" to paper,
                         "sort_index" to index,
                     ),
                 )
@@ -1832,6 +1880,24 @@ class Repository private constructor(
          */
         val derivedFromId: String?,
         val steps: List<String>,
+        /**
+         * The other four defaults, carried so a project started from somebody's
+         * own template has a shape.
+         *
+         * **A template is five defaults, DESIGN.md 20.4**, and an own template
+         * that carried only the steps produced a project with no road to draw,
+         * no chips when a date was recorded, and no papers. A person who shaped
+         * a project over months and saved it would have got the checklist back
+         * and nothing else.
+         *
+         * **A body written by an older build has none of these**, so each one
+         * falls back to empty and `lead` to where it stands. That is not a
+         * defect: it is what those templates actually held.
+         */
+        val lead: String = "standing",
+        val stages: List<String> = emptyList(),
+        val dateKinds: List<String> = emptyList(),
+        val papers: List<String> = emptyList(),
         val createdAt: Long,
     )
 
@@ -1855,9 +1921,25 @@ class Repository private constructor(
             ).use { if (it.moveToFirst()) it.getString(0) else null }
 
             val steps = projectSteps(projectId).map { it.text }
+            // The whole shape, not only the checklist. What somebody spent
+            // months arranging is the road, the lead and the papers as much as
+            // the steps, and a template that dropped them handed back the least
+            // interesting part of the work.
+            //
+            // **The stages are copied without their dates.** A stage carries
+            // when this project reached it, which belongs to this project and
+            // says nothing about the next one.
+            val lead = db().database.rawQuery(
+                "SELECT lead FROM live_project WHERE id = ?",
+                arrayOf(projectId),
+            ).use { if (it.moveToFirst()) it.getString(0) else "standing" }
             val body = JSONObject()
                 .put("name", name)
                 .put("steps", JSONArray(steps))
+                .put("lead", lead)
+                .put("stages", JSONArray(projectStages(projectId).map { it.name }))
+                .put("date_kinds", JSONArray(projectDateKinds(projectId)))
+                .put("papers", JSONArray(projectPapers(projectId).map { it.name }))
 
             insert(
                 "custom_template",
@@ -1888,16 +1970,25 @@ class Repository private constructor(
             ).use { cursor ->
                 buildList {
                     while (cursor.moveToNext()) {
-                        val steps = runCatching {
-                            val array = JSONObject(cursor.getString(3)).optJSONArray("steps")
-                            (0 until (array?.length() ?: 0)).map { array!!.getString(it) }
+                        val body = runCatching {
+                            JSONObject(cursor.getString(3))
                         }.getOrNull() ?: continue
+
+                        fun list(key: String): List<String> {
+                            val array = body.optJSONArray(key) ?: return emptyList()
+                            return (0 until array.length()).map { array.getString(it) }
+                        }
+
                         add(
                             OwnTemplate(
                                 id = cursor.getString(0),
                                 name = cursor.getString(1),
                                 derivedFromId = cursor.getString(2),
-                                steps = steps,
+                                steps = list("steps"),
+                                lead = body.optString("lead", "standing"),
+                                stages = list("stages"),
+                                dateKinds = list("date_kinds"),
+                                papers = list("papers"),
                                 createdAt = cursor.getLong(4),
                             ),
                         )

@@ -1424,6 +1424,10 @@ fun NotebookShell(
                         templateId = template.id,
                         name = template.name,
                         steps = template.steps,
+                        lead = template.lead,
+                        stages = template.stages,
+                        dateKinds = template.dateKinds,
+                        papers = template.papers,
                     )
                 }
                 startingFromOwn = null
@@ -1436,11 +1440,19 @@ fun NotebookShell(
             LaunchedEffect(template) {
                 val subject = repository.activeSubject()
                 if (subject != null) {
+                    // **All five defaults, not only the steps.** DESIGN.md
+                    // 20.4: a project template is a bundle of five, and a
+                    // project started with just the checklist has no road to
+                    // draw, no chips when a date is recorded, and no papers.
                     repository.startProject(
                         subjectId = subject.id,
                         templateId = template.id,
                         name = template.name,
                         steps = template.steps,
+                        lead = template.lead,
+                        stages = template.stages,
+                        dateKinds = template.dateKinds,
+                        papers = template.papers,
                     )
                 }
                 chosenTemplate = null

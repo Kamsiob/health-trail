@@ -367,6 +367,102 @@ class ArrangementTest {
         )
     }
 
+    // -- a template is five defaults, and all five are applied ---------------
+
+    @Test
+    fun everyShippedTemplateCarriesTheFiveDefaults() = runBlocking {
+        // The catalog on the device, not the file in the repository.
+        // check_templates.py holds the data to this; this holds the build to it,
+        // because a field that never reaches the assets is a field the app does
+        // not have.
+        val templates = TemplateCatalog.projects(context)
+        assertEquals(16, templates.size)
+        templates.forEach { template ->
+            assertTrue(
+                "${template.id} leads with ${template.lead}",
+                template.lead in setOf("standing", "date", "steps"),
+            )
+            assertTrue("${template.id} has no stages", template.stages.size >= 2)
+            assertTrue("${template.id} has no date kinds", template.dateKinds.isNotEmpty())
+            assertTrue("${template.id} has no papers", template.papers.isNotEmpty())
+        }
+        // All three shapes exist in the catalog, or two of the three project
+        // home screens can never be reached from a shipped template.
+        assertEquals(
+            setOf("standing", "date", "steps"),
+            templates.map { it.lead }.toSet(),
+        )
+    }
+
+    @Test
+    fun startingFromATemplateAppliesAllFiveDefaults() = runBlocking {
+        val template = TemplateCatalog.projects(context).first { it.id == "discharge_planning" }
+
+        val projectId = repository.startProject(
+            subjectId = subjectId,
+            templateId = template.id,
+            name = template.name,
+            steps = template.steps,
+            lead = template.lead,
+            stages = template.stages,
+            dateKinds = template.dateKinds,
+            papers = template.papers,
+        )
+
+        assertEquals(template.lead, repository.columnForTest("project", projectId, "lead"))
+        assertEquals(template.stages, repository.projectStages(projectId).map { it.name })
+        assertEquals(template.dateKinds, repository.projectDateKinds(projectId))
+        assertEquals(template.papers, repository.projectPapers(projectId).map { it.name })
+        assertEquals(template.steps, repository.projectSteps(projectId).map { it.text })
+
+        // **Nothing is entered yet.** A project created a second ago has not
+        // reached a stage, and that is a real state rather than an error.
+        assertNull(repository.columnForTest("project", projectId, "current_stage_id"))
+        assertTrue(repository.projectStages(projectId).none { it.isReached })
+        // And no paper is filled, which reads as not yet.
+        assertTrue(repository.projectPapers(projectId).none { it.isFilled })
+    }
+
+    @Test
+    fun aTemplateIsCopiedSoEditingTheProjectNeverTouchesIt() = runBlocking {
+        val template = TemplateCatalog.projects(context).first { it.id == "discharge_planning" }
+        val projectId = repository.startProject(
+            subjectId, template.id, template.name, template.steps,
+            template.lead, template.stages, template.dateKinds, template.papers,
+        )
+
+        // Reshape the project completely. 20.4: applied once, at setup, and
+        // after that there is no live link in either direction.
+        repository.setProjectLead(projectId, "standing")
+        repository.addProjectStage(projectId, "A stage the template never had")
+
+        val again = TemplateCatalog.projects(context).first { it.id == "discharge_planning" }
+        assertEquals("editing a project changed the template", template.lead, again.lead)
+        assertEquals(template.stages, again.stages)
+    }
+
+    @Test
+    fun savingAProjectAsATemplateKeepsItsWholeShape() = runBlocking {
+        val template = TemplateCatalog.projects(context).first { it.id == "discharge_planning" }
+        val projectId = repository.startProject(
+            subjectId, template.id, template.name, template.steps,
+            template.lead, template.stages, template.dateKinds, template.papers,
+        )
+        repository.saveProjectAsTemplate(projectId, "How we did it last time")
+
+        val own = repository.ownTemplates("project").first { it.name == "How we did it last time" }
+        // **The whole shape, not only the checklist.** What somebody spent
+        // months arranging is the road and the lead as much as the steps, and a
+        // template that kept only the steps hands back the least useful part.
+        assertEquals(template.lead, own.lead)
+        assertEquals(template.stages, own.stages)
+        assertEquals(template.dateKinds, own.dateKinds)
+        assertEquals(template.papers, own.papers)
+        assertEquals(template.steps, own.steps)
+        // The lineage travels, so the library can say what this grew out of.
+        assertEquals(template.id, own.derivedFromId)
+    }
+
     @Test
     fun theShapeIsADefaultAndNotACage() = runBlocking {
         val projectId = repository.startProject(
