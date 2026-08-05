@@ -2159,6 +2159,18 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 ---
 
+### D117. Starting a project is two stages rather than three, and the sixteen templates stay
+
+**2026-08-05, building #276 and #277.** The grid draws starting a project as three stages: the kind, then the name, then the setup previewed. Two things about it did not survive contact with what is already built, and both were decided toward the person rather than toward the drawing.
+
+**The name lives on the preview, so there are two stages and not three.** A stage whose only question is "what should this be called" arrives with the answer already filled in from the template, which means almost everybody taps through it. That is a tap charged to everyone to serve the few who rename, and rule 18 asks for exactly that arithmetic. The name is on the preview, pre-filled and editable, next to everything else the person is deciding. Both stages say which one they are, because the preview announcing "2 of 2" while the picker said nothing was the flow referring to a stage nobody had been shown.
+
+**The sixteen templates stay, and the grid's four kinds are the four categories they are already grouped by.** The grid says the built-ins ship as four bundles: benefits or waiver, insurance appeal, discharge or move, and blank. This app has sixteen, grouped into paying for care, challenging a decision, moving and coming home, and papers and permissions, held to that set by `check_templates.py`. **Dropping twelve templates is an owner decision and this is not it.** The four kinds are the four groups, the picker opens on the first of them, and the rest fold, which is the composition the grid asks for with the catalog the owner already approved.
+
+**Nothing is created until Create.** That is the part of screen 04 that was actually missing rather than differently shaped. Choosing a template used to start the project, its road, its steps, its papers and its date chips on one tap, so the first time anybody saw what a template meant was on a project that already existed. `DESIGN.md` 20.4 calls a template a starting hand and law 5 says so out loud, and neither was true of a screen that never showed the hand.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 

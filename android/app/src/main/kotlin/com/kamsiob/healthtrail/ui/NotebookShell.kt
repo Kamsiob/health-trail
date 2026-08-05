@@ -103,6 +103,7 @@ import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
+import com.kamsiob.healthtrail.ui.screens.StartProjectPreviewSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
 import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
@@ -267,6 +268,18 @@ fun NotebookShell(
     var chosenTemplate by remember {
         mutableStateOf<TemplateCatalog.ProjectTemplate?>(null)
     }
+    /**
+     * The template being looked at before anything is created, screen 04.
+     *
+     * **Separate from `chosenTemplate` on purpose.** That one means "create
+     * this now", and the whole point of the preview is that looking at a
+     * template is not agreeing to it.
+     */
+    var previewTemplate by remember {
+        mutableStateOf<TemplateCatalog.ProjectTemplate?>(null)
+    }
+    /** What the person called it on the preview, which may not be the template's own name. */
+    var previewName by remember { mutableStateOf<String?>(null) }
     // The project being looked at, and its steps.
     var openProject by remember { mutableStateOf<Repository.Project?>(null) }
     var projectSteps by remember { mutableStateOf<List<Repository.ProjectStep>>(emptyList()) }
@@ -1687,8 +1700,13 @@ fun NotebookShell(
             StartProjectScreen(
                 templates = projectTemplates,
                 onChoose = { template ->
+                    // **Nothing is created here any more**, 20.5 screen 04.
+                    // This used to start the project, its road, its steps, its
+                    // papers and its date chips on one tap, and the first time
+                    // anybody saw any of that was on a screen that already
+                    // existed.
                     startingProject = false
-                    chosenTemplate = template
+                    previewTemplate = template
                 },
                 onCancel = { startingProject = false },
                 onStartOwn = { name ->
@@ -1699,6 +1717,23 @@ fun NotebookShell(
                 onChooseOwn = { template ->
                     startingProject = false
                     startingFromOwn = template
+                },
+            )
+        }
+
+        previewTemplate?.let { template ->
+            StartProjectPreviewSheet(
+                template = template,
+                onCreate = { name ->
+                    previewTemplate = null
+                    previewName = name
+                    chosenTemplate = template
+                },
+                onDismiss = {
+                    // Back to the picker rather than out of the flow, which is
+                    // where the sheet's own label says it goes.
+                    previewTemplate = null
+                    startingProject = true
                 },
             )
         }
@@ -1841,7 +1876,10 @@ fun NotebookShell(
                     repository.startProject(
                         subjectId = subject.id,
                         templateId = template.id,
-                        name = template.name,
+                        // What the person called it, which the preview
+                        // pre-filled from the template and they may have
+                        // changed. Rule 20: what they typed is what it is.
+                        name = previewName?.takeIf { it.isNotBlank() } ?: template.name,
                         steps = template.steps,
                         lead = template.lead,
                         stages = template.stages,
@@ -1866,7 +1904,10 @@ fun NotebookShell(
                     repository.startProject(
                         subjectId = subject.id,
                         templateId = template.id,
-                        name = template.name,
+                        // What the person called it, which the preview
+                        // pre-filled from the template and they may have
+                        // changed. Rule 20: what they typed is what it is.
+                        name = previewName?.takeIf { it.isNotBlank() } ?: template.name,
                         steps = template.steps,
                         lead = template.lead,
                         stages = template.stages,
@@ -1875,6 +1916,7 @@ fun NotebookShell(
                     )
                 }
                 chosenTemplate = null
+                previewName = null
                 revision += 1
             }
         }

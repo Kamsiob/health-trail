@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -19,6 +20,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -158,7 +162,54 @@ fun RoadStrip(
             }
         }
 
+        // **Labels under the waypoints only while a stage name fits under
+        // one.** At font scale 2.0 with four stages each label gets about a
+        // quarter of the width, which is narrower than the word itself, and
+        // Compose then breaks inside the word: "Gathering" came out as
+        // "Gatherin" over "g". A road that spells its own stages wrong is
+        // worse than a road that lists them.
+        //
+        // **Below that width the names run as one line under the strip
+        // instead.** Nothing is dropped and nothing is abbreviated: the road
+        // still shows where the project is, and the names still say what the
+        // stages are called, which is what somebody at that font scale needs
+        // most. Section 9, and rule 14: the project home draws the same road
+        // and had the same defect.
         if (showLabels) {
+            LabelsOrList(stages = stages, current = current, mirrored = mirrored)
+        }
+    }
+}
+
+/**
+ * The stage names, under their own waypoints where they fit and as one line
+ * where they do not.
+ *
+ * **Measured rather than guessed.** A threshold derived from the font scale
+ * looked right on paper and did nothing on the phone, so this lays the longest
+ * name out with the same style the labels use and asks how wide it actually
+ * came out. That is the only answer that cannot be wrong about a font this
+ * component does not choose.
+ */
+@Composable
+private fun LabelsOrList(stages: List<RoadStage>, current: Int, mirrored: Boolean) {
+    val colors = HealthTrail.colors
+    val type = HealthTrail.type
+    val measurer = rememberTextMeasurer()
+
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val perStage = with(LocalDensity.current) { (maxWidth / stages.size).toPx() }
+        val widest = remember(stages, type.mono, perStage) {
+            stages.maxOf { measurer.measure(it.name, type.mono).size.width }
+        }
+
+        // **A word wider than its column is a word Compose breaks in half.**
+        // At font scale 2.0 with four stages, "Gathering" came out as
+        // "Gatherin" over "g". A road that spells its own stages wrong is worse
+        // than a road that lists them, so below this the names run as one line
+        // under the strip: nothing dropped, nothing abbreviated. Rule 14, and
+        // the project home draws the same road.
+        if (widest <= perStage) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -196,9 +247,19 @@ fun RoadStrip(
                     )
                 }
             }
+        } else {
+            Text(
+                text = stages.joinToString(SEPARATOR) { it.name },
+                style = type.mono,
+                color = colors.ink2,
+                modifier = Modifier.fillMaxWidth().padding(top = Space.xs),
+            )
         }
     }
 }
+
+/** What joins the stage names when they cannot sit under their own waypoints. */
+private const val SEPARATOR = " \u00b7 "
 
 /**
  * One point on the road.

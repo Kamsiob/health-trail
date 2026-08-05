@@ -160,6 +160,16 @@ fun StartProjectScreen(
             ) {
                 item(key = "head") {
                     Spacer(Modifier.height(Space.l))
+                    // **Where they are in the flow**, 20.5 screens 03 and 04.
+                    // The preview said "2 of 2" while this said nothing, so
+                    // the second stage announced a first one nobody had been
+                    // shown. Law 3: staged, and the stages say so.
+                    Text(
+                        text = strings["projects.start.stage"],
+                        style = HealthTrail.type.mono,
+                        color = colors.ink2,
+                    )
+                    Spacer(Modifier.height(Space.xs))
                     Text(
                         text = strings["projects.start.title"],
                         style = HealthTrail.type.displayL,

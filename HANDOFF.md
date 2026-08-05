@@ -172,6 +172,17 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **358 instrumented tests pass**, up from 356. Both new assertions were proved by breaking the screen on purpose and putting it back from a scratchpad copy, per section 7. Seen on the phone at both themes, at font scale 2.0, and in Arabic: `project-clusters-light`, `project-clusters-dark`, `project-clusters-2x-dark`, `project-clusters-rtl-dark`.
 
+### 2.34 Starting a project shows what a template is before it creates anything
+
+**#276 and #277 are built and seen.** Choosing a template used to create the project, its road, its steps, its papers and its date chips on one tap of a row, so the first time anybody saw what a template meant was on a project that already existed. **Nothing is created until Create now.**
+
+- **`StartProjectPreviewSheet` is screen 04.** The road drawn rather than counted, then the starting steps, the usual papers and the date kinds each with a line saying what they are and that they can be changed, then which of the three answers the project will open with and where to change it, then the name.
+- **Two stages, not three, and both say which they are.** The name is on the preview, pre-filled from the template, because a stage whose only question arrives pre-answered is a tap charged to everybody to serve the few who rename. The picker gained its own `1 OF 2` eyebrow, since the preview was announcing a stage nobody had been shown. `DECISIONS.md` D117.
+- **The sixteen templates stay.** The grid ships four built-in bundles; this app has sixteen grouped into the same four kinds. Dropping twelve is an owner decision and this is not it.
+- **`RoadStrip` no longer breaks a stage name in half.** At font scale 2.0 with four stages, each label gets about a quarter of the width, which is narrower than the word, and "Gathering" came out as "Gatherin" over "g". Below the width a name needs, the names run as one line under the road instead: nothing dropped, nothing abbreviated. **Measured with a text measurer rather than derived from the font scale**, because the derived threshold looked right and did nothing on the phone. This was one of #304's three uncertainties and it is fixed for the project home too, rule 14.
+
+**Seen at both themes, at font scale 2.0, and in Arabic**: `project-preview-light`, `project-preview-dark`, `project-preview-2x-light`, `project-preview-rtl-light`, plus `project-start-light` for the picker's eyebrow. **365 instrumented tests pass**, up from 362.
+
 ### 2.35 The projects tab before the first project
 
 **#274 is built and seen.** It was one gray paragraph under the subtitle with the rest of the screen blank below it, which is exactly the shape 5.17 already solved for every other empty screen in the app. It uses that solution now: the trail map ground, the line that says what this place is for at `displayS`, the paragraph under it, and the one thing to do.
@@ -357,6 +368,10 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 **A probe that edits a real file has to be restored by copy, never by git.** Proving a checker catches what it claims means breaking something on purpose and putting it back. On 2026-08-05 that was put back with `git checkout -- templates/data/projects.json`, which is a destructive command rule 6 bans by name, and it discarded an hour of uncommitted work on the same file rather than the probe. **Copy the file into the scratchpad first and copy it back**, or commit before probing. Nothing was lost permanently because the change was scripted and was regenerated, which was luck rather than a safeguard. **This is what B5 exists to prevent and it is the first time the missing guard has cost anything.**
 
 **`installDebug` clears this app's data on this phone.** Twice in a row an install was followed by the app opening at "Before you start" with an empty notebook. **Every device check is install, then `tools/seed.sh`, then navigate**, and a screenshot taken straight after an install is a screenshot of onboarding.
+
+**Copy the suite's report before rerunning anything.** A single class rerun overwrites `androidTest-results/connected/debug/TEST-*.xml`, and both flakes found this week, #302 and #308, lost their assertion and stack that way. Copy it into the scratchpad the moment the suite goes red.
+
+**`connectedDebugAndroidTest` uninstalls the app when it finishes.** `walk.sh` then dumps whatever is on the phone, which is the owner's home screen with his real calendar and contacts on it. **Reinstall and check the app is focused before walking**, and never screenshot without it: `screenshot.sh` refuses, but `walk.sh see` does not.
 
 **Distrust a negative result from a tool that cannot say what it did not examine.** This has now happened five times in one night and twice since. A "not found" from `walk.sh` usually means the thing is below the fold or the label differs in that locale.
 
