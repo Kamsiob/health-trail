@@ -19,6 +19,7 @@ import json
 import sqlite3
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -149,6 +150,94 @@ def main():
                     f"projects point at templates that are not in the catalog: "
                     f"{sorted(unknown)}."
                 )
+            # **The shape a person gave a project, and the Today they arranged.**
+            # contract/DATA-CONTRACT.md 8.7. This block exists because the same
+            # defect has now landed four times in this repository: a feature is
+            # built, the fixture never writes the rows it reads, and the feature
+            # is never once seen working. #237, #229, #233, and the projects
+            # that carried no template above are all this shape.
+            #
+            # Every project screen leads with one of the three answers in
+            # DESIGN.md 20.1, so all three leads have to exist or two of the
+            # three home screens can never be looked at on the phone.
+            leads = {t for t in distinct("project", "lead") if t}
+            missing_leads = {"standing", "date", "steps"} - leads
+            if missing_leads:
+                failures.append(
+                    f"no project leads with {sorted(missing_leads)}, so those project "
+                    f"shapes can never be seen on the device. DESIGN.md 20.3."
+                )
+
+            for table, why in (
+                ("project_stage", "the road strip has no stages to draw"),
+                ("project_standing", "where it stands is the answer two of the three "
+                                     "shapes lead with, and it would always be blank"),
+                ("project_date", "the next date is the answer the closing window "
+                                 "leads with"),
+                ("project_date_kind", "recording a date offers no chips"),
+                ("project_paper", "the papers screen has no placeholders"),
+                ("today_card", "nobody ever sees a blank Today, DESIGN.md 21.5, and "
+                               "an empty layout is exactly that"),
+            ):
+                if db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] < 1:
+                    failures.append(f"{table} is empty, so {why}.")
+
+            # **Both sides of today.** D113: a screen leads with the soonest date
+            # that has not passed, and the most recent when they all have. A
+            # fixture with dates on one side of today can only ever show one of
+            # those, and the passed rung of the states ladder is the one that
+            # would go unseen. This is a real date comparison against the clock
+            # on purpose: the point is whether it is still true today.
+            now = int(time.time() * 1000)
+            passed = db.execute(
+                "SELECT COUNT(*) FROM project_date WHERE due_start < ?", (now,)
+            ).fetchone()[0]
+            upcoming = db.execute(
+                "SELECT COUNT(*) FROM project_date WHERE due_start >= ?", (now,)
+            ).fetchone()[0]
+            if passed < 1 or upcoming < 1:
+                failures.append(
+                    f"project dates do not fall on both sides of today: {passed} have "
+                    f"passed and {upcoming} have not. The fixture's history ends on a "
+                    f"fixed date, so a future date written as a small offset stops "
+                    f"being in the future once real time passes it. Move HISTORY_ENDS "
+                    f"forward in tools/fixtures/generate.py."
+                )
+
+            # A date without its source is half a date, 20.1: "Apr 12, from the
+            # letter of Mar 5" is usable a year later and a bare Apr 12 is not.
+            if db.execute(
+                "SELECT COUNT(*) FROM project_date WHERE source_note IS NOT NULL"
+            ).fetchone()[0] < 1:
+                failures.append(
+                    "no project date carries where it was taken from, so the half of "
+                    "the date that makes it usable later is never rendered."
+                )
+
+            # The lead slot is singular by construction, DESIGN.md 21.1. The
+            # database refuses two; this catches zero, which it cannot.
+            for subject_id, leads_here in db.execute(
+                "SELECT subject_id, SUM(is_lead) FROM today_card "
+                "WHERE deleted_at IS NULL GROUP BY subject_id"
+            ):
+                if leads_here != 1:
+                    failures.append(
+                        f"subject {subject_id} has {leads_here} lead cards on Today. "
+                        f"There is never zero and never two. DESIGN.md 21.1."
+                    )
+
+            # A card pointing at a project that is finished is the source-closed
+            # rung of the states ladder, 21.4, and it cannot be seen without one.
+            if db.execute(
+                "SELECT COUNT(*) FROM today_card c JOIN project p "
+                "ON p.id = c.source_id WHERE c.source_table = 'project' "
+                "AND p.status IN ('done', 'abandoned')"
+            ).fetchone()[0] < 1:
+                failures.append(
+                    "no Today card points at a finished project, so the source-closed "
+                    "rung of the states ladder in DESIGN.md 21.4 can never be seen."
+                )
+
             if distinct("standing_instruction", "tag") != {"federal", "request"}:
                 failures.append(
                     "the fixture does not carry both standing instruction tags, so the "

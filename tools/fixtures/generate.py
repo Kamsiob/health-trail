@@ -178,7 +178,117 @@ class Generator:
         # screen that reads it looked broken when it was the fixture that was
         # ordered wrong.
         self.involve(db, people)
+        # After documents, because a paper placeholder points at one, and after
+        # projects, because it points at those. Same reason `involve` is last.
+        self.fill_project_papers(db)
+        # Last of all, because a card points at a measure, a project or a
+        # person, and every one of them has to exist before the card names it.
+        self.today_layout(db, subject_id)
         db.commit()
+
+    def fill_project_papers(self, db):
+        """Puts a real document behind some placeholders and leaves the rest empty.
+
+        **Both halves matter.** A filled placeholder is what the papers screen
+        is for; an empty one is the state that has to read "not yet" rather than
+        as something the person failed to do, 20.4. A fixture with only one of
+        them can only ever show half the screen.
+        """
+        documents = [
+            row[0]
+            for row in db.execute(
+                "SELECT id FROM document WHERE deleted_at IS NULL ORDER BY id"
+            )
+        ]
+        if not documents:
+            return
+        papers = [
+            row[0]
+            for row in db.execute(
+                "SELECT id FROM project_paper WHERE deleted_at IS NULL ORDER BY id"
+            )
+        ]
+        # Every third one, so the mix is visible on one screen rather than
+        # needing a scroll to find an empty one.
+        for position, paper_id in enumerate(papers):
+            if position % 3 != 0:
+                continue
+            db.execute(
+                "UPDATE project_paper SET document_id = ? WHERE id = ?",
+                (documents[position % len(documents)], paper_id),
+            )
+
+    def today_layout(self, db, subject_id):
+        """The arranged Today, as a situation template would have set it.
+
+        `contract/DATA-CONTRACT.md` 8.7 and `DESIGN.md` 21.5: nobody ever sees a
+        blank Today, so a fixture that writes no layout is a fixture that cannot
+        show the surface at all.
+
+        **The point of the spread is the states ladder**, 21.4 and 23.1. A card
+        for every rung has to be producible, so this deliberately includes a
+        card pointing at a project that is closed, which is the source-closed
+        rung, and a measure card whose measure has few readings.
+        """
+        def source(table):
+            row = db.execute(
+                f"SELECT id FROM {table} WHERE deleted_at IS NULL ORDER BY id LIMIT 1"
+            ).fetchone()
+            return row[0] if row else None
+
+        measure_id = source("measure")
+        # A project that is finished, on purpose: a card pointing at one says so
+        # and keeps working as a door, and is removed only by the person's hand.
+        closed = db.execute(
+            "SELECT id FROM project WHERE deleted_at IS NULL "
+            "AND status IN ('done', 'abandoned') ORDER BY id LIMIT 1"
+        ).fetchone()
+        open_project = db.execute(
+            "SELECT id FROM project WHERE deleted_at IS NULL "
+            "AND status NOT IN ('done', 'abandoned') ORDER BY id LIMIT 1"
+        ).fetchone()
+
+        cards = [
+            # The lead. The digest is the default lead in every template, 21.7.
+            ("digest", "wide", None, None),
+            ("next_up", "wide", None, None),
+            ("medications", "small", None, None),
+            ("incidents", "small", None, None),
+        ]
+        if measure_id:
+            cards.append(("measure", "tall", "measure", measure_id))
+        if open_project:
+            cards.append(("project_standing", "wide", "project", open_project[0]))
+            cards.append(("project_date", "small", "project", open_project[0]))
+        if closed:
+            cards.append(("project_steps", "wide", "project", closed[0]))
+        cards += [
+            ("ask_next_time", "small", None, None),
+            ("unfiled", "small", None, None),
+            ("money", "small", None, None),
+            ("care_team", "wide", None, None),
+            ("emergency_card", "small", None, None),
+            ("trail_lately", "tall", None, None),
+            ("recent_documents", "wide", None, None),
+            ("standing_instructions", "small", None, None),
+            ("milestones", "small", None, None),
+        ]
+
+        for position, (card_type, size, table, row_id) in enumerate(cards):
+            self.row(
+                db,
+                "today_card",
+                {
+                    "subject_id": subject_id,
+                    "card_type": card_type,
+                    "size": size,
+                    "sort_index": position,
+                    "is_lead": 1 if position == 0 else 0,
+                    "source_table": table,
+                    "source_id": row_id,
+                },
+                day=max(0, self.days - 1),
+            )
 
     def row(self, db, table, values, day=0):
         at = self.ms(day)
@@ -859,6 +969,10 @@ class Generator:
         """Projects at various stages, including the ones nobody finished."""
         for index in range(max(len(PROJECT_STATES), self.scaled(FULL["projects"]))):
             state = PROJECT_STATES[index % len(PROJECT_STATES)]
+            # **Which of the three answers this one opens with.** All three
+            # shapes have to exist in the fixture or two of the three project
+            # home screens can never be looked at on the phone. DESIGN.md 20.3.
+            lead = PROJECT_LEADS[index % len(PROJECT_LEADS)]
             day = self.rng.randrange(0, max(1, self.days))
             project_id = self.row(
                 db,
@@ -907,7 +1021,153 @@ class Generator:
                     values["completed_edtf"] = (self.start + timedelta(days=at)).isoformat()
                     values["completed_start"] = self.ms(at, 0, 0)
                     values["completed_end"] = self.ms(at, 23, 59)
+                # **The busy stretch needs its clusters and its handler tags**,
+                # DESIGN.md 20.3, and a fixture that never writes them means a
+                # built feature is never seen. Only the steps shape carries
+                # them, which is also what the screens expect: null is the
+                # normal state on the other two.
+                if lead == "steps":
+                    values["cluster"] = STEP_CLUSTERS[step % len(STEP_CLUSTERS)]
+                    if step % 3 == 0:
+                        values["handler_label"] = HANDLERS[
+                            (index + step) % len(HANDLERS)
+                        ]
                 self.row(db, "project_step", values, day=day)
+
+            self.project_shape(db, project_id, index, day, lead, state)
+
+    def project_shape(self, db, project_id, index, day, lead, state):
+        """The road, where it stands, the dates, the papers, and the date kinds.
+
+        `contract/DATA-CONTRACT.md` 8.7. **Without this the Projects grid cannot
+        be looked at on the phone at all**: every project screen leads with one
+        of the three answers in `DESIGN.md` 20.1, and two of the three are read
+        from tables that had no fixture writer.
+        """
+        stages = PROJECT_STAGES[index % len(PROJECT_STAGES)]
+
+        # How far along the road this one is. A finished project has reached the
+        # end; an abandoned one stopped where it stopped, which is honest and is
+        # what the screen has to be able to draw.
+        reached_through = {
+            "done": len(stages),
+            "active": 2,
+            "waiting": 2,
+            "stalled": 1,
+            "abandoned": 1,
+        }.get(state, 1)
+
+        current_stage_id = None
+        for position, name in enumerate(stages):
+            values = {
+                "project_id": project_id,
+                "name": name,
+                "sort_index": position,
+            }
+            if position < reached_through:
+                at = min(self.days - 1, day + position * 21)
+                values["entered_edtf"] = (self.start + timedelta(days=at)).isoformat()
+                values["entered_zone"] = "America/New_York"
+                values["entered_start"] = self.ms(at, 0, 0)
+                values["entered_end"] = self.ms(at, 23, 59) + 59_999
+            stage_id = self.row(db, "project_stage", values, day=day)
+            if position == reached_through - 1:
+                current_stage_id = stage_id
+
+        if current_stage_id:
+            db.execute(
+                "UPDATE project SET current_stage_id = ?, lead = ? WHERE id = ?",
+                (current_stage_id, lead, project_id),
+            )
+        else:
+            db.execute(
+                "UPDATE project SET lead = ? WHERE id = ?", (lead, project_id)
+            )
+
+        # **Where it stands, with its history.** Two entries on most, so the
+        # screen has something to show and the trail has a sequence. An
+        # abandoned project keeps the last thing anybody said, because that is
+        # the record.
+        for turn, (holder, activity) in enumerate(
+            STANDING[index % len(STANDING)]
+        ):
+            since = min(self.days - 1, day + turn * 34)
+            self.row(
+                db,
+                "project_standing",
+                {
+                    "project_id": project_id,
+                    "holder_label": holder,
+                    "activity": activity,
+                    "since_edtf": (self.start + timedelta(days=since)).isoformat(),
+                    "since_zone": "America/New_York",
+                    "since_start": self.ms(since, 0, 0),
+                    "since_end": self.ms(since, 23, 59) + 59_999,
+                },
+                day=since,
+            )
+
+        # **The dates, and deliberately one of each side of today.** D113 says
+        # the screen leads with the soonest that has not passed and falls back
+        # to the most recent when they all have, so a fixture with only future
+        # dates can never show the passed rung of the states ladder, 21.4.
+        kinds = PROJECT_DATE_KINDS[index % len(PROJECT_DATE_KINDS)]
+        for position, label in enumerate(kinds):
+            self.row(
+                db,
+                "project_date_kind",
+                {"project_id": project_id, "label": label, "sort_index": position},
+                day=day,
+            )
+
+        for offset, source in PROJECT_DATE_OFFSETS[index % len(PROJECT_DATE_OFFSETS)]:
+            # Offsets are counted from the end of the history, which is today
+            # for a fixture, so a negative one has passed and a positive one has
+            # not.
+            at = self.days - 1 + offset
+            on = self.start + timedelta(days=at)
+            self.row(
+                db,
+                "project_date",
+                {
+                    "project_id": project_id,
+                    "kind": kinds[abs(offset) % len(kinds)],
+                    "due_edtf": on.isoformat(),
+                    "due_zone": "America/New_York",
+                    "due_start": int(
+                        datetime.combine(on, datetime.min.time()).timestamp() * 1000
+                    ),
+                    "due_end": int(
+                        datetime.combine(on, datetime.min.time())
+                        .replace(hour=23, minute=59)
+                        .timestamp()
+                        * 1000
+                    )
+                    + 59_999,
+                    "source_note": source,
+                },
+                day=max(0, min(self.days - 1, at)),
+            )
+
+        # **The papers.** They are written empty here and some are filled in
+        # later, once documents exist: `fill_project_papers` runs after
+        # `documents` for the same reason `involve` runs last. An empty
+        # placeholder reads "not yet" and never as an error, 20.4, and a fixture
+        # where every placeholder is empty cannot show the other half of that.
+        for position, name in enumerate(PROJECT_PAPERS[index % len(PROJECT_PAPERS)]):
+            self.row(
+                db,
+                "project_paper",
+                {
+                    "project_id": project_id,
+                    "name": name,
+                    "sort_index": position,
+                    "direction": ["received", "sent"][position % 2]
+                    if position < 2
+                    else None,
+                },
+                day=day,
+            )
 
     def documents(self, db, subject_id, chapters):
         """Documents, each with an attachment and a note on where the paper is.
@@ -1166,6 +1426,88 @@ INSTRUCTIONS = [
 ]
 
 PROJECT_STATES = ["active", "waiting", "stalled", "done", "abandoned"]
+
+# Which of the three answers each project opens with, DESIGN.md 20.3. All three
+# are here because two of the three project home screens cannot be looked at on
+# the phone otherwise.
+PROJECT_LEADS = ["standing", "date", "steps", "standing", "date"]
+
+# The road each one runs along. Taken from the built-in bundles in 20.4, so what
+# the fixture draws is what a template would actually have produced.
+PROJECT_STAGES = [
+    ["Applied", "In review", "Decision"],
+    ["Decision received", "Preparing", "Submitted", "Answered"],
+    ["Date set", "Arranging", "Home"],
+    ["Asked", "Waiting", "Arranged"],
+    ["Started", "Underway"],
+]
+
+# Whose hands it has been in, and what was happening there. **Stated as fact and
+# never as a complaint**, DESIGN.md 20.7 and 22: a caseworker is a caseworker,
+# nobody is an adversary, and waiting is not framed as somebody's failure.
+STANDING = [
+    [
+        ("The county", "reviewing the application"),
+        ("The county", "waiting on the bank statements"),
+    ],
+    [
+        ("The insurer", "reviewing the appeal"),
+        ("The review board", "scheduled to look at it"),
+    ],
+    [
+        ("The discharge planner", "arranging the equipment"),
+        ("The medical supply company", "delivering the bed"),
+    ],
+    [("The facility business office", "looking into the charge")],
+    [
+        ("Us", "gathering what they asked for"),
+        ("The attorney's office", "preparing the filing"),
+    ],
+]
+
+# The kinds of date each situation tends to have, offered as chips when a date
+# is recorded, 20.4. Never a closed set: a date of a kind not listed is allowed.
+PROJECT_DATE_KINDS = [
+    ["Filing deadline", "Decision expected", "Renewal"],
+    ["Appeal deadline", "Hearing", "Answer expected"],
+    ["Discharge date", "Delivery", "First visit"],
+    ["Statement due", "Payment due"],
+    ["Filing deadline", "Court date"],
+]
+
+# Days from the end of the history, so a negative one has already passed and a
+# positive one has not. **Both sides of today on purpose**, because the passed
+# rung of the states ladder cannot be seen otherwise, 21.4 and D113.
+#
+# The future ones are stated in terms of UPCOMING_DAYS rather than as small
+# numbers of their own, and that is the whole reason they work: the history ends
+# on a fixed date, so an offset of "+21 days" stopped being in the future three
+# weeks after that date and the fixture quietly lost its upcoming rung. It has
+# the same known staleness as the upcoming appointment above, it goes stale on
+# the same day, and moving HISTORY_ENDS forward fixes both at once.
+PROJECT_DATE_OFFSETS = [
+    [(-34, "the letter of March 5"), (UPCOMING_DAYS - 40, "the letter of March 5")],
+    [(-6, "the notice they sent"), (UPCOMING_DAYS, "the notice they sent")],
+    [(UPCOMING_DAYS + 20, "the discharge planner, by phone")],
+    [(-12, "the statement")],
+    [(-58, "the first letter"), (UPCOMING_DAYS - 10, "the attorney's office, by phone")],
+]
+
+# The papers each one usually needs, as named placeholders, 20.4.
+PROJECT_PAPERS = [
+    ["The application", "Proof of income", "Bank statements", "The award letter"],
+    ["The denial letter", "The appeal form", "The doctor's letter"],
+    ["The discharge summary", "The equipment order"],
+    ["The itemized bill", "What we sent back"],
+    ["The signed form", "The filing receipt"],
+]
+
+# The areas a busy stretch clusters its steps under, 20.3.
+STEP_CLUSTERS = ["The house", "The ride", "Equipment", "The paperwork"]
+
+# Who said they would handle a step. **A label and never an identity**, D108:
+# no account, no address, and nothing that leaves the device.
+HANDLERS = ["My brother", "The discharge planner", "Me", "My sister"]
 
 PROJECTS = [
     "Medicaid application",

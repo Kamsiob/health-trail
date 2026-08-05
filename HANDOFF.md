@@ -77,11 +77,17 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 - **Three counts were written down in tests and are now counted from the contract**: the table, view and trigger counts in `FoundationSmokeTest` and `DatabaseTest`, and the trigger count in `SchemaStatementSplitTest`. A number in a test file means every table added to the contract fails a test for a reason that has nothing to do with what the test is about. **They assert the shape now instead**: one live view per user data table, two triggers each.
 - **`MigrationTest`'s synthetic steps sat at a fixed version 2**, which stopped running the moment `CURRENT` reached 2, so three tests passed while proving nothing. They are at `CURRENT + 1` now.
 
-**What is left of #262, in order:**
+**The fixture writes all of it now, and the archive carries it.**
 
-1. **The fixture writers**, so every rung of every card's states ladder can actually be produced on the device. `check_fixtures.py` holds ids to the real catalog, so this is where the states ladder audit becomes possible at all.
-2. **The archive round trip proved on the device**, per 8.5. Export and readable rendering are schema-driven and pick the tables up automatically; that is the reason to trust them, not the reason to skip the test.
-3. **The built-in project templates gain the five defaults.** `templates/data/projects.json` has `steps` and `roles` and needs `stages`, `lead`, `papers`, and `date_kinds` on all sixteen. This is content work in the app's voice.
+- **`tools/fixtures/generate.py`** writes the road, where it stands with its history, dates on both sides of today with their sources, date kinds, papers both filled and empty, step clusters and handler tags, and a seventeen-card Today layout. All three project leads exist, because two of the three project home screens cannot be looked at on the phone otherwise.
+- **A Today card deliberately points at a finished project**, which is the source-closed rung of the states ladder.
+- **The future dates are written as `UPCOMING_DAYS` offsets**, not as small numbers. The history ends on a fixed date, so "+21 days" stops being in the future three weeks later and the upcoming rung disappears silently. They go stale on the same day the upcoming appointment does, and moving `HISTORY_ENDS` fixes both.
+- **`check_fixtures.py` now fails if any of it stops being written**, including if the dates stop falling on both sides of today. **Each new assertion was proved by breaking the generator on purpose**, not by watching the check pass.
+- **`RegenerationTest`'s notebook now contains the arrangement**, so export, import, and re-rendering the readable copy byte-identically actually covers these tables. It did not before, and it would have kept passing.
+
+**What is left of #262:**
+
+1. **The built-in project templates gain the five defaults.** `templates/data/projects.json` has `steps` and `roles` and needs `stages`, `lead`, `papers`, and `date_kinds` on all sixteen. This is content work in the app's voice, and it is the last piece.
 
 **Two checkers were fixed rather than worked around while doing this**, D114, and **#216 is closed by it**.
 

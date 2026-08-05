@@ -215,5 +215,62 @@ class RegenerationTest {
             kind = "note",
             occurred = Edtf.parse("2026-06-01")!!,
         )
+
+        // **What the person arranged**, contract/DATA-CONTRACT.md 8.7. Without
+        // these rows this test proves nothing about them, and the promise that
+        // an arranged Today and a shaped project survive the new phone would be
+        // asserted in a document and tested nowhere.
+        //
+        // It is the same defect the fixture kept having: a feature is built,
+        // the notebook under test never contains it, and it is never once
+        // proved. Here it would have been quiet, because the test would still
+        // have passed.
+        val project = repository.startProject(
+            subjectId = subject,
+            templateId = "medicaid_ltc",
+            name = "The waiver application",
+            steps = listOf("Get the form", "Gather the statements"),
+        )
+        repository.setProjectLead(project, "date")
+
+        val applied = repository.addProjectStage(project, "Applied")
+        repository.addProjectStage(project, "In review")
+        repository.moveProjectToStage(project, applied, Edtf.parse("2026-03-05")!!)
+
+        repository.addProjectStanding(
+            projectId = project,
+            holderLabel = "The county",
+            since = Edtf.parse("2026-03")!!,
+            activity = "reviewing it",
+        )
+        // The source is the half that makes a date usable a year later, and a
+        // month-precision date here for the same reason the entry above has one.
+        repository.addProjectDate(
+            projectId = project,
+            kind = "Decision expected",
+            due = Edtf.parse("2026-09-12")!!,
+            sourceNote = "the letter of Mar 5",
+        )
+        repository.addProjectDateKind(project, "Decision expected")
+        repository.addProjectPaper(project, "The award letter", direction = "received")
+
+        val step = repository.projectSteps(project).first()
+        repository.setProjectStepHandling(
+            step.id,
+            cluster = "The paperwork",
+            handlerLabel = "My brother",
+        )
+
+        // A Today with a lead, a field, and a card that points at something, so
+        // the source pair travels rather than only the card types.
+        repository.setTodayLayout(
+            subjectId = subject,
+            cards = listOf(
+                "digest" to "wide",
+                "next_up" to "small",
+                "project_date" to "small",
+            ),
+            sources = mapOf(2 to ("project" to project)),
+        )
     }
 }
