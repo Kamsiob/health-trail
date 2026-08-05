@@ -54,7 +54,7 @@ class StartProjectScreenTest {
     private val templates = listOf(
         template("medicaid_ltc", "Medicaid application", "paying", "Applying for coverage"),
         template("bill_reconciliation", "Sorting out bills", "paying"),
-        template("discharge_appeal", "Fighting a discharge", "challenge"),
+        template("discharge_appeal", "Appealing a discharge", "challenge"),
         template("facility_transfer", "Moving to a different facility", "moving"),
         template("records_request", "Requesting medical records", "papers"),
     )

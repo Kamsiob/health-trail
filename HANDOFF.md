@@ -20,12 +20,12 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 **Take these in this order.**
 
-1. **#200, #201 and #202 are done and closed**, and sections 2 to 4 say what came out of them.
-2. **The rest of step 4**, #201 through #208, in number order, **except take #208 last**. Each was scoped on 2026-08-04 and the two with gaps carry a comment saying so:
-   - **#202** is half a conversion and half a build. "Change of situation" does not exist anywhere, and whoever takes it has to decide first whether changing the situation is a chapter boundary in the data or only in the words.
-   - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape.
-   - #201, #203, #204, #205, #206 and #207 are conversions of screens that exist.
-3. **The isolate audit, #226.** It has a generated worklist and needs Arabic on the device.
+1. **A new design direction arrived on 2026-08-04 and step zero is done.** Section 2 is the whole of it. **The next build is #262, the data contract work**, because everything on both new surfaces stores something.
+2. **#200, #201 and #202 are done and closed**, and sections 3 to 5 say what came out of them.
+3. **The rest of step 4 of the v4 conversion is untouched**: #203 through #208, in number order, **except take #208 last**. These are not affected by the new grids.
+   - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape. **Take it last.**
+   - #203, #204, #205, #206 and #207 are conversions of screens that exist.
+4. **The isolate audit, #226.** It has a generated worklist and needs Arabic on the device. **#202 found one of its cases by accident**, so the worklist is real.
 
 **Two things in step 4 are blocked and are not yours to unblock.** #199 (one test round and one test's history) and #182 (the tests section) both need a schema decision from the owner: there is no test, no round and no result anywhere in `contract/schema.sql`, so there is nothing to convert and nothing to build against. Both are labeled `blocked` and say what has to be decided. **Skip them.**
 
@@ -33,7 +33,28 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 2. What #202 landed
+## 2. The Today and Projects grids are adopted, and step zero is done
+
+**2026-08-04, owner's instruction.** Two new design references arrived and are now `reference/projects-grid.html` and `reference/today-grid.html`. **They extend v4; they do not replace it.** Everything in `DESIGN.md` sections 1 through 19 still governs both. Where the v4 grid drew Today or Projects, those drawings are superseded; every other screen in it is untouched. D106.
+
+**Step zero is complete and was documentation only. No application code was written against either grid.**
+
+- **`DESIGN.md` gained sections 20 through 23**, encoding both grids in the repository's own words: Projects, Today, the global voice rule, and the two new audits. **Read those rather than the HTML.** The three grid files are named side by side at the top of `DESIGN.md`, each saying what it governs.
+- **`DECISIONS.md` D106 through D112** record the adoption, the eleven inventory additions, the handler-tag ruling, the voice rule, the data contract amendment, the seven provisional resolutions, and the freeze rule.
+- **`contract/DATA-CONTRACT.md` gained 8.7**: the Today layout, project templates, stage assignments, standing entries, recorded dates with their sources, and steps with handler tags are **record**, not preference. They travel in the archive and restore on import.
+- **`MASTER_SPEC.md` 4.3 and 4.5 were rewritten**, and phases 1 and 4 corrected.
+- **`docs/REMOVAL-LEDGER.md` is new.** Superseded Today and Projects code freezes rather than being deleted: never called, extended, fixed, or translated. **Its ledger is empty because nothing has been superseded in fact yet.**
+- **`check_copy.py` gained the battle-voice rule**, D109.
+
+**Fifty-nine issues are open for the work**, #243 through #301. The two parents are **#243 Today** and **#244 Projects**. Under them: 28 screen issues, 17 card issues each carrying its full states ladder as acceptance criteria, 11 component issues, the data contract work at **#262**, and the two provisional template hands at **#273**.
+
+**Take #262 first.** Everything on both surfaces stores something, and building screens against a contract that does not exist yet is the order that produces a second migration.
+
+**Seven things are resolved provisionally, to the drawn default, and are meant to be revisited in one sitting after the owner tests on the phone.** D111 lists them together. **Two template default hands, hospital and rehab, were drafted rather than deferred and are not final.**
+
+---
+
+## 3. What #202 landed
 
 **Both halves are built, swept, tested and closed.** Both themes, font scale 2.0, and Arabic, on the phone. Reviews at **#241** and **#242**, and `DESIGN.md` section 14 carries both rows.
 
@@ -53,7 +74,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 3. What #201 landed
+## 4. What #201 landed
 
 **Both screens are converted, swept and closed.** Both themes, font scale 2.0, Arabic, and the search's own empty state, on the phone. Reviews at **#239** and **#240**, `DESIGN.md` section 14 carries both rows, and D104 and D105 carry the two decisions.
 
@@ -71,7 +92,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 4. What #200 landed, and the four issues that came out of it
+## 5. What #200 landed, and the four issues that came out of it
 
 **Both halves are built, swept, tested and logged.** This section is here because the next session inherits the decisions rather than the work.
 
@@ -95,14 +116,14 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 5. What is built
+## 6. What is built
 
 **Design direction v4 is adopted and most of the app is in it.** `reference/screen-grid.html` is the v4 grid. `DESIGN.md` was rewritten rather than patched.
 
 - **Step 1, the foundation: complete.** Every token in both themes, the type scale with all three faces verified per locale, the geometry, and all sixteen components. #149 through #168 closed.
 - **Step 2, the four destinations: complete.** #169 through #172 closed.
 - **Step 3, the section screens: complete but for #182**, which is blocked. Fourteen closed on device verification.
-- **Step 4, the detail screens: eleven of twenty closed.** #189 through #198, and #200. #199 is blocked; #201 through #208 are untouched.
+- **Step 4, the detail screens: thirteen of twenty closed.** #189 through #198, #200, #201 and #202. #199 is blocked; #203 through #208 are untouched.
 
 **#192, one medication, closed with its remainder split out rather than left vague.** Its questions are built and the fixture never exercises them, **#229**; its incidents cannot be expressed because the schema has no link from an incident to a medication, **#230**, which is the owner's call.
 
@@ -110,7 +131,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 6. What keeps going wrong, so it stops
+## 7. What keeps going wrong, so it stops
 
 **These are patterns, not history. Every one of them has now happened more than once.**
 
@@ -136,7 +157,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 7. Running the work
+## 8. Running the work
 
 **Never route around a check to make progress, and never delete or weaken a test to make a build pass.**
 
@@ -160,7 +181,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 8. Blocked, and it does not stop the work
+## 9. Blocked, and it does not stop the work
 
 **One thing is blocked: B5.** The destructive command guard needs installing from user settings and **only the owner can do it**, because Claude Code correctly refuses to let a session edit the hooks that constrain it. D64 has the account and B5 in `DECISIONS.md` is written as steps he can act on.
 
@@ -170,7 +191,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 9. The phone
+## 10. The phone
 
 - **Pixel 10 Pro XL, serial `57241FDCQ0000H`, over USB. The only test device.**
 - **No emulator.** Dropped from this project. Do not launch one, do not create an AVD, do not treat its absence as a blocker. D21, D23, B4.
@@ -206,7 +227,7 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 10. This environment, so a fresh session does not rediscover it
+## 11. This environment, so a fresh session does not rediscover it
 
 **An edit that replaces text must assert it matched.** Nine decision entries were once written and none reached `DECISIONS.md`: the anchor they targeted had been consumed by an earlier edit, so every one matched nothing and reported success. A silent no-op is worse than an error, because the work continues on top of a record that is not there.
 
@@ -244,13 +265,13 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 11. Where everything else is
+## 12. Where everything else is
 
 | Question | File |
 |---|---|
 | What to do next | This file, section 1. Then the board, project 3, in `ORDER OF WORK` order |
-| Why something is the way it is | `DECISIONS.md`, D1 through D105 |
-| What it should look like | `DESIGN.md`, plus `reference/screen-grid.html`. Section 14 is the undrawn-screen map |
+| Why something is the way it is | `DECISIONS.md`, D1 through D112 |
+| What it should look like | `DESIGN.md`. **Three grids**: `reference/screen-grid.html` generally, `projects-grid.html` and `today-grid.html` for those two surfaces. Section 14 is the undrawn-screen map; 20 and 21 are the two new surfaces |
 | What the data may do | `contract/DATA-CONTRACT.md`, and `contract/EXPORT-FORMAT.md` for the archive |
 | What the app is for | `MASTER_SPEC.md` |
 | How it gets tested | `TESTING-PERSONAS.md` |
@@ -262,6 +283,6 @@ Everything below is verified rather than asserted, as of 2026-08-04:
 
 ---
 
-## 12. Uncommitted work
+## 13. Uncommitted work
 
 **None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed.

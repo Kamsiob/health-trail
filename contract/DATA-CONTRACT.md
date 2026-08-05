@@ -384,6 +384,27 @@ Export and import are screens under design direction v4, not system dialogs. The
 
 ---
 
+## 8.7 What a person arranges is record, not preference
+
+**Amended 2026-08-04 on the owner's instruction, with the adoption of the Today and Projects grids.** D110. This is the one place those grids reach past design and into this contract.
+
+**The following are record. They live in the same database, travel in the archive, restore on import, appear in the readable copy, and join the coverage test in 8.5 and the regeneration test.**
+
+| What | Shape |
+|---|---|
+| **The Today layout** | An ordered list of card instances, each with a **type**, a **size**, and an **optional source id** (which measure, which project, which person), plus **the single lead assignment** |
+| **Project templates** | A name, ordered stage names, a lead, starting steps, paper placeholders, and date kinds. **Applied by copy, with no live link back** |
+| **Project stage assignments** | Which stage a project stands in, and when it moved |
+| **Standing entries** | Whose hands a project is in, since when, and what is happening |
+| **Recorded dates with their sources** | The date, its kind, and **the paper or entry it was taken from** |
+| **Steps with handler tags** | The step, its cluster, whether it is arranged, and the label naming who is handling it |
+
+**Why this is a contract amendment rather than a preference stored somewhere convenient.** A person's arranged Today is something they made. So is the shape they gave a project over eighteen months. **If those do not survive the new phone, the app has quietly decided that what somebody built is less real than what they typed**, and section 8's whole promise is that everything they made comes back.
+
+**A handler tag is a label and never an identity.** No account, no address, no second user, and nothing about it leaves the device. It is the person writing down who said they would do a thing.
+
+**A source id that no longer resolves is kept, not dropped.** A card pointing at a closed project renders its source-closed state and stays until the person removes it. **Import never silently discards a card because its source is gone**, which would be the file quietly editing somebody's desk.
+
 ## 9. Automated local backup
 
 Backup matters more here than in most apps, because the people using it are exhausted and the record is often the only continuous account of years of care.

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Trail · Today Grid v1 · A desk, set the way you keep it</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F1E6; --sand:#ECE4D1; --card:#FFFFFF;
+  --ink:#233240; --ink2:#5A6B77; --ink3:#94A0A9;
+  --line:rgba(35,50,64,.10); --line2:rgba(35,50,64,.20);
+  --blue:#2F6F8F; --blue-deep:#245C77; --blue-wash:#E2EDF2;
+  --gold:#D99D2B; --gold-ink:#8A5E10; --gold-wash:#F5E9CD;
+  --leaf:#4E8A5C; --leaf-ink:#3B6C48; --leaf-wash:#E2EDE1;
+  --alert:#B5492E; --alert-ink:#9A3C25; --alert-wash:#F6E2DA;
+  --rose:#A5674F; --rose-wash:#F2E1D8;
+  --teal:#3F7E74; --teal-wash:#DEEBE6;
+  --slate:#57708A; --slate-wash:#E3E9F0;
+  --moss:#6E7C43; --moss-wash:#EAECD8;
+  --manila:#A3772D; --manila-wash:#F1E6CC;
+  --stone:#7A756A; --stone-wash:#EAE7E0;
+  --disp:'Bricolage Grotesque',sans-serif;
+  --body:'Atkinson Hyperlegible',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --shadow:0 10px 26px rgba(60,54,38,.10),0 2px 6px rgba(60,54,38,.06);
+  --shadow-sm:0 2px 8px rgba(60,54,38,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#EFE8D8;color:var(--ink);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;padding:56px 30px 120px}
+.wrap{max-width:1480px;margin:0 auto}
+.doc-h1{font-family:var(--disp);font-weight:800;font-size:50px;letter-spacing:-.03em;line-height:1.03}
+.doc-sub{font-size:16.5px;color:var(--ink2);max-width:780px;margin-top:14px}
+.doc-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:14px;font-weight:700}
+.part{margin-top:84px}
+.part-h{display:flex;align-items:baseline;gap:18px;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.part-h .n{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--gold-ink)}
+.part-h h2{font-family:var(--disp);font-weight:800;font-size:29px;letter-spacing:-.02em}
+.part-intro{font-size:15px;color:var(--ink2);max-width:860px;margin:16px 0 34px}
+.part-intro b{color:var(--ink)}
+.panel{background:var(--card);border-radius:22px;box-shadow:var(--shadow-sm);padding:32px 36px;margin-bottom:24px}
+.panel h3{font-family:var(--disp);font-weight:700;font-size:20px;margin-bottom:6px}
+.panel .lead{color:var(--ink2);font-size:14px;max-width:800px;margin-bottom:20px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.spec{font-size:13.5px;color:var(--ink2)}
+.spec b{color:var(--ink);display:block;font-size:14px;margin-bottom:3px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:46px 30px;align-items:start}
+.shot{display:flex;flex-direction:column;gap:13px}
+.cap{padding:0 4px}
+.cap .num{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--gold-ink)}
+.cap h4{font-family:var(--disp);font-weight:700;font-size:16.5px;margin:3px 0 4px}
+.cap p{font-size:12.5px;color:var(--ink2)}
+.frame{background:#101416;border-radius:34px;padding:7px;box-shadow:0 24px 54px rgba(30,28,18,.28), inset 0 0 0 1.5px #2a3034;width:100%;max-width:302px;margin:0 auto}
+.scr{background:var(--paper);border-radius:28px;overflow:hidden;position:relative;height:626px;display:flex;flex-direction:column}
+.status{display:flex;justify-content:space-between;align-items:center;padding:9px 20px 0;font-family:var(--mono);font-size:9px;color:var(--ink2);font-weight:700}
+.cam{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:#101416}
+.body{padding:12px 13px 4px;flex:1;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.body>*{flex-shrink:0}
+
+.h1{font-family:var(--disp);font-weight:800;font-size:22px;letter-spacing:-.02em;line-height:1.1;margin-top:6px}
+.hsub{font-size:11px;color:var(--ink2);margin-top:2px}
+.hrow{display:flex;justify-content:space-between;align-items:flex-end}
+.one{padding:4px 2px}
+.one .k{font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:6px}
+.one .t{font-family:var(--disp);font-weight:800;font-size:21px;line-height:1.18;letter-spacing:-.015em}
+.one .d{font-size:11.5px;color:var(--ink2);margin-top:5px}
+.act{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);color:#fff;font-weight:800;font-size:13px;border-radius:100px;padding:12px;box-shadow:0 4px 12px rgba(47,111,143,.3)}
+.sec-btn{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--blue);color:var(--blue);font-weight:700;font-size:11px;border-radius:100px;padding:7px 14px;background:var(--card)}
+.sec-btn.small{padding:5px 11px;font-size:10px}
+.group{background:var(--card);border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden}
+.row{display:flex;align-items:center;gap:10px;padding:11px 13px;min-height:46px}
+.row+.row{border-top:1px solid var(--line)}
+.row .grow{flex:1;min-width:0}
+.row .t{font-weight:700;font-size:13px;line-height:1.3}
+.row .d{font-size:10.5px;color:var(--ink2);margin-top:1px}
+.chev{color:var(--ink3);font-size:15px;font-weight:700;flex:none}
+.fold{display:flex;align-items:center;gap:9px;padding:11px 13px;background:var(--sand);border-radius:14px;font-weight:700;font-size:12px;color:var(--ink2)}
+.fold .n{font-family:var(--mono);font-size:9.5px;background:var(--card);border-radius:100px;padding:2px 8px;color:var(--ink2)}
+.fold .chev{margin-left:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:8px 14px;border-radius:100px;border:1.5px solid var(--line2);color:var(--ink2);background:var(--card)}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.static{font-size:11.5px;color:var(--ink2)}
+.searchbar{background:var(--sand);border-radius:100px;padding:9px 15px;font-size:11.5px;color:var(--ink3);display:flex;align-items:center;gap:8px}
+.navbar{margin-top:auto;display:flex;justify-content:space-around;align-items:center;padding:8px 6px 3px;flex:none;position:relative;background:var(--card);margin:auto -13px 0;box-shadow:0 -1px 0 var(--line)}
+.nv{font-size:8px;color:var(--ink2);font-weight:700;text-align:center;width:52px}
+.nv .i{font-size:14px;display:block;margin:0 auto 2px;width:40px;padding:3px 0;border-radius:100px}
+.nv.on .i{background:var(--blue-wash);color:var(--blue-deep)}
+.nv.on{color:var(--blue-deep)}
+.fab{position:absolute;right:14px;top:-58px;width:48px;height:48px;border-radius:17px;background:var(--gold);color:#2B1D06;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:23px;box-shadow:0 7px 18px rgba(217,157,43,.45)}
+.sheetwrap .body>*:not(.sheet):not(.navbar){opacity:.28;filter:saturate(.6)}
+.sheet{margin:0 -16px;background:var(--card);border-radius:24px 24px 0 0;box-shadow:0 -12px 34px rgba(50,44,28,.16);padding:16px 18px 12px;margin-top:auto}
+.stat{font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums}
+.av{width:26px;height:26px;border-radius:50%;background:var(--tw,var(--sand));color:var(--td,var(--ink2));display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:10px;flex:none}
+.spine{position:relative;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.spine:before{content:"";position:absolute;left:4px;top:6px;bottom:6px;border-left:2px dashed var(--gold);opacity:.55}
+.sp{position:relative}
+.wp{position:absolute;left:-18px;top:6px;width:10px;height:10px;border-radius:50%}
+.wp.done{background:var(--gold);border:2px solid var(--paper);box-shadow:0 0 0 1.5px var(--gold)}
+
+/* ===================== THE CARD SYSTEM ===================== */
+/* user-facing name: cards. index cards in the binder. */
+.wfield{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.wg{position:relative;background:var(--card);border-radius:15px;box-shadow:var(--shadow-sm);padding:9px 11px 8px;min-height:82px;display:flex;flex-direction:column;--wh:var(--gold-ink);--ww:var(--gold-wash)}
+.wg.w2{grid-column:span 2}
+.wg .wtab{display:inline-flex;align-self:flex-start;font-family:var(--mono);font-size:6.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;background:var(--ww);color:var(--wh);border-radius:5px;padding:2px 7px;margin-bottom:5px}
+.wg .wchev{position:absolute;right:9px;top:8px;color:var(--ink3);font-size:12px;font-weight:700}
+.wg .big{font-family:var(--mono);font-weight:700;font-size:21px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.wg .bt{font-family:var(--disp);font-weight:800;font-size:13px;line-height:1.2;letter-spacing:-.01em}
+.wg .bd{font-size:9.5px;color:var(--ink2);margin-top:2px;line-height:1.35}
+.wg .bm{font-size:8.5px;color:var(--ink3);margin-top:auto;padding-top:4px}
+.wg .inact{margin-top:6px}
+.wg .notyet{font-size:10px;color:var(--ink2)}
+.wline{display:flex;align-items:center;gap:7px;font-size:10px;padding-top:4px}
+.wline+.wline{border-top:1px solid var(--line);margin-top:4px}
+.wline .stat{font-size:10px}
+.minichart{height:34px;margin-top:5px;position:relative}
+.minichart svg{width:100%;height:100%}
+.qbox{width:13px;height:13px;border-radius:4px;border:1.6px solid var(--line2);flex:none}
+
+/* edit mode */
+.editing .wg{outline:1.6px dashed var(--line2);outline-offset:2px}
+.rm{position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;box-shadow:var(--shadow-sm)}
+.drag{position:absolute;right:8px;bottom:6px;font-family:var(--mono);font-size:10px;color:var(--ink3);font-weight:700}
+.szrow{display:flex;gap:4px;margin-top:6px}
+.sz{font-family:var(--mono);font-size:7px;font-weight:700;border:1.2px solid var(--line2);border-radius:100px;padding:2px 7px;color:var(--ink3)}
+.sz.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+/* catalog shelves */
+.shelf{background:var(--paper);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.shelf .sh{display:flex;align-items:baseline;justify-content:space-between}
+.shelf .sh b{font-family:var(--disp);font-weight:700;font-size:15px}
+.shelf .sh span{font-family:var(--mono);font-size:8.5px;color:var(--ink3);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.shelf .note{font-size:11.5px;color:var(--ink2)}
+.shelfrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:300px}
+.shelfrow .wg{min-height:78px}
+.catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="doc-eyebrow">Health Trail · Today · Proposal Grid v1</div>
+<h1 class="doc-h1">A desk, set the way you keep it</h1>
+<p class="doc-sub">A redesign of the Today tab as a modular dashboard of cards, the way a person arranges a desk or a phone home screen: what they check first sits where their eyes land, and everything on it is theirs to add, move, resize, or remove. It has to be visual without being decorative, so every card earns its place by answering a real recurring question from the record, deterministically, with no interpretation and no advice. Everything stays inside design direction v4: the five laws, the six costumes, the tokens, the field notebook. The user-facing word is cards, because in this binder they are index cards; this document says card throughout and means the same thing a launcher means by widget.</p>
+
+<!-- ============================ PART A ============================ -->
+<div class="part">
+  <div class="part-h"><span class="n">PART A</span><h2>The thinking</h2></div>
+  <p class="part-intro">Six panels. The first one resolves the real tension in this brief, so it comes first.</p>
+
+  <div class="panel">
+    <h3>Law 1 versus modularity, resolved</h3>
+    <p class="lead">A free-form dashboard breaks the first law: if the person can stack six equal cards, no screen has one thing first. The resolution is a fixed structure with free contents. Today always has exactly one lead slot at the top, at display scale, singular by construction. Below it sits the card field, then the folds. What fills the lead is the person's choice: by default it is the digest, the deterministic sentence about today drawn from the record, and any card can be promoted to lead from its options, which demotes the previous lead back into the field. There is never zero and never two. Customization decides what deserves the top; the law decides that something singular is at the top. The universal search bar and the gold capture button keep their places on Today regardless of layout, because finding and recording are the two acts that must never move.</p>
+  </div>
+
+  <div class="panel">
+    <h3>What a card is</h3>
+    <p class="lead">A card is a named, deterministic question asked of the record every time Today opens: what is the next dated thing, how many are open, what was the latest value, who was seen last. Nothing more. The answer renders; the card is a door to where the answer lives. This is the whole pull model: every card declares one query over the same single database, queries run on open and after any save, everything is local, and no card ever computes an interpretation, a trend judgment, a recommendation, or a nudge. The engine that writes the digest sentence is the same deterministic template engine used everywhere else. Anatomy, uniform across all cards: a small index tab in the card's section hue and wash, naming its section in mono; the answer, sized by the card; a source or time line in quiet type; and a corner chevron, because every card is a door. Identity comes from the tab pack, never from decoration: an appointments card is slate because appointments are slate everywhere in the binder. Cards for whole-app surfaces, projects and the trail and the digest, wear gold.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Three sizes, and how content adapts</h3>
+    <p class="lead">Platform widget research is consistent and this design follows it: small carries one fact and is one touch target; wide carries a short list or a fact with one inline action, at most two targets; tall carries a chart or a small feed, at most three targets. Every card supports at least two sizes and declares its behavior at each. Growing a card never adds a new kind of content, it reveals more of the same answer: the medications card at small is a count, at wide it is the list. Shrinking never hides the existence of something open, only its detail. Inline actions appear only at wide and tall, always outlined, always a verb or a dialable number.</p>
+    <div class="cols">
+      <div class="spec"><b>Small</b> Half width. One answer, one line of context. The whole card is the touch target.</div>
+      <div class="spec"><b>Wide</b> Full width. The answer plus two or three lines, or one inline outlined action beside it.</div>
+      <div class="spec"><b>Tall</b> Full width, taller. A chart drawn under the chart card's rules, a mini spine, or a short list. Never a dense feed.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>The states ladder: how a card changes with its data</h3>
+    <p class="lead">A card's look is driven by what the record holds, and every card must define its whole ladder before it ships. This is where visual honesty lives, and it is the difference between useful and decorative.</p>
+    <div class="cols">
+      <div class="spec"><b>Full</b> The normal render. Real values, real dates, tabular numerals.</div>
+      <div class="spec"><b>Few</b> Sparse-data grace applies. A measure with two entries draws two dots and says "2 entries so far." No line is invented between points that are far apart in time; gaps stay gaps.</div>
+      <div class="spec"><b>None yet</b> "Not yet" is a calm state, never an error and never a scold. The card names its one action: "Nothing scheduled. Add one." Quiet is allowed to be good news, and the card says so plainly: "Nothing waiting."</div>
+      <div class="spec"><b>Passed</b> A date that has gone by reads "passed 6 days ago" in plain words. No urgency color, no alarm. The semantic colors keep their locked meanings; alert appears on exactly one card, open incidents, because that is alert's meaning.</div>
+      <div class="spec"><b>Source closed</b> A card pointing at a closed project or an ended thread says so: "This project closed Nov 8." It keeps working as a door to the record and is removed only by the person's hand. The app never deletes a card on its own.</div>
+      <div class="spec"><b>Returning</b> After a long absence the digest leads with "since you were last here" and plain counts, and every card simply shows its current true answer. No card ever measures the person's absence back at them.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Defaults beat blank canvases</h3>
+    <p class="lead">Choice research is blunt: a person facing a blank dashboard and forty options builds nothing. So nobody ever sees a blank Today. The situation template chosen at onboarding ships a complete starting layout, which is Law 5 doing the work: home care leads with the digest and carries medications, next up, a measure, and questions; a rehab stay carries progress and milestones high; a hospital stay carries next up, questions, and incidents; a coming-home project puts its steps and its date on Today from day one. The catalog itself is curated, roughly sixteen cards, one per real recurring question, not one per table. And two rules keep control where it belongs: the app never rearranges Today on its own, ever, and every template default is just a starting hand, editable from the first minute without penalty. Personalization here is the person's explicit choice plus their stated situation. It is never inference, because this app does not watch its user.</p>
+  </div>
+
+  <div class="panel">
+    <h3>The people this must hold</h3>
+    <div class="cols">
+      <div class="spec"><b>The daily manager</b> Home care, years in. Opens Today four times a day for the same three answers: medications, next appointment, the weight chart. Her Today is dense, wide cards, chart on top as lead.</div>
+      <div class="spec"><b>The hospital-week point person</b> Everything is changing daily. Needs next up, questions to ask on rounds, and open incidents where they cannot be missed. Will rearrange twice in a week, and that has to cost seconds.</div>
+      <div class="spec"><b>The parent of a child in treatment</b> Lives between appointments and approvals. Next up as lead, the project's next date beside it, capture always one thumb away. The voice rules from the Projects grid govern here too.</div>
+      <div class="spec"><b>The one bringing a parent home</b> A project's steps and its one converging date, promoted onto Today for two intense weeks, then removed when life settles. Cards that come and go with seasons are the system working, not churn.</div>
+      <div class="spec"><b>The returner</b> Four months away. The digest says what the file held, the cards show true current answers, and nothing shames. One tap from the digest resumes.</div>
+      <div class="spec"><b>The one who never customizes</b> Most people, per every launcher study. The template default must be genuinely good, because it is the only Today this person will ever see. The system is judged by its defaults, not its options.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PART B ============================ -->
+<div class="part">
+  <div class="part-h"><span class="n">PART B</span><h2>The screens</h2></div>
+  <p class="part-intro">Ten screens, from the first open to the edge states. Fictional world unchanged: Sam is the point person for his mother Norma. <b>What do I look at first, what can I touch, where is everything else.</b> One second, every time.</p>
+
+  <div class="grid">
+
+  <!-- 01 DEFAULT -->
+  <div class="shot">
+    <div class="cap"><span class="num">01</span><h4>Today, as the template set it</h4><p>Home care default, day one of use. The digest leads, singular. The card field below, search and capture fixed. Nobody meets a blank canvas.</p></div>
+    <div class="frame"><div class="scr"><div class="cam"></div>
+      <div class="status"><span>9:41</span><span>▲ ▮</span></div>
+      <div class="body">
+        <div class="hrow"><div class="h1">Today</div><span class="static" style="font-weight:700">Edit</span></div>
+        <div class="one" style="padding-top:0"><div class="k">Tuesday, Apr 4</div><div class="t" style="font-size:19px">Dr. Okafor tomorrow at 10:15. Nothing else is waiting.</div><div class="d">From the record · 2 entries this week</div></div>
+        <div class="searchbar">⌕ Search everything</div>
+        <div class="wfield">
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Medications</span><span class="wchev">›</span><div class="big">6</div><div class="bd">on the current list</div><div class="bm">last change Mar 12</div></div>
+          <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash)"><span class="wtab">Next up</span><span class="wchev">›</span><div class="bt">Dr. Okafor</div><div class="bd">Tomorrow 10:15 · office</div><div class="bm">1 more this month</div></div>
+          <div class="wg w2" style="--wh:var(--moss);--ww:var(--moss-wash)"><span class="wtab">Progress · Weight</span><span class="wchev">›</span>
+            <div style="display:flex;align-items:baseline;gap:8px"><span class="big">148<span style="font-size:11px">.5</span></span><span class="bd" style="margin-top:0">lb · recorded Sat</span></div>
+            <div class="minichart"><svg viewBox="0 0 260 34" preserveAspectRatio="none"><polyline points="4,26 40,24 76,25 112,20" fill="none" stroke="#6E7C43" stroke-width="2"/><circle cx="4" cy="26" r="2.5" fill="#6E7C43"/><circle cx="40" cy="24" r="2.5" fill="#6E7C43"/><circle cx="76" cy="25" r="2.5" fill="#6E7C43"/><circle cx="112" cy="20" r="2.5" fill="#6E7C43"/><circle cx="196" cy="16" r="2.5" fill="#6E7C43"/><circle cx="232" cy="14" r="2.5" fill="#6E7C43"/><polyline points="196,16 232,14" fill="none" stroke="#6E7C43" stroke-width="2"/></svg></div>
+            <div class="bm">a gap in June is shown as a gap</div></div>
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Ask next time</span><span class="wchev">›</span><div class="big">3</div><div class="bd">questions saved for Dr. Okafor</div></div>
+          <div class="wg" style="--wh:var(--alert-ink);--ww:var(--alert-wash)"><span class="wtab">Emergency card</span><span class="wchev">›</span><div class="bt">Norma's card</div><div class="bd">Allergies, meds, contacts</div><div class="bm">one tap, ready to hand over</div></div>
+        </div>
+        <div class="navbar"><div class="fab">+</div>
+          <div class="nv on"><span class="i">☀</span>Today</div><div class="nv"><span class="i">▤</span>Notebook</div><div class="nv"><span class="i">▲</span>Projects</div><div class="nv"><span class="i">≡</span>More</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 02 YEAR THREE -->
+  <div class="shot">
+    <div class="cap"><span class="num">02</span><h4>Today, year three, made his own</h4><p>Sam promoted the weight chart to lead during the medication change, added the project's next date, and removed what he never used. The digest, demoted, lives on as a wide card. Same grammar, different hand.</p></div>
+    <div class="frame"><div class="scr"><div class="cam"></div>
+      <div class="status"><span>9:41</span><span>▲ ▮</span></div>
+      <div class="body">
+        <div class="hrow"><div class="h1">Today</div><span class="static" style="font-weight:700">Edit</span></div>
+        <div class="one" style="padding-top:0"><div class="k">Lead · Progress · Weight</div><div class="t" style="font-size:19px"><span class="stat" style="font-size:26px">151.0</span> lb · recorded this morning</div><div class="d">Ozempic start is marked on the full chart · 214 entries</div></div>
+        <div class="searchbar">⌕ Search everything</div>
+        <div class="wfield">
+          <div class="wg w2" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Today's digest</span><span class="wchev">›</span><div class="bd" style="font-size:11px;margin-top:0">Nothing scheduled today. 1 question saved for Friday's visit. The waiver project stands with the county, 23 days.</div></div>
+          <div class="wg" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Waiver · next date</span><span class="wchev">›</span><div class="big">18</div><div class="bd">days until their window closes</div><div class="bm">Apr 12 · from the letter</div></div>
+          <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash)"><span class="wtab">Next up</span><span class="wchev">›</span><div class="bt">Home nurse</div><div class="bd">Friday 9:00 · at home</div></div>
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Medications</span><span class="wchev">›</span><div class="big">7</div><div class="bd">on the list · changed Tue</div></div>
+          <div class="wg" style="--wh:var(--manila);--ww:var(--manila-wash)"><span class="wtab">Money</span><span class="wchev">›</span><div class="wline"><span class="stat">2</span><span>waiting on insurance</span></div><div class="wline"><span class="stat">1</span><span>disputed</span></div></div>
+        </div>
+        <div class="navbar"><div class="fab">+</div>
+          <div class="nv on"><span class="i">☀</span>Today</div><div class="nv"><span class="i">▤</span>Notebook</div><div class="nv"><span class="i">▲</span>Projects</div><div class="nv"><span class="i">≡</span>More</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 03 APPOINTMENT MORNING -->
+  <div class="shot">
+    <div class="cap"><span class="num">03</span><h4>The morning of an appointment</h4><p>Same layout as 02, different data: the digest sentence changes because the record changed, and the questions card surfaces its list at the size it was already given. Data moves; cards never move themselves.</p></div>
+    <div class="frame"><div class="scr"><div class="cam"></div>
+      <div class="status"><span>8:02</span><span>▲ ▮</span></div>
+      <div class="body">
+        <div class="hrow"><div class="h1">Today</div><span class="static" style="font-weight:700">Edit</span></div>
+        <div class="one" style="padding-top:0"><div class="k">Lead · Progress · Weight</div><div class="t" style="font-size:19px"><span class="stat" style="font-size:26px">150.5</span> lb · recorded this morning</div><div class="d">214 entries · full chart in Progress</div></div>
+        <div class="searchbar">⌕ Search everything</div>
+        <div class="wfield">
+          <div class="wg w2" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Today's digest</span><span class="wchev">›</span><div class="bd" style="font-size:11px;margin-top:0"><b style="color:var(--ink)">Dr. Okafor today at 10:15.</b> 3 questions are saved for this visit. Bring the emergency card and the March lab papers.</div></div>
+          <div class="wg w2" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Ask next time · Dr. Okafor</span><span class="wchev">›</span>
+            <div class="wline"><span class="qbox"></span>Is the new dose staying?</div>
+            <div class="wline"><span class="qbox"></span>The dizziness on stairs</div>
+            <div class="wline"><span class="qbox"></span>Refill for the patch</div></div>
+          <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash)"><span class="wtab">Next up</span><span class="wchev">›</span><div class="bt">Dr. Okafor</div><div class="bd">Today 10:15 · office</div><div class="inact"><span class="sec-btn small">Directions saved</span></div></div>
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Medications</span><span class="wchev">›</span><div class="big">7</div><div class="bd">list ready to show</div></div>
+        </div>
+        <div class="navbar"><div class="fab">+</div>
+          <div class="nv on"><span class="i">☀</span>Today</div><div class="nv"><span class="i">▤</span>Notebook</div><div class="nv"><span class="i">▲</span>Projects</div><div class="nv"><span class="i">≡</span>More</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 04 RETURN -->
+  <div class="shot">
+    <div class="cap"><span class="num">04</span><h4>Back after four months</h4><p>The digest takes the lead voice for the return regardless of what card holds the lead slot: one calm paragraph of plain counts, then the field showing true current answers. Nothing shames, nothing nags, nothing is owed.</p></div>
+    <div class="frame"><div class="scr"><div class="cam"></div>
+      <div class="status"><span>9:41</span><span>▲ ▮</span></div>
+      <div class="body">
+        <div class="hrow"><div class="h1">Today</div><span class="static" style="font-weight:700">Edit</span></div>
+        <div class="one" style="padding-top:0"><div class="k">Since you were last here</div><div class="t" style="font-size:19px">4 months. The file kept everything.</div><div class="d">Last entry Dec 12 · everything below is current as of now</div></div>
+        <div class="searchbar">⌕ Search everything</div>
+        <div class="wfield">
+          <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash)"><span class="wtab">Next up</span><span class="wchev">›</span><div class="notyet">Nothing scheduled.</div><div class="bm">Add one when there is one</div></div>
+          <div class="wg" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Waiver · next date</span><span class="wchev">›</span><div class="bt">Passed 41 days ago</div><div class="bd">Dec 20, from the letter · open the project to update it</div></div>
+          <div class="wg w2" style="--wh:var(--moss);--ww:var(--moss-wash)"><span class="wtab">Progress · Weight</span><span class="wchev">›</span><div style="display:flex;align-items:baseline;gap:8px"><span class="big">151.0</span><span class="bd" style="margin-top:0">lb · last recorded Dec 10</span></div><div class="bm">the months between will show as a gap, which is honest</div></div>
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Medications</span><span class="wchev">›</span><div class="big">7</div><div class="bd">as of Dec · worth a look</div></div>
+        </div>
+        <div class="navbar"><div class="fab">+</div>
+          <div class="nv on"><span class="i">☀</span>Today</div><div class="nv"><span class="i">▤</span>Notebook</div><div class="nv"><span class="i">▲</span>Projects</div><div class="nv"><span class="i">≡</span>More</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 05 EDIT MODE -->
+  <div class="shot">
+    <div class="cap"><span class="num">05</span><h4>Editing Today</h4><p>Entered by the visible Edit button; touch and hold is a shortcut, never the only path. Cards get a remove dot, a drag handle, and reorder also works through each card's options for one-handed and switch access. The lead slot shows its swap. Done saves; nothing saves behind your back.</p></div>
+    <div class="frame"><div class="scr"><div class="cam"></div>
+      <div class="status"><span>9:41</span><span>▲ ▮</span></div>
+      <div class="body editing">
+        <div class="hrow"><div class="h1">Edit Today</div><span class="sec-btn small">Done</span></div>
+        <div class="one" style="padding-top:0;outline:1.6px dashed var(--line2);outline-offset:4px;border-radius:12px"><div class="k">Lead · Progress · Weight</div><div class="t" style="font-size:17px">The lead is singular. Swap it here.</div><div class="inact"><span class="sec-btn small">Swap lead</span></div></div>
+        <div class="wfield">
+          <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash)"><span class="rm">−</span><span class="wtab">Next up</span><div class="bt">Dr. Okafor</div><div class="bd">Tomorrow 10:15</div><span class="drag">≡</span><div class="szrow"><span class="sz on">Small</span><span class="sz">Wide</span></div></div>
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="rm">−</span><span class="wtab">Medications</span><div class="big">7</div><span class="drag">≡</span><div class="szrow"><span class="sz on">Small</span><span class="sz">Wide</span></div></div>
+          <div class="wg w2" style="--wh:var(--moss);--ww:var(--moss-wash)"><span class="rm">−</span><span class="wtab">Progress · Weight</span><div class="bd" style="margin-top:0">Currently the lead. Its field copy shows while it leads.</div><span class="drag">≡</span><div class="szrow"><span class="sz">Small</span><span class="sz on">Wide</span><span class="sz">Tall</span></div></div>
+        </div>
+        <div class="fold" style="border:1.6px dashed var(--line2);background:var(--paper)"><span>+</span> Add a card <span class="chev">›</span></div>
+        <div class="static" style="font-size:10px">Reorder by dragging, or from each card's options with Move up and Move down. Nothing here changes on its own.</div>
+        <div class="navbar">
+          <div class="nv on"><span class="i">☀</span>Today</div><div class="nv"><span class="i">▤</span>Notebook</div><div class="nv"><span class="i">▲</span>Projects</div><div class="nv"><span class="i">≡</span>More</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 06 GALLERY -->
+  <div class="shot">
+    <div class="cap"><span class="num">06</span><h4>Adding a card</h4><p>A sheet, grouped by section in binder order, each entry previewing its small size with real current data. The person's situation puts its suggestions first. Roughly sixteen cards total: a curated catalog, not an exhaustive one.</p></div>
+    <div class="frame"><div class="scr sheetwrap"><div class="cam"></div>
+      <div class="status"><span>9:41</span><span>▲ ▮</span></div>
+      <div class="body">
+        <div class="h1">Edit Today</div>
+        <div class="sheet">
+          <div class="one" style="padding-top:2px"><div class="k">Add a card</div><div class="t" style="font-size:18px">What question should Today answer?</div></div>
+          <div class="static" style="font-size:9.5px;margin-top:6px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink3)">Suggested for home care</div>
+          <div class="group" style="margin-top:5px">
+            <div class="row"><div class="av" style="--tw:var(--rose-wash);--td:var(--rose)">◉</div><div class="grow"><div class="t">Care team</div><div class="d">Quick dial for one person, or the row of everyone</div></div><span class="sec-btn small">Add</span></div>
+            <div class="row"><div class="av" style="--tw:var(--stone-wash);--td:var(--stone)">▤</div><div class="grow"><div class="t">Standing instructions</div><div class="d">Active count, and any noted issues</div></div><span class="sec-btn small">Add</span></div>
+          </div>
+          <div class="static" style="font-size:9.5px;margin-top:8px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink3)">Everything else, by section</div>
+          <div class="group" style="margin-top:5px">
+            <div class="row"><div class="av" style="--tw:var(--gold-wash);--td:var(--gold-ink)">▲</div><div class="grow"><div class="t">A project's next date</div><div class="d">Pick which project</div></div><span class="sec-btn small">Add</span></div>
+            <div class="row"><div class="av" style="--tw:var(--manila-wash);--td:var(--manila)">▣</div><div class="grow"><div class="t">Recent documents</div><div class="d">The last four, as thumbnails</div></div><span class="sec-btn small">Add</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 07 CONFIGURE -->
+  <div class="shot">
+    <div class="cap"><span class="num">07</span><h4>One card's options</h4><p>Opened from the card in edit mode. Size as chips, the source picker when a card needs one, Make this the lead, and Move up and Move down as the accessible reorder path. One sheet holds a card's whole life.</p></div>
+    <div class="frame"><div class="scr sheetwrap"><div class="cam"></div>
+      <div class="status"><span>9:41</span><span>▲ ▮</span></div>
+      <div class="body">
+        <div class="h1">Edit Today</div>
+        <div class="sheet">
+          <div class="one" style="padding-top:2px"><div class="k">Card options</div><div class="t" style="font-size:18px">Progress · which measure?</div></div>
+          <div class="chips" style="margin-top:10px"><span class="chip on">Weight</span><span class="chip">Blood pressure</span><span class="chip">Walking distance</span></div>
+          <div class="static" style="font-size:9.5px;margin-top:10px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink3)">Size</div>
+          <div class="chips" style="margin-top:5px"><span class="chip">Small · latest value</span><span class="chip on">Wide · small chart</span><span class="chip">Tall · chart and milestones</span></div>
+          <div class="group" style="margin-top:10px">
+            <div class="row"><div class="grow"><div class="t">Make this the lead</div><div class="d">The current lead returns to the field</div></div><span class="sec-btn small">Make lead</span></div>
+            <div class="row"><div class="grow"><div class="t">Position</div></div><span class="sec-btn small">Move up</span><span class="sec-btn small">Move down</span></div>
+          </div>
+          <div class="act" style="margin-top:11px">Done</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 08 MAX FONT -->
+  <div class="shot">
+    <div class="cap"><span class="num">08</span><h4>Largest font size</h4><p>At maximum font scale the field reflows to one column and every card renders at full width with nothing clipped, per the overflow audit. Layout order is preserved exactly. Designed, not endured.</p></div>
+    <div class="frame"><div class="scr"><div class="cam"></div>
+      <div class="status"><span>9:41</span><span>▲ ▮</span></div>
+      <div class="body">
+        <div class="hrow"><div class="h1" style="font-size:26px">Today</div><span class="static" style="font-weight:700;font-size:14px">Edit</span></div>
+        <div class="one" style="padding-top:0"><div class="k" style="font-size:10px">Tuesday, Apr 4</div><div class="t" style="font-size:22px">Dr. Okafor tomorrow at 10:15.</div></div>
+        <div class="wfield" style="grid-template-columns:1fr">
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash);min-height:70px"><span class="wtab" style="font-size:8px">Medications</span><span class="wchev">›</span><div class="big" style="font-size:26px">6</div><div class="bd" style="font-size:12px">on the current list</div></div>
+          <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash);min-height:70px"><span class="wtab" style="font-size:8px">Next up</span><span class="wchev">›</span><div class="bt" style="font-size:16px">Dr. Okafor</div><div class="bd" style="font-size:12px">Tomorrow 10:15 · office</div></div>
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash);min-height:70px"><span class="wtab" style="font-size:8px">Ask next time</span><span class="wchev">›</span><div class="big" style="font-size:26px">3</div><div class="bd" style="font-size:12px">questions saved</div></div>
+        </div>
+        <div class="navbar"><div class="fab">+</div>
+          <div class="nv on"><span class="i">☀</span>Today</div><div class="nv"><span class="i">▤</span>Notebook</div><div class="nv"><span class="i">▲</span>Projects</div><div class="nv"><span class="i">≡</span>More</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 09 OTHER TEMPLATE -->
+  <div class="shot">
+    <div class="cap"><span class="num">09</span><h4>A different situation's default</h4><p>The coming-home template's Today, untouched by the user: the project's date leads, its steps and next up sit high, incidents where they cannot be missed. Two situations, two starting hands, one grammar. Law 5 in full.</p></div>
+    <div class="frame"><div class="scr"><div class="cam"></div>
+      <div class="status"><span>9:41</span><span>▲ ▮</span></div>
+      <div class="body">
+        <div class="hrow"><div class="h1">Today</div><span class="static" style="font-weight:700">Edit</span></div>
+        <div class="one" style="padding-top:0"><div class="k">Lead · Norma comes home</div><div class="t" style="font-size:19px"><span class="stat" style="font-size:26px">9</span> days until she comes home</div><div class="d">Apr 21 · set at the care meeting</div></div>
+        <div class="searchbar">⌕ Search everything</div>
+        <div class="wfield">
+          <div class="wg w2" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Coming home · steps</span><span class="wchev">›</span>
+            <div class="wline"><span class="stat">1/3</span><span>Equipment</span></div>
+            <div class="wline"><span class="stat">2/4</span><span>The house, and the ride</span></div></div>
+          <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash)"><span class="wtab">Next up</span><span class="wchev">›</span><div class="bt">Care meeting</div><div class="bd">Thu 2:00 · Ridgeline, rm 2</div></div>
+          <div class="wg" style="--wh:var(--alert-ink);--ww:var(--alert-wash)"><span class="wtab">Incidents</span><span class="wchev">›</span><div class="big" style="color:var(--alert)">1</div><div class="bd">open · started Mar 30</div></div>
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Ask next time</span><span class="wchev">›</span><div class="big">5</div><div class="bd">for Thursday's meeting</div></div>
+          <div class="wg" style="--wh:var(--rose);--ww:var(--rose-wash)"><span class="wtab">Care team</span><span class="wchev">›</span><div class="bt">Nurse Alvarez</div><div class="inact"><span class="sec-btn small">555-0182</span></div></div>
+        </div>
+        <div class="navbar"><div class="fab">+</div>
+          <div class="nv on"><span class="i">☀</span>Today</div><div class="nv"><span class="i">▤</span>Notebook</div><div class="nv"><span class="i">▲</span>Projects</div><div class="nv"><span class="i">≡</span>More</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 10 QUIET DAY -->
+  <div class="shot">
+    <div class="cap"><span class="num">10</span><h4>A quiet day</h4><p>Nothing scheduled, nothing open, nothing waiting. The dashboard's hardest state: it must not invent urgency to look useful. Quiet renders as the good news it is, and every card still tells the truth at a glance.</p></div>
+    <div class="frame"><div class="scr"><div class="cam"></div>
+      <div class="status"><span>9:41</span><span>▲ ▮</span></div>
+      <div class="body">
+        <div class="hrow"><div class="h1">Today</div><span class="static" style="font-weight:700">Edit</span></div>
+        <div class="one" style="padding-top:0"><div class="k">Sunday, Apr 9</div><div class="t" style="font-size:19px">Nothing is scheduled and nothing is waiting.</div><div class="d">Next up is the home nurse, Friday 9:00</div></div>
+        <div class="searchbar">⌕ Search everything</div>
+        <div class="wfield">
+          <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash)"><span class="wtab">Next up</span><span class="wchev">›</span><div class="bt">Home nurse</div><div class="bd">Friday 9:00 · at home</div></div>
+          <div class="wg" style="--wh:var(--alert-ink);--ww:var(--alert-wash)"><span class="wtab">Incidents</span><span class="wchev">›</span><div class="notyet">None open.</div></div>
+          <div class="wg w2" style="--wh:var(--moss);--ww:var(--moss-wash)"><span class="wtab">Progress · Weight</span><span class="wchev">›</span><div style="display:flex;align-items:baseline;gap:8px"><span class="big">150.5</span><span class="bd" style="margin-top:0">lb · recorded yesterday</span></div></div>
+          <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Ask next time</span><span class="wchev">›</span><div class="big">1</div><div class="bd">saved for Friday</div></div>
+          <div class="wg" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Unfiled</span><span class="wchev">›</span><div class="notyet">Tray is empty.</div></div>
+        </div>
+        <div class="navbar"><div class="fab">+</div>
+          <div class="nv on"><span class="i">☀</span>Today</div><div class="nv"><span class="i">▤</span>Notebook</div><div class="nv"><span class="i">▲</span>Projects</div><div class="nv"><span class="i">≡</span>More</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  </div>
+</div>
+
+<!-- ============================ PART C: CARD CATALOG ============================ -->
+<div class="part">
+  <div class="part-h"><span class="n">PART C</span><h2>The card catalog</h2></div>
+  <p class="part-intro">Every card that ships, its question, its sizes, and the state that proves its honesty. Each shelf shows real renders at true phone width. This is the curated whole: <b>one card per recurring question, not one per table.</b> Anything not on a shelf here does not exist as a card.</p>
+
+  <div class="catalog">
+
+    <div class="shelf"><div class="sh"><b>Today's digest</b><span>Gold · Small / Wide</span></div>
+      <div class="note">Question: what does the record say about today? The deterministic sentence. Default lead in every template; as a field card it compresses to its counts.</div>
+      <div class="shelfrow"><div class="wg w2" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Today's digest</span><span class="wchev">›</span><div class="bd" style="font-size:11px;margin-top:0">Dr. Okafor tomorrow 10:15. 3 questions saved. The waiver stands with the county, 23 days.</div></div></div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Next up</b><span>Slate · Small / Wide</span></div>
+      <div class="note">Question: what is the next dated thing? Adapts: today shows the time large; two on one day become two lines at wide; none reads "Nothing scheduled" with the add as its door.</div>
+      <div class="shelfrow">
+        <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash)"><span class="wtab">Next up</span><span class="wchev">›</span><div class="bt">Dr. Okafor</div><div class="bd">Tomorrow 10:15</div></div>
+        <div class="wg" style="--wh:var(--slate);--ww:var(--slate-wash)"><span class="wtab">Next up</span><span class="wchev">›</span><div class="notyet">Nothing scheduled.</div><div class="bm">add one when there is one</div></div>
+      </div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Medications</b><span>Teal · Small / Wide</span></div>
+      <div class="note">Question: what is on the list right now? Record-keeping only; this card never reminds, alarms, or tracks doses. Wide is the list itself, ready to show a nurse.</div>
+      <div class="shelfrow">
+        <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Medications</span><span class="wchev">›</span><div class="big">7</div><div class="bd">on the list · changed Tue</div></div>
+        <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Medications</span><span class="wchev">›</span><div class="wline">Metformin · 500mg</div><div class="wline">Lisinopril · 10mg</div><div class="wline">+ 5 more</div></div>
+      </div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>A measure</b><span>Moss · Small / Wide / Tall</span></div>
+      <div class="note">Question: what is the latest value, and its recent shape? One card per chosen measure. Chart card rules apply in full: no targets, no zones, nothing colored by value, gaps drawn as gaps. Sparse data draws dots and says the count.</div>
+      <div class="shelfrow">
+        <div class="wg" style="--wh:var(--moss);--ww:var(--moss-wash)"><span class="wtab">Weight</span><span class="wchev">›</span><div class="big">150.5</div><div class="bd">lb · yesterday</div></div>
+        <div class="wg" style="--wh:var(--moss);--ww:var(--moss-wash)"><span class="wtab">Blood pressure</span><span class="wchev">›</span><div class="bd" style="margin-top:0">2 entries so far</div><div class="minichart"><svg viewBox="0 0 110 30"><circle cx="20" cy="20" r="3" fill="#6E7C43"/><circle cx="88" cy="14" r="3" fill="#6E7C43"/></svg></div></div>
+      </div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Milestones</b><span>Moss · Small</span></div>
+      <div class="note">Question: what was the most recent milestone? For the rehab seasons, where progress is events, not a line.</div>
+      <div class="shelfrow"><div class="wg" style="--wh:var(--moss);--ww:var(--moss-wash)"><span class="wtab">Milestones</span><span class="wchev">›</span><div class="bt">Walked 50 feet unassisted</div><div class="bm">Mar 26 · 14 on the arc</div></div></div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Ask next time</b><span>Teal · Small / Wide</span></div>
+      <div class="note">Question: what is saved to ask, and for whom? Wide lists the top questions for the nearest appointment's person; small is the count.</div>
+      <div class="shelfrow">
+        <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Ask next time</span><span class="wchev">›</span><div class="big">3</div><div class="bd">for Dr. Okafor</div></div>
+        <div class="wg" style="--wh:var(--teal);--ww:var(--teal-wash)"><span class="wtab">Ask next time</span><span class="wchev">›</span><div class="wline"><span class="qbox"></span>Is the new dose staying?</div><div class="wline"><span class="qbox"></span>The dizziness on stairs</div></div>
+      </div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>A project: where it stands</b><span>Gold · Wide</span></div>
+      <div class="note">Question: whose hands, since when? One card per chosen project, in the project's own steady voice. Closed source states itself and stays until removed.</div>
+      <div class="shelfrow"><div class="wg w2" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Waiver · where it stands</span><span class="wchev">›</span><div class="bt">The county is reviewing it. 23 days so far.</div><div class="bm">latest word Mar 28 · REF 4471-B</div></div></div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>A project: the next date</b><span>Gold · Small</span></div>
+      <div class="note">Question: how many days to the date that matters? Passed reads "passed N days ago," plainly, and remains a door to the project.</div>
+      <div class="shelfrow">
+        <div class="wg" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Waiver · next date</span><span class="wchev">›</span><div class="big">18</div><div class="bd">days · Apr 12, from the letter</div></div>
+        <div class="wg" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Appeal · next date</span><span class="wchev">›</span><div class="bt">Passed 6 days ago</div><div class="bd">open the project to update</div></div>
+      </div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>A project: steps</b><span>Gold · Wide</span></div>
+      <div class="note">Question: how far along are the clusters? For the busy stretches. Counts only; the steps themselves live in the project.</div>
+      <div class="shelfrow"><div class="wg w2" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Coming home · steps</span><span class="wchev">›</span><div class="wline"><span class="stat">1/3</span><span>Equipment</span></div><div class="wline"><span class="stat">2/4</span><span>The house, and the ride</span></div></div></div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Incidents</b><span>Alert · Small</span></div>
+      <div class="note">Question: how many are open? The one card where alert appears, because open incidents are alert's locked meaning. None open renders quiet, in ink.</div>
+      <div class="shelfrow">
+        <div class="wg" style="--wh:var(--alert-ink);--ww:var(--alert-wash)"><span class="wtab">Incidents</span><span class="wchev">›</span><div class="big" style="color:var(--alert)">1</div><div class="bd">open · started Mar 30</div></div>
+        <div class="wg" style="--wh:var(--alert-ink);--ww:var(--alert-wash)"><span class="wtab">Incidents</span><span class="wchev">›</span><div class="notyet">None open.</div></div>
+      </div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Money</b><span>Manila · Small / Wide</span></div>
+      <div class="note">Question: what is unresolved? Counts by state: waiting on insurance, disputed, unpaid. Amounts appear only at wide, right-aligned, integer minor units underneath.</div>
+      <div class="shelfrow"><div class="wg" style="--wh:var(--manila);--ww:var(--manila-wash)"><span class="wtab">Money</span><span class="wchev">›</span><div class="wline"><span class="stat">2</span><span>waiting on insurance</span></div><div class="wline"><span class="stat">1</span><span>disputed</span></div></div></div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Unfiled</b><span>Gold · Small</span></div>
+      <div class="note">Question: is anything waiting to be filed? The tray's count. Empty tray is stated as done, not hidden.</div>
+      <div class="shelfrow"><div class="wg" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">Unfiled</span><span class="wchev">›</span><div class="big">3</div><div class="bd">waiting to be filed</div></div></div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Emergency card</b><span>Red · Small / Wide</span></div>
+      <div class="note">Question: none. This is pure access: one tap to the hand-over screen. Red is its locked meaning. Suggested in every template's default hand.</div>
+      <div class="shelfrow"><div class="wg" style="--wh:var(--alert-ink);--ww:var(--alert-wash)"><span class="wtab">Emergency card</span><span class="wchev">›</span><div class="bt">Norma's card</div><div class="bd">allergies, meds, contacts</div></div></div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Care team</b><span>Rose · Small / Wide</span></div>
+      <div class="note">Question: how do I reach them, now? Small is one chosen person with a dialable outlined number; wide is the row of avatars, each a door.</div>
+      <div class="shelfrow">
+        <div class="wg" style="--wh:var(--rose);--ww:var(--rose-wash)"><span class="wtab">Care team</span><span class="wchev">›</span><div class="bt">Nurse Alvarez</div><div class="inact"><span class="sec-btn small">555-0182</span></div></div>
+        <div class="wg" style="--wh:var(--rose);--ww:var(--rose-wash)"><span class="wtab">Care team</span><span class="wchev">›</span><div style="display:flex;gap:5px;margin-top:3px"><span class="av" style="--tw:var(--rose-wash);--td:var(--rose)">KA</span><span class="av" style="--tw:var(--rose-wash);--td:var(--rose)">KO</span><span class="av" style="--tw:var(--rose-wash);--td:var(--rose)">PT</span><span class="av" style="--tw:var(--rose-wash);--td:var(--rose)">+3</span></div></div>
+      </div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>The trail, lately</b><span>Gold · Tall</span></div>
+      <div class="note">Question: what were the last few entries? A three-entry mini spine, gap markers included. The door opens the full trail.</div>
+      <div class="shelfrow"><div class="wg w2" style="--wh:var(--gold-ink);--ww:var(--gold-wash)"><span class="wtab">The trail, lately</span><span class="wchev">›</span>
+        <div class="spine" style="margin-top:4px"><div class="sp"><span class="wp done"></span><div style="font-size:10px"><b>Call · Denise</b> · Mar 28</div></div><div class="sp"><span class="wp done"></span><div style="font-size:10px"><b>Weight recorded</b> · Mar 27</div></div><div class="sp"><span class="wp done"></span><div style="font-size:10px"><b>Visit · Ridgeline</b> · Mar 25</div></div></div></div></div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Recent documents</b><span>Manila · Wide</span></div>
+      <div class="note">Question: what papers arrived lately? The last four as thumbnails, each a door. Never renders private content larger than a thumbnail on the dashboard.</div>
+      <div class="shelfrow"><div class="wg w2" style="--wh:var(--manila);--ww:var(--manila-wash)"><span class="wtab">Documents</span><span class="wchev">›</span><div style="display:flex;gap:6px;margin-top:3px"><span style="flex:1;height:34px;border-radius:8px;background:linear-gradient(160deg,#fdfcf8,#e2e5e0)"></span><span style="flex:1;height:34px;border-radius:8px;background:linear-gradient(160deg,#fdfcf8,#e2e5e0)"></span><span style="flex:1;height:34px;border-radius:8px;background:linear-gradient(150deg,#d8ccb8,#b3a288)"></span><span style="flex:1;height:34px;border-radius:8px;background:linear-gradient(160deg,#fdfcf8,#e2e5e0)"></span></div></div></div>
+    </div>
+
+    <div class="shelf"><div class="sh"><b>Standing instructions</b><span>Stone · Small</span></div>
+      <div class="note">Question: how many are active, and are any issues noted? Counts only; the instructions and their records live in their section.</div>
+      <div class="shelfrow"><div class="wg" style="--wh:var(--stone);--ww:var(--stone-wash)"><span class="wtab">Standing instr.</span><span class="wchev">›</span><div class="wline"><span class="stat">6</span><span>active</span></div><div class="wline"><span class="stat">2</span><span>issues noted</span></div></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================ PART D ============================ -->
+<div class="part">
+  <div class="part-h"><span class="n">PART D</span><h2>How it fits the system</h2></div>
+  <p class="part-intro">The rules that make this buildable and keep it honest, plus what waits on the owner.</p>
+
+  <div class="panel">
+    <h3>Mechanics, for the builder</h3>
+    <p class="lead">The layout is data: an ordered list of card instances, each with a type, a size, and an optional source id (which measure, which project, which person), plus one lead assignment. It lives in the same database, travels in the archive, and restores on import like everything else; a person's arranged Today survives a phone migration. Situation templates ship a default layout as part of their bundle, copied at onboarding with no live link, same rule as project templates. Each card type declares one deterministic query and its full states ladder; queries run when Today gains focus and after any save, reading the same SQLite as every screen. A card whose source id no longer resolves renders its source-closed state and is never auto-removed. Reordering is drag with a Move up and Move down path in card options, so it works one-handed, with TalkBack, and with switch access. Edit mode is entered by the visible Edit button; touch and hold on the field is a shortcut only. The in-app Today and the OS home screen widgets are separate systems: the existing OS widget commitments (capture, and later possibly a small subset of these cards) are unchanged by this design, and nothing here assumes them.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Costume audit, pre-run</h3>
+    <div class="cols">
+      <div class="spec"><b>The card</b> In costume terms every card is a row ending in a chevron: one door, opening its section or item. Its tab, numbers, and chart are bare. Inline actions exist only at wide and tall, always outlined pills, always a verb or a dialable number, never more than the size's target budget: one at small (the card itself), two at wide, three at tall.</div>
+      <div class="spec"><b>The lead slot</b> The one-thing hero in costume. Bare except for any outlined action its card defines.</div>
+      <div class="spec"><b>Edit mode</b> The remove dot and drag handle exist only inside edit mode, which is a modal state entered by a visible button, keeping "nothing bare responds to touch" true in normal reading. Size choices and reorder buttons are chips and outlined pills in the options sheet.</div>
+      <div class="spec"><b>Add a card</b> A sheet of rows with outlined Add actions, grouped by section, previews rendered with real data.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>The laws, checked</h3>
+    <div class="cols">
+      <div class="spec"><b>Law 1</b> The lead slot is singular by construction. The field never contains a second display-scale element; card titles cap at the bt size.</div>
+      <div class="spec"><b>Law 2</b> Every card is one door. Nothing bare responds. The audit runs per card type per size, and a card fails the screen if any state in its ladder breaks costume.</div>
+      <div class="spec"><b>Law 3</b> Card options ask one question per sheet. Adding is choose, then configure if needed, then done. Never a form.</div>
+      <div class="spec"><b>Law 4</b> The states ladder is the empty-one-few-many rule applied per card. The field itself scales: many cards scroll; the folds and search remain reachable; pinning integrates, and pinning anything anywhere offers Add to Today.</div>
+      <div class="spec"><b>Law 5</b> Templates ship whole starting hands. The catalog's suggested group is the situation's, and every default is editable from minute one.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>What Today never does</h3>
+    <p class="lead">It never rearranges itself, promotes a card, or injects one, no matter what the data does; the difference between screens 02 and 03 is data inside a layout the person owns, and that distinction is the whole trust model of the surface. It never interprets: no trends called good or bad, no streaks, no scores, no advice, no urgency theater. It never colors by value; the semantic colors keep their locked meanings, and the tab pack stays identity, never state. It never renders medical judgment, targets, or ranges on any chart, at any size. It never treats quiet as a failure to fix or absence as a debt to collect. And it never loses the arrangement: the layout is record, archived and restored like everything else the person has made.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Open questions for the owner</h3>
+    <div class="cols">
+      <div class="spec"><b>Catalog sign-off</b> Seventeen card types across sixteen shelves in Part C. Approve, cut, or add; the catalog is the choice-overload defense, so additions should displace, not accumulate.</div>
+      <div class="spec"><b>The digest when demoted</b> When another card leads, the digest sentence lives as a wide field card by default. Alternative: it could merge into the header under the date. Preference?</div>
+      <div class="spec"><b>Medications card scope</b> Drawn here as list and count only, consistent with the undecided reminders question. If reminders are ever decided in, that is a new card conversation, not a change to this one.</div>
+      <div class="spec"><b>Template default hands</b> The four starting layouts (home care, hospital, rehab, coming home) need your ruling card by card, since most people will never change them. Drafted in this grid for home care and coming home; the other two follow the same logic and await your pass.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

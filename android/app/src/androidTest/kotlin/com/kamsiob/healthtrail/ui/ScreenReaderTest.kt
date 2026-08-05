@@ -692,7 +692,7 @@ class ScreenReaderTest {
                     ),
                     TemplateCatalog.ProjectTemplate(
                         id = "discharge_appeal",
-                        name = "Fighting a facility discharge",
+                        name = "Appealing a facility discharge",
                         subtitle = "When a facility says someone has to leave",
                         category = "challenge",
                         stateVariance = false,

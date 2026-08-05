@@ -59,7 +59,7 @@ def main():
     w(f"- **{len(situations['templates'])} care settings**, each with the people to "
       "track, what runs in parallel, and a first week checklist")
     w(f"- **{len(projects['templates'])} long processes**, the applications, appeals, "
-      "and paperwork fights, broken into steps")
+      "and the paperwork that comes with them, broken into steps")
     w(f"- **{len(pi['progress_presets'])} things to measure**, with sensible units and "
       "how often")
     w(f"- **{len(pi['standing_instructions'])} standing instructions**, the rules you "
@@ -98,7 +98,7 @@ def main():
 
     # ---------- projects ----------
     w("# Part two: the long processes\n")
-    w("Applications, appeals, and paperwork fights. These run for months and involve "
+    w("Applications, appeals, and the paperwork around them. These run for months and involve "
       "people who do not talk to each other. Each one below is a sequence you can "
       "work through and check off.\n")
     for t in projects["templates"]:

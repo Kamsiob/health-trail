@@ -2034,6 +2034,85 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **This is why 16.2 requires the maximum font pass rather than a reading of the code.** Two lines looks like a fix at scale 1.0 and is a defect at 2.0, and nothing about the source says which.
 
+### D106. The Projects grid and the Today grid are adopted, extending v4 rather than replacing it
+
+**2026-08-04, owner's instruction.** Two files arrived and are now `reference/projects-grid.html` and `reference/today-grid.html`. They are the design direction for the Projects tab and the Today tab, and for every screen, sheet, and component belonging to those two surfaces.
+
+**They extend direction v4.** The identity, the five laws, the six costumes, the tokens, the interaction grammar, and everything else in `DESIGN.md` stand in full and govern both. **Where the v4 grid drew Today or Projects, those specific drawings are superseded**; every other screen in it is untouched.
+
+**Neither overrides `contract/DATA-CONTRACT.md` or the content rules**, with the single exception recorded as D110.
+
+**They are encoded in `DESIGN.md` sections 20 and 21 in the repository's own words, not as a pointer to the files.** That is the same rule the v4 adoption followed and for the same reason: a document that points at a file goes stale beside it, and the next session reads the document. A cold session builds both surfaces from this repository alone.
+
+**Three grid files now sit side by side at the top of `DESIGN.md`**, each naming what it governs, so there is never a question of which one applies.
+
+### D107. Eleven components are added to the inventory, and the inventory is closed again behind them
+
+**2026-08-04.** Section 7 said do not invent a new component. This is the owner amending the inventory, once, by name.
+
+**From the Projects grid:** the road strip (full and mini), the standing card, the date row, the latest word card, the step row with handler tag, and **the reference line as the standard dress for reference numbers everywhere in the app**, not only on that surface.
+
+**From the Today grid:** the card (with its index tab, sizes small, wide, and tall, and corner chevron), the lead slot, edit mode (remove dot, drag handle, size chips), and the add-a-card gallery pattern.
+
+**Each is composed from existing costumes**, as both grids' own costume audits describe. No new colors and no new interactive grammar.
+
+**Nothing else is added, and the rule returns to what it was**: any future component still requires an owner decision. The two grids are an amendment, not an opening.
+
+### D108. A handler tag is a label, and the single point person model is untouched
+
+**2026-08-04.** A step in the busy-stretch shape can carry a name: `SAM`, `MARIA`. **It is a label only.** No account, no notification, no assignment, no second user, no sync. It is the person writing down who said they would do a thing, which is what they would write on paper.
+
+**This was one of the grid's open questions and is ruled to the drawn default**, per D111.
+
+### D109. The battle voice is banned everywhere, in code identifiers as well as copy
+
+**2026-08-04, arriving with the Projects grid and made global on adoption.**
+
+**Nothing anywhere in this app frames a person's situation as a battle, a game, or a race.** Banned: fight, battle, win, lose, opponent, the ball, having the last word, and any sports or war metaphor.
+
+**Why it is global rather than confined to Projects.** The temptation is strongest there, because an appeal genuinely is adversarial in the world. But the person opening this app may be a parent whose child is in treatment, and casting their life as a fight they might lose is the app telling them what their situation means. **That is the same rule that bans interpretation**, applied to the frame rather than to a number.
+
+**Two consequences.** People in a process are **named by role, never cast as adversaries**: a caseworker is a caseworker. And **urgency is stated as fact, never performed**: a date is a number and its source, not a warning.
+
+**It joins `tools/checks/check_copy.py`**, and it covers identifiers because a variable named `daysToWin` becomes a string eventually.
+
+### D110. The Today layout and the project shapes are record, which amends the data contract
+
+**2026-08-04, owner approved**, and it is the one place these grids reach past design into `contract/DATA-CONTRACT.md`.
+
+**What becomes record:**
+
+- **The Today layout.** An ordered list of card instances, each with a type, a size, and an optional source id, **plus the single lead assignment**.
+- **Project templates are data**: a name, ordered stage names, a lead, starting steps, paper placeholders, and date kinds. **Applied by copy, with no live link.**
+- **Project stage assignments, standing entries, recorded dates with their sources, and steps with handler tags.**
+
+**All of it lives in the same database, travels in the archive, restores on import, appears in the readable copy, and joins the coverage test and the regeneration test.**
+
+**The reason this is a contract amendment and not a preference.** A person's arranged Today is something they made. So is the shape they gave a project. **If those do not survive the new phone, the app has quietly decided that what the person built is less real than what they typed**, and section 8's whole promise is that everything they made comes back byte for byte.
+
+### D111. The grids' open questions are resolved provisionally to the drawn default
+
+**2026-08-04.** Both grids end with open questions for the owner. **The ruling for this adoption is: build every one of them as drawn.** Each below is **provisionally resolved, revisitable after the owner tests on the device**, and they are listed together so they can be revisited in one sitting.
+
+1. **Inventory sign-off.** All eleven compositions approved, per D107.
+2. **Handler tags** are labels only, per D108.
+3. **The review-agency sentence** on the assembled-collection screen ships as written: "Records like these, with dates, names, and reference numbers, are what review agencies ask families for."
+4. **Checklist-era projects migrate** as one steps cluster, lead set to the steps, one stage named Underway. Nothing lost, reshapeable from setup.
+5. **The demoted digest** lives as a wide field card.
+6. **The medications card** is list and count only. If reminders are ever decided in, that is a new card conversation.
+7. **The full seventeen-type card catalog** ships as drawn.
+
+**Two template default hands are undrawn and were drafted rather than deferred**: hospital and rehab. The grid draws home care and coming home and states the logic; these two follow it. **They are provisional pending the owner's review**, they ship to the device for testing, and they are not final until he says so. Drafted as:
+
+- **Hospital stay**: digest leads, then next up, ask next time, incidents, care team. Everything changes daily and the questions are asked on rounds.
+- **Rehab stay**: digest leads, then a measure, milestones, next up, ask next time. Progress in a rehab season is events rather than a line, which is why milestones sit high.
+
+### D112. Superseded Today and Projects code is frozen rather than deleted, and the ledger is new
+
+**2026-08-04.** The adoption makes the existing Today dashboard and the existing checklist Projects obsolete. **Nothing is deleted.** Superseded code is **frozen: never called, extended, fixed, or translated.**
+
+**`docs/REMOVAL-LEDGER.md` did not exist and was created by this adoption.** The instruction referred to it as the existing deferral rule, and the rule was being followed in practice without a file to record it in. It now has one, and every row says what was superseded, by what, and when.
+
 ---
 
 ## BLOCKED

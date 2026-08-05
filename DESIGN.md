@@ -2,7 +2,19 @@
 
 This document is the binding source of truth for every visual, motion, and copy decision. Where code and this document disagree, this document wins. It is a living document: any decision made during implementation is written back into it in the same commit.
 
-**The visual reference is `reference/screen-grid.html`.** Open it in a browser. It holds twenty-five drawn screens, numbered 01 through 25, plus the laws they were drawn from and the notes on how they hold together. This document gives the tokens, the real dp and sp values, the dark theme, the measured contrast, and the rules the mockups imply but cannot state.
+**There are three visual references, and each governs a stated part of the app.**
+
+| File | Governs | Drawn |
+|---|---|---|
+| `reference/screen-grid.html` | **Everything, generally.** The identity, the five laws, the six costumes, and every screen not claimed below | Twenty-five screens, 01 through 25 |
+| `reference/projects-grid.html` | **The Projects tab**, and every screen, sheet, and component belonging to it | Eighteen screens |
+| `reference/today-grid.html` | **The Today tab**, and every screen, sheet, and component belonging to it | Ten screens, plus the card catalog |
+
+**The two surface grids extend v4; they do not replace it.** The identity, the five laws, the six costumes, the tokens, the interaction grammar, and everything else in this document stand in full and govern both surfaces. **Where the v4 grid drew Today or Projects, those specific drawings are superseded**; every other screen in it is untouched. Adopted 2026-08-04 on the owner's instruction, recorded as D106.
+
+**Sections 20 and 21 encode those two grids in this document's own words**, in full, because a document that points at a file is a document that goes stale beside it. A cold session builds both surfaces from this repository alone.
+
+This document gives the tokens, the real dp and sp values, the dark theme, the measured contrast, and the rules the mockups imply but cannot state.
 
 **`reference/concept-review.pdf` is a historical record of the concept review. It is not the visual reference and its screens no longer describe this app.** It is kept because the sequence and the voice in it are still useful reading. Nothing is built from it.
 
@@ -727,3 +739,243 @@ With every commit, ask whether the change made anything here wrong, and fix it i
 Any token added or changed during implementation is written back into section 4 or 5 **with its measured contrast ratio.** Any new component is specified in section 7 before it is built twice, **and it is not specified until it says when to use it and when not to.** Any screen that departs from `reference/screen-grid.html` gets its departure and reason recorded here, or gets corrected to match. Any new user-facing string follows section 11, and the ban list in section 17 gets re-checked against current research before any significant new design work.
 
 **A design document that no longer matches the software is worse than no design document**, because the next session will build against it and inherit the drift.
+
+---
+
+## 20. Projects
+
+**Governed by `reference/projects-grid.html`, adopted 2026-08-04**, D106. This section encodes that grid in full. Everything in sections 1 through 19 still applies: Projects is a whole-app surface, so it uses **gold and the base ladder** rather than a tab hue, per 4.3.
+
+### 20.1 What a project is, and the three answers
+
+**A project is a long process being carried for someone the person loves**: a waiver application, an insurance appeal, bringing a parent home, keeping a child's treatment covered. The person carrying it is tired and the process is slow and scattered.
+
+**Every project screen answers one of exactly three questions, and the screen's shape is which one it leads with.**
+
+1. **Where it stands.** Whose hands it is in, and since when. "The county is reviewing it. 23 days so far." **The elapsed time is a fact drawn from entries, never a judgment.**
+2. **The next date.** A recorded fact carrying its source: "Apr 12, from the letter of Mar 5." A countdown in tabular mono. **A passed date reads "passed 6 days ago", plainly.**
+3. **The latest word.** The most recent thing said by the office, the insurer, or the facility: who said it, when, and the reference number. It is what the person repeats at the start of every call.
+
+### 20.2 Why the checklist could not carry this
+
+**In a long process, most of what happens is not a task the person can check off.** They submitted the application; the county has been reviewing it for weeks. **A checklist shows that person a wall of unchecked boxes and makes the waiting feel like their failure.**
+
+What carries families through is a complete record: every call with a name, a date, and a reference number, and no missed window. **The checklist remains, as steps, and leads only in the one shape where the work truly is many small arrangements.**
+
+### 20.3 The three shapes, one grammar
+
+| Shape | Leads with | For |
+|---|---|---|
+| **The long road** | Where it stands | Benefits and waiver applications, guardianship, a placement waitlist. Months between events. The trail folds by stage and the quiet stretches are drawn honestly: "23 days pass" |
+| **The closing window** | The next date | Appeals, disputes, anything with a filing deadline. Under the countdown, what the file still needs before that date, each item there or **not yet** |
+| **The busy stretch** | The steps | Discharge planning, a move, getting the house ready. Two intense weeks of small parallel arrangements. Steps clustered by area with an arranged count, each able to carry who is handling it. The one date everything converges on sits above |
+
+**The shape is a default, never a cage.** It is one control on the project's setup screen and changes with no penalty.
+
+### 20.4 How templates shape a project, exactly
+
+**A project template is a bundle of five defaults, nothing more and nothing less**, and every one is visible, editable, and removable after setup:
+
+1. **The stages.** The named stretches of the road, drawn as the road strip. Benefits: Applied, In review, Decision. Appeal: Decision received, Preparing, Submitted, Answered. Discharge: Date set, Arranging, Home. **Stages can be renamed, added, or removed; the road redraws.**
+2. **The lead.** Which of the three answers opens the screen.
+3. **The starting steps.** A short editable list of what people in this situation usually gather or arrange. **Suggestions of structure, not instructions to act**: every one can be deleted, and the app never says do this now.
+4. **The usual papers.** Named placeholders, empty until filled. **An empty placeholder reads "not yet", never as an error.**
+5. **The date kinds.** The kinds of dates this situation tends to have, offered as chips when a date is recorded.
+
+**Applied once, at setup, as a preview the person confirms.** After that **there is no live link**: editing a project never touches the template, and updating a template never touches existing projects. The built-in bundles are Benefits or waiver, Insurance appeal, Discharge or move, and Blank, where Blank is one stage and the lead set to where it stands.
+
+### 20.5 The eighteen screens
+
+1. **Projects, before the first one.** The empty state says what this place is for and offers the one action.
+2. **Projects, underway.** Project cards, each carrying its mini road and answering where it stands and the next date at a glance. On hold and closed fold away. **The FAB is the screen's filled action, so Start is outlined.**
+3. **Starting one, 1 of 3.** One question per stage. The kind is chips.
+4. **Starting one, 3 of 3, the setup shown.** The template's five defaults previewed before anything exists. **Nothing is applied until Create.** This screen is the template system made visible.
+5. **The long road**, led by where it stands.
+6. **The closing window**, led by the next date, with what the file still needs beneath it.
+7. **The busy stretch**, led by the steps, clustered with arranged counts and handler tags.
+8. **Updating where it stands.** A one-stage sheet. Whose hands is chips drawn from the project's people; the date defaults to today. **Logging a call offers this automatically when things changed hands.**
+9. **Logging a call, from inside the project.** Pre-answered with the project as a chosen chip. **The name and reference number are first-class**, because they are what makes the record usable later.
+10. **One call, the whole record.** Every connection as a door, one outlined Edit.
+11. **The trail of the project.** The spine scoped to one project. Stage changes land as gold-ringed waypoints. Quiet stretches drawn and dated.
+12. **The road turns.** A sheet: the outcome as chips in the letter's own factual words, the letter photographed in the same motion. **The waypoint landing on the road is one of the three reserved expressive-spring moments**, per section 10.
+13. **Papers of the project.** Camera first, with the one distinction that matters: **what they sent and what you sent**, each dated.
+14. **People of the project.** Contacts with dialable numbers, separate from the care team. **The "also in" row is the cross-project door.**
+15. **Everything, together.** The assembled collection as one PDF, generated locally and handed to the share sheet.
+16. **Coming back after months away.** The project says what it held and offers one gentle way back in. **No shame, no streaks, nothing owed.**
+17. **Closed, and kept.** The outcome in one line, the story in honest numbers, the record kept whole. **Leaf is allowed here: resolved is its meaning.** Reopen exists because these processes come back.
+18. **The project's setup.** Law 5 made concrete: everything the template decided, changeable without penalty.
+
+### 20.6 The five components this surface adds
+
+Approved as inventory additions on 2026-08-04, D107. **Each is composed from existing costumes; no new colors and no new interactive grammar.**
+
+| Component | What it is | Costume |
+|---|---|---|
+| **Road strip** | The project's stages as a horizontal stretch of the trail, waypoints and dashed rail. **Full** on the project home, **mini** on its card | **Bare.** It is information and does nothing on touch. Stages are edited from setup. Mirrors fully in RTL |
+| **Standing card** | Where it stands: an eyebrow, a plain display sentence, the elapsed fact, and optional outlined actions | A grouped surface. Its actions are outlined pills, verbs or dialable numbers. **The sentence itself is bare** |
+| **Date row** | A tabular countdown beside its fact and its source | **A row ending in a chevron**, opening the date's detail. The number is bare, mono, tabular |
+| **Latest word card** | A gold wash band quoting the most recent entry, with attribution and reference line | A row with a chevron, opening the entry it quotes. Gold because the latest word is a trail entry surfaced |
+| **Step row** | A checklist line with an optional handler tag | The box is the interactive element; **the handler tag is data, mono, bare** |
+
+**The reference line, mono in a sand pill, is the standard dress for reference numbers everywhere in the app**, not only here.
+
+**A handler tag is a label, not an account.** No notification, no assignment, no second user. The single point person model is untouched. D108.
+
+### 20.7 What this surface never does
+
+**It never advises**: it does not say file, call, escalate, or hurry. **It never casts anyone as an adversary or the process as a fight.** It records dates the person took from real papers, each showing its source, and states them as numbers, never as alarms. **It never colors by urgency**; the semantic colors keep their locked meanings. It never scores, streaks, or percents anything. It never treats a lapse as failure. Deliberately absent and to stay absent: progress percentages, urgency colors, streaks or scores, advice about what to do next.
+
+### 20.8 To design a project screen this grid does not show
+
+**Start from the three answers in 20.1 and ask which one this screen serves.** Then apply the undrawn-screen method in section 13 in full.
+
+**Any new project shape must be a reordering of the existing components, never a new grammar**, and its template must be expressible as the five defaults in 20.4: stages, lead, starting steps, usual papers, date kinds. If it cannot be, it is not a project shape and the design is wrong somewhere earlier.
+
+---
+
+## 21. Today
+
+**Governed by `reference/today-grid.html`, adopted 2026-08-04**, D106. Today is a whole-app surface and wears **gold and the base ladder**, and each card wears its own section's hue.
+
+### 21.1 Law 1 versus modularity, resolved
+
+**A free-form dashboard breaks the first law**: if the person can stack six equal cards, no screen has one thing first.
+
+**The resolution is a fixed structure with free contents.** Today always has **exactly one lead slot** at the top, at display scale, **singular by construction**. Below it sits the card field, then the folds. **What fills the lead is the person's choice**: by default the digest, and any card can be promoted to lead from its options, which demotes the previous lead back into the field. **There is never zero and never two.**
+
+**Customization decides what deserves the top; the law decides that something singular is at the top.**
+
+**The universal search bar and the gold capture button keep their places regardless of layout**, because finding and recording are the two acts that must never move.
+
+### 21.2 What a card is
+
+**A card is a named, deterministic question asked of the record every time Today opens**: what is the next dated thing, how many are open, what was the latest value, who was seen last. Nothing more. **The answer renders; the card is a door to where the answer lives.**
+
+Every card declares **one query** over the same single database. Queries run when Today gains focus and after any save. **No card ever computes an interpretation, a trend judgment, a recommendation, or a nudge.** The engine that writes the digest sentence is the same deterministic template engine used everywhere else.
+
+**Anatomy, uniform across all cards:** a small index tab in the card's section hue and wash, naming its section in mono; the answer, sized by the card; a source or time line in quiet type; and **a corner chevron, because every card is a door**.
+
+**Identity comes from the tab pack, never from decoration.** An appointments card is slate because appointments are slate everywhere in the binder. Cards for whole-app surfaces wear gold.
+
+### 21.3 Three sizes, and how content adapts
+
+| Size | Width | Carries | Touch targets |
+|---|---|---|---|
+| **Small** | Half | One answer, one line of context | **One.** The whole card |
+| **Wide** | Full | The answer plus two or three lines, or one inline outlined action beside it | **Two** |
+| **Tall** | Full, taller | A chart under the chart card's rules, a mini spine, or a short list. **Never a dense feed** | **Three** |
+
+**Every card supports at least two sizes and declares its behavior at each.**
+
+**Growing a card never adds a new kind of content, it reveals more of the same answer.** The medications card at small is a count; at wide it is the list. **Shrinking never hides the existence of something open, only its detail.**
+
+**Inline actions appear only at wide and tall, always outlined, always a verb or a dialable number.**
+
+### 21.4 The states ladder
+
+**Every card defines its whole ladder before it ships.** This is where visual honesty lives and it is the difference between useful and decorative.
+
+| Rung | What it is |
+|---|---|
+| **Full** | The normal render. Real values, real dates, tabular numerals |
+| **Few** | Sparse-data grace. Two entries draws two dots and says "2 entries so far". **No line is invented between points far apart in time; gaps stay gaps** |
+| **None yet** | **A calm state, never an error and never a scold.** The card names its one action. **Quiet is allowed to be good news** and the card says so: "Nothing waiting" |
+| **Passed** | "passed 6 days ago", in plain words. **No urgency color, no alarm** |
+| **Source closed** | A card pointing at a closed project says so and keeps working as a door. **Removed only by the person's hand** |
+| **Returning** | The digest leads with "since you were last here" and plain counts. **No card ever measures the person's absence back at them** |
+
+### 21.5 Defaults beat blank canvases
+
+**Nobody ever sees a blank Today.** The situation template chosen at onboarding ships a complete starting layout, which is law 5 doing the work.
+
+**The catalog is curated, roughly sixteen cards, one per real recurring question, not one per table.**
+
+**Two rules keep control where it belongs.** The app **never rearranges Today on its own, ever**. And every template default is a starting hand, editable from the first minute without penalty. **Personalization is the person's explicit choice plus their stated situation. It is never inference, because this app does not watch its user.**
+
+### 21.6 The ten screens
+
+1. **Today, as the template set it.** The digest leads. Search and capture fixed.
+2. **Today, year three, made his own.** A chart promoted to lead, a project's date added, the digest demoted to a wide field card.
+3. **The morning of an appointment.** Same layout as 2, different data. **Data moves; cards never move themselves.**
+4. **Back after four months.** The digest takes the return voice regardless of which card holds the lead.
+5. **Editing Today.** Entered by the **visible Edit button**; touch and hold is a shortcut, never the only path. Remove dot, drag handle, size chips. **Done saves; nothing saves behind your back.**
+6. **Adding a card.** A sheet grouped by section in binder order, each entry previewing its small size **with real current data**. The situation's suggestions first.
+7. **One card's options.** Size chips, the source picker, Make this the lead, and **Move up and Move down as the accessible reorder path**.
+8. **Largest font size.** The field reflows to one column at full width, nothing clipped, **layout order preserved exactly**.
+9. **A different situation's default.** Two situations, two starting hands, one grammar.
+10. **A quiet day.** **The dashboard's hardest state: it must not invent urgency to look useful.**
+
+### 21.7 The card catalog
+
+**Seventeen types. Anything not here does not exist as a card.**
+
+| Card | Hue | Sizes | The question it answers |
+|---|---|---|---|
+| Today's digest | Gold | Small, Wide | What does the record say about today? Default lead in every template |
+| Next up | Slate | Small, Wide | What is the next dated thing? |
+| Medications | Teal | Small, Wide | What is on the list right now? **Record keeping only; never reminds, alarms, or tracks doses** |
+| A measure | Moss | Small, Wide, Tall | What is the latest value and its recent shape? One card per chosen measure. **Chart card rules in full** |
+| Milestones | Moss | Small | What was the most recent milestone? |
+| Ask next time | Teal | Small, Wide | What is saved to ask, and for whom? |
+| A project: where it stands | Gold | Wide | Whose hands, since when? |
+| A project: the next date | Gold | Small | How many days to the date that matters? |
+| A project: steps | Gold | Wide | How far along are the clusters? Counts only |
+| Incidents | Alert | Small | How many are open? **The one card where alert appears**, because that is alert's locked meaning |
+| Money | Manila | Small, Wide | What is unresolved? Amounts only at wide, right-aligned |
+| Unfiled | Gold | Small | Is anything waiting to be filed? |
+| Emergency card | Red | Small, Wide | **None. This is pure access**, one tap to the hand-over screen |
+| Care team | Rose | Small, Wide | How do I reach them, now? |
+| The trail, lately | Gold | Tall | What were the last few entries? A three-entry mini spine |
+| Recent documents | Manila | Wide | What papers arrived lately? **Never renders private content larger than a thumbnail** |
+| Standing instructions | Stone | Small | How many are active, and are any issues noted? |
+
+### 21.8 What Today never does
+
+**It never rearranges itself, promotes a card, or injects one, no matter what the data does.** The difference between screens 2 and 3 is data inside a layout the person owns, and **that distinction is the whole trust model of the surface**.
+
+It never interprets: no trends called good or bad, no streaks, no scores, no advice, no urgency theater. **It never colors by value.** It never renders medical judgment, targets, or ranges on any chart at any size. **It never treats quiet as a failure to fix or absence as a debt to collect.** And it never loses the arrangement.
+
+### 21.9 To design a card the catalog does not have
+
+**In this order, and the first step can end it.**
+
+1. **Name the recurring question it answers about the record.** **If you cannot name one real recurring question, the card does not exist.**
+2. **Write its one deterministic query.**
+3. **Define its full states ladder**, all six rungs of 21.4, **before any layout**.
+4. **Design its sizes within the touch-target budget** in 21.3. Growing reveals more of the same answer, never a new kind of content.
+5. **Cast its costume.** The card is one door; inline actions are outlined pills at wide and tall only.
+6. **Place it in the binder.** Its section's hue and wash, or gold for a whole-app surface.
+
+**A new card is a catalog change.** It **displaces or genuinely adds a question**, is recorded in 21.7 with all of the above, and **gets its states ladder into its issue's acceptance criteria**.
+
+---
+
+## 22. The voice rule these two grids make global
+
+**Nothing anywhere in this app frames a person's situation as a battle, a game, or a race.**
+
+**Banned in code identifiers and user-facing copy alike:** fight, battle, win, lose, opponent, the ball, having the last word, and any sports or war metaphor.
+
+**People in a process are named by role, never cast as adversaries.** A caseworker is a caseworker.
+
+**Urgency is stated as fact, a number and its source, never performed.** A date is a number and where it came from, not a warning.
+
+**This applies to every surface, not only Projects**, and it joins `tools/checks/check_copy.py`. It arrived with the Projects grid because that is the surface where the temptation is strongest, and it was made global on adoption because the temptation is not confined there. D109.
+
+---
+
+## 23. Verifying the two surfaces
+
+The costume audit, 16.1, and the overflow audit, 16.2, run on every screen in both grids as usual. **Two additions.**
+
+### 23.1 The states ladder audit
+
+**Every card type is verified on the device in every state of its ladder**, using fixture data that produces each state, **at both themes, at maximum font scale, and right to left**. **A card's issue does not close until every rung has been seen.**
+
+### 23.2 The trust audit
+
+**With fixture data changing underneath it, confirm Today's layout does not move**, and confirm **the lead slot is always exactly one thing**.
+
+**The road strip, the edit mode drag, and the card field must mirror correctly right to left.** **Reorder must work by drag and by Move up and Move down**, so it works one-handed, with the reader on, and with switch access.
+
+Everything on the phone, on a real build. No emulator.

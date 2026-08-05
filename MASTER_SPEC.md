@@ -100,9 +100,21 @@ Capture is additionally exposed as a home screen widget, a quick settings tile, 
 
 ### 4.3 Today
 
-The digest headed "since you were last here," built from the change log. Open item counts for incidents, questions, and waiting-ons. The next appointment with its prep status. The Emergency Card one tap away. Universal search at the top.
+**Rewritten 2026-08-04 with the adoption of `reference/today-grid.html`**, D106. The fixed dashboard described here before is superseded. `DESIGN.md` section 21 is the full specification.
 
-Lapse tolerance is a requirement: returning after months shows what changed with no guilt, no catch-up prompt, and no reference to how long it has been in any judging sense.
+**Today is a desk the person sets the way they keep it.** One **lead slot** at the top, singular by construction, and below it a **field of cards the person adds, moves, resizes, and removes**. What fills the lead is their choice; by default it is the digest.
+
+**A card is one deterministic question asked of the record**, answered on open and after any save, and it is a door to where the answer lives. Roughly sixteen card types ship, one per real recurring question rather than one per table. **No card interprets, advises, scores, or colors by value.**
+
+**The situation template ships a complete starting layout**, so nobody meets a blank canvas, and every default is editable from the first minute.
+
+**Today never rearranges itself.** Only the person's hand and the situation template at onboarding touch the layout. That is the trust model of the surface and it is absolute.
+
+**The layout is record**, not a preference: an ordered list of card instances with the lead assignment, archived and restored like everything else the person has made. `contract/DATA-CONTRACT.md` 8.7.
+
+Lapse tolerance is a requirement: returning after months shows what changed with no guilt, no catch-up prompt, and no reference to how long it has been in any judging sense. **No card ever measures the person's absence back at them.**
+
+The digest itself, the universal search bar, and the gold capture button keep their places regardless of layout.
 
 ### 4.4 Notebook
 
@@ -121,7 +133,17 @@ A table of contents with live counts and fixed positions. Sections: care team, m
 
 ### 4.5 Projects
 
-Separate from the notebook, for long bureaucratic processes. Each has its own contacts, timeline, checklist, attachments, a waiting-on field, and a status. Sixteen project templates ship. Each exports as its own document.
+**Rewritten 2026-08-04 with the adoption of `reference/projects-grid.html`**, D106. The checklist-led project described here before is superseded. `DESIGN.md` section 20 is the full specification.
+
+Separate from the notebook, for long bureaucratic processes. Each has its own contacts, timeline, attachments, papers, and a status. Sixteen project templates ship. Each exports as its own document.
+
+**Every project answers three things, and the shape of a project is which one it leads with**: where it stands (whose hands, since when), the next date (a recorded fact carrying its source), and the latest word (what was last said, by whom, with the reference number).
+
+**The checklist is not the project.** In a long process most of what happens is not a task anybody can check off, and a wall of unchecked boxes makes waiting feel like the person's failure. **Steps remain, and lead only in the busy-stretch shape**, where the work genuinely is many small arrangements.
+
+**A project template is five defaults and nothing more**: stages, lead, starting steps, usual papers, date kinds. **Applied by copy at creation with no live link**, so editing a project never touches the template and updating a template never touches existing projects. All five are visible and changeable from one screen forever after.
+
+**Nothing on this surface frames the process as a fight**, per `DESIGN.md` section 22. People are named by role, and urgency is a number and its source rather than a warning.
 
 ### 4.6 Chapters and threads
 
@@ -320,13 +342,13 @@ The three safety guards from `RUN-SAFETY.md` section 1, installed before any fea
 
 Phase 0 is deliberately larger than usual. Every item in it is something that cannot be added later without discarding user data or reimplementing a platform.
 
-**Phase 1. The notebook core.** Disclaimer gate, essentials-first setup, situation templates applied, Today with the digest engine, capture with all six inputs and the Unfiled tray, the trail, care team, medications, the emergency card, and the notebook table of contents. At the end of this phase a person could use the app daily. Every screen built to `DESIGN.md` including empty states, error states, and motion. **Phase 1 is reopened by the v4 adoption:** every screen it delivered is converted to the new direction before the phase is called done again.
+**Phase 1. The notebook core.** Disclaimer gate, essentials-first setup, situation templates applied, Today built to `reference/today-grid.html` with the digest engine behind its lead card, capture with all six inputs and the Unfiled tray, the trail, care team, medications, the emergency card, and the notebook table of contents. At the end of this phase a person could use the app daily. Every screen built to `DESIGN.md` including empty states, error states, and motion. **Phase 1 is reopened by the v4 adoption:** every screen it delivered is converted to the new direction before the phase is called done again.
 
 **Phase 2. Time and structure.** Chapters with transfers and archiving, care threads with filtering and ending, appointments with prep sheets, ask next time, the year scrubber and folding months, month review, the milestone arc.
 
 **Phase 3. Incidents, instructions, and money.** Incident threads with export, incidents over time with deterministic counts, standing instructions with tags and violation tracking, bills with states and links, running cost sheets.
 
-**Phase 4. Projects and documents.** Projects with checklists, waiting-on, contacts, and attachments. The documents section with categories and original-location notes. The full template library across all four types, with editing, duplication, and creation from scratch.
+**Phase 4. Projects and documents.** Projects built to `reference/projects-grid.html`: the three answers, the three shapes, the road strip, and the five template defaults. Waiting-on, contacts, papers, and attachments. The documents section with categories and original-location notes. The full template library across all four types, with editing, duplication, and creation from scratch.
 
 **Phase 5. Search and assembly.** Universal search, scoped search per section, assembled collections, any-day reconstruction, the family update draft, and the PDF export engine covering every export type.
 

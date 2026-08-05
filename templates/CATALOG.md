@@ -21,7 +21,7 @@ Nothing in this catalog is medical or legal advice. It does not tell you what ca
 ## What is in here
 
 - **14 care settings**, each with the people to track, what runs in parallel, and a first week checklist
-- **16 long processes**, the applications, appeals, and paperwork fights, broken into steps
+- **16 long processes**, the applications, appeals, and the paperwork that comes with them, broken into steps
 - **16 things to measure**, with sensible units and how often
 - **11 standing instructions**, the rules you give a facility, marked by whether federal rules back them up
 
@@ -723,7 +723,7 @@ Pick the one closest to your situation. Each sets up who to write down, what is 
 
 # Part two: the long processes
 
-Applications, appeals, and paperwork fights. These run for months and involve people who do not talk to each other. Each one below is a sequence you can work through and check off.
+Applications, appeals, and the paperwork around them. These run for months and involve people who do not talk to each other. Each one below is a sequence you can work through and check off.
 
 ## Medicaid application for long term care
 
@@ -1417,7 +1417,7 @@ Applications, appeals, and paperwork fights. These run for months and involve pe
 
 ---
 
-## Fighting a facility discharge
+## Appealing a facility discharge
 
 *When a facility says someone has to leave*
 
