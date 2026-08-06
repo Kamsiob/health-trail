@@ -16,7 +16,7 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **`check_i18n.py` holds plural categories from 2026-08-06**, #318, which is what finally caught nine Arabic strings rendering the wrong form. Section 2.44.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **446 instrumented tests pass**, last full run 2026-08-06 after the project's people landed. Up from 404 at the start of this run.
+- **448 instrumented tests pass**, last full run 2026-08-06 after #231's six cards learned to say what they do. Up from 404 at the start of this run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
 - **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
@@ -221,6 +221,20 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.45 Six cards told a reader that tapping them removed the thing
+
+**#231, and it is not closed**: the code half is done and the gate it names is not.
+
+`removableByLongPress` was the only modifier the app had for a tappable card, so every screen that needed a card to open something reached for it and passed `onLongPress = {}`. **The gesture went quiet and the words did not**: a reader announced the tap as "remove" on a card that opens an entry, and listed a long press called "remove" that ran an empty function.
+
+**Six sites, not the five the issue lists.** `PersonScreen`, `ThreadScreen`, `ChapterScreen`, `CareThreadsScreen`, `MedicationScreen`, **and `ChaptersScreen`**, which the issue did not name and which the criterion "no caller passes an empty `onLongPress` anywhere" is what found. All six use `openableByTap` with a label that is a verb. `grep -rn "onLongPress = {}"` over live code returns nothing.
+
+**The other `removableByLongPress` callers are left alone on purpose.** They pass a real `onRemove`, so the long press does something; that removal being long-press-only is **#218** and a different question.
+
+**`OpenNotRemoveTest` asserts the click label and the absence of the long press**, because none of this is visible: a screenshot of the fixed screen and the broken one are the same image, which is how it survived six screens and a design review.
+
+**What is left on #231 is its own third criterion**: "Verified with the reader on, per rule 19, not by reading the code." **That was not done**, and the issue stays open for it. Turning TalkBack on is rule 19's sanctioned exception and it was not worth starting at five in the morning at the end of a long run with a handoff owed. **It is the cheapest thing on the board for the next session**: turn the reader on, walk one of the six cards, restore per section 10.
 
 ### 2.44 Nine Arabic plurals were rendering the wrong form, and nothing could see it
 

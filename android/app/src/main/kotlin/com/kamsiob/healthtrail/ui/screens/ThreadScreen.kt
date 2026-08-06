@@ -24,7 +24,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -143,11 +143,13 @@ fun ThreadScreen(
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
                                 .clip(Radius.card)
-                                .background(colors.card)
-                                .removableByLongPress(
-                                    label = strings["remove.hint"],
-                                    onLongPress = {},
+                                // #231: a tap that opens says so, rather than
+                                // announcing "remove" and offering a long press
+                                // that runs an empty function.
+                                .openableByTap(
+                                    label = strings["prep.change.open"],
                                     onTap = { onOpenEntry(entry) },
+                                    resting = colors.card,
                                 )
                                 .testTag(OneThreadTags.entry(entry.id))
                                 .padding(Space.cardPadding),

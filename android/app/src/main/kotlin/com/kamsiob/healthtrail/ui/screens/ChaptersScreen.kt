@@ -27,7 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.ui.components.pressedSurface
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -225,20 +225,18 @@ private fun ChapterSpineRow(
 private fun ChapterRow(chapter: Repository.Chapter, onOpen: () -> Unit) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) { }
             .clip(Radius.card)
-            .background(surface)
-            .removableByLongPress(
-                label = strings["remove.hint"],
-                onLongPress = {},
+            // **#231, and this one was not on the issue's list of five.** The
+            // acceptance criterion is that no caller passes an empty
+            // `onLongPress` anywhere, which is what found it.
+            .openableByTap(
+                label = strings["chapters.open"],
                 onTap = onOpen,
-                interactionSource = interaction,
+                resting = colors.card,
             )
             .testTag(ChapterTags.row(chapter.id))
             .padding(Space.cardPadding),

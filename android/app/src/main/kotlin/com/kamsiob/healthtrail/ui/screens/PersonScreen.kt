@@ -24,7 +24,7 @@ import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -174,11 +174,17 @@ fun PersonScreen(
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
                                 .clip(Radius.card)
-                                .background(colors.card)
-                                .removableByLongPress(
-                                    label = strings["remove.hint"],
-                                    onLongPress = {},
+                                // **`openableByTap`, not the removal
+                                // modifier with its gesture switched off.**
+                                // That declared a tap action called "remove" on
+                                // a card that opens an entry, and a long press
+                                // called "remove" that ran an empty function.
+                                // The gesture went quiet and the words did not.
+                                // #231.
+                                .openableByTap(
+                                    label = strings["prep.change.open"],
                                     onTap = { onOpenEntry(entry) },
+                                    resting = colors.card,
                                 )
                                 .testTag(PersonTags.entry(entry.id))
                                 .padding(Space.cardPadding),

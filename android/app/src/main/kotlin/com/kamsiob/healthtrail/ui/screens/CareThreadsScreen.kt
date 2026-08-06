@@ -31,7 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.kamsiob.healthtrail.ui.components.pressedSurface
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -222,21 +222,20 @@ private fun ThreadRow(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(Radius.card)
-            .background(surface)
             // A tap opens the thread, which is the rule every list in this
-            // app learned on 2026-08-03.
-            .removableByLongPress(
-                label = strings["remove.hint"],
-                onLongPress = {},
+            // app learned on 2026-08-03. **#231: it says so now**, instead of
+            // announcing "remove" and offering a long press that did nothing.
+            // `openableByTap` carries its own interaction source, its own
+            // press step and the focus ring, so the hand rolled pair above is
+            // gone with it.
+            .openableByTap(
+                label = strings["threads.open"],
                 onTap = onOpen,
-                interactionSource = interaction,
+                resting = colors.card,
             )
             .testTag(ThreadTags.row(row.thread.id))
             .padding(Space.cardPadding),

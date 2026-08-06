@@ -26,7 +26,7 @@ import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -301,15 +301,18 @@ private fun Card(
             .fillMaxWidth()
             .semantics(mergeDescendants = true) { }
             .clip(Radius.card)
-            .background(colors.card)
             .then(
                 if (onTap == null) {
-                    Modifier
+                    // Not tappable, so it keeps the plain card surface and
+                    // declares no action at all.
+                    Modifier.background(colors.card)
                 } else {
-                    Modifier.removableByLongPress(
-                        label = strings["remove.hint"],
-                        onLongPress = {},
+                    // #231: it opens something, so it says "Open this entry"
+                    // rather than announcing a removal it does not do.
+                    Modifier.openableByTap(
+                        label = strings["prep.change.open"],
                         onTap = onTap,
+                        resting = colors.card,
                     )
                 },
             )

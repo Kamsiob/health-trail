@@ -121,6 +121,8 @@
   "notebook.section.medications": "Medications",
   "notebook.section.appointments": "Appointments",
   "notebook.section.chapters": "Chapters",
+  "chapters.open": "Open this chapter",
+  "threads.open": "Open this care thread",
   "notebook.section.threads": "Care threads",
   "notebook.section.trail": "The trail",
   "notebook.section.progress": "Progress",

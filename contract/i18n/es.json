@@ -121,6 +121,8 @@
   "notebook.section.medications": "Medicamentos",
   "notebook.section.appointments": "Citas",
   "notebook.section.chapters": "Capítulos",
+  "chapters.open": "Abrir este capítulo",
+  "threads.open": "Abrir esta línea de cuidado",
   "notebook.section.threads": "Líneas de cuidado",
   "notebook.section.trail": "El recorrido",
   "notebook.section.progress": "Evolución",

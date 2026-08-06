@@ -121,6 +121,8 @@
   "notebook.section.medications": "الأدوية",
   "notebook.section.appointments": "المواعيد",
   "notebook.section.chapters": "الفصول",
+  "chapters.open": "افتح هذا الفصل",
+  "threads.open": "افتح مسار الرعاية هذا",
   "notebook.section.threads": "مسارات الرعاية",
   "notebook.section.trail": "الأثر",
   "notebook.section.progress": "التطور",

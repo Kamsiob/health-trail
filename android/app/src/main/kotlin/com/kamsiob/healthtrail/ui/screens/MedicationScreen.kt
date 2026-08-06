@@ -18,7 +18,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -169,11 +169,12 @@ fun MedicationScreen(
                                     .fillMaxWidth()
                                     .semantics(mergeDescendants = true) { }
                                     .clip(Radius.card)
-                                    .background(colors.card)
-                                    .removableByLongPress(
-                                        label = strings["remove.hint"],
-                                        onLongPress = {},
+                                    // #231: the tap opens the question's own
+                                    // entry, and now says so.
+                                    .openableByTap(
+                                        label = strings["prep.change.open"],
                                         onTap = { onOpenQuestion(question) },
+                                        resting = colors.card,
                                     )
                                     .testTag(MedicationTags.question(question.id))
                                     .padding(Space.cardPadding),

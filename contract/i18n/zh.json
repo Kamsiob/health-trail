@@ -121,6 +121,8 @@
   "notebook.section.medications": "药物",
   "notebook.section.appointments": "预约",
   "notebook.section.chapters": "阶段",
+  "chapters.open": "打开这个阶段",
+  "threads.open": "打开这条照护线索",
   "notebook.section.threads": "照护线",
   "notebook.section.trail": "足迹",
   "notebook.section.progress": "变化",
