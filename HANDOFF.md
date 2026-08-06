@@ -10,7 +10,7 @@
 
 ## 1. Where to start
 
-Everything below is verified rather than asserted, as of 2026-08-06:
+Everything below is verified rather than asserted, as of 2026-08-06, at the end of the overnight run that landed sections 2.36 through 2.45:
 
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
@@ -25,18 +25,26 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 
 **Take these in this order.**
 
-1. **A new design direction arrived on 2026-08-04 and both surfaces are largely built to it.** Section 2 is the whole of it: the data work, the five components, all three project shapes, the projects list, Today's lead slot and card field, edit mode, the gallery, and the three project sheets. **What is left is named at the end of each subsection.**
+1. **#231 needs the screen reader turned on and nothing else.** Six cards were announcing "remove" on a tap that opens; all six are fixed and tested, and the issue's own third criterion, "verified with the reader on", is undone. **It is the cheapest item on the board**: turn TalkBack on, walk one card, hear "Open this entry", restore per section 10. Section 2.45.
 
-   **On Projects, what is closed is #274, #275, #276, #277, #280 and #291**, which is the empty state, the list, starting one, the preview of what a template sets up, the busy stretch, and every one of the five template defaults made editable. **What is unbuilt is #283, #284, #286, #287, #288, #289 and #290**, in that order: one call as a whole record, the project's trail, papers of the project, people, everything together, coming back after months, and closed and kept. **#278, #279, #281, #282 and #285 are built and are open only because they have not been seen at every gate**, which is a device job rather than a build job and is the cheapest thing on the board.
+2. **Projects has three screens left**, in this order, and they are all **states of the project home** rather than new places:
+   - **#288, screen 15, everything together.** The trail, papers and people counted on one row and reached from it.
+   - **#289, screen 16, coming back after months away.** Lapse tolerance is law: what the file held while the person was gone, and one gentle way back in, which is confirming where it stands. No shame, no streaks, nothing owed. The app already records a last visit, which is what the Today digest counts from.
+   - **#290, screen 17, closed and kept.** How it ended in one line, the whole story in honest numbers, and **Reopen**, because these processes come back. `Readable.kt` and `Share.kt` are what "Make the PDF" would use, the same as the prep sheet and the month review.
 
-   **On Today, #292 through #301 are all unbuilt**, and the card issues #245 through #261 with them.
-2. **#200, #201 and #202 are done and closed**, and sections 3 to 5 say what came out of them.
-3. **The rest of step 4 of the v4 conversion is untouched**: #203 through #208, in number order, **except take #208 last**. These are not affected by the new grids.
-   - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape. **Take it last.**
+   **Everything else on Projects is closed**, #274 through #287 and #291. Sections 2.1 through 2.45 say what each landed and what was deliberately left out.
+
+3. **Today is where the bulk of the unbuilt work is**: **#292 through #301**, and the card issues **#245 through #261** with them. Nothing there has been touched this run.
+
+4. **The rest of step 4 of the v4 conversion**: #203 through #208, in number order, **except take #208 last**.
+   - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built. Read `PrepScreen.kt` first; it is the same shape.
    - #203, #204, #205, #206 and #207 are conversions of screens that exist.
-4. **The isolate audit, #226.** It has a generated worklist and needs Arabic on the device. **#202 found one of its cases by accident**, so the worklist is real.
 
-**Two things in step 4 are blocked and are not yours to unblock.** #199 (one test round and one test's history) and #182 (the tests section) both need a schema decision from the owner: there is no test, no round and no result anywhere in `contract/schema.sql`, so there is nothing to convert and nothing to build against. Both are labeled `blocked` and say what has to be decided. **Skip them.**
+5. **The isolate audit, #226.** It has a generated worklist and needs Arabic on the device. **This run found two more of its family by accident**, the road strip reading backwards and nine wrong Arabic plurals, so the worklist is real and the screen is where they show up.
+
+**Two things in step 4 are blocked and are not yours to unblock.** #199 and #182 both need a schema decision from the owner: there is no test, no round and no result anywhere in `contract/schema.sql`. Both are labeled `blocked`. **Skip them.**
+
+**Read #57 before working on it.** Its premise is stale: it says attachment storage does not exist and all of it does, which is written on the issue.
 
 **THE ARCHIVE runs on its own track and must not be scheduled behind the screens.** #209 through #215, with #9 as the parent. #209, #213, #214 and #215 are done. What is next there is **#211**, the importer's remaining 8.3 rules, which three other things wait on.
 
@@ -55,7 +63,7 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 - **`docs/REMOVAL-LEDGER.md` is new.** Superseded Today and Projects code freezes rather than being deleted: never called, extended, fixed, or translated. **Its ledger is empty because nothing has been superseded in fact yet.**
 - **`check_copy.py` gained the battle-voice rule**, D109.
 
-**Fifty-nine issues are open for the work**, #243 through #301. The two parents are **#243 Today** and **#244 Projects**. Under them: 28 screen issues, 17 card issues each carrying its full states ladder as acceptance criteria, 11 component issues, the data contract work at **#262**, and the two provisional template hands at **#273**.
+**Fifty-nine issues were opened for the work**, #243 through #301, and **the Projects half is now all closed but three**: #288, #289 and #290. Today's are untouched. The two parents are **#243 Today** and **#244 Projects**. Under them: 28 screen issues, 17 card issues each carrying its full states ladder as acceptance criteria, 11 component issues, the data contract work at **#262**, and the two provisional template hands at **#273**.
 
 **Take #262 first.** Everything on both surfaces stores something, and building screens against a contract that does not exist yet is the order that produces a second migration.
 
@@ -625,7 +633,7 @@ The sheet carries the date now, defaulting to today so the common case stays one
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**All sixteen of them, oldest first.** Checked against the board on 2026-08-06 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+**All sixteen of them, oldest first.** Checked against the board on 2026-08-06 at the end of the overnight run with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
 
 | Screen | Issue |
 |---|---|
@@ -754,4 +762,4 @@ Every one of these was built from the existing components, logged in all three p
 
 ## 13. Uncommitted work
 
-**None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed.
+**None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed. **Nine commits landed on 2026-08-06 between 04:25 and 08:49 UTC**, `434db59` through `5eafa79`, and continuous integration is green on each one that has finished.
