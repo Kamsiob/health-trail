@@ -14,6 +14,7 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
+- **`check_i18n.py` holds plural categories from 2026-08-06**, #318, which is what finally caught nine Arabic strings rendering the wrong form. Section 2.44.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
 - **446 instrumented tests pass**, last full run 2026-08-06 after the project's people landed. Up from 404 at the start of this run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
@@ -220,6 +221,21 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.44 Nine Arabic plurals were rendering the wrong form, and nothing could see it
+
+**#318, filed and closed in the same run.** Building #287 put "1 مكالمات" on the phone, which is "1 calls". The string carried only `other`, which is well formed ICU and agrees with English, so **every one of the seventeen checks passed**.
+
+**`check_i18n.py` compares plural categories now.** `en` and `es` need `one` and `other`, `zh` needs only `other`, `ar` needs all six. **It found nine more, all real**, in the countdown, the road, the papers count, the preview and Today's digest: `71 يوم` where Arabic wants `71 يومًا`. All nine are corrected.
+
+**Two things it deliberately does not report**, and both were found by the first version reporting them:
+
+- **A plural whose branches never interpolate `#`** is a state switch wearing plural syntax. "Nothing on it yet" against "Filled in" reads the same at one and at seven, and demanding a `one` branch would make a translator write the same words twice.
+- **An explicit `=0` satisfies `zero`.** ICU matches explicit values before categories, and this catalog uses `=0` widely on purpose.
+
+**Proved by breaking it**: the dual was stripped from one Arabic plural, the check failed naming that key, and the file was restored from a scratchpad copy rather than with git.
+
+**This matters most for what has not been built yet.** #92 through #99 add ten more languages, each with its own category set, and adding them without this check means adding them wrong and not finding out.
 
 ### 2.43 The people a project has involved, and the cross-project door
 

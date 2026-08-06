@@ -55,6 +55,75 @@ BANNED_COGNATES = {
 }
 
 
+# What CLDR requires of a plural in each locale we ship.
+#
+# **The categories a language actually has, not the ones a translator felt like
+# writing.** A string carrying only `other` is well formed ICU and agrees with
+# English, which needs only `one` and `other`, so every other check in this file
+# passed while Arabic rendered "1 مكالمات", which is "1 calls". Found by reading
+# an Arabic screen on the phone; nothing here could see it. #318.
+#
+# **This is the same shape as `check_string_keys.py`**: two things agreed with
+# each other and neither was held to the thing that mattered.
+PLURAL_CATEGORIES = {
+    "en": {"one", "other"},
+    "es": {"one", "other"},
+    # Chinese has no grammatical number: `other` alone is correct and complete.
+    "zh": {"other"},
+    "ar": {"zero", "one", "two", "few", "many", "other"},
+}
+
+# The named categories a branch can use. `=0` and friends are explicit values
+# rather than categories and are always allowed beside them: this catalog uses
+# both and both are right.
+PLURAL_BRANCH = re.compile(r"(?<![\w=])\b(zero|one|two|few|many|other)\s*\{")
+
+# Only a value that actually opens a plural is worth looking inside.
+IS_PLURAL = re.compile(r"\{\s*\w+\s*,\s*plural\s*,")
+
+# ICU matches an explicit value before a category, so `=0` covers `zero`.
+EXPLICIT_ZERO = re.compile(r"=\s*0\s*\{")
+
+
+def plural_problems(code, catalog):
+    """Every plural in one catalog that is missing a category its language needs.
+
+    **Two things are deliberately not reported.**
+
+    A plural whose branches never interpolate the count is a state switch
+    wearing plural syntax: "Nothing on it yet" against "Filled in" reads the
+    same at one and at seven, and demanding a `one` branch there would force a
+    translator to write the same words twice.
+
+    An explicit `=0` satisfies `zero`. ICU matches explicit values before
+    categories, so a message that already spells out the empty case does not
+    need the category as well, and this catalog uses `=0` widely on purpose.
+    """
+    found = []
+    required = PLURAL_CATEGORIES.get(code)
+    if not required:
+        return found
+    for key, value in sorted(catalog.items()):
+        if key.startswith("_") or not isinstance(value, str):
+            continue
+        if not IS_PLURAL.search(value):
+            continue
+        # No `#` anywhere means no form varies with the number.
+        if "#" not in value:
+            continue
+        present = set(PLURAL_BRANCH.findall(value))
+        if EXPLICIT_ZERO.search(value):
+            present.add("zero")
+        missing = required - present
+        if missing:
+            found.append(
+                f"{code}.json {key!r} is a plural missing {sorted(missing)}. "
+                f"{code} needs {sorted(required)}, so a count in a missing "
+                f"category renders in the wrong form."
+            )
+    return found
+
+
 def main():
     problems = []
 
@@ -112,6 +181,10 @@ def main():
                     f"{sorted(want - got)}, so the sentence renders with a hole in it"
                 )
 
+    # Every plural must carry the categories its own language needs.
+    for code, catalog in catalogs.items():
+        problems.extend(plural_problems(code, catalog))
+
     # Direction, since Arabic ships in v1 and the layout depends on it.
     for code, catalog in catalogs.items():
         meta = catalog.get("_meta", {})
@@ -146,7 +219,8 @@ def main():
     ]
     print(
         f"Locale check passed. {len(catalogs)} catalogs, "
-        f"{len(source_keys)} keys each, placeholders and direction consistent."
+        f"{len(source_keys)} keys each, placeholders, plural categories "
+        f"and direction consistent."
     )
     if unreviewed:
         # Not a failure. It is a fact the app has to state honestly about
