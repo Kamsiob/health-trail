@@ -16,7 +16,7 @@ Everything below is verified rather than asserted, as of 2026-08-06, at the end 
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **`check_i18n.py` holds plural categories from 2026-08-06**, #318, which is what finally caught nine Arabic strings rendering the wrong form. Section 2.44.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **448 instrumented tests pass**, last full run 2026-08-06 after #231's six cards learned to say what they do. Up from 404 at the start of this run.
+- **455 instrumented tests pass**, last full run 2026-08-06 after text started reaching the database in NFC. Up from 404 at the start of this run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
 - **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
@@ -229,6 +229,18 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.46 Text reaches the database in NFC now, and #227 is closed
+
+**Release-blocking, and it was true of every string the app had ever stored.** `contract/DATA-CONTRACT.md` 8.4: "a name typed with a combining accent on one device and a precomposed character on another is the same person, not two." **Nothing normalized anything.**
+
+- **`Repository` has one write path now.** Two private extensions, `SQLiteDatabase.write`, and **all fifty-five `execSQL` call sites go through them**, so every string argument of every insert and every one of the fifty-two updates is normalized. Doing it at `insertRow` alone would have covered the inserts and left the updates.
+- **`data/Text.nfc` is the whole of it**, and an already-normal string is returned unchanged rather than copied, which is what almost every string is.
+- **It changes the encoding of a character and nothing else.** No trimming, no casing, no collapsing of spaces; a test holds that.
+- **`NormalizationTest` is 7 tests** and covers the three scripts the contract names. **One of them asserts the premise**, that the two spellings really are different strings of different lengths, so the rest cannot pass vacuously.
+- **Proved by breaking it**: `Text.nfc` was made the identity function, four of the seven failed, and the file was restored from a scratchpad copy.
+
+**What this does not do.** It normalizes on the way in. **Text already in a notebook written before today stays as it was typed**, so an old row with a decomposed name still misses a search for the composed one. Fixing that is a migration over every text column and it is not written: **that is worth deciding before v1 ships**, and it is the one part of 8.4 still outstanding.
 
 ### 2.45 Six cards told a reader that tapping them removed the thing
 

@@ -76,7 +76,7 @@ class Repository private constructor(
     }
 
     suspend fun putSetting(key: String, value: String) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "INSERT OR REPLACE INTO app_meta (key, value, updated_at) VALUES (?, ?, ?)",
             arrayOf<Any>(key, value, System.currentTimeMillis()),
         )
@@ -99,6 +99,44 @@ class Repository private constructor(
      *
      * Returns the generated id.
      */
+    /**
+     * Every write goes through here, so every string reaches SQLite in NFC.
+     *
+     * `contract/DATA-CONTRACT.md` 8.4: **a name typed with a combining accent
+     * on one device and a precomposed character on another is the same person,
+     * not two.** `José` from a keyboard that emits `e` plus U+0301 and `José`
+     * from one that emits U+00E9 are different byte sequences that look
+     * identical in every screenshot and every log, so search misses one of
+     * them, an import makes a second row, and nobody can see why. **Nothing in
+     * the app normalized anything until #227.**
+     *
+     * **At the write and not at the read.** Normalizing on the way out would
+     * leave the database holding both forms and every future query having to
+     * remember; normalizing on the way in means the stored bytes are canonical
+     * once and the problem stops existing.
+     *
+     * **NFC and not NFD**, which is what the contract names: it is the form the
+     * web and most keyboards already produce, so it is the one that changes the
+     * fewest bytes.
+     */
+    private fun net.zetetic.database.sqlcipher.SQLiteDatabase.write(sql: String) =
+        execSQL(sql)
+
+    /** The same, for the writes that carry arguments. Those are the text ones. */
+    private fun net.zetetic.database.sqlcipher.SQLiteDatabase.write(
+        sql: String,
+        args: Array<out Any?>,
+    ) =
+        execSQL(
+            sql,
+            Array(args.size) { index ->
+                val value = args[index]
+                // Only strings need it, and an already-normal string is
+                // returned unchanged rather than copied.
+                if (value is String) Text.nfc(value) else value
+            },
+        )
+
     private suspend fun insert(table: String, values: Map<String, Any?>): String =
         withContext(Dispatchers.IO) { insertRow(table, values) }
 
@@ -122,7 +160,7 @@ class Repository private constructor(
 
         val columns = all.keys.joinToString(", ")
         val placeholders = all.keys.joinToString(", ") { "?" }
-        db().database.execSQL(
+        db().database.write(
             "INSERT INTO $table ($columns) VALUES ($placeholders)",
             all.values.toTypedArray(),
         )
@@ -283,7 +321,7 @@ class Repository private constructor(
         phone: String?,
         roleLabel: String?,
     ) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE person SET display_name = ?, phone = ?, role_label = ?, " +
                 "updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
@@ -305,7 +343,7 @@ class Repository private constructor(
         notes: String?,
         onEmergencyCard: Boolean,
     ) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE medication SET name = ?, dose_text = ?, purpose_text = ?, notes = ?, " +
                 "on_emergency_card = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
@@ -372,7 +410,7 @@ class Repository private constructor(
          */
         startingHand: List<Pair<String, String>> = emptyList(),
     ) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE subject SET situation_template_id = ?, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ?",
             arrayOf<Any>(templateId, System.currentTimeMillis(), subjectId),
@@ -487,7 +525,7 @@ class Repository private constructor(
         withContext(Dispatchers.IO) {
             val columns = dateColumns("occurred", occurred)
             val assignments = columns.keys.joinToString(", ") { "$it = ?" }
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE entry SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
                 (columns.values + listOf(System.currentTimeMillis(), entryId)).toTypedArray(),
             )
@@ -616,7 +654,7 @@ class Repository private constructor(
      * this returns the row is gone from the app's point of view.
      */
     suspend fun delete(section: Section, rowId: String) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE ${section.table} SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ? AND deleted_at IS NULL",
             arrayOf<Any?>(
@@ -677,7 +715,7 @@ class Repository private constructor(
      * belongs at the top of somebody's screen.
      */
     suspend fun clearEveryLeadForTest(subjectId: String) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE today_card SET is_lead = 0 WHERE subject_id = ?",
             arrayOf<Any?>(subjectId),
         )
@@ -692,7 +730,7 @@ class Repository private constructor(
      */
     suspend fun tombstoneForTest(table: String, rowId: String) = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        db().database.execSQL(
+        db().database.write(
             "UPDATE $table SET deleted_at = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(now, now, rowId),
         )
@@ -843,14 +881,14 @@ class Repository private constructor(
         try {
             if (threadId != null) {
                 val now = System.currentTimeMillis()
-                database.execSQL(
+                database.write(
                     "INSERT INTO entry_thread " +
                         "(id, created_at, updated_at, origin_device, rev, entry_id, thread_id) " +
                         "VALUES (?, ?, ?, ?, 1, ?, ?)",
                     arrayOf<Any?>(Ids.new(), now, now, db().deviceId, entryId, threadId),
                 )
             }
-            database.execSQL(
+            database.write(
                 "UPDATE entry SET is_unfiled = 0, updated_at = ?, rev = rev + 1 WHERE id = ?",
                 arrayOf<Any?>(System.currentTimeMillis(), entryId),
             )
@@ -1117,7 +1155,7 @@ class Repository private constructor(
      */
     suspend fun setEntryPinned(entryId: String, pinned: Boolean) = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        db().database.execSQL(
+        db().database.write(
             "UPDATE entry SET pinned_at = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(if (pinned) now else null, now, entryId),
         )
@@ -1325,7 +1363,7 @@ class Repository private constructor(
 
         withContext(Dispatchers.IO) {
             val assignments = values.keys.joinToString(", ") { "$it = ?" }
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE emergency_card SET $assignments, updated_at = ?, rev = rev + 1 " +
                     "WHERE id = ?",
                 (values.values + listOf(System.currentTimeMillis(), existing.id)).toTypedArray(),
@@ -1405,7 +1443,7 @@ class Repository private constructor(
      */
     suspend fun removeEmergencyContact(contactId: String) =
         withContext(Dispatchers.IO) {
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE emergency_contact SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
                     "WHERE id = ?",
                 arrayOf<Any?>(
@@ -1518,7 +1556,7 @@ class Repository private constructor(
      */
     suspend fun setMedicationOnEmergencyCard(medicationId: String, onCard: Boolean) =
         withContext(Dispatchers.IO) {
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE medication SET on_emergency_card = ?, updated_at = ?, rev = rev + 1 " +
                     "WHERE id = ?",
                 arrayOf<Any?>(
@@ -1782,7 +1820,7 @@ class Repository private constructor(
 
     /** Changes what a project is called. Every name in this app is a correction away. */
     suspend fun renameProject(projectId: String, name: String) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE project SET name = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(name, System.currentTimeMillis(), projectId),
         )
@@ -1823,7 +1861,7 @@ class Repository private constructor(
      */
     suspend fun updateProjectStep(stepId: String, text: String, note: String?) =
         withContext(Dispatchers.IO) {
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE project_step SET text = ?, note = ?, updated_at = ?, " +
                     "rev = rev + 1 WHERE id = ?",
                 arrayOf<Any?>(
@@ -1876,12 +1914,12 @@ class Repository private constructor(
                 } ?: return@withContext
 
                 val now = System.currentTimeMillis()
-                database.execSQL(
+                database.write(
                     "UPDATE project_step SET sort_index = ?, updated_at = ?, " +
                         "rev = rev + 1 WHERE id = ?",
                     arrayOf<Any?>(neighbor.second, now, stepId),
                 )
-                database.execSQL(
+                database.write(
                     "UPDATE project_step SET sort_index = ?, updated_at = ?, " +
                         "rev = rev + 1 WHERE id = ?",
                     arrayOf<Any?>(index, now, neighbor.first),
@@ -1899,7 +1937,7 @@ class Repository private constructor(
      * step went rather than resurrecting it on the next sync.
      */
     suspend fun deleteProjectStep(stepId: String) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE project_step SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ?",
             arrayOf<Any?>(
@@ -2086,7 +2124,7 @@ class Repository private constructor(
                 )
             }
             val assignments = columns.keys.joinToString(", ") { "$it = ?" }
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE project_step SET $assignments, updated_at = ?, rev = rev + 1 " +
                     "WHERE id = ?",
                 (columns.values + listOf(System.currentTimeMillis(), stepId)).toTypedArray(),
@@ -2099,7 +2137,7 @@ class Repository private constructor(
         status: String,
         waitingOn: String?,
     ) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE project SET status = ?, waiting_on = ?, waiting_since = ?, " +
                 "updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
@@ -2323,7 +2361,7 @@ class Repository private constructor(
         state: String,
         notes: String?,
     ) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE bill SET description = ?, amount_minor = ?, state = ?, notes = ?, " +
                 "updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
@@ -2351,7 +2389,7 @@ class Repository private constructor(
             "notes" to notes?.ifBlank { null },
         )
         val assignments = columns.keys.joinToString(", ") { "$it = ?" }
-        db().database.execSQL(
+        db().database.write(
             "UPDATE appointment SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
             (columns.values + listOf(System.currentTimeMillis(), appointmentId)).toTypedArray(),
         )
@@ -2371,7 +2409,7 @@ class Repository private constructor(
         originalLocation: String?,
         notes: String?,
     ) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE document SET title = ?, original_location = ?, notes = ?, " +
                 "updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
@@ -2386,7 +2424,7 @@ class Repository private constructor(
 
     /** Moves a bill to another state. Nothing else about it changes. */
     suspend fun setBillState(billId: String, state: String) = withContext(Dispatchers.IO) {
-        db().database.execSQL(
+        db().database.write(
             "UPDATE bill SET state = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(state, System.currentTimeMillis(), billId),
         )
@@ -2435,7 +2473,7 @@ class Repository private constructor(
         val columns = dateColumns("acknowledged", acknowledged) +
             mapOf("acknowledged_how" to how?.ifBlank { null })
         val assignments = columns.keys.joinToString(", ") { "$it = ?" }
-        db().database.execSQL(
+        db().database.write(
             "UPDATE standing_instruction SET $assignments, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ?",
             (columns.values + listOf(System.currentTimeMillis(), instructionId)).toTypedArray(),
@@ -2601,7 +2639,7 @@ class Repository private constructor(
             val today = Edtf.day(LocalDate.now())
             val ending = dateColumns("ended", today)
             val assignments = ending.keys.joinToString(", ") { "$it = ?" }
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE chapter SET $assignments, updated_at = ?, rev = rev + 1 " +
                     "WHERE subject_id = ? AND deleted_at IS NULL " +
                     "AND (ended_edtf IS NULL OR ended_edtf = '')",
@@ -2752,7 +2790,7 @@ class Repository private constructor(
             "note" to note?.ifBlank { null },
         )
         val assignments = columns.keys.joinToString(", ") { "$it = ?" }
-        db().database.execSQL(
+        db().database.write(
             "UPDATE milestone SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
             (columns.values + listOf(System.currentTimeMillis(), milestoneId)).toTypedArray(),
         )
@@ -2837,7 +2875,7 @@ class Repository private constructor(
      */
     suspend fun setQuestionAnswer(questionId: String, answerText: String?) =
         withContext(Dispatchers.IO) {
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE question SET answer_text = ?, updated_at = ?, rev = rev + 1 " +
                     "WHERE id = ?",
                 arrayOf<Any?>(
@@ -3083,7 +3121,7 @@ class Repository private constructor(
         val columns = dateColumns("asked", asked) +
             mapOf("answer_text" to answerText?.ifBlank { null })
         val assignments = columns.keys.joinToString(", ") { "$it = ?" }
-        db().database.execSQL(
+        db().database.write(
             "UPDATE question SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
             (columns.values + listOf(System.currentTimeMillis(), questionId)).toTypedArray(),
         )
@@ -3624,7 +3662,7 @@ class Repository private constructor(
         // The same shape `markQuestionAsked` uses, so the change log trigger
         // sees an ordinary update and `rev` moves the way every other write
         // moves it.
-        db().database.execSQL(
+        db().database.write(
             "UPDATE incident SET resolved_at = ?, resolution_note = ?, " +
                 "updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
@@ -3645,7 +3683,7 @@ class Repository private constructor(
      */
     suspend fun attachEntryToIncident(entryId: String, incidentId: String) =
         withContext(Dispatchers.IO) {
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE entry SET incident_id = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
                 arrayOf<Any?>(incidentId, System.currentTimeMillis(), entryId),
             )
@@ -4644,7 +4682,7 @@ class Repository private constructor(
     suspend fun renameProjectStage(stageId: String, name: String) =
         withContext(Dispatchers.IO) {
             val now = System.currentTimeMillis()
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE project_stage SET name = ?, updated_at = ?, rev = rev + 1 " +
                     "WHERE id = ?",
                 arrayOf<Any?>(name, now, stageId),
@@ -4683,12 +4721,12 @@ class Repository private constructor(
                 } ?: return@withContext
 
                 val now = System.currentTimeMillis()
-                database.execSQL(
+                database.write(
                     "UPDATE project_stage SET sort_index = ?, updated_at = ?, " +
                         "rev = rev + 1 WHERE id = ?",
                     arrayOf<Any?>(neighbor.second, now, stageId),
                 )
-                database.execSQL(
+                database.write(
                     "UPDATE project_stage SET sort_index = ?, updated_at = ?, " +
                         "rev = rev + 1 WHERE id = ?",
                     arrayOf<Any?>(index, now, neighbor.first),
@@ -4724,7 +4762,7 @@ class Repository private constructor(
             val (projectId, index) = here
 
             val now = System.currentTimeMillis()
-            database.execSQL(
+            database.write(
                 "UPDATE project_stage SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
                     "WHERE id = ?",
                 arrayOf<Any?>(now, now, stageId),
@@ -4743,7 +4781,7 @@ class Repository private constructor(
                     arrayOf(projectId, index.toString()),
                 ).use { if (it.moveToFirst()) it.getString(0) else null }
 
-                database.execSQL(
+                database.write(
                     "UPDATE project SET current_stage_id = ?, updated_at = ?, rev = rev + 1 " +
                         "WHERE id = ?",
                     arrayOf<Any?>(fallback, now, projectId),
@@ -4780,7 +4818,7 @@ class Repository private constructor(
 
                 if (!alreadyReached) {
                     val dates = dateColumns("entered", reached)
-                    database.execSQL(
+                    database.write(
                         "UPDATE project_stage SET entered_edtf = ?, entered_zone = ?, " +
                             "entered_start = ?, entered_end = ?, updated_at = ?, " +
                             "rev = rev + 1 WHERE id = ?",
@@ -4790,7 +4828,7 @@ class Repository private constructor(
                         ),
                     )
                 }
-                database.execSQL(
+                database.write(
                     "UPDATE project SET current_stage_id = ?, updated_at = ?, " +
                         "rev = rev + 1 WHERE id = ?",
                     arrayOf<Any?>(stageId, now, projectId),
@@ -5242,7 +5280,7 @@ class Repository private constructor(
     suspend fun renameProjectDateKind(kindId: String, label: String) =
         withContext(Dispatchers.IO) {
             val now = System.currentTimeMillis()
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE project_date_kind SET label = ?, updated_at = ?, rev = rev + 1 " +
                     "WHERE id = ?",
                 arrayOf<Any?>(label, now, kindId),
@@ -5257,7 +5295,7 @@ class Repository private constructor(
      */
     suspend fun removeProjectDateKind(kindId: String) = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        db().database.execSQL(
+        db().database.write(
             "UPDATE project_date_kind SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ?",
             arrayOf<Any?>(now, now, kindId),
@@ -5565,7 +5603,7 @@ class Repository private constructor(
     suspend fun renameProjectPaper(paperId: String, name: String) =
         withContext(Dispatchers.IO) {
             val now = System.currentTimeMillis()
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE project_paper SET name = ?, updated_at = ?, rev = rev + 1 " +
                     "WHERE id = ?",
                 arrayOf<Any?>(name, now, paperId),
@@ -5582,7 +5620,7 @@ class Repository private constructor(
      */
     suspend fun emptyProjectPaper(paperId: String) = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        db().database.execSQL(
+        db().database.write(
             "UPDATE project_paper SET document_id = NULL, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ?",
             arrayOf<Any?>(now, paperId),
@@ -5598,7 +5636,7 @@ class Repository private constructor(
      */
     suspend fun removeProjectPaper(paperId: String) = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        db().database.execSQL(
+        db().database.write(
             "UPDATE project_paper SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ?",
             arrayOf<Any?>(now, now, paperId),
@@ -5608,7 +5646,7 @@ class Repository private constructor(
     suspend fun fillProjectPaper(paperId: String, documentId: String, direction: String?) =
         withContext(Dispatchers.IO) {
             val now = System.currentTimeMillis()
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE project_paper SET document_id = ?, direction = coalesce(?, direction), " +
                     "updated_at = ?, rev = rev + 1 WHERE id = ?",
                 arrayOf<Any?>(documentId, direction, now, paperId),
@@ -5623,7 +5661,7 @@ class Repository private constructor(
      */
     suspend fun setProjectLead(projectId: String, lead: String) = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        db().database.execSQL(
+        db().database.write(
             "UPDATE project SET lead = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(lead, now, projectId),
         )
@@ -5633,7 +5671,7 @@ class Repository private constructor(
     suspend fun setProjectStepHandling(stepId: String, cluster: String?, handlerLabel: String?) =
         withContext(Dispatchers.IO) {
             val now = System.currentTimeMillis()
-            db().database.execSQL(
+            db().database.write(
                 "UPDATE project_step SET cluster = ?, handler_label = ?, updated_at = ?, " +
                     "rev = rev + 1 WHERE id = ?",
                 arrayOf<Any?>(
@@ -6003,7 +6041,7 @@ class Repository private constructor(
             val now = System.currentTimeMillis()
             // Tombstoned, never deleted, per rule 3. The old arrangement stays
             // in the record and in the change log.
-            database.execSQL(
+            database.write(
                 "UPDATE today_card SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
                     "WHERE subject_id = ? AND deleted_at IS NULL",
                 arrayOf<Any?>(now, now, subjectId),
@@ -6082,7 +6120,7 @@ class Repository private constructor(
         if (isLead) return@withContext false
 
         val now = System.currentTimeMillis()
-        db().database.execSQL(
+        db().database.write(
             "UPDATE today_card SET deleted_at = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(now, now, cardId),
         )
@@ -6092,7 +6130,7 @@ class Repository private constructor(
     /** Changes one card's size. 21.3: growing reveals more of the same answer. */
     suspend fun setTodayCardSize(cardId: String, size: String) = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        db().database.execSQL(
+        db().database.write(
             "UPDATE today_card SET size = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(size, now, cardId),
         )
@@ -6130,12 +6168,12 @@ class Repository private constructor(
                 arrayOf(subjectId),
             ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
 
-            database.execSQL(
+            database.write(
                 "UPDATE today_card SET is_lead = 0, sort_index = ?, updated_at = ?, " +
                     "rev = rev + 1 WHERE subject_id = ? AND is_lead = 1 AND deleted_at IS NULL",
                 arrayOf<Any?>(lowest, now, subjectId),
             )
-            database.execSQL(
+            database.write(
                 "UPDATE today_card SET is_lead = 1, updated_at = ?, rev = rev + 1 WHERE id = ?",
                 arrayOf<Any?>(now, cardId),
             )
@@ -6186,12 +6224,12 @@ class Repository private constructor(
                 } ?: return@withContext false
 
                 val now = System.currentTimeMillis()
-                database.execSQL(
+                database.write(
                     "UPDATE today_card SET sort_index = ?, updated_at = ?, rev = rev + 1 " +
                         "WHERE id = ?",
                     arrayOf<Any?>(neighbor.second, now, cardId),
                 )
-                database.execSQL(
+                database.write(
                     "UPDATE today_card SET sort_index = ?, updated_at = ?, rev = rev + 1 " +
                         "WHERE id = ?",
                     arrayOf<Any?>(index, now, neighbor.first),
