@@ -576,6 +576,11 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 
 | Undrawn screen | Follows | Why that one |
 |---|---|---|
+| Starting a project, what the template sets up | 04 Starting one | The grid draws it as a screen; law 3 makes it the second stage of a sheet. **Built 2026-08-05**, #277, review at #309 |
+| The starting steps, changed | 18 The project's setup | Screen 18 draws the row and not what is behind it. **Built 2026-08-05**, #291, review at #310 |
+| The road, changed | 18 The project's setup | The same, and it draws the road it edits. **Built 2026-08-05**, #291, review at #311 |
+| The date kinds, changed | 18 The project's setup | The same, minus reordering: chips have no order. **Built 2026-08-05**, #291, review at #312 |
+| The usual papers, changed | 18 The project's setup | The same. Not screen 13, which holds the paper itself and is unbuilt. **Built 2026-08-05**, #291, review at #313 |
 | Standing instructions, the list | 12 Medications | A record of what was asked, folded by state, with `stone`. **Built 2026-08-04**, #185, review at #225 |
 | One standing instruction | 10 One incident | What was asked, then every violation on a spine |
 | One person | 09 One entry | Identity, then their own facts, then everything connected |

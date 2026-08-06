@@ -379,6 +379,28 @@ The six in `MASTER_SPEC.md` section 10. Three are decided and recorded, three ar
 
 **The continuous integration check for this only fires on a pull request**, and every increment tonight went straight to `main`, so it never ran. **The rule it protects still applies**: a public front page that undersells a working app is as much a lie as one that oversells it, and this is the class of staleness nobody notices because the person who changed the code is not the person reading the front page.
 
+## 12b. The overnight run of 2026-08-05, and what it cost to find
+
+**Nine increments, all pushed, all seen on the phone.** The account is here rather than in `HANDOFF.md` because it is how things came to be rather than what is true now.
+
+**What closed:** #274 the projects empty state, #276 and #277 starting a project with the template's five defaults shown before anything is created, #280 the busy stretch clustering its steps, #291 every one of those five defaults made editable from setup. #216, #305 and #306 had closed earlier in the same run, and #306 was reopened at the end of it.
+
+**Three defects were found by opening a screen rather than by reading code, which is the pattern this project keeps rediscovering.**
+
+- **The fixture handed four hospital discharge areas round robin to any steps led project**, so "The house", "The ride" and "Equipment" sat over three steps of a power of attorney with one row under each. It looked like nonsense on the phone and it was. The same defect the handler list had already had, fixed the same way: areas indexed alongside the steps themselves.
+- **A steps led project generated two to six steps**, so the busy stretch was never busy and the clustering had nothing to cluster. Seven to ten now.
+- **`RoadStrip` broke a stage name in half at font scale 2.0** with four stages: "Gathering" rendered as "Gatherin" over "g". A threshold derived from the font scale was written first, reasoned correctly, and changed nothing on the phone. Measuring the text with a text measurer worked. **That is twice in one night that a number which reasoned well lost to a screenshot.**
+
+**One promise was found to be false in the app's own words.** The road turning sheet said "the date is today unless you change it" and offered no way to change it. The sheet had been built, wired, and never opened.
+
+**#306 was closed on three green runs and was not fixed.** It failed twice at the end of the run, once expecting `en` and getting `ar`, once getting `es`, which is the exact symptom its own fix comment describes. The trigger is the per app locale being non empty when the suite starts, which the run's own right to left checks kept leaving behind. **Three fixes were tried and none worked**, so the file went back to its committed state and the issue was reopened with all three written into it. Rule 9, applied rather than admired.
+
+**Two hazards were learned the hard way and are now in `HANDOFF.md` section 7.** `installDebug` clears this app's data on this phone, so every device check is install, then seed, then navigate. And `connectedDebugAndroidTest` uninstalls the app when it finishes, after which `walk.sh see` dumps the owner's home screen with his real calendar and contacts on it; nothing was captured to disk, and `screenshot.sh` would have refused, but `walk.sh` does not.
+
+**Five screens were composed rather than drawn** and are logged in all three places per rule 12, at #309 through #313. They are the screens behind the four setup rows the grid draws as doors without drawing what is behind them.
+
+---
+
 ## 13. Uncommitted work
 
 **None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed. Per the memory this project keeps: **an increment ends when `origin/main` has it**, and a local commit is not done.

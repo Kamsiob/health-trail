@@ -10,18 +10,24 @@
 
 ## 1. Where to start
 
-Everything below is verified rather than asserted, as of 2026-08-05:
+Everything below is verified rather than asserted, as of 2026-08-06:
 
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
-- **17 repository checks pass** (`python3 tools/checks/run_all.py`).
-- **Continuous integration is green on `main`.** It had been **red for three commits**, from `050ac27` to `b40e6ac`, and nothing said so: the last green before that was `c99bff5`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **356 instrumented tests pass**, last full run 2026-08-05 after Today's card field landed.
-- **The phone was unplugged on 2026-08-05 at the owner's request, at a clean point.** It was left installed, with the month six fixture restored through the app's own importer, font scale 1.0, night mode on, animation scale unset, no per-app locale, and TalkBack off. Every one of those was checked against the value it had at the start of the run, not assumed. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
-- **`connectedAndroidTest` uninstalls the app every time it runs**, and that bit three times in this run: a seed against a phone with no app fails with one word, and the next thing you look at is the launcher. Reinstall and reseed after every suite.
+- **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
+- **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
+- **404 instrumented tests pass**, last full run 2026-08-06 after the road turning sheet gained its date. Up from 356 at the start of that run.
+- **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
+- **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
+- **`connectedAndroidTest` uninstalls the app every time it runs.** A seed against a phone with no app fails with one word, and `walk.sh see` then dumps the owner's home screen with his real calendar on it. Reinstall, reseed, and check the app is focused before walking.
+- **`installDebug` clears this app's data on this phone.** Every device check is install, then seed, then navigate.
 
 **Take these in this order.**
 
 1. **A new design direction arrived on 2026-08-04 and both surfaces are largely built to it.** Section 2 is the whole of it: the data work, the five components, all three project shapes, the projects list, Today's lead slot and card field, edit mode, the gallery, and the three project sheets. **What is left is named at the end of each subsection.**
+
+   **On Projects, what is closed is #274, #275, #276, #277, #280 and #291**, which is the empty state, the list, starting one, the preview of what a template sets up, the busy stretch, and every one of the five template defaults made editable. **What is unbuilt is #283, #284, #286, #287, #288, #289 and #290**, in that order: one call as a whole record, the project's trail, papers of the project, people, everything together, coming back after months, and closed and kept. **#278, #279, #281, #282 and #285 are built and are open only because they have not been seen at every gate**, which is a device job rather than a build job and is the cheapest thing on the board.
+
+   **On Today, #292 through #301 are all unbuilt**, and the card issues #245 through #261 with them.
 2. **#200, #201 and #202 are done and closed**, and sections 3 to 5 say what came out of them.
 3. **The rest of step 4 of the v4 conversion is untouched**: #203 through #208, in number order, **except take #208 last**. These are not affected by the new grids.
    - **#208**, the family update draft, does not exist at all and is Phase 5 work sitting in a step 4 list. Everything it needs is built: `Readable.kt` composes from real rows and `Share.kt` hands a document to the system sheet. Read `PrepScreen.kt` first; it is the same shape. **Take it last.**
@@ -442,6 +448,21 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **Commit and push after every working increment**, per rule 7. An increment ends when `origin/main` has it. **An issue closes only on device verification**: both themes, maximum font scale, right to left, and every state in `DESIGN.md` 13.3 including the empty one.
 
 **When a screen is undrawn, rule 12 wants three things at the moment it is built**: a `needs-design-review` issue with a real device screenshot, a row in `DESIGN.md` section 14, and a line in this file.
+
+### 8.1 The running list of screens composed rather than drawn
+
+Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
+
+| Screen | Issue | Follows |
+|---|---|---|
+| Standing instructions, the list | #225 | 12 Medications |
+| Care threads, the list | #223 | 12 Medications |
+| The long road project home | #304 | 05 The long road, drawn but not in full |
+| Starting a project, what the template sets up | #309 | 04 Starting one |
+| The starting steps, changed | #310 | 18 The project's setup |
+| The road, changed | #311 | 18 The project's setup |
+| The date kinds, changed | #312 | 18 The project's setup |
+| The usual papers, changed | #313 | 18 The project's setup |
 
 ---
 

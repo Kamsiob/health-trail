@@ -30,6 +30,12 @@
 - **The current Today dashboard**, superseded by `reference/today-grid.html` and `DESIGN.md` section 21. Today becomes a lead slot plus a field of card instances the person arranges.
 - **The rest of the checklist Projects**, superseded by `reference/projects-grid.html` and `DESIGN.md` section 20. A project becomes three answers with three shapes, and the checklist survives as one of the three rather than as the whole.
 
-**On the frozen project screen specifically.** It carried real work that the new screen does not do yet: adding, editing, moving and removing a step, setting the status, setting what the project is waiting on, and saving the project as a template. **None of that is deleted and none of it is lost.** It is reached from the busy stretch and the project's setup screen in the new grid, which are #280 and #291, and until those land the new home screen shows the three answers and does not offer those actions. **The frozen file is not extended to bridge the gap**, which is the whole point of freezing it.
+**On the frozen project screen specifically.** It carried real work the new screen did not do: adding, editing, moving and removing a step, setting the status, setting what the project is waiting on, and saving the project as a template. **None of that was deleted and none of it is lost.**
+
+**Checked on 2026-08-06, after #280 and #291 closed, rather than assumed.** Four of the six came back: the steps are edited from `ProjectStepsScreen` and `StepEditSheet`, and the status is set from the setup screen's chips.
+
+**Two did not, and this paragraph used to say they had.** Saving the project as a template and setting what it is waiting on both still have their repository call and their shell state with **nothing anywhere that sets them**. That is **#314**, and it is written down here because a ledger that quietly overstates what came back is worse than no ledger: the whole value of freezing rather than deleting is that somebody can check.
+
+**The frozen file is not extended to bridge the gap**, which is the whole point of freezing it.
 
 **A row is added at the moment the code is frozen, not at a phase gate**, which is the same discipline rule 12 applies to design reviews and for the same reason.
