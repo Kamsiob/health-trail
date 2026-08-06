@@ -172,6 +172,12 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **358 instrumented tests pass**, up from 356. Both new assertions were proved by breaking the screen on purpose and putting it back from a scratchpad copy, per section 7. Seen on the phone at both themes, at font scale 2.0, and in Arabic: `project-clusters-light`, `project-clusters-dark`, `project-clusters-2x-dark`, `project-clusters-rtl-dark`.
 
+### 2.32 The road turns on the date it actually turned
+
+**#285's sheet was built and had never been opened.** It said "the date is today unless you change it" and nothing on it let you change it: tapping a stage recorded today and there was no way to say otherwise. Somebody writing down on Thursday that the letter came on Monday could not.
+
+The sheet carries the date now, defaulting to today so the common case stays one tap, and `moveProjectToStage` is given what the sheet says rather than what the clock says. Rule 17: a date is the person's and never falsely precise. Seen on the phone: the road advanced to Decision on the chosen date and the stages before it kept the dates they already had.
+
 ### 2.33 The starting steps can be changed again
 
 **Part of #291.** `addProjectStep`, `updateProjectStep`, `moveProjectStep` and `deleteProjectStep` have been in the repository since Phase 0 with nothing reachable calling them since `ProjectDetailScreen` was superseded. The setup screen said everything the template decided was changeable and offered no way to change any of it, which is the promise without the thing.

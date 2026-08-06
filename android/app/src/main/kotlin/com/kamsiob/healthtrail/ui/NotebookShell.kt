@@ -304,7 +304,9 @@ fun NotebookShell(
     var loggingCallOn by remember { mutableStateOf<Repository.Project?>(null) }
     var setupOpen by rememberSaveable { mutableStateOf(false) }
     var movingStageOn by remember { mutableStateOf<Repository.Project?>(null) }
-    var movingStage by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var movingStage by remember {
+        mutableStateOf<Triple<String, String, Edtf.Date>?>(null)
+    }
     var settingLead by remember { mutableStateOf<Pair<String, String>?>(null) }
     var settingStatus by remember { mutableStateOf<Pair<String, String>?>(null) }
     var savingCall by remember {
@@ -1471,22 +1473,23 @@ fun NotebookShell(
                 // never disagree about where the project is: the strip derives
                 // it the same way.
                 currentStageId = projectStages.lastOrNull { it.isReached }?.id,
-                onPick = { stage ->
-                    movingStage = project.id to stage.id
+                onPick = { stage, on ->
+                    movingStage = Triple(project.id, stage.id, on)
                     movingStageOn = null
                 },
                 onDismiss = { movingStageOn = null },
             )
         }
 
-        movingStage?.let { (projectId, stageId) ->
+        movingStage?.let { (projectId, stageId, on) ->
             LaunchedEffect(projectId, stageId) {
                 repository.moveProjectToStage(
                     projectId = projectId,
                     stageId = stageId,
-                    // Today, like every other thing this surface records after
-                    // a phone call. Editable from the stage afterward.
-                    reached = Edtf.day(java.time.LocalDate.now()),
+                    // **What the sheet said, not what the clock says.** Today by
+                    // default, and the sheet offers the date so somebody writing
+                    // down on Thursday that the letter came on Monday can say so.
+                    reached = on,
                 )
                 movingStage = null
                 revision += 1
