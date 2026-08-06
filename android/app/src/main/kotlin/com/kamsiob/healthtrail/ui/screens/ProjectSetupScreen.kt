@@ -27,6 +27,7 @@ object ProjectSetupTags {
     const val STEPS = "project-setup-steps"
     const val STAGES = "project-setup-stages"
     const val KINDS = "project-setup-kinds"
+    const val PAPERS = "project-setup-papers"
     fun lead(value: String) = "project-setup-lead-$value"
     fun status(value: String) = "project-setup-status-$value"
 }
@@ -61,6 +62,7 @@ fun ProjectSetupScreen(
     onOpenSteps: () -> Unit,
     onOpenRoad: () -> Unit,
     onOpenKinds: () -> Unit,
+    onOpenPapers: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     /** What the template it came from is called, where this build still has it. */
@@ -156,6 +158,9 @@ fun ProjectSetupScreen(
                         "count" to papers.size,
                         "filled" to papers.count { it.isFilled },
                     ),
+                    chevron = true,
+                    onClick = onOpenPapers,
+                    modifier = Modifier.testTag(ProjectSetupTags.PAPERS),
                 )
                 DenseRow(
                     title = strings["project.setup.kinds"],

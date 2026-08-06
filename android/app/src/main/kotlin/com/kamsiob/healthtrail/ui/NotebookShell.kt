@@ -107,6 +107,8 @@ import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
 import com.kamsiob.healthtrail.ui.screens.StepEditSheet
 import com.kamsiob.healthtrail.ui.screens.DateKindEditSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateKindsScreen
+import com.kamsiob.healthtrail.ui.screens.PaperEditSheet
+import com.kamsiob.healthtrail.ui.screens.ProjectPapersScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectRoadScreen
 import com.kamsiob.healthtrail.ui.screens.StageEditSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectPreviewSheet
@@ -361,6 +363,13 @@ fun NotebookShell(
     var addingKind by remember { mutableStateOf<Pair<String, String>?>(null) }
     var renamingKind by remember { mutableStateOf<Pair<String, String>?>(null) }
     var removingKind by remember { mutableStateOf<String?>(null) }
+    /** The paper placeholders being changed, 20.5 screen 18. */
+    var papersOpen by remember { mutableStateOf(false) }
+    var paperUnderEdit by remember { mutableStateOf<Repository.ProjectPaper?>(null) }
+    var addingPaper by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var renamingPaper by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var emptyingPaper by remember { mutableStateOf<String?>(null) }
+    var removingPaper by remember { mutableStateOf<String?>(null) }
     var creatingOwnProject by remember { mutableStateOf<String?>(null) }
     var ownTemplates by remember {
         mutableStateOf<List<Repository.OwnTemplate>>(emptyList())
@@ -1622,7 +1631,25 @@ fun NotebookShell(
         }
 
         val currentProject = openProject
-        if (currentProject != null && setupOpen && kindsOpen) {
+        if (currentProject != null && setupOpen && papersOpen) {
+            ProjectPapersScreen(
+                projectName = currentProject.name,
+                papers = projectPapers,
+                onAdd = { addingPaper = currentProject.id to it },
+                onOpen = { paperUnderEdit = it },
+                onBack = { papersOpen = false },
+            )
+
+            paperUnderEdit?.let { paper ->
+                PaperEditSheet(
+                    paper = paper,
+                    onSave = { renamingPaper = paper.id to it; paperUnderEdit = null },
+                    onEmpty = { emptyingPaper = paper.id; paperUnderEdit = null },
+                    onRemove = { removingPaper = paper.id; paperUnderEdit = null },
+                    onDismiss = { paperUnderEdit = null },
+                )
+            }
+        } else if (currentProject != null && setupOpen && kindsOpen) {
             ProjectDateKindsScreen(
                 projectName = currentProject.name,
                 kinds = projectDateKindRows,
@@ -1705,6 +1732,7 @@ fun NotebookShell(
                 onOpenSteps = { stepsOpen = true },
                 onOpenRoad = { roadOpen = true },
                 onOpenKinds = { kindsOpen = true },
+                onOpenPapers = { papersOpen = true },
                 onBack = { setupOpen = false },
             )
         } else if (currentProject != null) {
@@ -1800,6 +1828,7 @@ fun NotebookShell(
                     stepsOpen = false
                     roadOpen = false
                     kindsOpen = false
+                    papersOpen = false
                 },
             )
         }
@@ -2058,6 +2087,38 @@ fun NotebookShell(
             LaunchedEffect(pending) {
                 repository.moveProjectStep(pending.first, pending.second)
                 movingStep = null
+                revision += 1
+            }
+        }
+
+        addingPaper?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.addProjectPaper(pending.first, pending.second)
+                addingPaper = null
+                revision += 1
+            }
+        }
+
+        renamingPaper?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.renameProjectPaper(pending.first, pending.second)
+                renamingPaper = null
+                revision += 1
+            }
+        }
+
+        emptyingPaper?.let { id ->
+            LaunchedEffect(id) {
+                repository.emptyProjectPaper(id)
+                emptyingPaper = null
+                revision += 1
+            }
+        }
+
+        removingPaper?.let { id ->
+            LaunchedEffect(id) {
+                repository.removeProjectPaper(id)
+                removingPaper = null
                 revision += 1
             }
         }

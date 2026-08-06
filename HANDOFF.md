@@ -198,7 +198,11 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **`projectDateKindRows` reads alongside `projectDateKinds` rather than replacing it**, so the chips keep taking labels alone and a caller that only offers them does not have to know they have identities.
 - Verified end to end on the phone: removing a kind on this screen removes the chip from the date sheet.
 
-**Usual papers are the last thing left on #291.** `addProjectPaper` and `fillProjectPaper` exist; there is no rename and no remove, and the row is still a line rather than a door.
+**The usual papers are done, which closes #291.** `ProjectPapersScreen` sits behind setup's Usual papers row, with `PaperEditSheet` for rename, empty and remove.
+
+- **A placeholder is a place, not a paper.** An empty one says "Waiting", never "missing", and **nothing on the screen counts the empty ones or chases them**: six placeholders with a count of how many are still unfilled is rule 13 pointed at somebody who is waiting on other people's post.
+- **Emptying and removing are separate, and neither touches the document.** Taking the wrong paper out of the right place is the common mistake and must not require destroying the place; removing the place is a decision about how the project is organized. The document stays in the notebook either way, and the sheet says so, because the thing at risk is a photograph of a letter somebody may not be able to get again.
+- **Emptying is not offered on a place with nothing in it**, so the sheet never draws a control that would do nothing.
 
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
@@ -400,6 +404,8 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 **A probe that edits a real file has to be restored by copy, never by git.** Proving a checker catches what it claims means breaking something on purpose and putting it back. On 2026-08-05 that was put back with `git checkout -- templates/data/projects.json`, which is a destructive command rule 6 bans by name, and it discarded an hour of uncommitted work on the same file rather than the probe. **Copy the file into the scratchpad first and copy it back**, or commit before probing. Nothing was lost permanently because the change was scripted and was regenerated, which was luck rather than a safeguard. **This is what B5 exists to prevent and it is the first time the missing guard has cost anything.**
 
 **`installDebug` clears this app's data on this phone.** Twice in a row an install was followed by the app opening at "Before you start" with an empty notebook. **Every device check is install, then `tools/seed.sh`, then navigate**, and a screenshot taken straight after an install is a screenshot of onboarding.
+
+**Clear the app locale before running the instrumented suite.** `AppLanguageTest` failed twice tonight because a right to left check left the per app locale set to Arabic by hand: `connectedDebugAndroidTest` only clears it when it actually reinstalls, and on an up to date install nothing wipes it. `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""` first. **#306 is reopened**, with three attempted fixes that did not work written into it.
 
 **Copy the suite's report before rerunning anything.** A single class rerun overwrites `androidTest-results/connected/debug/TEST-*.xml`, and both flakes found this week, #302 and #308, lost their assertion and stack that way. Copy it into the scratchpad the moment the suite goes red.
 

@@ -5135,6 +5135,57 @@ class Repository private constructor(
     }
 
     /** Fills a paper placeholder with the document that arrived for it. */
+    /**
+     * Renames a paper placeholder, and leaves whatever is filed in it alone.
+     *
+     * **The placeholder is a named place, not the paper.** Somebody who decides
+     * "The application copy" is really "The renewal packet" has not changed
+     * which document is filed there, and clearing it on a rename would throw
+     * away the one thing the placeholder was for.
+     */
+    suspend fun renameProjectPaper(paperId: String, name: String) =
+        withContext(Dispatchers.IO) {
+            val now = System.currentTimeMillis()
+            db().database.execSQL(
+                "UPDATE project_paper SET name = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(name, now, paperId),
+            )
+        }
+
+    /**
+     * Takes a document back out of its placeholder, leaving the place named.
+     *
+     * **The document is not touched.** It stays in the notebook where it was
+     * filed; this only says it is not the thing this placeholder was waiting
+     * for. Somebody who photographed the wrong letter needs this and should not
+     * have to delete the photograph to get it.
+     */
+    suspend fun emptyProjectPaper(paperId: String) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        db().database.execSQL(
+            "UPDATE project_paper SET document_id = NULL, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ?",
+            arrayOf<Any?>(now, paperId),
+        )
+    }
+
+    /**
+     * Removes a paper placeholder.
+     *
+     * A tombstone, per rule 3. **Whatever was filed in it stays in the
+     * notebook**: a placeholder is a named place, and taking the place away is
+     * not a reason to lose the person's own paper.
+     */
+    suspend fun removeProjectPaper(paperId: String) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        db().database.execSQL(
+            "UPDATE project_paper SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ?",
+            arrayOf<Any?>(now, now, paperId),
+        )
+    }
+
     suspend fun fillProjectPaper(paperId: String, documentId: String, direction: String?) =
         withContext(Dispatchers.IO) {
             val now = System.currentTimeMillis()
