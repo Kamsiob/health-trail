@@ -15,7 +15,7 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **427 instrumented tests pass**, last full run 2026-08-06 after the entry gained its project door. Up from 404 at the start of this run.
+- **435 instrumented tests pass**, last full run 2026-08-06 after the project's own trail landed. Up from 404 at the start of this run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
 - **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
@@ -220,6 +220,27 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.41 A project has its own trail now, and it reads forwards
+
+**#284, screen 11.** The project home had a "What was said" fold listing the linked entries. A project's trail is those **and** the road turning **and** the dates it is running against, on one spine, which is what the grid draws and what a person actually wants when they ask what has happened.
+
+- **`Repository.projectTrail` merges three sources**, `entriesAbout`, the reached stages and the project dates, into one date-ordered list of `ProjectTrailItem`. The screen does no lookups and no arithmetic on it.
+- **Oldest first, the opposite of the main trail.** The trail answers "what happened lately"; a process is read forward. **The gap markers say "3 weeks pass", not "3 weeks earlier"**: `trail.gap.*` is written for a list read backwards and would have been plainly wrong here, so `project.trail.gap.*` is its forward twin.
+- **A stage nobody has reached is not on it.** It has no date, so it has no place on something ordered by date, and putting it at the end would say it happened last rather than not at all.
+- **Dates that have not arrived are on it and are not marked as anything.** Nothing is late and nothing is missed, rule 2 and 20.7.
+- **The fold became a door**, keeping the fold row's own shape the way Setup does, and **it is drawn even at zero**: a door that appears only once there is something behind it is one nobody learns about, which is the same arithmetic that put "Write down a date" on a project that already has one.
+- **The filter chips are only the kinds the project actually has**, so there is never a chip with nothing behind it, and they sit in a fixed order so they do not reshuffle as a project grows.
+
+**Three things worth knowing, all found while building it.**
+
+1. **`filterKeyFor` had to be a closed set.** The chip label is a computed key, `project.trail.filter.{kind}`, which is exactly the shape `check_string_keys.py` cannot see, and `entry.kind` allows `transfer` and `milestone` beyond the six the catalog names. An open set was a crash on opening the trail of a project holding a transfer. It mirrors `kindNameKey`'s own fallback, and **`ProjectTrailChipsTest` holds every kind the schema allows against all four catalogs**.
+2. **The chips needed plural labels.** `entry.kind.call` is "A call", which is right over one row and reads as a mislabeled control on a chip that selects all of them.
+3. **The empty state was written as a gray paragraph under the subtitle**, which is the exact shape #274 already had to fix once and which reads as a screen that failed to load. It uses `SectionEmpty` with the ground, a lead and the paragraph now, at `EMPTY_HEIGHT_TALL`.
+
+**What is deliberately not built:** the scrubber and the scoped search, which the issue itself says arrive as it grows, and the reference number, which is **#303**.
+
+**435 instrumented tests pass**, up from 427. `ProjectTrailTest` is 6 tests and `ProjectTrailChipsTest` 2. Seen at both themes, at font scale 2.0, in Arabic, and empty on a project started for the purpose: `project-trail-light`, `project-trail-dark`, `project-trail-2x-dark`, `project-trail-rtl-dark`, `project-trail-empty-light`.
 
 ### 2.40 An entry could be reached from its project and had no way back to it
 

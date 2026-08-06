@@ -5028,6 +5028,105 @@ class Repository private constructor(
         ),
     )
 
+    /**
+     * What kind of thing one row of a project's trail is. `DESIGN.md` 20.5
+     * screen 11.
+     *
+     * **Three sources, one line.** A long process is not only the calls: the
+     * road turning and a deadline arriving are as much a part of what happened
+     * as anything somebody wrote down, and the grid draws them on the same
+     * spine for exactly that reason.
+     */
+    enum class ProjectTrailKind { ENTRY, STAGE, DATE }
+
+    /**
+     * One thing that happened to a project, whatever kind of thing it was.
+     *
+     * **The screen does no arithmetic and no lookups on this.** Everything it
+     * needs to draw a row is here, because the alternative is a screen holding
+     * three lists and working out which one each row came from, which is the
+     * complexity rule 20 says belongs in the code.
+     */
+    data class ProjectTrailItem(
+        val kind: ProjectTrailKind,
+        val id: String,
+        val whenEdtf: String?,
+        val whenStart: Long?,
+        /** What the row says, already the person's own words where there are any. */
+        val title: String,
+        /** The second line, or null where the row is one line. */
+        val note: String?,
+        /** The entry itself, for the rows that are one and null for the rest. */
+        val entry: TrailEntry? = null,
+    )
+
+    /**
+     * One project's own trail: what was said, where the road turned, and the
+     * dates it is running against. `DESIGN.md` 20.5 screen 11.
+     *
+     * **Oldest first, unlike the main trail**, which is newest first. A process
+     * is read forward: somebody wants to see how it got here and what is coming,
+     * and the grid draws it that way. The main trail answers "what happened
+     * lately", which is a different question.
+     *
+     * **Dates that have not arrived are included and are not marked as late or
+     * missed.** A response window closing is a fact about the calendar; the app
+     * records and counts and never concludes, per rule 2 and 20.7.
+     *
+     * **A stage nobody has reached contributes nothing.** It has no date, so it
+     * has no place on a line ordered by date, and putting it at the end would
+     * assert it happened last rather than not at all.
+     */
+    suspend fun projectTrail(projectId: String): List<ProjectTrailItem> =
+        withContext(Dispatchers.IO) {
+            val items = mutableListOf<ProjectTrailItem>()
+
+            entriesAbout(projectId).forEach { entry ->
+                items += ProjectTrailItem(
+                    kind = ProjectTrailKind.ENTRY,
+                    id = entry.id,
+                    whenEdtf = entry.occurredEdtf,
+                    whenStart = entry.occurredStart,
+                    // The row renders the entry itself, so the screen keeps the
+                    // one heading rule that every other trail row already uses.
+                    title = entry.title.orEmpty(),
+                    note = entry.body,
+                    entry = entry,
+                )
+            }
+
+            projectStages(projectId).filter { it.isReached }.forEach { stage ->
+                items += ProjectTrailItem(
+                    kind = ProjectTrailKind.STAGE,
+                    id = stage.id,
+                    whenEdtf = stage.enteredEdtf,
+                    whenStart = stage.enteredStart,
+                    title = stage.name,
+                    note = null,
+                )
+            }
+
+            projectDates(projectId).forEach { date ->
+                items += ProjectTrailItem(
+                    kind = ProjectTrailKind.DATE,
+                    id = date.id,
+                    whenEdtf = date.dueEdtf,
+                    whenStart = date.dueStart,
+                    title = date.kind,
+                    note = date.sourceNote,
+                )
+            }
+
+            // **Undated rows sort last rather than being dropped.** "Not sure
+            // when" is a first class value per rule 17, and an entry somebody
+            // wrote without a date is still something that happened to this
+            // project. It goes at the end because that is the only place that
+            // does not assert a position it does not have.
+            items.sortedWith(
+                compareBy(nullsLast()) { it.whenStart },
+            )
+        }
+
     /** Every date this project holds, soonest first. */
     suspend fun projectDates(projectId: String): List<ProjectDate> =
         withContext(Dispatchers.IO) {

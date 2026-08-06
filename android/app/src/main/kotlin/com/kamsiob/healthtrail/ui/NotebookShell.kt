@@ -104,6 +104,7 @@ import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectTrailScreen
 import com.kamsiob.healthtrail.ui.screens.StepEditSheet
 import com.kamsiob.healthtrail.ui.screens.DateKindEditSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateKindsScreen
@@ -316,6 +317,10 @@ fun NotebookShell(
         mutableStateOf<Quadruple<String, String, Edtf.Date, String>?>(null)
     }
     var projectDateKinds by remember { mutableStateOf<List<String>>(emptyList()) }
+    var projectTrail by remember {
+        mutableStateOf<List<Repository.ProjectTrailItem>>(emptyList())
+    }
+    var trailOpen by remember { mutableStateOf(false) }
     var projectEntries by remember {
         mutableStateOf<List<Repository.TrailEntry>>(emptyList())
     }
@@ -683,6 +688,9 @@ fun NotebookShell(
             projectNextDate = openProject?.let { repository.leadingProjectDate(it.id) }
             projectLatestWord = openProject?.let { repository.latestWordFor(it.id) }
             projectEntries = openProject?.let { repository.entriesAbout(it.id) }.orEmpty()
+            // What was said, where the road turned, and the dates it runs
+            // against, on one line. 20.5 screen 11.
+            projectTrail = openProject?.let { repository.projectTrail(it.id) }.orEmpty()
             projectPapers = openProject?.let { repository.projectPapers(it.id) }.orEmpty()
             projectDateKinds =
                 openProject?.let { repository.projectDateKinds(it.id) }.orEmpty()
@@ -746,7 +754,11 @@ fun NotebookShell(
     // Setup sits on top of the project, so back closes it first. Depth stops
     // at level three, per the grid's own navigation model.
     BackHandler(enabled = setupOpen) { setupOpen = false }
-    BackHandler(enabled = openProject != null && !setupOpen) {
+    // The trail sits on top of the project, so back closes the trail rather
+    // than the project underneath it. Without this, one back from a project's
+    // trail left the projects list and the person lost two screens to one tap.
+    BackHandler(enabled = openProject != null && trailOpen) { trailOpen = false }
+    BackHandler(enabled = openProject != null && !setupOpen && !trailOpen) {
         openProject = null
     }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
@@ -1693,6 +1705,16 @@ fun NotebookShell(
                     onDismiss = { stageUnderEdit = null },
                 )
             }
+        } else if (currentProject != null && trailOpen) {
+            ProjectTrailScreen(
+                projectName = currentProject.name,
+                items = projectTrail,
+                // **Rule 18 both ways**, and precisely: the entry itself rather
+                // than the section it lives in, and the entry names this
+                // project back since #283.
+                onOpenEntry = { openEntry = it.id },
+                onBack = { trailOpen = false },
+            )
         } else if (currentProject != null && setupOpen && stepsOpen) {
             ProjectStepsScreen(
                 projectName = currentProject.name,
@@ -1832,12 +1854,15 @@ fun NotebookShell(
                 onOpenSetup = { setupOpen = true },
                 onMoveStage = { movingStageOn = currentProject },
                 entries = projectEntries,
+                trailCount = projectTrail.size,
+                onOpenTrail = { trailOpen = true },
                 // **Rule 18 both ways.** The entry already knows the project;
                 // this is the project opening the entry.
                 onOpenEntryById = { openEntry = it },
                 onBack = {
                     openProject = null
                     setupOpen = false
+                    trailOpen = false
                     stepsOpen = false
                     roadOpen = false
                     kindsOpen = false

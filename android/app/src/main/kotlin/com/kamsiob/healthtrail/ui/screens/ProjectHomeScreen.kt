@@ -112,6 +112,10 @@ fun ProjectHomeScreen(
      */
     entries: List<Repository.TrailEntry> = emptyList(),
     onOpenEntryById: (String) -> Unit = {},
+    /** How many things are on this project's trail, entries and stages and dates. */
+    trailCount: Int = 0,
+    /** Opens the project's own trail. 20.5 screen 11. */
+    onOpenTrail: () -> Unit = {},
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
 ) {
     // **Open from the start on the busy stretch**, where the steps are the
@@ -432,34 +436,26 @@ fun ProjectHomeScreen(
         // latest word is above; this is the rest of it, and 20.5 screen 11 puts
         // the project's own trail here. It folds because a project two years
         // old has two hundred of these and the three answers stay first.
-        if (entries.isNotEmpty()) {
-            item {
-                FoldRow(
-                    labelKey = "project.fold.trail",
-                    expanded = trailOpen,
-                    onToggle = { trailOpen = !trailOpen },
-                    count = entries.size.toString(),
-                    modifier = Modifier.testTag(ProjectHomeTags.TRAIL),
-                )
-                Spacer(Modifier.height(Space.cardGap))
-            }
-            if (trailOpen) {
-                items(entries, key = { it.id }) { entry ->
-                    DenseRow(
-                        title = Bidi.isolate(
-                            entry.body?.takeIf { it.isNotBlank() }
-                                ?: entry.title.orEmpty(),
-                        ),
-                        subtitle = Bidi.join(
-                            entry.title?.takeIf { !entry.body.isNullOrBlank() },
-                            entry.occurredEdtf?.let { EventDateText.render(strings, it) },
-                        ),
-                        subtitleMaxLines = 2,
-                        onClick = { onOpenEntryById(entry.id) },
-                    )
-                }
-                item { Spacer(Modifier.height(Space.cardGap)) }
-            }
+        // **A door rather than a fold, since 20.5 screen 11 is a screen.** The
+        // fold listed the linked entries and nothing else; the project's trail
+        // is those *and* the road turning *and* the dates it is running
+        // against, on one spine, read forwards, with its own filters. None of
+        // that fits under a disclosure on a screen whose job is the three
+        // answers. It keeps the fold row's own shape, the way Setup does.
+        // **Always here, even at nothing.** A door that appears only once there
+        // is something behind it is one nobody learns about, which is the same
+        // arithmetic that put "Write down a date" on a project that already has
+        // one. "Nothing on this project's trail yet" is a real answer and the
+        // trail screen gives it; a missing row gives nothing.
+        item {
+            FoldRow(
+                labelKey = "project.fold.trail",
+                expanded = false,
+                onToggle = onOpenTrail,
+                count = trailCount.toString(),
+                modifier = Modifier.testTag(ProjectHomeTags.TRAIL),
+            )
+            Spacer(Modifier.height(Space.cardGap))
         }
 
         // Only when the steps are not the lead, or the busy stretch would
