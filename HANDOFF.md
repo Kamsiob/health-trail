@@ -15,11 +15,11 @@ Everything below is verified rather than asserted, as of 2026-08-06, at the end 
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **`check_i18n.py` holds plural categories from 2026-08-06**, #318, which is what finally caught nine Arabic strings rendering the wrong form. Section 2.44.
-- **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **455 instrumented tests pass**, last full run 2026-08-06 after text started reaching the database in NFC. Up from 404 at the start of this run.
+- **Continuous integration is green on `main` at `86339ae`**, checked. **Two commits before it were red and the tip is not**: the fixture check added for #233 found a real defect that only reproduces in UTC, and `86339ae` fixed it. Section 2.49. **Check CI after every push**, `gh run list --branch main --limit 3`: the tree being clean and the checks passing locally tell you nothing about it.
+- **455 instrumented tests pass**, last full run 2026-08-06 at 09:44 UTC, after the fixture's timezone fix moved every timestamp in it. Up from 404 at the start of the overnight run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
-- **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
+- **The phone was attached for the whole overnight run of 2026-08-06 and is left at its starting values**, each checked rather than assumed: font scale 1.0, animator null, heads-up notifications 1, the accessibility services string still the KDE Connect one, no per-app locale, and the in-app theme following the phone. **TalkBack was never turned on**, which is why #231 is still open. The app is installed and seeded with the month six notebook. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
 - **`connectedAndroidTest` uninstalls the app every time it runs.** A seed against a phone with no app fails with one word, and `walk.sh see` then dumps the owner's home screen with his real calendar on it. Reinstall, reseed, and check the app is focused before walking.
 - **`installDebug` clears this app's data on this phone.** Every device check is install, then seed, then navigate.
 
@@ -804,4 +804,6 @@ Every one of these was built from the existing components, logged in all three p
 
 ## 13. Uncommitted work
 
-**None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed. **Nine commits landed on 2026-08-06 between 04:25 and 08:49 UTC**, `434db59` through `5eafa79`, and continuous integration is green on each one that has finished.
+**None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed.
+
+**Fourteen commits landed on 2026-08-06 between 04:25 and 09:46 UTC**, `434db59` through `86339ae`. **Continuous integration is green on the tip.** Two commits in the middle, `17b4e43` and `a73f33d`, are red in the history and were fixed by `86339ae`: the fixture check added for #233 found a defect that only reproduces in UTC, so it passed here and failed there. That is the check working, and it is left in the history rather than rewritten.
