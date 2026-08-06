@@ -453,16 +453,27 @@ The sheet carries the date now, defaulting to today so the common case stays one
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-| Screen | Issue | Follows |
-|---|---|---|
-| Standing instructions, the list | #225 | 12 Medications |
-| Care threads, the list | #223 | 12 Medications |
-| The long road project home | #304 | 05 The long road, drawn but not in full |
-| Starting a project, what the template sets up | #309 | 04 Starting one |
-| The starting steps, changed | #310 | 18 The project's setup |
-| The road, changed | #311 | 18 The project's setup |
-| The date kinds, changed | #312 | 18 The project's setup |
-| The usual papers, changed | #313 | 18 The project's setup |
+**All fifteen of them, oldest first.** Checked against the board on 2026-08-06 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+
+| Screen | Issue |
+|---|---|
+| Care threads, the list | #223 |
+| Standing instructions, the list | #225 |
+| One appointment and its prep sheet | #232 |
+| The milestone arc | #235 |
+| Month review | #236 |
+| Starting a project | #239 |
+| The template library | #240 |
+| Change of situation | #241 |
+| The situation picker, converted | #242 |
+| The long road project home | #304 |
+| Starting a project, what the template sets up | #309 |
+| The starting steps, changed | #310 |
+| The road, changed | #311 |
+| The date kinds, changed | #312 |
+| The usual papers, changed | #313 |
+
+**Six of these are the Projects surface**, #304 and #309 through #313, and they are the ones that arrived in a single run. The other nine have been waiting longer.
 
 ---
 
