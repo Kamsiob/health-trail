@@ -33,6 +33,7 @@ import hashlib
 import random
 import sqlite3
 import sys
+from zoneinfo import ZoneInfo
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -119,10 +120,28 @@ class Generator:
             f"{self.device}:{self.counter}".encode()
         ).hexdigest()[:32]
 
+    # Every row this file writes says it happened in New York, so every instant
+    # it computes has to be in New York too.
+    ZONE = ZoneInfo("America/New_York")
+
     def ms(self, day_offset, hour=9, minute=0):
+        """The instant, in the zone the rows claim rather than the machine's.
+
+        **This used the machine's local time.** `datetime.timestamp()` on a
+        naive datetime resolves in whatever zone the generator happens to be
+        running in, while every row it writes carries
+        `"America/New_York"`. On a laptop in New York the two agreed and
+        nothing showed; in continuous integration, which runs in UTC, a
+        `2021-08-10T10:00` appointment got an instant that reads 06:00 in the
+        zone it claims.
+
+        **Found by the check added for #233**, on the first push after it, which
+        is the check working: the fixture must produce rows the app could have
+        written, and an EDTF that disagrees with its own instant is not one.
+        """
         moment = datetime.combine(
             self.start + timedelta(days=day_offset), datetime.min.time()
-        ).replace(hour=hour, minute=minute)
+        ).replace(hour=hour, minute=minute, tzinfo=self.ZONE)
         return int(moment.timestamp() * 1000)
 
     def scaled(self, full):

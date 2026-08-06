@@ -230,6 +230,18 @@ The sheet carries the date now, defaulting to today so the common case stays one
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
 
+### 2.49 The fixture computed its instants in the wrong timezone, and CI caught it
+
+**The check added for #233 failed on the very next push**, which is the check working. `Fixture.ms` built a naive `datetime` and called `.timestamp()`, which resolves in **whatever zone the generator is running in**, while every row it writes carries `"America/New_York"`.
+
+**On this laptop the two agreed and nothing showed. Continuous integration runs in UTC**, so a `2021-08-10T10:00` appointment got an instant reading 06:00 in the zone it claims, and 1658 rows were wrong.
+
+- **`ms` resolves in `America/New_York` now**, which is what the rows say.
+- **Checked under three zones**, `TZ=UTC` and `TZ=Asia/Tokyo` as well as this machine's, so it is zone independent rather than right by coincidence.
+- **Every timestamp in every fixture moved**, which is why the suite was run again after it.
+
+**This is the first time a check written in this repository has failed on real infrastructure for a reason the author could not see locally**, and it is the argument for CI in one line. It is also the fifth fixture defect this run.
+
 ### 2.48 Eight places at once, and #219 is closed
 
 A chapter is current exactly when it has no end date, which is the right rule: the place somebody has not left is where they are. **The fixture left every chapter open**, so the chapters screen said "where they are now" and listed eight buildings, each ringed with a gold milestone waypoint. `DESIGN.md` 5.2.1: a milestone is rare by design, and **if everything is ringed nothing is**.
