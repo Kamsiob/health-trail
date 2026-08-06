@@ -146,8 +146,11 @@ fun ProjectStepsScreen(
 
         item {
             Spacer(Modifier.height(Space.sectionGap))
+            // **The field and the button do not say the same words.** Both
+            // read "Add a step", so a reader heard the label twice and had no
+            // way to tell the field from the control that acts on it.
             DictatableField(
-                label = strings["projects.add_step"],
+                label = strings["project.steps.new"],
                 value = pending,
                 onValueChange = { pending = it },
                 hint = strings["project.steps.add.hint"],

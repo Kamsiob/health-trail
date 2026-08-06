@@ -105,6 +105,8 @@ import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
 import com.kamsiob.healthtrail.ui.screens.StepEditSheet
+import com.kamsiob.healthtrail.ui.screens.ProjectRoadScreen
+import com.kamsiob.healthtrail.ui.screens.StageEditSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectPreviewSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
@@ -340,6 +342,14 @@ fun NotebookShell(
     var stepsOpen by remember { mutableStateOf(false) }
     /** The one step whose sheet is open. */
     var stepUnderEdit by remember { mutableStateOf<Repository.ProjectStep?>(null) }
+    /** The road being changed, 20.5 screen 18. */
+    var roadOpen by remember { mutableStateOf(false) }
+    var stageUnderEdit by remember { mutableStateOf<Repository.ProjectStage?>(null) }
+    var addingStage by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var renamingStage by remember { mutableStateOf<Pair<String, String>?>(null) }
+    /** Reordering a stage against its neighbor, which is not the same as moving the project onto one. */
+    var reorderingStage by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var removingStage by remember { mutableStateOf<String?>(null) }
     var creatingOwnProject by remember { mutableStateOf<String?>(null) }
     var ownTemplates by remember {
         mutableStateOf<List<Repository.OwnTemplate>>(emptyList())
@@ -1597,7 +1607,28 @@ fun NotebookShell(
         }
 
         val currentProject = openProject
-        if (currentProject != null && setupOpen && stepsOpen) {
+        if (currentProject != null && setupOpen && roadOpen) {
+            ProjectRoadScreen(
+                projectName = currentProject.name,
+                stages = projectStages,
+                onAdd = { addingStage = currentProject.id to it },
+                onOpen = { stageUnderEdit = it },
+                onBack = { roadOpen = false },
+            )
+
+            stageUnderEdit?.let { stage ->
+                val index = projectStages.indexOfFirst { it.id == stage.id }
+                StageEditSheet(
+                    stage = stage,
+                    canMoveEarlier = index > 0,
+                    canMoveLater = index >= 0 && index < projectStages.lastIndex,
+                    onSave = { renamingStage = stage.id to it; stageUnderEdit = null },
+                    onMove = { reorderingStage = stage.id to it; stageUnderEdit = null },
+                    onRemove = { removingStage = stage.id; stageUnderEdit = null },
+                    onDismiss = { stageUnderEdit = null },
+                )
+            }
+        } else if (currentProject != null && setupOpen && stepsOpen) {
             ProjectStepsScreen(
                 projectName = currentProject.name,
                 steps = projectSteps,
@@ -1640,6 +1671,7 @@ fun NotebookShell(
                 onSetLead = { settingLead = currentProject.id to it },
                 onSetStatus = { settingStatus = currentProject.id to it },
                 onOpenSteps = { stepsOpen = true },
+                onOpenRoad = { roadOpen = true },
                 onBack = { setupOpen = false },
             )
         } else if (currentProject != null) {
@@ -1733,6 +1765,7 @@ fun NotebookShell(
                     openProject = null
                     setupOpen = false
                     stepsOpen = false
+                    roadOpen = false
                 },
             )
         }
@@ -1991,6 +2024,38 @@ fun NotebookShell(
             LaunchedEffect(pending) {
                 repository.moveProjectStep(pending.first, pending.second)
                 movingStep = null
+                revision += 1
+            }
+        }
+
+        addingStage?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.addProjectStage(pending.first, pending.second)
+                addingStage = null
+                revision += 1
+            }
+        }
+
+        renamingStage?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.renameProjectStage(pending.first, pending.second)
+                renamingStage = null
+                revision += 1
+            }
+        }
+
+        reorderingStage?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.moveProjectStage(pending.first, pending.second)
+                reorderingStage = null
+                revision += 1
+            }
+        }
+
+        removingStage?.let { id ->
+            LaunchedEffect(id) {
+                repository.removeProjectStage(id)
+                removingStage = null
                 revision += 1
             }
         }

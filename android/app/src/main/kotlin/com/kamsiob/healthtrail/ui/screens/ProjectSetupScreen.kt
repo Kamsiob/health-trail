@@ -25,6 +25,7 @@ object ProjectSetupTags {
     const val LEAD = "project-setup-lead"
     const val STATUS = "project-setup-status"
     const val STEPS = "project-setup-steps"
+    const val STAGES = "project-setup-stages"
     fun lead(value: String) = "project-setup-lead-$value"
     fun status(value: String) = "project-setup-status-$value"
 }
@@ -57,6 +58,7 @@ fun ProjectSetupScreen(
     onSetLead: (String) -> Unit,
     onSetStatus: (String) -> Unit,
     onOpenSteps: () -> Unit,
+    onOpenRoad: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     /** What the template it came from is called, where this build still has it. */
@@ -128,6 +130,9 @@ fun ProjectSetupScreen(
                     subtitle = stages.joinToString(" · ") { it.name }
                         .ifBlank { strings["project.setup.nothing_yet"] },
                     subtitleMaxLines = 2,
+                    chevron = true,
+                    onClick = onOpenRoad,
+                    modifier = Modifier.testTag(ProjectSetupTags.STAGES),
                 )
                 // **A door, not a line.** 20.5 screen 18 draws this with a
                 // chevron, and adding, editing, reordering and removing a step

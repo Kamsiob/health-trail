@@ -184,9 +184,16 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 
 **Still owed on #291:** stages, usual papers and date kinds are still read-only lines.
 
-**The stages half of that is unblocked.** `renameProjectStage`, `moveProjectStage` and `removeProjectStage` exist and are covered by `RoadEditTest`. The one that needed thinking about is removal: `RoadStrip` works out where a project is from the stages themselves, so a project left pointing at a removed stage draws as having reached nothing, and the road would say the application had never been filed. Removal moves the project back to the last stage before it that was actually reached, in the same transaction, and to no stage at all where there is none. **The editor is not built yet**, so nothing reachable calls any of the three.
+**The stages are done, and the road is editable.** `ProjectRoadScreen` sits behind setup's Stages row, which is a door now. It draws the same `RoadStrip` the project draws, above the list it edits, so what somebody changes is the thing they see rather than an abstract list that turns into it. Each stage opens `StageEditSheet`: rename, move earlier, move later, remove, the same shape as a step's sheet because it is the same job.
 
-Usual papers and date kinds still have add and nothing else.
+- **Removal was the part that needed thinking about.** `RoadStrip` works out where a project is from the stages themselves, so a project left pointing at a removed stage draws as having reached nothing and the road says the application was never filed. Removal moves the project back to the last stage before it that was actually reached, in the same transaction, and to no stage where there is none. `RoadEditTest` covers it against a real database.
+- **Renaming keeps the arrival**, and the sheet says so on a stage the project has reached rather than leaving somebody to guess what they are about to lose.
+- **One stage is a list and not a road.** `RoadStrip` needs two, so a project down to one draws the list alone.
+- **The field and the button no longer say the same words.** Both the steps and the road screens had "Add a step" and "Add a stage" on the field label and on the control that acts on it, which is two nodes saying one thing to a reader. The field names what you type, the button is the verb.
+
+**Usual papers and date kinds still have add and nothing else**, and their rows are still lines rather than doors. That is what is left on #291.
+
+**388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
 
