@@ -273,14 +273,35 @@ fun ProjectHomeScreen(
                     modifier = Modifier.testTag(ProjectHomeTags.LATEST),
                 )
             } else {
-                Text(
-                    text = strings["project.word.none"],
-                    style = type.bodyS,
-                    color = colors.ink2,
+                // **The eyebrow stays when the card goes.** Without it this
+                // rung is the sentence "Nothing written down from them yet"
+                // with nothing on the screen that says who "them" is: the
+                // filled card carries "The latest word" and the empty one
+                // dropped it, so on a brand new project two of the three
+                // answers were loose gray lines with no label at all. 20.1
+                // says the screen answers three questions, and a question is
+                // not answered by a sentence that does not name it.
+                //
+                // The date rung needs none of this: "No date written down yet"
+                // says what it is about, and the filled DateRow has no eyebrow
+                // either, so adding one there would invent a label the drawn
+                // state does not have.
+                Column(
                     modifier = Modifier
                         .testTag(ProjectHomeTags.LATEST)
                         .padding(horizontal = Space.xs, vertical = Space.s),
-                )
+                ) {
+                    Text(
+                        text = strings["project.latest_word"],
+                        style = type.mono,
+                        color = colors.goldInk,
+                    )
+                    Text(
+                        text = strings["project.word.none"],
+                        style = type.bodyS,
+                        color = colors.ink2,
+                    )
+                }
             }
             // **Always offered.** The latest word is the thing that changes
             // most often on a long process, and an action that appears only

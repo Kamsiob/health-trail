@@ -15,7 +15,7 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **421 instrumented tests pass**, last full run 2026-08-06 after the road strip's Arabic fix. Up from 404 at the start of this run.
+- **422 instrumented tests pass**, last full run 2026-08-06 after a brand new project's empty state gained its third label. Up from 404 at the start of this run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
 - **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
@@ -220,6 +220,18 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.39 A brand new project's third answer did not say what it was
+
+**Found by starting a real project on the phone**, which is the empty rung of 13.3 for screens 05, 06 and 07 and the one gate on them nobody had walked. The screen was honest everywhere else: "Nobody has said yet", "No date written down yet", each with its one action and none of it framed as a deficiency, rule 13.
+
+**The latest word rung was the bare sentence "Nothing written down from them yet"**, and the filled `LatestWordCard` carries a "The latest word" eyebrow that the empty branch dropped. So on the first screen anybody opens after starting a project, "them" referred to nothing on the screen. 20.1 says this screen answers three questions, and a question is not answered by a sentence that does not name it.
+
+- **The eyebrow stays when the card goes**, in the same `mono` and `goldInk` the card uses.
+- **The date rung was deliberately left alone.** "No date written down yet" says what it is about, and the filled `DateRow` has no eyebrow either, so adding one would invent a label the drawn state does not have.
+- `ProjectHomeScreenTest` covers it; `latestWord` is already null in every case there, so the empty rung was being rendered by all five existing tests and asserted by none.
+
+**422 instrumented tests pass**, up from 421. `docs/screenshots/project-new-empty-light.png`.
 
 ### 2.38 The road ran one way in Arabic and its own stage names ran the other
 

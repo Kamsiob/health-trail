@@ -233,4 +233,23 @@ class ProjectHomeScreenTest {
         compose.onNodeWithText(Bidi.join("", "1")).assertDoesNotExist()
         compose.onNodeWithText(Bidi.join("", "2")).assertDoesNotExist()
     }
+
+    /**
+     * The latest word still names itself when there is nothing to show.
+     *
+     * `latestWord` is null in every case here, so this holds the empty rung.
+     * Without the eyebrow it was the bare sentence "Nothing written down from
+     * them yet" with nothing on the screen saying who "them" is, which is what
+     * a brand new project shows on the first screen anybody opens: 20.1 says
+     * this screen answers three questions, and a question is not answered by a
+     * sentence that does not name it. Found by starting a real project on the
+     * phone and looking at it.
+     */
+    @Test
+    fun theEmptyLatestWordStillSaysWhatItIs() {
+        show("standing")
+        val strings = Strings.load(context, Locale.ENGLISH)
+        compose.onNodeWithText(strings["project.latest_word"]).assertIsDisplayed()
+        compose.onNodeWithText(strings["project.word.none"]).assertIsDisplayed()
+    }
 }
