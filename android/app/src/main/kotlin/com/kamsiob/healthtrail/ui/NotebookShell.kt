@@ -105,6 +105,7 @@ import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectPaperworkScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectPeopleScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectTrailScreen
 import com.kamsiob.healthtrail.ui.screens.StepEditSheet
 import com.kamsiob.healthtrail.ui.screens.DateKindEditSheet
@@ -323,6 +324,10 @@ fun NotebookShell(
     }
     var trailOpen by remember { mutableStateOf(false) }
     var paperworkOpen by remember { mutableStateOf(false) }
+    var peopleOpen by remember { mutableStateOf(false) }
+    var projectPeople by remember {
+        mutableStateOf<List<Repository.ProjectPerson>>(emptyList())
+    }
     var documentFilings by remember {
         mutableStateOf<List<Repository.DocumentFiling>>(emptyList())
     }
@@ -703,6 +708,8 @@ fun NotebookShell(
             // The places with whatever is filed in them, for screen 13.
             projectPaperCards =
                 openProject?.let { repository.projectPaperCards(it.id) }.orEmpty()
+            // Whoever this process has actually involved, 20.5 screen 14.
+            projectPeople = openProject?.let { repository.projectPeople(it.id) }.orEmpty()
             projectDateKinds =
                 openProject?.let { repository.projectDateKinds(it.id) }.orEmpty()
             // The same list with the ids the editor needs. Read alongside
@@ -770,7 +777,11 @@ fun NotebookShell(
     // trail left the projects list and the person lost two screens to one tap.
     BackHandler(enabled = openProject != null && trailOpen) { trailOpen = false }
     BackHandler(enabled = openProject != null && paperworkOpen) { paperworkOpen = false }
-    BackHandler(enabled = openProject != null && !setupOpen && !trailOpen && !paperworkOpen) {
+    BackHandler(enabled = openProject != null && peopleOpen) { peopleOpen = false }
+    BackHandler(
+        enabled = openProject != null && !setupOpen && !trailOpen &&
+            !paperworkOpen && !peopleOpen,
+    ) {
         openProject = null
     }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
@@ -1717,6 +1728,27 @@ fun NotebookShell(
                     onDismiss = { stageUnderEdit = null },
                 )
             }
+        } else if (currentProject != null && peopleOpen) {
+            ProjectPeopleScreen(
+                projectName = currentProject.name,
+                people = projectPeople,
+                careTeamSize = people.size,
+                onOpenPerson = { openProject = null; peopleOpen = false; openPerson = it },
+                // **The cross-project door**, which is the one new navigation
+                // idea on this surface: it swaps the project underneath rather
+                // than stacking a second one on top.
+                onOpenProject = { other ->
+                    peopleOpen = false
+                    openProject = projects.firstOrNull { it.id == other.id }
+                },
+                onCall = { number -> dial(context, number) },
+                onOpenCareTeam = {
+                    openProject = null
+                    peopleOpen = false
+                    openSection = Repository.Section.CARE_TEAM
+                },
+                onBack = { peopleOpen = false },
+            )
         } else if (currentProject != null && paperworkOpen) {
             ProjectPaperworkScreen(
                 projectName = currentProject.name,
@@ -1881,6 +1913,8 @@ fun NotebookShell(
                 trailCount = projectTrail.size,
                 onOpenTrail = { trailOpen = true },
                 onOpenPaperwork = { paperworkOpen = true },
+                onOpenPeople = { peopleOpen = true },
+                peopleCount = projectPeople.size,
                 // **Rule 18 both ways.** The entry already knows the project;
                 // this is the project opening the entry.
                 onOpenEntryById = { openEntry = it },
@@ -1889,6 +1923,7 @@ fun NotebookShell(
                     setupOpen = false
                     trailOpen = false
                     paperworkOpen = false
+                    peopleOpen = false
                     stepsOpen = false
                     roadOpen = false
                     kindsOpen = false

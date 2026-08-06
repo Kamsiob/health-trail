@@ -15,7 +15,7 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **440 instrumented tests pass**, last full run 2026-08-06 after the project's papers landed. Up from 404 at the start of this run.
+- **446 instrumented tests pass**, last full run 2026-08-06 after the project's people landed. Up from 404 at the start of this run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
 - **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
@@ -220,6 +220,25 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.43 The people a project has involved, and the cross-project door
+
+**#287, screen 14.** `ProjectPeopleScreen` sits behind a new People row on the project home.
+
+- **The project's own contacts, not the care team.** The two overlap and are not the same list; showing the whole team under a Medicaid application would bury the two caseworkers in a list of nurses. **The care team is a door at the bottom**, with a line saying which list is which.
+- **Derived, and nothing writes anything.** Somebody is on a project because they are named on an entry linked to it. **There is no project-to-person table and this does not add one.**
+- **The "also in" row is the cross-project door**, which screen 14 calls the one new navigation idea on this surface. It swaps the project underneath rather than stacking a second one.
+- **The count is how many times somebody turned up, never a score**, and nothing is colored by how long it has been.
+- **Two queries, not one per person.** A project with nine contacts would otherwise cost ten round trips to draw one screen.
+
+**The fixture could never show this screen, which is the #229 and #237 pattern for the fourth time.** The people pass runs over calls before `connect_entries_to_projects` creates the office calls, so **a project's entries named nobody** and People was always 0. The fixture now writes `PROJECT_CONTACTS`, office people rather than ward nurses, one per project, **with one shared by exactly two projects** so the cross-project door has something to point at. Putting her on all five gave one person four "also in" rows, which turns the one new idea on that screen into wallpaper: seen on the phone, not reasoned.
+
+**Two things were found by looking at it.**
+
+1. **The "also in" card was the same white row as the person above it** and read as another person. It carries the gold waypoint the entry screen already uses to mean a project.
+2. **The Arabic plurals I added were wrong**, "1 مكالمات". The catalog uses the full `zero`/`one`/`two`/`few`/`many`/`other` categories everywhere else and my additions used only `other`. **Seven strings were corrected**, across the trail gaps, the paper count and the people counts. **`check_i18n.py` holds the four catalogs to each other and does not compare plural categories**, so nothing caught it: worth a checker, and it is the reason to read an Arabic screen rather than trust the catalog.
+
+**446 instrumented tests pass**, up from 440. `ProjectPeopleTest` is 6 tests. Seen at both themes, at font scale 2.0 and in Arabic: `project-people-light`, `project-people-dark`, `project-people-2x-dark`, `project-people-rtl-dark`.
 
 ### 2.42 The papers of a project, as paper
 

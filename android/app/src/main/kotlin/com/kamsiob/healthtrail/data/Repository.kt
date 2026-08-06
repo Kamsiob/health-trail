@@ -5349,6 +5349,122 @@ class Repository private constructor(
             }
         }
 
+    /**
+     * Somebody this project has actually involved. `DESIGN.md` 20.5 screen 14.
+     *
+     * **The project's own contacts, and not the care team.** They overlap and
+     * they are not the same list: the care team is everybody looking after the
+     * person, and this is whoever has turned up in this process. A screen
+     * showing the whole care team under a Medicaid application would bury the
+     * two caseworkers who matter in a list of nurses.
+     *
+     * **Derived rather than stored.** There is no project-to-person table and
+     * this does not add one: somebody is on a project because they are named on
+     * an entry that is linked to it, which is a fact the record already holds.
+     * Nothing here writes anything.
+     */
+    data class ProjectPerson(
+        val person: Person,
+        /** How many of this project's entries name them. Never a score. */
+        val mentions: Int,
+        /** When they last turned up on it, at whatever precision was given. */
+        val lastEdtf: String?,
+        val lastStart: Long?,
+        /**
+         * The other projects that also name them, for the cross-project door.
+         *
+         * **The one new navigation idea on this surface**, per screen 14: a
+         * caseworker handling two of somebody's processes is the case where a
+         * person is holding two threads and the app can say so.
+         */
+        val alsoIn: List<EntryProject>,
+    )
+
+    /**
+     * The people this project has involved, most recently seen first.
+     *
+     * **One query for the people and one for where else they turn up**, rather
+     * than one per person: a project with nine contacts would otherwise cost
+     * ten round trips to draw one screen.
+     */
+    suspend fun projectPeople(projectId: String): List<ProjectPerson> =
+        withContext(Dispatchers.IO) {
+            val database = db().database
+            val rows = database.rawQuery(
+                "SELECT pe.id, pe.display_name, pe.role_label, pe.phone, pe.email, " +
+                    "pe.notes, COUNT(*), MAX(e.occurred_edtf), MAX(e.occurred_start) " +
+                    "FROM live_link l " +
+                    "JOIN live_entry e ON e.id = " +
+                    "  CASE WHEN l.source_table = 'entry' THEN l.source_id ELSE l.target_id END " +
+                    "JOIN live_entry_person ep ON ep.entry_id = e.id " +
+                    "JOIN live_person pe ON pe.id = ep.person_id " +
+                    "WHERE (l.source_table = 'entry' AND l.target_table = 'project' " +
+                    "       AND l.target_id = ?) " +
+                    "   OR (l.source_table = 'project' AND l.target_table = 'entry' " +
+                    "       AND l.source_id = ?) " +
+                    "GROUP BY pe.id " +
+                    "ORDER BY MAX(e.occurred_start) DESC, pe.display_name",
+                arrayOf(projectId, projectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            Person(
+                                id = cursor.getString(0),
+                                displayName = cursor.getString(1),
+                                roleLabel = cursor.getString(2),
+                                phone = cursor.getString(3),
+                                email = cursor.getString(4),
+                                notes = cursor.getString(5),
+                            ) to Triple(
+                                cursor.getInt(6),
+                                cursor.getString(7),
+                                if (cursor.isNull(8)) null else cursor.getLong(8),
+                            ),
+                        )
+                    }
+                }
+            }
+            if (rows.isEmpty()) return@withContext emptyList()
+
+            // Where else each of them turns up, in one pass over the same join.
+            val elsewhere = mutableMapOf<String, MutableList<EntryProject>>()
+            val marks = rows.joinToString(", ") { "?" }
+            database.rawQuery(
+                "SELECT DISTINCT ep.person_id, pr.id, pr.name, pr.status " +
+                    "FROM live_link l " +
+                    "JOIN live_project pr ON pr.id = " +
+                    "  CASE WHEN l.source_table = 'project' THEN l.source_id ELSE l.target_id END " +
+                    "JOIN live_entry e ON e.id = " +
+                    "  CASE WHEN l.source_table = 'entry' THEN l.source_id ELSE l.target_id END " +
+                    "JOIN live_entry_person ep ON ep.entry_id = e.id " +
+                    "WHERE pr.id <> ? AND ep.person_id IN ($marks) " +
+                    "ORDER BY pr.name",
+                (listOf(projectId) + rows.map { it.first.id }).toTypedArray(),
+            ).use { cursor ->
+                while (cursor.moveToNext()) {
+                    elsewhere.getOrPut(cursor.getString(0)) { mutableListOf() }
+                        .add(
+                            EntryProject(
+                                id = cursor.getString(1),
+                                name = cursor.getString(2),
+                                status = cursor.getString(3),
+                            ),
+                        )
+                }
+            }
+
+            rows.map { (person, seen) ->
+                ProjectPerson(
+                    person = person,
+                    mentions = seen.first,
+                    lastEdtf = seen.second,
+                    lastStart = seen.third,
+                    alsoIn = elsewhere[person.id].orEmpty(),
+                )
+            }
+        }
+
     suspend fun projectPaperCards(projectId: String): List<ProjectPaperCard> =
         withContext(Dispatchers.IO) {
             db().database.rawQuery(

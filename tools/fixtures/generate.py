@@ -242,6 +242,21 @@ class Generator:
         Calls, because the latest word is almost always something said on the
         phone.
         """
+        contact_ids = [
+            self.row(
+                db,
+                "person",
+                {
+                    "subject_id": subject_id,
+                    "display_name": name,
+                    "role_label": role,
+                    "phone": phone,
+                },
+                day=0,
+            )
+            for name, role, phone in PROJECT_CONTACTS
+        ]
+
         for index, project_id in enumerate(projects):
             said = OFFICE_WORDS[index % len(OFFICE_WORDS)]
             for turn, words in enumerate(said):
@@ -271,6 +286,35 @@ class Generator:
                         "relation": "about",
                     },
                     day=day,
+                )
+                # **Who said it**, which is what makes screen 14 possible at
+                # all. Deliberate rather than sampled: the people pass runs
+                # before these entries exist, so a project's calls named nobody
+                # and the project people screen was always empty.
+                #
+                # **The third contact is shared by exactly two projects**, so
+                # the cross-project door has something to point at and is not
+                # noise. Putting her on every project's last call gave one
+                # person four "also in" rows, which turns the one new idea on
+                # that screen into wallpaper: seen on the phone, not reasoned.
+                shared = index in SHARED_CONTACT_PROJECTS and turn == len(said) - 1
+                contact = (
+                    contact_ids[-1]
+                    if shared
+                    else contact_ids[index % (len(contact_ids) - 1)]
+                )
+                db.execute(
+                    "INSERT INTO entry_person (id, created_at, updated_at,"
+                    " origin_device, rev, entry_id, person_id)"
+                    " VALUES (?, ?, ?, ?, 1, ?, ?)",
+                    (
+                        self.new_id(),
+                        self.ms(day),
+                        self.ms(day),
+                        self.device,
+                        entry_id,
+                        contact,
+                    ),
                 )
 
     def today_layout(self, db, subject_id):
@@ -1733,6 +1777,30 @@ PEOPLE = [
     ("Ruth Ann Pierce", "Physical therapy", "555 0173", None),
     ("Jerome Whitfield", "Ombudsman", "555 0199", "County office. Not facility staff."),
 ]
+
+# The people on the other end of a long process, who are not the care team.
+#
+# **A project's people and the care team are different lists**, DESIGN.md 20.5
+# screen 14. Without these the project people screen could only ever show ward
+# nurses, which is the wrong answer dressed as a right one, or nothing at all.
+#
+# **The last one is on two projects on purpose.** The cross-project door is the
+# one new navigation idea on that surface and a fixture that never puts anybody
+# in two processes cannot show it, which is the same defect as #229 and #237.
+PROJECT_CONTACTS = [
+    ("Denise Alvarado", "Intake caseworker", "555 0114"),
+    ("R. Boyd", "Intake supervisor", "555 0117"),
+    ("Colleen Marsh", "Records office", "555 0128"),
+    ("Hector Salas", "Housing coordinator", "555 0133"),
+    ("Priya Nandakumar", "Benefits adviser", "555 0139"),
+    # The shared one, and the last on purpose: see below.
+    ("Marisol Vega", "Appeals clerk", "555 0121"),
+]
+
+# Which projects the shared contact turns up in. Two, and only two: she is the
+# whole reason the cross-project door exists, and putting her on all five gave
+# one person four "also in" rows, which turns that idea into wallpaper.
+SHARED_CONTACT_PROJECTS = (0, 1)
 
 # Somebody who left. A care team that only ever grows is not a care team that
 # has been used for five years.

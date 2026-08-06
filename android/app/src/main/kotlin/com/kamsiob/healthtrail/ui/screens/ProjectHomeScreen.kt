@@ -46,6 +46,7 @@ object ProjectHomeTags {
     const val MOVE_STAGE = "project-home-move-stage"
     const val TRAIL = "project-home-trail"
     const val PAPERS = "project-home-papers"
+    const val PEOPLE = "project-home-people"
 }
 
 /**
@@ -119,6 +120,10 @@ fun ProjectHomeScreen(
     onOpenTrail: () -> Unit = {},
     /** Opens the project's papers as paper. 20.5 screen 13. */
     onOpenPaperwork: () -> Unit = {},
+    /** Opens the people this process has involved. 20.5 screen 14. */
+    onOpenPeople: () -> Unit = {},
+    /** How many people this process has involved. Never a score. */
+    peopleCount: Int = 0,
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
 ) {
     // **Open from the start on the busy stretch**, where the steps are the
@@ -491,6 +496,19 @@ fun ProjectHomeScreen(
         // states and nothing else; 20.5 screen 13 shows the paper itself, split
         // by what they sent and what you sent, which is the question somebody
         // is actually asking. Drawn even at zero, for the reason the trail is.
+        // **The people this process has involved**, 20.5 screen 14, above the
+        // papers because a long process is mostly other people.
+        item {
+            FoldRow(
+                labelKey = "project.fold.people",
+                expanded = false,
+                onToggle = onOpenPeople,
+                count = peopleCount.toString(),
+                modifier = Modifier.testTag(ProjectHomeTags.PEOPLE),
+            )
+            Spacer(Modifier.height(Space.cardGap))
+        }
+
         item {
             FoldRow(
                 labelKey = "project.fold.papers",
