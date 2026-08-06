@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -249,7 +250,7 @@ private fun LabelsOrList(stages: List<RoadStage>, current: Int, mirrored: Boolea
             }
         } else {
             Text(
-                text = stages.joinToString(SEPARATOR) { it.name },
+                text = stageNamesLine(stages),
                 style = type.mono,
                 color = colors.ink2,
                 modifier = Modifier.fillMaxWidth().padding(top = Space.xs),
@@ -258,8 +259,27 @@ private fun LabelsOrList(stages: List<RoadStage>, current: Int, mirrored: Boolea
     }
 }
 
-/** What joins the stage names when they cannot sit under their own waypoints. */
-private const val SEPARATOR = " \u00b7 "
+/**
+ * The stage names as one line, for when they cannot sit under their waypoints.
+ *
+ * **`Bidi.join` and not a plain concatenation**, which is what this was and
+ * which read backwards in Arabic. The waypoints above mirror because Compose
+ * lays them out; a run of Latin names joined by hand with a middle dot does
+ * not, so the road ran right to left while its own names ran left to right and
+ * the first stage sat at opposite ends of the two. **Every template name the
+ * app ships is Latin, #62**, so that was the normal case in Arabic rather than
+ * an edge one, and it was found by looking at the screen.
+ *
+ * **Raw names in**, per `DESIGN.md` section 15: these have not been isolated
+ * anywhere else, and joining something already isolated nests the marks.
+ *
+ * **It is a function rather than an expression inline** because [RoadStrip]
+ * clears its descendants' semantics to speak as one node, so nothing in the
+ * strip's own text is reachable from a test. This is the only place the
+ * concatenation can be held.
+ */
+internal fun stageNamesLine(stages: List<RoadStage>): String =
+    Bidi.join(stages.map { it.name })
 
 /**
  * One point on the road.
