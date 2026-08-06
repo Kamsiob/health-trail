@@ -319,9 +319,11 @@ fun NotebookShell(
     var projectEntries by remember {
         mutableStateOf<List<Repository.TrailEntry>>(emptyList())
     }
-    var savingStanding by remember {
-        mutableStateOf<Triple<String, String, String>?>(null)
-    }
+    // A named type rather than a fourth slot on a Triple. Three anonymous
+    // strings and a date is exactly the shape where the holder and the activity
+    // get passed the wrong way round, and neither the compiler nor a screenshot
+    // would say so.
+    var savingStanding by remember { mutableStateOf<StandingWrite?>(null) }
     var projectCards by remember {
         mutableStateOf<Map<String, Repository.ProjectCard>>(emptyMap())
     }
@@ -1563,25 +1565,26 @@ fun NotebookShell(
                 // have to have filled in first.
                 people = projectStandingHistory.map { it.holderLabel }.distinct(),
                 previous = projectStanding,
-                onSave = { holder, activity ->
-                    savingStanding = Triple(project.id, holder, activity)
+                onSave = { holder, activity, since ->
+                    savingStanding = StandingWrite(project.id, holder, activity, since)
                     updatingStanding = null
                 },
                 onDismiss = { updatingStanding = null },
             )
         }
 
-        savingStanding?.let { (projectId, holder, activity) ->
-            LaunchedEffect(projectId, holder, activity) {
+        savingStanding?.let { write ->
+            LaunchedEffect(write) {
                 repository.addProjectStanding(
-                    projectId = projectId,
-                    holderLabel = holder,
-                    // **Today, and not asked for.** A person recording this
-                    // five minutes after the call knows when it happened, and
-                    // asking them to confirm it is a question with one answer.
-                    // It stays editable from the entry itself, rule 17.
-                    since = Edtf.day(java.time.LocalDate.now()),
-                    activity = activity.ifBlank { null },
+                    projectId = write.projectId,
+                    holderLabel = write.holder,
+                    // **What the sheet says, not what the clock says.** The
+                    // lead has always read "the date is today unless you change
+                    // it" and this line used to stamp today regardless, so the
+                    // one sentence on the sheet that made a promise was the one
+                    // the code broke. Rule 17.
+                    since = write.since,
+                    activity = write.activity.ifBlank { null },
                 )
                 savingStanding = null
                 revision += 1
@@ -3917,4 +3920,19 @@ private data class Quadruple<A, B, C, D>(
     val second: B,
     val third: C,
     val fourth: D,
+)
+
+/**
+ * One pending write of where a project stands, held between the sheet and the
+ * effect that saves it.
+ *
+ * **Named rather than a Triple with a date bolted on.** Two of these fields are
+ * free text the person typed and they are adjacent, which is the shape that
+ * gets passed the wrong way round with nothing to catch it.
+ */
+private data class StandingWrite(
+    val projectId: String,
+    val holder: String,
+    val activity: String,
+    val since: com.kamsiob.healthtrail.time.Edtf.Date,
 )

@@ -24,19 +24,25 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.cappedChips
+import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import java.time.LocalDate
 
 object StandingTags {
     const val SHEET = "standing-sheet"
     const val WHO = "standing-who"
     const val WHAT = "standing-what"
+    const val WHEN = "standing-when"
     const val SAVE = "standing-save"
 }
 
@@ -51,10 +57,13 @@ object StandingTags {
  * besides.** The chips are what somebody already wrote down; the field is for
  * the office nobody has named yet, which is most of them at the start.
  *
- * **Since when defaults to today and is not asked for.** A person recording
- * this five minutes after the call knows when it happened, and asking them to
- * confirm it is a question with one answer. It is editable afterward from the
- * entry itself, per rule 17.
+ * **Since when defaults to today and can be changed.** A person recording this
+ * five minutes after the call usually wants today, so today is one tap. The
+ * sheet's own copy said "the date is today unless you change it" and for a week
+ * nothing on it changed the date, which is the same defect the stage sheet
+ * carried until `ac526b6`. Somebody writing down on Thursday that the county
+ * picked it up on Monday needs this, and rule 17 says a date is never falsely
+ * precise and always the person's.
  *
  * **Nothing here is framed as a fight**, section 22. The holder is named by
  * role as the person wrote it down, and what is happening is stated as fact.
@@ -64,7 +73,7 @@ object StandingTags {
 fun StandingSheet(
     /** Names already on this project, offered as chips. */
     people: List<String>,
-    onSave: (holder: String, activity: String) -> Unit,
+    onSave: (holder: String, activity: String, since: Edtf.Date) -> Unit,
     onDismiss: () -> Unit,
     /** Where it stood before, so the sheet opens on what is already true. */
     previous: Repository.ProjectStanding? = null,
@@ -75,6 +84,11 @@ fun StandingSheet(
 
     var holder by remember(previous?.id) { mutableStateOf(previous?.holderLabel.orEmpty()) }
     var activity by remember(previous?.id) { mutableStateOf(previous?.activity.orEmpty()) }
+    // **Today, not the previous standing's date.** This records where the
+    // project stands now; opening on the date it last changed hands would
+    // pre-fill the one answer that is almost certainly wrong.
+    var since by remember(previous?.id) { mutableStateOf(Edtf.day(LocalDate.now())) }
+    var picking by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -155,6 +169,28 @@ fun StandingSheet(
                 fieldTestTag = StandingTags.WHAT,
             )
 
+            Spacer(Modifier.height(Space.m))
+
+            // **What the lead has promised all along.** Today by default, so
+            // the common case is still no taps at all, and the whole control
+            // is one line rather than a stage of its own.
+            //
+            // **Labeled like the two fields above it**, because unlabeled it
+            // was a bare button showing a date in a column of labeled fields,
+            // directly above two more full width buttons. A value is not an
+            // action and must not be dressed as one.
+            Text(
+                text = strings["project.standing.when"],
+                style = HealthTrail.type.bodyM,
+                color = colors.ink2,
+            )
+            Spacer(Modifier.height(Space.xs))
+            QuietButton(
+                label = EventDateText.render(strings, since),
+                onClick = { picking = true },
+                modifier = Modifier.fillMaxWidth().testTag(StandingTags.WHEN),
+            )
+
             Spacer(Modifier.height(Space.l))
 
             FilledButton(
@@ -163,7 +199,7 @@ fun StandingSheet(
                 // only that it is with the county can say that and nothing
                 // else. The one thing this cannot save is nothing at all.
                 enabled = holder.isNotBlank(),
-                onClick = { onSave(holder.trim(), activity.trim()) },
+                onClick = { onSave(holder.trim(), activity.trim(), since) },
                 modifier = Modifier.fillMaxWidth().testTag(StandingTags.SAVE),
             )
 
@@ -175,5 +211,14 @@ fun StandingSheet(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+    }
+
+    if (picking) {
+        DatePickerSheet(
+            initial = since,
+            onPick = { since = it; picking = false },
+            onDismiss = { picking = false },
+            titleKey = "date.pick.title",
+        )
     }
 }

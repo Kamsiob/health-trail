@@ -15,7 +15,7 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **413 instrumented tests pass**, last full run 2026-08-06 after #314 closed. Up from 404.
+- **417 instrumented tests pass**, last full run 2026-08-06 after the standing sheet gained its date. Up from 404 at the start of this run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
 - **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
@@ -220,6 +220,20 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.37 The standing sheet said the date was today unless you changed it, and nothing changed it
+
+**The same defect the stage sheet carried until `ac526b6`, on its sibling sheet on the same screen**, found by opening it during the #281 gate sweep rather than by reading it. `project.standing.lead` has always read "Since when is optional. The date is today unless you change it", and the sheet had no date control at all: `addProjectStanding` already took an `Edtf.Date` and the shell stamped `LocalDate.now()` over whatever the person meant.
+
+- **The sheet carries the date now**, defaulting to today so the common case is still no taps, and it is **labeled "Since when?"** like the two fields above it. Unlabeled it was a bare button showing a date directly above two more full width buttons, which dresses a value as an action.
+- **The date does not inherit the previous standing's.** That is when the project last changed hands, which is the one answer almost certainly wrong for the change being recorded now.
+- **`savingStanding` is a named `StandingWrite` rather than a Triple with a date bolted on.** Two of its four fields are adjacent free text the person typed, which is the shape that gets passed the wrong way round with nothing to catch it.
+- Proved on the phone: picked August 3 while today was August 6, saved, and the standing card read August 3.
+- **`StandingSheetTest` is 4 tests and the date assertion was proved by breaking it**, removing the control, watching that one test fail, and restoring from a scratchpad copy rather than with git, per section 7.
+
+**417 instrumented tests pass**, up from 413. Seen at both themes, at font scale 2.0 and in Arabic: `project-standing-sheet-light`, `project-standing-sheet-dark`, `project-standing-sheet-2x-dark`, `project-standing-sheet-rtl-dark`.
+
+**The log a call sheet was checked for the same shape and does not have it**: it claims no date and its save is enabled by the note alone, so rule 13's partial save holds. **It still has no date of its own**, which matters for a call being written up the next morning, and that is left as is rather than widened into here.
 
 ### 2.36 The last two things the superseded project screen could do have come back
 
