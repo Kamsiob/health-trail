@@ -5014,6 +5014,65 @@ class Repository private constructor(
             }
         }
 
+    /**
+     * One of a project's date kinds, with the id needed to change it.
+     *
+     * **`projectDateKinds` returns labels alone** because that is all the chips
+     * on the date sheet need, and it stays that way: a caller that only offers
+     * them should not have to know they have identities.
+     */
+    data class ProjectDateKind(val id: String, val label: String)
+
+    /** The same list, for the screen that edits it. */
+    suspend fun projectDateKindRows(projectId: String): List<ProjectDateKind> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id, label FROM live_project_date_kind WHERE project_id = ? " +
+                    "ORDER BY sort_index, created_at",
+                arrayOf(projectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(ProjectDateKind(cursor.getString(0), cursor.getString(1)))
+                    }
+                }
+            }
+        }
+
+    /**
+     * Renames a date kind.
+     *
+     * **Dates already recorded under the old name keep it.** `project_date.kind`
+     * is the words the person used at the time, copied at the moment they wrote
+     * the date down, and rewriting history to match a label they changed later
+     * would be the app editing what somebody recorded. The kind list is what is
+     * offered next time, not a key into what was.
+     */
+    suspend fun renameProjectDateKind(kindId: String, label: String) =
+        withContext(Dispatchers.IO) {
+            val now = System.currentTimeMillis()
+            db().database.execSQL(
+                "UPDATE project_date_kind SET label = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(label, now, kindId),
+            )
+        }
+
+    /**
+     * Removes a date kind, and leaves every date recorded under it alone.
+     *
+     * A tombstone like every other deletion, per rule 3. Taking a kind off the
+     * list stops it being offered; it does not reach back into the record.
+     */
+    suspend fun removeProjectDateKind(kindId: String) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        db().database.execSQL(
+            "UPDATE project_date_kind SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ?",
+            arrayOf<Any?>(now, now, kindId),
+        )
+    }
+
     suspend fun addProjectDateKind(projectId: String, label: String): String =
         withContext(Dispatchers.IO) {
             val next = db().database.rawQuery(

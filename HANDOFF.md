@@ -191,7 +191,14 @@ Everything below is verified rather than asserted, as of 2026-08-05:
 - **One stage is a list and not a road.** `RoadStrip` needs two, so a project down to one draws the list alone.
 - **The field and the button no longer say the same words.** Both the steps and the road screens had "Add a step" and "Add a stage" on the field label and on the control that acts on it, which is two nodes saying one thing to a reader. The field names what you type, the button is the verb.
 
-**Usual papers and date kinds still have add and nothing else**, and their rows are still lines rather than doors. That is what is left on #291.
+**The date kinds are done too.** `ProjectDateKindsScreen` sits behind setup's Date kinds row, with `DateKindEditSheet` for rename and remove. These are the chips somebody taps when they write a date down, and a template that offered "Renewal" to a process that never renews left a chip in the way forever.
+
+- **The list is what is offered next time and never a key into the record.** `project_date.kind` is the words the person used when they wrote the date down, copied at that moment, so renaming a kind does not reach back and rewrite what they recorded and removing one does not take the date with it. **The sheet says so**, because otherwise the only way to find out is to try it.
+- **No reordering here**, unlike the road and the steps. A handful of labels offered as chips has no order somebody reads down, and a control that exists because the neighboring screen has one is decoration.
+- **`projectDateKindRows` reads alongside `projectDateKinds` rather than replacing it**, so the chips keep taking labels alone and a caller that only offers them does not have to know they have identities.
+- Verified end to end on the phone: removing a kind on this screen removes the chip from the date sheet.
+
+**Usual papers are the last thing left on #291.** `addProjectPaper` and `fillProjectPaper` exist; there is no rename and no remove, and the row is still a line rather than a door.
 
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 

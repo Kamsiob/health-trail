@@ -26,6 +26,7 @@ object ProjectSetupTags {
     const val STATUS = "project-setup-status"
     const val STEPS = "project-setup-steps"
     const val STAGES = "project-setup-stages"
+    const val KINDS = "project-setup-kinds"
     fun lead(value: String) = "project-setup-lead-$value"
     fun status(value: String) = "project-setup-status-$value"
 }
@@ -59,6 +60,7 @@ fun ProjectSetupScreen(
     onSetStatus: (String) -> Unit,
     onOpenSteps: () -> Unit,
     onOpenRoad: () -> Unit,
+    onOpenKinds: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     /** What the template it came from is called, where this build still has it. */
@@ -161,6 +163,9 @@ fun ProjectSetupScreen(
                         .ifBlank { strings["project.setup.nothing_yet"] },
                     subtitleMaxLines = 2,
                     divider = false,
+                    chevron = true,
+                    onClick = onOpenKinds,
+                    modifier = Modifier.testTag(ProjectSetupTags.KINDS),
                 )
             }
             Spacer(Modifier.height(Space.s))

@@ -105,6 +105,8 @@ import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
 import com.kamsiob.healthtrail.ui.screens.StepEditSheet
+import com.kamsiob.healthtrail.ui.screens.DateKindEditSheet
+import com.kamsiob.healthtrail.ui.screens.ProjectDateKindsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectRoadScreen
 import com.kamsiob.healthtrail.ui.screens.StageEditSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectPreviewSheet
@@ -350,6 +352,15 @@ fun NotebookShell(
     /** Reordering a stage against its neighbor, which is not the same as moving the project onto one. */
     var reorderingStage by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     var removingStage by remember { mutableStateOf<String?>(null) }
+    /** The date kinds being changed, 20.5 screen 18. */
+    var kindsOpen by remember { mutableStateOf(false) }
+    var projectDateKindRows by remember {
+        mutableStateOf<List<Repository.ProjectDateKind>>(emptyList())
+    }
+    var kindUnderEdit by remember { mutableStateOf<Repository.ProjectDateKind?>(null) }
+    var addingKind by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var renamingKind by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var removingKind by remember { mutableStateOf<String?>(null) }
     var creatingOwnProject by remember { mutableStateOf<String?>(null) }
     var ownTemplates by remember {
         mutableStateOf<List<Repository.OwnTemplate>>(emptyList())
@@ -662,6 +673,10 @@ fun NotebookShell(
             projectPapers = openProject?.let { repository.projectPapers(it.id) }.orEmpty()
             projectDateKinds =
                 openProject?.let { repository.projectDateKinds(it.id) }.orEmpty()
+            // The same list with the ids the editor needs. Read alongside
+            // rather than instead, so the chips keep taking labels alone.
+            projectDateKindRows =
+                openProject?.let { repository.projectDateKindRows(it.id) }.orEmpty()
             instructionCatalog = TemplateCatalog.instructions(context)
             emergencyContacts = emergencyCard
                 ?.let { repository.emergencyContacts(it.id) }
@@ -1607,7 +1622,24 @@ fun NotebookShell(
         }
 
         val currentProject = openProject
-        if (currentProject != null && setupOpen && roadOpen) {
+        if (currentProject != null && setupOpen && kindsOpen) {
+            ProjectDateKindsScreen(
+                projectName = currentProject.name,
+                kinds = projectDateKindRows,
+                onAdd = { addingKind = currentProject.id to it },
+                onOpen = { kindUnderEdit = it },
+                onBack = { kindsOpen = false },
+            )
+
+            kindUnderEdit?.let { kind ->
+                DateKindEditSheet(
+                    kind = kind,
+                    onSave = { renamingKind = kind.id to it; kindUnderEdit = null },
+                    onRemove = { removingKind = kind.id; kindUnderEdit = null },
+                    onDismiss = { kindUnderEdit = null },
+                )
+            }
+        } else if (currentProject != null && setupOpen && roadOpen) {
             ProjectRoadScreen(
                 projectName = currentProject.name,
                 stages = projectStages,
@@ -1672,6 +1704,7 @@ fun NotebookShell(
                 onSetStatus = { settingStatus = currentProject.id to it },
                 onOpenSteps = { stepsOpen = true },
                 onOpenRoad = { roadOpen = true },
+                onOpenKinds = { kindsOpen = true },
                 onBack = { setupOpen = false },
             )
         } else if (currentProject != null) {
@@ -1766,6 +1799,7 @@ fun NotebookShell(
                     setupOpen = false
                     stepsOpen = false
                     roadOpen = false
+                    kindsOpen = false
                 },
             )
         }
@@ -2024,6 +2058,30 @@ fun NotebookShell(
             LaunchedEffect(pending) {
                 repository.moveProjectStep(pending.first, pending.second)
                 movingStep = null
+                revision += 1
+            }
+        }
+
+        addingKind?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.addProjectDateKind(pending.first, pending.second)
+                addingKind = null
+                revision += 1
+            }
+        }
+
+        renamingKind?.let { pending ->
+            LaunchedEffect(pending) {
+                repository.renameProjectDateKind(pending.first, pending.second)
+                renamingKind = null
+                revision += 1
+            }
+        }
+
+        removingKind?.let { id ->
+            LaunchedEffect(id) {
+                repository.removeProjectDateKind(id)
+                removingKind = null
                 revision += 1
             }
         }
