@@ -2736,7 +2736,17 @@ fun NotebookShell(
             entryDetail?.takeIf { it.entry.id == entryId }?.let { detail ->
                 EntryScreen(
                     detail = detail,
-                    backLabelKey = if (openSection != null) "section.back.trail" else "section.back",
+                    // **The way back names where it actually goes.** An entry
+                    // opened from a project's "What was said" returns to that
+                    // project and said "Back to the notebook" while doing it,
+                    // which is the same small lie the setup screen told about
+                    // the projects list and that somebody only notices by being
+                    // surprised. Found by tapping it, not by reading it.
+                    backLabelKey = when {
+                        openSection != null -> "section.back.trail"
+                        openProject != null -> "section.back.project"
+                        else -> "section.back"
+                    },
                     onEditDate = { editingDate = detail.entry },
                     onSetPinned = { pinned -> pinningEntry = detail.entry.id to pinned },
                     onOpenPerson = { openEntry = null; openPerson = it },
@@ -2761,6 +2771,19 @@ fun NotebookShell(
                         openEntry = null
                         openIncident = incidents.firstOrNull { it.id == detail.incidentId }
                         incidentsOpen = openIncident != null
+                    },
+                    // **The project itself, not the projects tab.** The
+                    // difference between a link and a signpost, the same one
+                    // the chapter door above makes. #283 closes the last one
+                    // way link on this screen: a call logged from inside a
+                    // project could be opened from the project and had no way
+                    // back to it.
+                    onOpenProject = { project ->
+                        openEntry = null
+                        openProject = projects.firstOrNull { it.id == project.id }
+                        // A project the list has not loaded is not a reason to
+                        // strand somebody on nothing: the tab always opens.
+                        if (openProject == null) destination = Destination.PROJECTS
                     },
                     // Back to what the question is about, which closes the loop
                     // the medication screen opened.

@@ -3690,7 +3690,30 @@ class Repository private constructor(
          */
         val medicationId: String?,
         val medicationName: String?,
+        /**
+         * The long processes this entry is about. Rule 18, and #283.
+         *
+         * **The other half of a link that was one way.** A project shows every
+         * entry connected to it, `entriesAbout`, and logging a call from inside
+         * a project writes that connection. The entry said nothing back, so the
+         * call somebody logged from a Medicaid application opened onto a screen
+         * with no way to get to the Medicaid application: a dead end wearing a
+         * disguise, and the last one on this screen.
+         *
+         * **A list rather than one.** 8.1's `link` table does not stop an entry
+         * being connected to two projects, and a person who rings one office
+         * about two applications has done exactly that. The screen draws each.
+         */
+        val projects: List<EntryProject> = emptyList(),
     )
+
+    /**
+     * A project as an entry names it: enough to draw a door and no more.
+     *
+     * **Not [Project], which costs three more queries per row** for step counts
+     * and a next step that nothing on the entry screen shows.
+     */
+    data class EntryProject(val id: String, val name: String, val status: String)
 
     /** One entry read on its own, or null when it is gone. */
     suspend fun entry(entryId: String): EntryDetail? = withContext(Dispatchers.IO) {
@@ -3742,7 +3765,46 @@ class Repository private constructor(
                 incidentIsOpen = cursor.isNull(12),
                 medicationId = cursor.getString(13),
                 medicationName = cursor.getString(14),
+                projects = projectsOnEntryBlocking(database, entryId),
             )
+        }
+    }
+
+    /**
+     * The projects one entry is connected to, in the order they were linked.
+     *
+     * **Both directions of the link are accepted**, exactly as [entriesAbout]
+     * and [latestWordFor] do. A link written from the entry and one written
+     * from the project mean the same thing to a person, and a screen that
+     * showed the connection only when the row happened to be written one way
+     * round is the dead end rule 18 is about.
+     *
+     * **Tombstoned projects are excluded by `live_project`**, so an entry about
+     * a project somebody removed says nothing rather than offering a door onto
+     * a screen that is gone.
+     */
+    private fun projectsOnEntryBlocking(
+        database: net.zetetic.database.sqlcipher.SQLiteDatabase,
+        entryId: String,
+    ): List<EntryProject> = database.rawQuery(
+        "SELECT p.id, p.name, p.status FROM live_link l " +
+            "JOIN live_project p ON p.id = " +
+            "  CASE WHEN l.source_table = 'project' THEN l.source_id ELSE l.target_id END " +
+            "WHERE (l.source_table = 'entry' AND l.source_id = ? AND l.target_table = 'project') " +
+            "   OR (l.target_table = 'entry' AND l.target_id = ? AND l.source_table = 'project') " +
+            "ORDER BY l.created_at",
+        arrayOf(entryId, entryId),
+    ).use { cursor ->
+        buildList {
+            while (cursor.moveToNext()) {
+                add(
+                    EntryProject(
+                        id = cursor.getString(0),
+                        name = cursor.getString(1),
+                        status = cursor.getString(2),
+                    ),
+                )
+            }
         }
     }
 
@@ -4933,6 +4995,36 @@ class Repository private constructor(
             "target_table" to "project",
             "target_id" to projectId,
             "relation" to "about",
+        ),
+    )
+
+    /**
+     * Writes a raw link with the sides given, for a test and nothing else.
+     *
+     * **It exists to produce a state the app cannot**, which is the only way to
+     * prove the readers accept a link written from either side. Every writer in
+     * this app puts the entry on the source side; an imported notebook is not
+     * obliged to, and 8.1 does not make one direction canonical. Without this
+     * the both-ways readers in [entriesAbout], [latestWordFor] and
+     * [projectsOnEntryBlocking] are half untested and would keep passing.
+     *
+     * **Named so nobody reaches for it by accident**, like `columnForTest`,
+     * `clearEveryLeadForTest` and `tombstoneForTest`.
+     */
+    suspend fun insertLinkForTest(
+        sourceTable: String,
+        sourceId: String,
+        targetTable: String,
+        targetId: String,
+        relation: String = "about",
+    ): String = insert(
+        "link",
+        mapOf(
+            "source_table" to sourceTable,
+            "source_id" to sourceId,
+            "target_table" to targetTable,
+            "target_id" to targetId,
+            "relation" to relation,
         ),
     )
 

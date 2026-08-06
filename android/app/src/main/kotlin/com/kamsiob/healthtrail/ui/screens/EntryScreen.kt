@@ -49,6 +49,7 @@ object EntryTags {
     const val CHAPTER = "entry_chapter"
     const val MEDICATION = "entry_medication"
     const val INCIDENT = "entry_incident"
+    fun project(id: String) = "entry_project_$id"
 }
 
 /**
@@ -78,6 +79,8 @@ fun EntryScreen(
     onOpenThread: (Repository.CareThread) -> Unit,
     onOpenPerson: (Repository.Person) -> Unit,
     onOpenChapter: () -> Unit,
+    /** Opens the long process this entry is about. Rule 18, #283. */
+    onOpenProject: (Repository.EntryProject) -> Unit,
     onOpenMedication: () -> Unit,
     onOpenIncident: () -> Unit,
     onRemove: () -> Unit,
@@ -153,6 +156,7 @@ fun EntryScreen(
             detail.incidentTitle != null ||
             detail.medicationName != null ||
             entry.threads.isNotEmpty() ||
+            detail.projects.isNotEmpty() ||
             detail.people.isNotEmpty()
 
         if (hasLinks) {
@@ -218,6 +222,38 @@ fun EntryScreen(
                 }
             }
 
+            // **The long process this was about**, #283 and rule 18. A project
+            // shows every entry connected to it and logging a call from inside
+            // one writes that connection; the entry said nothing back, so a
+            // call logged from a Medicaid application opened onto a screen with
+            // no way to reach the Medicaid application.
+            //
+            // **Here rather than at the top, which is where the grid draws
+            // it.** Screen 10 draws an entry reached from its project, where
+            // the project is the thing you came from. This screen is reached
+            // from the trail and from search far more often, and the reason
+            // people sit above everything else still holds: a call is a call
+            // with somebody. So the project sits with "what it is about",
+            // beside the medication, and above the chapter, which is where it
+            // happened rather than what it was.
+            detail.projects.forEach { project ->
+                item(key = "project_${project.id}") {
+                    LinkRow(
+                        testTag = EntryTags.project(project.id),
+                        onClick = { onOpenProject(project) },
+                        leading = { WaypointDot(color = colors.gold) },
+                        label = Bidi.isolate(project.name),
+                        // The kind first, then where it stands, so the row says
+                        // what it is before it says how it is going.
+                        note = Bidi.join(
+                            strings["entry.project"],
+                            strings["projects.status.${project.status}"],
+                        ),
+                    )
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            }
+
             // **What it is about**, above the chapter, because a question about
             // a dose is about the dose first and the building second.
             detail.medicationName?.let { name ->
@@ -255,16 +291,24 @@ fun EntryScreen(
             // the screen was opened**, which is law 2's definition of the
             // smaller action. The label says what the tap will do rather than
             // what the state is, so it is an offer rather than a report.
+            //
+            // **Sized to the label and not to the screen**, D118. Both of these
+            // were full width, which is the treatment `SectionScaffold` uses at
+            // the foot of every screen to mean the way back, so this screen
+            // ended in three identical full width outlined buttons of which the
+            // last was the way out and the middle one removed the thing being
+            // read. The sheets keep their full width remove: they have no way
+            // back to collide with, only Cancel.
             QuietButton(
                 label = strings[if (entry.pinnedAt != null) "trail.unpin" else "trail.pin"],
                 onClick = { onSetPinned(entry.pinnedAt == null) },
-                modifier = Modifier.fillMaxWidth().testTag(EntryTags.PIN),
+                modifier = Modifier.testTag(EntryTags.PIN),
             )
             Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["entry.remove"],
                 onClick = onRemove,
-                modifier = Modifier.fillMaxWidth().testTag(EntryTags.REMOVE),
+                modifier = Modifier.testTag(EntryTags.REMOVE),
             )
             Spacer(Modifier.height(Space.l))
         }

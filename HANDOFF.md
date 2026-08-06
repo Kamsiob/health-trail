@@ -15,7 +15,7 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **422 instrumented tests pass**, last full run 2026-08-06 after a brand new project's empty state gained its third label. Up from 404 at the start of this run.
+- **427 instrumented tests pass**, last full run 2026-08-06 after the entry gained its project door. Up from 404 at the start of this run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
 - **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
@@ -220,6 +220,24 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.40 An entry could be reached from its project and had no way back to it
+
+**#283, and it is the last one way link on the entry screen.** `entriesAbout` let a project list every entry connected to it and logging a call from inside a project wrote that connection, but `EntryDetail` carried no project at all. A call logged against a Medicaid application opened onto a screen with no Medicaid application on it: rule 18's dead end wearing a disguise.
+
+- **`EntryDetail.projects` is a list**, because 8.1's `link` table does not stop an entry being about two projects and somebody who rings one office about two applications has done exactly that.
+- **Both link directions are read**, the same way `entriesAbout` and `latestWordFor` do. Nothing in the app writes the project-as-source direction; an import can. **`insertLinkForTest` exists to produce that state**, named like `tombstoneForTest` so nobody reaches for it by accident, and without it half of every both-ways reader in this file is untested and keeps passing.
+- **A removed project stops being a door.** Deletion is a tombstone, so the row is still there to join against, and `live_project` is what keeps it off the screen.
+- **The project sits with "what it is about", not at the top** where screen 10 draws it. Screen 10 draws an entry reached from its project; this screen is reached from the trail and from search far more often, and people-first still holds.
+
+**Two things were found by tapping rather than reading, and both are fixed.**
+
+1. **The way back said "Back to the notebook" and went to the project.** The same small lie the setup screen told about the projects list. It names the project now.
+2. **`Pin this to the top` and `Remove this` were full width**, which `SectionScaffold` uses at the foot of every screen to mean the way back, so the screen ended in three identical full width outlined buttons of which the last was the way out and the middle one removed the thing being read. Both are pills now, D118. **The edit sheets keep their full width remove**: they have no way back to collide with, only Cancel.
+
+**What is deliberately not built**, and neither is invented here: the **reference line** has no column and is **#303**, the owner's call, so `ReferenceLine` still has never rendered with real data; the **paper it produced** needs attachment storage, **#57**; and the call's **duration** exists in `call_detail.duration_minutes` and no screen reads it.
+
+**427 instrumented tests pass**, up from 422. `EntryProjectLinkTest` is 5 tests. Seen at both themes, at font scale 2.0 and in Arabic: `entry-project-door-light`, `entry-project-door-dark`, `entry-project-door-2x-dark`, `entry-project-door-rtl-dark`.
 
 ### 2.39 A brand new project's third answer did not say what it was
 
