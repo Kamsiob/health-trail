@@ -34,7 +34,9 @@
 
 **Checked on 2026-08-06, after #280 and #291 closed, rather than assumed.** Four of the six came back: the steps are edited from `ProjectStepsScreen` and `StepEditSheet`, and the status is set from the setup screen's chips.
 
-**Two did not, and this paragraph used to say they had.** Saving the project as a template and setting what it is waiting on both still have their repository call and their shell state with **nothing anywhere that sets them**. That is **#314**, and it is written down here because a ledger that quietly overstates what came back is worse than no ledger: the whole value of freezing rather than deleting is that somebody can check.
+**Two did not, and this paragraph used to say they had.** Saving the project as a template and setting what it is waiting on both still had their repository call and their shell state with **nothing anywhere that set them**. That was **#314**, and it was written down here because a ledger that quietly overstates what came back is worse than no ledger: the whole value of freezing rather than deleting is that somebody can check.
+
+**All six have come back as of 2026-08-06.** #314 built the last two onto the setup screen, where they were placed by looking at that screen rather than by copying the old one: both are pills rather than full width buttons, and the template action is a headed section of its own. D118. Verified on the phone at both themes, at font scale 2.0 and in Arabic, end to end in both directions: a name saved and survived a full app restart, and a saved template turned up under YOURS in the template library with its lineage kept.
 
 **The frozen file is not extended to bridge the gap**, which is the whole point of freezing it.
 

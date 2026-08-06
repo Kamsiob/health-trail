@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -17,6 +21,9 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -28,6 +35,10 @@ object ProjectSetupTags {
     const val STAGES = "project-setup-stages"
     const val KINDS = "project-setup-kinds"
     const val PAPERS = "project-setup-papers"
+    const val WAITING = "project-setup-waiting"
+    const val SAVE_WAITING = "project-setup-waiting-save"
+    const val SAVE_TEMPLATE = "project-setup-save-template"
+    const val SAVED_TEMPLATE = "project-setup-saved-template"
     fun lead(value: String) = "project-setup-lead-$value"
     fun status(value: String) = "project-setup-status-$value"
 }
@@ -59,6 +70,8 @@ fun ProjectSetupScreen(
     dateKinds: List<String>,
     onSetLead: (String) -> Unit,
     onSetStatus: (String) -> Unit,
+    onSetWaitingOn: (String) -> Unit,
+    onSaveAsTemplate: () -> Unit,
     onOpenSteps: () -> Unit,
     onOpenRoad: () -> Unit,
     onOpenKinds: () -> Unit,
@@ -67,10 +80,21 @@ fun ProjectSetupScreen(
     modifier: Modifier = Modifier,
     /** What the template it came from is called, where this build still has it. */
     templateName: String? = null,
+    /** Whether this session has already kept this project as a template. */
+    savedAsTemplate: Boolean = false,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val type = HealthTrail.type
+
+    // **Held in the screen and written on an explicit save.** Writing on every
+    // keystroke would bump the revision and append to the change log once per
+    // letter, which the data contract would carry and nobody should have to
+    // read. Keyed on the stored value so a save, or a change made anywhere
+    // else, lands in the field rather than being overwritten by a stale draft.
+    var waitingOn by remember(project.id, project.waitingOn) {
+        mutableStateOf(project.waitingOn.orEmpty())
+    }
 
     SectionScaffold(
         name = ProjectSetupTags.NAME,
@@ -209,6 +233,95 @@ fun ProjectSetupScreen(
                         selected = project.status == option,
                         onClick = { onSetStatus(option) },
                         modifier = Modifier.testTag(ProjectSetupTags.status(option)),
+                    )
+                }
+            }
+
+            // **Who you are waiting on, beside the status and not behind it.**
+            // The schema makes it first class because it is the most useful
+            // field a project has, and it is always offered rather than only
+            // when the status says "waiting": somebody is usually waiting on
+            // somebody long before they think to change a status.
+            //
+            // It went with the superseded detail screen and its repository call
+            // and shell state have been sitting here with nothing setting them
+            // ever since, which is #314.
+            Spacer(Modifier.height(Space.m))
+            HealthTrailTextField(
+                label = strings["projects.waiting_field"],
+                value = waitingOn,
+                onValueChange = { waitingOn = it },
+                hint = strings["projects.waiting_field.hint"],
+                fieldTestTag = ProjectSetupTags.WAITING,
+            )
+
+            // **Only drawn when it would do something.** An empty field that
+            // has not been touched has nothing to save, and a control that does
+            // nothing on press reads as broken, per rule 16 and D42.
+            //
+            // **Sized to its label rather than to the screen.** A full width
+            // outlined button is what this app puts at the foot of a screen to
+            // mean "the way back", and drawing one here made a save for one
+            // field look like the screen's own footer. In content actions are
+            // pills, the way the project's own screen draws "Log a call".
+            if (waitingOn.trim() != project.waitingOn.orEmpty().trim()) {
+                Spacer(Modifier.height(Space.s))
+                QuietButton(
+                    label = strings["projects.waiting_save"],
+                    onClick = { onSetWaitingOn(waitingOn.trim()) },
+                    modifier = Modifier.testTag(ProjectSetupTags.SAVE_WAITING),
+                )
+            }
+            Spacer(Modifier.height(Space.sectionGap))
+        }
+
+        // **Keeping what this project turned into, for the next one like it.**
+        // Somebody who has spent four months learning what a Medicaid
+        // application actually needs should not have to learn it twice, and
+        // this is what makes editing a shipped template their own copy rather
+        // than a change to the catalog: `custom_template.derived_from_id` keeps
+        // the lineage, so a later version's catalog can never overwrite it.
+        //
+        // **It sits here rather than on the project's own screen** because it
+        // is a decision about the template library rather than about this
+        // project, and it is last because it is the rarest thing on the screen.
+        item {
+            // **Only when there is a shape to keep.** A template made from a
+            // project with no road, no steps, no papers and no date kinds is a
+            // name with nothing under it. The lead alone is not enough, because
+            // every project has one whether or not anybody chose it.
+            val hasShape = stages.isNotEmpty() || steps.isNotEmpty() ||
+                papers.isNotEmpty() || dateKinds.isNotEmpty()
+            if (hasShape) {
+                // **A section of its own, headed like its two peers.** Without
+                // a heading this was a button floating under the waiting-on
+                // field, which read as that field's save control, and its saved
+                // state was one gray sentence alone at the foot of the screen.
+                // Rule 15: the block is named, then the rest recedes.
+                Text(
+                    text = strings["project.setup.template"],
+                    style = type.displayS,
+                    color = colors.ink,
+                )
+                Text(
+                    text = strings["projects.save_as_template.aside"],
+                    style = type.bodyS,
+                    color = colors.ink2,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+                Spacer(Modifier.height(Space.s))
+                if (savedAsTemplate) {
+                    Text(
+                        text = strings["projects.saved_as_template"],
+                        style = type.bodyM,
+                        color = colors.ink2,
+                        modifier = Modifier.testTag(ProjectSetupTags.SAVED_TEMPLATE),
+                    )
+                } else {
+                    TextAction(
+                        label = strings["projects.save_as_template"],
+                        onClick = onSaveAsTemplate,
+                        modifier = Modifier.testTag(ProjectSetupTags.SAVE_TEMPLATE),
                     )
                 }
             }

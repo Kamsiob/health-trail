@@ -1732,6 +1732,13 @@ fun NotebookShell(
                 },
                 onSetLead = { settingLead = currentProject.id to it },
                 onSetStatus = { settingStatus = currentProject.id to it },
+                // **Both of these had their repository call and their state
+                // here and nothing setting them**, from the day the detail
+                // screen was superseded until #314 was found by reading the
+                // removal ledger against what had actually come back.
+                onSetWaitingOn = { settingWaitingOn = currentProject.id to it },
+                onSaveAsTemplate = { savingTemplate = currentProject },
+                savedAsTemplate = currentProject.id in savedTemplates,
                 onOpenSteps = { stepsOpen = true },
                 onOpenRoad = { roadOpen = true },
                 onOpenKinds = { kindsOpen = true },

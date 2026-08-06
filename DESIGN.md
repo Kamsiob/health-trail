@@ -581,6 +581,7 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 | The road, changed | 18 The project's setup | The same, and it draws the road it edits. **Built 2026-08-05**, #291, review at #311 |
 | The date kinds, changed | 18 The project's setup | The same, minus reordering: chips have no order. **Built 2026-08-05**, #291, review at #312 |
 | The usual papers, changed | 18 The project's setup | The same. Not screen 13, which holds the paper itself and is unbuilt. **Built 2026-08-05**, #291, review at #313 |
+| Keeping a project as a template, and who it is waiting on | 18 The project's setup | Two blocks on a drawn screen that the drawing does not carry. Both came off the superseded detail screen and the grid does not say where they go. **Built 2026-08-06**, #314, review at #317, decided in D118 |
 | Standing instructions, the list | 12 Medications | A record of what was asked, folded by state, with `stone`. **Built 2026-08-04**, #185, review at #225 |
 | One standing instruction | 10 One incident | What was asked, then every violation on a spine |
 | One person | 09 One entry | Identity, then their own facts, then everything connected |

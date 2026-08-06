@@ -15,7 +15,8 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **404 instrumented tests pass**, last full run 2026-08-06 after the road turning sheet gained its date. Up from 356 at the start of that run.
+- **413 instrumented tests pass**, last full run 2026-08-06 after #314 closed. Up from 404.
+- **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
 - **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
 - **`connectedAndroidTest` uninstalls the app every time it runs.** A seed against a phone with no app fails with one word, and `walk.sh see` then dumps the owner's home screen with his real calendar on it. Reinstall, reseed, and check the app is focused before walking.
@@ -220,6 +221,20 @@ The sheet carries the date now, defaulting to today so the common case stays one
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
 
+### 2.36 The last two things the superseded project screen could do have come back
+
+**#314 is closed.** Saving a project as a template and naming who it is waiting on both went with `ProjectDetailScreen` when it was frozen. Their repository calls and their `NotebookShell` state survived the supersession and **nothing anywhere set them**, which is a shape no screenshot shows and no compiler complains about: the state is read, the effect is written, and the control that would fire it does not exist. Found by reading `docs/REMOVAL-LEDGER.md` against what had actually come back. **The ledger now says all six are back, and it was corrected in the same commit.**
+
+- **Both live on the setup screen** and both are **pills sized to their label**, not full width buttons. The old screen drew them full width; this screen ends in "Back to the project", which is the treatment this app uses to mean the way back, and a column of three identical full width buttons was what the first build produced the moment somebody typed a name. `Update where it stands` and `Log a call` are the pattern. D118.
+- **The template action is its own headed section**, "Keep this for the next one". Without a heading it sat directly under an empty text field and read as that field's save button, and its saved state was one gray sentence alone at the foot of the screen. **Both defects were found by looking at it on the phone**, not by reading it.
+- **`projects.save_as_template` was corrected in place in all four catalogs.** It said "Save these steps as your own template" and a template has carried the lead, the stages, the steps, the papers and the date kinds since #262.
+- **The save is explicit and the control is only drawn when it would do something.** Clearing the field is a save, so somebody who is no longer waiting on the county can say so.
+- Proved on the phone end to end: a name saved, survived a force stop and a full restart, and a saved template turned up under YOURS in the library as "Your copy of a template that comes with the app".
+
+**413 instrumented tests pass**, up from 404. Seen at both themes, at font scale 2.0 and in Arabic: `project-setup-template-light`, `project-setup-template-dark`, `project-setup-template-2x-dark`, `project-setup-template-rtl-dark`, `project-setup-waiting-typed-light`.
+
+**Two things were filed rather than built.** Saving twice inserts a second `custom_template` row, so a person who saves in March and again in June gets two identically named templates with no way to tell them apart, which was the frozen screen's behavior too and is now reachable again: **#315**. And the instrumented suite fails a whole class with `RootViewWithoutFocusException` when the notification shade is open on this phone, which reads exactly like a product defect: **#316**.
+
 ### 2.34 Starting a project shows what a template is before it creates anything
 
 **#276 and #277 are built and seen.** Choosing a template used to create the project, its road, its steps, its papers and its date chips on one tap of a row, so the first time anybody saw what a template meant was on a project that already existed. **Nothing is created until Create now.**
@@ -421,6 +436,10 @@ The sheet carries the date now, defaulting to today so the common case stays one
 
 **Copy the suite's report before rerunning anything.** A single class rerun overwrites `androidTest-results/connected/debug/TEST-*.xml`, and both flakes found this week, #302 and #308, lost their assertion and stack that way. Copy it into the scratchpad the moment the suite goes red.
 
+**A whole class failing identically is the environment, not the product.** On 2026-08-06 all six `BackJourneyTest` tests failed with `RootViewWithoutFocusException` and the phone's notification shade was open, holding focus over Reddit. Six named back-journey tests going red at once looks like a real back-stack regression and cost eight minutes. **Read the exception before reading the code**: `has-window-focus=false` and a `Sys2040` in `mCurrentFocus` mean nothing was ever driven. Collapse the shade, press home, rerun the class alone. **#316.**
+
+**A control that came off a superseded screen does not come back just because its call survived.** `saveProjectAsTemplate` and `setProjectStatus`'s waiting-on argument both kept their repository call and their `NotebookShell` state through the supersession, and nothing set either for a week: the state is read, the effect is written, the compiler is happy, and the control does not exist. **Nothing catches this shape.** It was found by reading `docs/REMOVAL-LEDGER.md` against the app, which is what the ledger is for. #314. **Check the ledger's other rows the same way rather than trusting what they claim came back.**
+
 **`connectedDebugAndroidTest` uninstalls the app when it finishes.** `walk.sh` then dumps whatever is on the phone, which is the owner's home screen with his real calendar and contacts on it. **Reinstall and check the app is focused before walking**, and never screenshot without it: `screenshot.sh` refuses, but `walk.sh see` does not.
 
 **Distrust a negative result from a tool that cannot say what it did not examine.** This has now happened five times in one night and twice since. A "not found" from `walk.sh` usually means the thing is below the fold or the label differs in that locale.
@@ -453,7 +472,7 @@ The sheet carries the date now, defaulting to today so the common case stays one
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**All fifteen of them, oldest first.** Checked against the board on 2026-08-06 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+**All sixteen of them, oldest first.** Checked against the board on 2026-08-06 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
 
 | Screen | Issue |
 |---|---|
@@ -472,8 +491,9 @@ Every one of these was built from the existing components, logged in all three p
 | The road, changed | #311 |
 | The date kinds, changed | #312 |
 | The usual papers, changed | #313 |
+| Keeping a project as a template, and who it is waiting on | #317 |
 
-**Six of these are the Projects surface**, #304 and #309 through #313, and they are the ones that arrived in a single run. The other nine have been waiting longer.
+**Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. The other nine have been waiting longer.
 
 ---
 

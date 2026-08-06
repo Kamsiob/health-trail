@@ -2169,6 +2169,16 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **Nothing is created until Create.** That is the part of screen 04 that was actually missing rather than differently shaped. Choosing a template used to start the project, its road, its steps, its papers and its date chips on one tap, so the first time anybody saw what a template meant was on a project that already existed. `DESIGN.md` 20.4 calls a template a starting hand and law 5 says so out loud, and neither was true of a screen that never showed the hand.
 
+### D118. Keeping a project as a template is a headed section on setup, not a button under the last field
+
+**2026-08-06, building #314.** Saving a project as a template and naming who it is waiting on both went with the superseded `ProjectDetailScreen` and were rebuilt on the setup screen. **Where they went was decided by looking at the screen rather than by copying the old one.**
+
+**The old screen drew both controls at full width, and that is wrong on this screen.** The setup screen ends in "Back to the project", a full width outlined button, and this app uses that treatment to mean "the way back". Two more of them stacked above it made the rarest action on the screen read as loud as the navigation, and once somebody typed a name into the waiting-on field there were three identical full width buttons in a column. **In content actions are pills sized to their label**, which is what the project's own screen already does with "Update where it stands", "Write down a date" and "Log a call". Both new controls are pills.
+
+**The template action is a section with a heading, because without one it read as the waiting-on field's save button.** An empty text field with a wide button under it saying "Save this setup" is a save button for that field, whatever the words say. It has "Keep this for the next one" over it now, at `displayS`, the same as the two blocks above it, and the aside sits under the heading as the note. **The heading stays in the saved state**, which otherwise collapsed to one gray sentence alone at the foot of the screen.
+
+**The label was corrected in place in all four catalogs.** It said "Save these steps as your own template" and a template has carried the lead, the stages, the steps, the papers and the date kinds since #262. Naming one of the five was the app describing itself wrongly on the one screen whose job is saying what a template is. It is "Save this setup as your own template". **Correcting the value rather than adding a key is deliberate**: the frozen screen reads the same key, and adding a duplicate so a screen nobody can reach keeps a stale label is waste. Changing a shared catalog value is not extending a frozen file.
+
 ---
 
 ## BLOCKED
