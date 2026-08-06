@@ -10,12 +10,12 @@
 
 ## 1. Where to start
 
-Everything below is verified rather than asserted, as of 2026-08-06, at the end of the overnight run that landed sections 2.36 through 2.45:
+Everything below is verified rather than asserted, as of 2026-08-06, at the end of the overnight run that landed sections 2.36 through 2.49:
 
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **`check_i18n.py` holds plural categories from 2026-08-06**, #318, which is what finally caught nine Arabic strings rendering the wrong form. Section 2.44.
-- **Continuous integration is green on `main` at `86339ae`**, checked. **Two commits before it were red and the tip is not**: the fixture check added for #233 found a real defect that only reproduces in UTC, and `86339ae` fixed it. Section 2.49. **Check CI after every push**, `gh run list --branch main --limit 3`: the tree being clean and the checks passing locally tell you nothing about it.
+- **Continuous integration is green on `main` at the tip**, checked after the last push. **Two commits before it were red and the tip is not**: the fixture check added for #233 found a real defect that only reproduces in UTC, and `86339ae` fixed it. Section 2.49. **Check CI after every push**, `gh run list --branch main --limit 3`: the tree being clean and the checks passing locally tell you nothing about it.
 - **455 instrumented tests pass**, last full run 2026-08-06 at 09:44 UTC, after the fixture's timezone fix moved every timestamp in it. Up from 404 at the start of the overnight run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
