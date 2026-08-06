@@ -5278,6 +5278,118 @@ class Repository private constructor(
         }
 
     /** The papers this project needs, filled and not yet, in order. */
+    /**
+     * One named place for paper, with whatever is actually in it. Screen 13.
+     *
+     * **The place and the paper are different things and this carries both.**
+     * [ProjectPaper] is the place; a person looking at the papers of a project
+     * wants the photograph, its title and when it arrived, and getting those
+     * one row at a time would be a query per placeholder on a screen drawing
+     * twelve of them.
+     */
+    data class ProjectPaperCard(
+        val paper: ProjectPaper,
+        /** The document filed here, or null while the place is still waiting. */
+        val documentId: String?,
+        val title: String?,
+        /** The photograph's content hash, null where the document has none. */
+        val sha256: String?,
+        val receivedEdtf: String?,
+        /** Where the original physically is, as the person wrote it. */
+        val originalLocation: String?,
+    ) {
+        val isFilled: Boolean get() = documentId != null
+    }
+
+    /**
+     * The project's papers with what is filed in each, in one query.
+     *
+     * **A left join, so an empty place is still a row.** 20.4: an unfilled
+     * placeholder is "not yet" and never missing, and dropping it here would
+     * make the screen unable to say so.
+     */
+    /**
+     * Which project has this document filed as one of its papers, if any.
+     *
+     * **The other half of screen 13's link**, rule 18. A project's papers open
+     * the document; without this the document was a dead end that said nothing
+     * about the process it belongs to, which is the thing somebody opening it
+     * from Documents six months later most wants to know.
+     *
+     * **A list, because one photograph can be filed in two places.** Nothing in
+     * the app does that yet and the schema does not stop it.
+     */
+    data class DocumentFiling(
+        val projectId: String,
+        val projectName: String,
+        /** The name of the place it is filed in, as the person named it. */
+        val paperName: String,
+    )
+
+    /** Where this document is filed among the projects' papers. Rule 18. */
+    suspend fun filingsForDocument(documentId: String): List<DocumentFiling> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT pr.id, pr.name, p.name FROM live_project_paper p " +
+                    "JOIN live_project pr ON pr.id = p.project_id " +
+                    "WHERE p.document_id = ? ORDER BY p.created_at",
+                arrayOf(documentId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            DocumentFiling(
+                                projectId = cursor.getString(0),
+                                projectName = cursor.getString(1),
+                                paperName = cursor.getString(2),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+    suspend fun projectPaperCards(projectId: String): List<ProjectPaperCard> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT p.id, p.name, p.sort_index, p.direction, p.document_id, " +
+                    "d.title, a.sha256, d.received_edtf, d.original_location " +
+                    "FROM live_project_paper p " +
+                    "LEFT JOIN live_document d ON d.id = p.document_id " +
+                    "LEFT JOIN live_attachment a ON a.document_id = d.id " +
+                    "WHERE p.project_id = ? " +
+                    "ORDER BY p.sort_index, p.created_at",
+                arrayOf(projectId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            ProjectPaperCard(
+                                paper = ProjectPaper(
+                                    id = cursor.getString(0),
+                                    name = cursor.getString(1),
+                                    sortIndex = cursor.getInt(2),
+                                    direction = cursor.getString(3),
+                                    // **The document as the place records it**,
+                                    // not as the join found it: a place pointing
+                                    // at a tombstoned document is still filled
+                                    // as far as the person arranged it, and the
+                                    // screen says the paper is gone rather than
+                                    // silently emptying the place.
+                                    documentId = cursor.getString(4),
+                                ),
+                                documentId = if (cursor.isNull(5)) null else cursor.getString(4),
+                                title = cursor.getString(5),
+                                sha256 = cursor.getString(6),
+                                receivedEdtf = cursor.getString(7),
+                                originalLocation = cursor.getString(8),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
     suspend fun projectPapers(projectId: String): List<ProjectPaper> =
         withContext(Dispatchers.IO) {
             db().database.rawQuery(

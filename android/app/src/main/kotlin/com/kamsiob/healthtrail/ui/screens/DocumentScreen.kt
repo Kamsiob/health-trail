@@ -30,6 +30,7 @@ object OneDocTags {
     const val IMAGE = "document_image"
     const val EDIT = "document_edit"
     const val CHAPTER = "document_chapter"
+    fun project(id: String) = "document_project_$id"
 }
 
 /**
@@ -61,6 +62,10 @@ fun DocumentScreen(
     onOpenChapter: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Opens the project this is filed as a paper of. Rule 18, #286. */
+    onOpenProject: (String) -> Unit = {},
+    /** Where this document is filed among the projects' papers. */
+    filings: List<Repository.DocumentFiling> = emptyList(),
     backLabelKey: String = "section.back.documents",
 ) {
     val strings = LocalStrings.current
@@ -142,6 +147,35 @@ fun DocumentScreen(
                         onClick = { onOpenChapter(chapterId) },
                         modifier = Modifier.testTag(OneDocTags.CHAPTER),
                     )
+                }
+                Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
+        // **The other half of screen 13's link.** A project's papers open the
+        // document; without this the document said nothing about the process it
+        // belongs to, which is what somebody opening it from Documents months
+        // later most wants to know. Rule 18.
+        if (filings.isNotEmpty()) {
+            item {
+                Spacer(Modifier.height(Space.s))
+                GroupHeader(labelKey = "document.filed_as")
+                Spacer(Modifier.height(Space.headerGap))
+                GroupedSurface {
+                    filings.forEachIndexed { index, filing ->
+                        DenseRow(
+                            title = Bidi.isolate(filing.projectName),
+                            // **The place, not just the project.** "The award
+                            // letter" is what the person called the slot, and
+                            // it is the half that says why this paper is there.
+                            subtitle = Bidi.isolate(filing.paperName),
+                            leading = { WaypointDot(color = colors.gold) },
+                            chevron = true,
+                            divider = index < filings.lastIndex,
+                            onClick = { onOpenProject(filing.projectId) },
+                            modifier = Modifier.testTag(OneDocTags.project(filing.projectId)),
+                        )
+                    }
                 }
                 Spacer(Modifier.height(Space.cardGap))
             }

@@ -45,6 +45,7 @@ object ProjectHomeTags {
     const val SETUP = "project-home-setup"
     const val MOVE_STAGE = "project-home-move-stage"
     const val TRAIL = "project-home-trail"
+    const val PAPERS = "project-home-papers"
 }
 
 /**
@@ -116,6 +117,8 @@ fun ProjectHomeScreen(
     trailCount: Int = 0,
     /** Opens the project's own trail. 20.5 screen 11. */
     onOpenTrail: () -> Unit = {},
+    /** Opens the project's papers as paper. 20.5 screen 13. */
+    onOpenPaperwork: () -> Unit = {},
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
 ) {
     // **Open from the start on the busy stretch**, where the steps are the
@@ -484,31 +487,19 @@ fun ProjectHomeScreen(
             }
         }
 
-        if (papers.isNotEmpty()) {
-            item {
-                FoldRow(
-                    labelKey = "project.fold.papers",
-                    expanded = papersOpen,
-                    onToggle = { papersOpen = !papersOpen },
-                    count = papers.size.toString(),
-                )
-                Spacer(Modifier.height(Space.cardGap))
-            }
-            if (papersOpen) {
-                items(papers, key = { it.id }) { paper ->
-                    // **An empty placeholder reads "not yet", never as an
-                    // error**, 20.4. It is a paper that has not arrived, which
-                    // is the ordinary state of most of them for most of the time.
-                    DenseRow(
-                        title = Bidi.isolate(paper.name),
-                        subtitle = strings[
-                            if (paper.isFilled) "project.paper.held"
-                            else "project.paper.not_yet"
-                        ],
-                    )
-                }
-                item { Spacer(Modifier.height(Space.cardGap)) }
-            }
+        // **A door, like the trail.** The fold listed the places and their two
+        // states and nothing else; 20.5 screen 13 shows the paper itself, split
+        // by what they sent and what you sent, which is the question somebody
+        // is actually asking. Drawn even at zero, for the reason the trail is.
+        item {
+            FoldRow(
+                labelKey = "project.fold.papers",
+                expanded = false,
+                onToggle = onOpenPaperwork,
+                count = papers.size.toString(),
+                modifier = Modifier.testTag(ProjectHomeTags.PAPERS),
+            )
+            Spacer(Modifier.height(Space.cardGap))
         }
 
         // **The way to everything the template decided.** 20.5 screen 18 and

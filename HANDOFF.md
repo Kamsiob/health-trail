@@ -15,7 +15,7 @@ Everything below is verified rather than asserted, as of 2026-08-06:
 - The working tree is clean and everything is on `origin/main`. **Check it rather than trusting this line**: `git status --porcelain` and `git log --oneline -5`.
 - **17 repository checks pass** (`python3 tools/checks/run_all.py`), and `tools/verify.sh` is the runner that reaches everything including the test sources.
 - **Continuous integration is green on `main`** for the last three commits, checked at `ac526b6`. **Check it after every push**, `gh run list --branch main --limit 3`, because the tree being clean and the checks passing tell you nothing about it.
-- **435 instrumented tests pass**, last full run 2026-08-06 after the project's own trail landed. Up from 404 at the start of this run.
+- **440 instrumented tests pass**, last full run 2026-08-06 after the project's papers landed. Up from 404 at the start of this run.
 - **Close the notification shade before running the suite.** An open shade holds window focus and fails all six `BackJourneyTest` tests with `RootViewWithoutFocusException`, which reads exactly like a back-stack defect and is not one. `adb shell cmd statusbar collapse` then `input keyevent KEYCODE_HOME`. **#316** asks for this as a refusing preflight rather than a habit.
 - **Clear the per-app locale before running the suite**: `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""`. #306 fails without it and the failure looks like a product defect. Section 7.
 - **The phone was unplugged on 2026-08-06 at the owner's request, at a clean point.** It was left installed, font scale 1.0 and no per-app locale, both checked against the values they had at the start rather than assumed. The notebook on it is whatever the last `tools/seed.sh` left. **Confirm it is attached before planning any device work**: `adb devices`, then `tools/seed.sh`.
@@ -220,6 +220,28 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.42 The papers of a project, as paper
+
+**#286, screen 13.** `ProjectPaperworkScreen` sits behind the project home's Papers row, which is a door now like the trail. The papers fold listed the places and their two states; this shows the paper.
+
+- **What they sent and what you sent**, which is the one distinction that matters in any process and which `project_paper.direction` has carried the whole time. Chips for the two the grid draws, only when the project uses both.
+- **A grid of thumbnails or a list**, toggled. **The toggle is remembered for rotation and the back stack and not across a restart**: view preferences have no table and that is **#222**, blocked on the owner, and storing it anywhere else would be inventing the table that issue is about.
+- **A placeholder is a place**, so an empty one says "Waiting" at the same size as a full one, and **nothing counts the empty ones**. The header says how many places there are.
+- **Both ways with Documents**, which is the acceptance criterion: a filled place opens the document, and the document now carries a "Filed as" row naming the project **and the place**, `Repository.filingsForDocument`.
+
+**Four defects came out of looking at it, all fixed here.**
+
+1. **The filled tile had a raised white panel the empty ones did not**, because `openableByTap` rests on the card surface. On the phone that read as two different components and made "Waiting" look like an afterthought, which is the opposite of what 20.4 says a placeholder is. Transparent at rest now.
+2. **The tile led with the document's title and hid the place's own name.** Somebody looking for "Proof of income" found a tile called "Discharge summary" with no way to tell it was the same place. The place leads; what is in it says so underneath, and on a tile the photograph is that answer.
+3. **The tile line truncated at font scale 2.0**, "May 12," with the year cut off. Neither tile line is capped now: an uneven tile is the honest shape, which is the same call `RoadStrip` makes.
+4. **The document's way back said "Back to documents" while going to the project's papers**, the third instance of that small lie this run.
+
+**`verify.sh` earned its keep again**: `lintDebug` failed on `ModifierParameter`, because the two new optional parameters landed before `modifier`. Everything else was green and it had already been walked on the phone.
+
+**Not built, and named rather than skipped:** camera-first capture from this screen, and the "Older" fold the grid draws for a project with many papers. **#57 is stale and should be read before it is worked on**: attachment storage exists and is proved, `Attachments.put`/`read`, and the export carries it.
+
+**440 instrumented tests pass**, up from 435. `ProjectPaperworkTest` is 5 tests. Seen at both themes, at font scale 2.0 and in Arabic: `project-paperwork-light`, `project-paperwork-dark`, `project-paperwork-2x-dark`, `project-paperwork-rtl-dark`, `project-paperwork-list-light`.
 
 ### 2.41 A project has its own trail now, and it reads forwards
 

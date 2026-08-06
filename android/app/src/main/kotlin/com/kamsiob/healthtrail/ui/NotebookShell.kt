@@ -104,6 +104,7 @@ import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectPaperworkScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectTrailScreen
 import com.kamsiob.healthtrail.ui.screens.StepEditSheet
 import com.kamsiob.healthtrail.ui.screens.DateKindEditSheet
@@ -321,6 +322,13 @@ fun NotebookShell(
         mutableStateOf<List<Repository.ProjectTrailItem>>(emptyList())
     }
     var trailOpen by remember { mutableStateOf(false) }
+    var paperworkOpen by remember { mutableStateOf(false) }
+    var documentFilings by remember {
+        mutableStateOf<List<Repository.DocumentFiling>>(emptyList())
+    }
+    var projectPaperCards by remember {
+        mutableStateOf<List<Repository.ProjectPaperCard>>(emptyList())
+    }
     var projectEntries by remember {
         mutableStateOf<List<Repository.TrailEntry>>(emptyList())
     }
@@ -692,6 +700,9 @@ fun NotebookShell(
             // against, on one line. 20.5 screen 11.
             projectTrail = openProject?.let { repository.projectTrail(it.id) }.orEmpty()
             projectPapers = openProject?.let { repository.projectPapers(it.id) }.orEmpty()
+            // The places with whatever is filed in them, for screen 13.
+            projectPaperCards =
+                openProject?.let { repository.projectPaperCards(it.id) }.orEmpty()
             projectDateKinds =
                 openProject?.let { repository.projectDateKinds(it.id) }.orEmpty()
             // The same list with the ids the editor needs. Read alongside
@@ -758,7 +769,8 @@ fun NotebookShell(
     // than the project underneath it. Without this, one back from a project's
     // trail left the projects list and the person lost two screens to one tap.
     BackHandler(enabled = openProject != null && trailOpen) { trailOpen = false }
-    BackHandler(enabled = openProject != null && !setupOpen && !trailOpen) {
+    BackHandler(enabled = openProject != null && paperworkOpen) { paperworkOpen = false }
+    BackHandler(enabled = openProject != null && !setupOpen && !trailOpen && !paperworkOpen) {
         openProject = null
     }
     BackHandler(enabled = aboutOpen) { aboutOpen = false }
@@ -1705,6 +1717,18 @@ fun NotebookShell(
                     onDismiss = { stageUnderEdit = null },
                 )
             }
+        } else if (currentProject != null && paperworkOpen) {
+            ProjectPaperworkScreen(
+                projectName = currentProject.name,
+                papers = projectPaperCards,
+                // The document itself, which already knows where it came from,
+                // so rule 18 holds both ways.
+                onOpenDocument = { id ->
+                    openDocument = documents.firstOrNull { it.id == id }
+                    if (openDocument == null) openSection = Repository.Section.DOCUMENTS
+                },
+                onBack = { paperworkOpen = false },
+            )
         } else if (currentProject != null && trailOpen) {
             ProjectTrailScreen(
                 projectName = currentProject.name,
@@ -1856,6 +1880,7 @@ fun NotebookShell(
                 entries = projectEntries,
                 trailCount = projectTrail.size,
                 onOpenTrail = { trailOpen = true },
+                onOpenPaperwork = { paperworkOpen = true },
                 // **Rule 18 both ways.** The entry already knows the project;
                 // this is the project opening the entry.
                 onOpenEntryById = { openEntry = it },
@@ -1863,6 +1888,7 @@ fun NotebookShell(
                     openProject = null
                     setupOpen = false
                     trailOpen = false
+                    paperworkOpen = false
                     stepsOpen = false
                     roadOpen = false
                     kindsOpen = false
@@ -2718,8 +2744,27 @@ fun NotebookShell(
         // own paper at a size somebody could read.
         openDocument?.let { current ->
             val fresh = documents.firstOrNull { it.id == current.id } ?: current
+            LaunchedEffect(current.id, revision) {
+                documentFilings = repository.filingsForDocument(current.id)
+            }
             DocumentScreen(
                 document = fresh,
+                filings = documentFilings,
+                // **The project itself**, and it keeps the papers screen
+                // underneath so back returns where the person came from.
+                onOpenProject = { id ->
+                    openDocument = null
+                    openProject = projects.firstOrNull { it.id == id }
+                    if (openProject == null) destination = Destination.PROJECTS
+                },
+                // **Names where it goes.** Reached from a project's papers this
+                // returns there, and "Back to documents" was the same small lie
+                // the entry screen told before #283.
+                backLabelKey = if (paperworkOpen) {
+                    "section.back.project_papers"
+                } else {
+                    "section.back.documents"
+                },
                 onEdit = {
                     editingDocument = fresh
                     documentError = null
