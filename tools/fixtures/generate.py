@@ -444,22 +444,29 @@ class Generator:
         made = []
         for index in range(wanted):
             began = index * span
-            made.append(
-                self.row(
-                    db,
-                    "chapter",
-                    {
-                        "subject_id": subject_id,
-                        "name": PLACES[index % len(PLACES)],
-                        **{
-                            "started_edtf": (self.start + timedelta(days=began)).isoformat(),
-                            "started_start": self.ms(began, 0, 0),
-                            "started_end": self.ms(began, 23, 59),
-                        },
-                    },
-                    day=began,
-                )
-            )
+            values = {
+                "subject_id": subject_id,
+                "name": PLACES[index % len(PLACES)],
+                "started_edtf": (self.start + timedelta(days=began)).isoformat(),
+                "started_start": self.ms(began, 0, 0),
+                "started_end": self.ms(began, 23, 59),
+            }
+            # **A person is in one place at a time**, #219. Every chapter but
+            # the last one ends, on the day the next one starts, because a
+            # chapter is current exactly when it has no end date and eight
+            # current places is the fixture asserting somebody is in eight
+            # buildings at once.
+            #
+            # **It made the screen lie in the way 5.2.1 warns about**: the
+            # chapters screen ringed all eight with a gold milestone waypoint,
+            # and a milestone is rare by design. If everything is ringed
+            # nothing is.
+            if index < wanted - 1:
+                ends = (index + 1) * span
+                values["ended_edtf"] = (self.start + timedelta(days=ends)).isoformat()
+                values["ended_start"] = self.ms(ends, 0, 0)
+                values["ended_end"] = self.ms(ends, 23, 59)
+            made.append(self.row(db, "chapter", values, day=began))
         return made
 
     def threads(self, db, subject_id):

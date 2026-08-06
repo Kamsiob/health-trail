@@ -76,6 +76,37 @@ EDTF_COLUMNS = [
 ]
 
 
+def chapter_problems(path):
+    """A person is in one place at a time. #219.
+
+    A chapter is current exactly when it has no end date, which is the right
+    rule: the place somebody has not left is where they are. **The fixture left
+    every chapter open**, so the chapters screen said "where they are now" and
+    listed eight buildings, each ringed with a gold milestone waypoint.
+    `DESIGN.md` 5.2.1: a milestone is rare by design, and if everything is
+    ringed nothing is.
+    """
+    db = sqlite3.connect(path)
+    try:
+        open_rows = db.execute(
+            "SELECT COUNT(*) FROM chapter WHERE deleted_at IS NULL "
+            "AND ended_edtf IS NULL"
+        ).fetchone()[0]
+        total = db.execute(
+            "SELECT COUNT(*) FROM chapter WHERE deleted_at IS NULL"
+        ).fetchone()[0]
+    finally:
+        db.close()
+    if total and open_rows != 1:
+        return [
+            f"{open_rows} of {total} chapters have no end date. A person is in "
+            f"one place at a time, so exactly one is current; the screen rings "
+            f"every current one and a screen where everything is ringed says "
+            f"nothing."
+        ]
+    return []
+
+
 def edtf_problems(path):
     """Every row whose derived columns disagree with the precision it declares.
 
@@ -335,6 +366,7 @@ def main():
 
         # Every EDTF must agree with the columns derived from it. #233.
         failures.extend(edtf_problems(first))
+        failures.extend(chapter_problems(first))
 
         # Year five hits the scale the issue states.
         actual = counts(first)
@@ -357,8 +389,8 @@ def main():
     print(
         "Fixture check passed. The same seed is byte identical across runs, a "
         "different seed is not, all six points generate and grow, year five "
-        "hits its stated scale, and every EDTF agrees with the columns derived "
-        "from it."
+        "hits its stated scale, every EDTF agrees with the columns derived "
+        "from it, and exactly one chapter is current."
     )
     return 0
 

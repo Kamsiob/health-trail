@@ -230,6 +230,14 @@ The sheet carries the date now, defaulting to today so the common case stays one
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
 
+### 2.48 Eight places at once, and #219 is closed
+
+A chapter is current exactly when it has no end date, which is the right rule: the place somebody has not left is where they are. **The fixture left every chapter open**, so the chapters screen said "where they are now" and listed eight buildings, each ringed with a gold milestone waypoint. `DESIGN.md` 5.2.1: a milestone is rare by design, and **if everything is ringed nothing is**.
+
+- **Every chapter but the last one ends now**, on the day the next one starts.
+- **`check_fixtures.py` holds it**: exactly one chapter has no end date.
+- Seen on the phone: "Where they are now" is one place, and the rest fold under "Other places".
+
 ### 2.47 An appointment's date and its instant disagreed, and #233 is closed
 
 The fixture wrote a day precision EDTF beside a 10am instant, which is **a row the app itself could never produce**: `Repository.dateColumns` derives the columns from `Edtf.resolve`, and a day gets midnight to one millisecond before the next.
