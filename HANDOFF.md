@@ -230,6 +230,16 @@ The sheet carries the date now, defaulting to today so the common case stays one
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
 
+### 2.47 An appointment's date and its instant disagreed, and #233 is closed
+
+The fixture wrote a day precision EDTF beside a 10am instant, which is **a row the app itself could never produce**: `Repository.dateColumns` derives the columns from `Edtf.resolve`, and a day gets midnight to one millisecond before the next.
+
+- **It is a moment now**, `2026-11-27T10:00`, with `scheduled_start` and `scheduled_end` both the instant, which is what `Precision.MOMENT` resolves to. The old hour long end was not a shape the app writes either.
+- **Seen on the phone**: the appointment reads "November 27, 2026 at 10:00 AM". It used to say only the date while carrying a time nobody could see, and the appointments screen splits upcoming from past on that instant, so one on today's date flipped from "coming up" to "already happened" at 10am.
+- **`check_fixtures.py` holds it now.** Every EDTF in `appointment` and `entry` must agree with the columns derived from it: a day starts at midnight, a moment's instant is the minute its text names, and a moment's end is its start. **Proved by putting #233 back on purpose**, watching the check name 45 rows, and restoring from a scratchpad copy.
+
+**A fixture whose rows the app cannot produce cannot exercise the path the app takes**, which is the whole point of one, and this is the fourth defect of that family this run.
+
 ### 2.46 Text reaches the database in NFC now, and #227 is closed
 
 **Release-blocking, and it was true of every string the app had ever stored.** `contract/DATA-CONTRACT.md` 8.4: "a name typed with a combining accent on one device and a precomposed character on another is the same person, not two." **Nothing normalized anything.**

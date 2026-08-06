@@ -17,6 +17,8 @@ Kamsiob, AGPL-3.0.
 import hashlib
 import json
 import sqlite3
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import sys
 import tempfile
 import time
@@ -56,6 +58,67 @@ def counts(path):
         }
     finally:
         db.close()
+
+
+# Which tables carry an EDTF beside the columns derived from it, and what the
+# three columns are called there.
+#
+# **A fixture that writes these by hand can produce a row the app could never
+# write**, which is #233: an appointment carried a day precision EDTF beside a
+# 10am instant, so anything reading the instant got a time nobody typed and the
+# appointments screen flipped one from "coming up" to "already happened" at 10am
+# instead of at midnight. A fixture whose rows the app cannot produce cannot
+# exercise the path the app actually takes, which is the whole point of one.
+EDTF_COLUMNS = [
+    ("appointment", "scheduled_edtf", "scheduled_start", "scheduled_end"),
+    ("appointment", "attended_edtf", "attended_start", None),
+    ("entry", "occurred_edtf", "occurred_start", "occurred_end"),
+]
+
+
+def edtf_problems(path):
+    """Every row whose derived columns disagree with the precision it declares.
+
+    Only the two shapes this fixture writes are checked, day and moment, since
+    a rule about a precision nothing generates is a rule nobody can break.
+    """
+    found = []
+    db = sqlite3.connect(path)
+    try:
+        for table, edtf_col, start_col, end_col in EDTF_COLUMNS:
+            cols = f"{edtf_col}, {start_col}" + (f", {end_col}" if end_col else "")
+            rows = db.execute(
+                f"SELECT id, {cols} FROM {table} WHERE {edtf_col} IS NOT NULL "
+                f"AND {start_col} IS NOT NULL"
+            ).fetchall()
+            for row in rows:
+                rid, edtf, start = row[0], row[1], row[2]
+                end = row[3] if end_col else None
+                at = datetime.fromtimestamp(start / 1000, ZoneInfo("America/New_York"))
+                if "T" in edtf:
+                    # A moment resolves to start == end, and the instant has to
+                    # be the minute the text names.
+                    want = edtf.split("T", 1)[1][:5]
+                    got = f"{at.hour:02d}:{at.minute:02d}"
+                    if want != got:
+                        found.append(
+                            f"{table} {rid} says {edtf!r} and its {start_col} is {got}"
+                        )
+                    if end is not None and end != start:
+                        found.append(
+                            f"{table} {rid} is a moment and its {end_col} is not its start"
+                        )
+                else:
+                    # A day runs midnight to one millisecond before the next.
+                    if (at.hour, at.minute, at.second) != (0, 0, 0):
+                        found.append(
+                            f"{table} {rid} says {edtf!r}, which is day precision, and "
+                            f"its {start_col} is {at.hour:02d}:{at.minute:02d}, a time "
+                            f"nobody typed"
+                        )
+    finally:
+        db.close()
+    return found
 
 
 def digest(path):
@@ -270,6 +333,9 @@ def main():
         finally:
             db.close()
 
+        # Every EDTF must agree with the columns derived from it. #233.
+        failures.extend(edtf_problems(first))
+
         # Year five hits the scale the issue states.
         actual = counts(first)
         for table, (low, high) in YEAR_FIVE.items():
@@ -290,8 +356,9 @@ def main():
 
     print(
         "Fixture check passed. The same seed is byte identical across runs, a "
-        "different seed is not, all six points generate and grow, and year five "
-        "hits its stated scale."
+        "different seed is not, all six points generate and grow, year five "
+        "hits its stated scale, and every EDTF agrees with the columns derived "
+        "from it."
     )
     return 0
 

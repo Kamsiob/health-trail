@@ -404,6 +404,16 @@ class Generator:
         db.execute(f"INSERT INTO {table} ({columns}) VALUES ({marks})", list(full.values()))
         return full["id"]
 
+    def moment_edtf(self, day_offset, hour, minute):
+        """An EDTF at minute precision, which is what a timed thing has.
+
+        `Edtf.Precision.MOMENT` is `YYYY-MM-DDTHH:MM`. Written here so the
+        fixture cannot drift from what the app would store: the whole point of
+        a fixture is that it produces rows the app itself could have written.
+        """
+        on = self.start + timedelta(days=day_offset)
+        return f"{on.isoformat()}T{hour:02d}:{minute:02d}"
+
     def edtf_day(self, day_offset):
         on = self.start + timedelta(days=day_offset)
         return {
@@ -785,10 +795,24 @@ class Generator:
                 "title": title,
                 "location_note": where,
                 "chapter_id": chapters[min(len(chapters) - 1, day // max(1, self.days // len(chapters)))],
-                "scheduled_edtf": (self.start + timedelta(days=day)).isoformat(),
+                # **A moment, because it has a time.** #233: this wrote a
+                # day precision EDTF beside a 10am instant, which is a row the
+                # app itself could never produce. `Repository.dateColumns`
+                # derives the columns from `Edtf.resolve`, and a day gets
+                # midnight to one millisecond before the next day, so anything
+                # reading `scheduled_start` for one of these got a time nobody
+                # typed: the appointments screen splits upcoming from past on
+                # that value, and an appointment on today's date flipped from
+                # "coming up" to "already happened" at 10am rather than at
+                # midnight.
+                #
+                # **A moment resolves to start == end**, which is what
+                # `Edtf.Precision.MOMENT` does, so the hour long end this used
+                # to write was not a shape the app has either.
+                "scheduled_edtf": self.moment_edtf(day, 10, 0),
                 "scheduled_zone": "America/New_York",
                 "scheduled_start": self.ms(day, 10, 0),
-                "scheduled_end": self.ms(day, 11, 0),
+                "scheduled_end": self.ms(day, 10, 0),
             }
             if people:
                 values["person_id"] = self.rng.choice(people)
