@@ -25,7 +25,7 @@ Everything below is verified rather than asserted, as of 2026-08-06, at the end 
 
 **Take these in this order.**
 
-1. **#231 needs the screen reader turned on and nothing else.** Six cards were announcing "remove" on a tap that opens; all six are fixed and tested, and the issue's own third criterion, "verified with the reader on", is undone. **It is the cheapest item on the board**: turn TalkBack on, walk one card, hear "Open this entry", restore per section 10. Section 2.45.
+1. **#231 needs a human ear and nothing else.** Six cards were announcing "remove" on a tap that opens; all six are fixed and tested. **The reader was turned on and it did not settle the criterion**: TalkBack bound and processed this app's events, the cards focus as one node each and activating one opens the thing, but **the spoken string cannot be captured over adb** on this build. Section 2.51. **Turn TalkBack on, swipe to one of the six cards, and listen.** That is the whole of it.
 
 2. **Projects has three screens left**, in this order, and they are all **states of the project home** rather than new places:
    - **#288, screen 15, everything together.** The trail, papers and people counted on one row and reached from it.
@@ -229,6 +229,18 @@ The sheet carries the date now, defaulting to today so the common case stays one
 **388 instrumented tests pass**, up from 373. Seen at both themes, at font scale 2.0 and in Arabic: `project-road-light`, `project-road-dark`, `project-road-2x-dark`, `project-road-rtl-dark`, `stage-edit-light`.
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
+
+### 2.51 The reader was turned on, and it settled half of #231
+
+**Rule 19's exception was used properly**: the three accessibility values were written to disk before anything changed, TalkBack was enabled beside the existing KDE Connect service, and every value was read back afterward. `dumpsys accessibility` shows TalkBack unbound and KDE Connect the only bound service, which is where it started.
+
+**Confirmed with it running:** each card is one focusable node rather than a cluster, and activating one opens the thing and removes nothing.
+
+**Not confirmed, and it is the half the issue is about:** the announced words. **TalkBack does not log utterances to logcat at any tag that could be raised**, `dumpsys accessibility` exposes window and focus state but not the focused node's action labels, and `uiautomator dump` does not serialize `AccessibilityAction` labels at all. Three approaches, none of which produced the string, so the three-attempts rule ended it.
+
+**The label is asserted by `OpenNotRemoveTest` against the semantics tree, which is where TalkBack reads it from.** That is good reason to believe it is right and it is not the same as hearing it, so **#231 stays open**. A person with the phone settles it in a minute.
+
+**Worth knowing before anybody tries again**: this is a real limit of driving a screen reader over adb, not a missing trick. Anything whose acceptance is "what the reader says" needs an ear in the room.
 
 ### 2.50 Restore replaces `app_meta`, which is worse than #307 says
 
