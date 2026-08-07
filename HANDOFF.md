@@ -230,6 +230,17 @@ The sheet carries the date now, defaulting to today so the common case stays one
 
 **373 instrumented tests pass**, up from 365. Seen at both themes, at font scale 2.0 and in Arabic: `project-steps-light`, `project-steps-dark`, `project-steps-2x-dark`, `project-steps-rtl-dark`, `step-edit-light`.
 
+### 2.50 Restore replaces `app_meta`, which is worse than #307 says
+
+**#307 was confirmed on the phone twice** during this run, and tracing it found a second defect in the same line of code. **#320 is new and release-blocking.**
+
+The chain: `ExportContainer.PLATFORM_TABLES` skips only `android_metadata`, so **`app_meta` travels in the archive**; `Backup.restore` copies the archive's database over the live path rather than merging; and `HealthTrailDatabase.ensureDeviceId` keeps whatever `device_id` it finds.
+
+- **#307 is the cosmetic half**: `disclaimer_accepted` lives in `app_meta`, so a restore sends the person back through "Before you start" on a notebook they have used for months.
+- **#320 is the other half**: `device_id` lives there too, so **a restored phone stamps every row and every change log entry with the source phone's identity**, and the `device` table's `is_self` row names the wrong device. Silent until sync exists, by which point every post-restore row is mislabeled.
+
+**They are one fix**, in whatever preserves or re-stamps `app_meta` across the replacement. **Neither was changed**: #307 touches the first screen the app ever shows and #320 touches the recovery path, and both want an owner decision on direction. **#320's chain is read out of the source and was not observed on the device**, which is said on the issue.
+
 ### 2.49 The fixture computed its instants in the wrong timezone, and CI caught it
 
 **The check added for #233 failed on the very next push**, which is the check working. `Fixture.ms` built a naive `datetime` and called `.timestamp()`, which resolves in **whatever zone the generator is running in**, while every row it writes carries `"America/New_York"`.
