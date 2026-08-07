@@ -2184,7 +2184,31 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
-**One thing is blocked as of 2026-08-02, and it is B5.** The four entries before it are all resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. **B5 does not stop the work.** A fresh session can build everything on the list without it, exactly as the last two sessions did, on rule 6 followed by hand.
+**Nothing is blocked on the owner's machine as of 2026-08-07.** B5, the destructive command guard, is resolved: it is installed, it is live, and it refused a real command. The entries below are kept with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. **What remains blocked is not machinery but decisions**: #182 and #199 need a schema decision, and #303, #238, #319 and #320 each need a direction chosen. Every one of them says on the issue exactly what has to be decided.
+
+**The original note, from when B5 was open:** The four entries before it are all resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. **B5 does not stop the work.** A fresh session can build everything on the list without it, exactly as the last two sessions did, on rule 6 followed by hand.
+
+### B5. RESOLVED 2026-08-07. The guard is installed, live, and has refused a real command
+
+**Opened 2026-08-02. Closed by observation rather than by anybody reporting it done.**
+
+**What changed.** The guard is wired in `.claude/settings.json` as a `PreToolUse` hook on
+`Bash`, pointing at `.claude/hooks/block-destructive.py` with the path correctly quoted.
+On 2026-08-07 it **refused a real removal command aimed at the app package**, with the
+reasoning from D50 quoted back, and it refused rather than asking, which is what an
+unattended run needs.
+
+**So two things this entry said are no longer true**: that the guard has never run, and
+that only the owner can install it. It is installed and it runs. The account below is
+kept because the cost it records is real and is the reason the guard exists.
+
+**One defect came with the good news, and it is #323.** The guard matches on substrings
+of the whole command text, so it also fires on *prose that mentions* a blocked verb.
+Writing the sentence "an instrumented run removes the app when it finishes" into
+`HANDOFF.md` was blocked. **That is not a reason to weaken it**: it caught a genuine
+mistake the same day. It is a reason to make it skip heredoc bodies.
+
+**The original entry, kept because the cost it records still stands:**
 
 ### B5. The destructive command guard needs to be installed from user settings, and only the owner can do it. Opened 2026-08-02
 

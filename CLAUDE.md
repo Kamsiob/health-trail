@@ -6,7 +6,7 @@ This file is deliberately short. It is loaded automatically every session and it
 
 ## Hard rules
 
-1. **Read HANDOFF.md before doing anything, every session.** It is the current state of the work. If you find yourself re-reading files you already read this session, compaction has happened: stop, read HANDOFF.md again, and re-orient before continuing.
+1. **Read HANDOFF.md, then issue #321, before doing anything, every session.** HANDOFF.md is the current state and is deliberately short. **#321, "START HERE", is the order of work** and names the next action: `gh issue view 321`. **Never read `docs/RUN-LOG.md` to orient**, it is history. If you find yourself re-reading files you already read this session, compaction has happened: stop, read both again, and re-orient before continuing.
 2. **No medical advice, no legal advice, no interpretation.** The app records, organizes, and counts. It never concludes. No target ranges, no normal values, no thresholds, no color coding by value, no judgments on any measurement, no educational content.
 3. **The schema is fixed by contract/DATA-CONTRACT.md.** Every row has a locally generated id, created and updated timestamps, a revision, an origin device, and a tombstone column. Deletion is always a tombstone, never a row removal. Every write appends to the change log in the same transaction. Do not change any of this without the owner's explicit decision.
 4. **No em dashes in anything a user or reader sees.** App copy, documentation, README, commit messages, store text. Commas, periods, and colons instead. Source code is exempt where a character is functionally required.
@@ -33,6 +33,6 @@ This file is deliberately short. It is loaded automatically every session and it
 
 ## Where everything is
 
-`README-START-HERE.md` maps the folder. **`docs/RUN-LOG.md` is history and is never read to orient**: `HANDOFF.md` is the current state and it is the short one. `MASTER_SPEC.md` is the features and the phase plan. `contract/DATA-CONTRACT.md` is the schema and export format. `DESIGN.md` plus `reference/screen-grid.html` is what it looks like. `TESTING-PERSONAS.md` is how it gets tested. `AGENTS.md` is delegation. `RUN-SAFETY.md` is how a long unattended run stays safe. `PROJECT-DELTAS.md` overrides `kamsiob-project-template.md`.
+**Issue #321 is the entry point for what to do next**, and the six milestones on the board are the order. `README-START-HERE.md` maps the folder. **`docs/RUN-LOG.md` is history and is never read to orient**: `HANDOFF.md` is the current state and it is the short one. `MASTER_SPEC.md` is the features and the phase plan. `contract/DATA-CONTRACT.md` is the schema and export format. `DESIGN.md` plus `reference/screen-grid.html` is what it looks like. `TESTING-PERSONAS.md` is how it gets tested. `AGENTS.md` is delegation. `RUN-SAFETY.md` is how a long unattended run stays safe. `PROJECT-DELTAS.md` overrides `kamsiob-project-template.md`.
 
 Precedence: verified code, then HANDOFF.md, then DECISIONS.md, then the data contract for data questions, then DESIGN.md for visual questions, then RUN-SAFETY.md and AGENTS.md for how-to-work questions, then PROJECT-DELTAS.md, then MASTER_SPEC.md, then the template.
