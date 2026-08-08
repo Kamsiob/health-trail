@@ -31,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import com.kamsiob.healthtrail.data.Repository
@@ -167,9 +168,23 @@ fun TodayFieldScreen(
     // card to be there; staging it would mean the gallery's Add did nothing
     // visible until Done, which is the opposite of what that button says.
 
+    // **One column once the type is large enough that half a screen is not a
+    // card.** 21.6 screen 8: the field reflows and every card renders at full
+    // width with nothing clipped, and the layout order is preserved exactly,
+    // which a one column grid gives for free. **Designed, not endured.**
+    //
+    // At scale 2.0 a half width cell on a 360dp screen is about 170dp, and a
+    // card there is a tab, a number and a wrapped three word line stacked into
+    // a column barely wider than the words. The threshold is 1.5 because that
+    // is where the second column stops being able to hold a card rather than
+    // where the person has reached the end of the slider: somebody at 1.7 has
+    // the same problem as somebody at 2.0 and should not have to go further to
+    // get the fix.
+    val oneColumn = LocalDensity.current.fontScale >= WIDE_TYPE_SCALE
+
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+            columns = GridCells.Fixed(if (oneColumn) 1 else 2),
             modifier = Modifier
                 .fillMaxSize()
                 .systemBarsPadding()
@@ -178,7 +193,9 @@ fun TodayFieldScreen(
             horizontalArrangement = Arrangement.spacedBy(Space.cardGap),
             verticalArrangement = Arrangement.spacedBy(Space.cardGap),
         ) {
-            item(span = { GridItemSpan(2) }, key = "today-header") {
+            val fullWidth = GridItemSpan(if (oneColumn) 1 else 2)
+
+            item(span = { fullWidth }, key = "today-header") {
                 Column {
                     Spacer(Modifier.height(Space.sm))
                     Row(
@@ -237,7 +254,7 @@ fun TodayFieldScreen(
             val lead = shown.first()
             val field = shown.drop(1)
 
-            item(span = { GridItemSpan(2) }, key = "today-lead-slot") {
+            item(span = { fullWidth }, key = "today-lead-slot") {
                 LeadSlot(
                     card = lead,
                     answer = answers[lead.id] ?: digestAnswer(lead, digest, strings, hasAnything),
@@ -262,7 +279,7 @@ fun TodayFieldScreen(
             // leaving for search mid-edit would throw away an unsaved draft and
             // a door that costs you your work is worse than no door.
             if (!editing) {
-                item(span = { GridItemSpan(2) }, key = "today-search") {
+                item(span = { fullWidth }, key = "today-search") {
                     UniversalSearchDoor(
                         onOpen = onSearch,
                         modifier = Modifier.testTag(TodayFieldTags.SEARCH),
@@ -273,7 +290,10 @@ fun TodayFieldScreen(
             items(
                 count = field.size,
                 key = { field[it].id },
-                span = { index -> GridItemSpan(if (field[index].size == "small") 1 else 2) },
+                span = { index ->
+                    if (oneColumn) fullWidth
+                    else GridItemSpan(if (field[index].size == "small") 1 else 2)
+                },
             ) { index ->
                 val card = field[index]
                 // Its place in the whole surface, which is what a move has to
@@ -282,7 +302,16 @@ fun TodayFieldScreen(
                 CardFor(
                     card = card,
                     answer = answers[card.id] ?: digestAnswer(card, digest, strings, hasAnything),
-                    size = CardSize.of(card.size),
+                    // **Full width is wide.** A card the person made small is
+                    // rendering at full width in this layout, and 21.3 ties the
+                    // second line of context to width rather than to the label
+                    // on the size chip. Leaving it at small would give a full
+                    // width card one line and a lot of nothing.
+                    size = if (oneColumn && card.size == "small") {
+                        CardSize.WIDE
+                    } else {
+                        CardSize.of(card.size)
+                    },
                     onOpen = onOpen,
                     modifier = Modifier.testTag(TodayFieldTags.card(card.id)),
                     today = today,
@@ -305,7 +334,7 @@ fun TodayFieldScreen(
                 )
             }
 
-            item(span = { GridItemSpan(2) }, key = "today-fab-clearance") {
+            item(span = { fullWidth }, key = "today-fab-clearance") {
                 Spacer(Modifier.height(Space.xxl))
             }
         }
@@ -1189,3 +1218,12 @@ private fun EditAction(label: String, spoken: String, onClick: () -> Unit) {
             .padding(horizontal = Space.s, vertical = Space.s),
     )
 }
+
+/**
+ * The text scale at which Today's field becomes one column.
+ *
+ * `DESIGN.md` 21.6 screen 8. Not the top of the slider: somebody at 1.7 has the
+ * same half width card as somebody at 2.0, and making them go further to get a
+ * readable screen is the opposite of designing for it.
+ */
+private const val WIDE_TYPE_SCALE = 1.5f

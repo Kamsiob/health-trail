@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -22,6 +23,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.screens.TodayFieldScreen
 import com.kamsiob.healthtrail.ui.screens.TodayFieldTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import java.time.LocalDate
 import java.util.Locale
@@ -787,6 +789,52 @@ class TodayFieldScreenTest {
         assertTrue(
             "two month precise dates were treated as the same day",
             "Blood draw" !in spokenByCard("c-next"),
+        )
+    }
+
+    @Test
+    fun theFieldReflowsToOneColumnAtLargeTypeAndKeepsItsOrder() {
+        // 21.6 screen 8. **Designed, not endured**: at scale 2.0 a half width
+        // cell is a card barely wider than the words in it, so the field goes
+        // to one column and every card renders full width. **Layout order is
+        // preserved exactly**, which is the part a reflow is most likely to
+        // get wrong and the part the person would notice.
+        val layout = startingHand()
+        val strings = Strings.load(context)
+        compose.setContent {
+            HealthTrailTheme {
+                CompositionLocalProvider(
+                    LocalStrings provides strings,
+                    LocalDensity provides Density(
+                        density = LocalDensity.current.density,
+                        fontScale = 2.0f,
+                    ),
+                ) {
+                    TodayFieldScreen(
+                        layout = layout,
+                        answers = emptyMap(),
+                        onOpen = {},
+                        today = today,
+                    )
+                }
+            }
+        }
+
+        assertEquals(
+            "the field did not keep its order when it reflowed",
+            layout.field.map { it.id },
+            fieldOrder(layout),
+        )
+
+        // One column means every card starts at the same edge.
+        val lefts = layout.field.map {
+            compose.onNodeWithTag(TodayFieldTags.card(it.id))
+                .fetchSemanticsNode().boundsInRoot.left
+        }
+        assertEquals(
+            "cards are still sharing a row at the largest type size: $lefts",
+            1,
+            lefts.distinct().size,
         )
     }
 
