@@ -345,6 +345,7 @@ private fun LeadSlot(
             listOf(eyebrow) + answerParts(
                 shown,
                 strings,
+                cardType = card.type,
                 showItems = true,
                 countLine = countLineKey(card.type)?.let { strings[it] },
             ),
@@ -399,6 +400,7 @@ private fun CardFor(
             listOf(tab) + answerParts(
                 shown,
                 strings,
+                cardType = card.type,
                 showItems = size != CardSize.SMALL,
                 countLine = countLineKey(card.type)?.let { strings[it] },
             ),
@@ -577,8 +579,18 @@ private fun AnswerBody(
         // news, and this says so rather than leaving a hole. At the lead it is
         // said at lead scale, because the answer to the question the person
         // opened the app to ask is still the answer when it is a quiet one.
+        //
+        // **Each card says its own nothing.** Every card on the surface saying
+        // "Nothing waiting" is the app answering fourteen different questions
+        // with one sentence, and on a new notebook that is the whole screen
+        // saying the same four words in a column. 21.4 wants the rung to name
+        // what is not there, and "Nothing scheduled" also tells the person
+        // which door this is without them having to work it out.
+        //
+        // **No count of what has not been done**, per rule 13: an unfilled slot
+        // reads as not yet, never as an error and never as a tally.
         Text(
-            text = strings["today.card.nothing"],
+            text = strings[emptyLineKey(cardType)],
             style = if (lead) type.hero else type.bodyS,
             color = if (lead) colors.ink else colors.ink2,
         )
@@ -781,6 +793,38 @@ private fun worded(
     }
 }
 
+/**
+ * What a card says when the record has nothing for it yet. `DESIGN.md` 21.4.
+ *
+ * **Literal keys, per [countLineKey] and [cardTabKey]**, so the checker that
+ * reads the code's keys can see them.
+ *
+ * **Falls back to the general sentence rather than to a key that may not
+ * exist**, because `Strings.resolve` throws in debug and the empty rung is the
+ * state a brand new notebook is entirely made of. A crash there would be a
+ * crash on the first screen anybody ever sees.
+ */
+private fun emptyLineKey(cardType: String): String = when (cardType) {
+    "next_up" -> "today.card.next_up.none"
+    "medications" -> "today.card.medications.none"
+    "ask_next_time" -> "today.card.ask_next_time.none"
+    "money" -> "today.card.money.none"
+    "incidents" -> "today.card.incidents.none"
+    "unfiled" -> "today.card.unfiled.none"
+    "care_team" -> "today.card.care_team.none"
+    "recent_documents" -> "today.card.recent_documents.none"
+    "standing_instructions" -> "today.card.standing_instructions.none"
+    "emergency_card" -> "today.card.emergency_card.none"
+    "trail_lately" -> "today.card.trail_lately.none"
+    "measure" -> "today.card.measure.none"
+    "milestones" -> "today.card.milestones.none"
+    "project_date" -> "today.card.project_date.none"
+    // The digest always has a sentence, and the two other project cards say
+    // their own thing when there is nothing: a project with no steps and no
+    // waiting-on is a project somebody just started.
+    else -> "today.card.nothing"
+}
+
 /** A project status value as the word the rest of the app uses for it. */
 private fun projectStatusKey(status: String?): String = when (status) {
     "waiting" -> "projects.status.waiting"
@@ -833,6 +877,8 @@ private fun countLineKey(cardType: String): String? = when (cardType) {
 private fun answerParts(
     answer: Repository.TodayAnswer?,
     strings: Strings,
+    /** The card's type, so the empty rung reads aloud as it reads on screen. */
+    cardType: String,
     /**
      * Whether the card is showing its list.
      *
@@ -847,7 +893,7 @@ private fun answerParts(
 ): List<String?> = when {
     answer == null -> listOf(strings["today.card.unread"])
     answer.sourceClosed -> listOf(answer.title, strings["today.card.source_closed"])
-    answer.isEmpty -> listOf(strings["today.card.nothing"])
+    answer.isEmpty -> listOf(strings[emptyLineKey(cardType)])
     else -> buildList {
         add(answer.count?.takeIf { it > 0 }?.toString())
         if (answer.count != null && answer.count > 0 && answer.title == null) add(countLine)

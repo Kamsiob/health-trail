@@ -105,6 +105,52 @@ class TodayCardKeyTest {
     }
 
     @Test
+    fun `no card says nothing yet in a way that scolds or keeps score`() {
+        // **Rule 13 and 21.4.** The none-yet rung is a calm state, never an
+        // error and never a scold, and an unfilled slot reads as "not yet"
+        // rather than as something the person failed to do. It matters most
+        // here of anywhere in the app: a brand new notebook is a whole screen
+        // made of this rung, and it is the first thing anybody sees.
+        val values = Regex(
+            """^\s{2}"(today\.card\.[^"]*\.none)"\s*:\s*"((?:[^"\\]|\\.)*)"""",
+            RegexOption.MULTILINE,
+        )
+            .findAll(read("contract/i18n/en.json"))
+            .associate { it.groupValues[1] to it.groupValues[2] }
+        assertTrue("no none-yet copy was read out of en.json", values.isNotEmpty())
+
+        val banned = listOf(
+            "you have not", "you haven't", "missing", "incomplete", "should",
+            "must", "need to", "failed", "%", "remember to", "don't forget",
+        )
+        val problems = values.flatMap { (key, text) ->
+            banned.filter { it in text.lowercase() }.map { "$key says $it: \"$text\"" }
+        }
+        assertTrue(problems.joinToString("\n"), problems.isEmpty())
+    }
+
+    @Test
+    fun `each card says its own nothing`() {
+        // Fourteen cards answering fourteen questions with one sentence is a
+        // new notebook showing the same four words in a column, and it also
+        // costs the person the one clue saying which door each card is.
+        val values = Regex(
+            """^\s{2}"(today\.card\.[^"]*\.none)"\s*:\s*"((?:[^"\\]|\\.)*)"""",
+            RegexOption.MULTILINE,
+        )
+            .findAll(read("contract/i18n/en.json"))
+            .map { it.groupValues[2] }
+            .toList()
+        assertTrue("no none-yet copy was read out of en.json", values.isNotEmpty())
+        assertEquals(
+            "two cards share their none-yet sentence, so the screen says the " +
+                "same thing twice: ${values.groupBy { it }.filterValues { it.size > 1 }.keys}",
+            values.size,
+            values.distinct().size,
+        )
+    }
+
+    @Test
     fun `the catalog has no today card key for a type the schema refuses`() {
         // The other direction. A `today.card.something` left behind after a type
         // was renamed is copy nobody can reach, and it reads to the next person
