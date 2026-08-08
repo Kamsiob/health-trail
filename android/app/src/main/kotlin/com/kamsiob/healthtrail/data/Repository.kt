@@ -5712,10 +5712,40 @@ class Repository private constructor(
          * catalog in the person's own language.
          */
         val sourceClosed: Boolean = false,
+        /**
+         * The same answer in more detail, for the wide and tall forms.
+         *
+         * **More of the same answer and never a new kind of content**, per 21.3,
+         * which uses this card as its example: the medications card at small is
+         * a count and at wide it is the list. Both are the one question "what is
+         * on the list right now", asked once.
+         *
+         * **Short by construction.** The query takes a handful, and [count] is
+         * still the true total, so the card can say how many it is not showing
+         * rather than quietly cropping. A card is never a dense feed, 21.3.
+         */
+        val items: List<TodayItem> = emptyList(),
     ) {
         /** Whether the record has anything to say. The none-yet rung, 21.4. */
         val isEmpty: Boolean get() = (count ?: 0) == 0 && title.isNullOrBlank()
     }
+
+    /**
+     * One line of a card's list.
+     *
+     * **Two fields rather than one joined string**, because joining is wording
+     * and wording is the screen's. A separator chosen here would also be a
+     * separator with no bidi isolation around either half, which is the exact
+     * family of defect `RoadStrip`'s fallback line carried: text the person
+     * typed, concatenated by hand, running the wrong way in Arabic.
+     */
+    data class TodayItem(
+        /** The thing itself. A medication's name, a person's name. */
+        val label: String,
+        /** The one thing about it worth seeing beside it, where there is one. */
+        val note: String? = null,
+    )
+
 
     /**
      * Every card's answer, in one pass. `DESIGN.md` 21.2.
@@ -5755,6 +5785,23 @@ class Repository private constructor(
                     if (it.moveToFirst()) it.getInt(0) else 0
                 }
 
+            // A short list for a card's wide form. Two columns, the second
+            // optional, and the caller's query does the limiting so the count
+            // beside it stays the true total.
+            fun manyOf(sql: String, vararg args: String): List<TodayItem> =
+                database.rawQuery(sql, arrayOf(*args)).use { cursor ->
+                    buildList {
+                        while (cursor.moveToNext()) {
+                            add(
+                                TodayItem(
+                                    label = cursor.getString(0),
+                                    note = cursor.getString(1)?.takeIf { it.isNotBlank() },
+                                ),
+                            )
+                        }
+                    }
+                }
+
             val now = System.currentTimeMillis()
 
             // The next dated thing. **Only what has not happened**, because a
@@ -5770,11 +5817,24 @@ class Repository private constructor(
                 TodayAnswer(title = next?.first, whenEdtf = next?.second)
             }
 
+            // **The list is the same answer at a larger size**, 21.3, and this
+            // card is the example that rule is written around: at small a
+            // count, at wide the list itself, ready to show a nurse.
+            //
+            // **Record keeping only.** D111: nothing here reminds, alarms, or
+            // tracks a dose. It says what is on the list, in the words the
+            // person was told, and the dose is never parsed into a number and a
+            // unit because misparsing a dose is worse than not parsing one.
             put("medications") { TodayAnswer(
                 count = countOf(
                     "SELECT COUNT(*) FROM live_medication WHERE subject_id = ? " +
                         "AND stopped_edtf IS NULL",
                     subjectId,
+                ),
+                items = manyOf(
+                    "SELECT name, dose_text FROM live_medication WHERE subject_id = ? " +
+                        "AND stopped_edtf IS NULL ORDER BY name LIMIT ?",
+                    subjectId, TODAY_CARD_ITEMS.toString(),
                 ),
             ) }
             // Counted here rather than through the section's own suspend
@@ -6289,3 +6349,13 @@ class Repository private constructor(
         }
     }
 }
+
+/**
+ * How many of a list a wide Today card shows before it says how many are left.
+ *
+ * Three, because a wide card carries the answer plus two or three lines, per
+ * `DESIGN.md` 21.3, and the line after them is the one that says what is not
+ * here. **The count on the answer stays the true total**, so a card that is
+ * showing three of eleven says so rather than quietly cropping to three.
+ */
+private const val TODAY_CARD_ITEMS = 3

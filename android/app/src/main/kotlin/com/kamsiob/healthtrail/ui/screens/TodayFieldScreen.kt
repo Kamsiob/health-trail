@@ -344,7 +344,7 @@ private fun LeadSlot(
         modifier = Modifier.testTag(TodayFieldTags.LEAD),
         speaksAsOneNode = !editing,
     ) {
-        AnswerBody(answer = answer, lead = true, showDetail = true)
+        AnswerBody(answer = answer, cardType = card.type, lead = true, showDetail = true)
 
         if (editing && canMoveDown) {
             Row(modifier = Modifier.padding(top = Space.s)) {
@@ -395,7 +395,12 @@ private fun CardFor(
         // The second line appears at wide and tall only, per 21.3: at small the
         // card carries one answer and one line of context, and that line is the
         // answer's own.
-        AnswerBody(answer = answer, lead = false, showDetail = size != CardSize.SMALL)
+        AnswerBody(
+            answer = answer,
+            cardType = card.type,
+            lead = false,
+            showDetail = size != CardSize.SMALL,
+        )
 
         // **The controls, and only while editing.** 21.6 screen 7 gives Move
         // up and Move down as the accessible reorder path, so reordering works
@@ -466,6 +471,8 @@ private fun CardFor(
 @Composable
 private fun AnswerBody(
     answer: Repository.TodayAnswer?,
+    /** The card's type, for the one line of context that names what the count counts. */
+    cardType: String,
     lead: Boolean,
     /**
      * Whether this card is wide enough for a second line of context.
@@ -503,6 +510,14 @@ private fun AnswerBody(
             style = if (lead) type.hero else type.monoL,
             color = colors.ink,
         )
+        // **A number with no noun is not an answer.** 21.3 gives every size one
+        // line of context and the smallest size is not exempt: a card reading
+        // "6" alone makes the person supply the word themselves, on a screen
+        // whose whole job is that they should not have to. The grid says "on
+        // the current list" under the 6, and this is that line.
+        countLineKey(cardType)?.let {
+            Text(text = strings[it], style = type.bodyS, color = colors.ink2)
+        }
     }
     answer?.title?.let {
         Text(
@@ -550,6 +565,41 @@ private fun AnswerBody(
         )
     }
 
+    // **The list, at wide and tall only.** 21.3 uses this card as its example:
+    // the medications card at small is a count and at wide it is the list, and
+    // both are the one question "what is on the list right now" asked once.
+    // Growing reveals more of the same answer, never a new kind of content, so
+    // this is never a different query and never a feed.
+    if (showDetail && answer != null && answer.items.isNotEmpty()) {
+        Column(modifier = Modifier.padding(top = Space.xs)) {
+            for (item in answer.items) {
+                Text(
+                    // Two fields joined here rather than in the query, because
+                    // joining is wording. `Bidi.join` isolates each part, so a
+                    // medication somebody typed in Arabic keeps its own
+                    // direction beside a dose typed in English.
+                    text = Bidi.join(item.label, item.note),
+                    style = type.bodyS,
+                    color = colors.ink,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            // **What is not here, said rather than cropped.** The count is the
+            // true total, so a card showing three of eleven says so. Silently
+            // showing the first three would be the app deciding which
+            // medications matter, which is exactly what it must not do.
+            val hidden = (answer.count ?: 0) - answer.items.size
+            if (hidden > 0) {
+                Text(
+                    text = strings("today.card.more", "count" to hidden),
+                    style = type.bodyS,
+                    color = colors.ink2,
+                )
+            }
+        }
+    }
+
     // **The context lines, and growing reveals more of the same answer.** 21.3:
     // the first line is the one line of context every size carries, the second
     // appears at wide and tall. **When it is comes first** where the record has
@@ -567,6 +617,39 @@ private fun AnswerBody(
             modifier = Modifier.padding(top = Space.xs),
         )
     }
+}
+
+/**
+ * The word under a card's number, naming what it counted.
+ *
+ * **Every key here is a literal and that is the whole reason this function
+ * exists.** `check_string_keys.py` reads the code's keys against the catalog and
+ * **skips anything built at runtime**, by design, because a key assembled from a
+ * variable cannot be resolved by reading the source. Its stated safety net for
+ * those is the instrumented suite rendering the screen, which is a net with a
+ * hole in it on any night the phone cannot be driven. `"today.card.$type.count"`
+ * would have been exactly the shape that took the app down once already:
+ * `ChangeSituationScreen` asked for `more.title`, which has never existed, and
+ * `Strings.resolve` throws rather than falling back.
+ *
+ * **Null for a card that does not answer with a number**, so a type that gains a
+ * count later fails the `when` here rather than inventing a key.
+ */
+private fun countLineKey(cardType: String): String? = when (cardType) {
+    "medications" -> "today.card.medications.count"
+    "incidents" -> "today.card.incidents.count"
+    "unfiled" -> "today.card.unfiled.count"
+    "money" -> "today.card.money.count"
+    "care_team" -> "today.card.care_team.count"
+    "recent_documents" -> "today.card.recent_documents.count"
+    "standing_instructions" -> "today.card.standing_instructions.count"
+    "ask_next_time" -> "today.card.ask_next_time.count"
+    "emergency_card" -> "today.card.emergency_card.count"
+    "trail_lately" -> "today.card.trail_lately.count"
+    // The digest, the next dated thing, a measure, a milestone and the project
+    // cards all answer with a thing rather than a quantity, so their context
+    // line is the answer's own date or detail.
+    else -> null
 }
 
 /**
