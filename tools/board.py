@@ -74,9 +74,37 @@ def load_fields():
     return fields, options
 
 
+# **Above any real count, and checked rather than trusted.** Both reads used to
+# ask for 200. The repository passed 200 issues, so the board read saw 200 of
+# 271 items and every issue past the cap looked absent: sync re-added it, which
+# GitHub treats as a no-op, and then **set its Status**, so an open issue the
+# owner had marked In Progress was quietly put back to Todo by a routine sync.
+# The file's own closing line says an open issue is never moved automatically,
+# and for seventy of them that was not true. The issue read was capped the same
+# way, so seventy-nine issues were never synced at all and eight of them were
+# missing from the board entirely.
+#
+# Found on 2026-08-08 by noticing that `sync` reported "200 added" and then "63
+# added" on an immediately repeated run. **A count that changes when nothing
+# did is the tool describing something other than what it did**, which is D68
+# for the umpteenth time.
+PAGE = 1000
+
+
+def truncated(name, count):
+    """A read that came back exactly full is a read that was cut off."""
+    if count >= PAGE:
+        raise SystemExit(
+            f"{name} returned {count} rows, which is the page size. This tool "
+            f"cannot see past it and would silently treat everything beyond as "
+            f"absent. Raise PAGE or paginate before trusting anything below."
+        )
+    return count
+
+
 def load_items():
     raw = gh(["project", "item-list", str(PROJECT_NUMBER), "--owner", OWNER,
-              "--format", "json", "--limit", "200"])
+              "--format", "json", "--limit", str(PAGE)])
     items = []
     for entry in json.loads(raw)["items"]:
         content = entry.get("content") or {}
@@ -88,13 +116,16 @@ def load_items():
             "priority": entry.get("priority"),
             "area": entry.get("area"),
         })
+    truncated("The board item read", len(items))
     return items
 
 
 def load_issues():
-    raw = gh(["issue", "list", "--repo", REPO, "--state", "all", "--limit", "200",
-              "--json", "number,id,title,state"])
-    return json.loads(raw)
+    raw = gh(["issue", "list", "--repo", REPO, "--state", "all",
+              "--limit", str(PAGE), "--json", "number,id,title,state"])
+    issues = json.loads(raw)
+    truncated("The issue read", len(issues))
+    return issues
 
 
 def set_field(fields, options, item_id, name, value):
