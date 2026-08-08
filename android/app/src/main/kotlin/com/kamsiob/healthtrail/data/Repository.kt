@@ -5765,6 +5765,17 @@ class Repository private constructor(
          */
         val detailKey: String? = null,
         val detailCount: Int? = null,
+        /**
+         * Whether [items] is a sample of the thing [count] counted.
+         *
+         * **True for almost every card**, where the count is how many there are
+         * and the items are the first few of them, so the card can honestly say
+         * "and 8 more". **False for the steps card**, whose count is steps and
+         * whose items are clusters: subtracting one from the other gave a
+         * project with six steps in one cluster the line "and 5 more", which is
+         * a sentence about nothing. Seen on the phone.
+         */
+        val itemsSampleTheCount: Boolean = true,
     ) {
         /** Whether the record has anything to say. The none-yet rung, 21.4. */
         val isEmpty: Boolean get() = (count ?: 0) == 0 && title.isNullOrBlank()
@@ -6128,8 +6139,17 @@ class Repository private constructor(
             // **A measure with no reading yet is the none-yet rung**, not a
             // missing card: the person chose to track it and has not written
             // anything down. It keeps its name and says nothing is there.
+            // **`coalesce`, because a value lives in one of two columns.** This
+            // read only `value_text`, which is null for every measure recorded
+            // as a number, so a weight card with a hundred readings behind it
+            // had no answer at all and rendered "No readings yet" directly above
+            // its own chart. Seen on the phone; nothing in the code says which
+            // column a measure uses, because a measure can use either.
             "measure" -> database.rawQuery(
-                "SELECT m.name, v.value_text, v.occurred_edtf FROM live_measure m " +
+                "SELECT m.name, " +
+                    "trim(coalesce(v.value_text, v.value_number || '') || ' ' || " +
+                    "coalesce(v.unit, '')), " +
+                    "v.occurred_edtf FROM live_measure m " +
                     "LEFT JOIN live_measurement v ON v.measure_id = m.id " +
                     "WHERE m.id = ? ORDER BY v.occurred_start DESC LIMIT 1",
                 arrayOf(sourceId),
@@ -6147,6 +6167,35 @@ class Repository private constructor(
                 // because a chart is drawn along time and `chartPoints` positions
                 // by it.
                 answer.copy(
+                    // **A measure recorded in words has no shape to draw**, and
+                    // plenty are: "Brighter than yesterday. Ate most of her
+                    // lunch." is a real measure and the app never parses it.
+                    // At tall that left a card of empty space, which rule 11
+                    // rules out. The recent readings are the same answer
+                    // revealed further, which is what 21.3 asks a larger size
+                    // to do, so every measure has something to grow into.
+                    items = database.rawQuery(
+                        // **Offset by one, because the newest reading is
+                        // already the answer above.** Without it the card said
+                        // the same sentence twice, once at display size and
+                        // once in the list under it, which is the shape of a
+                        // card arguing with itself.
+                        "SELECT coalesce(value_text, value_number), occurred_edtf " +
+                            "FROM live_measurement WHERE measure_id = ? " +
+                            "ORDER BY occurred_start DESC LIMIT ? OFFSET 1",
+                        arrayOf(sourceId, TODAY_CARD_ITEMS.toString()),
+                    ).use { cursor ->
+                        buildList {
+                            while (cursor.moveToNext()) {
+                                add(
+                                    TodayItem(
+                                        label = cursor.getString(0),
+                                        noteEdtf = cursor.getString(1),
+                                    ),
+                                )
+                            }
+                        }
+                    },
                     series = database.rawQuery(
                         "SELECT id, measure_id, value_number, value_text, unit, " +
                             "occurred_edtf, occurred_start, note, source " +
@@ -6306,8 +6355,20 @@ class Repository private constructor(
                 }
                 TodayAnswer(
                     sourceName = project.name,
-                    count = clusters.sumOf { it.note?.substringAfter('/')?.toIntOrNull() ?: 0 },
-                    items = clusters.filter { it.label.isNotBlank() },
+                    // **How many steps the plan has, not how many are done.** A
+                    // completed count at display size is a progress meter on
+                    // somebody's own diligence, which rule 13 rules out. This
+                    // sums each cluster's total, and the per cluster tally in
+                    // the items is a count of the plan, which is what 21.7 asks.
+                    count = clusters.sumOf {
+                        it.note?.substringAfter('/')?.toIntOrNull() ?: 0
+                    },
+                    // **A step with no cluster is still in a group.** Filtering
+                    // the blank label away meant a project whose steps are not
+                    // clustered showed a bare number at wide and nothing else.
+                    // The group keeps its place and the screen names it.
+                    items = clusters,
+                    itemsSampleTheCount = false,
                 )
             }
 

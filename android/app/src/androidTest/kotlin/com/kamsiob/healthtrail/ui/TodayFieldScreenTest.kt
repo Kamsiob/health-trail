@@ -126,6 +126,37 @@ class TodayFieldScreenTest {
             .sortedBy { (_, node) -> node.fetchSemanticsNode().positionInRoot.y }
             .map { (id, _) -> id }
 
+    /**
+     * What a card says, as a reader hears it, with the isolate marks taken out.
+     *
+     * **A Today card cannot be tested through its rendered text and does not say
+     * so.** `TodayCard` and `TodayLead` both `clearAndSetSemantics`, on purpose:
+     * 21.2 wants a card to be one stop for a reader rather than four, so every
+     * descendant is dropped from the semantics tree and `onNodeWithText` finds
+     * nothing inside one. A test written against the text fails looking exactly
+     * like the defect it was meant to catch, which is what fourteen of these did
+     * the first time they ran on a phone. `HANDOFF.md` section 7 names the trap
+     * and `RoadStrip` hit it first.
+     *
+     * **So the assertion is on the sentence the card composes**, which is the
+     * thing that has to say what the screen says, per section 9. That it also
+     * *looks* right is what the device pass is for, and a test cannot do it.
+     *
+     * `Bidi.join` wraps every part in isolate characters, so a raw substring
+     * never matches. They are stripped here rather than being written into every
+     * expectation.
+     */
+    private fun spoken(tag: String): String =
+        compose.onNodeWithTag(tag)
+            .fetchSemanticsNode()
+            .config.getOrNull(SemanticsProperties.ContentDescription)
+            ?.joinToString(" ")
+            .orEmpty()
+            .filterNot { it == '\u2068' || it == '\u2069' }
+
+    /** The same, for the card whose id is given. */
+    private fun spokenByCard(id: String): String = spoken(TodayFieldTags.card(id))
+
     @Test
     fun thereIsExactlyOneLeadAndNeverTwo() {
         // 21.1. Never zero and never two, and the singularity is by
@@ -161,11 +192,10 @@ class TodayFieldScreenTest {
         // translation.
         val strings = Strings.load(context)
         show()
-        compose
-            .onNodeWithText(
-                EventDateText.dayHeading(strings, today).uppercase(strings.locale),
-            )
-            .assertIsDisplayed()
+        assertTrue(
+            "the lead does not name the day: ${spoken(TodayFieldTags.LEAD)}",
+            EventDateText.dayHeading(strings, today) in spoken(TodayFieldTags.LEAD),
+        )
     }
 
     @Test
@@ -260,9 +290,10 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
-        compose
-            .onNodeWithText(EventDateText.render(strings, "2026-04-09"))
-            .assertIsDisplayed()
+        assertTrue(
+            "the card does not say when: ${spokenByCard("c-next")}",
+            EventDateText.render(strings, "2026-04-09") in spokenByCard("c-next"),
+        )
     }
 
     @Test
@@ -277,7 +308,10 @@ class TodayFieldScreenTest {
             ),
         )
         val rendered = EventDateText.render(strings, "2026-04")
-        compose.onNodeWithText(rendered).assertIsDisplayed()
+        assertTrue(
+            "the card does not say when: ${spokenByCard("c-next")}",
+            rendered in spokenByCard("c-next"),
+        )
         assertTrue(
             "a month precise date rendered as a day: $rendered",
             rendered == strings("date.month", "date" to "April 2026"),
@@ -290,8 +324,12 @@ class TodayFieldScreenTest {
         // card reading "6" alone makes the person supply the noun themselves.
         val strings = Strings.load(context)
         show(answers = mapOf("c-meds" to Repository.TodayAnswer(count = 6)))
-        compose.onNodeWithText("6").assertIsDisplayed()
-        compose.onNodeWithText(strings["today.card.medications.count"]).assertIsDisplayed()
+        val said = spokenByCard("c-meds")
+        assertTrue("the card does not say 6: $said", "6" in said)
+        assertTrue(
+            "the count has no noun: $said",
+            strings["today.card.medications.count"] in said,
+        )
     }
 
     @Test
@@ -318,11 +356,13 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
-        compose.onNodeWithText("Metformin · 500 mg twice a day").assertIsDisplayed()
-        compose.onNodeWithText("Atorvastatin").assertIsDisplayed()
-        compose
-            .onNodeWithText(strings("today.card.more", "count" to 8))
-            .assertIsDisplayed()
+        val said = spokenByCard("c-meds")
+        assertTrue("the list is not there: $said", "Metformin · 500 mg twice a day" in said)
+        assertTrue("a dose-less medication is missing: $said", "Atorvastatin" in said)
+        assertTrue(
+            "the card crops eight medications without saying so: $said",
+            strings("today.card.more", "count" to 8) in said,
+        )
     }
 
     @Test
@@ -350,18 +390,17 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
+        val said = spokenByCard("c-trail")
         for (raw in listOf("2026-04-09", "2026-04")) {
             assertTrue(
-                "the stored form $raw is on the screen, which rule 17 rules out",
-                compose.onAllNodesWithText(raw, substring = true)
-                    .fetchSemanticsNodes().isEmpty(),
+                "the stored form $raw reaches the person, which rule 17 rules out: $said",
+                raw !in said,
             )
         }
-        compose
-            .onNodeWithText(
-                "Letter arrived · " + EventDateText.render(strings, "2026-04"),
-            )
-            .assertIsDisplayed()
+        assertTrue(
+            "the item's date is not rendered: $said",
+            "Letter arrived · " + EventDateText.render(strings, "2026-04") in said,
+        )
     }
 
     @Test
@@ -384,13 +423,9 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
-        val node = compose.onNodeWithTag(TodayFieldTags.card("c-weight"))
-            .fetchSemanticsNode()
-        val spoken = node.config.getOrNull(SemanticsProperties.ContentDescription)
-            ?.joinToString(" ")
-            .orEmpty()
-        assertTrue("the tab does not name the measure: $spoken", "Weight" in spoken)
-        compose.onNodeWithText("148.5 lb").assertIsDisplayed()
+        val said = spokenByCard("c-weight")
+        assertTrue("the tab does not name the measure: $said", "Weight" in said)
+        assertTrue("the value is not the answer: $said", "148.5 lb" in said)
     }
 
     @Test
@@ -418,12 +453,14 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
-        compose
-            .onNodeWithText(strings("project.countdown.days", "count" to 18))
-            .assertIsDisplayed()
-        compose
-            .onNodeWithText(strings("project.countdown.passed", "count" to 6))
-            .assertIsDisplayed()
+        assertTrue(
+            "no countdown: ${spokenByCard("c-due")}",
+            strings("project.countdown.days", "count" to 18) in spokenByCard("c-due"),
+        )
+        assertTrue(
+            "a date that has gone by does not say so: ${spokenByCard("c-gone")}",
+            strings("project.countdown.passed", "count" to 6) in spokenByCard("c-gone"),
+        )
     }
 
     @Test
@@ -445,12 +482,9 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
-        compose.onNodeWithText("Window closes").assertIsDisplayed()
-        assertTrue(
-            "a month precise date was counted down to a number of days",
-            compose.onAllNodesWithText("days", substring = true)
-                .fetchSemanticsNodes().isEmpty(),
-        )
+        val said = spokenByCard("c-due")
+        assertTrue("the kind is not shown: $said", "Window closes" in said)
+        assertTrue("a month precise date was counted down to days: $said", "days" !in said)
     }
 
     @Test
@@ -472,12 +506,15 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
-        compose.onNodeWithText("The county office").assertIsDisplayed()
-        compose.onNodeWithText(strings["projects.status.waiting"]).assertIsDisplayed()
+        val said = spokenByCard("c-proj")
+        assertTrue("who it waits on is not the answer: $said", "The county office" in said)
         assertTrue(
-            "the stored status value is on the screen",
-            compose.onAllNodesWithText("waiting", substring = false)
-                .fetchSemanticsNodes().isEmpty(),
+            "the status is not worded: $said",
+            strings["projects.status.waiting"] in said,
+        )
+        assertTrue(
+            "the stored status value reaches the person: $said",
+            " waiting " !in " $said ",
         )
     }
 
@@ -568,9 +605,10 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
-        compose
-            .onNodeWithText(strings("instruction.violations.count", "count" to 3))
-            .assertIsDisplayed()
+        assertTrue(
+            "issues noted are not said: ${spokenByCard("c-si")}",
+            strings("instruction.violations.count", "count" to 3) in spokenByCard("c-si"),
+        )
     }
 
     @Test
@@ -588,9 +626,9 @@ class TodayFieldScreenTest {
             answers = mapOf("c-si" to Repository.TodayAnswer(count = 4)),
         )
         assertTrue(
-            "the card announces that nothing has gone wrong, which nobody asked",
-            compose.onAllNodesWithText("followed", substring = true)
-                .fetchSemanticsNodes().isEmpty(),
+            "the card announces that nothing has gone wrong, which nobody asked: " +
+                spokenByCard("c-si"),
+            "followed" !in spokenByCard("c-si"),
         )
     }
 
@@ -621,12 +659,14 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
-        compose
-            .onNodeWithText(strings["date.tomorrow"], substring = true)
-            .assertIsDisplayed()
-        compose
-            .onNodeWithText(EventDateText.render(strings, "2026-05-20"))
-            .assertIsDisplayed()
+        assertTrue(
+            "tomorrow is not said in words: ${spokenByCard("c-soon")}",
+            strings["date.tomorrow"] in spokenByCard("c-soon"),
+        )
+        assertTrue(
+            "a date further out lost its date: ${spokenByCard("c-later")}",
+            EventDateText.render(strings, "2026-05-20") in spokenByCard("c-later"),
+        )
     }
 
     @Test
@@ -647,14 +687,14 @@ class TodayFieldScreenTest {
                 ),
             ),
         )
+        val said = spokenByCard("c-vague")
         for (word in listOf(strings["date.today"], strings["date.tomorrow"])) {
-            assertTrue(
-                "a month precise date was called $word",
-                compose.onAllNodesWithText(word, substring = true)
-                    .fetchSemanticsNodes().isEmpty(),
-            )
+            assertTrue("a month precise date was called $word: $said", word !in said)
         }
-        compose.onNodeWithText(EventDateText.render(strings, "2026-04")).assertIsDisplayed()
+        assertTrue(
+            "the month is not rendered: $said",
+            EventDateText.render(strings, "2026-04") in said,
+        )
     }
 
     @Test
@@ -665,7 +705,10 @@ class TodayFieldScreenTest {
         val strings = Strings.load(context)
         show(digest = Digest.nothing)
         compose.onNodeWithTag(TodayFieldTags.LEAD).assertIsDisplayed()
-        compose.onNodeWithText(strings["today.card.digest.quiet"]).assertIsDisplayed()
+        assertTrue(
+            "a quiet day does not say so: ${spoken(TodayFieldTags.LEAD)}",
+            strings["today.card.digest.quiet"] in spoken(TodayFieldTags.LEAD),
+        )
     }
 
     @Test

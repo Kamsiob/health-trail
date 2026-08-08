@@ -622,7 +622,8 @@ private fun AnswerBody(
     // hue and never from the value, no target, no zone, no axis, and **gaps
     // drawn as gaps**, because joining the dots across three missing months
     // invents a line nobody recorded.
-    if (tall && answer != null && answer.series.size > 1) {
+    val drewChart = tall && answer != null && answer.series.size > 1
+    if (drewChart) {
         Spacer(Modifier.height(Space.xs))
         Plot(
             readings = chartPoints(answer.series),
@@ -636,7 +637,10 @@ private fun AnswerBody(
     // both are the one question "what is on the list right now" asked once.
     // Growing reveals more of the same answer, never a new kind of content, so
     // this is never a different query and never a feed.
-    if (showDetail && answer != null && answer.items.isNotEmpty()) {
+    // **A chart or a list, never both.** 21.3 gives tall a chart, a mini spine,
+    // or a short list, and a card carrying a line and then the same readings
+    // written out underneath it says one thing twice and stops being a shape.
+    if (showDetail && !drewChart && answer != null && answer.items.isNotEmpty()) {
         Column(modifier = Modifier.padding(top = Space.xs)) {
             for (item in answer.items) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -647,7 +651,7 @@ private fun AnswerBody(
                         // its own direction beside a dose typed in English, and
                         // a date never renders as the EDTF it is stored as.
                         text = Bidi.join(
-                            item.label,
+                            item.label.ifBlank { strings["project.steps.ungrouped"] },
                             item.note,
                             item.noteEdtf?.let { EventDateText.render(strings, it) },
                         ),
@@ -679,7 +683,11 @@ private fun AnswerBody(
             // true total, so a card showing three of eleven says so. Silently
             // showing the first three would be the app deciding which
             // medications matter, which is exactly what it must not do.
-            val hidden = (answer.count ?: 0) - answer.items.size
+            val hidden = if (answer.itemsSampleTheCount) {
+                (answer.count ?: 0) - answer.items.size
+            } else {
+                0
+            }
             if (hidden > 0) {
                 Text(
                     text = strings("today.card.more", "count" to hidden),
@@ -920,6 +928,8 @@ private fun countLineKey(cardType: String): String? = when (cardType) {
     "ask_next_time" -> "today.card.ask_next_time.count"
     "emergency_card" -> "today.card.emergency_card.count"
     "trail_lately" -> "today.card.trail_lately.count"
+    "project_steps" -> "today.card.project_steps.count"
+    "measure" -> "today.card.measure.count"
     // The digest, the next dated thing, a measure, a milestone and the project
     // cards all answer with a thing rather than a quantity, so their context
     // line is the answer's own date or detail.
@@ -965,7 +975,7 @@ private fun answerParts(
             for (item in answer.items) {
                 add(
                     Bidi.join(
-                        item.label,
+                        item.label.ifBlank { strings["project.steps.ungrouped"] },
                         item.note,
                         item.noteEdtf?.let { EventDateText.render(strings, it) },
                         item.amountMinor?.let {
@@ -974,7 +984,11 @@ private fun answerParts(
                     ),
                 )
             }
-            val hidden = (answer.count ?: 0) - answer.items.size
+            val hidden = if (answer.itemsSampleTheCount) {
+                (answer.count ?: 0) - answer.items.size
+            } else {
+                0
+            }
             if (answer.items.isNotEmpty() && hidden > 0) {
                 add(strings("today.card.more", "count" to hidden))
             }

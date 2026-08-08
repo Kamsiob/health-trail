@@ -91,12 +91,21 @@ trap restore_heads_up EXIT INT TERM
 
 # Anything already on screen from another application, checked as well, because
 # suppressing new notifications does nothing about one that is already up.
+#
+# **The clipboard overlay is on this list because it got through.** On
+# 2026-08-08 two captures came back with the system clipboard preview across the
+# bottom of them, showing the owner's shell prompt and the command he had
+# copied. It never takes focus, so the focus check passed; it is not a heads-up
+# notification, a toast or a popup, so the pattern below did not match it; and
+# it appears on this phone constantly because KDE Connect syncs the desktop
+# clipboard to it. Both images were deleted rather than committed, and they were
+# caught by looking at the picture, which is not a control.
 # Looks for visible windows belonging to a package that is neither this app nor
 # the system chrome that is always present.
 intruders="$("$ADB" shell dumpsys window windows 2>/dev/null \
   | grep -E '^\s+Window\{' \
   | grep -vE "$PACKAGE|StatusBar|NavigationBar|ScreenDecor|InputMethod|DockedStackDivider|NotificationShade u0 NotificationShade\}" \
-  | grep -iE 'heads-up|HeadsUp|Toast|PopupWindow' || true)"
+  | grep -iE 'heads-up|HeadsUp|Toast|PopupWindow|[Cc]lipboard' || true)"
 
 if [ -n "$intruders" ]; then
   echo "Refusing to capture: something is overlaying the app." >&2

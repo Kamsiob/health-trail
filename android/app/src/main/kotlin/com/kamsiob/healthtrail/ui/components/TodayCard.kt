@@ -22,6 +22,15 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.theme.Space
 
+/**
+ * The width the corner chevron needs, plus the space around it.
+ *
+ * The chevron is 8dp wide with `Space.s` of padding on each side, and it floats
+ * over the card's content rather than sitting in the layout, so anything that
+ * reaches the end edge has to leave this clear by hand.
+ */
+private val CHEVRON_ROOM: Dp = 8.dp + 8.dp + 8.dp
+
 /** How much room a card takes on the field. `DESIGN.md` 21.3. */
 enum class CardSize {
     /** Half width. One answer, one line of context. One touch target. */
@@ -104,11 +113,17 @@ fun TodayCard(
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
-    val minHeight: Dp = when (size) {
-        CardSize.SMALL -> 96.dp
-        CardSize.WIDE -> 96.dp
-        CardSize.TALL -> 168.dp
-    }
+    // **One floor for all three sizes, and tall earns its height from content.**
+    // Tall reserved 168dp, so a card the person made tall whose record has
+    // nothing more to show, a measure with one reading and no line to draw,
+    // rendered as a hundred points of empty box. Rule 11: no blank area, and a
+    // reserved height is a blank area with a reason.
+    //
+    // **Nothing is hidden by not padding it.** 21.3: shrinking never hides the
+    // existence of something open, only its detail, and there is no detail
+    // here to hide. A chart or a short list makes a tall card tall; an empty
+    // record makes it the size of what it has to say, which is honest.
+    val minHeight: Dp = 96.dp
 
     Box(
         modifier = modifier
@@ -132,6 +147,14 @@ fun TodayCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
+                    // **The chevron's room, kept clear.** The tab had no width
+                    // limit and the chevron floats in the corner over the top
+                    // of it, so a card naming its source, "Project · Appeal the
+                    // level of care assessment", ran its own words underneath
+                    // the chevron and ellipsized behind it. Seen on the phone
+                    // and invisible in the code, because nothing collides until
+                    // the text is long enough.
+                    .padding(end = CHEVRON_ROOM)
                     .clip(RoundedCornerShape(5.dp))
                     .background(hue.wash)
                     .padding(horizontal = Space.s, vertical = 2.dp),

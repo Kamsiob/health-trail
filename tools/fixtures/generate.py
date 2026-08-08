@@ -354,7 +354,26 @@ class Generator:
             ).fetchone()
             return row[0] if row else None
 
-        measure_id = source("measure")
+        # **A measure with numbers in it, so the chart has a line to draw.**
+        # `ORDER BY id` picks by hash, and it kept landing on "How she seemed",
+        # which is a measure recorded in words. The card rendered correctly and
+        # the chart at tall was never once seen with anything in it. Same family
+        # as #325: a card pointing at a source it cannot answer from.
+        numeric = db.execute(
+            "SELECT m.id FROM measure m JOIN measurement v ON v.measure_id = m.id "
+            "WHERE m.deleted_at IS NULL AND v.deleted_at IS NULL "
+            "AND v.value_number IS NOT NULL GROUP BY m.id ORDER BY COUNT(*) DESC LIMIT 1"
+        ).fetchone()
+        # **And one recorded in words, because plenty are.** The app never parses
+        # a dose or a value into a number, and a measure that is a sentence has
+        # no shape to draw: that is a real state and it needs looking at too.
+        wordy = db.execute(
+            "SELECT m.id FROM measure m JOIN measurement v ON v.measure_id = m.id "
+            "WHERE m.deleted_at IS NULL AND v.deleted_at IS NULL "
+            "AND v.value_number IS NULL GROUP BY m.id ORDER BY m.id LIMIT 1"
+        ).fetchone()
+        measure_id = (numeric or wordy or (None,))[0] if (numeric or wordy) else None
+        wordy_measure = wordy[0] if wordy and (not numeric or wordy[0] != measure_id) else None
         # A project that is finished, on purpose: a card pointing at one says so
         # and keeps working as a door, and is removed only by the person's hand.
         closed = db.execute(
@@ -375,6 +394,8 @@ class Generator:
         ]
         if measure_id:
             cards.append(("measure", "tall", "measure", measure_id))
+        if wordy_measure:
+            cards.append(("measure", "small", "measure", wordy_measure))
         # **A card pointing at a source it cannot answer from is a card nobody
         # has seen working.** `project_standing` takes a project that is
         # actually waiting on somebody, and `project_steps` takes an open one so
