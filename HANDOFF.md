@@ -55,6 +55,8 @@
 
 **Milestone 1, Today: the surface is built and verified, and fourteen issues closed on the device on 2026-08-08.** #292, #270, #269, #247, #248, #250 through #257 and #261. The 16.4 checklist was walked in full: both themes, font scale 2.0 with the baseline restored, Arabic right to left with the app restarted so the catalog switched, the empty state from a cleared install, 479 instrumented tests, and TalkBack bound against the app.
 
+**One thing is on `main` unverified**, and it is the only one: #260's document thumbnails. The code compiles and passes the checks and the unit tests, and **it has never been on a screen**, because the phone was unplugged before a clean capture. The commit says so and the issue is open. Look at it before trusting it.
+
 **What is left in milestone 1, and each says why on its own issue:** the care team source picker and its dialable number #258, the tall mini spine on the trail #259, thumbnails on documents #260, and screens #293 through #301.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
