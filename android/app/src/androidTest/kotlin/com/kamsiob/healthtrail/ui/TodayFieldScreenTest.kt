@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -279,6 +280,86 @@ class TodayFieldScreenTest {
             "a month precise date rendered as a day: $rendered",
             rendered == strings("date.month", "date" to "April 2026"),
         )
+    }
+
+    @Test
+    fun aCountCarriesTheWordForWhatItCounted() {
+        // 21.3: every size carries one answer and one line of context, and a
+        // card reading "6" alone makes the person supply the noun themselves.
+        val strings = Strings.load(context)
+        show(answers = mapOf("c-meds" to Repository.TodayAnswer(count = 6)))
+        compose.onNodeWithText("6").assertIsDisplayed()
+        compose.onNodeWithText(strings["today.card.medications.count"]).assertIsDisplayed()
+    }
+
+    @Test
+    fun growingTheMedicationsCardRevealsTheListAndSaysWhatIsNotOnIt() {
+        // The example 21.3 is written around: at small a count, at wide the
+        // list. And the count stays the true total, so a card showing three of
+        // eleven says so rather than cropping and letting the person believe
+        // they are looking at all of it.
+        val strings = Strings.load(context)
+        val wide = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-meds", "medications", size = "wide")),
+        )
+        show(
+            wide,
+            answers = mapOf(
+                "c-meds" to Repository.TodayAnswer(
+                    count = 11,
+                    items = listOf(
+                        Repository.TodayItem("Metformin", "500 mg twice a day"),
+                        Repository.TodayItem("Lisinopril", "10 mg in the morning"),
+                        Repository.TodayItem("Atorvastatin"),
+                    ),
+                ),
+            ),
+        )
+        compose.onNodeWithText("Metformin · 500 mg twice a day").assertIsDisplayed()
+        compose.onNodeWithText("Atorvastatin").assertIsDisplayed()
+        compose
+            .onNodeWithText(strings("today.card.more", "count" to 8))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun noStoredDateReachesTheScreenAsTheStringItIsStoredAs() {
+        // **Rule 17 and 9.2: the person never sees EDTF.** This nearly shipped:
+        // the trail card's list put `occurred_edtf` straight into the line, so
+        // the front screen of the app would have shown somebody "2026-04" as
+        // though that were a date anybody writes.
+        val strings = Strings.load(context)
+        val wide = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-trail", "trail_lately", size = "wide")),
+        )
+        show(
+            wide,
+            answers = mapOf(
+                "c-trail" to Repository.TodayAnswer(
+                    count = 2,
+                    title = "Called the ward",
+                    whenEdtf = "2026-04-09",
+                    items = listOf(
+                        Repository.TodayItem("Called the ward", noteEdtf = "2026-04-09"),
+                        Repository.TodayItem("Letter arrived", noteEdtf = "2026-04"),
+                    ),
+                ),
+            ),
+        )
+        for (raw in listOf("2026-04-09", "2026-04")) {
+            assertTrue(
+                "the stored form $raw is on the screen, which rule 17 rules out",
+                compose.onAllNodesWithText(raw, substring = true)
+                    .fetchSemanticsNodes().isEmpty(),
+            )
+        }
+        compose
+            .onNodeWithText(
+                "Letter arrived · " + EventDateText.render(strings, "2026-04"),
+            )
+            .assertIsDisplayed()
     }
 
     @Test

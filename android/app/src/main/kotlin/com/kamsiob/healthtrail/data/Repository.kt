@@ -5744,6 +5744,29 @@ class Repository private constructor(
         val label: String,
         /** The one thing about it worth seeing beside it, where there is one. */
         val note: String? = null,
+        /**
+         * When it was, where the line carries a date.
+         *
+         * **Separate from [note] because a stored date is not display text.**
+         * `DESIGN.md` 9.2 and rule 17: the person never sees EDTF, ever, and
+         * putting `2026-04` in [note] would put exactly that on the front
+         * screen of the app. It renders through `EventDateText` like every
+         * other date, so a month stays a month.
+         */
+        val noteEdtf: String? = null,
+        /**
+         * An amount, where the line is money, in minor units.
+         *
+         * **Not a formatted string, for the same reason [note] is not a joined
+         * one.** Money's shape belongs to the reader's locale and its currency
+         * belongs to the bill, and `formatMoney` already knows that an Arabic
+         * reader in the United States is still looking at dollars. A number
+         * formatted here would be formatted in whatever locale the query
+         * happened to run in.
+         */
+        val amountMinor: Long? = null,
+        /** The amount's own currency, never the locale's. */
+        val currency: String? = null,
     )
 
 
@@ -5788,14 +5811,28 @@ class Repository private constructor(
             // A short list for a card's wide form. Two columns, the second
             // optional, and the caller's query does the limiting so the count
             // beside it stays the true total.
-            fun manyOf(sql: String, vararg args: String): List<TodayItem> =
+            fun manyOf(
+                sql: String,
+                vararg args: String,
+                /**
+                 * Whether the second column is a stored date rather than text.
+                 *
+                 * **It has to be said rather than guessed**, because an EDTF
+                 * string put in `note` renders as `2026-04` on the front screen
+                 * of the app, which rule 17 and 9.2 forbid outright. It nearly
+                 * shipped that way for the trail card.
+                 */
+                dates: Boolean = false,
+            ): List<TodayItem> =
                 database.rawQuery(sql, arrayOf(*args)).use { cursor ->
                     buildList {
                         while (cursor.moveToNext()) {
+                            val second = cursor.getString(1)?.takeIf { it.isNotBlank() }
                             add(
                                 TodayItem(
                                     label = cursor.getString(0),
-                                    note = cursor.getString(1)?.takeIf { it.isNotBlank() },
+                                    note = if (dates) null else second,
+                                    noteEdtf = if (dates) second else null,
                                 ),
                             )
                         }
@@ -5859,29 +5896,85 @@ class Repository private constructor(
                     ),
                 )
             }
-            put("money") { TodayAnswer(
-                count = countOf(
-                    "SELECT COUNT(*) FROM live_bill WHERE subject_id = ? " +
-                        "AND state NOT IN ('paid', 'closed')",
-                    subjectId,
-                ),
-            ) }
+            put("money") {
+                // **Amounts only at wide**, 21.7, and the amount travels as a
+                // number in minor units with its own currency rather than as
+                // text. Formatting is the screen's, because the shape belongs
+                // to the reader's locale and the currency belongs to the bill.
+                val open = database.rawQuery(
+                    "SELECT description, state, amount_minor, currency FROM live_bill " +
+                        "WHERE subject_id = ? AND state NOT IN ('paid', 'closed') " +
+                        "ORDER BY coalesce(due_start, received_start, created_at) LIMIT ?",
+                    arrayOf(subjectId, TODAY_CARD_ITEMS.toString()),
+                ).use { cursor ->
+                    buildList {
+                        while (cursor.moveToNext()) {
+                            add(
+                                TodayItem(
+                                    label = cursor.getString(0),
+                                    amountMinor =
+                                        if (cursor.isNull(2)) null else cursor.getLong(2),
+                                    currency = cursor.getString(3),
+                                ),
+                            )
+                        }
+                    }
+                }
+                TodayAnswer(
+                    count = countOf(
+                        "SELECT COUNT(*) FROM live_bill WHERE subject_id = ? " +
+                            "AND state NOT IN ('paid', 'closed')",
+                        subjectId,
+                    ),
+                    items = open,
+                )
+            }
             put("care_team") { TodayAnswer(
                 count = countOf(
                     "SELECT COUNT(*) FROM live_person WHERE subject_id = ? " +
                         "AND archived_at IS NULL",
                     subjectId,
                 ),
+                // **Who they are, not how to dial them.** 21.7 asks "how do I
+                // reach them, now", and the answer to that at wide is an
+                // outlined dialable number, which is an inline action and
+                // belongs to #258. Growing a card reveals more of the same
+                // answer, so what wide adds here is which people, by name.
+                items = manyOf(
+                    "SELECT display_name, role_label FROM live_person " +
+                        "WHERE subject_id = ? AND archived_at IS NULL " +
+                        "ORDER BY display_name LIMIT ?",
+                    subjectId, TODAY_CARD_ITEMS.toString(),
+                ),
             ) }
             put("recent_documents") { TodayAnswer(
                 count = countOf(
                     "SELECT COUNT(*) FROM live_document WHERE subject_id = ?", subjectId,
                 ),
+                // **The title and its category, and never the paper itself.**
+                // 21.7: this card never renders private content larger than a
+                // thumbnail, and a title is what the person named it.
+                items = manyOf(
+                    "SELECT title, category FROM live_document WHERE subject_id = ? " +
+                        "ORDER BY coalesce(received_start, created_at) DESC LIMIT ?",
+                    subjectId, TODAY_CARD_ITEMS.toString(),
+                ),
             ) }
             put("standing_instructions") { TodayAnswer(
                 count = countOf(
-                    "SELECT COUNT(*) FROM live_standing_instruction WHERE subject_id = ?",
+                    "SELECT COUNT(*) FROM live_standing_instruction WHERE subject_id = ? " +
+                        "AND ended_edtf IS NULL",
                     subjectId,
+                ),
+                // **In force means not ended.** The count was every instruction
+                // ever written, including the ones the person had ended, so a
+                // card asking how many are active answered with how many have
+                // existed. Its own screen has always filtered these.
+                items = manyOf(
+                    "SELECT name, notes FROM live_standing_instruction " +
+                        "WHERE subject_id = ? AND ended_edtf IS NULL " +
+                        "ORDER BY name LIMIT ?",
+                    subjectId, TODAY_CARD_ITEMS.toString(),
                 ),
             ) }
             // Open means unanswered. `question` has `answer_text` and no
@@ -5891,6 +5984,17 @@ class Repository private constructor(
                     "SELECT COUNT(*) FROM live_question WHERE subject_id = ? " +
                         "AND answer_text IS NULL",
                     subjectId,
+                ),
+                // **And for whom**, which is half the question 21.7 asks. The
+                // named person first and the role when there is no name, so a
+                // question saved for "the ward nurse" still says who it is for.
+                items = manyOf(
+                    "SELECT q.text, coalesce(p.display_name, q.role_label) " +
+                        "FROM live_question q " +
+                        "LEFT JOIN live_person p ON p.id = q.person_id " +
+                        "WHERE q.subject_id = ? AND q.answer_text IS NULL " +
+                        "ORDER BY q.created_at LIMIT ?",
+                    subjectId, TODAY_CARD_ITEMS.toString(),
                 ),
             ) }
             put("emergency_card") { TodayAnswer(
@@ -5916,15 +6020,29 @@ class Repository private constructor(
             }
 
             put("trail_lately") {
+                val latest = one(
+                    "SELECT coalesce(title, body), occurred_edtf FROM live_entry " +
+                        "WHERE subject_id = ? ORDER BY occurred_start DESC LIMIT 1",
+                    subjectId,
+                )
                 TodayAnswer(
                     count = countOf(
                         "SELECT COUNT(*) FROM live_entry WHERE subject_id = ?", subjectId,
                     ),
-                    title = one(
+                    title = latest?.first,
+                    // The date the latest entry carries, which the card showed
+                    // nowhere: "what were the last few entries" with no when.
+                    whenEdtf = latest?.second,
+                    // **The last few, which is what the card is called.** 21.7
+                    // wants a three entry mini spine at tall, #259; this is the
+                    // same three entries in the shape every other card uses
+                    // until that lands.
+                    items = manyOf(
                         "SELECT coalesce(title, body), occurred_edtf FROM live_entry " +
-                            "WHERE subject_id = ? ORDER BY occurred_start DESC LIMIT 1",
-                        subjectId,
-                    )?.first,
+                            "WHERE subject_id = ? ORDER BY occurred_start DESC LIMIT ?",
+                        subjectId, TODAY_CARD_ITEMS.toString(),
+                        dates = true,
+                    ),
                 )
             }
 

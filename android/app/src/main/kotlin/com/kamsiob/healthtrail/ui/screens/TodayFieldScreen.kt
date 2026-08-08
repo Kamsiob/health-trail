@@ -338,7 +338,14 @@ private fun LeadSlot(
         // **Raw parts, joined once.** Bidi.join isolates every part it is
         // given, so handing it a string that was already joined wraps the whole
         // thing again and the marks nest.
-        description = Bidi.join(listOf(eyebrow) + answerParts(answer, strings)),
+        description = Bidi.join(
+            listOf(eyebrow) + answerParts(
+                answer,
+                strings,
+                showItems = true,
+                countLine = countLineKey(card.type)?.let { strings[it] },
+            ),
+        ),
         openLabel = strings("today.card.open", "name" to tab),
         onOpen = { onOpen(card) },
         modifier = Modifier.testTag(TodayFieldTags.LEAD),
@@ -383,7 +390,14 @@ private fun CardFor(
         // given, so handing it a string that was already joined wraps the whole
         // thing again and the marks nest. The same defect was fixed on the
         // project screen four commits ago and written straight back in here.
-        description = Bidi.join(listOf(tab) + answerParts(answer, strings)),
+        description = Bidi.join(
+            listOf(tab) + answerParts(
+                answer,
+                strings,
+                showItems = size != CardSize.SMALL,
+                countLine = countLineKey(card.type)?.let { strings[it] },
+            ),
+        ),
         onOpen = { onOpen(card) },
         openLabel = strings("today.card.open", "name" to tab),
         size = size,
@@ -573,17 +587,41 @@ private fun AnswerBody(
     if (showDetail && answer != null && answer.items.isNotEmpty()) {
         Column(modifier = Modifier.padding(top = Space.xs)) {
             for (item in answer.items) {
-                Text(
-                    // Two fields joined here rather than in the query, because
-                    // joining is wording. `Bidi.join` isolates each part, so a
-                    // medication somebody typed in Arabic keeps its own
-                    // direction beside a dose typed in English.
-                    text = Bidi.join(item.label, item.note),
-                    style = type.bodyS,
-                    color = colors.ink,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        // The parts joined here rather than in the query,
+                        // because joining is wording. `Bidi.join` isolates each
+                        // part, so a medication somebody typed in Arabic keeps
+                        // its own direction beside a dose typed in English, and
+                        // a date never renders as the EDTF it is stored as.
+                        text = Bidi.join(
+                            item.label,
+                            item.note,
+                            item.noteEdtf?.let { EventDateText.render(strings, it) },
+                        ),
+                        style = type.bodyS,
+                        color = colors.ink,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    // **Amounts at the end edge, in tabular mono.** 21.7 says
+                    // amounts only at wide and right aligned, and section 7
+                    // puts every amount in the mono face so a column of them
+                    // lines up on the decimal point. `Alignment.End` rather
+                    // than right, so it follows the reading direction.
+                    item.amountMinor?.let { minor ->
+                        Spacer(Modifier.width(Space.s))
+                        Text(
+                            text = Bidi.isolate(
+                                formatMoney(strings, minor, item.currency ?: "USD"),
+                            ),
+                            style = type.mono,
+                            color = colors.ink,
+                            maxLines = 1,
+                        )
+                    }
+                }
             }
             // **What is not here, said rather than cropped.** The count is the
             // true total, so a card showing three of eleven says so. Silently
@@ -662,19 +700,49 @@ private fun countLineKey(cardType: String): String? = when (cardType) {
 private fun answerParts(
     answer: Repository.TodayAnswer?,
     strings: Strings,
+    /**
+     * Whether the card is showing its list.
+     *
+     * **The reader hears what is on the screen and not what is in the model.**
+     * Section 9: what is read aloud says the same thing the screen says. A small
+     * card announcing three medications it is not displaying is as wrong as a
+     * wide one that shows them and stays silent.
+     */
+    showItems: Boolean = false,
+    /** The word under the number, which the eye gets and the ear was not getting. */
+    countLine: String? = null,
 ): List<String?> = when {
     answer == null -> listOf(strings["today.card.unread"])
     answer.sourceClosed -> listOf(answer.title, strings["today.card.source_closed"])
     answer.isEmpty -> listOf(strings["today.card.nothing"])
-    else -> listOf(
-        answer.count?.takeIf { it > 0 }?.toString(),
-        answer.title,
-        // **The date the screen shows**, per section 9: what is read aloud says
-        // the same thing the screen says. It was absent here for as long as it
-        // was absent there, so the omission was consistent and wrong twice.
-        answer.whenEdtf?.takeIf { it.isNotBlank() }?.let { EventDateText.render(strings, it) },
-        answer.detail,
-    )
+    else -> buildList {
+        add(answer.count?.takeIf { it > 0 }?.toString())
+        if (answer.count != null && answer.count > 0 && answer.title == null) add(countLine)
+        add(answer.title)
+        // **The date the screen shows**, per section 9. It was absent here for
+        // as long as it was absent there, so the omission was consistent and
+        // wrong twice.
+        add(answer.whenEdtf?.takeIf { it.isNotBlank() }?.let { EventDateText.render(strings, it) })
+        if (showItems) {
+            for (item in answer.items) {
+                add(
+                    Bidi.join(
+                        item.label,
+                        item.note,
+                        item.noteEdtf?.let { EventDateText.render(strings, it) },
+                        item.amountMinor?.let {
+                            formatMoney(strings, it, item.currency ?: "USD")
+                        },
+                    ),
+                )
+            }
+            val hidden = (answer.count ?: 0) - answer.items.size
+            if (answer.items.isNotEmpty() && hidden > 0) {
+                add(strings("today.card.more", "count" to hidden))
+            }
+        }
+        add(answer.detail)
+    }
 }
 
 /**
