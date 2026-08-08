@@ -375,10 +375,24 @@ class Generator:
         ]
         if measure_id:
             cards.append(("measure", "tall", "measure", measure_id))
+        # **A card pointing at a source it cannot answer from is a card nobody
+        # has seen working.** `project_standing` takes a project that is
+        # actually waiting on somebody, and `project_steps` takes an open one so
+        # its cluster counts are visible at all. #325.
+        waiting = db.execute(
+            "SELECT id FROM project WHERE deleted_at IS NULL "
+            "AND status = 'waiting' ORDER BY id LIMIT 1"
+        ).fetchone()
+        standing_source = waiting or open_project
+        if standing_source:
+            cards.append(("project_standing", "wide", "project", standing_source[0]))
         if open_project:
-            cards.append(("project_standing", "wide", "project", open_project[0]))
             cards.append(("project_date", "small", "project", open_project[0]))
+            cards.append(("project_steps", "wide", "project", open_project[0]))
         if closed:
+            # **The source-closed rung still has to exist somewhere**, 21.4, and
+            # a second steps card on a finished project is what a person's own
+            # desk looks like anyway: the card stays until their hand removes it.
             cards.append(("project_steps", "wide", "project", closed[0]))
         cards += [
             ("ask_next_time", "small", None, None),
@@ -1138,6 +1152,25 @@ class Generator:
                     "name": PROJECTS[index % len(PROJECTS)],
                     "template_id": PROJECT_TEMPLATES[index % len(PROJECT_TEMPLATES)],
                     "status": state,
+                    # **A project waiting on somebody says who**, which nothing
+                    # in the fixture ever set. `report_today_rungs.py` found it:
+                    # `project_standing` was on its none-yet rung at all six
+                    # horizons, so the card whose question 21.7 states as "whose
+                    # hands, since when" had never once rendered an answer, and
+                    # every device pass read that emptiness as the card being
+                    # fine. #325.
+                    **(
+                        {
+                            "waiting_on": PROJECT_WAITING_ON[
+                                index % len(PROJECT_WAITING_ON)
+                            ],
+                            "waiting_since": self.ms(
+                                min(self.days - 1, day + self.rng.randrange(2, 40)),
+                            ),
+                        }
+                        if state == "waiting"
+                        else {}
+                    ),
                     "started_edtf": (self.start + timedelta(days=day)).isoformat(),
                     "started_start": self.ms(day, 0, 0),
                     "started_end": self.ms(day, 23, 59),
@@ -1590,6 +1623,17 @@ INSTRUCTIONS = [
 ]
 
 PROJECT_STATES = ["active", "waiting", "stalled", "done", "abandoned"]
+
+# Who a waiting project is waiting on. **An office rather than a person's name**
+# in most cases, because that is what the answer usually is and because a card
+# on the front screen naming an individual is a different privacy question than
+# one naming a department. #325.
+PROJECT_WAITING_ON = [
+    "The county benefits office",
+    "The insurer's appeals desk",
+    "Dr. Okafor's office, for the letter",
+    "The housing authority",
+]
 
 # Which of the three answers each project opens with, DESIGN.md 20.3. All three
 # are here because two of the three project home screens cannot be looked at on
