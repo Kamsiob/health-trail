@@ -6114,9 +6114,12 @@ class Repository private constructor(
                     subjectId,
                 )
                 TodayAnswer(
-                    count = countOf(
-                        "SELECT COUNT(*) FROM live_entry WHERE subject_id = ?", subjectId,
-                    ),
+                    // **No count on this card.** 21.7 asks it "what were the
+                    // last few entries", and the answer is the entries. A total
+                    // of 182 is a fact about the trail rather than an answer to
+                    // that question, and it was being announced to a reader
+                    // while the screen did not show it at all, because the big
+                    // number only renders when there is no title.
                     title = latest?.first,
                     // The date the latest entry carries, which the card showed
                     // nowhere: "what were the last few entries" with no when.
@@ -6125,9 +6128,15 @@ class Repository private constructor(
                     // wants a three entry mini spine at tall, #259; this is the
                     // same three entries in the shape every other card uses
                     // until that lands.
+                    // **Offset by one, because the newest entry is already the
+                    // answer above.** Without it the card said "Care plan
+                    // meeting" at display size and then listed "Care plan
+                    // meeting" again as the first of the last few. Same defect
+                    // the measure card had, fixed there and written back in
+                    // here.
                     items = manyOf(
                         "SELECT coalesce(title, body), occurred_edtf FROM live_entry " +
-                            "WHERE subject_id = ? ORDER BY occurred_start DESC LIMIT ?",
+                            "WHERE subject_id = ? ORDER BY occurred_start DESC LIMIT ? OFFSET 1",
                         subjectId, TODAY_CARD_ITEMS.toString(),
                         dates = true,
                     ),

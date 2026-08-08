@@ -21,7 +21,7 @@
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **17 repository checks pass**, `python3 tools/checks/run_all.py`. **`tools/verify.sh` is the honest runner**: it is the only one that compiles the instrumented sources and runs lint, and both have broken CI on work already walked on the phone.
 - **176 unit tests pass and they need no phone.** `tools/verify.sh` runs them. On a night when the device is unreachable this is most of what is left, and it is worth writing logic into a place these can reach rather than only into a composable.
-- **479 instrumented tests pass**, last full run 2026-08-08 on the unlocked phone.
+- **482 instrumented tests pass**, last full run 2026-08-08 on the unlocked phone.
 - **Continuous integration is green on `main` at the tip.** **Check after every push**, `gh run list --branch main --limit 3`. A clean tree and passing local checks say nothing about it.
 - **The phone is attached, unlocked, installed, seeded and at its starting values**, each read back rather than assumed: font scale 1.0, animator null, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone. **It was behind a secure keyguard from 01:30 to about 08:10 EDT on 2026-08-08**, which blocked every device check in that window; section 7 has what that looks like.
 - **`tools/device.sh` puts the phone in a usable state in one step** and refuses if the app is not frontmost. Use it rather than `seed.sh` directly.
@@ -55,7 +55,7 @@
 
 **Milestone 1, Today: the surface is built and verified, and fourteen issues closed on the device on 2026-08-08.** #292, #270, #269, #247, #248, #250 through #257 and #261. The 16.4 checklist was walked in full: both themes, font scale 2.0 with the baseline restored, Arabic right to left with the app restarted so the catalog switched, the empty state from a cleared install, 479 instrumented tests, and TalkBack bound against the app.
 
-**What is left in milestone 1, and each says why on its own issue:** two appointments on one day #246, the milestones card's own look #249, the care team source picker and its dialable number #258, the tall mini spine on the trail #259, thumbnails on documents #260, and screens #293 through #301.
+**What is left in milestone 1, and each says why on its own issue:** the care team source picker and its dialable number #258, the tall mini spine on the trail #259, thumbnails on documents #260, and screens #293 through #301.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 

@@ -1017,8 +1017,14 @@ private fun answerParts(
     answer.sourceClosed -> listOf(answer.title, strings["today.card.source_closed"])
     answer.isEmpty -> listOf(strings[emptyLineKey(cardType)])
     else -> buildList {
-        add(answer.count?.takeIf { it > 0 }?.toString())
-        if (answer.count != null && answer.count > 0 && answer.title == null) add(countLine)
+        // **The number only where the screen shows one**, which is where the
+        // card has no title of its own. It was announced either way, so the
+        // trail card told a reader there were 182 entries while the eye saw a
+        // sentence and no number at all. Section 9.
+        if (answer.title == null) {
+            add(answer.count?.takeIf { it > 0 }?.toString())
+            if ((answer.count ?: 0) > 0) add(countLine)
+        }
         add(answer.title)
         // **The date the screen shows**, per section 9. It was absent here for
         // as long as it was absent there, so the omission was consistent and
