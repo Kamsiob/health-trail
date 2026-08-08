@@ -273,6 +273,7 @@ fun TodayFieldScreen(
                     size = CardSize.of(card.size),
                     onOpen = onOpen,
                     modifier = Modifier.testTag(TodayFieldTags.card(card.id)),
+                    today = today,
                     editing = editing,
                     canMoveDown = index < field.lastIndex,
                     onMove = { earlier ->
@@ -318,7 +319,7 @@ private fun LeadSlot(
     onMoveDown: () -> Unit,
 ) {
     val strings = LocalStrings.current
-    val tab = strings["today.card.${card.type}"]
+    val tab = tabFor(card, answer, strings)
 
     // **The day for the digest, the card's own name for anything else.** The
     // digest's eyebrow is what day it is, which is a fact worth stating above a
@@ -332,6 +333,8 @@ private fun LeadSlot(
         tab
     }
 
+    val shown = worded(card.type, answer, today)
+
     TodayLead(
         eyebrow = eyebrow,
         hue = hueForCard(card.type),
@@ -340,7 +343,7 @@ private fun LeadSlot(
         // thing again and the marks nest.
         description = Bidi.join(
             listOf(eyebrow) + answerParts(
-                answer,
+                shown,
                 strings,
                 showItems = true,
                 countLine = countLineKey(card.type)?.let { strings[it] },
@@ -351,7 +354,7 @@ private fun LeadSlot(
         modifier = Modifier.testTag(TodayFieldTags.LEAD),
         speaksAsOneNode = !editing,
     ) {
-        AnswerBody(answer = answer, cardType = card.type, lead = true, showDetail = true)
+        AnswerBody(answer = shown, cardType = card.type, lead = true, showDetail = true)
 
         if (editing && canMoveDown) {
             Row(modifier = Modifier.padding(top = Space.s)) {
@@ -378,10 +381,12 @@ private fun CardFor(
     onResize: (String) -> Unit = {},
     onRemove: () -> Unit = {},
     onPromote: () -> Unit = {},
+    today: LocalDate = LocalDate.now(),
 ) {
     val strings = LocalStrings.current
 
-    val tab = strings["today.card.${card.type}"]
+    val tab = tabFor(card, answer, strings)
+    val shown = worded(card.type, answer, today)
 
     TodayCard(
         tab = tab,
@@ -392,7 +397,7 @@ private fun CardFor(
         // project screen four commits ago and written straight back in here.
         description = Bidi.join(
             listOf(tab) + answerParts(
-                answer,
+                shown,
                 strings,
                 showItems = size != CardSize.SMALL,
                 countLine = countLineKey(card.type)?.let { strings[it] },
@@ -410,7 +415,7 @@ private fun CardFor(
         // card carries one answer and one line of context, and that line is the
         // answer's own.
         AnswerBody(
-            answer = answer,
+            answer = shown,
             cardType = card.type,
             lead = false,
             showDetail = size != CardSize.SMALL,
@@ -655,6 +660,134 @@ private fun AnswerBody(
             modifier = Modifier.padding(top = Space.xs),
         )
     }
+}
+
+/**
+ * The card's index tab, naming which one it is.
+ *
+ * **A card pointing at one thing says which thing.** 21.2 puts identity on the
+ * tab, and the grid heads a measure card "Progress · Weight" and a project's
+ * date card "Waiver · the next date". Four project cards on one Today all
+ * reading "Project" is four cards nobody can tell apart, and the name belongs
+ * here rather than in the answer: the answer is the reading or the countdown,
+ * and this is what it is a reading of.
+ */
+private fun tabFor(
+    card: Repository.TodayCard,
+    answer: Repository.TodayAnswer?,
+    strings: Strings,
+): String = Bidi.join(strings[cardTabKey(card.type)], answer?.sourceName)
+
+/**
+ * The catalog key for a card type's tab. **Literal, per [countLineKey].**
+ *
+ * `check_string_keys.py` cannot see a key built from a variable, and this file
+ * asked for `"today.card.${card.type}"` for as long as the surface has existed.
+ * `TodayCardKeyTest` now holds the schema's seventeen types to the catalog, so
+ * the dynamic form is covered; this stays a `when` anyway, because the check
+ * that reads the code should be able to see the code's keys.
+ */
+private fun cardTabKey(cardType: String): String = when (cardType) {
+    "digest" -> "today.card.digest"
+    "next_up" -> "today.card.next_up"
+    "medications" -> "today.card.medications"
+    "measure" -> "today.card.measure"
+    "milestones" -> "today.card.milestones"
+    "ask_next_time" -> "today.card.ask_next_time"
+    "project_standing" -> "today.card.project_standing"
+    "project_date" -> "today.card.project_date"
+    "project_steps" -> "today.card.project_steps"
+    "incidents" -> "today.card.incidents"
+    "money" -> "today.card.money"
+    "unfiled" -> "today.card.unfiled"
+    "emergency_card" -> "today.card.emergency_card"
+    "care_team" -> "today.card.care_team"
+    "trail_lately" -> "today.card.trail_lately"
+    "recent_documents" -> "today.card.recent_documents"
+    "standing_instructions" -> "today.card.standing_instructions"
+    // A type the schema refuses cannot reach here, and `TodayCardKeyTest`
+    // fails the build if the schema ever gains one this does not know.
+    else -> "today.card.digest"
+}
+
+/**
+ * The stored values in an answer, turned into words. `DESIGN.md` section 9.2.
+ *
+ * **A stored value is not display text and this is where that stops being
+ * true.** A project's status arrives as `waiting`, which is a database value
+ * and not a word anybody wrote, and a project date arrives as the date rather
+ * than as the countdown 21.7 asks for. Rendering either one raw is the same
+ * defect as putting EDTF on the screen, which this surface nearly did.
+ *
+ * **The countdown is computed here rather than in the query**, because how many
+ * days away something is is a fact about now, and a query result is a fact
+ * about when the query ran.
+ */
+@Composable
+private fun worded(
+    cardType: String,
+    answer: Repository.TodayAnswer?,
+    today: LocalDate,
+): Repository.TodayAnswer? {
+    val strings = LocalStrings.current
+    if (answer == null || answer.sourceClosed) return answer
+    return when (cardType) {
+        "project_standing" -> answer.copy(
+            // **Whose hands is the answer and the status is the context.**
+            // 21.7 asks "whose hands, since when", and a person waiting on the
+            // county wants the county, not the word Waiting.
+            title = answer.title ?: strings[projectStatusKey(answer.detail)],
+            detail = answer.title?.let { strings[projectStatusKey(answer.detail)] },
+        )
+
+        "project_date" -> {
+            val due = answer.whenEdtf
+                ?.let { com.kamsiob.healthtrail.time.Edtf.parse(it) }
+                ?.let {
+                    com.kamsiob.healthtrail.time.Edtf.resolve(it, java.time.ZoneId.systemDefault())
+                }
+                ?.start
+                ?.let {
+                    java.time.Instant.ofEpochMilli(it)
+                        .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                }
+            // **A date the person gave coarsely gets no countdown.** Rule 17:
+            // "sometime in April" is not a number of days away, and turning it
+            // into one would invent the precision the whole date model exists
+            // to protect. The card shows the date it was given instead.
+            val exact = answer.whenEdtf?.let {
+                com.kamsiob.healthtrail.time.Edtf.parse(it)?.precision
+            } == com.kamsiob.healthtrail.time.Edtf.Precision.DAY
+            val days = if (due != null && exact) {
+                java.time.temporal.ChronoUnit.DAYS.between(today, due)
+            } else {
+                null
+            }
+            answer.copy(
+                title = when {
+                    days == null -> answer.title
+                    days == 0L -> strings["project.countdown.today"]
+                    days > 0 -> strings("project.countdown.days", "count" to days)
+                    // **Passed is plain words and no urgency color**, 21.4.
+                    else -> strings("project.countdown.passed", "count" to -days)
+                },
+                // The kind, which is what the date is, in the person's own
+                // words. It is free text they typed, so it renders as it is.
+                detail = if (days == null) answer.detail else answer.title,
+            )
+        }
+
+        else -> answer
+    }
+}
+
+/** A project status value as the word the rest of the app uses for it. */
+private fun projectStatusKey(status: String?): String = when (status) {
+    "waiting" -> "projects.status.waiting"
+    "stalled" -> "projects.status.stalled"
+    "done" -> "projects.status.done"
+    "abandoned" -> "projects.status.abandoned"
+    else -> "projects.status.active"
 }
 
 /**

@@ -5725,6 +5725,21 @@ class Repository private constructor(
          * rather than quietly cropping. A card is never a dense feed, 21.3.
          */
         val items: List<TodayItem> = emptyList(),
+        /**
+         * What this card points at, where it points at one thing.
+         *
+         * **It qualifies the tab, not the answer.** A card for one measure is
+         * "Progress · Weight" and a card for one project is "Waiver · the next
+         * date", which is what the grid draws and what lets four project cards
+         * on one screen be told apart. The tab is identity, so the name belongs
+         * there rather than taking the place of the answer.
+         *
+         * **This is why the measure card was upside down.** It put the measure's
+         * name in [title] and the reading in [detail], so the card asking "what
+         * is the latest value" showed the word Weight at display size and the
+         * number in the quiet line under it.
+         */
+        val sourceName: String? = null,
     ) {
         /** Whether the record has anything to say. The none-yet rung, 21.4. */
         val isEmpty: Boolean get() = (count ?: 0) == 0 && title.isNullOrBlank()
@@ -6063,6 +6078,14 @@ class Repository private constructor(
         if (sourceId == null) return@withContext null
         val database = db().database
         when (cardType) {
+            // **The value is the answer and the name is the tab.** 21.7 asks
+            // "what is the latest value", and this card answered with the word
+            // Weight at display size and the reading in the quiet line under
+            // it, which is the question and the answer the wrong way round.
+            //
+            // **A measure with no reading yet is the none-yet rung**, not a
+            // missing card: the person chose to track it and has not written
+            // anything down. It keeps its name and says nothing is there.
             "measure" -> database.rawQuery(
                 "SELECT m.name, v.value_text, v.occurred_edtf FROM live_measure m " +
                     "LEFT JOIN live_measurement v ON v.measure_id = m.id " +
@@ -6071,38 +6094,148 @@ class Repository private constructor(
             ).use {
                 if (!it.moveToFirst()) null
                 else TodayAnswer(
-                    title = it.getString(0),
-                    detail = it.getString(1),
+                    sourceName = it.getString(0),
+                    title = it.getString(1),
                     whenEdtf = it.getString(2),
                 )
             }
 
-            "project_standing", "project_date", "project_steps" -> database.rawQuery(
-                // **The base table, deliberately.** A card pointing at a
-                // tombstoned project renders its source-closed rung, 21.4, and
-                // it can only do that if it can still read the name.
-                // allow-base-table: the source-closed rung is the whole point.
-                "SELECT name, deleted_at, status FROM project WHERE id = ?",
-                arrayOf(sourceId),
-            ).use {
-                if (!it.moveToFirst()) {
+            "project_standing", "project_date", "project_steps" -> {
+                val project = database.rawQuery(
+                    // **The base table, deliberately.** A card pointing at a
+                    // tombstoned project renders its source-closed rung, 21.4,
+                    // and it can only do that if it can still read the name.
+                    "SELECT name, deleted_at, status, waiting_on, waiting_since " +
+                        // allow-base-table: the source-closed rung is the whole point.
+                        "FROM project WHERE id = ?",
+                    arrayOf(sourceId),
+                ).use {
+                    if (!it.moveToFirst()) null
+                    else ProjectFacts(
+                        name = it.getString(0),
+                        // Closed means finished or removed. Both are states the
+                        // person put the project in, and neither is a reason
+                        // for the app to take the card off their screen.
+                        closed = !it.isNull(1) ||
+                            it.getString(2) in setOf("done", "abandoned"),
+                        status = it.getString(2),
+                        waitingOn = it.getString(3),
+                        waitingSince = if (it.isNull(4)) null else it.getLong(4),
+                    )
+                }
+                if (project == null) {
                     // **The project is gone entirely**, which an import from a
                     // notebook that had it can produce. The card is kept and
                     // says it cannot reach what it points at.
                     TodayAnswer(sourceClosed = true)
                 } else {
-                    TodayAnswer(
-                        title = it.getString(0),
-                        // Closed means finished or removed. Both are states the
-                        // person put the project in, and neither is a reason for
-                        // the app to take the card off their screen.
-                        sourceClosed = !it.isNull(1) ||
-                            it.getString(2) in setOf("done", "abandoned"),
-                    )
+                    projectCardAnswer(database, cardType, sourceId, project)
                 }
             }
 
             else -> null
+        }
+    }
+
+    /** What the three project cards all need to read once. */
+    private data class ProjectFacts(
+        val name: String,
+        val closed: Boolean,
+        val status: String,
+        val waitingOn: String?,
+        val waitingSince: Long?,
+    )
+
+    /**
+     * One project card's answer. `DESIGN.md` 21.7.
+     *
+     * **Three cards, three questions, one project.** They differ in what they
+     * ask, not in what they point at, and all three carry the project's name on
+     * the tab so four of them on one screen can be told apart.
+     *
+     * **A closed project answers that it is closed and nothing else.** 21.4's
+     * source-closed rung: the card says so plainly, keeps working as a door, and
+     * stays until the person's own hand removes it. Reporting a countdown to a
+     * date on a project somebody finished would be the app talking about
+     * something that is over.
+     */
+    private fun projectCardAnswer(
+        database: net.zetetic.database.sqlcipher.SQLiteDatabase,
+        cardType: String,
+        projectId: String,
+        project: ProjectFacts,
+    ): TodayAnswer {
+        if (project.closed) {
+            return TodayAnswer(sourceName = project.name, sourceClosed = true)
+        }
+        return when (cardType) {
+            // **Whose hands, since when.** The named person is the answer where
+            // there is one, because "waiting on the county" is what the person
+            // actually wants off this card, and the status word alone is what
+            // the card said before.
+            "project_standing" -> TodayAnswer(
+                sourceName = project.name,
+                title = project.waitingOn,
+                // The status travels as its stored value and the screen words
+                // it, the same as everywhere else.
+                detail = project.status,
+                whenEdtf = project.waitingSince?.let {
+                    Edtf.day(
+                        java.time.Instant.ofEpochMilli(it)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate(),
+                    ).canonical
+                },
+            )
+
+            // **How many days to the date that matters**, and the counting is
+            // the screen's: a number of days is a fact about now, and now is
+            // not something a query result should be frozen at. What comes out
+            // of here is the date itself.
+            "project_date" -> database.rawQuery(
+                "SELECT kind, due_edtf FROM live_project_date " +
+                    "WHERE project_id = ? AND due_start IS NOT NULL " +
+                    "ORDER BY due_start LIMIT 1",
+                arrayOf(projectId),
+            ).use {
+                if (!it.moveToFirst()) TodayAnswer(sourceName = project.name)
+                else TodayAnswer(
+                    sourceName = project.name,
+                    title = it.getString(0),
+                    whenEdtf = it.getString(1),
+                )
+            }
+
+            // **Counts only**, 21.7: the steps themselves live in the project,
+            // and a card is never a dense feed. One line per cluster saying how
+            // many of its steps are done, which is a count of the work rather
+            // than a score on the person: rule 13 rules out a completion meter
+            // and this is a tally of a plan, not of anybody's diligence.
+            "project_steps" -> database.rawQuery(
+                "SELECT coalesce(cluster, ''), COUNT(*), " +
+                    "SUM(CASE WHEN completed_edtf IS NULL THEN 0 ELSE 1 END) " +
+                    "FROM live_project_step WHERE project_id = ? " +
+                    "GROUP BY coalesce(cluster, '') ORDER BY MIN(sort_index)",
+                arrayOf(projectId),
+            ).use { cursor ->
+                val clusters = buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            TodayItem(
+                                label = cursor.getString(0),
+                                note = "${cursor.getInt(2)}/${cursor.getInt(1)}",
+                            ),
+                        )
+                    }
+                }
+                TodayAnswer(
+                    sourceName = project.name,
+                    count = clusters.sumOf { it.note?.substringAfter('/')?.toIntOrNull() ?: 0 },
+                    items = clusters.filter { it.label.isNotBlank() },
+                )
+            }
+
+            else -> TodayAnswer(sourceName = project.name)
         }
     }
 

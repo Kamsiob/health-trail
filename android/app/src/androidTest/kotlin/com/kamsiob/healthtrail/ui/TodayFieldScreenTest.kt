@@ -3,6 +3,8 @@ package com.kamsiob.healthtrail.ui
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -360,6 +362,123 @@ class TodayFieldScreenTest {
                 "Letter arrived · " + EventDateText.render(strings, "2026-04"),
             )
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun aMeasureCardAnswersWithTheValueAndNamesItOnTheTab() {
+        // **The card was upside down.** 21.7 asks "what is the latest value",
+        // and it put the measure's name at display size with the reading in the
+        // quiet line under it. The name belongs on the tab, which is where 21.2
+        // puts identity and what lets two measure cards be told apart.
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-weight", "measure")),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                "c-weight" to Repository.TodayAnswer(
+                    sourceName = "Weight",
+                    title = "148.5 lb",
+                    whenEdtf = "2026-04-02",
+                ),
+            ),
+        )
+        val node = compose.onNodeWithTag(TodayFieldTags.card("c-weight"))
+            .fetchSemanticsNode()
+        val spoken = node.config.getOrNull(SemanticsProperties.ContentDescription)
+            ?.joinToString(" ")
+            .orEmpty()
+        assertTrue("the tab does not name the measure: $spoken", "Weight" in spoken)
+        compose.onNodeWithText("148.5 lb").assertIsDisplayed()
+    }
+
+    @Test
+    fun aProjectDateCountsDownAndSaysPassedInPlainWords() {
+        // 21.7 and 21.4. A date that has gone by reads "passed 6 days ago", in
+        // plain words, with no urgency color and no alarm.
+        val strings = Strings.load(context)
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-due", "project_date"), card("c-gone", "project_date")),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                // today is April 4th.
+                "c-due" to Repository.TodayAnswer(
+                    sourceName = "Waiver",
+                    title = "Window closes",
+                    whenEdtf = "2026-04-22",
+                ),
+                "c-gone" to Repository.TodayAnswer(
+                    sourceName = "Waiver",
+                    title = "Form was due",
+                    whenEdtf = "2026-03-29",
+                ),
+            ),
+        )
+        compose
+            .onNodeWithText(strings("project.countdown.days", "count" to 18))
+            .assertIsDisplayed()
+        compose
+            .onNodeWithText(strings("project.countdown.passed", "count" to 6))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun aCoarseProjectDateIsNeverTurnedIntoANumberOfDays() {
+        // Rule 17. "Sometime in April" is not a number of days away, and
+        // counting from a month the person gave loosely would invent exactly
+        // the precision the date model exists to protect.
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-due", "project_date")),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                "c-due" to Repository.TodayAnswer(
+                    sourceName = "Waiver",
+                    title = "Window closes",
+                    whenEdtf = "2026-06",
+                ),
+            ),
+        )
+        compose.onNodeWithText("Window closes").assertIsDisplayed()
+        assertTrue(
+            "a month precise date was counted down to a number of days",
+            compose.onAllNodesWithText("days", substring = true)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
+    fun aProjectCardLeadsWithWhoItIsWaitingOn() {
+        // 21.7: whose hands, since when. The person waiting on the county wants
+        // the county, not the word Waiting.
+        val strings = Strings.load(context)
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-proj", "project_standing", size = "wide")),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                "c-proj" to Repository.TodayAnswer(
+                    sourceName = "Waiver",
+                    title = "The county office",
+                    detail = "waiting",
+                ),
+            ),
+        )
+        compose.onNodeWithText("The county office").assertIsDisplayed()
+        compose.onNodeWithText(strings["projects.status.waiting"]).assertIsDisplayed()
+        assertTrue(
+            "the stored status value is on the screen",
+            compose.onAllNodesWithText("waiting", substring = false)
+                .fetchSemanticsNodes().isEmpty(),
+        )
     }
 
     @Test
