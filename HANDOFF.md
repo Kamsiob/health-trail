@@ -234,7 +234,9 @@ Every one of these was built from the existing components, logged in all three p
 
 **Gradle is fast and it looks broken.** An incremental Kotlin recompile of several changed files finishes in about a second. That is real.
 
-**Everything else:** Gradle 9.6.1, AGP 9.3.1, Kotlin 2.4.10, Compose BOM 2026.06.01, JDK 21, compileSdk 37, targetSdk 36, minSdk 26. minSdk 26 is why `java.time` is available to `Edtf.kt` without desugaring. Android's `execSQL` refuses any statement that returns rows and `PRAGMA journal_mode` returns one, so `ContractAssets.splitStatements` handles the splitting including trigger bodies and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
+**Gradle's own version is a lint error, so a Gradle release turns CI red without anybody touching the repository.** `AndroidGradlePluginVersion` fails `lintDebug` the moment a newer Gradle exists, and 9.7.0 was published on 2026-08-06. Nothing in the tree changed and the build went red. **Upgrade the wrapper rather than suppressing the check**: `cd android && ./gradlew wrapper --gradle-version <new>`, then run `lintDebug` and both compiles.
+
+**Everything else:** Gradle 9.7.0, AGP 9.3.1, Kotlin 2.4.10, Compose BOM 2026.06.01, JDK 21, compileSdk 37, targetSdk 36, minSdk 26. minSdk 26 is why `java.time` is available to `Edtf.kt` without desugaring. Android's `execSQL` refuses any statement that returns rows and `PRAGMA journal_mode` returns one, so `ContractAssets.splitStatements` handles the splitting including trigger bodies and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 
 **Run `tools/verify.sh`, not the checks you happen to remember.** Continuous integration failed on 2026-08-02 for a lint error, `Uri.parse` where the KTX `String.toUri` was wanted, in code that had been walked on the device and had passed all ten content checks and 185 instrumented tests. **`verify.sh` runs `lintDebug` and would have caught it.** Running `run_all.py` plus the instrumented suite by hand feels like verifying and skips whatever is not in that habit.
 
