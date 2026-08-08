@@ -104,6 +104,21 @@ object EventDateText {
         LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(epochMillis), zone)
             .format(pattern(strings, "date.format.month_year"))
 
+    /**
+     * A day with its weekday, for a heading that says what day it is.
+     *
+     * **This is a heading and not an event date**, which is why it carries no
+     * hedge and takes a [LocalDate] rather than a stored value: nothing here is
+     * reporting when something happened, so there is no precision to preserve
+     * and nothing to be uncertain about. The lead slot on Today uses it, per
+     * `DESIGN.md` 21.1.
+     *
+     * **The pattern is a catalog string like every other**, because "Tuesday,
+     * April 4" and "4月4日星期二" are not one shape with different words in it.
+     */
+    fun dayHeading(strings: Strings, date: LocalDate): String =
+        date.format(pattern(strings, "date.format.weekday_day"))
+
     /** The date itself, formatted, with no hedge around it. */
     private fun bare(strings: Strings, date: Edtf.Date): String {
         val body = body(date)

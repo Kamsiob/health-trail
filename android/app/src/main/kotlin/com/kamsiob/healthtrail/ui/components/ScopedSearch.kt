@@ -162,9 +162,14 @@ fun ScopedSearch(
  * **Its handle mirrors.** A magnifier is a held object and it points the way a
  * right handed person holds it, which is the other way around in a right to
  * left layout.
+ *
+ * **Shared with [UniversalSearchDoor] rather than drawn twice.** Two magnifiers
+ * in one app are two magnifiers that drift the moment either is touched, and
+ * the mirroring rule above is exactly the sort of thing the second copy would
+ * be missing.
  */
 @Composable
-private fun MagnifierMark(size: Dp = 15.dp) {
+internal fun MagnifierMark(size: Dp = 15.dp) {
     val colors = HealthTrail.colors
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 

@@ -2179,6 +2179,24 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **The label was corrected in place in all four catalogs.** It said "Save these steps as your own template" and a template has carried the lead, the stages, the steps, the papers and the date kinds since #262. Naming one of the five was the app describing itself wrongly on the one screen whose job is saying what a template is. It is "Save this setup as your own template". **Correcting the value rather than adding a key is deliberate**: the frozen screen reads the same key, and adding a duplicate so a screen nobody can reach keeps a stale label is waste. Changing a shared catalog value is not extending a frozen file.
 
+### D119. Today's lead is the hero costume, and the header keeps its tab chip rather than taking a display title
+
+**2026-08-08, building #292 and #270.** The lead slot was rendered as a wide `TodayCard`: white surface, index tab, chevron, the same shape as the four cards under it. **That is uniform weight, rule 15, on the one screen where the first law is hardest to keep.** 21.1 resolves law 1 against modularity by putting exactly one thing at the top at display scale, and a lead in the card costume gives that argument away: the person's eye has five equal things to sort and the whole point was that it should have one.
+
+**The lead is now `TodayLead`**, which is `Hero`'s shape with an eyebrow the catalog cannot hold. Directly on paper, no surface, no shadow, no border, display scale, and the answer wraps freely rather than truncating at two lines, per D105.
+
+**The eyebrow is the day for the digest and the promoted card's own name for anything else.** The grid draws "Tuesday, Apr 4" on screen 01 and "Lead · Progress · Weight" on screen 02. **The "Lead ·" prefix is dropped**: "lead" is this document's vocabulary for a slot, not a word that means anything to the person holding the phone, and rule 20 puts the complexity in the code rather than on the screen. **"Today" was rejected as the digest's eyebrow** because the tab chip says it and the active navigation tab says it, and a third would be the app introducing itself to somebody who is already there.
+
+**The header keeps its tab chip and does not take the grid's display title.** The grid heads screen 01 with "Today" at 22px over a lead sentence at 21px, which on a real 360dp screen is two display headings two lines apart and no single first thing. Every other destination in this app, Notebook, Projects and More, leads with a tab chip, so the chip is also the consistent answer. **This is a deliberate departure from the drawing and it is the only one**, recorded here so nobody re-derives it from the grid and puts the title back.
+
+### D120. Today's search door is a button that looks like a field, and it is fixed
+
+**2026-08-08, building #292.** 21.1: the universal search bar and the gold capture button keep their places regardless of layout, because finding and recording are the two acts that must never move. **The new Today surface arrived with no search affordance at all**, and it is what every seeded notebook lands on, so on every real notebook there has been no way to search from the front door for as long as the surface has existed. The previous Today had it in the header; nothing carried it across, and nothing noticed because the surface had no test of any kind.
+
+**It is a door and not a field.** Search is a whole screen with its own field, its own results and its own empty state. A second live field on Today would be two places to type one query, and the one that is not the search screen throws the words away the moment the person navigates. It wears the sand pill and the same magnifier the real field wears, which is what makes it obvious, and it is a button.
+
+**It is hidden in edit mode and only there.** Grid screen 05 draws no search bar, and there is a reason beyond the drawing: edit mode holds an unsaved draft that Done writes in one go, so a door that navigates away mid-edit costs the person the arrangement they were making. A door that takes your work is worse than no door.
+
 ---
 
 ## BLOCKED

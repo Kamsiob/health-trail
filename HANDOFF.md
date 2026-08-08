@@ -96,6 +96,10 @@
 
 **A screen that clears its descendants' semantics cannot be tested through its text, and will not tell you so.** `RoadStrip` speaks as one node by design, so `onNodeWithText` finds nothing inside it and `walk.sh see` prints nothing from it. A test written against the rendered text fails looking exactly like the defect it was meant to catch. **Put the logic in a named function and hold that instead.**
 
+**A surface with no test of its own loses whatever the screen it replaced was carrying.** `TodayFieldScreen` replaced the previous Today on every seeded notebook, which is every real one, and arrived with no way into search at all: the old screen had it in the header, nothing carried it across, and the new surface had **no test file of any kind**, so nothing said so for as long as it has existed. **Check what the superseded screen did that the new one does not**, the same way `docs/REMOVAL-LEDGER.md` is read against the app for #314, and write the test at the moment the surface lands rather than after.
+
+**A parser hides a duplicate from every check that reads the parsed thing.** All four locale catalogs carried `project.step.handled_by` twice, and `check_i18n.py` compares dictionaries, so the second copy was gone before the first comparison ran. The four agreed, the placeholders matched, the plurals were complete, and the files were wrong. It happened to be harmless because both copies held the same words, which is luck rather than a safeguard. `check_i18n.py` reads the raw text for this now and was proved by writing a real duplicate into `en.json` and watching it fail. **Anything checked only through a parser has this blind spot.**
+
 **A control that came off a superseded screen does not come back just because its call survived.** `saveProjectAsTemplate` and `setProjectStatus`'s waiting-on argument both kept their repository call and their `NotebookShell` state through the supersession, and nothing set either for a week: the state is read, the effect is written, the compiler is happy, and the control does not exist. **Nothing catches this shape.** It was found by reading `docs/REMOVAL-LEDGER.md` against the app, which is what the ledger is for. #314. **Check the ledger's other rows the same way rather than trusting what they claim came back.**
 
 **`connectedDebugAndroidTest` uninstalls the app when it finishes.** `walk.sh` then dumps whatever is on the phone, which is the owner's home screen with his real calendar and contacts on it. **Reinstall and check the app is focused before walking**, and never screenshot without it: `screenshot.sh` refuses, but `walk.sh see` does not.
@@ -265,5 +269,13 @@ Every one of these was built from the existing components, logged in all three p
 ## 13. Uncommitted work
 
 **None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed.
+
+### The phone was locked for the 2026-08-08 overnight run
+
+**A secure keyguard, so nothing on the device could be done**, and this is not a defect in anything. `adb` reported `isKeyguardShowing=true` with `mWakefulness=Awake`, and a wake plus a swipe does not get past a secure lock. **Instrumented tests cannot run through it either**: the activity never takes focus, which is #316's `RootViewWithoutFocusException` arriving from a different direction.
+
+**What that means for anything built while it holds.** Code, checks, lint, catalogs and documents all proceed. **Nothing closes**, because an issue closes on device verification and only on that. #292 and #270 are built, tested and pushed, and both are waiting on the phone for their four gate captures and the 16.4 checklist.
+
+**Check it before assuming the run is device-blocked:** `adb shell dumpsys window | grep isKeyguardShowing`.
 
 **Fourteen commits landed on 2026-08-06 between 04:25 and 09:46 UTC**, `434db59` through `86339ae`. **Continuous integration is green on the tip.** Two commits in the middle, `17b4e43` and `a73f33d`, are red in the history and were fixed by `86339ae`: the fixture check added for #233 found a defect that only reproduces in UTC, so it passed here and failed there. That is the check working, and it is left in the history rather than rewritten.

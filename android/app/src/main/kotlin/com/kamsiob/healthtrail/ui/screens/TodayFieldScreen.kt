@@ -37,14 +37,18 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.CardSize
 import com.kamsiob.healthtrail.ui.components.TabChip
 import com.kamsiob.healthtrail.ui.components.TodayCard
+import com.kamsiob.healthtrail.ui.components.TodayLead
+import com.kamsiob.healthtrail.ui.components.UniversalSearchDoor
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import java.time.LocalDate
 
 object TodayFieldTags {
     const val ROOT = "today-field"
@@ -52,6 +56,7 @@ object TodayFieldTags {
     const val EDIT = "today-edit"
     const val DONE = "today-done"
     const val ADD = "today-add"
+    const val SEARCH = "today-field-search"
     fun card(id: String) = "today-card-$id"
 }
 
@@ -63,6 +68,17 @@ object TodayFieldTags {
  * screen has one thing first. The resolution is a fixed structure with free
  * contents, and the singularity is not a convention here: the lead comes from
  * `Repository.TodayLayout`, which has nowhere to put zero or two.
+ *
+ * **The lead wears the lead costume and not the card costume**, per 21.1 and
+ * the `TodayLead` component. It sat in a wide card for a while, which put the
+ * most important thing on the screen at exactly the weight of the four things
+ * under it, and rule 15 calls uniform weight what it is: the whole job of
+ * sorting pushed onto somebody already exhausted.
+ *
+ * **Search and capture keep their places regardless of layout.** 21.1: finding
+ * and recording are the two acts that must never move, so the search door sits
+ * under the lead and the gold capture button sits in the shell, while
+ * everything between them is the person's to arrange.
  *
  * **This screen never rearranges anything.** 21.8. It renders the order it is
  * given and does nothing else with it: there is no promotion, no injection, no
@@ -82,6 +98,15 @@ fun TodayFieldScreen(
     answers: Map<String, Repository.TodayAnswer>,
     onOpen: (Repository.TodayCard) -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Opens search, which is a whole screen with its own field.
+     *
+     * **`MASTER_SPEC.md` 4.8 puts universal search at the top of Today**, and
+     * 21.1 says it stays there whatever the person does to the cards. When this
+     * surface replaced the previous Today it arrived without one at all, so on
+     * a real notebook there was no way to search from the front door.
+     */
+    onSearch: () -> Unit = {},
     /**
      * Saves a rearranged layout, in the order given, the first card leading.
      *
@@ -105,6 +130,13 @@ fun TodayFieldScreen(
      */
     digest: com.kamsiob.healthtrail.data.Digest.Summary =
         com.kamsiob.healthtrail.data.Digest.nothing,
+    /**
+     * What day it is, for the lead's eyebrow.
+     *
+     * **Passed in rather than read here**, so a test can say what today is and
+     * the screen has no clock of its own.
+     */
+    today: LocalDate = LocalDate.now(),
 ) {
     val colors = HealthTrail.colors
     val strings = LocalStrings.current
@@ -134,7 +166,7 @@ fun TodayFieldScreen(
             horizontalArrangement = Arrangement.spacedBy(Space.cardGap),
             verticalArrangement = Arrangement.spacedBy(Space.cardGap),
         ) {
-            item(span = { GridItemSpan(2) }) {
+            item(span = { GridItemSpan(2) }, key = "today-header") {
                 Column {
                     Spacer(Modifier.height(Space.sm))
                     Row(
@@ -142,7 +174,12 @@ fun TodayFieldScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         // Today belongs to no section, so gold and the base
-                        // ladder, per 4.3.
+                        // ladder, per 4.3. **A chip and not a display title**:
+                        // the lead sentence directly under it is the display
+                        // scale thing on this screen, and a heading at the same
+                        // weight two lines above it would give the screen two
+                        // first things. The word is already on the active
+                        // navigation tab besides.
                         TabChip(hue = wholeAppHue(), labelKey = "today.tab")
                         Spacer(Modifier.weight(1f))
                         if (editing) {
@@ -181,57 +218,141 @@ fun TodayFieldScreen(
                             modifier = Modifier.padding(top = Space.xs),
                         )
                     }
-                    Spacer(Modifier.height(Space.s))
                 }
             }
 
             val shown = if (editing) draft else layout.all
+            val lead = shown.first()
+            val field = shown.drop(1)
 
-            items(
-                count = shown.size,
-                key = { shown[it].id },
-                span = { index ->
-                    // **The first card always spans**, editing or not: it is
-                    // the lead, and the lead is never half a screen wide.
-                    GridItemSpan(if (index > 0 && shown[index].size == "small") 1 else 2)
-                },
-            ) { index ->
-                val card = shown[index]
-                val isLead = index == 0
-                CardFor(
-                    card = card,
-                    answer = answers[card.id] ?: digestAnswer(card, digest, strings),
-                    size = if (isLead) CardSize.WIDE else CardSize.of(card.size),
+            item(span = { GridItemSpan(2) }, key = "today-lead-slot") {
+                LeadSlot(
+                    card = lead,
+                    answer = answers[lead.id] ?: digestAnswer(lead, digest, strings),
+                    today = today,
                     onOpen = onOpen,
-                    modifier = Modifier.testTag(
-                        if (isLead) TodayFieldTags.LEAD else TodayFieldTags.card(card.id),
-                    ),
                     editing = editing,
-                    canMoveUp = index > 0,
-                    canMoveDown = index < shown.lastIndex,
-                    onMove = { earlier ->
-                        val to = if (earlier) index - 1 else index + 1
-                        draft = draft.toMutableList().apply { add(to, removeAt(index)) }
-                    },
-                    onResize = { size ->
-                        draft = draft.toMutableList()
-                            .also { it[index] = it[index].copy(size = size) }
-                    },
-                    onRemove = {
-                        // **The lead cannot be removed**, because there is
-                        // never zero. Edit mode does not offer it.
-                        if (!isLead) {
-                            draft = draft.toMutableList().apply { removeAt(index) }
-                        }
-                    },
-                    onPromote = {
-                        draft = draft.toMutableList().apply { add(0, removeAt(index)) }
+                    // **Down is the lead's only control**, and it is how a lead
+                    // is demoted: 21.1 says promoting a card demotes the one
+                    // that was there, and this is the same move made from the
+                    // other end. There is no Remove, because there is never
+                    // zero, and no size chips, because a lead is not a size the
+                    // person chose while it is leading.
+                    canMoveDown = field.isNotEmpty(),
+                    onMoveDown = {
+                        draft = draft.toMutableList().apply { add(1, removeAt(0)) }
                     },
                 )
             }
 
-            item(span = { GridItemSpan(2) }) {
+            // **Under the lead and above the field, always in that place.**
+            // 21.1. Hidden only while editing, per grid screen 05, because
+            // leaving for search mid-edit would throw away an unsaved draft and
+            // a door that costs you your work is worse than no door.
+            if (!editing) {
+                item(span = { GridItemSpan(2) }, key = "today-search") {
+                    UniversalSearchDoor(
+                        onOpen = onSearch,
+                        modifier = Modifier.testTag(TodayFieldTags.SEARCH),
+                    )
+                }
+            }
+
+            items(
+                count = field.size,
+                key = { field[it].id },
+                span = { index -> GridItemSpan(if (field[index].size == "small") 1 else 2) },
+            ) { index ->
+                val card = field[index]
+                // Its place in the whole surface, which is what a move has to
+                // act on: the field is the layout with the lead taken off.
+                val position = index + 1
+                CardFor(
+                    card = card,
+                    answer = answers[card.id] ?: digestAnswer(card, digest, strings),
+                    size = CardSize.of(card.size),
+                    onOpen = onOpen,
+                    modifier = Modifier.testTag(TodayFieldTags.card(card.id)),
+                    editing = editing,
+                    canMoveDown = index < field.lastIndex,
+                    onMove = { earlier ->
+                        val to = if (earlier) position - 1 else position + 1
+                        draft = draft.toMutableList().apply { add(to, removeAt(position)) }
+                    },
+                    onResize = { size ->
+                        draft = draft.toMutableList()
+                            .also { it[position] = it[position].copy(size = size) }
+                    },
+                    onRemove = {
+                        draft = draft.toMutableList().apply { removeAt(position) }
+                    },
+                    onPromote = {
+                        draft = draft.toMutableList().apply { add(0, removeAt(position)) }
+                    },
+                )
+            }
+
+            item(span = { GridItemSpan(2) }, key = "today-fab-clearance") {
                 Spacer(Modifier.height(Space.xxl))
+            }
+        }
+    }
+}
+
+/**
+ * The one thing at the top. `DESIGN.md` 21.1.
+ *
+ * **The same answer the card would show, in the lead costume.** The body is
+ * composed once for both, so the lead and the field can never word the same
+ * answer differently, which is what would happen the first time either was
+ * touched if there were two copies of it.
+ */
+@Composable
+private fun LeadSlot(
+    card: Repository.TodayCard,
+    answer: Repository.TodayAnswer?,
+    today: LocalDate,
+    onOpen: (Repository.TodayCard) -> Unit,
+    editing: Boolean,
+    canMoveDown: Boolean,
+    onMoveDown: () -> Unit,
+) {
+    val strings = LocalStrings.current
+    val tab = strings["today.card.${card.type}"]
+
+    // **The day for the digest, the card's own name for anything else.** The
+    // digest's eyebrow is what day it is, which is a fact worth stating above a
+    // sentence about today and is what the grid draws. Naming it "Today" there
+    // would be the third time that word appears on the screen, after the chip
+    // and the navigation tab. A card the person promoted says which card it is,
+    // so they can see what they put at the top.
+    val eyebrow = if (card.type == "digest") {
+        EventDateText.dayHeading(strings, today)
+    } else {
+        tab
+    }
+
+    TodayLead(
+        eyebrow = eyebrow,
+        hue = hueForCard(card.type),
+        // **Raw parts, joined once.** Bidi.join isolates every part it is
+        // given, so handing it a string that was already joined wraps the whole
+        // thing again and the marks nest.
+        description = Bidi.join(listOf(eyebrow) + answerParts(answer, strings)),
+        openLabel = strings("today.card.open", "name" to tab),
+        onOpen = { onOpen(card) },
+        modifier = Modifier.testTag(TodayFieldTags.LEAD),
+        speaksAsOneNode = !editing,
+    ) {
+        AnswerBody(answer = answer, lead = true, showDetail = true)
+
+        if (editing && canMoveDown) {
+            Row(modifier = Modifier.padding(top = Space.s)) {
+                EditAction(
+                    label = strings["today.edit.down.short"],
+                    spoken = strings("today.edit.down", "name" to tab),
+                    onClick = onMoveDown,
+                )
             }
         }
     }
@@ -245,7 +366,6 @@ private fun CardFor(
     onOpen: (Repository.TodayCard) -> Unit,
     modifier: Modifier = Modifier,
     editing: Boolean = false,
-    canMoveUp: Boolean = false,
     canMoveDown: Boolean = false,
     onMove: (earlier: Boolean) -> Unit = {},
     onResize: (String) -> Unit = {},
@@ -253,8 +373,6 @@ private fun CardFor(
     onPromote: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-    val type = HealthTrail.type
 
     val tab = strings["today.card.${card.type}"]
 
@@ -274,59 +392,11 @@ private fun CardFor(
         // thing would swallow them.
         speaksAsOneNode = !editing,
     ) {
-        // **The answer, and the same answer at every size.** 21.3: growing a
-        // card reveals more of the same answer and never a new kind of content.
-        // **A zero is not an answer worth shouting.** Rendering the number
-        // whatever it was put a large 0 directly above "Nothing waiting", which
-        // says the same thing twice and, at that weight, reads as a score on a
-        // person who has just started. The empty rung is the sentence alone.
-        val count = answer?.count?.takeIf { it > 0 }
-        if (count != null && answer.title == null) {
-            Text(
-                text = Bidi.isolate(count.toString()),
-                style = type.monoL,
-                color = colors.ink,
-            )
-        }
-        answer?.title?.let {
-            Text(
-                text = Bidi.isolate(it),
-                style = type.displayS,
-                color = colors.ink,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        // **The source-closed rung**, 21.4. It says so plainly and keeps
-        // working as a door, and the card stays until the person's own hand
-        // removes it.
-        if (answer?.sourceClosed == true) {
-            Text(
-                text = strings["today.card.source_closed"],
-                style = type.bodyS,
-                color = colors.ink2,
-            )
-        }
-        if (answer == null) {
-            // **Not the same thing as nothing waiting.** A card whose question
-            // could not be asked has not learned that the record is empty, and
-            // saying "Nothing waiting" here would be the app asserting
-            // something false about somebody's record. One broken query once
-            // made every card on this surface say it at the same time.
-            Text(
-                text = strings["today.card.unread"],
-                style = type.bodyS,
-                color = colors.ink2,
-            )
-        } else if (answer.isEmpty && !answer.sourceClosed) {
-            // **A calm state, never a scold**, 21.4. Quiet is allowed to be
-            // good news, and this says so rather than leaving a hole.
-            Text(
-                text = strings["today.card.nothing"],
-                style = type.bodyS,
-                color = colors.ink2,
-            )
-        }
+        // The second line appears at wide and tall only, per 21.3: at small the
+        // card carries one answer and one line of context, and that line is the
+        // answer's own.
+        AnswerBody(answer = answer, lead = false, showDetail = size != CardSize.SMALL)
+
         // **The controls, and only while editing.** 21.6 screen 7 gives Move
         // up and Move down as the accessible reorder path, so reordering works
         // one-handed, with the reader on, and with switch access. Drag is a
@@ -353,13 +423,11 @@ private fun CardFor(
                     modifier = Modifier.padding(top = Space.xs),
                     horizontalArrangement = Arrangement.spacedBy(Space.s),
                 ) {
-                    if (canMoveUp) {
-                        EditAction(
-                            label = strings["today.edit.up.short"],
-                            spoken = strings("today.edit.up", "name" to tab),
-                            onClick = { onMove(true) },
-                        )
-                    }
+                    EditAction(
+                        label = strings["today.edit.up.short"],
+                        spoken = strings("today.edit.up", "name" to tab),
+                        onClick = { onMove(true) },
+                    )
                     if (canMoveDown) {
                         EditAction(
                             label = strings["today.edit.down.short"],
@@ -367,45 +435,112 @@ private fun CardFor(
                             onClick = { onMove(false) },
                         )
                     }
-                    if (canMoveUp) {
-                        // **Promoting to the lead is its own action**, 21.1,
-                        // because reaching the top by tapping Move up eleven
-                        // times is not the same offer. Promoting demotes the
-                        // card that was there back into the field, which is
-                        // what moving to position zero does.
-                        EditAction(
-                            label = strings["today.edit.lead.short"],
-                            spoken = strings("today.edit.lead", "name" to tab),
-                            onClick = onPromote,
-                        )
-                    }
-                    if (canMoveUp) {
-                        // **Only a card that is not the lead can be removed**,
-                        // because there is never zero, and the lead is the one
-                        // card that cannot move up.
-                        EditAction(
-                            label = strings["today.edit.remove.short"],
-                            spoken = strings("today.edit.remove", "name" to tab),
-                            onClick = onRemove,
-                        )
-                    }
+                    // **Promoting to the lead is its own action**, 21.1,
+                    // because reaching the top by tapping Move up eleven times
+                    // is not the same offer. Promoting demotes the card that
+                    // was there back into the field, which is what moving to
+                    // position zero does.
+                    EditAction(
+                        label = strings["today.edit.lead.short"],
+                        spoken = strings("today.edit.lead", "name" to tab),
+                        onClick = onPromote,
+                    )
+                    EditAction(
+                        label = strings["today.edit.remove.short"],
+                        spoken = strings("today.edit.remove", "name" to tab),
+                        onClick = onRemove,
+                    )
                 }
             }
         }
+    }
+}
 
-        // The second line appears at wide and tall only, per 21.3: at small the
-        // card carries one answer and one line of context, and that line is the
-        // answer's own.
-        if (size != CardSize.SMALL) {
-            answer?.detail?.let {
-                Text(
-                    text = Bidi.isolate(it),
-                    style = type.bodyS,
-                    color = colors.ink2,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+/**
+ * What the record says, in one place for both costumes.
+ *
+ * **The lead and a card show the same answer at different scales**, never
+ * different answers. Two renderings of one query is two renderings that
+ * disagree the first time either is touched.
+ */
+@Composable
+private fun AnswerBody(
+    answer: Repository.TodayAnswer?,
+    lead: Boolean,
+    showDetail: Boolean,
+) {
+    val colors = HealthTrail.colors
+    val type = HealthTrail.type
+    val strings = LocalStrings.current
+
+    // **A zero is not an answer worth shouting.** Rendering the number whatever
+    // it was put a large 0 directly above "Nothing waiting", which says the
+    // same thing twice and, at that weight, reads as a score on a person who
+    // has just started. The empty rung is the sentence alone.
+    val count = answer?.count?.takeIf { it > 0 }
+    if (count != null && answer.title == null) {
+        Text(
+            text = Bidi.isolate(count.toString()),
+            style = if (lead) type.hero else type.monoL,
+            color = colors.ink,
+        )
+    }
+    answer?.title?.let {
+        Text(
+            text = Bidi.isolate(it),
+            style = if (lead) type.hero else type.displayS,
+            color = colors.ink,
+            // **The lead wraps freely and a card does not.** D105: a fixed cap
+            // is a cap at the smallest type size and a truncation at the
+            // largest, and the lead's sentence is the one thing the screen
+            // exists to say. A card in a half-width cell has four others beside
+            // it and cannot grow to six lines without taking the fold.
+            maxLines = if (lead) Int.MAX_VALUE else 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+    // **The source-closed rung**, 21.4. It says so plainly and keeps working as
+    // a door, and the card stays until the person's own hand removes it.
+    if (answer?.sourceClosed == true) {
+        Text(
+            text = strings["today.card.source_closed"],
+            style = type.bodyS,
+            color = colors.ink2,
+        )
+    }
+    if (answer == null) {
+        // **Not the same thing as nothing waiting.** A card whose question
+        // could not be asked has not learned that the record is empty, and
+        // saying "Nothing waiting" here would be the app asserting something
+        // false about somebody's record. One broken query once made every card
+        // on this surface say it at the same time.
+        Text(
+            text = strings["today.card.unread"],
+            style = if (lead) type.hero else type.bodyS,
+            color = if (lead) colors.ink else colors.ink2,
+        )
+    } else if (answer.isEmpty && !answer.sourceClosed) {
+        // **A calm state, never a scold**, 21.4. Quiet is allowed to be good
+        // news, and this says so rather than leaving a hole. At the lead it is
+        // said at lead scale, because the answer to the question the person
+        // opened the app to ask is still the answer when it is a quiet one.
+        Text(
+            text = strings["today.card.nothing"],
+            style = if (lead) type.hero else type.bodyS,
+            color = if (lead) colors.ink else colors.ink2,
+        )
+    }
+
+    if (showDetail) {
+        answer?.detail?.let {
+            Text(
+                text = Bidi.isolate(it),
+                style = type.bodyS,
+                color = colors.ink2,
+                maxLines = if (lead) Int.MAX_VALUE else 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = Space.xs),
+            )
         }
     }
 }

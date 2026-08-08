@@ -1,0 +1,128 @@
+package com.kamsiob.healthtrail.ui.components
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.TabHue
+
+/**
+ * The lead slot on Today. `DESIGN.md` 21.1, and the one-thing hero in costume.
+ *
+ * **Exactly one, never zero and never two, and that is by construction rather
+ * than by convention.** A free-form dashboard breaks law 1: if six equal cards
+ * can be stacked then no screen has one thing first. The resolution is a fixed
+ * structure with free contents, so what fills this slot is the person's choice
+ * and the fact that something singular is at the top is not.
+ *
+ * **It is not a card and must not become one.** It sits directly on `paper`
+ * with no surface, no shadow and no border, which is the whole difference
+ * between the top of a page and the first item in a list. Wearing the card
+ * costume here would put the most important thing on the screen at exactly the
+ * weight of the four things under it, which is rule 15's uniform weight and is
+ * the defect this component exists to prevent. Same rule as [Hero], and this is
+ * that component's shape with an eyebrow the catalog cannot hold.
+ *
+ * **The eyebrow is data, not copy.** For the digest it is the day, because that
+ * is the one fact worth stating above a sentence about today and because the
+ * word "Today" is already on the tab chip and on the active navigation tab. For
+ * any other card promoted here it is that card's own name, so the person can
+ * see what they put at the top. Either way it takes the hue's ink, which is
+ * identity and never state: 21.2, the hue does not change with what the answer
+ * says.
+ *
+ * **The answer wraps freely.** A fixed cap is a cap at the smallest type size
+ * and a truncation at the largest, per D105, and the sentence here is the one
+ * thing the screen exists to say.
+ *
+ * **It is one node to a reader**, like every card, unless it is holding
+ * controls: the eyebrow, the sentence, the quiet line and the chevron read as
+ * four stops would make somebody listen to four things to learn one.
+ *
+ * **When to use it.** At the top of Today, once, and nowhere else. Elsewhere in
+ * the app the same job is [Hero]'s.
+ *
+ * **When not to use it.** For anything that is not the single thing the person
+ * came for. Promoting a second block to this treatment does not give the screen
+ * two leads, it gives it none.
+ */
+@Composable
+fun TodayLead(
+    /** The day, or the promoted card's own name. Already in the person's language. */
+    eyebrow: String,
+    /** The eyebrow's hue, from the tab pack. Gold for a whole-app surface. */
+    hue: TabHue,
+    /** What a reader says instead of the whole block, composed by the caller. */
+    description: String,
+    /** The verb a reader announces for the tap. */
+    openLabel: String,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+    /**
+     * Whether the slot speaks as one node.
+     *
+     * **False while it holds edit controls**, for the same reason [TodayCard]
+     * turns it off: `clearAndSetSemantics` clears every descendant, so controls
+     * inside would be unreachable by a screen reader and by switch access.
+     */
+    speaksAsOneNode: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    val colors = HealthTrail.colors
+    val strings = LocalStrings.current
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(Radius.card)
+            // **Transparent at rest**, so the press is a tint rather than a
+            // surface appearing where there was none. Section 5.14 still
+            // reaches it: rule 16 wants everything the person touches to
+            // respond, and the lead is the largest tap target on the screen.
+            .openableByTap(label = openLabel, onTap = onOpen, resting = Color.Transparent)
+            .then(
+                if (speaksAsOneNode) {
+                    Modifier.clearAndSetSemantics { contentDescription = description }
+                } else {
+                    Modifier.semantics { contentDescription = description }
+                },
+            )
+            .padding(vertical = Space.s),
+    ) {
+        Text(
+            text = eyebrow.uppercase(strings.locale),
+            style = HealthTrail.type.mono,
+            color = hue.ink,
+        )
+        Spacer(Modifier.height(Space.s))
+        Row(
+            modifier = Modifier.sizeIn(minHeight = Space.touchTarget),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(modifier = Modifier.weight(1f)) { content() }
+            Spacer(Modifier.width(Space.sm))
+            // The chevron sits on the first line of the sentence rather than
+            // centered against a block that can grow to six lines at the
+            // largest font size, where centered would leave it floating beside
+            // nothing.
+            Chevron(modifier = Modifier.padding(top = Space.xs))
+        }
+    }
+}

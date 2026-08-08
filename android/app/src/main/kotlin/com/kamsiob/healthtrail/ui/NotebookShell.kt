@@ -928,6 +928,13 @@ fun NotebookShell(
                             // is where the person would go to see the whole of
                             // it. A project card opens the project itself.
                             digest = digest,
+                            // **Search keeps its place on Today**, 21.1, and
+                            // this surface arrived without one at all: the
+                            // previous Today had the way into search in its
+                            // header, and a seeded notebook, which is every
+                            // real one, had no way to search from the front
+                            // door for as long as the new surface has existed.
+                            onSearch = { searchOpen = true },
                             // **One write, from Done.** The screen holds every
                             // change while editing so a person can move three
                             // cards and change their mind about all of them,

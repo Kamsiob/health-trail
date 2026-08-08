@@ -338,6 +338,7 @@ A row may be 46dp tall and still carry a 48dp touch target through invisible pad
 | **Outlined action** | A smaller action. Always a verb or a dialable number |
 | **Chip** | A choice. Outlined open, filled chosen |
 | **The one-thing hero** | Sits directly on paper. No surface, no shadow, no border. At most one per screen, and none is valid |
+| **Today's lead slot** | The hero in Today's costume, and **exactly one, never zero and never two**, per 21.1. Sits directly on paper at display scale with a mono eyebrow in its card's hue, and it is **never a card**: the lead wearing the card costume puts the most important thing on the screen at the weight of the four things under it. Its eyebrow is the day for the digest and the promoted card's own name for anything else. **Not for any screen but Today**, where the same job is the hero's |
 | **Wash band** | A section-colored summary strip, for a total or a state at a glance |
 | **Spine with waypoints** | Filled done, ringed open, hollow upcoming, gold-ringed milestone. Dashed rail, and mono gap markers such as "six days pass" |
 | **Avatar** | Initials in the section wash |
@@ -347,6 +348,7 @@ A row may be 46dp tall and still carry a 48dp touch target through invisible pad
 | **Agenda list and month grid** | For appointments, drawn only from what is recorded in the app |
 | **Thumbnail gallery** | The person's own paper, visible |
 | **Scoped search bar** | Sand, rounded, sitting at the top of the list it searches and **never reaching outside it**. Its hint says how many things are in scope. Filters as you type, with no submit; a clear control appears only once there is something to clear. **Not on a list that fits in a screenful or two** |
+| **Universal search door** | The way into search, **fixed under Today's lead and nowhere else in the app**, per 21.1 and `MASTER_SPEC.md` 4.8. A sand pill carrying the same magnifier the field it opens wears, and **it is a button rather than a field**: search is a whole screen with its own field, and a second live field here would be two places to type one query with one of them throwing the words away. Finding and recording are the two acts that must never move, so this and the gold capture button stay put while everything between them is the person's to arrange. **Not inside a section**, which searches itself with the scoped search bar |
 | **View toggle** | Remembered per section |
 | **Pin marker and pinned group** | The person's own hierarchy, above everything |
 | **Sticky section header** | So the person always knows where they are |

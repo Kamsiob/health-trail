@@ -124,6 +124,49 @@ def plural_problems(code, catalog):
     return found
 
 
+def duplicate_keys(code, raw):
+    """Keys written twice in one catalog file.
+
+    **Nothing in this file could see this, by construction.** Every other check
+    here reads a parsed dictionary, and a parser keeps one value per key: the
+    duplicate is gone before the first comparison runs. So the four catalogs
+    agreed with each other, the placeholders matched, the plurals were complete,
+    and all four files carried `project.step.handled_by` twice for as long as
+    anybody had been looking.
+
+    **It happened to be harmless and that is luck, not a safeguard.** Both
+    copies held the same words. Two copies with different words is a catalog
+    where the screen shows one of them and the reviewer reads the other, and no
+    check in this repository would have said so.
+
+    Same family as `check_string_keys.py`: a thing held only to something that
+    shares its blind spot. This one reads the file as text, which is the only
+    place the second copy still exists.
+    """
+    found = []
+    seen = {}
+    for line_number, line in enumerate(raw.splitlines(), start=1):
+        match = KEY_LINE.match(line)
+        if not match:
+            continue
+        key = match.group(1)
+        if key in seen:
+            found.append(
+                f"{code}.json has {key!r} twice, at lines {seen[key]} and "
+                f"{line_number}. A parser keeps the last one and every other "
+                f"check here reads the parsed catalog, so the first copy is "
+                f"invisible to all of them and to anybody reading the file."
+            )
+        else:
+            seen[key] = line_number
+    return found
+
+
+# A top level key line, which is what these catalogs are: one key per line, no
+# nesting except `_meta`. Matched as text on purpose, per `duplicate_keys`.
+KEY_LINE = re.compile(r'^\s{2}"((?:[^"\\]|\\.)*)"\s*:')
+
+
 def main():
     problems = []
 
@@ -137,10 +180,14 @@ def main():
         if not path.is_file():
             problems.append(f"{code}.json is missing. All four locales ship in v1.")
             continue
+        raw = path.read_text(encoding="utf-8")
         try:
-            catalogs[code] = json.loads(path.read_text(encoding="utf-8"))
+            catalogs[code] = json.loads(raw)
         except json.JSONDecodeError as error:
             problems.append(f"{code}.json is not valid JSON: {error}")
+            continue
+        # Read as text, because by the line above the duplicate is gone.
+        problems.extend(duplicate_keys(code, raw))
 
     if SOURCE not in catalogs:
         print("Locale check failed. The source catalog is missing.\n")
