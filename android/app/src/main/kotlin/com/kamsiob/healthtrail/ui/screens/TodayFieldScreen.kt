@@ -140,6 +140,15 @@ fun TodayFieldScreen(
      * the screen has no clock of its own.
      */
     today: LocalDate = LocalDate.now(),
+    /**
+     * Whether anything has ever been written down.
+     *
+     * **Only the digest asks**, and only to avoid telling somebody on their
+     * first morning what has changed since a visit they never made. Counted in
+     * the shell, which already has the section totals, rather than inferred
+     * here from every card being empty: a broken query would look identical.
+     */
+    hasAnything: Boolean = true,
 ) {
     val colors = HealthTrail.colors
     val strings = LocalStrings.current
@@ -231,7 +240,7 @@ fun TodayFieldScreen(
             item(span = { GridItemSpan(2) }, key = "today-lead-slot") {
                 LeadSlot(
                     card = lead,
-                    answer = answers[lead.id] ?: digestAnswer(lead, digest, strings),
+                    answer = answers[lead.id] ?: digestAnswer(lead, digest, strings, hasAnything),
                     today = today,
                     onOpen = onOpen,
                     editing = editing,
@@ -272,7 +281,7 @@ fun TodayFieldScreen(
                 val position = index + 1
                 CardFor(
                     card = card,
-                    answer = answers[card.id] ?: digestAnswer(card, digest, strings),
+                    answer = answers[card.id] ?: digestAnswer(card, digest, strings, hasAnything),
                     size = CardSize.of(card.size),
                     onOpen = onOpen,
                     modifier = Modifier.testTag(TodayFieldTags.card(card.id)),
@@ -1069,8 +1078,26 @@ private fun digestAnswer(
     card: Repository.TodayCard,
     digest: com.kamsiob.healthtrail.data.Digest.Summary,
     strings: Strings,
+    /** Whether anything has ever been written down. */
+    hasAnything: Boolean,
 ): Repository.TodayAnswer? {
     if (card.type != "digest") return null
+    // **A notebook made thirty seconds ago has no last time.** The lead read
+    // "Nothing new since you were last here" on the first screen anybody sees
+    // after onboarding, which refers to a visit that did not happen. The
+    // previous Today had this right and showed no digest at all on a first
+    // run; this surface cannot, because 21.1 says the lead is never empty.
+    //
+    // **So it says what is true on day one and nothing more.** Not a task, not
+    // a setup prompt, not a count of what is missing: rule 13 rules all three
+    // out, and this is the one screen where a new person decides whether the
+    // app is going to nag them. It states what the card is for and stops.
+    if (!hasAnything) {
+        return Repository.TodayAnswer(
+            title = strings["today.card.digest.first"],
+            detail = strings["today.card.digest.first.detail"],
+        )
+    }
     // **Counted, never judged.** It says how many things are new, which is a
     // fact about the record. It never says whether that is a lot, whether the
     // person has been away too long, or what any of it means, and a quiet week

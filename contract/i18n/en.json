@@ -889,6 +889,8 @@
   "today.card.unread": "This one could not be read",
   "today.card.digest.new": "{count, plural, one {1 new thing since you were last here} other {# new things since you were last here}}",
   "today.card.digest.quiet": "Nothing new since you were last here",
+  "today.card.digest.first": "Nothing to sum up yet",
+  "today.card.digest.first.detail": "Whatever you write down will show up here.",
   "today.edit": "Edit",
   "today.edit.done": "Done",
   "today.edit.cancel": "Cancel",

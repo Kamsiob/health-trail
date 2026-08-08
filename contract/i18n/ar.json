@@ -889,6 +889,8 @@
   "today.card.unread": "تعذرت قراءة هذه",
   "today.card.digest.new": "{count, plural, zero {لا جديد منذ آخر زيارة} one {شيء جديد واحد منذ آخر زيارة} two {شيئان جديدان منذ آخر زيارة} few {# أشياء جديدة منذ آخر زيارة} many {# شيئًا جديدًا منذ آخر زيارة} other {# شيء جديد منذ آخر زيارة}}",
   "today.card.digest.quiet": "لا جديد منذ آخر زيارة",
+  "today.card.digest.first": "لا شيء لتلخيصه بعد",
+  "today.card.digest.first.detail": "كل ما تدوّنه سيظهر هنا.",
   "today.edit": "تحرير",
   "today.edit.done": "تم",
   "today.edit.cancel": "إلغاء",

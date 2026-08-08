@@ -889,6 +889,8 @@
   "today.card.unread": "这一项无法读取",
   "today.card.digest.new": "{count, plural, other {自上次以来有 # 项新内容}}",
   "today.card.digest.quiet": "自上次以来没有新内容",
+  "today.card.digest.first": "还没有可汇总的内容",
+  "today.card.digest.first.detail": "您记下的内容都会出现在这里。",
   "today.edit": "编辑",
   "today.edit.done": "完成",
   "today.edit.cancel": "取消",

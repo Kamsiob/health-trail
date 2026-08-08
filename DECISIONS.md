@@ -2209,6 +2209,20 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **Bouncy Castle went to 1.85.2 in the same change**, because a crypto library patch is worth taking on its own merits rather than because a checker asked for it.
 
+### D122. The digest's first run says what the card is for, and the wording was decided rather than escalated
+
+**2026-08-08, #245.** On a notebook made thirty seconds ago the lead read **"Nothing new since you were last here"**, on the first screen anybody sees after onboarding, referring to a visit that did not happen. The previous Today had this right and showed no digest at all on a first run, per `TodayScreenTest.afirstRunHasNoDigestAtAll`. **This surface cannot do that**, because 21.1 says the lead is never zero.
+
+**It says "Nothing to sum up yet", with "Whatever you write down will show up here." underneath.** Three things that were ruled out and why:
+
+- **A task or a setup prompt.** Rule 13 rules out prompts to finish setting up and any count of the person's own diligence. The old screen's coaching list is a separate component and belongs where it is.
+- **Reusing "Nothing written down yet"**, which is the trail card's none-yet line. Two cards sharing a sentence is what the whole none-yet pass was undoing, and a `TodayCardKeyTest` assertion holds them apart.
+- **Anything welcoming.** A person arrives here because somebody they love needs care. A greeting is the wrong register and section 11 says so.
+
+**The wording was decided here rather than sent to the owner**, per rule 10: a session decides, logs it, and continues, and only a genuine blocker goes to BLOCKED. An earlier note on the issue called the wording his, which was too cautious and is corrected by this entry. **It is copy and copy is changeable**: if he wants different words the key is `today.card.digest.first` and nothing else moves.
+
+**`hasAnything` is counted in the shell** from the section totals, the same signal the previous Today used, rather than inferred from every card being empty. A broken query would look identical to a new notebook, and one broken query once made every card on this surface claim the record was empty.
+
 ---
 
 ## BLOCKED

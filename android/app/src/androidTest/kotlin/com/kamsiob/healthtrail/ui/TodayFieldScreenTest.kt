@@ -698,6 +698,46 @@ class TodayFieldScreenTest {
     }
 
     @Test
+    fun aBrandNewNotebookIsNotToldWhatChangedSinceAVisitItNeverHad() {
+        // **The first screen anybody sees after onboarding.** It read "Nothing
+        // new since you were last here" on a notebook made thirty seconds ago.
+        // The previous Today showed no digest at all on a first run and was
+        // right to; this surface cannot, because 21.1 says the lead is never
+        // empty, so it says what is true on day one instead.
+        val strings = Strings.load(context)
+        compose.setContent {
+            HealthTrailTheme {
+                CompositionLocalProvider(LocalStrings provides strings) {
+                    TodayFieldScreen(
+                        layout = startingHand(),
+                        answers = emptyMap(),
+                        onOpen = {},
+                        today = today,
+                        hasAnything = false,
+                    )
+                }
+            }
+        }
+        val said = spoken(TodayFieldTags.LEAD)
+        assertTrue(
+            "a new notebook is told about a visit that never happened: $said",
+            strings["today.card.digest.quiet"] !in said,
+        )
+        assertTrue(
+            "the first run says nothing of its own: $said",
+            strings["today.card.digest.first"] in said,
+        )
+        // **And it does not turn into a task list.** Rule 13: an unfilled slot
+        // reads as not yet, never as something the person has failed to do.
+        for (banned in listOf("should", "need to", "must", "finish", "complete")) {
+            assertTrue(
+                "the first run nags: $banned is in \"$said\"",
+                banned !in said.lowercase(),
+            )
+        }
+    }
+
+    @Test
     fun aQuietLeadIsStillTheLead() {
         // 21.4's "none yet" rung, at the top of the screen. Quiet is allowed to
         // be good news and the answer to the question the person opened the app

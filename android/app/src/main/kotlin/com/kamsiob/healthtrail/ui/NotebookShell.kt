@@ -928,6 +928,11 @@ fun NotebookShell(
                             // is where the person would go to see the whole of
                             // it. A project card opens the project itself.
                             digest = digest,
+                            // **The same signal the previous Today used**, so
+                            // the digest does not tell somebody on their first
+                            // morning what has changed since a visit they never
+                            // made. #245.
+                            hasAnything = (counts?.sumOf { it.count } ?: 0) > 0,
                             // **Search keeps its place on Today**, 21.1, and
                             // this surface arrived without one at all: the
                             // previous Today had the way into search in its
