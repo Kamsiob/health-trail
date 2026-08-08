@@ -896,6 +896,10 @@ Every card declares **one query** over the same single database. Queries run whe
 | **Source closed** | A card pointing at a closed project says so and keeps working as a door. **Removed only by the person's hand** |
 | **Returning** | The digest leads with "since you were last here" and plain counts. **No card ever measures the person's absence back at them** |
 
+**Not every rung applies to every card, and chasing one that cannot exist is an evening wasted.** A card that answers with a number has no date to have gone by and no single source to close, so **passed and source closed belong only to the cards that point at something dated or at one row**: next up, a measure, milestones, the trail, and the three project cards. **Few means nothing on a card whose count is a yes or a no**, which is the emergency card. Everything else carries all six.
+
+**Which fixture reaches which rung is a question with an answer**, and it is `python3 tools/checks/report_today_rungs.py`. It builds all six horizons and prints the table, including what no fixture produces, so "fixture data exists that produces each rung" is checked rather than assumed. **The empty Today is the one state no seed reaches**: it comes from clearing the app and walking onboarding.
+
 ### 21.5 Defaults beat blank canvases
 
 **Nobody ever sees a blank Today.** The situation template chosen at onboarding ships a complete starting layout, which is law 5 doing the work.
