@@ -330,11 +330,12 @@ private fun LeadSlot(
     // would be the third time that word appears on the screen, after the chip
     // and the navigation tab. A card the person promoted says which card it is,
     // so they can see what they put at the top.
-    val eyebrow = if (card.type == "digest") {
-        EventDateText.dayHeading(strings, today)
-    } else {
-        tab
-    }
+    // **The day only for the digest**, and null otherwise, because for any
+    // other card the eyebrow is the tab itself and the reader's sentence is
+    // built from that tab's own raw parts below. Carrying the joined eyebrow
+    // into those parts would say the card's name twice and nest its isolates.
+    val day = if (card.type == "digest") EventDateText.dayHeading(strings, today) else null
+    val eyebrow = day ?: tab
 
     val shown = worded(card.type, answer, today)
 
@@ -344,12 +345,17 @@ private fun LeadSlot(
         // **Raw parts, joined once.** Bidi.join isolates every part it is
         // given, so handing it a string that was already joined wraps the whole
         // thing again and the marks nest.
+        // **Raw parts, joined once.** The tab is already a joined string, so
+        // passing it here wrapped it a second time and the isolate marks
+        // nested: the reader's sentence came out `⁨⁨Next up⁩⁩ · ...`. Seen by
+        // walking the semantics tree on the phone, and invisible in English.
         description = Bidi.join(
-            listOf(eyebrow) + answerParts(
+            listOf(strings[cardTabKey(card.type)], answer?.sourceName, day) + answerParts(
                 shown,
                 strings,
                 cardType = card.type,
                 showItems = true,
+                drewChart = false,
                 countLine = countLineKey(card.type)?.let { strings[it] },
             ),
         ),
@@ -405,12 +411,16 @@ private fun CardFor(
         // given, so handing it a string that was already joined wraps the whole
         // thing again and the marks nest. The same defect was fixed on the
         // project screen four commits ago and written straight back in here.
+        // **Raw parts, joined once**, for the same reason as the lead: `tab` has
+        // already been through `Bidi.join`, and joining a joined string nests
+        // the isolates.
         description = Bidi.join(
-            listOf(tab) + answerParts(
+            listOf(strings[cardTabKey(card.type)], answer?.sourceName) + answerParts(
                 shown,
                 strings,
                 cardType = card.type,
                 showItems = size != CardSize.SMALL,
+                drewChart = size == CardSize.TALL && (shown?.series?.size ?: 0) > 1,
                 countLine = countLineKey(card.type)?.let { strings[it] },
             ),
         ),
@@ -959,6 +969,14 @@ private fun answerParts(
     showItems: Boolean = false,
     /** The word under the number, which the eye gets and the ear was not getting. */
     countLine: String? = null,
+    /**
+     * Whether the card drew its chart, so the ear gets what the eye gets.
+     *
+     * 21.3 gives tall a chart or a list and the screen picks the chart when
+     * there is a series. Section 9: what is read aloud says the same thing the
+     * screen says.
+     */
+    drewChart: Boolean = false,
 ): List<String?> = when {
     answer == null -> listOf(strings["today.card.unread"])
     answer.sourceClosed -> listOf(answer.title, strings["today.card.source_closed"])
@@ -971,17 +989,24 @@ private fun answerParts(
         // as long as it was absent there, so the omission was consistent and
         // wrong twice.
         add(answer.whenEdtf?.takeIf { it.isNotBlank() }?.let { EventDateText.render(strings, it) })
-        if (showItems) {
+        // **The ear gets what the eye gets: a chart or a list, never both.**
+        // 21.3 gives tall one or the other and the screen picks the chart when
+        // there is a series, so announcing the list too made a reader listen to
+        // three readings that were not on the screen and then be told there
+        // were twelve. Section 9.
+        if (showItems && !drewChart) {
+            // **Raw parts, never a joined line.** `Bidi.join` isolates every
+            // part it is handed, so adding an already joined item wrapped it a
+            // second time and the sentence came out `⁨⁨137.3⁩ · ⁨May 5⁩⁩`. The
+            // caller joins once, at the end, over flat parts.
             for (item in answer.items) {
+                add(item.label.ifBlank { strings["project.steps.ungrouped"] })
+                add(item.note)
+                add(item.noteEdtf?.let { EventDateText.render(strings, it) })
                 add(
-                    Bidi.join(
-                        item.label.ifBlank { strings["project.steps.ungrouped"] },
-                        item.note,
-                        item.noteEdtf?.let { EventDateText.render(strings, it) },
-                        item.amountMinor?.let {
-                            formatMoney(strings, it, item.currency ?: "USD")
-                        },
-                    ),
+                    item.amountMinor?.let {
+                        formatMoney(strings, it, item.currency ?: "USD")
+                    },
                 )
             }
             val hidden = if (answer.itemsSampleTheCount) {
@@ -992,13 +1017,13 @@ private fun answerParts(
             if (answer.items.isNotEmpty() && hidden > 0) {
                 add(strings("today.card.more", "count" to hidden))
             }
-            // **A chart is one sentence to a reader, never a list of points.**
-            // `ChartCard` says the same thing about itself: a chart announced
-            // as coordinates is useless. How many readings there are is the
-            // part somebody listening can act on.
-            if (answer.series.size > 1) {
-                add(strings("progress.readings", "count" to answer.series.size))
-            }
+        }
+        // **A chart is one sentence to a reader, never a list of points.**
+        // `ChartCard` says the same thing about itself: a chart announced as
+        // coordinates is useless. How many readings there are is the part
+        // somebody listening can act on.
+        if (drewChart) {
+            add(strings("progress.readings", "count" to answer.series.size))
         }
         add(answer.detail)
         add(

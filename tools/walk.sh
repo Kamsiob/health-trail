@@ -44,10 +44,37 @@ dump() {
 case "${1:-}" in
     see)
         dump
-        tr '>' '\n' < "$DUMP" \
-            | grep -o 'text="[^"]*"' \
-            | grep -v 'text=""' \
-            | sed 's/text=//'
+        # **Content descriptions too, and marked as such.**
+        #
+        # This read `text=` alone, so a node that speaks through a description
+        # was invisible to it. That is most of Today: a card is one stop for a
+        # reader by design, 21.2, and `clearAndSetSemantics` puts the whole
+        # card's sentence in a description with no text underneath it. Walking
+        # Today printed "Edit" and the four navigation tabs, which reads as a
+        # blank screen and is the opposite of the truth.
+        #
+        # **This file's own promise is that it walks what a screen reader
+        # walks**, and a reader announces a description exactly where it finds
+        # one. Reading half the tree was not that.
+        #
+        # The `desc:` marker is kept because the two are not the same thing to
+        # look at: text is on the screen and a description is what is said
+        # instead of it, and a sweep for what is rendered wants to tell them
+        # apart.
+        python3 - "$DUMP" <<'PY'
+import re
+import sys
+
+xml = open(sys.argv[1], encoding='utf-8', errors='replace').read()
+for match in re.finditer(r'<node[^>]*>', xml):
+    node = match.group(0)
+    text = (re.search(r'text="([^"]*)"', node) or [None, ''])[1]
+    desc = (re.search(r'content-desc="([^"]*)"', node) or [None, ''])[1]
+    if text:
+        print(f'"{text}"')
+    elif desc:
+        print(f'desc: "{desc}"')
+PY
         ;;
 
     tap)
