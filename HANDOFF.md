@@ -4,7 +4,7 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-05.
+**Last rewritten:** 2026-08-08.
 
 ---
 
@@ -16,14 +16,14 @@
 
 **Do not read `docs/RUN-LOG.md` to orient.** It is history, it is a thousand lines, and nothing in it is current state.
 
-### Verified rather than asserted, 2026-08-07
+### Verified rather than asserted, 2026-08-08
 
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **17 repository checks pass**, `python3 tools/checks/run_all.py`. **`tools/verify.sh` is the honest runner**: it is the only one that compiles the instrumented sources and runs lint, and both have broken CI on work already walked on the phone.
-- **171 unit tests pass and they need no phone.** `tools/verify.sh` runs them. On a night when the device is unreachable this is most of what is left, and it is worth writing logic into a place these can reach rather than only into a composable.
+- **176 unit tests pass and they need no phone.** `tools/verify.sh` runs them. On a night when the device is unreachable this is most of what is left, and it is worth writing logic into a place these can reach rather than only into a composable.
 - **455 instrumented tests pass**, last full run 2026-08-06. **Not rerun since**, because the phone has been locked.
 - **Continuous integration is green on `main` at the tip.** **Check after every push**, `gh run list --branch main --limit 3`. A clean tree and passing local checks say nothing about it.
-- **The phone is attached, installed, seeded, and at its starting values**, each read back rather than assumed: font scale 1.0, animator null, no per-app locale, the accessibility services string the KDE Connect one, theme following the phone.
+- **The phone is attached and locked.** Font scale 1.0, animator null, no per-app locale, theme following the phone, each read back rather than assumed. **A secure keyguard has been up since 01:30 EDT on 2026-08-08**, so nothing on the device could be done and nothing was: no install, no seed, no walk, no screenshot, no instrumented run. Section 13.
 - **`tools/device.sh` puts the phone in a usable state in one step** and refuses if the app is not frontmost. Use it rather than `seed.sh` directly.
 - **The destructive command guard is live and proven**, not blocked. It refused a real removal command on 2026-08-07. Section 9.
 
@@ -53,17 +53,24 @@
 
 **#192, one medication, closed with its remainder split out rather than left vague.** Its questions are built and the fixture never exercises them, **#229**; its incidents cannot be expressed because the schema has no link from an incident to a medication, **#230**, which is the owner's call.
 
-**Milestone 1, Today: the surface is real and nothing in it is closed.** The night of 2026-08-08 was worked with the phone locked, so every issue below is built, pushed and green in CI, and **every one of them still owes its device verification**. Do not close any of them from the code.
+**Milestone 1, Today: the surface is real and nothing in it is closed.** The night of 2026-08-08 was worked with the phone behind a secure keyguard, so everything below is built, pushed and green in continuous integration, and **every one of it still owes its device verification**. Do not close any of it from the code.
 
-- **The lead is the hero costume**, not a wide card. #292, #270. D119.
-- **The universal search door**, which the surface had been missing entirely. #292. D120.
-- **Every counting card carries the noun under its number**, and wide shows the list with "and N more". #247, #250, #255, #258, #259, #260, #261.
-- **Every card says its own "nothing yet"**, rather than fourteen cards sharing one sentence. 21.4's none-yet rung.
-- **The measure card answers with the value**, not with the measure's name, and every card pointing at one thing names it on the tab. #248.
-- **The three project cards answer their own three questions**, including the countdown and "passed N days ago". #251, #252, #253.
-- **`TodayFieldScreenTest` exists**, and the surface had no test of any kind before it.
+| What changed | Issues |
+|---|---|
+| **The lead is the hero costume**, not a wide card. D119 | #292, #270 |
+| **The universal search door**, which the surface had been missing entirely. D120 | #292 |
+| **Every counting card carries the noun under its number**, and wide shows the list with "and N more" | #247, #250, #255, #258, #260 |
+| **Every card says its own "nothing yet"**, rather than fourteen cards sharing one sentence | 21.4's none-yet rung |
+| **The measure card answers with the value** and draws its shape at tall | #248 |
+| **Every card pointing at one thing names it on the tab** | #248, #251, #252, #253 |
+| **The three project cards answer their own questions**, countdown and "passed N days ago" included | #251, #252, #253 |
+| **The instructions card answers whether anything was not followed** | #261 |
+| **Next up says Today and Tomorrow in words** | #246 |
+| **`TodayFieldScreenTest` exists.** The surface had no test of any kind | all of them |
 
-**What is left in milestone 1, by issue**: the dialable number on care team #258, the tall mini spine on the trail #259, thumbnails on documents #260, whether any issues are noted on standing instructions #261, the measure chart at tall #248, and screens #293 through #301, which are mostly device verification of what is now built.
+**Two things that reached the model and nearly reached the screen.** A raw EDTF string in a card's list, and a project's stored status value. Both are the same defect: a stored value is not display text. Stored values become words in `worded()` and nowhere else.
+
+**What is left in milestone 1, by issue:** the care team source picker and its dialable number #258, which #258 now scopes in full; the tall mini spine on the trail #259; thumbnails on documents #260; and screens #293 through #301, which are mostly device verification of what is now built.
 
 **THE ARCHIVE is largely built and proved on real hardware**, not asserted: a two-layer container at format version 3, a readable copy of 61 pages, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. `docs/RUN-LOG.md` has the account and what each piece was proved with.
 
