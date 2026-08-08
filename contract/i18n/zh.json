@@ -227,6 +227,8 @@
   "date.format.year": "yyyy年",
   "date.format.time": "H:mm",
   "date.unknown": "日期不详",
+  "date.today": "今天",
+  "date.tomorrow": "明天",
   "date.moment": "{date} {time}",
   "date.week": "{date}那一周",
   "date.month": "{date}的某个时候",

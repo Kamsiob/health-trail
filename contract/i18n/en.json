@@ -227,6 +227,8 @@
   "date.format.year": "yyyy",
   "date.format.time": "h:mm a",
   "date.unknown": "Date not known",
+  "date.today": "Today",
+  "date.tomorrow": "Tomorrow",
   "date.moment": "{date} at {time}",
   "date.week": "The week of {date}",
   "date.month": "Sometime in {date}",

@@ -595,6 +595,69 @@ class TodayFieldScreenTest {
     }
 
     @Test
+    fun theNextDatedThingSaysTodayAndTomorrowInWords() {
+        // The grid draws "Tomorrow 10:15" and the card rendered "April 5, 2026
+        // at 10:15 AM", which is correct and makes the person do arithmetic in
+        // a kitchen. Anything further out keeps its full date.
+        val strings = Strings.load(context)
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(
+                card("c-soon", "next_up", size = "wide"),
+                card("c-later", "next_up", size = "wide"),
+            ),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                // today is April 4th.
+                "c-soon" to Repository.TodayAnswer(
+                    title = "Dr. Okafor",
+                    whenEdtf = "2026-04-05T10:15",
+                ),
+                "c-later" to Repository.TodayAnswer(
+                    title = "Home nurse",
+                    whenEdtf = "2026-05-20",
+                ),
+            ),
+        )
+        compose
+            .onNodeWithText(strings["date.tomorrow"], substring = true)
+            .assertIsDisplayed()
+        compose
+            .onNodeWithText(EventDateText.render(strings, "2026-05-20"))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun aCoarseDateIsNeverCalledTodayOrTomorrow() {
+        // Rule 17. A month is not a day, so it can be neither, and saying so
+        // would be the fabrication the date model exists to prevent.
+        val strings = Strings.load(context)
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-vague", "next_up", size = "wide")),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                "c-vague" to Repository.TodayAnswer(
+                    title = "The review meeting",
+                    whenEdtf = "2026-04",
+                ),
+            ),
+        )
+        for (word in listOf(strings["date.today"], strings["date.tomorrow"])) {
+            assertTrue(
+                "a month precise date was called $word",
+                compose.onAllNodesWithText(word, substring = true)
+                    .fetchSemanticsNodes().isEmpty(),
+            )
+        }
+        compose.onNodeWithText(EventDateText.render(strings, "2026-04")).assertIsDisplayed()
+    }
+
+    @Test
     fun aQuietLeadIsStillTheLead() {
         // 21.4's "none yet" rung, at the top of the screen. Quiet is allowed to
         // be good news and the answer to the question the person opened the app

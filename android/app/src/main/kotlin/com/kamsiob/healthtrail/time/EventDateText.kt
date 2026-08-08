@@ -119,6 +119,44 @@ object EventDateText {
     fun dayHeading(strings: Strings, date: LocalDate): String =
         date.format(pattern(strings, "date.format.weekday_day"))
 
+    /**
+     * "Today" or "Tomorrow", with the time where there is one.
+     *
+     * **Null for anything else**, which is most dates, and the caller falls back
+     * to [render]. This is not a general way of saying dates: it is for the one
+     * card whose question is what happens next, where "Tomorrow 10:15" is what
+     * somebody standing in a kitchen actually needs and "April 9, 2026" makes
+     * them count.
+     *
+     * **Null for a coarse date too, and that is the important part.** A month is
+     * not a day, so it can be neither today nor tomorrow, and answering
+     * "sometime in April" with "Today" would be the fabrication rule 17 exists
+     * to prevent. Only a day or a moment gets this treatment, and a moment keeps
+     * its time.
+     *
+     * **Never "Yesterday" or any other backwards word.** Nothing that calls this
+     * is looking behind it, and a card called next up showing last week is
+     * answering a different question from the one it names.
+     */
+    fun nearby(strings: Strings, canonical: String?, today: LocalDate): String? {
+        val date = canonical?.takeIf { it.isNotBlank() }?.let { Edtf.parse(it) } ?: return null
+        if (date.qualifier != Edtf.Qualifier.NONE) return null
+        val body = date.canonical
+        val (day, time) = when (date.precision) {
+            Edtf.Precision.DAY -> runCatching { LocalDate.parse(body) }.getOrNull() to null
+            Edtf.Precision.MOMENT -> runCatching { LocalDateTime.parse(body) }.getOrNull()
+                ?.let { it.toLocalDate() to it.format(pattern(strings, "date.format.time")) }
+                ?: (null to null)
+            else -> null to null
+        }
+        val word = when (day) {
+            today -> strings["date.today"]
+            today.plusDays(1) -> strings["date.tomorrow"]
+            else -> return null
+        }
+        return com.kamsiob.healthtrail.i18n.Bidi.join(word, time)
+    }
+
     /** The date itself, formatted, with no hedge around it. */
     private fun bare(strings: Strings, date: Edtf.Date): String {
         val body = body(date)

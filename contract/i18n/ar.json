@@ -227,6 +227,8 @@
   "date.format.year": "yyyy",
   "date.format.time": "h:mm a",
   "date.unknown": "التاريخ غير معروف",
+  "date.today": "اليوم",
+  "date.tomorrow": "غدًا",
   "date.moment": "{date} في {time}",
   "date.week": "أسبوع {date}",
   "date.month": "في وقت ما من {date}",

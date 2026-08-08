@@ -833,6 +833,21 @@ private fun worded(
             )
         }
 
+        // **What happens next, said the way somebody in a kitchen says it.**
+        // The grid draws "Tomorrow 10:15" and the card was rendering "April 9,
+        // 2026 at 10:15 AM", which is correct and makes the person count.
+        // Anything further out than tomorrow keeps its full date, and a coarse
+        // date is never given a day word at all: rule 17 again.
+        "next_up" -> answer.copy(
+            detail = EventDateText.nearby(strings, answer.whenEdtf, today)
+                ?: answer.detail,
+            whenEdtf = if (EventDateText.nearby(strings, answer.whenEdtf, today) != null) {
+                null
+            } else {
+                answer.whenEdtf
+            },
+        )
+
         else -> answer
     }
 }

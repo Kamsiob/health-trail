@@ -227,6 +227,8 @@
   "date.format.year": "yyyy",
   "date.format.time": "H:mm",
   "date.unknown": "Fecha desconocida",
+  "date.today": "Hoy",
+  "date.tomorrow": "Mañana",
   "date.moment": "{date} a las {time}",
   "date.week": "La semana del {date}",
   "date.month": "En algún momento de {date}",
