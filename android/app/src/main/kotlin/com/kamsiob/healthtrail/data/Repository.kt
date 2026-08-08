@@ -5818,6 +5818,16 @@ class Repository private constructor(
         val amountMinor: Long? = null,
         /** The amount's own currency, never the locale's. */
         val currency: String? = null,
+        /**
+         * The content hash of the picture of this thing, where there is one.
+         *
+         * **Only the documents card uses it**, and only at wide. 21.7: that
+         * card never renders private content larger than a thumbnail, so what
+         * travels is a hash and the screen decides how big the picture is
+         * allowed to be. Null for a document nobody photographed, which is a
+         * real and ordinary state.
+         */
+        val imageSha: String? = null,
     )
 
 
@@ -6025,11 +6035,25 @@ class Repository private constructor(
                 // **The title and its category, and never the paper itself.**
                 // 21.7: this card never renders private content larger than a
                 // thumbnail, and a title is what the person named it.
-                items = manyOf(
-                    "SELECT title, category FROM live_document WHERE subject_id = ? " +
-                        "ORDER BY coalesce(received_start, created_at) DESC LIMIT ?",
-                    subjectId, TODAY_CARD_ITEMS.toString(),
-                ),
+                items = database.rawQuery(
+                    "SELECT d.title, d.category, a.sha256 FROM live_document d " +
+                        "LEFT JOIN live_attachment a ON a.document_id = d.id " +
+                        "WHERE d.subject_id = ? " +
+                        "ORDER BY coalesce(d.received_start, d.created_at) DESC LIMIT ?",
+                    arrayOf(subjectId, TODAY_CARD_ITEMS.toString()),
+                ).use { cursor ->
+                    buildList {
+                        while (cursor.moveToNext()) {
+                            add(
+                                TodayItem(
+                                    label = cursor.getString(0),
+                                    note = cursor.getString(1)?.takeIf { it.isNotBlank() },
+                                    imageSha = cursor.getString(2),
+                                ),
+                            )
+                        }
+                    }
+                },
             ) }
             put("standing_instructions") { TodayAnswer(
                 count = countOf(

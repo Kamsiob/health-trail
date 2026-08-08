@@ -34,6 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import com.kamsiob.healthtrail.data.Attachments
+import com.kamsiob.healthtrail.ui.components.Thumbnail
+import androidx.compose.ui.platform.LocalContext
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -566,6 +569,14 @@ private fun AnswerBody(
     tall: Boolean = false,
     /** The card's hue, so a chart drawn here is the section's line and not a new color. */
     hue: TabHue = wholeAppHue(),
+    /**
+     * Where the person's own pictures are read from, for the documents card.
+     *
+     * Opened against the context the same way `DocumentsScreen` does, rather
+     * than threaded down from the shell, because it is a reader over a folder
+     * and not state anybody owns.
+     */
+    attachments: Attachments = Attachments.open(LocalContext.current),
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
@@ -692,6 +703,21 @@ private fun AnswerBody(
         Column(modifier = Modifier.padding(top = Space.xs)) {
             for (item in answer.items) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    // **The person's own paper, at thumbnail size and no
+                    // larger.** 21.7 says this card never renders private
+                    // content bigger than this, which is the whole reason the
+                    // hash travels and the screen decides the size. A document
+                    // nobody photographed gets the section's fallback drawing
+                    // rather than a hole.
+                    if (cardType == "recent_documents") {
+                        Thumbnail(
+                            sha256 = item.imageSha,
+                            attachments = attachments,
+                            section = Repository.Section.DOCUMENTS,
+                            size = Space.l,
+                        )
+                        Spacer(Modifier.width(Space.s))
+                    }
                     Text(
                         // The parts joined here rather than in the query,
                         // because joining is wording. `Bidi.join` isolates each
