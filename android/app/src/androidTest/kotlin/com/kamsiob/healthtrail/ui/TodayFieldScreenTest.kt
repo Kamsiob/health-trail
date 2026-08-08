@@ -738,6 +738,59 @@ class TodayFieldScreenTest {
     }
 
     @Test
+    fun twoAppointmentsOnOneDayBecomeTwoLinesAndNextWeekDoesNot() {
+        // 21.7. A card listing next week as well has stopped answering "what is
+        // the next dated thing" and started being an agenda, which the app
+        // already has a screen for.
+        val strings = Strings.load(context)
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-next", "next_up", size = "wide")),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                "c-next" to Repository.TodayAnswer(
+                    title = "Dr. Okafor",
+                    whenEdtf = "2026-04-09T10:15",
+                    items = listOf(
+                        Repository.TodayItem("Blood draw", noteEdtf = "2026-04-09T14:00"),
+                        Repository.TodayItem("Care plan meeting", noteEdtf = "2026-04-16"),
+                    ),
+                ),
+            ),
+        )
+        val said = spokenByCard("c-next")
+        assertTrue("the second thing that day is missing: $said", "Blood draw" in said)
+        assertTrue("a later day is being listed: $said", "Care plan meeting" !in said)
+    }
+
+    @Test
+    fun aCoarseDateSharesItsDayWithNothing() {
+        // Rule 17. "Sometime in April" is not on any particular day, so it
+        // cannot be the same day as anything, and saying it is would invent the
+        // precision the date model exists to protect.
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-next", "next_up", size = "wide")),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                "c-next" to Repository.TodayAnswer(
+                    title = "The review meeting",
+                    whenEdtf = "2026-04",
+                    items = listOf(Repository.TodayItem("Blood draw", noteEdtf = "2026-04")),
+                ),
+            ),
+        )
+        assertTrue(
+            "two month precise dates were treated as the same day",
+            "Blood draw" !in spokenByCard("c-next"),
+        )
+    }
+
+    @Test
     fun aQuietLeadIsStillTheLead() {
         // 21.4's "none yet" rung, at the top of the screen. Quiet is allowed to
         // be good news and the answer to the question the person opened the app

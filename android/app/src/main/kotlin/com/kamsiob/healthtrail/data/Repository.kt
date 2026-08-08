@@ -5902,7 +5902,27 @@ class Repository private constructor(
                         "ORDER BY scheduled_start LIMIT 1",
                     subjectId, now.toString(),
                 )
-                TodayAnswer(title = next?.first, whenEdtf = next?.second)
+                TodayAnswer(
+                    title = next?.first,
+                    whenEdtf = next?.second,
+                    // **The rest of what is ahead, for the wide form.** 21.7:
+                    // two on one day become two lines. Which of these belong to
+                    // the same day is decided in Kotlin rather than in SQL,
+                    // because a day is a timezone question and `scheduled_start`
+                    // is an instant: comparing epoch milliseconds here would put
+                    // an early appointment on the wrong side of midnight for
+                    // somebody in the wrong offset.
+                    items = manyOf(
+                        "SELECT title, scheduled_edtf FROM live_appointment " +
+                            "WHERE subject_id = ? AND scheduled_start >= ? " +
+                            "ORDER BY scheduled_start LIMIT ? OFFSET 1",
+                        subjectId, now.toString(), TODAY_CARD_ITEMS.toString(),
+                        dates = true,
+                    ),
+                    // The card says only what shares the day with the answer, so
+                    // the count cannot be a sample of it.
+                    itemsSampleTheCount = false,
+                )
             }
 
             // **The list is the same answer at a larger size**, 21.3, and this

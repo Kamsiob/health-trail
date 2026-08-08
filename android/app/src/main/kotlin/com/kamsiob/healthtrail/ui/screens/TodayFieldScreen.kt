@@ -865,7 +865,12 @@ private fun worded(
         // 2026 at 10:15 AM", which is correct and makes the person count.
         // Anything further out than tomorrow keeps its full date, and a coarse
         // date is never given a day word at all: rule 17 again.
+        // **Only what shares the day with the answer.** 21.7 wants two on one
+        // day to become two lines, and nothing more: a card listing next week
+        // as well has stopped answering "what is the next dated thing" and
+        // started being an agenda, which is a screen the app already has.
         "next_up" -> answer.copy(
+            items = answer.items.filter { sameDay(it.noteEdtf, answer.whenEdtf) },
             detail = EventDateText.nearby(strings, answer.whenEdtf, today)
                 ?: answer.detail,
             whenEdtf = if (EventDateText.nearby(strings, answer.whenEdtf, today) != null) {
@@ -909,6 +914,27 @@ private fun emptyLineKey(cardType: String): String = when (cardType) {
     // their own thing when there is nothing: a project with no steps and no
     // waiting-on is a project somebody just started.
     else -> "today.card.nothing"
+}
+
+/**
+ * Whether two stored dates fall on the same calendar day.
+ *
+ * **Both have to be day precise for the question to mean anything.** "Sometime
+ * in April" is not on any particular day, so it shares one with nothing, and
+ * saying otherwise would be the invented precision rule 17 exists to prevent.
+ */
+private fun sameDay(a: String?, b: String?): Boolean {
+    if (a.isNullOrBlank() || b.isNullOrBlank()) return false
+    fun day(text: String): String? {
+        val date = com.kamsiob.healthtrail.time.Edtf.parse(text) ?: return null
+        return when (date.precision) {
+            com.kamsiob.healthtrail.time.Edtf.Precision.DAY -> date.canonical
+            com.kamsiob.healthtrail.time.Edtf.Precision.MOMENT -> date.canonical.substringBefore('T')
+            else -> null
+        }
+    }
+    val left = day(a) ?: return false
+    return left == day(b)
 }
 
 /** A project status value as the word the rest of the app uses for it. */
