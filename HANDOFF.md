@@ -53,6 +53,18 @@
 
 **#192, one medication, closed with its remainder split out rather than left vague.** Its questions are built and the fixture never exercises them, **#229**; its incidents cannot be expressed because the schema has no link from an incident to a medication, **#230**, which is the owner's call.
 
+**Milestone 1, Today: the surface is real and nothing in it is closed.** The night of 2026-08-08 was worked with the phone locked, so every issue below is built, pushed and green in CI, and **every one of them still owes its device verification**. Do not close any of them from the code.
+
+- **The lead is the hero costume**, not a wide card. #292, #270. D119.
+- **The universal search door**, which the surface had been missing entirely. #292. D120.
+- **Every counting card carries the noun under its number**, and wide shows the list with "and N more". #247, #250, #255, #258, #259, #260, #261.
+- **Every card says its own "nothing yet"**, rather than fourteen cards sharing one sentence. 21.4's none-yet rung.
+- **The measure card answers with the value**, not with the measure's name, and every card pointing at one thing names it on the tab. #248.
+- **The three project cards answer their own three questions**, including the countdown and "passed N days ago". #251, #252, #253.
+- **`TodayFieldScreenTest` exists**, and the surface had no test of any kind before it.
+
+**What is left in milestone 1, by issue**: the dialable number on care team #258, the tall mini spine on the trail #259, thumbnails on documents #260, whether any issues are noted on standing instructions #261, the measure chart at tall #248, and screens #293 through #301, which are mostly device verification of what is now built.
+
 **THE ARCHIVE is largely built and proved on real hardware**, not asserted: a two-layer container at format version 3, a readable copy of 61 pages, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. `docs/RUN-LOG.md` has the account and what each piece was proved with.
 
 ---
