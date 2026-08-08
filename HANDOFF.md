@@ -53,24 +53,19 @@
 
 **#192, one medication, closed with its remainder split out rather than left vague.** Its questions are built and the fixture never exercises them, **#229**; its incidents cannot be expressed because the schema has no link from an incident to a medication, **#230**, which is the owner's call.
 
-**Milestone 1, Today: the surface is real and nothing in it is closed.** The night of 2026-08-08 was worked with the phone behind a secure keyguard, so everything below is built, pushed and green in continuous integration, and **every one of it still owes its device verification**. Do not close any of it from the code.
+**Milestone 1, Today: the surface is built and verified, and fourteen issues closed on the device on 2026-08-08.** #292, #270, #269, #247, #248, #250 through #257 and #261. The 16.4 checklist was walked in full: both themes, font scale 2.0 with the baseline restored, Arabic right to left with the app restarted so the catalog switched, the empty state from a cleared install, 479 instrumented tests, and TalkBack bound against the app.
 
-| What changed | Issues |
-|---|---|
-| **The lead is the hero costume**, not a wide card. D119 | #292, #270 |
-| **The universal search door**, which the surface had been missing entirely. D120 | #292 |
-| **Every counting card carries the noun under its number**, and wide shows the list with "and N more" | #247, #250, #255, #258, #260 |
-| **Every card says its own "nothing yet"**, rather than fourteen cards sharing one sentence | 21.4's none-yet rung |
-| **The measure card answers with the value** and draws its shape at tall | #248 |
-| **Every card pointing at one thing names it on the tab** | #248, #251, #252, #253 |
-| **The three project cards answer their own questions**, countdown and "passed N days ago" included | #251, #252, #253 |
-| **The instructions card answers whether anything was not followed** | #261 |
-| **Next up says Today and Tomorrow in words** | #246 |
-| **`TodayFieldScreenTest` exists.** The surface had no test of any kind | all of them |
+**What is left in milestone 1, and each says why on its own issue:** the digest's first run voice #245, two appointments on one day #246, the milestones card's own look #249, the care team source picker and its dialable number #258, the tall mini spine on the trail #259, thumbnails on documents #260, and screens #293 through #301.
 
-**Two things that reached the model and nearly reached the screen.** A raw EDTF string in a card's list, and a project's stored status value. Both are the same defect: a stored value is not display text. Stored values become words in `worded()` and nowhere else.
+**What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 
-**What is left in milestone 1, by issue:** the care team source picker and its dialable number #258, which #258 now scopes in full; the tall mini spine on the trail #259; thumbnails on documents #260; and screens #293 through #301, which are mostly device verification of what is now built.
+- A card's tab ran underneath the corner chevron and ellipsized behind it. Nothing collides until the text is long enough.
+- A tall card reserved 168dp whatever it had to say, so a measure with one reading was a hundred points of empty box.
+- The measure query read `value_text` only, which is null for a measure recorded as a number, so a weight card with a hundred readings said "No readings yet" directly above its own chart.
+- "and 5 more" subtracted clusters from steps, which is a sentence about nothing.
+- The reader's sentence had nested isolate marks, and announced three readings the screen was not showing.
+
+**Two of those were found only because `walk.sh see` was fixed to read content descriptions**, and it had been reading half the tree.
 
 **THE ARCHIVE is largely built and proved on real hardware**, not asserted: a two-layer container at format version 3, a readable copy of 61 pages, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. `docs/RUN-LOG.md` has the account and what each piece was proved with.
 
