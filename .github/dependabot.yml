@@ -17,3 +17,19 @@ updates:
       - "type:task"
       - "area:repo"
     open-pull-requests-limit: 5
+
+  # The Android project, which now exists. **This is what owns staying
+  # current**, since lint's two version checks were turned off for making a
+  # third party's release schedule into a red build on an unchanged tree.
+  # D121. A pull request naming the version is reviewable and testable; a
+  # failing `lintDebug` at three in the morning is neither.
+  - package-ecosystem: gradle
+    directory: "/android"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build"
+    labels:
+      - "type:task"
+      - "area:repo"
+    open-pull-requests-limit: 5

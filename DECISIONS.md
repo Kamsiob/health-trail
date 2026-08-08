@@ -2197,6 +2197,18 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **It is hidden in edit mode and only there.** Grid screen 05 draws no search bar, and there is a reason beyond the drawing: edit mode holds an unsaved draft that Done writes in one go, so a door that navigates away mid-edit costs the person the arrangement they were making. A door that takes your work is worse than no door.
 
+### D121. Lint's two version currency checks are off, and Dependabot owns staying current instead
+
+**2026-08-08.** `warningsAsErrors = true` turned `NewerVersionAvailable` and `AndroidGradlePluginVersion` into build breaking errors. **Neither is a check on this repository.** Both fail the moment somebody else publishes a release, so a tree nobody has touched goes from green to red overnight and the failure names a file nobody edited.
+
+**It happened twice inside one hour.** Gradle 9.7.0 was published on 2026-08-06; CI was green at 23:35 that night and the next run failed on an unchanged commit. The wrapper was upgraded, which fixed it, and the very next push failed again on Bouncy Castle 1.85.2. Chasing them one at a time is a build that any third party can break at three in the morning, and each red build costs a session the ability to tell a real failure from the weather.
+
+**This is not the check being routed around, which rule 8 of the running notes rules out.** Staying current is still owned and is still acted on. It is owned by the thing built for it: **Dependabot now watches the Gradle ecosystem in `/android`** as well as the actions, and it opens a pull request naming the version. That is reviewable, it is testable, and it does not break `main`. Lint's version check does none of those things: it states a fact and fails the build.
+
+**Nothing else was weakened.** `warningsAsErrors` still holds, `abortOnError` still holds, there is still no baseline file, and the two disabled checks join `OldTargetApi` and `ObsoleteSdkInt` in the same pattern the build file already uses: named, one at a time, each with the reason next to it.
+
+**Bouncy Castle went to 1.85.2 in the same change**, because a crypto library patch is worth taking on its own merits rather than because a checker asked for it.
+
 ---
 
 ## BLOCKED

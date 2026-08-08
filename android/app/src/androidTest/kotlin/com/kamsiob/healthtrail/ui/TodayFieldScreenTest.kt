@@ -243,6 +243,45 @@ class TodayFieldScreenTest {
     }
 
     @Test
+    fun theNextDatedThingShowsWhenItIs() {
+        // **The defect this test exists for.** `whenEdtf` was read from the
+        // record for Next up, Milestones and a measure, carried through
+        // `TodayAnswer`, and rendered by nothing, so the card whose whole
+        // question is "what is the next dated thing" showed a name and no date.
+        val strings = Strings.load(context)
+        show(
+            answers = mapOf(
+                "c-next" to Repository.TodayAnswer(
+                    title = "Dr. Okafor",
+                    whenEdtf = "2026-04-09",
+                ),
+            ),
+        )
+        compose
+            .onNodeWithText(EventDateText.render(strings, "2026-04-09"))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun aCoarseDateOnACardIsNotMadePrecise() {
+        // Rule 17 and 9.2, on this surface too. "Sometime in April 2026" is
+        // honest and "April 1, 2026" for the same stored value is a
+        // fabrication, and a card is not exempt from that because it is small.
+        val strings = Strings.load(context)
+        show(
+            answers = mapOf(
+                "c-next" to Repository.TodayAnswer(title = "Dr. Okafor", whenEdtf = "2026-04"),
+            ),
+        )
+        val rendered = EventDateText.render(strings, "2026-04")
+        compose.onNodeWithText(rendered).assertIsDisplayed()
+        assertTrue(
+            "a month precise date rendered as a day: $rendered",
+            rendered == strings("date.month", "date" to "April 2026"),
+        )
+    }
+
+    @Test
     fun aQuietLeadIsStillTheLead() {
         // 21.4's "none yet" rung, at the top of the screen. Quiet is allowed to
         // be good news and the answer to the question the person opened the app

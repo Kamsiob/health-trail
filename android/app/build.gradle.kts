@@ -117,6 +117,24 @@ android {
         // build fails with "resource mipmap/ic_launcher not found". Verified by
         // trying it. The qualifier stays.
         disable += "ObsoleteSdkInt"
+
+        // **The two version currency checks, because they are not checks on
+        // this repository.** `NewerVersionAvailable` and
+        // `AndroidGradlePluginVersion` fail the build the moment somebody else
+        // publishes a release, so a tree nobody has touched goes from green to
+        // red overnight and the failure names a file nobody edited. It happened
+        // twice in one hour on 2026-08-08: Gradle 9.7.0 on the 6th, then Bouncy
+        // Castle 1.85.2, each one red on an unchanged commit.
+        //
+        // **This is not the check being routed around.** Staying current is
+        // still owned, and it is owned by the thing built for it: Dependabot
+        // watches the Gradle ecosystem and opens a pull request naming the
+        // version, which is reviewable, testable and does not break `main` at
+        // three in the morning. A build whose greenness depends on the outside
+        // world's release schedule is not telling anybody anything about this
+        // code. D121.
+        disable += "NewerVersionAvailable"
+        disable += "AndroidGradlePluginVersion"
     }
 }
 

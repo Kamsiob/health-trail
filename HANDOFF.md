@@ -20,7 +20,8 @@
 
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **17 repository checks pass**, `python3 tools/checks/run_all.py`. **`tools/verify.sh` is the honest runner**: it is the only one that compiles the instrumented sources and runs lint, and both have broken CI on work already walked on the phone.
-- **455 instrumented tests pass**, last full run 2026-08-06.
+- **171 unit tests pass and they need no phone.** `tools/verify.sh` runs them. On a night when the device is unreachable this is most of what is left, and it is worth writing logic into a place these can reach rather than only into a composable.
+- **455 instrumented tests pass**, last full run 2026-08-06. **Not rerun since**, because the phone has been locked.
 - **Continuous integration is green on `main` at the tip.** **Check after every push**, `gh run list --branch main --limit 3`. A clean tree and passing local checks say nothing about it.
 - **The phone is attached, installed, seeded, and at its starting values**, each read back rather than assumed: font scale 1.0, animator null, no per-app locale, the accessibility services string the KDE Connect one, theme following the phone.
 - **`tools/device.sh` puts the phone in a usable state in one step** and refuses if the app is not frontmost. Use it rather than `seed.sh` directly.
@@ -240,7 +241,7 @@ Every one of these was built from the existing components, logged in all three p
 
 **Gradle is fast and it looks broken.** An incremental Kotlin recompile of several changed files finishes in about a second. That is real.
 
-**Gradle's own version is a lint error, so a Gradle release turns CI red without anybody touching the repository.** `AndroidGradlePluginVersion` fails `lintDebug` the moment a newer Gradle exists, and 9.7.0 was published on 2026-08-06. Nothing in the tree changed and the build went red. **Upgrade the wrapper rather than suppressing the check**: `cd android && ./gradlew wrapper --gradle-version <new>`, then run `lintDebug` and both compiles.
+**A release by somebody else used to turn CI red on an unchanged tree, and no longer does.** `warningsAsErrors` made lint's two version currency checks build breaking, so the moment Gradle or any dependency published, `lintDebug` failed naming a file nobody had edited. It happened twice inside an hour on 2026-08-08: Gradle 9.7.0, then Bouncy Castle 1.85.2. **`NewerVersionAvailable` and `AndroidGradlePluginVersion` are disabled with their reason**, and **staying current is Dependabot's**, which now watches `/android` and opens a pull request instead. D121. **Nothing else in lint was weakened**, and `warningsAsErrors` still holds.
 
 **Everything else:** Gradle 9.7.0, AGP 9.3.1, Kotlin 2.4.10, Compose BOM 2026.06.01, JDK 21, compileSdk 37, targetSdk 36, minSdk 26. minSdk 26 is why `java.time` is available to `Edtf.kt` without desugaring. Android's `execSQL` refuses any statement that returns rows and `PRAGMA journal_mode` returns one, so `ContractAssets.splitStatements` handles the splitting including trigger bodies and routes pragmas through `rawQuery`. Reuse it rather than writing a second splitter.
 

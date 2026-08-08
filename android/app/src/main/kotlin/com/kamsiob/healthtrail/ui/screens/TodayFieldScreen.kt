@@ -467,11 +467,30 @@ private fun CardFor(
 private fun AnswerBody(
     answer: Repository.TodayAnswer?,
     lead: Boolean,
+    /**
+     * Whether this card is wide enough for a second line of context.
+     *
+     * **Small still gets one**, per 21.3: half width carries one answer and one
+     * line of context, not an answer alone. A small Next up card showing a name
+     * and nothing else is not answering the question it names.
+     */
     showDetail: Boolean,
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
     val strings = LocalStrings.current
+
+    // **When it is, which nothing rendered until 2026-08-08.** `whenEdtf` is
+    // read from the record for Next up, Milestones and a measure, carried
+    // through `TodayAnswer`, and was dropped on the floor by every renderer, so
+    // the card whose whole question is "what is the next dated thing" showed a
+    // name and no date. Same family as a control that kept its repository call
+    // through a supersession: read, carried, compiled, never on screen.
+    //
+    // **Through `EventDateText`, so precision is never invented**, per rule 17
+    // and 9.2. A month stays a month here exactly as it does in the trail.
+    val whenText = answer?.whenEdtf?.takeIf { it.isNotBlank() }
+        ?.let { EventDateText.render(strings, it) }
 
     // **A zero is not an answer worth shouting.** Rendering the number whatever
     // it was put a large 0 directly above "Nothing waiting", which says the
@@ -531,17 +550,22 @@ private fun AnswerBody(
         )
     }
 
-    if (showDetail) {
-        answer?.detail?.let {
-            Text(
-                text = Bidi.isolate(it),
-                style = type.bodyS,
-                color = colors.ink2,
-                maxLines = if (lead) Int.MAX_VALUE else 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = Space.xs),
-            )
-        }
+    // **The context lines, and growing reveals more of the same answer.** 21.3:
+    // the first line is the one line of context every size carries, the second
+    // appears at wide and tall. **When it is comes first** where the record has
+    // it, because a date is the context on every card that carries one, and the
+    // detail follows. Neither is a new kind of content at the larger size.
+    val lines = listOfNotNull(whenText, answer?.detail?.takeIf { it.isNotBlank() })
+        .let { if (showDetail) it else it.take(1) }
+    for (line in lines) {
+        Text(
+            text = Bidi.isolate(line),
+            style = type.bodyS,
+            color = colors.ink2,
+            maxLines = if (lead) Int.MAX_VALUE else 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = Space.xs),
+        )
     }
 }
 
@@ -562,6 +586,10 @@ private fun answerParts(
     else -> listOf(
         answer.count?.takeIf { it > 0 }?.toString(),
         answer.title,
+        // **The date the screen shows**, per section 9: what is read aloud says
+        // the same thing the screen says. It was absent here for as long as it
+        // was absent there, so the omission was consistent and wrong twice.
+        answer.whenEdtf?.takeIf { it.isNotBlank() }?.let { EventDateText.render(strings, it) },
         answer.detail,
     )
 }
