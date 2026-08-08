@@ -5751,6 +5751,20 @@ class Repository private constructor(
          * 21.3 says tall carries a chart and never a dense feed.
          */
         val series: List<Reading> = emptyList(),
+        /**
+         * A second, counted line, as a catalog key and its number.
+         *
+         * **A key rather than a sentence**, because the sentence is the
+         * screen's and its plural is the reader's language's. The key is a
+         * literal here, so `check_string_keys.py` can still see it.
+         *
+         * For the standing instructions card this is how many times something
+         * was not followed, which is the other half of the question 21.7 asks.
+         * **A count and never a judgment**: nothing says a facility is bad and
+         * no threshold turns the number into an opinion.
+         */
+        val detailKey: String? = null,
+        val detailCount: Int? = null,
     ) {
         /** Whether the record has anything to say. The none-yet rung, 21.4. */
         val isEmpty: Boolean get() = (count ?: 0) == 0 && title.isNullOrBlank()
@@ -6002,6 +6016,23 @@ class Repository private constructor(
                         "ORDER BY name LIMIT ?",
                     subjectId, TODAY_CARD_ITEMS.toString(),
                 ),
+                // **And are any issues noted**, which is the other half of the
+                // question 21.7 asks and which the card never answered. This is
+                // the part of the record a family actually needs in a room:
+                // "we asked in writing in March, and it happened again in May
+                // and again in June" is a different conversation.
+                //
+                // **Zero is not a line.** A card saying "not followed 0 times"
+                // introduces a worry to somebody who does not have one, and
+                // 21.4 says quiet is allowed to be good news without being
+                // announced.
+                detailKey = "instruction.violations.count",
+                detailCount = countOf(
+                    "SELECT COUNT(*) FROM live_instruction_violation v " +
+                        "JOIN live_standing_instruction s ON s.id = v.instruction_id " +
+                        "WHERE s.subject_id = ?",
+                    subjectId,
+                ).takeIf { it > 0 },
             ) }
             // Open means unanswered. `question` has `answer_text` and no
             // `resolved_at`, and asking for one that is not there throws.

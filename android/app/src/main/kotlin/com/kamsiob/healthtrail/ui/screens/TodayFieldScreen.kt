@@ -695,7 +695,16 @@ private fun AnswerBody(
     // appears at wide and tall. **When it is comes first** where the record has
     // it, because a date is the context on every card that carries one, and the
     // detail follows. Neither is a new kind of content at the larger size.
-    val lines = listOfNotNull(whenText, answer?.detail?.takeIf { it.isNotBlank() })
+    // A counted second line, worded here because its plural belongs to the
+    // reader's language. The key is a literal on the repository side.
+    val countedLine = answer?.detailKey?.let { key ->
+        answer.detailCount?.let { strings(key, "count" to it) }
+    }
+    val lines = listOfNotNull(
+        whenText,
+        answer?.detail?.takeIf { it.isNotBlank() },
+        countedLine,
+    )
         .let { if (showDetail) it else it.take(1) }
     for (line in lines) {
         Text(
@@ -963,6 +972,11 @@ private fun answerParts(
             }
         }
         add(answer.detail)
+        add(
+            answer.detailKey?.let { key ->
+                answer.detailCount?.let { strings(key, "count" to it) }
+            },
+        )
     }
 }
 

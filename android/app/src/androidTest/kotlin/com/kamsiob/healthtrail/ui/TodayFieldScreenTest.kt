@@ -549,6 +549,52 @@ class TodayFieldScreenTest {
     }
 
     @Test
+    fun standingInstructionsSaysWhetherAnythingWasNotFollowed() {
+        // 21.7 asks two things: how many are active, **and are any issues
+        // noted**. The second half is the part a family actually needs in a
+        // room, and the card never answered it.
+        val strings = Strings.load(context)
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-si", "standing_instructions", size = "wide")),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                "c-si" to Repository.TodayAnswer(
+                    count = 4,
+                    detailKey = "instruction.violations.count",
+                    detailCount = 3,
+                ),
+            ),
+        )
+        compose
+            .onNodeWithText(strings("instruction.violations.count", "count" to 3))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun noIssuesNotedIsSaidByNotSayingIt() {
+        // **Zero is not a line.** "Not followed 0 times" introduces a worry to
+        // somebody who does not have one, and 21.4 lets quiet be good news
+        // without announcing itself. Rule 2 as well: the app counts, and a
+        // count of nothing is not a finding.
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(card("c-si", "standing_instructions", size = "wide")),
+        )
+        show(
+            layout,
+            answers = mapOf("c-si" to Repository.TodayAnswer(count = 4)),
+        )
+        assertTrue(
+            "the card announces that nothing has gone wrong, which nobody asked",
+            compose.onAllNodesWithText("followed", substring = true)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
     fun aQuietLeadIsStillTheLead() {
         // 21.4's "none yet" rung, at the top of the screen. Quiet is allowed to
         // be good news and the answer to the question the person opened the app
