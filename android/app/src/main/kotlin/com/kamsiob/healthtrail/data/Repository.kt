@@ -5740,6 +5740,17 @@ class Repository private constructor(
          * number in the quiet line under it.
          */
         val sourceName: String? = null,
+        /**
+         * The recent readings, for a measure card drawn at tall.
+         *
+         * **The same rows the Progress screen plots**, so the two charts of one
+         * measure cannot disagree about the same silence. `ChartCard.chartPoints`
+         * turns them into points and owns the gap rule.
+         *
+         * **Newest first, as the query returns them**, and a handful of them:
+         * 21.3 says tall carries a chart and never a dense feed.
+         */
+        val series: List<Reading> = emptyList(),
     ) {
         /** Whether the record has anything to say. The none-yet rung, 21.4. */
         val isEmpty: Boolean get() = (count ?: 0) == 0 && title.isNullOrBlank()
@@ -6097,6 +6108,40 @@ class Repository private constructor(
                     sourceName = it.getString(0),
                     title = it.getString(1),
                     whenEdtf = it.getString(2),
+                )
+            }?.let { answer ->
+                // **The recent shape, which is the other half of the question.**
+                // 21.7 asks "what is the latest value, and its recent shape",
+                // and the card had no shape at any size. Read oldest first,
+                // because a chart is drawn along time and `chartPoints` positions
+                // by it.
+                answer.copy(
+                    series = database.rawQuery(
+                        "SELECT id, measure_id, value_number, value_text, unit, " +
+                            "occurred_edtf, occurred_start, note, source " +
+                            "FROM live_measurement WHERE measure_id = ? " +
+                            "AND value_number IS NOT NULL AND occurred_start IS NOT NULL " +
+                            "ORDER BY occurred_start DESC LIMIT ?",
+                        arrayOf(sourceId, TODAY_CARD_POINTS.toString()),
+                    ).use { cursor ->
+                        buildList {
+                            while (cursor.moveToNext()) {
+                                add(
+                                    Reading(
+                                        id = cursor.getString(0),
+                                        measureId = cursor.getString(1),
+                                        number = cursor.getDouble(2),
+                                        text = cursor.getString(3),
+                                        unit = cursor.getString(4),
+                                        occurredEdtf = cursor.getString(5),
+                                        occurredStart = cursor.getLong(6),
+                                        note = cursor.getString(7),
+                                        source = cursor.getString(8),
+                                    ),
+                                )
+                            }
+                        }.reversed()
+                    },
                 )
             }
 
@@ -6610,3 +6655,12 @@ class Repository private constructor(
  * showing three of eleven says so rather than quietly cropping to three.
  */
 private const val TODAY_CARD_ITEMS = 3
+
+/**
+ * How many readings a measure card's chart draws.
+ *
+ * **A card is never a dense feed**, 21.3, and the tall size carries a chart
+ * rather than a history. Twelve is enough for a shape and few enough that the
+ * line stays a line at a card's width.
+ */
+private const val TODAY_CARD_POINTS = 12

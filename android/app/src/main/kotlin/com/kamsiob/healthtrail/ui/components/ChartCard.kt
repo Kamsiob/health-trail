@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -133,7 +134,7 @@ object ChartHeight {
 }
 
 @Composable
-private fun Plot(readings: List<Reading>, line: Color, height: Dp) {
+internal fun Plot(readings: List<Reading>, line: Color, height: Dp) {
     val colors = HealthTrail.colors
 
     Canvas(
@@ -196,3 +197,63 @@ private val RING = 0.75.dp
 
 /** Below this, a series is flat rather than having a range worth scaling to. */
 private const val FLAT_EPSILON = 1e-6f
+
+/**
+ * The plot points for one measure, positioned by when each reading happened.
+ *
+ * **Positioned by time, not by index.** Six readings in a week and one four
+ * months later are not evenly spaced, and drawing them evenly would be the chart
+ * saying something about the rhythm that the record does not.
+ *
+ * **A gap breaks the line.** The rule is a silence longer than three times the
+ * median interval for this measure, which is derived from the measure's own
+ * rhythm rather than from a fixed number of days: a daily weight and a quarterly
+ * lab round have very different silences, and one threshold for both would draw
+ * a break in every lab chart and none in any weight chart.
+ *
+ * **The value is unscaled and stays that way.** `ChartCard` normalizes to its
+ * own extremes and draws no axis, which is what keeps the line a shape rather
+ * than a measurement somebody could read a number off.
+ *
+ * **It lives here rather than on the screen that first needed it**, because the
+ * Today surface draws the same series at the same measure's tall size, and a
+ * second copy of the gap rule is two charts that disagree about the same
+ * silence the first time either is touched. The rule is part of the chart, not
+ * part of the Progress screen.
+ */
+fun chartPoints(readings: List<Repository.Reading>): List<Reading> {
+    val usable = readings.filter { it.number != null && it.occurredStart != null }
+    if (usable.size < 2) {
+        return usable.map { Reading(position = 0.5f, value = it.number!!.toFloat()) }
+    }
+
+    val first = usable.first().occurredStart!!
+    val last = usable.last().occurredStart!!
+    val span = (last - first).coerceAtLeast(1L).toFloat()
+
+    val intervals = usable.zipWithNext { older, newer ->
+        newer.occurredStart!! - older.occurredStart!!
+    }.sorted()
+    val median = intervals[intervals.size / 2].coerceAtLeast(1L)
+    val breakAfter = median * GAP_MULTIPLE
+
+    return usable.mapIndexed { index, reading ->
+        val previous = usable.getOrNull(index - 1)
+        Reading(
+            position = (reading.occurredStart!! - first) / span,
+            value = reading.number!!.toFloat(),
+            startsSegment = previous != null &&
+                reading.occurredStart - previous.occurredStart!! > breakAfter,
+        )
+    }
+}
+
+/**
+ * How much longer than usual a silence has to be before the line breaks.
+ *
+ * Three, which is loose enough that an ordinary irregular week does not shatter
+ * a chart into fragments and tight enough that a season with nothing in it is
+ * visible as one. It is a drawing rule and not a judgment: the app is deciding
+ * where to lift the pen, never what the silence meant.
+ */
+private const val GAP_MULTIPLE = 3

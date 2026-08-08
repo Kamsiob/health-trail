@@ -482,6 +482,73 @@ class TodayFieldScreenTest {
     }
 
     @Test
+    fun aMeasureDrawsItsShapeAtTallAndNowhereSmaller() {
+        // 21.7 asks the measure card for the latest value **and its recent
+        // shape**, and 21.3 puts a chart at tall only: a line across half a
+        // screen width is a decoration rather than a shape anybody can read.
+        val strings = Strings.load(context)
+        val series = (0..5).map {
+            Repository.Reading(
+                id = "r$it",
+                measureId = "m1",
+                number = 148.0 + it,
+                text = null,
+                unit = "lb",
+                occurredEdtf = "2026-03-0${it + 1}",
+                occurredStart = 1772000000000L + it * 86_400_000L,
+                note = null,
+                source = null,
+            )
+        }
+        val layout = Repository.TodayLayout(
+            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            field = listOf(
+                card("c-tall", "measure", size = "tall"),
+                card("c-small", "measure", size = "small"),
+            ),
+        )
+        show(
+            layout,
+            answers = mapOf(
+                "c-tall" to Repository.TodayAnswer(
+                    sourceName = "Weight",
+                    title = "153 lb",
+                    series = series,
+                ),
+                "c-small" to Repository.TodayAnswer(
+                    sourceName = "Weight",
+                    title = "153 lb",
+                    series = series,
+                ),
+            ),
+        )
+
+        // The reader hears the chart as one sentence, never as coordinates.
+        fun spoken(id: String) = compose.onNodeWithTag(TodayFieldTags.card(id))
+            .fetchSemanticsNode()
+            .config.getOrNull(SemanticsProperties.ContentDescription)
+            ?.joinToString(" ")
+            .orEmpty()
+
+        val readings = strings("progress.readings", "count" to series.size)
+        assertTrue(
+            "the tall card does not say how many readings its chart draws",
+            readings in spoken("c-tall"),
+        )
+        assertTrue(
+            "the small card announces a chart it does not draw",
+            readings !in spoken("c-small"),
+        )
+
+        // The chart itself takes height the small card does not have.
+        val tall = compose.onNodeWithTag(TodayFieldTags.card("c-tall"))
+            .fetchSemanticsNode().size.height
+        val small = compose.onNodeWithTag(TodayFieldTags.card("c-small"))
+            .fetchSemanticsNode().size.height
+        assertTrue("the tall card is not taller than the small one", tall > small)
+    }
+
+    @Test
     fun aQuietLeadIsStillTheLead() {
         // 21.4's "none yet" rung, at the top of the screen. Quiet is allowed to
         // be good news and the answer to the question the person opened the app

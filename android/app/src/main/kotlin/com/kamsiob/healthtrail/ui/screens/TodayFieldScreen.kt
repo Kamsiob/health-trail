@@ -38,6 +38,9 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.ChartHeight
+import com.kamsiob.healthtrail.ui.components.Plot
+import com.kamsiob.healthtrail.ui.components.chartPoints
 import com.kamsiob.healthtrail.ui.components.CardSize
 import com.kamsiob.healthtrail.ui.components.TabChip
 import com.kamsiob.healthtrail.ui.components.TodayCard
@@ -355,7 +358,13 @@ private fun LeadSlot(
         modifier = Modifier.testTag(TodayFieldTags.LEAD),
         speaksAsOneNode = !editing,
     ) {
-        AnswerBody(answer = shown, cardType = card.type, lead = true, showDetail = true)
+        AnswerBody(
+            answer = shown,
+            cardType = card.type,
+            lead = true,
+            showDetail = true,
+            hue = hueForCard(card.type),
+        )
 
         if (editing && canMoveDown) {
             Row(modifier = Modifier.padding(top = Space.s)) {
@@ -421,6 +430,8 @@ private fun CardFor(
             cardType = card.type,
             lead = false,
             showDetail = size != CardSize.SMALL,
+            tall = size == CardSize.TALL,
+            hue = hueForCard(card.type),
         )
 
         // **The controls, and only while editing.** 21.6 screen 7 gives Move
@@ -503,6 +514,10 @@ private fun AnswerBody(
      * and nothing else is not answering the question it names.
      */
     showDetail: Boolean,
+    /** Whether the card has the height for a chart. Tall only, per 21.3. */
+    tall: Boolean = false,
+    /** The card's hue, so a chart drawn here is the section's line and not a new color. */
+    hue: TabHue = wholeAppHue(),
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
@@ -593,6 +608,26 @@ private fun AnswerBody(
             text = strings[emptyLineKey(cardType)],
             style = if (lead) type.hero else type.bodyS,
             color = if (lead) colors.ink else colors.ink2,
+        )
+    }
+
+    // **The recent shape, at tall only.** 21.7 asks the measure card "what is
+    // the latest value, and its recent shape", and 21.3 puts a chart at tall
+    // and nowhere smaller: a line drawn across half a screen width is a
+    // decoration rather than a shape anybody can read.
+    //
+    // **The same plot the Progress screen draws**, through the same
+    // `chartPoints`, so two charts of one measure cannot disagree about the
+    // same silence. Every chart rule comes with it: one color from the section
+    // hue and never from the value, no target, no zone, no axis, and **gaps
+    // drawn as gaps**, because joining the dots across three missing months
+    // invents a line nobody recorded.
+    if (tall && answer != null && answer.series.size > 1) {
+        Spacer(Modifier.height(Space.xs))
+        Plot(
+            readings = chartPoints(answer.series),
+            line = hue.base,
+            height = ChartHeight.standard,
         )
     }
 
@@ -918,6 +953,13 @@ private fun answerParts(
             val hidden = (answer.count ?: 0) - answer.items.size
             if (answer.items.isNotEmpty() && hidden > 0) {
                 add(strings("today.card.more", "count" to hidden))
+            }
+            // **A chart is one sentence to a reader, never a list of points.**
+            // `ChartCard` says the same thing about itself: a chart announced
+            // as coordinates is useless. How many readings there are is the
+            // part somebody listening can act on.
+            if (answer.series.size > 1) {
+                add(strings("progress.readings", "count" to answer.series.size))
             }
         }
         add(answer.detail)

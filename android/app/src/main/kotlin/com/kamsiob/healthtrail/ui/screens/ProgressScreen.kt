@@ -30,7 +30,7 @@ import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
-import com.kamsiob.healthtrail.ui.components.Reading as Point
+import com.kamsiob.healthtrail.ui.components.chartPoints
 
 object ProgressTags {
     const val NAME = "progress"
@@ -139,7 +139,7 @@ fun ProgressScreen(
             if (hero.isText) {
                 TextMeasureHero(measure = hero, readings = heroReadings)
             } else {
-                val points = plot(heroReadings)
+                val points = chartPoints(heroReadings)
                 ChartCard(
                     name = hero.name,
                     latest = latestOf(strings, hero, heroReadings) ?: "",
@@ -224,59 +224,6 @@ fun ProgressScreen(
     }
 }
 
-/**
- * The plot points for one measure, positioned by when each reading happened.
- *
- * **Positioned by time, not by index.** Six readings in a week and one four
- * months later are not evenly spaced, and drawing them evenly would be the chart
- * saying something about the rhythm that the record does not.
- *
- * **A gap breaks the line.** The rule is a silence longer than three times the
- * median interval for this measure, which is derived from the measure's own
- * rhythm rather than from a fixed number of days: a daily weight and a quarterly
- * lab round have very different silences, and one threshold for both would draw
- * a break in every lab chart and none in any weight chart.
- *
- * **The value is unscaled and stays that way.** `ChartCard` normalizes to its
- * own extremes and draws no axis, which is what keeps the line a shape rather
- * than a measurement somebody could read a number off.
- */
-private fun plot(readings: List<Repository.Reading>): List<Point> {
-    val usable = readings.filter { it.number != null && it.occurredStart != null }
-    if (usable.size < 2) {
-        return usable.map { Point(position = 0.5f, value = it.number!!.toFloat()) }
-    }
-
-    val first = usable.first().occurredStart!!
-    val last = usable.last().occurredStart!!
-    val span = (last - first).coerceAtLeast(1L).toFloat()
-
-    val intervals = usable.zipWithNext { older, newer ->
-        newer.occurredStart!! - older.occurredStart!!
-    }.sorted()
-    val median = intervals[intervals.size / 2].coerceAtLeast(1L)
-    val breakAfter = median * GAP_MULTIPLE
-
-    return usable.mapIndexed { index, reading ->
-        val previous = usable.getOrNull(index - 1)
-        Point(
-            position = (reading.occurredStart!! - first) / span,
-            value = reading.number!!.toFloat(),
-            startsSegment = previous != null &&
-                reading.occurredStart - previous.occurredStart!! > breakAfter,
-        )
-    }
-}
-
-/**
- * How much longer than usual a silence has to be before the line breaks.
- *
- * Three, which is loose enough that an ordinary irregular week does not shatter
- * a chart into fragments and tight enough that a season with nothing in it is
- * visible as one. It is a drawing rule and not a judgment: the app is deciding
- * where to lift the pen, never what the silence meant.
- */
-private const val GAP_MULTIPLE = 3
 
 /**
  * The latest value with its date, which is what a row of a measure is for.
