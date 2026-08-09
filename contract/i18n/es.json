@@ -1353,5 +1353,6 @@
   "section.back.conflicts": "Volver a Más",
   "conflicts.field.deleted_at": "Si se eliminó",
   "conflicts.removed": "Eliminado",
-  "conflicts.not_removed": "Sigue aquí"
+  "conflicts.not_removed": "Sigue aquí",
+  "restore.confirm.unchosen": "Elija una de estas primero"
 }

@@ -209,6 +209,49 @@ class MergeApplyTest {
     }
 
     @Test
+    fun aWholeNotebookArrivesEvenThoughChildrenSortBeforeTheirParents() = runBlocking {
+        // **The case the phone found and no test here could.** Every other
+        // archive in this class came from the notebook it is merged into, so
+        // everything was unchanged and nothing was ever inserted. A real second
+        // phone produces a file of rows this one has never seen, and they go in
+        // table by table: `attachment` sorts before the `entry` it belongs to,
+        // so SQLite refused the insert and the app crashed with FOREIGN KEY
+        // constraint failed.
+        val opened = archiveOf { repository, subject ->
+            val chapter = repository.createChapter(subjectId = subject, name = "Maplewood")
+            repository.createEntry(
+                subjectId = subject, kind = "note",
+                occurred = Edtf.parse("2026-08-01")!!, body = "an entry in a chapter",
+                chapterId = chapter,
+            )
+        }
+
+        // Empty this notebook, so every row in the file is genuinely new. This
+        // is the full data wipe's path, which is one of the two operations the
+        // contract allows to touch rows directly.
+        wipe()
+
+        val report = MergeApply.merge(context, opened, mergedAt = 1_785_000_100_000L).getOrThrow()
+
+        assertTrue("a whole notebook should arrive", report.inserted > 0)
+        assertTrue("and it should bring its entries", countOf(ENTRY_ROWS) > 0)
+    }
+
+    /** Removes every row, the way the full data wipe does. */
+    private suspend fun wipe() {
+        val handle = HealthTrailDatabase.open(context).database
+        val tables = Backup.schema(context).keys.filter { it !in Merge.NOT_MERGED }
+        handle.beginTransaction()
+        try {
+            handle.execSQL("PRAGMA defer_foreign_keys = ON")
+            for (table in tables) handle.execSQL("DELETE FROM \"$table\"")
+            handle.setTransactionSuccessful()
+        } finally {
+            handle.endTransaction()
+        }
+    }
+
+    @Test
     fun theTablesThatAreNotMergedAreNamedInTheReport() = runBlocking {
         val opened = archiveOf { repository, subject ->
             repository.createEntry(

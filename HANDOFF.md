@@ -53,9 +53,10 @@
 - **THE ARCHIVE is largely built and proved on real hardware**: a two-layer container at format version 3, a readable copy, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. **The stranger test passes**, run on 2026-08-09 on a laptop that has never had the app.
 - **The readable copy is written in the person's language and so are its values**, #327 and #328. Verified by exporting in Arabic, decrypting with the passphrase alone, and reading the pages in a browser: 128 field labels, 39 headings, 81 stored values across 17 vocabularies, money as money, and no bare epoch anywhere. **What is left is two ordinary integers**, `sort_index` and `color_index`, and `color_index` reads as "Its color: 0", which is a palette index a reader cannot use.
 - **The contract now carries three files for the readable copy, not one.** `contract/readable-fields.json` is what each column renders as, `contract/readable-vocabularies.json` is the fixed vocabularies those decisions name, and `contract/test-vectors/readable/` is the golden vector. All three are generated into the app by the build, so nothing is hand kept on the Kotlin side.
+- **The importer merges as well as replaces**, #211. `Merge` is pure so the rules that decide whose version of a note survives are unit tested without a phone: match by id, later `updated_at` wins, `origin_device` breaks a tie so two phones reach the same answer in either direction, and merge never deletes because removal travels as a tombstone. Every resolution goes to `conflict_log` with both sides whole, and **there is a screen that reads it**. **Two criteria of #211 are not met and say so on the issue**: a missing attachment is #332, and per-section view choices are not a thing the schema carries.
 - **B4's argument is finally true.** It dropped the emulator because "data survival is proven by the round trip against the golden vectors in continuous integration", and **nothing in continuous integration rendered a readable page at all** until 2026-08-09: `RegenerationTest` is instrumented and `DateVectorTest` reads assets. `ReadableVectorTest` is the half that needs no Android. **Regenerate it deliberately**, `-Dhealthtrail.vector.write=true`, and read the diff.
 
-**Nothing on `main` is unverified.** Every screen that has shipped has been on the phone at both themes, font scale 2.0 and Arabic right to left.
+**Nothing on `main` is unverified, with two named exceptions.** Every screen that has shipped has been on the phone at both themes, font scale 2.0 and Arabic right to left. **The merge choice on the restore screen and the screen that reads what a merge decided were built on 2026-08-09 and have not been walked yet**, and they are listed in section 8.1 for that reason.
 
 **The account of how it got here is `docs/RUN-LOG.md`, and it is history rather than orientation.** Section 6 of that file is 2026-08-09, the day milestone 1 finished: twenty-two issues, ten defects that were invisible in the code and obvious on a screen, four fixture modes that did not exist, and two decisions taken rather than escalated.
 
@@ -115,9 +116,9 @@ Each is said out loud on its own issue rather than counted as done.
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**All sixteen of them, oldest first.** Rechecked against the board on 2026-08-09 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+**Eighteen of them, oldest first.** Rechecked against the board on 2026-08-09 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
 
-**Nothing built on 2026-08-09 added to this list**, and that was checked rather than assumed: every screen and state built that day is drawn in one of the three grids, so rule 12 never applied. The card's options sheet is grid screen 07, the closed project is 17, the greeting is 16, and the Today work is screens 01 through 10.
+**The Today work of 2026-08-09 added nothing to this list**, and that was checked rather than assumed: every screen and state built that morning is drawn in one of the three grids, so rule 12 never applied. The card's options sheet is grid screen 07, the closed project is 17, the greeting is 16, and the Today work is screens 01 through 10. **The merge work that evening added two**, because the grid draws restore with one outcome and draws nothing at all for reading what a merge decided.
 
 | Screen | Issue |
 |---|---|
@@ -137,8 +138,10 @@ Every one of these was built from the existing components, logged in all three p
 | The date kinds, changed | #312 |
 | The usual papers, changed | #313 |
 | Keeping a project as a template, and who it is waiting on | #317 |
+| Merge or replace, on the restore screen | #333 |
+| What the merge decided | #334 |
 
-**Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. The other nine have been waiting longer.
+**Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. The other nine have been waiting longer.
 
 ---
 

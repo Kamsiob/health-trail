@@ -1353,5 +1353,6 @@
   "section.back.conflicts": "返回“更多”",
   "conflicts.field.deleted_at": "是否已删除",
   "conflicts.removed": "已删除",
-  "conflicts.not_removed": "仍然存在"
+  "conflicts.not_removed": "仍然存在",
+  "restore.confirm.unchosen": "请先选择其中一项"
 }

@@ -122,6 +122,20 @@ internal object MergeApply {
 
         handle.beginTransaction()
         try {
+            // **Foreign keys are checked at commit rather than at each row.**
+            // Rows go in table by table, so a child can arrive before its
+            // parent: an attachment sorts before the entry it belongs to, and
+            // SQLite refused the insert. The phone found this and no test could
+            // have, because every archive the tests merge came from the same
+            // notebook and produced no inserts at all.
+            //
+            // **This weakens nothing.** The constraint still runs, once, when
+            // the transaction commits, which is what `defer_foreign_keys` is
+            // for. And `Merge.plan` has already proved every reference resolves
+            // against what the notebook will hold, so the deferred check is the
+            // second of two rather than the only one. It resets itself at the
+            // end of the transaction.
+            handle.execSQL("PRAGMA defer_foreign_keys = ON")
             for ((table, rows) in plan.inserts) {
                 for (row in rows) insert(handle, table, row)
             }

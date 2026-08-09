@@ -1353,5 +1353,6 @@
   "section.back.conflicts": "العودة إلى المزيد",
   "conflicts.field.deleted_at": "هل حُذف",
   "conflicts.removed": "محذوف",
-  "conflicts.not_removed": "ما زال موجودًا"
+  "conflicts.not_removed": "ما زال موجودًا",
+  "restore.confirm.unchosen": "اختر أحد هذين أولًا"
 }

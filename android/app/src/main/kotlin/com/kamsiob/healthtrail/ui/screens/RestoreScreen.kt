@@ -273,7 +273,17 @@ fun RestoreScreen(
                                 RestoreHow.MERGE -> strings["restore.warning.merge"]
                             },
                             style = HealthTrail.type.bodyM,
-                            color = colors.alertInk,
+                            // **Only one of these is a warning.** Replace loses
+                            // work and earns the alert ink. Keeping both loses
+                            // nothing, and its sentence begins "Nothing here is
+                            // removed": setting that in alarm red was visible
+                            // the moment it was looked at on the phone, and an
+                            // app that shouts reassurance teaches people to
+                            // ignore the colour when it means something.
+                            color = when (chosen) {
+                                RestoreHow.REPLACE -> colors.alertInk
+                                RestoreHow.MERGE -> colors.ink2
+                            },
                         )
                     }
 
@@ -282,9 +292,18 @@ fun RestoreScreen(
                         // The button says which of the two it will do, so the
                         // last thing read before the irreversible tap is the
                         // thing that is about to happen.
+                        //
+                        // **And it says neither until one is chosen.** Looking
+                        // at the screen on the phone showed a disabled button
+                        // reading "Replace everything with this" under two
+                        // unselected options, which is the app asserting a
+                        // choice nobody made and reads as replace being the
+                        // default. The whole point of this control is that
+                        // there is no default.
                         label = when (how) {
                             RestoreHow.MERGE -> strings["restore.confirm.merge"]
-                            else -> strings["restore.confirm"]
+                            RestoreHow.REPLACE -> strings["restore.confirm"]
+                            null -> strings["restore.confirm.unchosen"]
                         },
                         onClick = { how?.let(onRestore) },
                         enabled = !busy && how != null,

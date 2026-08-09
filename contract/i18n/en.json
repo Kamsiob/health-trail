@@ -1353,5 +1353,6 @@
   "section.back.conflicts": "Back to More",
   "conflicts.field.deleted_at": "Whether it was removed",
   "conflicts.removed": "Removed",
-  "conflicts.not_removed": "Still here"
+  "conflicts.not_removed": "Still here",
+  "restore.confirm.unchosen": "Choose one of these first"
 }
