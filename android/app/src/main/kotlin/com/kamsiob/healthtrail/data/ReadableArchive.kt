@@ -187,7 +187,7 @@ object ReadableArchive {
     fun render(source: Source, fieldMap: Map<String, TableFields>): Map<String, String> {
         val pages = LinkedHashMap<String, String>()
         val words = source.words
-        val labels = Labels(source, fieldMap)
+        val labels = Labels(source)
 
         val datedPages = mutableListOf<PageRef>()
         for ((table, dateColumn) in DATED) {
@@ -475,7 +475,7 @@ object ReadableArchive {
      * has no label in all four catalogs. It is here for a caller holding a
      * partial vocabulary, which in practice means a test.
      */
-    private class Labels(val source: Source, val fieldMap: Map<String, TableFields>) {
+    private class Labels(val source: Source) {
 
         val words: Words get() = source.words
 
