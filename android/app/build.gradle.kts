@@ -161,6 +161,9 @@ run {
         if (!contractDir.resolve("readable-fields.json").isFile) {
             add(contractDir.resolve("readable-fields.json").path)
         }
+        if (!contractDir.resolve("readable-vocabularies.json").isFile) {
+            add(contractDir.resolve("readable-vocabularies.json").path)
+        }
         if (!templatesDataDir.isDirectory) add(templatesDataDir.path)
     }
     if (missing.isNotEmpty()) {
@@ -201,6 +204,9 @@ val copyContractAssets by tasks.registering(Sync::class) {
     // why each of the rest does not. In /contract because the web version
     // renders the same archive from the same decisions.
     from(contractDir.resolve("readable-fields.json")) { into("contract") }
+    // The fixed vocabularies those decisions name, so a stored value reaches a
+    // page as a word rather than as itself.
+    from(contractDir.resolve("readable-vocabularies.json")) { into("contract") }
     from(templatesDataDir) {
         into("templates")
         include("*.json")
@@ -240,15 +246,18 @@ val copyContractAssets by tasks.registering(Sync::class) {
  */
 val generateReadableFields by tasks.registering {
     group = "build"
-    description = "Generates ReadableFieldMap.kt from contract/readable-fields.json."
+    description = "Generates ReadableFieldMap.kt from the contract's readable decisions."
 
     val source = contractDir.resolve("readable-fields.json")
+    val vocabularySource = contractDir.resolve("readable-vocabularies.json")
     val outputDir = layout.buildDirectory.dir("generated/readableFields")
     inputs.file(source)
+    inputs.file(vocabularySource)
     outputs.dir(outputDir)
 
     doLast {
         val root = groovy.json.JsonSlurper().parse(source) as Map<*, *>
+        val vocabularies = groovy.json.JsonSlurper().parse(vocabularySource) as Map<*, *>
         val file = outputDir.get().asFile.resolve(
             "com/kamsiob/healthtrail/data/ReadableFieldMap.kt",
         )
@@ -274,12 +283,41 @@ val generateReadableFields by tasks.registering {
                         val decision = columns[column] as? Map<*, *>
                         val renderer = decision?.get("render")?.toString()
                         if (!renderer.isNullOrEmpty()) {
-                            appendLine("                \"$column\" to \"$renderer\",")
+                            // The optional half of a decision, written as named
+                            // arguments so the generated file reads as prose
+                            // rather than as a row of positional strings.
+                            val extras = listOf("vocabulary", "currency", "currencyFrom")
+                                .mapNotNull { name ->
+                                    decision[name]?.toString()?.takeIf { it.isNotEmpty() }
+                                        ?.let { "$name = \"$it\"" }
+                                }
+                            val tail = if (extras.isEmpty()) "" else ", " + extras.joinToString(", ")
+                            appendLine(
+                                "                ReadableArchive.Field(\"$column\", " +
+                                    "\"$renderer\"$tail),",
+                            )
                         }
                     }
                     appendLine("            ),")
                     appendLine("        ),")
                 }
+                appendLine("    )")
+                appendLine()
+                appendLine("    // The fixed vocabularies those decisions name, in the order")
+                appendLine("    // contract/readable-vocabularies.json declares them.")
+                appendLine("    val vocabularies: Map<String, List<String>> = mapOf(")
+                vocabularies.keys
+                    .map { it.toString() }
+                    .filterNot { it.startsWith("_") }
+                    .sorted()
+                    .forEach { name ->
+                        val entry = vocabularies[name] as Map<*, *>
+                        val values = (entry["values"] as? List<*>).orEmpty()
+                        appendLine(
+                            "        \"$name\" to listOf(" +
+                                values.joinToString(", ") { "\"$it\"" } + "),",
+                        )
+                    }
                 appendLine("    )")
                 appendLine("}")
             },

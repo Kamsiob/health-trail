@@ -41,18 +41,31 @@ Kamsiob, AGPL-3.0.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 FIELD_MAP = ROOT / "contract/readable-fields.json"
+VOCABULARIES = ROOT / "contract/readable-vocabularies.json"
+SCHEMA = ROOT / "contract/schema.sql"
 I18N = ROOT / "contract/i18n"
 
 LOCALES = ["en", "es", "zh", "ar"]
 
-# A zone is rendered as part of its own date and never on its own, so it never
-# shows a label. `ReadableWords` filters the same decision out.
-ZONE = "dateZone"
+# Drawn inside another field rather than on its own, so neither ever shows a
+# label. `ReadableWords` filters the same two decisions out.
+RENDERED_INSIDE_ANOTHER = {"dateZone", "moneyCurrency"}
+
+# Every decision `ReadableArchive.renderField` knows.
+#
+# **Held here because the renderer's last branch is `else`.** A decision spelled
+# wrong does not fail: it falls through to the plain value and prints the column
+# contents, which is the whole of #328 arriving again by typo.
+DECISIONS = {
+    "id", "date", "dateZone", "boolean", "attachment", "link",
+    "money", "moneyCurrency", "enum", "tableName", "value",
+}
 
 # What the archive says on its own behalf, beyond the table and column names.
 # Listed rather than derived because prose has no schema to derive it from, and
@@ -90,9 +103,121 @@ def rendered(field_map):
             continue
         tables.append(table)
         for column, decision in shown:
-            if decision != ZONE and column not in columns:
+            if decision not in RENDERED_INSIDE_ANOTHER and column not in columns:
                 columns.append(column)
     return tables, sorted(columns)
+
+
+def vocabulary_problems(field_map, vocabularies, schema, catalogs):
+    """Every stored value that would reach a page as itself.
+
+    **Three separate ways this goes wrong**, and the third is the one nothing
+    else could see.
+
+    A column declared `enum` naming a vocabulary that does not exist renders the
+    raw token, because the renderer falls back to it rather than throwing.
+
+    A declared value with no word in one of the four catalogs renders the raw
+    token in that language only, which is the #327 shape again.
+
+    And **a value the schema allows that the vocabulary does not list** is the
+    quiet one: everything above passes, the build is green, and the first row
+    somebody writes with that value prints `waiting_on_insurance` in a document
+    a family reads. So where the schema constrains the column, its CHECK is the
+    authority and this holds the declaration to it.
+    """
+    problems = []
+
+    used = {}
+    for table, spec in sorted(field_map.items()):
+        for column in spec.get("order", []):
+            decision = spec["columns"].get(column, {})
+            if decision.get("render") != "enum":
+                continue
+            name = decision.get("vocabulary")
+            if not name:
+                problems.append(
+                    f"readable-fields.json: {table}.{column} is an enum with no "
+                    f"vocabulary, so its value renders as the column contents."
+                )
+                continue
+            if name not in vocabularies:
+                problems.append(
+                    f"readable-fields.json: {table}.{column} names the vocabulary "
+                    f"{name!r}, which readable-vocabularies.json does not declare."
+                )
+                continue
+            used.setdefault(name, []).append((table, column))
+
+    for name in sorted(vocabularies):
+        if name not in used:
+            problems.append(
+                f"readable-vocabularies.json declares {name!r}, which no column in "
+                f"readable-fields.json renders. Either it is spelled wrong or the "
+                f"column it was for is gone."
+            )
+
+    for name, values in sorted(vocabularies.items()):
+        if not values:
+            problems.append(f"readable-vocabularies.json: {name!r} declares no values.")
+        for code, catalog in catalogs.items():
+            for value in values:
+                key = f"archive.vocabulary.{name}.{value}"
+                if key not in catalog:
+                    problems.append(
+                        f"{code}.json has no {key!r}. The archive falls back to the "
+                        f"stored value, so the page prints {value!r} in a document "
+                        f"somebody reads."
+                    )
+                elif not str(catalog[key]).strip():
+                    problems.append(f"{code}.json has {key!r} empty.")
+
+        # The schema is the authority wherever it constrains the column.
+        for table, column in used.get(name, []):
+            allowed = check_values(schema, table, column)
+            if allowed is None:
+                continue
+            missing = [v for v in allowed if v not in values]
+            extra = [v for v in values if v not in allowed]
+            for value in missing:
+                problems.append(
+                    f"schema.sql allows {table}.{column} = {value!r} and the {name!r} "
+                    f"vocabulary does not list it, so the first row written with it "
+                    f"prints the stored value."
+                )
+            for value in extra:
+                problems.append(
+                    f"the {name!r} vocabulary lists {value!r}, which the CHECK on "
+                    f"{table}.{column} does not allow. It is four translations "
+                    f"nothing can ever render."
+                )
+
+    # Any archive.vocabulary.* key nothing declares.
+    known = {
+        f"archive.vocabulary.{name}.{value}"
+        for name, values in vocabularies.items()
+        for value in values
+    }
+    for code, catalog in catalogs.items():
+        for key in sorted(catalog):
+            if key.startswith("archive.vocabulary.") and key not in known:
+                problems.append(
+                    f"{code}.json has {key!r}, which no declared vocabulary contains."
+                )
+    return problems
+
+
+def check_values(schema, table, column):
+    """The values a CHECK constraint allows, or None where there is no CHECK."""
+    body = re.search(
+        rf"CREATE TABLE IF NOT EXISTS {table} \((.*?)\n\);", schema, re.S,
+    )
+    if not body:
+        return None
+    found = re.search(
+        rf"{column}\s+TEXT[^,]*?CHECK \({column} IN \(([^)]*)\)", body.group(1), re.S,
+    )
+    return re.findall(r"'([^']+)'", found.group(1)) if found else None
 
 
 def main() -> int:
@@ -101,6 +226,12 @@ def main() -> int:
         return 0
 
     field_map = json.loads(FIELD_MAP.read_text(encoding="utf-8"))
+    vocabularies = {
+        name: spec["values"]
+        for name, spec in json.loads(VOCABULARIES.read_text(encoding="utf-8")).items()
+        if not name.startswith("_")
+    }
+    schema = SCHEMA.read_text(encoding="utf-8")
     tables, columns = rendered(field_map)
 
     required = (
@@ -129,11 +260,26 @@ def main() -> int:
             elif not str(catalog[key]).strip():
                 problems.append(f"{code}.json has {key!r} empty, which renders as a blank label.")
 
+    for table, spec in sorted(field_map.items()):
+        for column, decision in sorted(spec.get("columns", {}).items()):
+            render = decision.get("render")
+            if render and render not in DECISIONS:
+                problems.append(
+                    f"readable-fields.json: {table}.{column} says render {render!r}, "
+                    f"which the renderer does not know. Its last branch is `else`, so "
+                    f"the column would print its stored contents and nothing would fail."
+                )
+
+    problems.extend(vocabulary_problems(field_map, vocabularies, schema, catalogs))
+
     # A label nothing renders is a translation four people maintain for no
     # reader. Reported so the set stays exactly the set that reaches a page.
+    # The vocabulary keys have their own accounting above.
     known = set(required)
     for code, catalog in catalogs.items():
         for key in sorted(catalog):
+            if key.startswith("archive.vocabulary."):
+                continue
             if key.startswith("archive.") and key not in known:
                 problems.append(
                     f"{code}.json has {key!r}, which nothing in the readable copy "
@@ -147,9 +293,12 @@ def main() -> int:
             print(f"  {problem}")
         return 1
 
+    values = sum(len(v) for v in vocabularies.values())
     print(
-        f"Readable label check passed. {len(tables)} tables, {len(columns)} columns "
-        f"and {len(PAGE_KEYS)} page strings have a word in all {len(LOCALES)} languages."
+        f"Readable label check passed. {len(tables)} tables, {len(columns)} columns, "
+        f"{len(PAGE_KEYS)} page strings and {values} stored values across "
+        f"{len(vocabularies)} vocabularies have a word in all {len(LOCALES)} languages, "
+        f"and every vocabulary matches the CHECK constraint behind it."
     )
     return 0
 

@@ -1,0 +1,186 @@
+{
+  "_about": "The fixed vocabularies the archive's readable copy turns into words. contract/DATA-CONTRACT.md 8.2 and issue #328. A stored value is not display text: a bill printed 'paid' and a project printed 'needs_attention', which are column contents rather than words, and they read the same in every language because there was nothing to translate. Each value here has a word in all four catalogs under archive.vocabulary.<name>.<value>, and check_readable_labels.py fails the build when one is missing. Where the schema constrains a column, this file must list exactly what the CHECK allows, and that check runs too, so a value added to the schema cannot quietly reach a page as itself. Which column uses which vocabulary is stated in contract/readable-fields.json, not here, because that is where every other rendering decision lives.",
+  "advice_risk": {
+    "what": "How cautiously the app words anything about this measure, carried from the preset.",
+    "source": "CHECK constraint on measure.advice_risk in contract/schema.sql.",
+    "values": [
+      "low",
+      "medium",
+      "high"
+    ]
+  },
+  "bill_state": {
+    "what": "Where a bill stands.",
+    "source": "CHECK constraint on bill.state in contract/schema.sql.",
+    "values": [
+      "needs_attention",
+      "disputed",
+      "waiting_on_insurance",
+      "paid",
+      "closed"
+    ]
+  },
+  "call_direction": {
+    "what": "Who placed the call.",
+    "source": "CHECK constraint on call_detail.direction in contract/schema.sql.",
+    "values": [
+      "outgoing",
+      "incoming"
+    ]
+  },
+  "card_size": {
+    "what": "How much of Today a card takes up. DESIGN.md 21.3.",
+    "source": "CHECK constraint on today_card.size in contract/schema.sql.",
+    "values": [
+      "small",
+      "wide",
+      "tall"
+    ]
+  },
+  "card_type": {
+    "what": "Which of the seventeen Today cards this is. DESIGN.md 21.7.",
+    "source": "CHECK constraint on today_card.card_type in contract/schema.sql.",
+    "values": [
+      "digest",
+      "next_up",
+      "medications",
+      "measure",
+      "milestones",
+      "ask_next_time",
+      "project_standing",
+      "project_date",
+      "project_steps",
+      "incidents",
+      "money",
+      "unfiled",
+      "emergency_card",
+      "care_team",
+      "trail_lately",
+      "recent_documents",
+      "standing_instructions"
+    ]
+  },
+  "entry_kind": {
+    "what": "What kind of thing an entry on the trail is.",
+    "source": "CHECK constraint on entry.kind in contract/schema.sql.",
+    "values": [
+      "call",
+      "visit",
+      "incident",
+      "measurement",
+      "question",
+      "document",
+      "note",
+      "transfer",
+      "milestone"
+    ]
+  },
+  "gap_tolerance": {
+    "what": "How far apart readings may sit before the gap is worth showing. Written by the shipped templates in templates/data/progress-and-instructions.json, which is why the schema does not constrain it.",
+    "source": "Declared here. The schema does not constrain this column.",
+    "values": [
+      "low",
+      "moderate",
+      "high",
+      "cycle_based",
+      "not_applicable"
+    ]
+  },
+  "instruction_tag": {
+    "what": "Whether an instruction is a right somebody has or a request they made.",
+    "source": "CHECK constraint on standing_instruction.tag in contract/schema.sql.",
+    "values": [
+      "federal",
+      "request"
+    ]
+  },
+  "involvement": {
+    "what": "How a person was involved in an entry. The vocabulary is named in the schema comment above entry_person.involvement rather than in a CHECK.",
+    "source": "Declared here. The schema does not constrain this column.",
+    "values": [
+      "spoke_with",
+      "left_message_for",
+      "present",
+      "mentioned"
+    ]
+  },
+  "link_relation": {
+    "what": "What one record has to do with another. Repository writes 'about' and nothing else yet, and the column is unconstrained so that it can grow.",
+    "source": "Declared here. The schema does not constrain this column.",
+    "values": [
+      "about"
+    ]
+  },
+  "measure_style": {
+    "what": "How a tracked thing is kept.",
+    "source": "CHECK constraint on measure.style in contract/schema.sql.",
+    "values": [
+      "continuous",
+      "milestone_heavy",
+      "event_log",
+      "observational",
+      "photo_log",
+      "categorical"
+    ]
+  },
+  "measurement_source": {
+    "what": "Who the reading came from.",
+    "source": "CHECK constraint on measurement.source in contract/schema.sql.",
+    "values": [
+      "family",
+      "clinician",
+      "device",
+      "unknown"
+    ]
+  },
+  "medication_event_kind": {
+    "what": "What changed about a medication.",
+    "source": "CHECK constraint on medication_event.kind in contract/schema.sql.",
+    "values": [
+      "started",
+      "stopped",
+      "dose_changed",
+      "held",
+      "resumed",
+      "noted"
+    ]
+  },
+  "paper_direction": {
+    "what": "Which way a paper went.",
+    "source": "CHECK constraint on project_paper.direction in contract/schema.sql.",
+    "values": [
+      "received",
+      "sent"
+    ]
+  },
+  "project_lead": {
+    "what": "Which of the three answers a project's home screen opens with. DESIGN.md 20.1.",
+    "source": "CHECK constraint on project.lead in contract/schema.sql.",
+    "values": [
+      "standing",
+      "date",
+      "steps"
+    ]
+  },
+  "project_status": {
+    "what": "Where a project stands.",
+    "source": "CHECK constraint on project.status in contract/schema.sql.",
+    "values": [
+      "active",
+      "waiting",
+      "stalled",
+      "done",
+      "abandoned"
+    ]
+  },
+  "template_kind": {
+    "what": "What a template the person saved sets up.",
+    "source": "CHECK constraint on custom_template.kind in contract/schema.sql.",
+    "values": [
+      "situation",
+      "project",
+      "progress",
+      "standing_instruction"
+    ]
+  }
+}

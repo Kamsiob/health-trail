@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.data
 
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.i18n.formatMoney
 
 /**
  * The archive's vocabulary, read out of the shared catalogs.
@@ -48,17 +49,33 @@ internal object ReadableWords {
         val columns = fieldMap.values
             .flatMap { it.rendered }
             // A zone is rendered as part of its own date and never on its own,
-            // so it never shows a label and does not need one.
-            .filter { (_, decision) -> decision != ZONE }
-            .map { (column, _) -> column }
+            // and a currency inside its own amount, so neither shows a label
+            // and neither needs one.
+            .filterNot { it.render in RENDERED_INSIDE_ANOTHER }
+            .map { it.column }
             .distinct()
             .associateWith { strings["archive.field.$it"] }
+
+        // **Only the vocabularies something actually renders.** Derived from
+        // the field map the same way the labels are, so a column that stops
+        // being an enum stops needing words on the same day.
+        val vocabularies = fieldMap.values
+            .flatMap { it.rendered }
+            .mapNotNull { it.vocabulary }
+            .distinct()
+            .associateWith { vocabulary ->
+                ReadableFieldMap.vocabularies[vocabulary].orEmpty().associateWith { value ->
+                    strings["archive.vocabulary.$vocabulary.$value"]
+                }
+            }
 
         return ReadableArchive.Words(
             lang = languageTag(strings),
             dir = if (strings.isRtl) "rtl" else "ltr",
             tables = tables,
             columns = columns,
+            vocabularies = vocabularies,
+            money = { minor, code -> formatMoney(strings, minor, code) },
             subjectFallback = strings["archive.page.subject.fallback"],
             about = strings["archive.page.about"],
             datedHeading = strings["archive.page.dated.heading"],
@@ -98,6 +115,9 @@ internal object ReadableWords {
             else -> strings.locale.toLanguageTag()
         }
 
-    /** The rendering decision for a date's zone column. */
-    private const val ZONE = "dateZone"
+    /**
+     * The decisions whose column is drawn inside another field rather than on
+     * its own, so neither ever shows a label of its own.
+     */
+    private val RENDERED_INSIDE_ANOTHER = setOf("dateZone", "moneyCurrency")
 }

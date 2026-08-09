@@ -34,7 +34,7 @@ class ReadableFieldsTest {
         // The renderer walks what this returns, so a not-rendered column being
         // absent is what makes it impossible to print by accident. D90: the rule
         // is enforced by there being nothing to call.
-        val entry = parsed.getValue("entry").rendered.map { it.first }
+        val entry = parsed.getValue("entry").rendered.map { it.column }
         for (bookkeeping in listOf("created_at", "updated_at", "deleted_at", "origin_device", "rev")) {
             assertFalse("$bookkeeping should not be renderable", entry.contains(bookkeeping))
         }
@@ -45,12 +45,12 @@ class ReadableFieldsTest {
         // Section 8.2. Every entry prints its id, and it is the same id as in
         // data/trail.sqlite.
         val entry = parsed.getValue("entry").rendered
-        assertTrue(entry.any { it.first == "id" && it.second == "id" })
+        assertTrue(entry.any { it.column == "id" && it.render == "id" })
     }
 
     @Test
     fun `an event date renders as a date and its zone as part of that date`() {
-        val entry = parsed.getValue("entry").rendered.toMap()
+        val entry = parsed.getValue("entry").rendered.associate { it.column to it.render }
         assertEquals("date", entry["occurred_edtf"])
         assertEquals("dateZone", entry["occurred_zone"])
     }
@@ -61,21 +61,21 @@ class ReadableFieldsTest {
         // index recomputed from the EDTF string on import, not a second source
         // of truth, and printing them would show a reader two dates for one
         // event.
-        val entry = parsed.getValue("entry").rendered.map { it.first }
+        val entry = parsed.getValue("entry").rendered.map { it.column }
         assertFalse(entry.contains("occurred_start"))
         assertFalse(entry.contains("occurred_end"))
     }
 
     @Test
     fun `a foreign key renders as a link rather than a raw value`() {
-        val entry = parsed.getValue("entry").rendered.toMap()
+        val entry = parsed.getValue("entry").rendered.associate { it.column to it.render }
         assertEquals("link", entry["chapter_id"])
     }
 
     @Test
     fun `internal tables render nothing at all`() {
         for (internal in listOf("app_meta", "device", "schema_migration", "change_log")) {
-            val rendered: List<Pair<String, String>> = parsed[internal]?.rendered.orEmpty()
+            val rendered: List<ReadableArchive.Field> = parsed[internal]?.rendered.orEmpty()
             assertEquals("$internal should render nothing", 0, rendered.size)
         }
     }
@@ -85,14 +85,14 @@ class ReadableFieldsTest {
         // The renderer walks this order and the archive has to be byte identical
         // across runs. It comes from an "order" array in the contract file, so
         // it cannot change because a parser iterated an object differently.
-        val entry = parsed.getValue("entry").rendered.map { it.first }
+        val entry = parsed.getValue("entry").rendered.map { it.column }
         assertEquals("id", entry.first())
         assertTrue(entry.indexOf("occurred_edtf") < entry.indexOf("body"))
     }
 
     @Test
     fun `the person's own words are rendered`() {
-        val entry = parsed.getValue("entry").rendered.map { it.first }
+        val entry = parsed.getValue("entry").rendered.map { it.column }
         assertTrue(entry.contains("title"))
         assertTrue(entry.contains("body"))
     }

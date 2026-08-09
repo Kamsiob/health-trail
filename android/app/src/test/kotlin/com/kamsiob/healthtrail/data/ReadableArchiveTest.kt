@@ -17,24 +17,24 @@ class ReadableArchiveTest {
     private val fields = mapOf(
         "entry" to ReadableArchive.TableFields(
             listOf(
-                "id" to "id",
-                "title" to "value",
-                "body" to "value",
-                "occurred_edtf" to "date",
-                "occurred_zone" to "dateZone",
-                "chapter_id" to "link",
+                ReadableArchive.Field("id", "id"),
+                ReadableArchive.Field("title", "value"),
+                ReadableArchive.Field("body", "value"),
+                ReadableArchive.Field("occurred_edtf", "date"),
+                ReadableArchive.Field("occurred_zone", "dateZone"),
+                ReadableArchive.Field("chapter_id", "link"),
             ),
         ),
         "person" to ReadableArchive.TableFields(
             listOf(
-                "id" to "id",
-                "display_name" to "value",
-                "role_label" to "value",
-                "phone" to "value",
+                ReadableArchive.Field("id", "id"),
+                ReadableArchive.Field("display_name", "value"),
+                ReadableArchive.Field("role_label", "value"),
+                ReadableArchive.Field("phone", "value"),
             ),
         ),
         "chapter" to ReadableArchive.TableFields(
-            listOf("id" to "id", "name" to "value"),
+            listOf(ReadableArchive.Field("id", "id"), ReadableArchive.Field("name", "value")),
         ),
     )
 
@@ -59,6 +59,10 @@ class ReadableArchiveTest {
             "display_name" to "Name", "role_label" to "Their role", "phone" to "Phone",
             "name" to "Name", "is_unfiled" to "Still waiting to be filed",
         ),
+        vocabularies: Map<String, Map<String, String>> = mapOf(
+            "bill_state" to mapOf("paid" to "Paid", "needs_attention" to "Needs attention"),
+            "entry_kind" to mapOf("call" to "A call"),
+        ),
         notRecorded: String = "not recorded",
         yes: String = "yes",
         no: String = "no",
@@ -67,6 +71,10 @@ class ReadableArchiveTest {
         dir = dir,
         tables = tables,
         columns = columns,
+        vocabularies = vocabularies,
+        // Enough to tell minor units from an amount without pulling ICU into a
+        // test about the renderer. What the app passes is `formatMoney`.
+        money = { minor, code -> "$code ${minor / 100}.${(minor % 100).toString().padStart(2, '0')}" },
         subjectFallback = "This record",
         about = "A copy of a care notebook, written by the person who kept it. " +
             "It is not a clinical record and nothing in it is advice.",
@@ -345,8 +353,8 @@ class ReadableArchiveTest {
         // ever exported landed on one undated page. A missing column reads as
         // null, null is a real bucket, and nothing failed.
         val paperFields = mapOf(
-            "bill" to ReadableArchive.TableFields(listOf("id" to "id", "received_edtf" to "date")),
-            "document" to ReadableArchive.TableFields(listOf("id" to "id", "received_edtf" to "date")),
+            "bill" to ReadableArchive.TableFields(listOf(ReadableArchive.Field("id", "id"), ReadableArchive.Field("received_edtf", "date"))),
+            "document" to ReadableArchive.TableFields(listOf(ReadableArchive.Field("id", "id"), ReadableArchive.Field("received_edtf", "date"))),
         )
         val pages = ReadableArchive.render(
             ReadableArchive.Source(
@@ -410,7 +418,7 @@ class ReadableArchiveTest {
         // 0 or 1 and a reader handed a column of noughts learns nothing.
         val flagged = mapOf(
             "entry" to ReadableArchive.TableFields(
-                listOf("id" to "id", "is_unfiled" to "boolean"),
+                listOf(ReadableArchive.Field("id", "id"), ReadableArchive.Field("is_unfiled", "boolean")),
             ),
         )
         fun render(value: String?) = ReadableArchive.render(
@@ -433,7 +441,7 @@ class ReadableArchiveTest {
         // Section 8.2 keeps null, empty and zero as three different things.
         val flagged = mapOf(
             "entry" to ReadableArchive.TableFields(
-                listOf("id" to "id", "is_unfiled" to "boolean"),
+                listOf(ReadableArchive.Field("id", "id"), ReadableArchive.Field("is_unfiled", "boolean")),
             ),
         )
         val html = ReadableArchive.render(
@@ -447,6 +455,171 @@ class ReadableArchiveTest {
         ).getValue("entry-2026.html")
         assertTrue(html.contains("not recorded"))
         assertFalse(html.contains(">no<"))
+    }
+
+    @Test
+    fun `an amount reads as money rather than as the integer the column holds`() {
+        // #328. A real export printed "679040" where the bill said six thousand
+        // seven hundred and ninety dollars and forty cents. Minor units are how
+        // money is stored so that nothing rounds; they are not how it is read.
+        val money = mapOf(
+            "bill" to ReadableArchive.TableFields(
+                listOf(
+                    ReadableArchive.Field("id", "id"),
+                    ReadableArchive.Field("amount_minor", "money", currency = "currency"),
+                    ReadableArchive.Field("currency", "moneyCurrency"),
+                ),
+            ),
+        )
+        val page = ReadableArchive.render(
+            ReadableArchive.Source(
+                tables = mapOf("bill" to listOf(mapOf(
+                    "id" to "b1", "amount_minor" to "679040", "currency" to "USD",
+                    "received_edtf" to "2026-04-21",
+                ))),
+                words = words(
+                    tables = mapOf("bill" to "Bills"),
+                    columns = mapOf("id" to "Reference", "amount_minor" to "Amount",
+                                    "currency" to "Currency"),
+                ),
+                subjectName = "Ruth Baxter",
+            ),
+            money,
+        ).getValue("bill-2026.html")
+
+        assertTrue(page.contains("USD 6790.40"))
+        assertFalse("the raw minor units reached the page", page.contains("679040"))
+        // The currency is inside its own amount, so it is not a field of its own.
+        assertFalse("the currency was printed twice", page.contains(">USD<"))
+    }
+
+    @Test
+    fun `a cost entry takes the currency of the sheet it is on`() {
+        // A cost entry has an amount and no currency, because the currency
+        // belongs to the sheet. Without following that link the amount prints
+        // as the bare number this decision exists to stop.
+        val costs = mapOf(
+            "cost_entry" to ReadableArchive.TableFields(
+                listOf(
+                    ReadableArchive.Field("id", "id"),
+                    ReadableArchive.Field("amount_minor", "money", currencyFrom = "cost_sheet_id"),
+                ),
+            ),
+            "cost_sheet" to ReadableArchive.TableFields(
+                listOf(ReadableArchive.Field("id", "id"), ReadableArchive.Field("name", "value")),
+            ),
+        )
+        val page = ReadableArchive.render(
+            ReadableArchive.Source(
+                tables = mapOf(
+                    "cost_entry" to listOf(mapOf(
+                        "id" to "c1", "amount_minor" to "4500",
+                        "cost_sheet_id" to "s1", "occurred_edtf" to "2026-05-02",
+                    )),
+                    "cost_sheet" to listOf(mapOf("id" to "s1", "name" to "The move", "currency" to "EUR")),
+                ),
+                words = words(
+                    tables = mapOf("cost_entry" to "Costs", "cost_sheet" to "Cost sheets"),
+                    columns = mapOf("id" to "Reference", "amount_minor" to "Amount", "name" to "Name"),
+                ),
+                subjectName = "Ruth Baxter",
+            ),
+            costs,
+        ).getValue("cost_entry-2026.html")
+
+        assertTrue(page.contains("EUR 45.00"))
+    }
+
+    @Test
+    fun `a stored value reads as a word, in the person's language`() {
+        // #328, and `docs/TRAPS.md` section 3: a stored value is not display
+        // text. "paid" is a column's contents and reads the same in every
+        // language because there is nothing in it to translate.
+        val billFields = mapOf(
+            "bill" to ReadableArchive.TableFields(
+                listOf(
+                    ReadableArchive.Field("id", "id"),
+                    ReadableArchive.Field("state", "enum", vocabulary = "bill_state"),
+                ),
+            ),
+        )
+        fun render(vocabularies: Map<String, Map<String, String>>) = ReadableArchive.render(
+            ReadableArchive.Source(
+                tables = mapOf("bill" to listOf(mapOf(
+                    "id" to "b1", "state" to "paid", "received_edtf" to "2026-04-21",
+                ))),
+                words = words(
+                    tables = mapOf("bill" to "Bills"),
+                    columns = mapOf("id" to "Reference", "state" to "Where it stands"),
+                    vocabularies = vocabularies,
+                ),
+                subjectName = "Ruth Baxter",
+            ),
+            billFields,
+        ).getValue("bill-2026.html")
+
+        val english = render(mapOf("bill_state" to mapOf("paid" to "Paid")))
+        assertTrue(english.contains(">Paid<"))
+        assertFalse("the stored value reached the page", english.contains(">paid<"))
+
+        val arabic = render(mapOf("bill_state" to mapOf("paid" to "مدفوعة")))
+        assertTrue(arabic.contains("مدفوعة"))
+        assertFalse(arabic.contains(">Paid<"))
+    }
+
+    @Test
+    fun `a value the vocabulary has never heard of still reaches the page`() {
+        // A row written by a later version is still part of the record. The
+        // token is a lead and a blank is a dead end, which is the same argument
+        // as the dangling reference above. `check_readable_labels.py` makes this
+        // unreachable for every value the schema allows.
+        val billFields = mapOf(
+            "bill" to ReadableArchive.TableFields(
+                listOf(
+                    ReadableArchive.Field("id", "id"),
+                    ReadableArchive.Field("state", "enum", vocabulary = "bill_state"),
+                ),
+            ),
+        )
+        val page = ReadableArchive.render(
+            ReadableArchive.Source(
+                tables = mapOf("bill" to listOf(mapOf(
+                    "id" to "b1", "state" to "written_off", "received_edtf" to "2026-04-21",
+                ))),
+                words = words(tables = mapOf("bill" to "Bills"),
+                              columns = mapOf("id" to "Reference", "state" to "Where it stands")),
+                subjectName = "Ruth Baxter",
+            ),
+            billFields,
+        ).getValue("bill-2026.html")
+        assertTrue(page.contains("written_off"))
+    }
+
+    @Test
+    fun `a column holding a table name reads as that section's own heading`() {
+        // A reader who has just seen a page called "The trail" should not then
+        // be told that this points at `entry`.
+        val linkFields = mapOf(
+            "link" to ReadableArchive.TableFields(
+                listOf(
+                    ReadableArchive.Field("id", "id"),
+                    ReadableArchive.Field("target_table", "tableName"),
+                ),
+            ),
+        )
+        val page = ReadableArchive.render(
+            ReadableArchive.Source(
+                tables = mapOf("link" to listOf(mapOf("id" to "l1", "target_table" to "entry"))),
+                words = words(
+                    tables = mapOf("link" to "Connections", "entry" to "The trail"),
+                    columns = mapOf("id" to "Reference", "target_table" to "What it points to"),
+                ),
+                subjectName = "Ruth Baxter",
+            ),
+            linkFields,
+        ).getValue("link.html")
+        assertTrue(page.contains(">The trail<"))
+        assertFalse(page.contains(">entry<"))
     }
 
     @Test

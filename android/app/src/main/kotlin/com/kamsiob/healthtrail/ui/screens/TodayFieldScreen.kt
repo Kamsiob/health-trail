@@ -56,6 +56,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.i18n.formatMoney
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Avatar
 import com.kamsiob.healthtrail.ui.components.AvatarOverflow

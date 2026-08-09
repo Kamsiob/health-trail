@@ -91,6 +91,26 @@ object ReadableArchive {
         val tables: Map<String, String>,
         /** Column name to its field label. */
         val columns: Map<String, String>,
+        /**
+         * Vocabulary name to stored value to the word a reader sees.
+         *
+         * **The archive keeps its own words for these rather than borrowing the
+         * screens'.** Two reasons, and the second is the one that matters. A
+         * screen speaks to the person who is standing there, so the paperwork
+         * filter says "You sent", and an archive read by a sibling or a lawyer
+         * years later cannot say that. And a screen's copy gets reworded for
+         * screen reasons: coupling a document that has to be byte identical
+         * across a round trip to a string somebody may soften next month is a
+         * regeneration failure nobody would connect to its cause. #328.
+         */
+        val vocabularies: Map<String, Map<String, String>>,
+        /**
+         * Minor units and an ISO currency code, as money.
+         *
+         * The same function the app's own screens use, so a bill reads the same
+         * in the archive as it did on the phone.
+         */
+        val money: (Long, String) -> String,
         /** What the front page is titled when the record names nobody. */
         val subjectFallback: String,
         /** The front page's opening paragraph, which is also its disclaimer. */
@@ -350,25 +370,21 @@ object ReadableArchive {
             append("<h3>").append(ReadablePage.escape(heading)).append("</h3>\n")
         }
         append("<dl>\n")
-        for ((column, decision) in fields.rendered) {
-            if (column == "title" && !heading.isNullOrBlank()) continue
-            if (column == "display_name" && !heading.isNullOrBlank()) continue
-            if (column == "name" && !heading.isNullOrBlank()) continue
-            append(renderField(column, decision, row, labels))
+        for (field in fields.rendered) {
+            if (field.column == "title" && !heading.isNullOrBlank()) continue
+            if (field.column == "display_name" && !heading.isNullOrBlank()) continue
+            if (field.column == "name" && !heading.isNullOrBlank()) continue
+            append(renderField(field, row, labels))
         }
         append("</dl>\n")
         append("</div>\n")
     }
 
-    private fun renderField(
-        column: String,
-        decision: String,
-        row: Row,
-        labels: Labels,
-    ): String {
+    private fun renderField(field: Field, row: Row, labels: Labels): String {
+        val column = field.column
         val label = labels.column(column)
         val words = labels.words
-        return when (decision) {
+        return when (field.render) {
             "id" -> "<div class=\"f\"><dt>${ReadablePage.escape(label)}</dt>" +
                 "<dd class=\"id\">${ReadablePage.escape(row[column].orEmpty())}</dd></div>"
 
@@ -428,6 +444,61 @@ object ReadableArchive {
                 }
             }
 
+            // **A stored value is not display text**, `docs/TRAPS.md` section 3,
+            // and this is the clause of it that reached a real archive. A bill
+            // printed `paid` and a project printed `needs_attention`, which are
+            // column contents rather than words, and they were the same in
+            // every language because there was nothing to translate.
+            //
+            // **The raw value if the vocabulary does not know it**, rather than
+            // a blank or a thrown exception. A row written by a later version,
+            // or by a template that shipped a value this build has never heard
+            // of, is still part of the record and printing the token is a lead.
+            // `check_readable_labels.py` makes that unreachable for every value
+            // the schema allows.
+            "enum" -> {
+                val stored = row[column]
+                if (stored.isNullOrBlank()) {
+                    ReadablePage.notRecorded(label, words.notRecorded)
+                } else {
+                    ReadablePage.field(
+                        label,
+                        words.vocabularies[field.vocabulary]?.get(stored) ?: stored,
+                        words.notRecorded,
+                    )
+                }
+            }
+
+            // The value names a table, so it reads as that section's own
+            // heading. A reader who has just seen a page called "The trail"
+            // should not then be told this points at `entry`.
+            "tableName" -> {
+                val stored = row[column]
+                if (stored.isNullOrBlank()) {
+                    ReadablePage.notRecorded(label, words.notRecorded)
+                } else {
+                    ReadablePage.field(label, labels.table(stored), words.notRecorded)
+                }
+            }
+
+            // **Minor units are not an amount.** The column holds 679040 and
+            // the bill says six thousand seven hundred and ninety dollars and
+            // forty cents. The locale decides the shape and the record decides
+            // the currency, which is the same rule the app's own screens use
+            // and the same function.
+            "money" -> {
+                val minor = row[column]?.toLongOrNull()
+                if (minor == null) {
+                    ReadablePage.notRecorded(label, words.notRecorded)
+                } else {
+                    ReadablePage.field(label, words.money(minor, labels.currencyFor(field, row)), words.notRecorded)
+                }
+            }
+
+            // Rendered inside its own amount rather than beside it, exactly as
+            // a date's zone is, so the page does not say USD twice.
+            "moneyCurrency" -> ""
+
             else -> ReadablePage.field(label, row[column], words.notRecorded)
         }
     }
@@ -453,7 +524,40 @@ object ReadableArchive {
     }
 
     /** A table's rendering decisions, in a fixed order. */
-    data class TableFields(val rendered: List<Pair<String, String>>)
+    data class TableFields(val rendered: List<Field>)
+
+    /**
+     * One column's rendering decision, as `contract/readable-fields.json` states it.
+     *
+     * **A decision used to be a bare string** and that was enough while every
+     * decision was self contained. It is not any more: an `enum` has to say
+     * which vocabulary its value belongs to, and money has to say where its
+     * currency comes from. **Encoding those into the decision string would have
+     * been quicker and is the shortcut this file cannot afford**, because the
+     * next person to read it would have to work out the grammar from the parser.
+     *
+     * Generated from the contract by the build, so nothing here is hand kept.
+     */
+    data class Field(
+        val column: String,
+        /**
+         * `id`, `date`, `dateZone`, `boolean`, `attachment`, `link`, `money`,
+         * `moneyCurrency`, `enum`, `tableName`, or `value`.
+         */
+        val render: String,
+        /** For `enum`: which vocabulary in [Words.vocabularies] the value is in. */
+        val vocabulary: String? = null,
+        /** For `money`: the column on this same row holding the ISO currency. */
+        val currency: String? = null,
+        /**
+         * For `money`: a link column whose target row holds the currency.
+         *
+         * A cost entry has an amount and no currency, because the currency
+         * belongs to the sheet it is on. Following the link is what stops that
+         * amount printing as a bare number.
+         */
+        val currencyFrom: String? = null,
+    )
 
     /**
      * Human words for table and column names.
@@ -489,7 +593,40 @@ object ReadableArchive {
             }
         }
 
+        /** Row id to the ISO currency on that row, for the tables that carry one. */
+        private val currencies: Map<String, String> = buildMap {
+            for ((_, rows) in source.tables) {
+                for (row in rows) {
+                    val id = row["id"] ?: continue
+                    val currency = row["currency"]?.takeIf { it.isNotBlank() } ?: continue
+                    put(id, currency)
+                }
+            }
+        }
+
         fun nameFor(column: String, id: String): String = names[id] ?: id
+
+        /**
+         * Which currency an amount is in.
+         *
+         * On its own row where the record carries one, and otherwise from the
+         * row it points at: a cost entry has an amount and belongs to a sheet,
+         * and the sheet is where the currency lives.
+         *
+         * **Falls back to the dollar**, which is what the app writes when
+         * nothing else is known and what `formatMoney` already does with a code
+         * it cannot parse. An amount with no currency at all would print as the
+         * bare number this whole decision exists to stop.
+         */
+        fun currencyFor(field: Field, row: Row): String {
+            field.currency?.let { column ->
+                row[column]?.takeIf { it.isNotBlank() }?.let { return it }
+            }
+            field.currencyFrom?.let { column ->
+                row[column]?.let { target -> currencies[target]?.let { return it } }
+            }
+            return "USD"
+        }
 
         fun table(table: String): String = words.tables[table] ?: open(table)
 

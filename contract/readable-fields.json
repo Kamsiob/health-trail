@@ -235,10 +235,13 @@
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "amount_minor": {
-        "render": "value"
+        "render": "money",
+        "currency": "currency",
+        "note": "Minor units, so it is rendered as money in the person's locale with the bill's own currency rather than as the integer the column holds. It printed 679040 for six thousand seven hundred and ninety dollars and forty cents. #328."
       },
       "currency": {
-        "render": "value"
+        "render": "moneyCurrency",
+        "note": "Rendered as part of its own amount rather than on its own, the way a date's zone is, so it is not printed twice. #328."
       },
       "received_edtf": {
         "render": "date",
@@ -269,7 +272,9 @@
         "notRendered": "Derived index, recomputed from the EDTF string on import rather than trusted from the file. contract/DATA-CONTRACT.md section 3.1. The EDTF column is what renders."
       },
       "state": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "bill_state",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the bill_state vocabulary and renders as its word in the person's language. #328."
       },
       "state_note": {
         "render": "value"
@@ -328,7 +333,9 @@
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "direction": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "call_direction",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the call_direction vocabulary and renders as its word in the person's language. #328."
       },
       "number_called": {
         "render": "value"
@@ -626,7 +633,9 @@
         "render": "value"
       },
       "amount_minor": {
-        "render": "value"
+        "render": "money",
+        "currencyFrom": "cost_sheet_id",
+        "note": "Minor units. A cost entry carries no currency of its own, so it takes the one on the cost sheet it belongs to. #328."
       },
       "occurred_edtf": {
         "render": "date",
@@ -725,7 +734,9 @@
         "notRendered": "Row bookkeeping for sync."
       },
       "kind": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "template_kind",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the template_kind vocabulary and renders as its word in the person's language. #328."
       },
       "derived_from_id": {
         "render": "link",
@@ -998,7 +1009,9 @@
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "kind": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "entry_kind",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the entry_kind vocabulary and renders as its word in the person's language. #328."
       },
       "occurred_edtf": {
         "render": "date",
@@ -1076,7 +1089,9 @@
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "involvement": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "involvement",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the involvement vocabulary and renders as its word in the person's language. #328."
       }
     }
   },
@@ -1285,21 +1300,25 @@
         "notRendered": "Row bookkeeping for sync."
       },
       "source_table": {
-        "render": "value"
+        "render": "tableName",
+        "note": "The value is a table name, so it renders as that section's own heading rather than as the schema's word for it. #328."
       },
       "source_id": {
         "render": "link",
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "target_table": {
-        "render": "value"
+        "render": "tableName",
+        "note": "The value is a table name, so it renders as that section's own heading rather than as the schema's word for it. #328."
       },
       "target_id": {
         "render": "link",
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "relation": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "link_relation",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the link_relation vocabulary and renders as its word in the person's language. #328."
       },
       "note": {
         "render": "value"
@@ -1355,13 +1374,19 @@
         "render": "value"
       },
       "style": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "measure_style",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the measure_style vocabulary and renders as its word in the person's language. #328."
       },
       "gap_tolerance": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "gap_tolerance",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the gap_tolerance vocabulary and renders as its word in the person's language. #328."
       },
       "advice_risk": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "advice_risk",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the advice_risk vocabulary and renders as its word in the person's language. #328."
       },
       "show_medication_markers": {
         "render": "value"
@@ -1449,7 +1474,9 @@
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "source": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "measurement_source",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the measurement_source vocabulary and renders as its word in the person's language. #328."
       },
       "note": {
         "render": "value"
@@ -1593,7 +1620,9 @@
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "kind": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "medication_event_kind",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the medication_event_kind vocabulary and renders as its word in the person's language. #328."
       },
       "occurred_edtf": {
         "render": "date",
@@ -1951,7 +1980,9 @@
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "status": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "project_status",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the project_status vocabulary and renders as its word in the person's language. #328."
       },
       "waiting_on": {
         "render": "value"
@@ -1991,8 +2022,9 @@
         "render": "value"
       },
       "lead": {
-        "render": "value",
-        "note": "Which of the three answers this project opens with, which is the shape the person gave it. DESIGN.md 20.3."
+        "render": "enum",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the project_lead vocabulary and renders as its word in the person's language. #328.",
+        "vocabulary": "project_lead"
       },
       "current_stage_id": {
         "render": "link",
@@ -2256,7 +2288,9 @@
         "render": "value"
       },
       "tag": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "instruction_tag",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the instruction_tag vocabulary and renders as its word in the person's language. #328."
       },
       "chapter_id": {
         "render": "link",
@@ -2729,8 +2763,9 @@
         "render": "value"
       },
       "direction": {
-        "render": "value",
-        "note": "What they sent or what you sent. Empty is a real state and reads as not yet."
+        "render": "enum",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the paper_direction vocabulary and renders as its word in the person's language. #328.",
+        "vocabulary": "paper_direction"
       },
       "document_id": {
         "render": "link",
@@ -2774,10 +2809,14 @@
         "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
       },
       "card_type": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "card_type",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the card_type vocabulary and renders as its word in the person's language. #328."
       },
       "size": {
-        "render": "value"
+        "render": "enum",
+        "vocabulary": "card_size",
+        "note": "Section 8.2: a stored value is not display text. The value is a member of the card_size vocabulary and renders as its word in the person's language. #328."
       },
       "sort_index": {
         "render": "value"
@@ -2786,8 +2825,8 @@
         "render": "boolean"
       },
       "source_table": {
-        "render": "value",
-        "note": "Which table the card points at. It renders as the plain table name beside the id, because a reader restoring by hand needs to know where to look and the pair is meaningless split up."
+        "render": "tableName",
+        "note": "The value is a table name, so it renders as that section's own heading rather than as the schema's word for it. #328."
       },
       "source_id": {
         "render": "value",

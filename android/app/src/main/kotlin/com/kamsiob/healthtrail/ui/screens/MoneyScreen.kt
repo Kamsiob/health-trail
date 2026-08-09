@@ -18,6 +18,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.i18n.formatMoney
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -254,25 +255,3 @@ private fun BillRow(
     )
 }
 
-/**
- * Minor units rendered as money, in the catalog's locale but the bill's own
- * currency.
- *
- * **The locale decides the shape and the bill decides the currency.** An Arabic
- * reader in the United States is still looking at dollars, and rendering them
- * with the locale's default currency would silently relabel the amount.
- */
-internal fun formatMoney(strings: Strings, minor: Long, currencyCode: String): String {
-    val format = NumberFormat.getCurrencyInstance(strings.locale)
-    val currency = runCatching { Currency.getInstance(currencyCode) }
-        .getOrElse { Currency.getInstance("USD") }
-    format.currency = currency
-    val digits = currency.defaultFractionDigits.coerceAtLeast(0)
-    format.minimumFractionDigits = digits
-    format.maximumFractionDigits = digits
-    // Divided as a decimal rather than a double, so nothing rounds on the way
-    // to the screen.
-    val major = java.math.BigDecimal(minor)
-        .movePointLeft(digits)
-    return format.format(major)
-}

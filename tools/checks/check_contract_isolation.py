@@ -94,6 +94,13 @@ SCHEMA_ALLOWED = {
     # schema and asserts the archive's field map covers it, which is the
     # opposite of a second copy. contract/DATA-CONTRACT.md 8.5.
     "tools/checks/check_readable_coverage.py",
+    # Parses contract/schema.sql for the CHECK constraint behind each column an
+    # archive renders as a word, so it necessarily carries the pattern it parses
+    # for. Same situation as the line above and for the same reason: it declares
+    # nothing, it holds the vocabulary file to the one schema. A value the
+    # schema allows and the vocabulary does not list would otherwise reach a
+    # page as itself. #328.
+    "tools/checks/check_readable_labels.py",
     # Builds a three column throwaway database in a temp directory so the
     # standalone decryptor has an archive to open. It is not a schema the app
     # could ever load: nothing copies it, nothing packages it, and it is deleted
