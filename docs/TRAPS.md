@@ -40,8 +40,6 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **Distrust a negative result from a tool that cannot say what it did not examine.** Five times in one night and several since.
 
-**A green suite can be green on a code path it never runs.** `MergeApplyTest` had five cases around the importer's insert path and no coverage of it at all, because every archive those cases merge came from the notebook they merge into: everything was unchanged and nothing was ever inserted. The path crashed on the phone the first time a real second notebook arrived. **Ask what the test data makes reachable**, not what the test names say.
-
 **Look at every screenshot before committing it, and `screenshot.sh` is not the last control.** It refuses unless the app is focused, suppresses heads-up notifications and crops the status bar, and things still get through. A heads-up notification once put the owner's phone number and a contact photo into a capture. On 2026-08-08 the **system clipboard overlay** put his shell prompt into two, because it never takes focus and was not a heads-up, a toast or a popup; the pattern catches `clipboard` now. **Both times the image was caught by a person looking at it.** D53, D72. **Never screenshot the share sheet or the calendar app**: they show real contacts.
 
 **`screenshot.sh` appends the theme**, so a name ending in `-dark` yields `-dark-dark.png`. It reads the app's own Appearance choice first and the device only when that choice is to follow it. D31.
@@ -72,6 +70,8 @@ Each section says when it applies. If you are not doing that thing, skip it.
 ---
 
 ## 2. Before you run or believe the tests
+**A green suite can be green on a code path it never runs.** `MergeApplyTest` had five cases around the importer's insert path and no coverage of it at all, because every archive those cases merge came from the notebook they merge into: everything was unchanged and nothing was ever inserted. The path crashed on the phone the first time a real second notebook arrived. **Ask what the test data makes reachable**, not what the test names say.
+
 
 **`tools/verify.sh` is the honest runner and the only one that reaches everything.** It captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. CI once failed on a lint error in code that had been walked on the device and had passed every content check and 185 instrumented tests. Running `run_all.py` plus the suite by hand feels like verifying and skips whatever is not in that habit.
 
