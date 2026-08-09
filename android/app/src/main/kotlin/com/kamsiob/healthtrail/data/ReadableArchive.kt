@@ -397,6 +397,22 @@ object ReadableArchive {
             // own, so it is not printed twice.
             "dateZone" -> ""
 
+            // **A row timestamp, and never the epoch number itself.** Section
+            // 8.2 says so in as many words, and `ReadableDate.timestamp` was
+            // written for exactly this and called by nothing: six columns were
+            // printing things like `1781701200000` where the page meant to say
+            // when somebody answered. Found by sweeping a real export for bare
+            // integers rather than by reading the field map. #328.
+            //
+            // In UTC with the offset spelled out, because unlike an event date
+            // these columns carry no zone of their own and inventing one would
+            // be a precision the record does not have.
+            "timestamp" -> ReadablePage.field(
+                label,
+                row[column]?.toLongOrNull()?.let { ReadableDate.timestamp(it, null) },
+                words.notRecorded,
+            )
+
             // **A flag reads as a word.** SQLite stores it as 0 or 1, and a
             // reader handed a column of noughts learns nothing: "Still waiting
             // to be filed: 0" is a sentence with no meaning outside a database.

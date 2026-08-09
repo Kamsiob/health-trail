@@ -623,6 +623,41 @@ class ReadableArchiveTest {
     }
 
     @Test
+    fun `a row timestamp reads as a date rather than as the epoch number`() {
+        // #328, and section 8.2 says it in as many words: never a bare epoch
+        // number. Six columns were printing things like 1781701200000 where the
+        // page meant to say when somebody answered, and `ReadableDate.timestamp`
+        // had been written for exactly this and called by nothing.
+        val incidentFields = mapOf(
+            "incident" to ReadableArchive.TableFields(
+                listOf(
+                    ReadableArchive.Field("id", "id"),
+                    ReadableArchive.Field("resolved_at", "timestamp"),
+                ),
+            ),
+        )
+        fun render(value: String?) = ReadableArchive.render(
+            ReadableArchive.Source(
+                tables = mapOf("incident" to listOf(mapOf(
+                    "id" to "i1", "resolved_at" to value, "reported_edtf" to "2026-06-12",
+                ))),
+                words = words(tables = mapOf("incident" to "Incidents"),
+                              columns = mapOf("id" to "Reference", "resolved_at" to "Answered")),
+                subjectName = "Ruth Baxter",
+            ),
+            incidentFields,
+        ).getValue("incident-2026.html")
+
+        val answered = render("1781701200000")
+        assertFalse("the epoch number reached the page", answered.contains("1781701200000"))
+        assertTrue(answered.contains("2026"))
+        assertTrue("the offset travels with the time", answered.contains("UTC"))
+
+        // Never zero and never blank: a column nobody filled is not a moment.
+        assertTrue(render(null).contains("not recorded"))
+    }
+
+    @Test
     fun `the front page says plainly that this is not a clinical record`() {
         // Rule 2 and section 8.2: the readable copy carries the app's own
         // content rules. A document that looks official and is not is worse

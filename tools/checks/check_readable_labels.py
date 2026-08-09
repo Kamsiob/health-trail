@@ -63,7 +63,7 @@ RENDERED_INSIDE_ANOTHER = {"dateZone", "moneyCurrency"}
 # wrong does not fail: it falls through to the plain value and prints the column
 # contents, which is the whole of #328 arriving again by typo.
 DECISIONS = {
-    "id", "date", "dateZone", "boolean", "attachment", "link",
+    "id", "date", "dateZone", "timestamp", "boolean", "attachment", "link",
     "money", "moneyCurrency", "enum", "tableName", "value",
 }
 
@@ -207,6 +207,51 @@ def vocabulary_problems(field_map, vocabularies, schema, catalogs):
     return problems
 
 
+def raw_number_problems(field_map, schema):
+    """Columns whose type says the plain value cannot be what a reader should see.
+
+    **Written because three of these were found by grepping a real archive for
+    long integers, not by reading anything.** `entry.pinned_at` and five like it
+    printed epoch milliseconds on a page, which `contract/DATA-CONTRACT.md` 8.2
+    forbids in as many words and which `ReadableDate.timestamp` was written for
+    and nothing called. `call_detail.reached` printed 0 and 1, which is the
+    sentence with no meaning outside a database that the `boolean` decision
+    already existed to stop.
+
+    **The type is the tell and the schema already carries it.** An INTEGER
+    column constrained to 0 and 1 is a flag whatever it is called, and an
+    INTEGER column named `_at` or `_since` is a time. Both are provable from
+    `contract/schema.sql`, so neither has to be noticed by a person again.
+    """
+    problems = []
+    tables = dict(re.findall(
+        r"CREATE TABLE IF NOT EXISTS (\w+) \((.*?)\n\);", schema, re.S,
+    ))
+    for table, spec in sorted(field_map.items()):
+        body = tables.get(table, "")
+        for column in spec.get("order", []):
+            if spec["columns"].get(column, {}).get("render") != "value":
+                continue
+            if not re.search(rf"^\s*{column}\s+INTEGER", body, re.M):
+                continue
+            if re.search(
+                rf"^\s*{column}\s+INTEGER[^,]*CHECK \({column} IN \(0, 1\)\)", body, re.M,
+            ):
+                problems.append(
+                    f"{table}.{column} is an INTEGER flag rendered as a plain value, so "
+                    f"the page prints 0 or 1. Render it as a boolean, which says yes or "
+                    f"no and keeps a flag nobody set apart from one somebody cleared."
+                )
+            elif column.endswith("_at") or column.endswith("_since"):
+                problems.append(
+                    f"{table}.{column} is epoch milliseconds rendered as a plain value, "
+                    f"so the page prints a number like 1781701200000. "
+                    f"contract/DATA-CONTRACT.md 8.2: never a bare epoch number. Render "
+                    f"it as a timestamp."
+                )
+    return problems
+
+
 def check_values(schema, table, column):
     """The values a CHECK constraint allows, or None where there is no CHECK."""
     body = re.search(
@@ -271,6 +316,7 @@ def main() -> int:
                 )
 
     problems.extend(vocabulary_problems(field_map, vocabularies, schema, catalogs))
+    problems.extend(raw_number_problems(field_map, schema))
 
     # A label nothing renders is a translation four people maintain for no
     # reader. Reported so the set stays exactly the set that reaches a page.

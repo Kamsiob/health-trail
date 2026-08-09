@@ -341,7 +341,8 @@
         "render": "value"
       },
       "reached": {
-        "render": "value"
+        "render": "boolean",
+        "note": "SQLite stores a flag as 0 or 1 and a reader handed a column of noughts learns nothing. Null, empty and zero stay three different things: a flag nobody set is not a flag somebody cleared. #328."
       },
       "duration_minutes": {
         "render": "value"
@@ -1049,7 +1050,8 @@
         "render": "value"
       },
       "pinned_at": {
-        "render": "value"
+        "render": "timestamp",
+        "note": "Epoch milliseconds. contract/DATA-CONTRACT.md 8.2 is explicit that a date never renders as a bare epoch number, and this column printed one. Rendered in UTC with the offset shown, because unlike an event date it carries no zone of its own. #328."
       }
     }
   },
@@ -1193,7 +1195,8 @@
         "notRendered": "Derived index, recomputed from the EDTF string on import rather than trusted from the file. contract/DATA-CONTRACT.md section 3.1. The EDTF column is what renders."
       },
       "resolved_at": {
-        "render": "value"
+        "render": "timestamp",
+        "note": "Epoch milliseconds. contract/DATA-CONTRACT.md 8.2 is explicit that a date never renders as a bare epoch number, and this column printed one. Rendered in UTC with the offset shown, because unlike an event date it carries no zone of its own. #328."
       },
       "resolution_note": {
         "render": "value"
@@ -1389,7 +1392,8 @@
         "note": "Section 8.2: a stored value is not display text. The value is a member of the advice_risk vocabulary and renders as its word in the person's language. #328."
       },
       "show_medication_markers": {
-        "render": "value"
+        "render": "boolean",
+        "note": "SQLite stores a flag as 0 or 1 and a reader handed a column of noughts learns nothing. Null, empty and zero stay three different things: a flag nobody set is not a flag somebody cleared. #328."
       },
       "notes": {
         "render": "value"
@@ -1571,7 +1575,8 @@
         "render": "value"
       },
       "on_emergency_card": {
-        "render": "value"
+        "render": "boolean",
+        "note": "SQLite stores a flag as 0 or 1 and a reader handed a column of noughts learns nothing. Null, empty and zero stay three different things: a flag nobody set is not a flag somebody cleared. #328."
       }
     }
   },
@@ -1813,7 +1818,8 @@
         "render": "value"
       },
       "archived_at": {
-        "render": "value"
+        "render": "timestamp",
+        "note": "Epoch milliseconds. contract/DATA-CONTRACT.md 8.2 is explicit that a date never renders as a bare epoch number, and this column printed one. Rendered in UTC with the offset shown, because unlike an event date it carries no zone of its own. #328."
       }
     }
   },
@@ -1882,7 +1888,8 @@
         "render": "value"
       },
       "archived_at": {
-        "render": "value"
+        "render": "timestamp",
+        "note": "Epoch milliseconds. contract/DATA-CONTRACT.md 8.2 is explicit that a date never renders as a bare epoch number, and this column printed one. Rendered in UTC with the offset shown, because unlike an event date it carries no zone of its own. #328."
       }
     }
   },
@@ -1988,7 +1995,8 @@
         "render": "value"
       },
       "waiting_since": {
-        "render": "value"
+        "render": "timestamp",
+        "note": "Epoch milliseconds. contract/DATA-CONTRACT.md 8.2 is explicit that a date never renders as a bare epoch number, and this column printed one. Rendered in UTC with the offset shown, because unlike an event date it carries no zone of its own. #328."
       },
       "started_edtf": {
         "render": "date",
@@ -2415,7 +2423,8 @@
         "note": "A flag. SQLite stores it as 0 or 1, and a reader handed a column of noughts learns nothing. Rendered as yes or no."
       },
       "closed_at": {
-        "render": "value"
+        "render": "timestamp",
+        "note": "Epoch milliseconds. contract/DATA-CONTRACT.md 8.2 is explicit that a date never renders as a bare epoch number, and this column printed one. Rendered in UTC with the offset shown, because unlike an event date it carries no zone of its own. #328."
       },
       "closed_note": {
         "render": "value"
