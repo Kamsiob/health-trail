@@ -105,7 +105,7 @@ Both reach the phone through `tools/seed.sh month6 6 <pass> --quiet` or `--situa
 
 **The digest was dropping two of its three counts.** The previous Today showed corrected and removed alongside the total and this surface asked for neither, though the catalog has carried both sentences since the first Today. It says all three now, and only where there is something to say: a week with nothing corrected is not told so, because a zero there is a tally of the person's own diligence, which rule 13 rules out. **No seed reaches those two yet**: the fixture's fourteen updates land on rows it inserted in the same window, and the digest counts a row once per category.
 
-**Milestone 1's screens are done.** What is left on the milestone is #273, the two undrawn template hands awaiting the owner's eye, and #243, the parent.
+**Milestone 1 is done.** All ten Today screens are built and walked, and **#273's two drafted hands have now been seen on the phone**, which is what `--situation` made possible: hospital stay and short term rehab, at both themes and font scale 2.0. **They remain provisional and the owner has not looked at them yet.**
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 
