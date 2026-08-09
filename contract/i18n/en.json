@@ -1326,5 +1326,14 @@
   "archive.vocabulary.template_kind.situation": "A whole situation",
   "archive.vocabulary.template_kind.project": "A project",
   "archive.vocabulary.template_kind.progress": "Something to track",
-  "archive.vocabulary.template_kind.standing_instruction": "A standing instruction"
+  "archive.vocabulary.template_kind.standing_instruction": "A standing instruction",
+  "restore.how.group": "What should happen to what is here",
+  "restore.how.replace.label": "Replace what is here",
+  "restore.how.replace.detail": "Your notebook becomes exactly what is in the file. Anything written since the file was made is gone.",
+  "restore.how.merge.label": "Keep both",
+  "restore.how.merge.detail": "Everything in the file is added to what is here. Where the same thing was written in both, the one written later is kept and you can read what the other one said.",
+  "restore.confirm.merge": "Keep both",
+  "restore.warning.merge": "Nothing here is removed. Where the same thing was written in both, the one written later is kept, and both versions are saved so you can see what changed.",
+  "restore.done.merge": "Done. Both notebooks are here now.",
+  "restore.refused": "Nothing was merged. This file has records that point at something neither notebook has, so putting them in would leave part of the record with no home. Nothing here was changed."
 }

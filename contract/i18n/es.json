@@ -1326,5 +1326,14 @@
   "archive.vocabulary.template_kind.situation": "Una situación completa",
   "archive.vocabulary.template_kind.project": "Un trámite",
   "archive.vocabulary.template_kind.progress": "Algo que seguir",
-  "archive.vocabulary.template_kind.standing_instruction": "Una instrucción permanente"
+  "archive.vocabulary.template_kind.standing_instruction": "Una instrucción permanente",
+  "restore.how.group": "Qué debe pasar con lo que ya hay",
+  "restore.how.replace.label": "Reemplazar lo que hay",
+  "restore.how.replace.detail": "Su cuaderno pasa a ser exactamente lo que hay en el archivo. Todo lo escrito desde que se hizo el archivo se pierde.",
+  "restore.how.merge.label": "Conservar ambos",
+  "restore.how.merge.detail": "Todo lo del archivo se añade a lo que ya hay. Cuando lo mismo se escribió en ambos, se conserva lo escrito más tarde y usted puede leer lo que decía lo otro.",
+  "restore.confirm.merge": "Conservar ambos",
+  "restore.warning.merge": "No se elimina nada de lo que hay. Cuando lo mismo se escribió en ambos, se conserva lo escrito más tarde y se guardan las dos versiones para que usted pueda ver qué cambió.",
+  "restore.done.merge": "Listo. Ahora están los dos cuadernos.",
+  "restore.refused": "No se combinó nada. Este archivo tiene registros que apuntan a algo que no está en ninguno de los dos cuadernos, así que incorporarlos dejaría parte del registro sin sitio. Aquí no se cambió nada."
 }

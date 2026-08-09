@@ -22,6 +22,8 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.ChoiceRow
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -32,6 +34,8 @@ import java.time.format.DateTimeFormatter
 
 object RestoreTags {
     const val NAME = "restore"
+    const val HOW_REPLACE = "restore_how_replace"
+    const val HOW_MERGE = "restore_how_merge"
     const val CHOOSE = "restore_choose"
     const val PASSPHRASE = "restore_passphrase"
     const val UNLOCK = "restore_unlock"
@@ -39,6 +43,20 @@ object RestoreTags {
     const val PROBLEM = "restore_problem"
     const val STATUS = "restore_status"
 }
+
+/**
+ * What the person chose to happen to the notebook that is already here.
+ *
+ * **A choice rather than a default, and 8.3 says so**: merge or replace is
+ * explicit, described in plain words, never a guess. The two are genuinely
+ * different promises. Replace means the file wins and anything written since it
+ * was made is gone; keeping both means nothing here is removed and the later
+ * version of anything written twice is the one kept.
+ *
+ * **Neither is preselected.** A default here is the app guessing which of those
+ * two sentences the person meant, and one of them loses work.
+ */
+enum class RestoreHow { REPLACE, MERGE }
 
 /** Where the restore has got to. */
 sealed interface RestoreState {
@@ -62,7 +80,18 @@ sealed interface RestoreState {
     data class Problem(val message: String) : RestoreState
 
     data object Working : RestoreState
+
+    /** Replaced. The notebook is what was in the file. */
     data object Done : RestoreState
+
+    /**
+     * Merged. Both notebooks are here.
+     *
+     * **A different sentence rather than the same one**, because the two
+     * promises are different and telling somebody their notebook "is what was
+     * in the file" after a merge would be false.
+     */
+    data object Merged : RestoreState
 }
 
 /**
@@ -89,13 +118,16 @@ fun RestoreScreen(
     state: RestoreState,
     onChoose: () -> Unit,
     onUnlock: (String) -> Unit,
-    onRestore: () -> Unit,
+    onRestore: (RestoreHow) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     var passphrase by remember(state) { mutableStateOf("") }
+    // Reset whenever the state changes, so a second file never inherits the
+    // answer given about the first one.
+    var how by remember(state) { mutableStateOf<RestoreHow?>(null) }
     val busy = state is RestoreState.Working
 
     SectionScaffold(
@@ -201,28 +233,72 @@ fun RestoreScreen(
                         )
                     }
 
-                    Spacer(Modifier.height(Space.l))
-                    Text(
-                        text = strings["restore.warning"],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.alertInk,
-                    )
+                    Spacer(Modifier.height(Space.sectionGap))
+                    GroupHeader(labelKey = "restore.how.group")
+                    Spacer(Modifier.height(Space.m))
+
+                    // One grouped surface rather than two cards: it is one
+                    // question with two answers, each needing a sentence, which
+                    // is a radio group. `ChoiceRow` is the same shape the
+                    // appearance question uses.
+                    GroupedSurface {
+                        ChoiceRow(
+                            label = strings["restore.how.replace.label"],
+                            detail = strings["restore.how.replace.detail"],
+                            selected = how == RestoreHow.REPLACE,
+                            onClick = { how = RestoreHow.REPLACE },
+                            isLast = false,
+                            testTag = RestoreTags.HOW_REPLACE,
+                        )
+                        ChoiceRow(
+                            label = strings["restore.how.merge.label"],
+                            detail = strings["restore.how.merge.detail"],
+                            selected = how == RestoreHow.MERGE,
+                            onClick = { how = RestoreHow.MERGE },
+                            isLast = true,
+                            testTag = RestoreTags.HOW_MERGE,
+                        )
+                    }
+
+                    // **The warning follows the choice**, because the two are
+                    // different truths and a single sentence covering both
+                    // would be true of neither. It is silent until the person
+                    // has chosen, rather than warning about something they have
+                    // not asked for.
+                    how?.let { chosen ->
+                        Spacer(Modifier.height(Space.l))
+                        Text(
+                            text = when (chosen) {
+                                RestoreHow.REPLACE -> strings["restore.warning"]
+                                RestoreHow.MERGE -> strings["restore.warning.merge"]
+                            },
+                            style = HealthTrail.type.bodyM,
+                            color = colors.alertInk,
+                        )
+                    }
+
                     Spacer(Modifier.height(Space.l))
                     FilledButton(
-                        label = strings["restore.confirm"],
-                        onClick = onRestore,
-                        enabled = !busy,
+                        // The button says which of the two it will do, so the
+                        // last thing read before the irreversible tap is the
+                        // thing that is about to happen.
+                        label = when (how) {
+                            RestoreHow.MERGE -> strings["restore.confirm.merge"]
+                            else -> strings["restore.confirm"]
+                        },
+                        onClick = { how?.let(onRestore) },
+                        enabled = !busy && how != null,
                         modifier = Modifier.fillMaxWidth().testTag(RestoreTags.CONFIRM),
                     )
                 }
 
-                is RestoreState.Working, is RestoreState.Done -> {
+                is RestoreState.Working, is RestoreState.Done, is RestoreState.Merged -> {
                     Spacer(Modifier.height(Space.sectionGap))
                     Text(
-                        text = if (state is RestoreState.Working) {
-                            strings["restore.working"]
-                        } else {
-                            strings["restore.done"]
+                        text = when (state) {
+                            is RestoreState.Working -> strings["restore.working"]
+                            is RestoreState.Merged -> strings["restore.done.merge"]
+                            else -> strings["restore.done"]
                         },
                         style = HealthTrail.type.bodyL,
                         color = colors.ink,

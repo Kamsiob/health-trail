@@ -70,8 +70,10 @@ import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
+import com.kamsiob.healthtrail.ui.screens.RestoreHow
 import com.kamsiob.healthtrail.ui.screens.RestoreState
 import com.kamsiob.healthtrail.data.ExportContainer
+import com.kamsiob.healthtrail.data.MergeApply
 import com.kamsiob.healthtrail.ui.screens.ExportState
 import com.kamsiob.healthtrail.data.Backup
 import com.kamsiob.healthtrail.ui.screens.MoreScreen
@@ -571,6 +573,10 @@ fun NotebookShell(
     var openWith by remember { mutableStateOf<String?>(null) }
     var openNow by remember { mutableStateOf(false) }
     var applyNow by remember { mutableStateOf(false) }
+    // Which of the two things the person asked for. Held beside the trigger
+    // rather than inside the screen, because the screen is redrawn from state
+    // and an answer that lived there would be lost the moment it was given.
+    var applyHow by remember { mutableStateOf(RestoreHow.REPLACE) }
     // The emergency card, and whether it is being filled in.
     var emergencyCard by remember { mutableStateOf<Repository.EmergencyCard?>(null) }
     var editingEmergencyCard by remember { mutableStateOf(false) }
@@ -1255,7 +1261,7 @@ fun NotebookShell(
                     chooseFile.launch(arrayOf("*/*"))
                 },
                 onUnlock = { entered -> openWith = entered; openNow = true },
-                onRestore = { applyNow = true },
+                onRestore = { chosen -> applyHow = chosen; applyNow = true },
                 onBack = {
                     restoreOpen = false
                     restoreState = RestoreState.Empty
@@ -1312,7 +1318,7 @@ fun NotebookShell(
 
         if (applyNow) {
             val source = restoreFile
-            LaunchedEffect(source) {
+            LaunchedEffect(source, applyHow) {
                 if (source == null) {
                     applyNow = false
                     return@LaunchedEffect
@@ -1327,11 +1333,36 @@ fun NotebookShell(
                 )
                 restoreState = opened.fold(
                     onSuccess = { container ->
-                        Backup.restore(context, container).fold(
-                            onSuccess = { RestoreState.Done },
-                            onFailure = {
+                        // **Two promises, two functions.** Replace swaps the
+                        // whole file; keeping both merges row by row and writes
+                        // what it resolved. 8.3 requires the choice to be the
+                        // person's rather than the app's, so it is carried here
+                        // rather than decided here.
+                        val applied = when (applyHow) {
+                            RestoreHow.MERGE ->
+                                MergeApply.merge(context, container, System.currentTimeMillis())
+                                    .map { 0 }
+                            else -> Backup.restore(context, container)
+                        }
+                        applied.fold(
+                            onSuccess = {
+                                if (applyHow == RestoreHow.MERGE) {
+                                    RestoreState.Merged
+                                } else {
+                                    RestoreState.Done
+                                }
+                            },
+                            onFailure = { failure ->
                                 RestoreState.Problem(
-                                    it.message ?: strings["common.error.generic"],
+                                    // A merge that refused says why in its own
+                                    // words, and those words are the ones the
+                                    // person needs rather than a generic
+                                    // failure.
+                                    if (failure is MergeApply.Refused) {
+                                        strings["restore.refused"]
+                                    } else {
+                                        failure.message ?: strings["common.error.generic"]
+                                    },
                                 )
                             },
                         )

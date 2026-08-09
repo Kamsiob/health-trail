@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.ChoiceRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.Hairline
@@ -157,67 +158,14 @@ fun AppearanceScreen(
 @Composable
 private fun Option(choice: ThemeChoice, selected: Boolean, onClick: () -> Unit, isLast: Boolean) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-
-    // A Column so the row can carry the group's hairline under it, which is
-    // what makes three options one surface rather than three.
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-    val ring by focusRingAlpha(interaction)
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.tile)
-            .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
-            .clickable(
-                interactionSource = interaction,
-                // The row's own surface is the answer to the touch, per section
-                // 5.14. A ripple over it would be a second, louder one.
-                indication = null,
-                role = Role.RadioButton,
-                onClick = onClick,
-            )
-            // Selection is state, not decoration. Without this the dot is the
-            // only carrier and a reader user gets three identical rows.
-            .semantics { this.selected = selected }
-            .testTag(AppearanceTags.option(choice))
-            .padding(horizontal = Space.cardPadding, vertical = Space.m),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = strings[labelKey(choice)],
-                style = HealthTrail.type.label,
-                color = colors.ink,
-            )
-            Spacer(Modifier.height(Space.xs))
-            Text(
-                text = strings[detailKey(choice)],
-                style = HealthTrail.type.bodyM,
-                color = colors.ink2,
-            )
-        }
-
-        if (selected) {
-            Spacer(Modifier.width(Space.sm))
-            // The bottom navigation's selected dot, which is already this
-            // app's way of saying "this one". A checkmark would be a new path
-            // for a job an existing shape does, and section 10.2 says compose
-            // rather than add.
-            Box(
-                modifier = Modifier
-                    .size(Space.s)
-                    .clip(CircleShape)
-                    .background(colors.blueDeep),
-            )
-        }
-    }
-        if (!isLast) Hairline(inset = Space.cardPadding, end = Space.cardPadding)
-    }
+    ChoiceRow(
+        label = strings[labelKey(choice)],
+        detail = strings[detailKey(choice)],
+        selected = selected,
+        onClick = onClick,
+        isLast = isLast,
+        testTag = AppearanceTags.option(choice),
+    )
 }
 
 private fun labelKey(choice: ThemeChoice) = when (choice) {

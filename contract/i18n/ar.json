@@ -1326,5 +1326,14 @@
   "archive.vocabulary.template_kind.situation": "وضع كامل",
   "archive.vocabulary.template_kind.project": "معاملة",
   "archive.vocabulary.template_kind.progress": "شيء يُتتبَّع",
-  "archive.vocabulary.template_kind.standing_instruction": "تعليمة دائمة"
+  "archive.vocabulary.template_kind.standing_instruction": "تعليمة دائمة",
+  "restore.how.group": "ماذا يحدث لما هو موجود هنا",
+  "restore.how.replace.label": "استبدال ما هو موجود",
+  "restore.how.replace.detail": "يصبح دفترك تمامًا ما في الملف. كل ما كُتب بعد إنشاء الملف يزول.",
+  "restore.how.merge.label": "الاحتفاظ بالاثنين",
+  "restore.how.merge.detail": "يُضاف كل ما في الملف إلى ما هو موجود هنا. وحين يكون الشيء نفسه مكتوبًا في الاثنين، يُحتفظ بما كُتب لاحقًا ويمكنك قراءة ما قاله الآخر.",
+  "restore.confirm.merge": "الاحتفاظ بالاثنين",
+  "restore.warning.merge": "لا يُحذف شيء مما هنا. وحين يكون الشيء نفسه مكتوبًا في الاثنين، يُحتفظ بما كُتب لاحقًا، وتُحفظ النسختان لتتمكن من رؤية ما تغيّر.",
+  "restore.done.merge": "تم. الدفتران هنا الآن.",
+  "restore.refused": "لم يُدمج شيء. يحتوي هذا الملف على سجلات تشير إلى شيء لا يملكه أي من الدفترين، فإدخالها سيترك جزءًا من السجل بلا مكان. لم يتغير شيء هنا."
 }

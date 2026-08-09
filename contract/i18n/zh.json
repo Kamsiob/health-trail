@@ -1326,5 +1326,14 @@
   "archive.vocabulary.template_kind.situation": "一种整体情况",
   "archive.vocabulary.template_kind.project": "一个事项",
   "archive.vocabulary.template_kind.progress": "需要记录的项目",
-  "archive.vocabulary.template_kind.standing_instruction": "一条长期交代"
+  "archive.vocabulary.template_kind.standing_instruction": "一条长期交代",
+  "restore.how.group": "已有内容怎么处理",
+  "restore.how.replace.label": "替换现有内容",
+  "restore.how.replace.detail": "您的笔记本将完全变成文件中的内容。文件生成之后写下的一切都会消失。",
+  "restore.how.merge.label": "两者都保留",
+  "restore.how.merge.detail": "文件中的一切都会加入到已有内容中。同一件事在两边都写过时，保留写得较晚的那份，另一份的内容您仍然可以读到。",
+  "restore.confirm.merge": "两者都保留",
+  "restore.warning.merge": "这里的内容不会被删除。同一件事在两边都写过时，保留写得较晚的那份，两份都会保存，以便您查看有什么不同。",
+  "restore.done.merge": "完成。两个笔记本的内容现在都在这里。",
+  "restore.refused": "没有合并任何内容。此文件中有些记录指向两个笔记本都没有的东西，放进来会让部分记录无处安放。这里的内容没有任何改动。"
 }
