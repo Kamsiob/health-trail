@@ -19,6 +19,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.fabSafeActionBar
 import com.kamsiob.healthtrail.ui.components.fabScrollClearance
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.components.TabChip
@@ -214,10 +215,21 @@ fun ProjectsScreen(
             // under a screen with nothing on it is the same control twice.
             if (projects.isNotEmpty()) item {
                 Spacer(Modifier.height(Space.s))
+                // **It stops before the FAB's corner.** `fabSafeActionBar` is
+                // the modifier D81 exists for and this screen was not using it:
+                // full width, the button ran underneath the gold FAB, and at
+                // font scale 2.0 the FAB sat on top of its trailing end. **A
+                // control somebody cannot reach because another control is on
+                // top of it is the most basic possible defect**, and it is
+                // invisible in a mockup because nothing overlaps until the FAB
+                // is real. Seen on the phone at 2.0.
                 QuietButton(
                     label = strings["projects.start"],
                     onClick = onStart,
-                    modifier = Modifier.fillMaxWidth().testTag(ProjectTags.START),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fabSafeActionBar()
+                        .testTag(ProjectTags.START),
                 )
                 // The FAB sits over the bottom of this destination, so the last
                 // thing in the list needs room to scroll fully clear of it,

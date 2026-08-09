@@ -57,6 +57,8 @@
 
 **Projects is next.** **#289 and #290 are done.** A project nobody has touched for months greets you with what the file held and one way back in, and a closed one leads with how it ended. **#290 is done**: a closed project leads with how it ended, the whole story in honest counts, and Open it again. Two record gaps came with it, both of them columns that had been in the schema since Phase 0 with nothing writing them: **closing a project never wrote down when it closed**, in the app or in the fixture, so the span screen 17 asks for could not be computed. Both write it now, and reopening clears it.
 
+**#275 is done**, and looking at it at font scale 2.0 found that **the gold FAB was sitting on top of the Start one button**. `fabSafeActionBar` is the modifier D81 exists for and that screen was not using it. A control somebody cannot reach because another control is on top of it is the most basic possible defect, and it is invisible in a mockup because nothing overlaps until the FAB is real.
+
 **The five Projects components are in `DESIGN.md` section 7 now**, each with when to use it and when not to, which is what section 19 asks of a component and what 20.6 did not carry: 20.6 says what each is and what it wears, and says nothing about when it is the wrong choice. #263 through #267.
 
 **#268, the reference line, stays open and is blocked by #303**: nothing in the app can put a reference number on an entry, so the component has still never rendered with real data.
