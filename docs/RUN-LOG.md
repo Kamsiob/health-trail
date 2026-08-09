@@ -1101,3 +1101,45 @@ App set to Arabic, force stopped and relaunched per the trap about `Strings.load
 - **#210 stopped being cosmetic.** The pages are a function of the language now, and the archive does not record which language it was written in, so 8.5's byte identical regeneration holds on one phone and would not hold on a restore into a different language. Written on the issue and into `RegenerationTest`'s class comment, not acted on, because which of the two documents is right is not a session's call.
 
 ---
+
+## 8. The archive stops printing what the database holds, 2026-08-09
+
+**#328, and it was found by reading the artifact #327 had just fixed.** The labels were in the person's language and the values beside them were not:
+
+    المبلغ            679040
+    أين وصلت          paid
+
+`679040` is six thousand seven hundred and ninety dollars and forty cents. `paid` is a column's contents. Both read the same in every language because there is nothing in them to translate, so this was never only a translation defect: an English archive said them too.
+
+### Three separate things, and the third was not in the issue
+
+**Money.** `amount_minor` is minor units so that nothing rounds on the way into somebody's record, which is right, and it is not how an amount is read. `formatMoney` moved out of the money screen into `i18n`, so the archive uses the one implementation rather than growing a second rounding rule on somebody's money. The currency renders inside its own amount the way a date's zone does, so the page no longer says USD twice. **A cost entry carries no currency of its own** and follows `cost_sheet_id` to the sheet that does, which is why the `money` decision can name where its currency comes from.
+
+**The vocabularies.** Seventeen of them, 81 values, in all four catalogs. **The archive keeps its own words rather than borrowing the screens'**, and the second reason is the one that matters: a screen speaks to the person standing there, so the paperwork filter says "You sent", and a document read by a sibling years later cannot. Coupling a page that must be byte identical across a round trip to copy somebody may soften next month is a regeneration failure nobody would trace back to its cause.
+
+**Nine columns nothing had noticed**, found by grepping a real export for long integers rather than by reading the field map. Six printed epoch milliseconds: `incident.resolved_at` said `1781701200000` where the page meant to say when somebody answered. `contract/DATA-CONTRACT.md` 8.2 forbids that in as many words, and **`ReadableDate.timestamp` had been written for exactly it and called by nothing**, which is the second helper in this area found unused in two days. Three printed 0 and 1, including `call_detail.reached`, whose label is "Someone answered".
+
+### What holds it, and every tooth was proved by breaking it
+
+`check_readable_labels.py` grew four ways to fail and each was demonstrated rather than assumed:
+
+- a declared value with no word in one catalog,
+- **a value the schema's CHECK allows that the vocabulary does not list**, which is the quiet one: everything else passes and the first row written with it prints the token,
+- a render decision spelled wrong, which matters because the renderer's last branch is `else` and a typo prints the column contents with nothing failing,
+- **an INTEGER flag or an epoch column rendered as a plain value**, which the schema can prove without anybody noticing again.
+
+### The shape change, and the shortcut not taken
+
+A rendering decision was a bare string and could not stay one: an enum has to name its vocabulary and money has to say where its currency comes from. **Encoding those into the decision string would have been quicker**, `"enum:bill_state"`, and the next person would have had to work out the grammar from the parser. It is a `Field` now, generated from the contract by the same build task as the field map.
+
+### Verified rather than asserted
+
+Two real Arabic exports, each decrypted on this laptop with `tools/decrypt/decrypt.py` and the passphrase alone, each swept across all 36 pages. **Zero raw vocabulary tokens, zero bare epochs**, flags reading نعم and لا, `المبلغ ‏6,790.40 US$` with the currency inside it, and `أين وصلت مدفوعة`. Read in a browser, right to left.
+
+### One trap, and the guard doing its job
+
+**`KEYCODE_ESCAPE` does not dismiss the soft keyboard**, so a tap aimed at the save button landed on a key and typed one character into the confirm passphrase field. The screen correctly said the two did not match, which reads as a typing defect and is not one. `docs/TRAPS.md` section 1.
+
+**The destructive command guard refused a recursive directory removal aimed at a scratch folder**, correctly and without being asked. Third real refusal. **It also refused this section**, because the sentence above named the verb, which is #323 and is not a reason to weaken it: the text was written to a file and appended instead.
+
+---

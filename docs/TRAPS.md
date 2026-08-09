@@ -107,6 +107,10 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **A stored value is not display text.** An EDTF string, a project status, a currency amount: every one of them nearly reached a screen as itself. Turn stored values into words in one place and nowhere else, and let dates go through `EventDateText` so precision is never invented.
 
+**All three of those reached the archive, and stayed there for months.** A real export read `المبلغ 679040` and `أين وصلت paid`, plus `1781701200000` where a page meant to say when somebody answered and `0` under a label reading "Someone answered". **The screens were fine, because a screen has somebody looking at it.** Nothing looks at a readable page until a family opens it in ten years, so **the only thing that finds this is grepping a produced archive** for long integers, bare digits and schema tokens. `check_readable_labels.py` does it from the schema now, and #328 is the account.
+
+**A helper written for exactly this failure and called by nothing is the pattern, not the exception.** `ReadablePage.attachment` shipped uncalled and forty photographs went unreferenced; `ReadableDate.timestamp`, whose own comment says "never a bare epoch number, which is the easier half to get wrong", was uncalled while six columns printed epochs. **When a helper's comment describes a defect precisely, check who calls it** before assuming it is handled.
+
 **A date pattern is a translated string that is also code.** A bad one throws in one language only. `DateFormatPatternTest` compiles every `date.format.*` in all four catalogs and checks that no rendered date contains a number the date does not have, which is what catches an unquoted word like the Spanish `de`.
 
 ---

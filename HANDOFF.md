@@ -28,7 +28,7 @@
 
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **18 repository checks pass**, `python3 tools/checks/run_all.py`. The eighteenth is `check_readable_labels.py`, which holds every table and column the archive renders to a word in all four catalogs.
-- **181 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
+- **187 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
 - **510 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone, after #327.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
 - **The phone was returned to its starting values on 2026-08-09 and can be unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone. **It holds the month six fixture notebook**, which is what `tools/seed.sh` leaves, and none of it is real. **One test archive is in `Download`**, `healthtrail-export-20260809-1007.zip`, beside the ones from 2026-08-04, and it holds nothing but the fixture.
@@ -51,7 +51,8 @@
 - **Milestone 1, Today: finished.** All ten grid screens built and walked, parent #243 closed, and the only issue left on that milestone is the tracker #321.
 - **Milestone 2, Projects: four issues left and all four are blocked.** Section 9 says on what.
 - **THE ARCHIVE is largely built and proved on real hardware**: a two-layer container at format version 3, a readable copy, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. **The stranger test passes**, run on 2026-08-09 on a laptop that has never had the app.
-- **The readable copy is written in the person's language**, #327, and that was verified by exporting in Arabic, decrypting with the passphrase alone, and rendering the pages in a browser: 128 field labels and 39 headings, none of them English. **Its values are not**, which is **#328**: `paid` and `679040` still reach a page as themselves, in every language.
+- **The readable copy is written in the person's language and so are its values**, #327 and #328. Verified by exporting in Arabic, decrypting with the passphrase alone, and reading the pages in a browser: 128 field labels, 39 headings, 81 stored values across 17 vocabularies, money as money, and no bare epoch anywhere. **What is left is two ordinary integers**, `sort_index` and `color_index`, and `color_index` reads as "Its color: 0", which is a palette index a reader cannot use.
+- **The contract now carries two files for the readable copy, not one.** `contract/readable-fields.json` is what each column renders as, and `contract/readable-vocabularies.json` is the fixed vocabularies those decisions name. Both are generated into the app by the build, so nothing is hand kept on the Kotlin side.
 
 **Nothing on `main` is unverified.** Every screen that has shipped has been on the phone at both themes, font scale 2.0 and Arabic right to left.
 
