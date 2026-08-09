@@ -27,8 +27,8 @@
 ### Verified rather than asserted, 2026-08-09
 
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
-- **17 repository checks pass**, `python3 tools/checks/run_all.py`.
-- **176 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
+- **18 repository checks pass**, `python3 tools/checks/run_all.py`. The eighteenth is `check_readable_labels.py`, which holds every table and column the archive renders to a word in all four catalogs.
+- **181 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
 - **510 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
 - **The phone was returned to its starting values and unplugged on 2026-08-09**, each setting read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone. **It holds the month six fixture notebook**, which is what `tools/seed.sh` leaves, and none of it is real.
@@ -51,6 +51,7 @@
 - **Milestone 1, Today: finished.** All ten grid screens built and walked, parent #243 closed, and the only issue left on that milestone is the tracker #321.
 - **Milestone 2, Projects: four issues left and all four are blocked.** Section 9 says on what.
 - **THE ARCHIVE is largely built and proved on real hardware**: a two-layer container at format version 3, a readable copy, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. **The stranger test passes**, run on 2026-08-09 on a laptop that has never had the app.
+- **The readable copy is written in the person's language**, #327, and that was verified by exporting in Arabic, decrypting with the passphrase alone, and rendering the pages in a browser: 128 field labels and 39 headings, none of them English. **Its values are not**, which is **#328**: `paid` and `679040` still reach a page as themselves, in every language.
 
 **Nothing on `main` is unverified.** Every screen that has shipped has been on the phone at both themes, font scale 2.0 and Arabic right to left.
 
@@ -90,7 +91,7 @@ Each is said out loud on its own issue rather than counted as done.
 
 **Never route around a check to make progress, and never delete or weaken a test to make a build pass.**
 
-    python3 tools/checks/run_all.py                    # 17 content and contract checks, seconds
+    python3 tools/checks/run_all.py                    # 18 content and contract checks, seconds
     tools/verify.sh                                    # the honest runner, includes lintDebug
     cd android && ./gradlew :app:connectedDebugAndroidTest   # 510 tests, about eight minutes
 
@@ -150,7 +151,7 @@ Every one of these was built from the existing components, logged in all three p
 - **#288** needs a PDF engine, and **nothing in the app can make a PDF**. The engine is #228 on milestone 5, two milestones later. Rule 11 rules out a screen whose only action does nothing. **The owner picks**: move #288 to milestone 5, or move #228 forward.
 - **#238** needs a decision on whether a milestone may point at a measure at all, which comes close to interpreting a measurement.
 - **#319 and #320** need a direction for the `app_meta` problem: text already stored unnormalized, and a restored phone writing under the source phone's identity.
-- **#210 carries a question rather than a block**: `DATA-CONTRACT.md` 8.2 says the inner manifest carries the readable copy's locale and `EXPORT-FORMAT.md` line 181 says it carries `pages` and nothing else. The code follows the format document, **which is the published one and is what `tools/decrypt` was written from**, so which is right is not a session's call.
+- **#210 carries a question rather than a block**: `DATA-CONTRACT.md` 8.2 says the inner manifest carries the readable copy's locale and `EXPORT-FORMAT.md` line 181 says it carries `pages` and nothing else. The code follows the format document, **which is the published one and is what `tools/decrypt` was written from**, so which is right is not a session's call. **It stopped being cosmetic on 2026-08-09**: since #327 the readable pages are written in the person's language, so 8.5's byte identical regeneration now depends on a language the archive does not record. Said on #210 and in `RegenerationTest`'s class comment.
 
 **Milestone 2 is entirely blocked and nothing else is.** Milestones 3 through 6 are buildable without any of these.
 

@@ -34,6 +34,8 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **`walk.sh tap` cannot match a label that carries a name, because the isolate marks are inside it.** `Bidi.join` wraps every part it is handed, so the Remove control on a Today card describes itself as `Remove ⁨Milestones⁩` and no plain string matches. It reports NOT FOUND, which reads as "below the fold" and is not. **Dump the tree and tap the bounds**, and re-dump between taps because removing a card reflows everything under it. Cost twenty minutes on 2026-08-09, and one blind tap landed on a different screen entirely.
 
+**A tap on a button while the keyboard is up types into the focused field instead.** `KEYCODE_ESCAPE` does not dismiss the soft keyboard and `walk.sh tap` does not check for it, so a tap aimed at a control below the fold lands on a key. On 2026-08-09 the export screen's confirm passphrase field gained exactly one character each time the save button was pressed, and the screen correctly said the two did not match. **It reads as a typing defect and it is not one:** the give-away is a field whose character count grew by one between two reads with no typing in between. **Press `KEYCODE_BACK` first**, then dump and tap the bounds.
+
 **`tap` matches on a substring, so a short word hits the longest sentence containing it.** `walk.sh tap "Remove"` matched a care team card whose answer is "Closed. Still here until you remove it." and opened the card instead of the control. Same night.
 
 **Distrust a negative result from a tool that cannot say what it did not examine.** Five times in one night and several since.
@@ -91,7 +93,9 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **A catalog key is a string literal and the compiler never sees it.** `ChangeSituationScreen` asked for `more.title`, which has never existed, and `Strings.resolve` throws rather than falling back. The screen crashed the app the first time it was opened, having passed seventeen checks, the Kotlin compiler and lint, because `check_i18n.py` holds the four catalogs to **each other** and nothing held the **code** to them. `check_string_keys.py` reads the other direction now.
 
-**A key built from a variable is checked by nothing.** `check_string_keys.py` skips it by design, and its stated safety net is the instrumented suite, which is a net with a hole in it whenever the phone is unreachable. **Prefer a literal in a `when`.** Where a dynamic key is unavoidable, hold the whole set some other way, as `TodayCardKeyTest` holds the schema's card types to the catalog.
+**A key built from a variable is checked by nothing.** `check_string_keys.py` skips it by design, and its stated safety net is the instrumented suite, which is a net with a hole in it whenever the phone is unreachable. **Prefer a literal in a `when`.** Where a dynamic key is unavoidable, hold the whole set some other way, as `TodayCardKeyTest` holds the schema's card types to the catalog and `check_readable_labels.py` holds the archive's rendered tables and columns to all four.
+
+**The archive's version of this had no crash to warn anybody.** Its labels are `archive.field.${column}`, so `check_string_keys.py` skipped them and `check_i18n.py` only compared the catalogs to each other: **four catalogs agreeing that a key is absent passed both checks**, and a missing label falls back to the column name with its underscores opened out. So an Arabic archive rendered, linked, counted and looked finished, in English. #327. **A dynamic key whose miss is silent is worse than one that throws**, and it is the one that needs the set held somewhere.
 
 **A parser hides a duplicate from every check that reads the parsed thing.** All four catalogs carried `project.step.handled_by` twice and `check_i18n.py` compares dictionaries, so the second copy was gone before the first comparison ran. It happened to be harmless, which was luck. The check reads raw text for this now.
 

@@ -1062,3 +1062,42 @@ None of grid screens 02, 03, 04, 09 or 10 was reachable from a seed, which is wh
 - **`walk.sh tap` cannot match a label carrying a name**, because `Bidi.join` puts isolate marks inside it, and it matches on substrings so a short word hits the longest sentence containing it.
 
 ---
+
+## 7. The archive learns to speak, 2026-08-09
+
+**#327, and it was the defect the previous run's Arabic check was built to find.** Every readable page carried `lang="ar" dir="rtl"` and not one carried an Arabic word of its own.
+
+### What the shape of the fix had to be
+
+`ReadableArchive` is pure by contract and 8.5's byte identical regeneration test rests on that, so it could not grow a catalog lookup. **It takes a vocabulary in.** `ReadableArchive.Words` carries the language, the direction, the table and column labels, the page's own prose, and three functions for the strings that carry a count or a year, because Arabic needs six plural forms and ICU belongs with the caller that has a locale.
+
+**The label set is derived rather than listed.** `ReadableWords.from` reads `contract/readable-fields.json`, which is the same file that decides what is rendered at all, so a column given a rendering decision tomorrow needs a word tomorrow and there is no second declaration to drift. 199 keys: 40 tables, 144 columns, 15 page strings, in all four catalogs.
+
+### The check is the part that matters, and it exists because two checks had the same blind spot
+
+The keys are built from a variable. **`check_string_keys.py` skips dynamic keys by design and `check_i18n.py` only holds the four catalogs to each other, so all four agreeing that a key is absent passes both**, and a missing label is not a crash: it is an English fallback on a page that still looks finished. `check_readable_labels.py` derives the required set from the field map and fails when a catalog is missing one, or carries one nothing renders. Eighteen checks now. This is the same family as `check_string_keys.py` itself: a thing held only to something that shares its blind spot.
+
+### Two defects the work walked into
+
+- **`DATED` named two columns that do not exist.** `issued_edtf` on `bill`, `dated_edtf` on `document`. **Every bill and every document ever exported was grouped under a null date and landed on one `undated` page**, and nothing failed anywhere: a missing column reads as null, null is a real bucket, and the pages were produced, linked and counted with the year simply gone. Found by holding that list to the field map rather than by reading it. Both tables carry `received_edtf`.
+- **The export asked `Locale.getDefault()` for the language it stamped.** `Strings.load` already documents that as unreliable for the per-app language, and the reason is written there: asking for Chinese yields a configuration of `en-US,zh-Hans` because the app carries no `values-zh` resources, so the default is English. An archive could carry `lang="en"` on a Chinese notebook. It asks the catalog it actually loaded now, and stamps `zh-Hans` rather than a bare `zh`, per D52.
+
+### Verified rather than asserted
+
+App set to Arabic, force stopped and relaunched per the trap about `Strings.load`, a real export driven through the export screen, pulled to this laptop and **opened with `tools/decrypt/decrypt.py` and the passphrase alone**. 45 files, 36 readable pages, 4 attachments.
+
+**128 distinct field labels and 39 distinct headings across every page, and not one of them is ASCII.** The only Latin in a heading is the subject's name, which is data. Then **rendered in a browser rather than assumed**, which is what 8.2 asks for: the front page and a bill page both lay out right to left with the labels on the right.
+
+**The bill and document fix showed on the same export**: `الفواتير، 2026` with five, `المستندات، 2026` with four, and one bill genuinely undated.
+
+### What the phone showed that the code did not
+
+**`walk.sh tap` on a button typed a character into a text field.** The soft keyboard was still up, `KEYCODE_ESCAPE` had not dismissed it, and the tap landed inside it, so the confirm passphrase field gained exactly one character and the screen said the two did not match. It read as a typing defect twice before the cause was clear. **`KEYCODE_BACK` dismisses it; escape does not.**
+
+### What was deliberately left
+
+- **#328, stored values reach the page as themselves.** `أين وصلت: paid`, and `المبلغ: 679040` where the amount is six thousand seven hundred and ninety dollars and forty cents. Wrong in English too, so localization made it visible rather than causing it. `docs/TRAPS.md` section 3 names all three of these exact cases and they all reached a page anyway.
+- **Dates stay English.** `ReadableDate` documents that as a decided exception with its reason, and warns in its own comment that a later session would try to "fix" it.
+- **#210 stopped being cosmetic.** The pages are a function of the language now, and the archive does not record which language it was written in, so 8.5's byte identical regeneration holds on one phone and would not hold on a restore into a different language. Written on the issue and into `RegenerationTest`'s class comment, not acted on, because which of the two documents is right is not a session's call.
+
+---
