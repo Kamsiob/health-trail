@@ -56,7 +56,7 @@ internal object Merge {
         "conflict_log" to "this mechanism's own output",
         "app_meta" to "application state, and unresolved: #319 and #320",
         "device" to "the identity of the phone, not the record",
-        "migration" to "which migrations this phone has applied",
+        "schema_migration" to "which migrations this phone has applied",
         "android_metadata" to "SQLite's own",
     )
 

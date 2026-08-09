@@ -180,10 +180,20 @@ class MergeApplyTest {
         }
         // Break one reference inside the staged file, which is exactly the
         // shape of an archive that has been altered or truncated.
+        //
+        // **And make it newer, or it never arrives.** The first version of this
+        // test altered the row and left its timestamp alone, so the merge
+        // correctly kept this phone's copy and the broken row was never applied.
+        // The test passed nothing: it proved the resolution rule, not the guard
+        // it was written for.
         net.zetetic.database.sqlcipher.SQLiteDatabase.openDatabase(
             opened.database.path, null,
             net.zetetic.database.sqlcipher.SQLiteDatabase.OPEN_READWRITE,
-        ).use { it.execSQL("UPDATE entry SET chapter_id = 'no-such-chapter'") }
+        ).use {
+            it.execSQL(
+                "UPDATE entry SET chapter_id = 'no-such-chapter', updated_at = updated_at + 1000",
+            )
+        }
 
         val entriesBefore = countOf(ENTRY_ROWS)
         val conflictsBefore = countOf("SELECT count(*) FROM conflict_log")

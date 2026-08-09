@@ -69,12 +69,40 @@ internal object MergeApply {
     ): Result<Report> = withContext(Dispatchers.IO) {
         val handle = HealthTrailDatabase.open(context).database
         val schema = Backup.schema(context)
-        val mergeable = schema.keys.filter { it !in Merge.NOT_MERGED }.sorted()
+        // **Asked of the schema rather than listed.** A merge matches rows by
+        // `id` and resolves them by `updated_at`, so a table without both
+        // cannot be merged whatever it is called. Naming them by hand is how
+        // this broke the first time: the list said `migration` and the table is
+        // `schema_migration`, so the read hit a table with no `id` and threw.
+        val mergeable = schema.entries
+            .filter { (table, columns) ->
+                table !in Merge.NOT_MERGED && "id" in columns && "updated_at" in columns
+            }
+            .map { it.key }
+            .sorted()
 
         val local = readAll(handle, mergeable)
+        val present = SQLiteDatabase.openDatabase(
+            opened.database.path, null, SQLiteDatabase.OPEN_READONLY,
+        ).use { tablesIn(it) }
         val incoming = SQLiteDatabase.openDatabase(
             opened.database.path, null, SQLiteDatabase.OPEN_READONLY,
-        ).use { readAll(it, mergeable.filter { table -> table in tablesIn(it) }) }
+        ).use { readAll(it, mergeable.filter { table -> table in present }) }
+
+        // **What the file holds and this did not merge, with the reason.**
+        // Computed from the file's own tables rather than from the rows that
+        // were read, because the rows that were read are by definition the ones
+        // that were not skipped. Reporting from them said nothing, which the
+        // instrumented test caught: 8.3's rule is that content is never quietly
+        // left out, and a report that silently omits what it omitted is the
+        // same failure one level up.
+        val skipped = present
+            .filter { it !in mergeable && it != "sqlite_sequence" }
+            .sorted()
+            .associateWith { table ->
+                Merge.NOT_MERGED[table]
+                    ?: "no id and updated_at, so a row in it cannot be matched or dated"
+            }
 
         val plan = Merge.plan(local, incoming, references(handle, mergeable))
         if (!plan.canApply) return@withContext Result.failure(Refused(plan.dangling))
@@ -118,7 +146,7 @@ internal object MergeApply {
                 unchanged = plan.unchanged,
                 conflicts = plan.conflicts.size,
                 attachments = attachments,
-                skipped = plan.skipped,
+                skipped = skipped,
             ),
         )
     }
