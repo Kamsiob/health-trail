@@ -4,7 +4,7 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-09.
+**Last rewritten:** 2026-08-09, after the archive's language, its values, its regeneration in continuous integration, and the importer's merge.
 
 ---
 
@@ -31,16 +31,18 @@
 - **212 unit tests pass and they need no phone**, and **three of them are the archive's regeneration**, which until 2026-08-09 could only run on the phone. `contract/test-vectors/readable/`. On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
 - **515 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone, after #211's merge landed.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
-- **The phone was returned to its starting values on 2026-08-09 and can be unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone. **It holds the month six fixture notebook**, which is what `tools/seed.sh` leaves, and none of it is real. **Three test archives are in `Download`** from that day, beside the ones from 2026-08-04, and every one of them holds nothing but the fixture.
-- **The destructive command guard is live and proven.** It refused two real commands on 2026-08-08, a recursive directory removal and an app data wipe, both correctly. Section 9.
+- **The phone was returned to its starting values on 2026-08-09 and unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale so the app runs in English, and the accessibility services string the KDE Connect one. **It holds the month six fixture notebook** with the disclaimer accepted, which is what `tools/seed.sh` leaves, and none of it is real.
+- **Three test archives sit in `Download` from 2026-08-09**, beside the ones from 2026-08-04, and every one holds nothing but the fixture. **Their passphrases are `arabic327`, `arabic328` and `arabic328b`**, written down here because a locked file whose passphrase nobody recorded is a file nobody can use, and these are the fastest way to reach the merge screens without exporting first.
+- **The destructive command guard is live and proven.** It refused three real commands, two on 2026-08-08 and one on 2026-08-09, and it also refused a run log paragraph that merely named a blocked verb, which is #323. Section 9.
 
-### The five that actually get broken
+### The six that actually get broken
 
 1. **Run `tools/verify.sh`**, not the checks you happen to remember. It is the only runner that compiles the instrumented sources and runs lint.
 2. **An issue closes only on device verification**, per `DESIGN.md` 16.4: both themes, font scale 2.0, right to left, and every state including the empty one.
 3. **Commit and push after every working increment**, and check CI after each push. An increment ends when `origin/main` has it.
 4. **The fixture must produce rows the app itself could write.**
-5. **Look at the screen before closing anything.** Five defects on Today on 2026-08-08 were invisible in the code and obvious in a screenshot.
+5. **Look at the screen before closing anything.** Five defects on Today on 2026-08-08 were invisible in the code and obvious in a screenshot, and five more on 2026-08-09 were invisible in a green test suite.
+6. **`tools/seed.sh` drives the restore screen**, so a change to that screen breaks seeding. It did on 2026-08-09 and the seed reported failure while leaving an empty notebook.
 
 ## 6. What is built
 
@@ -96,11 +98,16 @@ Each is said out loud on its own issue rather than counted as done.
 
     python3 tools/checks/run_all.py                    # 18 content and contract checks, seconds
     tools/verify.sh                                    # the honest runner, includes lintDebug
-    cd android && ./gradlew :app:connectedDebugAndroidTest   # 510 tests, about eight minutes
+    cd android && ./gradlew :app:connectedDebugAndroidTest   # 515 tests, about ten minutes
 
 **Run `tools/verify.sh`, not the checks you happen to remember.** CI once failed on a lint error in code that had been walked on the device and passed every content check and 185 instrumented tests.
 
-**Run the instrumented suite after any run that changes a screen**, and **do not touch the phone while it runs**. A capture attempted mid-run on 2026-08-04 force-stopped the app under the suite and produced 79 tests with one bogus failure. A run driven from two places at once tells you nothing.
+**One class while iterating, the whole suite before committing.** A single class runs in under half a minute:
+
+    ./gradlew :app:connectedDebugAndroidTest \
+      -Pandroid.testInstrumentationRunnerArguments.class=com.kamsiob.healthtrail.data.MergeApplyTest
+
+**Run the whole suite after any run that changes a screen**, and **do not touch the phone while it runs**. A capture attempted mid-run on 2026-08-04 force-stopped the app under the suite and produced 79 tests with one bogus failure. A run driven from two places at once tells you nothing.
 
 **`connectedAndroidTest` uninstalls the app and takes the notebook with it.** Reinstall and reseed afterward:
 
@@ -111,6 +118,14 @@ Each is said out loud on its own issue rather than counted as done.
 **Commit and push after every working increment**, per rule 7. An increment ends when `origin/main` has it. **An issue closes only on device verification**: both themes, maximum font scale, right to left, and every state in `DESIGN.md` 13.3 including the empty one.
 
 **When a screen is undrawn, rule 12 wants three things at the moment it is built**: a `needs-design-review` issue with a real device screenshot, a row in `DESIGN.md` section 14, and a line in this file.
+
+**Reading an archive needs no app and no phone**, and it is how the readable copy is actually checked:
+
+    echo <passphrase> | python3 tools/decrypt/decrypt.py <archive> <folder>
+    flatpak run --filesystem="$PWD" com.brave.Browser --headless \
+      --screenshot=out.png --window-size=900,1400 "file://$PWD/<folder>/readable/index.html"
+
+**Sweep a produced archive rather than trusting the field map.** Raw schema tokens, bare integers of five digits or more, and a bare `0` or `1` in a `<dd>` are the three shapes that have hidden real defects.
 
 ### 8.1 The running list of screens composed rather than drawn
 
@@ -155,10 +170,12 @@ Every one of these was built from the existing components, logged in all three p
 - **#303** needs somewhere for a reference number to live, and **#268 is blocked behind it**: `ReferenceLine` has still never rendered with real data.
 - **#288** needs a PDF engine, and **nothing in the app can make a PDF**. The engine is #228 on milestone 5, two milestones later. Rule 11 rules out a screen whose only action does nothing. **The owner picks**: move #288 to milestone 5, or move #228 forward.
 - **#238** needs a decision on whether a milestone may point at a measure at all, which comes close to interpreting a measurement.
-- **#319 and #320** need a direction for the `app_meta` problem: text already stored unnormalized, and a restored phone writing under the source phone's identity.
+- **#319 and #320** need a direction for the `app_meta` problem: text already stored unnormalized, and a restored phone writing under the source phone's identity. **The merge now depends on this**: `app_meta` is deliberately not merged because of it, which is why #211's "per-section view choices restore" criterion cannot be met.
+- **#332 is half a session's work and half the owner's.** An attachment row whose file is gone produces an archive this app then refuses to open, and export never notices. Making export look is straightforward; **recording what it found in `MANIFEST.json` is a published format change**, the same shape as #210's question. **It is the only open defect where the app can produce something it cannot read back**, which is why it is the next action.
+- **#331 needs a direction rather than a fix.** The JDK and Android format the same money differently, Arabic-Indic digits against Latin, so 8.5's byte identical regeneration cannot hold across two readers of the contract. Three shapes are on the issue and the third, formatting money in this repository the way `ReadableDate` already spells month names, is probably right.
 - **#210 carries a question rather than a block**: `DATA-CONTRACT.md` 8.2 says the inner manifest carries the readable copy's locale and `EXPORT-FORMAT.md` line 181 says it carries `pages` and nothing else. The code follows the format document, **which is the published one and is what `tools/decrypt` was written from**, so which is right is not a session's call. **It stopped being cosmetic on 2026-08-09**: since #327 the readable pages are written in the person's language, so 8.5's byte identical regeneration now depends on a language the archive does not record. Said on #210 and in `RegenerationTest`'s class comment.
 
-**Milestone 2 is entirely blocked and nothing else is.** Milestones 3 through 6 are buildable without any of these.
+**Milestone 2 is entirely blocked. Milestone 3 has two questions in it and is not stopped by them**, since #332's first half and #212's tests can both proceed. Milestones 4 through 6 are buildable without any of these.
 
 ## 10. The phone
 
@@ -193,9 +210,10 @@ Every one of these was built from the existing components, logged in all three p
 |---|---|
 | What to do next | Issue #321, then this file |
 | What will bite me doing this | `docs/TRAPS.md`, one section, chosen from its table |
-| Why something is the way it is | `DECISIONS.md`, D1 through D124. Search it, do not read it |
+| Why something is the way it is | `DECISIONS.md`, D1 through D128. Search it, do not read it |
 | What it should look like | `DESIGN.md`. **Three grids**: `reference/screen-grid.html` generally, `projects-grid.html` and `today-grid.html` for those two surfaces. Section 14 is the undrawn-screen map; 20 and 21 are the two new surfaces |
 | What the data may do | `contract/DATA-CONTRACT.md`, and `contract/EXPORT-FORMAT.md` for the archive |
+| What the archive renders, and how | `contract/readable-fields.json` per column, `contract/readable-vocabularies.json` for the fixed vocabularies, `contract/test-vectors/readable/` for the bytes it must produce |
 | What the app is for | `MASTER_SPEC.md` |
 | How it gets tested | `TESTING-PERSONAS.md` |
 | How a long unattended run stays safe | `RUN-SAFETY.md` |

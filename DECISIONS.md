@@ -2253,6 +2253,64 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **What would change this.** If saving twice turns out to be something people do by accident rather than on purpose, 3 becomes the right answer, because the cost of a stage is worth avoiding a library nobody can read. That is an observation nobody has yet.
 
+### D125. The archive keeps its own words for a stored value, rather than borrowing the screen's
+
+**2026-08-09, #328.** A bill printed `paid` and a project printed `needs_attention` in the readable copy, which are column contents rather than words, and they read the same in every language because there is nothing in them to translate. The app already turns every one of those into words on its own screens: `money.state.paid` is "Paid" and "مدفوعة". **The obvious fix was to use those keys, and it is the wrong one.**
+
+**Two reasons, and the second is the one that decides it.**
+
+**A screen speaks to the person standing there.** `project.paperwork.filter.received` is "They sent" and `.sent` is "You sent". A document read by a sibling in another state, or by a lawyer years later, cannot say "you": there is no you. The archive's register is third person and permanent, and a handful of the existing vocabularies are already wrong for it.
+
+**And a screen's copy gets reworded for screen reasons.** `contract/DATA-CONTRACT.md` 8.5 requires the readable copy to regenerate byte identical. Coupling a document that has to satisfy that to a string somebody may soften next month is a regeneration failure nobody would trace back to its cause: the archive would simply stop matching itself, and the commit that did it would be a copy tweak on an unrelated screen.
+
+**So the archive has `archive.vocabulary.<name>.<value>`**, 81 values across 17 vocabularies, declared in `contract/readable-vocabularies.json` and held to the schema's own CHECK constraints by `check_readable_labels.py`. Where the wording happens to match a screen's, that is a coincidence rather than a reference.
+
+**The cost is real and it is accepted**: two places say "Paid", and a change to one does not change the other. That is the point rather than an oversight.
+
+**What would change this.** If the two ever have to agree, the way to make them agree is a test asserting it, the way `StringsTest` holds the preview entries to the English catalog. Not a shared key.
+
+---
+
+### D126. A merge keeps the later version, breaks a tie on the device, and never deletes
+
+**2026-08-09, #211.** Three rules decide whose version of somebody's note survives, and each was chosen against an alternative.
+
+**The later `updated_at` wins.** The alternative is asking the person, per row. A merge of two notebooks that have both been used for a month is hundreds of rows, and a question repeated hundreds of times is not a choice, it is an obstacle. **Nothing is discarded either way**: the version that lost is written whole to `conflict_log` and there is a screen that reads it, so the automatic answer is reviewable rather than final.
+
+**A tie is broken by `origin_device`, lexicographically.** Two rows written in the same millisecond are rare and they are not impossible, and the alternative is a coin toss. **A coin toss is the one answer that cannot be allowed**, because two phones merging the same pair in either direction would reach different results, and the notebooks would diverge permanently with each certain it was right. Any deterministic rule works; this one is already in the schema as the sync tiebreaker.
+
+**Merge never deletes.** A row the incoming file has never heard of is a row the other phone never saw, which is not the same as a row somebody removed, and only one of those is a thing the file can express. Removal travels as a tombstone, an ordinary row with `deleted_at` set, so it merges by the same rule as everything else and needs no special case. **That is what the schema having no hard deletes buys**, and it is why a deletion made on one phone is not undone by merging in an older file.
+
+**What would change this.** If two people ever edit one notebook concurrently rather than one person using two phones, the last writer winning becomes too blunt and the conflict log becomes something that has to be acted on rather than read. That is the sync problem and it is a different issue.
+
+---
+
+### D127. Merge or replace has no default, and the button says which one it will do
+
+**2026-08-09, #211 and #333.** `contract/DATA-CONTRACT.md` 8.3 requires the choice to be explicit and in plain words. It does not say whether one may be preselected, and preselecting one is the obvious convenience.
+
+**Neither is preselected, because the two are different promises and one of them loses work.** Replace means the file wins and everything written since it was made is gone. Keeping both means nothing here is removed. A default is the app guessing which of those two sentences somebody meant, on an irreversible action, and getting it wrong costs them a month of notes.
+
+**Rule 23 does not apply here**, and this is worth saying because it looks like it should. Rule 23 picks the easiest option when more than one is defensible and all are safe. **A default is not safe**: it is easier only for the person who wanted the default and it is destructive for the person who did not.
+
+**Two consequences, both deliberate.** The confirm button reads "Choose one of these first" and is disabled until answered, rather than showing one option's label under two unselected rows, which is the app asserting a choice nobody made. And the warning under the choice changes with it, because a single sentence covering both would be true of neither.
+
+**What would change this.** Nothing, unless the two stop being different promises.
+
+---
+
+### D128. The golden vector's expected pages are regenerated by hand, and its money strings come off the phone
+
+**2026-08-09, #9.** `contract/test-vectors/readable/` locks the readable copy's output byte for byte, in continuous integration, without a device. Two things about how it is maintained were decided rather than fallen into.
+
+**Regeneration is a switch somebody has to throw.** `-Dhealthtrail.vector.write=true`, then read the diff before committing it. The alternative is a test that rewrites its expectation when it fails, which is a test that always passes. **A diff here means the archive's permanent text or its layout changed**, and both are decisions rather than accidents, so the moment of noticing is the point of the whole thing.
+
+**The money strings were read off a real export rather than computed.** They had to come from somewhere, and computing them on this laptop gave a different answer: `java.text.NumberFormat` on the JDK renders the Arabic case with Arabic-Indic digits where Android's ICU produced Latin ones. Same code, same locale tag, same currency.
+
+**So the vector carries what the app produces**, and the divergence is filed as #331 rather than hidden by picking whichever number made the test green. That is the distinction the vector exists to make: its words are inputs to the renderer, not claims about ICU, and the day the two platforms disagree the diff appears here instead of in somebody's archive.
+
+**What would change this.** If #331 is settled by formatting money in this repository rather than asking the platform, these strings become computable and should be computed.
+
 ---
 
 ## BLOCKED
