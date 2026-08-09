@@ -2237,6 +2237,24 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 ---
 
+### D124. Saving a project as a template twice keeps both, and the library says when each was saved
+
+**2026-08-09, #315.** `saveProjectAsTemplate` always inserts, so somebody who saves a project in March and again in June gets two rows in the library with the same name and the same subtitle. **The two rows are not the defect.** The second save is a genuinely different shape: the road has moved, steps have been added, papers have been named, and somebody may want both. **The defect is that the library gave them no way to tell which is which.**
+
+**Three ways it could have gone**, and the issue laid all three out:
+
+1. **Replace**, so a second save updates the row this project already produced. Simple, and it silently discards a shape somebody may have wanted.
+2. **Keep both, and say when.** The library carries the date each was saved.
+3. **Ask for a name on the second save.** The most explicit, and it charges a stage to everybody in order to serve the person who saves twice.
+
+**Rule 23 decides it and picks 2.** All three are safe, private and compatible, so the question is which costs the person least, and 2 costs them nothing: nothing is discarded, nothing is asked at the moment of saving, and the thing they need in order to choose is on the row where they are choosing.
+
+**The date renders at the precision a save has**, which is a day, through `EventDateText` like every other date in the app. **Nothing is deduplicated and nothing is renamed**: the record keeps what the person made, which is the same rule the tombstone column exists for.
+
+**What would change this.** If saving twice turns out to be something people do by accident rather than on purpose, 3 becomes the right answer, because the cost of a stage is worth avoiding a library nobody can read. That is an observation nobody has yet.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 

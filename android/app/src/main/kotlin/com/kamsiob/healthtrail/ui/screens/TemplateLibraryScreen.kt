@@ -20,6 +20,8 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -28,6 +30,8 @@ import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import java.time.ZoneId
+import java.time.Instant
 
 object LibraryTags {
     const val NAME = "template_library"
@@ -123,13 +127,7 @@ fun TemplateLibraryScreen(
                         // says so, and one built from nothing says that
                         // instead. Both are facts about where the person's own
                         // work came from.
-                        provenance = strings[
-                            if (template.derivedFromId != null) {
-                                "library.derived"
-                            } else {
-                                "library.scratch"
-                            },
-                        ],
+                        provenance = ownProvenance(template, strings),
                         steps = template.steps.size,
                         started = startedFrom(template.id),
                         onOpenProject = onOpenProject,
@@ -191,13 +189,7 @@ fun TemplateLibraryScreen(
                         ownUnused.forEachIndexed { index, template ->
                             DenseRow(
                                 title = Bidi.isolate(template.name),
-                                subtitle = strings[
-                                    if (template.derivedFromId != null) {
-                                        "library.derived"
-                                    } else {
-                                        "library.scratch"
-                                    },
-                                ],
+                                subtitle = ownProvenance(template, strings),
                                 trailing = strings(
                                     "projects.step_count",
                                     "count" to template.steps.size,
@@ -336,3 +328,35 @@ private fun TemplateCard(
         }
     }
 }
+
+/**
+ * Where one of the person's own templates came from, and when they saved it.
+ *
+ * **The date is what tells two saves of one project apart.** #315: saving a
+ * project as a template twice makes two rows with the same name, and that is
+ * not itself wrong, because the second save is a different shape: the road has
+ * moved, steps have been added, papers have been named. Somebody may want both.
+ * **What was wrong is that the library gave them no way to tell which is
+ * which.** D124, and it is rule 23 picking the option that costs the person
+ * least: nothing is discarded and nothing is asked of them at the moment of
+ * saving.
+ *
+ * **The date it was saved, at the precision a save has**, which is a day.
+ */
+@Composable
+private fun ownProvenance(
+    template: Repository.OwnTemplate,
+    strings: Strings,
+): String = Bidi.join(
+    strings[if (template.derivedFromId != null) "library.derived" else "library.scratch"],
+    strings(
+        "library.saved_on",
+        "date" to EventDateText.render(
+            strings,
+            Instant.ofEpochMilli(template.createdAt)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+                .toString(),
+        ),
+    ),
+)

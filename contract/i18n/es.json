@@ -680,6 +680,7 @@
   "library.own": "Suya",
   "library.derived": "Su copia de una plantilla que trae la aplicación",
   "library.scratch": "Hecha desde cero",
+  "library.saved_on": "guardada el {date}",
   "library.in_use": "{count, plural, one {1 empezado desde esta} other {# empezados desde esta}}",
   "library.never_used": "Todavía no ha empezado nada desde esta",
   "library.empty": "Todavía no ha hecho ninguna suya. Cambie los pasos de un proyecto y guárdelos, y aparecerá aquí.",

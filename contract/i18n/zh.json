@@ -680,6 +680,7 @@
   "library.own": "你的",
   "library.derived": "你对应用自带模板的副本",
   "library.scratch": "从零建立",
+  "library.saved_on": "{date}保存",
   "library.in_use": "{count, plural, other {已从这里开始 # 项}}",
   "library.never_used": "还没有从这里开始过",
   "library.empty": "你还没有做过自己的模板。改一个流程的步骤并保存，它就会出现在这里。",

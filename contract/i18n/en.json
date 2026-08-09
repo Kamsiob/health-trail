@@ -680,6 +680,7 @@
   "library.own": "Yours",
   "library.derived": "Your copy of a template that comes with the app",
   "library.scratch": "Built from nothing",
+  "library.saved_on": "saved {date}",
   "library.in_use": "{count, plural, one {1 started from this} other {# started from this}}",
   "library.never_used": "Nothing started from this yet",
   "library.empty": "You have not made any of your own yet. Change a project's steps and save them, and it turns up here.",
