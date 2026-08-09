@@ -1,8 +1,12 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,11 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.Radius
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,10 +33,17 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,6 +77,7 @@ import com.kamsiob.healthtrail.ui.components.TodayLead
 import com.kamsiob.healthtrail.ui.components.UniversalSearchDoor
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -83,6 +97,9 @@ object TodayFieldTags {
 
     /** The control that opens the source picker, in edit mode. */
     fun who(id: String) = "today-who-$id"
+
+    /** The grip that carries a card, in edit mode. */
+    fun drag(id: String) = "today-drag-$id"
 }
 
 /**
@@ -248,9 +265,66 @@ fun TodayFieldScreen(
     // get the fix.
     val oneColumn = LocalDensity.current.fontScale >= WIDE_TYPE_SCALE
 
+    // **Where the field is, so a drag knows what it is over.** The grid's own
+    // layout information is the only honest source for that: it is already
+    // mirrored in right to left, already reflowed to one column at large type,
+    // and already knows where a card is after the last swap. Computing target
+    // positions by hand would be a second layout that has to agree with the
+    // real one, and it would be the half that gets right to left wrong.
+    val gridState = rememberLazyGridState()
+
+    // Which card the finger is carrying, by id, and how far it has moved from
+    // where the grid put it. Null when nothing is being dragged.
+    var dragging by remember { mutableStateOf<String?>(null) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+
+    // **Dropped the moment edit mode ends**, so a card cannot be left visually
+    // offset from the slot it actually occupies.
+    if (!editing && dragging != null) {
+        dragging = null
+        dragOffset = Offset.Zero
+    }
+
+    /**
+     * Moves the dragged card to whatever slot the finger is now over.
+     *
+     * **The center of the card decides, not the finger.** A finger on the
+     * bottom edge of a tall card is already inside the card below it, and
+     * reordering on that reads as the list flinching away from the touch.
+     *
+     * **The lead is not a drop target.** 21.1: promoting demotes the card that
+     * was there, which is a decision with a consequence, so it stays its own
+     * named action rather than something a slip of the thumb can do.
+     */
+    fun dragTo(id: String) {
+        val layout = gridState.layoutInfo
+        val held = layout.visibleItemsInfo.firstOrNull { it.key == id } ?: return
+        val centerX = held.offset.x + held.size.width / 2f + dragOffset.x
+        val centerY = held.offset.y + held.size.height / 2f + dragOffset.y
+        val over = layout.visibleItemsInfo.firstOrNull { other ->
+            other.key != id &&
+                centerX >= other.offset.x &&
+                centerX <= other.offset.x + other.size.width &&
+                centerY >= other.offset.y &&
+                centerY <= other.offset.y + other.size.height
+        } ?: return
+
+        val from = draft.indexOfFirst { it.id == id }
+        val to = draft.indexOfFirst { it.id == over.key }
+        // Both have to be real field cards. The header, the lead slot and the
+        // search door are grid items too, and their keys are not card ids.
+        if (from < 1 || to < 1 || from == to) return
+        draft = draft.toMutableList().apply { add(to, removeAt(from)) }
+        // **The offset resets because the card has moved under it.** Keeping it
+        // would carry the whole distance already traveled into the new slot and
+        // the card would shoot past the finger.
+        dragOffset = Offset.Zero
+    }
+
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(if (oneColumn) 1 else 2),
+            state = gridState,
             modifier = Modifier
                 .fillMaxSize()
                 .systemBarsPadding()
@@ -381,7 +455,31 @@ fun TodayFieldScreen(
                     },
                     onOpen = onOpen,
                     onDial = onDial,
-                    modifier = Modifier.testTag(TodayFieldTags.card(card.id)),
+                    modifier = Modifier
+                        // **Above the field while it is being carried.** Without
+                        // this the dragged card slides under its neighbours,
+                        // which reads as the card falling through the screen.
+                        .zIndex(if (dragging == card.id) 1f else 0f)
+                        .graphicsLayer {
+                            if (dragging == card.id) {
+                                translationX = dragOffset.x
+                                translationY = dragOffset.y
+                            }
+                        }
+                        .testTag(TodayFieldTags.card(card.id)),
+                    dragging = dragging == card.id,
+                    onDragStart = {
+                        dragging = card.id
+                        dragOffset = Offset.Zero
+                    },
+                    onDrag = { delta ->
+                        dragOffset += delta
+                        dragTo(card.id)
+                    },
+                    onDragEnd = {
+                        dragging = null
+                        dragOffset = Offset.Zero
+                    },
                     today = today,
                     editing = editing,
                     // **The source picker, and only where a card takes one.**
@@ -578,6 +676,11 @@ private fun CardFor(
     onDial: (String) -> Unit = {},
     /** Opens the source picker, or null for a card that takes no source. */
     onPickSource: (() -> Unit)? = null,
+    /** Whether the finger is carrying this card right now. */
+    dragging: Boolean = false,
+    onDragStart: () -> Unit = {},
+    onDrag: (Offset) -> Unit = {},
+    onDragEnd: () -> Unit = {},
     today: LocalDate = LocalDate.now(),
 ) {
     val strings = LocalStrings.current
@@ -641,7 +744,10 @@ private fun CardFor(
         // shortcut on top of this, never instead of it.
         if (editing) {
             Column(modifier = Modifier.padding(top = Space.s)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Space.xs),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     for (option in listOf("small", "wide", "tall")) {
                         SizeChip(
                             label = strings["today.edit.size.$option"],
@@ -649,6 +755,20 @@ private fun CardFor(
                             onClick = { onResize(option) },
                         )
                     }
+                    Spacer(Modifier.weight(1f))
+                    // **The shortcut, at the end of the row of options.** 21.6
+                    // screen 5 gives edit mode a drag handle, and 23.2 is why it
+                    // is a shortcut and not the mechanism: Move up, Move down
+                    // and To top are the reorder path, they work one handed,
+                    // with a reader, and with switch access, and a gesture is
+                    // the fast way for somebody who can make it.
+                    DragHandle(
+                        dragging = dragging,
+                        onDragStart = onDragStart,
+                        onDrag = onDrag,
+                        onDragEnd = onDragEnd,
+                        modifier = Modifier.testTag(TodayFieldTags.drag(card.id)),
+                    )
                 }
                 // **The word is short and the sentence is the reader's.**
                 // "Move Medications down" is a correct sentence and it is far
@@ -657,7 +777,14 @@ private fun CardFor(
                 // the phone. The visible word is Up, Down, Remove; the reader
                 // still hears which card it moves, which is the part that
                 // matters when you cannot see the card it is sitting on.
-                Row(
+                // **They wrap rather than clip.** Four controls and a card half
+                // a screen wide do not fit on one line, and the last of them
+                // rendered as "Remov": rule 11 rules out truncation, and a
+                // control whose word is cut in half is a control somebody has
+                // to guess at. Wrapping is what a row of actions does when the
+                // screen is narrow, and it is the same answer at font scale 2.0
+                // where every word is longer.
+                FlowRow(
                     modifier = Modifier.padding(top = Space.xs),
                     horizontalArrangement = Arrangement.spacedBy(Space.s),
                 ) {
@@ -1801,6 +1928,96 @@ private fun SizeChip(label: String, selected: Boolean, onClick: () -> Unit) {
             .padding(horizontal = Space.s, vertical = Space.xs),
     )
 }
+
+/**
+ * The grip that carries a card. `DESIGN.md` 21.6 screen 5.
+ *
+ * **A shortcut on top of the named controls, never instead of them.** 23.2:
+ * Move up, Move down and To top are the reorder path, because they work one
+ * handed, with a reader on, and with switch access, and a drag works for none
+ * of those. This is the fast way for somebody who can make the gesture, and the
+ * screen is complete without it.
+ *
+ * **Two bars rather than an icon font**, drawn like every other mark in this app
+ * so it cannot fall back to a box in a locale the font does not cover, and so it
+ * takes the theme's own ink.
+ *
+ * **It answers the finger before anything moves**, per rule 16 and 5.14: the
+ * grip darkens the moment it is held, which is what tells somebody the card is
+ * theirs to move rather than that the app is thinking about it.
+ *
+ * **Invisible to a screen reader, and that is the point.** A reader cannot make
+ * this gesture, so announcing it offers somebody a control they cannot use and
+ * puts a stop in the way of the ones they can. The reorder a reader performs is
+ * beside it in words, on every card, always. Same rule the avatars and the
+ * chevron follow: decorative, because the thing it does is named next to it.
+ */
+@Composable
+private fun DragHandle(
+    dragging: Boolean,
+    onDragStart: () -> Unit,
+    onDrag: (Offset) -> Unit,
+    onDragEnd: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HealthTrail.colors
+    val ink by animateColorAsState(
+        targetValue = if (dragging) colors.ink else colors.ink3,
+        animationSpec = LocalMotion.current.quick(),
+        label = "grip",
+    )
+
+    Canvas(
+        modifier = modifier
+            .size(GRIP_TARGET)
+            .clearAndSetSemantics { }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { onDragStart() },
+                    onDragEnd = { onDragEnd() },
+                    onDragCancel = { onDragEnd() },
+                    onDrag = { change, delta ->
+                        // Consumed, so the grid does not scroll under the card
+                        // being carried, which is two things answering one
+                        // finger.
+                        change.consume()
+                        onDrag(delta)
+                    },
+                )
+            },
+    ) {
+        val width = GRIP_WIDTH.toPx()
+        val gap = GRIP_GAP.toPx()
+        val left = (size.width - width) / 2f
+        for (bar in -1..1) {
+            val y = size.height / 2f + bar * gap
+            drawLine(
+                color = ink,
+                start = Offset(left, y),
+                end = Offset(left + width, y),
+                strokeWidth = GRIP_STROKE.toPx(),
+                cap = StrokeCap.Round,
+            )
+        }
+    }
+}
+
+/**
+ * The grip's touch target, which is the floor rather than the drawing.
+ *
+ * Section 9's minimum, because a control small enough to look tidy is a control
+ * somebody with a tremor cannot hold.
+ */
+private val GRIP_TARGET = 48.dp
+
+/** How wide each bar is drawn. Narrower than the target, on purpose. */
+private val GRIP_WIDTH = 18.dp
+
+/** The distance between bars. */
+private val GRIP_GAP = 5.dp
+
+/** How heavy each bar is. */
+private val GRIP_STROKE = 2.dp
 
 /**
  * One edit control: a short word to look at, a whole sentence to hear.

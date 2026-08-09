@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
@@ -14,6 +15,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Digest
@@ -907,6 +909,92 @@ class TodayFieldScreenTest {
         compose.onNodeWithTag(TodayFieldTags.LEAD).assertIsDisplayed()
         compose.onNodeWithTag(TodayFieldTags.SEARCH).assertIsDisplayed()
         compose.onNodeWithTag(TodayFieldTags.card("c-meds")).assertIsDisplayed()
+    }
+
+    // -- edit mode, #271 -----------------------------------------------------
+
+    @Test
+    fun draggingACardMovesItAndDoneSavesWhereItLanded() {
+        // 21.6 screen 5 gives edit mode a drag handle, and 23.2 keeps Move up
+        // and Move down beside it: the drag is the shortcut and the named
+        // controls are the path. **Nothing saves until Done**, here as
+        // everywhere else on this surface.
+        var saved: List<Repository.TodayCard>? = null
+        val layout = startingHand()
+        liveAnswers.value = emptyMap()
+        compose.setContent {
+            HealthTrailTheme {
+                CompositionLocalProvider(LocalStrings provides Strings.load(context)) {
+                    TodayFieldScreen(
+                        layout = layout,
+                        answers = liveAnswers.value,
+                        onOpen = {},
+                        onSave = { saved = it },
+                        today = today,
+                    )
+                }
+            }
+        }
+
+        compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
+
+        val before = fieldOrder(layout)
+        val first = compose.onNodeWithTag(TodayFieldTags.card(before.first()))
+            .fetchSemanticsNode().size.height.toFloat()
+
+        compose.onNodeWithTag(TodayFieldTags.drag(before.first()), useUnmergedTree = true)
+            .performTouchInput {
+                down(center)
+                // Past the slop, then far enough to clear the card below it.
+                // One move would be a fling; the steps are what a finger does.
+                moveBy(Offset(0f, first * 0.4f))
+                moveBy(Offset(0f, first * 0.4f))
+                moveBy(Offset(0f, first * 0.4f))
+                up()
+            }
+
+        assertTrue(
+            "the dragged card did not move: ${fieldOrder(layout)}",
+            fieldOrder(layout).first() != before.first(),
+        )
+        assertEquals("nothing should have been saved before Done", null, saved)
+
+        compose.onNodeWithTag(TodayFieldTags.DONE).performClick()
+        assertTrue(
+            "Done did not save where the card landed",
+            saved?.map { it.id }?.drop(1)?.first() != before.first(),
+        )
+        assertEquals(
+            "a card was lost or duplicated by the drag",
+            layout.all.map { it.id }.sorted(),
+            saved?.map { it.id }?.sorted(),
+        )
+    }
+
+    @Test
+    fun everyCardInEditModeOffersTheNamedReorderPathAsWellAsTheGrip() {
+        // 23.2, and the reason the grip is a shortcut. Move up and Move down
+        // work one handed, with a reader on, and with switch access; a drag
+        // works with none of those, so it can never be the only way.
+        val layout = startingHand()
+        show(layout)
+        compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
+
+        val strings = Strings.load(context)
+        // **Found in the unmerged tree on purpose.** The grip is decorative to
+        // a reader, because a reader cannot make the gesture, so it does not
+        // appear as a stop of its own. That it is drawn at all is checked here;
+        // that the named path exists is checked below, and that is the one a
+        // reader uses.
+        for (card in layout.field) {
+            compose.onNodeWithTag(TodayFieldTags.drag(card.id), useUnmergedTree = true)
+                .assertIsDisplayed()
+        }
+        assertTrue(
+            "the named reorder path is missing",
+            compose.onAllNodesWithText(strings["today.edit.up.short"])
+                .fetchSemanticsNodes().isNotEmpty(),
+        )
     }
 
     // -- the trail card's mini spine, #259 ----------------------------------

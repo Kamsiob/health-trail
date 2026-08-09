@@ -29,7 +29,7 @@
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **17 repository checks pass**, `python3 tools/checks/run_all.py`.
 - **176 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
-- **503 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone.
+- **505 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
 - **The phone is attached, installed, seeded and at its starting values**, each read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone.
 - **The destructive command guard is live and proven.** It refused two real commands on 2026-08-08, a recursive directory removal and an app data wipe, both correctly. Section 9.
@@ -73,7 +73,12 @@
 
 **#272's worst defect is fixed and the issue is still open.** **Every entry in the add-a-card gallery said "Nothing waiting"**, whatever the record held, because the previews were looked up from the answers of the cards already on Today and the gallery only ever offers the ones that are not. Fourteen identical false sentences on the screen where somebody chooses what to look at. The answers are read when the sheet opens now, through the card's own wording so a preview and its card cannot disagree, and `AddCardOffersTest` holds it. **What is left on #272 is on the issue**: grouping by section in binder order, the situation's suggestions first, and whether the row or an outlined Add is the target.
 
-**What is left in milestone 1, and each says why on its own issue:** screens #293 through #301, edit mode #271, and the rest of the gallery #272.
+**#271, Today's edit mode, is done and walked.** Drag to reorder is there now, and it was the only thing left: Move up, Move down and To top were already the accessible path 23.2 asks for. **The drag reads the grid's own layout information**, which is already mirrored, so it works identically in Arabic, proved by dragging the same card in both directions and comparing the order after.
+
+- **The grip is decorative to a screen reader**, because a reader cannot make the gesture: announcing it offers somebody a control they cannot use and puts a stop in front of the ones they can. Same rule the avatars and the chevron follow.
+- **Adding it found a truncation that was already there.** Four edit controls on a half width card rendered the last one as "Remov". They wrap now.
+
+**What is left in milestone 1, and each says why on its own issue:** screens #293 through #301, and the rest of the gallery #272.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 
