@@ -1455,6 +1455,10 @@ class Generator:
             # home screens can never be looked at on the phone. DESIGN.md 20.3.
             lead = PROJECT_LEADS[index % len(PROJECT_LEADS)]
             day = self.rng.randrange(0, max(1, self.days))
+            # **After it began and not after the history ends.** A process that
+            # closed before it started is the kind of thing a fixture teaches
+            # you to distrust the screen over.
+            ended = self.rng.randrange(day, max(day + 1, self.days))
             project_id = self.row(
                 db,
                 "project",
@@ -1485,6 +1489,25 @@ class Generator:
                     "started_edtf": (self.start + timedelta(days=day)).isoformat(),
                     "started_start": self.ms(day, 0, 0),
                     "started_end": self.ms(day, 23, 59),
+                    # **A project that ended says when it ended.** The columns
+                    # have been in the schema since Phase 0 and nothing ever
+                    # wrote them, in the app or here, so screen 17's "closed in
+                    # November, started in March the year before" had no dates
+                    # to render and the span it asks for could not be computed.
+                    # The app writes them now when a project is closed; this is
+                    # the same fact for a notebook that arrives already holding
+                    # finished processes.
+                    **(
+                        {
+                            "finished_edtf": (
+                                self.start + timedelta(days=ended)
+                            ).isoformat(),
+                            "finished_start": self.ms(ended, 0, 0),
+                            "finished_end": self.ms(ended, 23, 59),
+                        }
+                        if state in FINISHED_STATES
+                        else {}
+                    ),
                 },
                 day=day,
             )
@@ -1966,6 +1989,9 @@ PROJECT_WAITING_ON = [
 # puts the fourth and fifth in done and abandoned, which fold away on the
 # projects screen. A shape that only exists on a finished project is a shape
 # nobody looking at the fixture will ever open.
+# The two states that mean a project is over, as the app names them.
+FINISHED_STATES = ("done", "abandoned")
+
 PROJECT_LEADS = ["standing", "steps", "date", "steps", "standing"]
 
 # The road each one runs along, taken from the built-in bundles in 20.4 where

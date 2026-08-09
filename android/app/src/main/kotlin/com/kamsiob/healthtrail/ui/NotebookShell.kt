@@ -1994,6 +1994,12 @@ fun NotebookShell(
             }
 
             ProjectHomeScreen(
+                // **Reopening puts it back to active and clears the close
+                // date.** 20.5 screen 17: these processes come back, and a file
+                // that could only be closed once would make somebody start a
+                // second one and lose the history that made the first worth
+                // keeping.
+                onReopen = { settingStatus = currentProject.id to "active" },
                 project = currentProject,
                 stages = projectStages,
                 standing = projectStanding,

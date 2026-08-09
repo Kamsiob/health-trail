@@ -1606,8 +1606,24 @@ class Repository private constructor(
          * can read the next one.
          */
         val lead: String = "standing",
+        /**
+         * When this began and when it ended, as the person gave them.
+         *
+         * **Both are EDTF and neither is display text**, per rule 17: a process
+         * somebody remembers starting "sometime in March" started in March, and
+         * the screen renders exactly that precision. **`finishedEdtf` is null
+         * while a project is open**, which is what it means for it to be open.
+         *
+         * They are here rather than queried separately because screen 17 asks
+         * the closed project how long it took, and a span is two dates.
+         */
+        val startedEdtf: String? = null,
+        val finishedEdtf: String? = null,
+        /** The same two, resolved, for the arithmetic a span needs. */
+        val startedStart: Long? = null,
+        val finishedStart: Long? = null,
     ) {
-        val isFinished: Boolean get() = status == "done" || status == "abandoned"
+        val isFinished: Boolean get() = status in FINISHED_STATUSES
     }
 
     /** One step of a project, in the order the template gave. */
@@ -1644,12 +1660,14 @@ class Repository private constructor(
                 "COUNT(s.id), COUNT(s.completed_edtf), " +
                 "(SELECT n.text FROM live_project_step n " +
                 "  WHERE n.project_id = p.id AND n.completed_edtf IS NULL " +
-                "  ORDER BY n.sort_index, n.created_at LIMIT 1), p.lead " +
+                "  ORDER BY n.sort_index, n.created_at LIMIT 1), p.lead, " +
+                "p.started_edtf, p.finished_edtf, p.started_start, p.finished_start " +
                 "FROM live_project p " +
                 "LEFT JOIN live_project_step s ON s.project_id = p.id " +
                 "WHERE p.subject_id = ? " +
                 "GROUP BY p.id, p.name, p.template_id, p.status, p.waiting_on, " +
-                "p.notes, p.created_at, p.lead " +
+                "p.notes, p.created_at, p.lead, p.started_edtf, p.finished_edtf, " +
+                "p.started_start, p.finished_start " +
                 "ORDER BY p.status IN ('done', 'abandoned'), p.created_at DESC",
             arrayOf(subjectId),
         ).use { cursor ->
@@ -1667,6 +1685,10 @@ class Repository private constructor(
                             doneCount = cursor.getInt(7),
                             nextStep = cursor.getString(8),
                             lead = cursor.getString(9),
+                            startedEdtf = cursor.getString(10),
+                            finishedEdtf = cursor.getString(11),
+                            startedStart = if (cursor.isNull(12)) null else cursor.getLong(12),
+                            finishedStart = if (cursor.isNull(13)) null else cursor.getLong(13),
                         ),
                     )
                 }
@@ -2137,13 +2159,33 @@ class Repository private constructor(
         status: String,
         waitingOn: String?,
     ) = withContext(Dispatchers.IO) {
+        // **Closing a project writes down when it closed, and reopening takes
+        // that back.** The columns were in the schema from Phase 0 and nothing
+        // ever set them, so a finished project could not say when it finished
+        // and screen 17's "closed November 8, started March 3 the year before"
+        // had no dates to render. Same shape as a control that kept its
+        // repository call through a supersession: read, carried, never written.
+        //
+        // **Through `dateColumns`, so all four move together** and the EDTF
+        // agrees with the instants derived from it, which is what the archive
+        // and every date check depend on.
+        val finished = if (status in FINISHED_STATUSES) {
+            dateColumns("finished", Edtf.day(LocalDate.now()))
+        } else {
+            // **Cleared rather than left**, because a project that is open
+            // again did not finish. Leaving the old date would make the record
+            // say something that is no longer true.
+            listOf("edtf", "zone", "start", "end").associate { "finished_$it" to null }
+        }
+        val sets = finished.keys.joinToString("") { ", $it = ?" }
         db().database.write(
-            "UPDATE project SET status = ?, waiting_on = ?, waiting_since = ?, " +
-                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+            "UPDATE project SET status = ?, waiting_on = ?, waiting_since = ?" +
+                sets + ", updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
                 status,
                 waitingOn?.ifBlank { null },
                 if (status == "waiting") System.currentTimeMillis() else null,
+                *finished.values.toTypedArray(),
                 System.currentTimeMillis(),
                 projectId,
             ),
@@ -6926,3 +6968,13 @@ private const val TODAY_CARD_ITEMS = 3
  * line stays a line at a card's width.
  */
 private const val TODAY_CARD_POINTS = 12
+
+/**
+ * The two statuses that mean a project is over. `DESIGN.md` 20.5 screen 17.
+ *
+ * **Named once**, because the same question was asked in three hand written
+ * forms and a fourth status would have been added to two of them. Done and
+ * abandoned are both endings, and the record keeps both exactly as it kept
+ * everything else: screen 17 is called "closed, and kept".
+ */
+internal val FINISHED_STATUSES = setOf("done", "abandoned")

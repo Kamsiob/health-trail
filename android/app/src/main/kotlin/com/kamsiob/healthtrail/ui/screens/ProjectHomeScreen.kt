@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DateRow
 import com.kamsiob.healthtrail.ui.components.DenseRow
@@ -47,6 +48,9 @@ object ProjectHomeTags {
     const val TRAIL = "project-home-trail"
     const val PAPERS = "project-home-papers"
     const val PEOPLE = "project-home-people"
+    const val ENDED = "project-home-ended"
+    const val STORY = "project-home-story"
+    const val REOPEN = "project-home-reopen"
 }
 
 /**
@@ -125,6 +129,15 @@ fun ProjectHomeScreen(
     /** How many people this process has involved. Never a score. */
     peopleCount: Int = 0,
     onToggleStep: (Repository.ProjectStep) -> Unit = {},
+    /**
+     * Puts a closed project back to work. 20.5 screen 17.
+     *
+     * **It exists because these processes come back.** An appeal is refused and
+     * refiled, a waiver lapses and is applied for again, and a file that could
+     * only be closed once would make somebody start a second one and lose the
+     * history that made the first worth keeping.
+     */
+    onReopen: () -> Unit = {},
 ) {
     // **Open from the start on the busy stretch**, where the steps are the
     // lead, and closed everywhere else, where they are volume behind the
@@ -164,11 +177,70 @@ fun ProjectHomeScreen(
                 // strip itself does nothing on touch, so the way to move along
                 // it is an outlined action rather than a tappable waypoint,
                 // which would make an information graphic look like a picker.
-                Spacer(Modifier.height(Space.s))
-                QuietButton(
-                    label = strings["project.stage.move.short"],
-                    onClick = onMoveStage,
-                    modifier = Modifier.testTag(ProjectHomeTags.MOVE_STAGE),
+                //
+                // **Not on a closed project.** The road stays, because it is
+                // the shape of what happened and worth reading afterwards, but
+                // an action that says move it along sits above a block that
+                // says how it ended and contradicts it. Reopening is the way
+                // back to moving, and it is right there.
+                if (!project.isFinished) {
+                    Spacer(Modifier.height(Space.s))
+                    QuietButton(
+                        label = strings["project.stage.move.short"],
+                        onClick = onMoveStage,
+                        modifier = Modifier.testTag(ProjectHomeTags.MOVE_STAGE),
+                    )
+                }
+                Spacer(Modifier.height(Space.sectionGap))
+            }
+        }
+
+        // **A closed project leads with how it ended.** 20.5 screen 17. The
+        // three answers below still render, because the record is kept whole
+        // and a finished process is still a process somebody may need to read,
+        // but the question this screen answers first has changed: not "where
+        // does it stand" but "what happened, and what did it take".
+        //
+        // **Nothing here scores the person.** The numbers are counts of the
+        // record: how long it ran, how many calls, how many papers, how many
+        // people. Rule 13 and 20.7 both rule out anything that reads as a grade
+        // on how well somebody handled it.
+        if (project.isFinished) {
+            item {
+                StandingCard(
+                    eyebrow = strings["project.ended"],
+                    holder = strings[endedKey(project.status)],
+                    since = endedSpan(project, strings),
+                    modifier = Modifier.testTag(ProjectHomeTags.ENDED),
+                    actions = {
+                        // **Outlined, and the only action here.** Reopening is
+                        // a real thing somebody does and it is not the point of
+                        // the screen, which is the record.
+                        QuietButton(
+                            label = strings["project.reopen"],
+                            onClick = onReopen,
+                            modifier = Modifier.testTag(ProjectHomeTags.REOPEN),
+                        )
+                    },
+                )
+                Spacer(Modifier.height(Space.sectionGap))
+            }
+            item {
+                GroupHeaderText(label = strings["project.story"])
+                DenseRow(
+                    title = strings["project.story.line"],
+                    subtitle = storyLine(project, entries, papers, peopleCount, strings),
+                    subtitleMaxLines = Int.MAX_VALUE,
+                    modifier = Modifier.testTag(ProjectHomeTags.STORY),
+                )
+                // **What closing did not do**, said plainly, because that is
+                // the whole promise of the screen's name. Nothing is deleted,
+                // nothing is archived away, and the export still holds it.
+                Text(
+                    text = strings["project.story.kept"],
+                    style = type.bodyS,
+                    color = colors.ink2,
+                    modifier = Modifier.padding(top = Space.xs),
                 )
                 Spacer(Modifier.height(Space.sectionGap))
             }
@@ -575,4 +647,74 @@ private fun roadDescription(
             "stage" to stages[current].name,
         )
     }
+}
+
+/**
+ * How a finished project ended, in the person's own language.
+ *
+ * **Two endings and the record keeps both.** Done is a process that reached an
+ * answer; abandoned is one somebody stopped carrying, which is a decision and
+ * not a failure. 20.7: nothing here says whether either was the right call.
+ */
+private fun endedKey(status: String): String = when (status) {
+    "abandoned" -> "project.ended.abandoned"
+    else -> "project.ended.done"
+}
+
+/**
+ * When it closed and when it began, on one quiet line.
+ *
+ * **Exactly the precision each date was given**, through `EventDateText`, per
+ * rule 17. A project somebody remembers starting sometime in March started in
+ * March, and this line says March.
+ *
+ * **A missing close date is a real state.** Every project closed before the app
+ * wrote that column has one, and the line says when it started instead of
+ * inventing a day it ended.
+ */
+@Composable
+private fun endedSpan(project: Repository.Project, strings: Strings): String {
+    val closed = project.finishedEdtf?.takeIf { it.isNotBlank() }
+        ?.let { strings("project.ended.on", "date" to EventDateText.render(strings, it)) }
+    val began = project.startedEdtf?.takeIf { it.isNotBlank() }
+        ?.let { strings("project.ended.from", "date" to EventDateText.render(strings, it)) }
+    return Bidi.join(closed, began)
+}
+
+/**
+ * The whole story in honest numbers. 20.5 screen 17.
+ *
+ * **Counts of the record and never a grade.** How long it ran, how many calls
+ * were logged, how many papers were kept, how many people it involved. Rule 13
+ * rules out anything that reads as a score on somebody's own diligence, and
+ * 20.7 rules out the app having a view about how a process went.
+ *
+ * **A part that cannot be counted is left out rather than shown as zero.** A
+ * project with no papers does not need to be told it has no papers.
+ */
+@Composable
+private fun storyLine(
+    project: Repository.Project,
+    entries: List<Repository.TrailEntry>,
+    papers: List<Repository.ProjectPaper>,
+    peopleCount: Int,
+    strings: Strings,
+): String {
+    val days = project.startedStart?.let { from ->
+        project.finishedStart?.let { to ->
+            java.time.temporal.ChronoUnit.DAYS.between(
+                java.time.Instant.ofEpochMilli(from).atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDate(),
+                java.time.Instant.ofEpochMilli(to).atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDate(),
+            )
+        }
+    }
+    val calls = entries.count { it.kind == "call" }
+    return Bidi.join(
+        days?.takeIf { it > 0 }?.let { strings("project.story.days", "count" to it) },
+        calls.takeIf { it > 0 }?.let { strings("project.story.calls", "count" to it) },
+        papers.size.takeIf { it > 0 }?.let { strings("project.story.papers", "count" to it) },
+        peopleCount.takeIf { it > 0 }?.let { strings("project.story.people", "count" to it) },
+    )
 }
