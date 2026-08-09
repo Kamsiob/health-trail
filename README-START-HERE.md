@@ -4,12 +4,17 @@ Health Trail by Kamsiob, a local-first care notebook for the family member who i
 
 ---
 
-## Picking up the work? Read two files and stop
+## Picking up the work? Read three things and stop
 
-1. **`CLAUDE.md`**, which is loaded automatically anyway. Twenty-three rules, one page.
-2. **`HANDOFF.md`**, which is the current state and says what to do next in order. About three thousand words.
+1. **`CLAUDE.md`**, which is loaded automatically anyway. Twenty-four rules, one page.
+2. **`HANDOFF.md`**, which is what is true right now. About two and a half thousand words.
+3. **Issue #321**, pinned on GitHub, which is what to do next: `gh issue view 321`.
 
-**That is enough to start.** Everything else in this folder is reference, and reading it front to back costs most of a context window for material you probably do not need today. Open the rest when a specific question sends you there, which is what the table in `HANDOFF.md` section 9 is for.
+**That is enough to start**, and it is about five thousand words in total.
+
+**Everything else is read on demand and never in bulk.** This folder holds more documentation than a session can hold in its head, and reading it front to back spends the context before any work starts. `HANDOFF.md` section 1 has the ladder that says what to open when.
+
+**Two files have their own rule about how to read them.** **`docs/TRAPS.md` is read one section at a time**, chosen from the table at the top of it by what you are about to do, and never end to end. **`DECISIONS.md` is searched for a D number**, never read through.
 
 **Do not read `docs/RUN-LOG.md` to orient.** It is history, it is long, and nothing in it is the current state.
 
@@ -63,6 +68,8 @@ HANDOFF.md                   the current state of the work and what to do next. 
 DECISIONS.md                 every decision and why, D1 through D102, plus the BLOCKED
                              section for anything only the owner can resolve.
 
+docs/TRAPS.md                what will bite you, grouped by what you are about to do.
+                             Read one section, chosen from its own table. Never all of it.
 docs/RUN-LOG.md              history. How things came to be and what proved them.
                              Never read this to orient yourself.
 
