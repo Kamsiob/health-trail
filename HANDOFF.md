@@ -97,7 +97,15 @@ Both reach the phone through `tools/seed.sh month6 6 <pass> --quiet` or `--situa
 - **A chart promoted to the lead could not draw one.** The lead left `tall` at its default, so a measure at the top of somebody's Today listed its readings. Grid screen 02 is a chart at the lead, so the screen the design asks for could not exist. The lead is full width at display scale, which is more room than a tall card has, and it draws its chart now, gaps as gaps.
 - **`Bidi.isolate` is idempotent now**, which retires a whole family. Four separate defects have been isolate marks nested by a second call, and the rule they kept restating is that the caller joins once. Isolating something already isolated does nothing, so it does nothing.
 
-**What is left in milestone 1:** #295, the digest's return voice, which needs the device's own last-visit mark set back rather than anything in the notebook.
+**#295 is done, and the return voice reads as it should**: "177 new things since you were last here", a plain count, nothing owed and nothing shamed, with the field showing true current answers underneath.
+
+**It is set up on the device rather than in the notebook**, because the last visit is a preference and not a record:
+
+    adb shell run-as com.kamsiob.healthtrail sh -c 'echo <base64 xml> | base64 -d > /data/data/com.kamsiob.healthtrail/shared_prefs/health-trail-visits.xml'
+
+**The digest was dropping two of its three counts.** The previous Today showed corrected and removed alongside the total and this surface asked for neither, though the catalog has carried both sentences since the first Today. It says all three now, and only where there is something to say: a week with nothing corrected is not told so, because a zero there is a tally of the person's own diligence, which rule 13 rules out. **No seed reaches those two yet**: the fixture's fourteen updates land on rows it inserted in the same window, and the digest counts a row once per category.
+
+**Milestone 1's screens are done.** What is left on the milestone is #273, the two undrawn template hands awaiting the owner's eye, and #243, the parent.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 

@@ -1914,6 +1914,21 @@ private fun digestAnswer(
         } else {
             strings["today.card.digest.quiet"]
         },
+        // **The other two counts, which the previous Today showed and this one
+        // dropped.** 21.6 screen 4 asks the return voice for a calm paragraph
+        // of plain counts, and a correction and a removal are counts about the
+        // record just as much as an addition is. The catalog has carried both
+        // sentences since the first Today and this surface asked for neither.
+        //
+        // **Only where there is something to say.** A week with nothing
+        // corrected does not get told so: rule 13 rules out a tally of the
+        // person's own diligence, and a zero here would be exactly that.
+        detail = Bidi.join(
+            digest.corrected.takeIf { it > 0 }
+                ?.let { strings("today.digest.corrected", "count" to it) },
+            digest.removed.takeIf { it > 0 }
+                ?.let { strings("today.digest.removed", "count" to it) },
+        ).takeIf { it.isNotBlank() },
     )
 }
 
