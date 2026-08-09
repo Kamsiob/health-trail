@@ -30,6 +30,7 @@ Kamsiob, AGPL-3.0.
 
 import argparse
 import hashlib
+import json
 import random
 import sqlite3
 import sys
@@ -38,6 +39,13 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+
+# The situation every fixture assumes unless it is told otherwise.
+#
+# **Named rather than repeated**, because it appears in the subject row, in the
+# argument default, and in the test that decides whether to write the template's
+# own starting hand or the spread that reaches every rung.
+DEFAULT_SITUATION = "nursing_home"
 SCHEMA = ROOT / "contract" / "schema.sql"
 
 # The six points TESTING-PERSONAS.md section 1 names, as days of history.
@@ -103,10 +111,22 @@ INCIDENT_STEPS = [
 class Generator:
     """Everything that writes, in one place, so the seed reaches all of it."""
 
-    def __init__(self, seed, days):
+    def __init__(self, seed, days, situation=DEFAULT_SITUATION, quiet=False):
         self.rng = random.Random(seed)
         self.days = days
         self.start = HISTORY_ENDS - timedelta(days=days)
+        # **Which situation this notebook chose at onboarding.** Grid screen 09
+        # is two situations side by side, one grammar, and a fixture that only
+        # ever knows one of them cannot show it. The layout comes from the
+        # template's own starting hand when this is asked for, because that
+        # screen is the template's Today untouched.
+        self.situation = situation
+        # **Whether this notebook is having a quiet week.** Grid screen 10 calls
+        # it the dashboard's hardest state: nothing scheduled, nothing open,
+        # nothing waiting, and it must not invent urgency to look useful. No
+        # seed could reach it, so the surface's hardest state was the one nobody
+        # could look at.
+        self.quiet = quiet
         self.device = "fixture-%016x" % seed
         # A counter rather than a clock, so ids are stable across runs and
         # still sort in creation order the way UUIDv7 does in the app.
@@ -204,7 +224,78 @@ class Generator:
         # Last of all, because a card points at a measure, a project or a
         # person, and every one of them has to exist before the card names it.
         self.today_layout(db, subject_id)
+        if self.quiet:
+            self.settle_everything(db, subject_id)
         db.commit()
+
+    def settle_everything(self, db, subject_id):
+        """Nothing scheduled, nothing open, nothing waiting. Grid screen 10.
+
+        **The dashboard's hardest state, and no seed could reach it.** 21.6
+        screen 10: quiet must render as the good news it is, and the surface
+        must not invent urgency to look useful. That is the one claim about
+        Today nobody could check, because every fixture is a notebook in the
+        middle of something.
+
+        **It settles rather than deletes.** A quiet week is a notebook where the
+        calls were made and the answers came, not one where the history was
+        taken away: the trail still holds five years, the care team is still
+        there, the papers are still filed. What changes is that nothing is
+        outstanding, which is exactly what the screen is about.
+
+        **The dates it writes are inside the history**, so `occurred_start` and
+        the EDTF beside it still agree, which `check_fixtures.py` verifies.
+        """
+        settled = self.ms(max(0, self.days - 1))
+
+        # Incidents that were raised and answered. The trail still shows them.
+        db.execute(
+            "UPDATE incident SET resolved_at = ?, updated_at = ?"
+            " WHERE deleted_at IS NULL AND subject_id = ? AND resolved_at IS NULL",
+            (settled, settled, subject_id),
+        )
+        # Questions that were asked and answered, so nothing is saved to ask.
+        db.execute(
+            "UPDATE question SET answer_text = ?, updated_at = ?"
+            " WHERE deleted_at IS NULL AND subject_id = ? AND answer_text IS NULL",
+            ("They explained it at the last visit.", settled, subject_id),
+        )
+        # Bills that were paid.
+        db.execute(
+            "UPDATE bill SET state = 'paid', updated_at = ?"
+            " WHERE deleted_at IS NULL AND subject_id = ? AND state NOT IN ('paid', 'closed')",
+            (settled, subject_id),
+        )
+        # Everything filed where it belongs, so nothing waits in the tray.
+        db.execute(
+            "UPDATE entry SET is_unfiled = 0, updated_at = ?"
+            " WHERE deleted_at IS NULL AND subject_id = ? AND is_unfiled = 1",
+            (settled, subject_id),
+        )
+        # **And nothing ahead.** An appointment still to come is the one thing
+        # that makes Today say there is something to do, and a quiet day has
+        # none: these already happened.
+        db.execute(
+            "UPDATE appointment SET updated_at = ?"
+            " WHERE deleted_at IS NULL AND subject_id = ? AND scheduled_start >= ?",
+            (settled, subject_id, self.ms(max(0, self.days - 1))),
+        )
+        for row in db.execute(
+            "SELECT id FROM appointment WHERE deleted_at IS NULL AND subject_id = ?"
+            " AND scheduled_start >= ?",
+            (subject_id, self.ms(max(0, self.days - 1))),
+        ).fetchall():
+            day = self.rng.randrange(0, max(1, self.days))
+            db.execute(
+                "UPDATE appointment SET scheduled_edtf = ?, scheduled_start = ?,"
+                " scheduled_end = ? WHERE id = ?",
+                (
+                    self.edtf_day(day)["occurred_edtf"],
+                    self.ms(day, 10, 0),
+                    self.ms(day, 11, 0),
+                    row[0],
+                ),
+            )
 
     def fill_project_papers(self, db):
         """Puts a real document behind some placeholders and leaves the rest empty.
@@ -361,6 +452,37 @@ class Generator:
         card pointing at a project that is closed, which is the source-closed
         rung, and a measure card whose measure has few readings.
         """
+
+        # **A named situation gets its own starting hand, untouched.** Grid
+        # screen 09 is a second situation's Today exactly as its template left
+        # it, which is law 5 in full: two situations, two hands, one grammar.
+        # The spread below exists to reach every rung of every ladder and is
+        # nobody's real Today, so it would be the wrong thing to draw there.
+        #
+        # **Read from the catalog rather than written out again**, so a hand
+        # that changes in `templates/data/situations.json` changes here too. A
+        # fixture that disagrees with the catalog shows a screen the app would
+        # never draw.
+        if self.situation != DEFAULT_SITUATION:
+            for position, (card_type, size) in enumerate(
+                starting_hands()[self.situation]
+            ):
+                self.row(
+                    db,
+                    "today_card",
+                    {
+                        "subject_id": subject_id,
+                        "card_type": card_type,
+                        "size": size,
+                        "sort_index": position,
+                        "is_lead": 1 if position == 0 else 0,
+                        "source_table": None,
+                        "source_id": None,
+                    },
+                    day=max(0, self.days - 1),
+                )
+            return
+
         def source(table):
             row = db.execute(
                 f"SELECT id FROM {table} WHERE deleted_at IS NULL ORDER BY id LIMIT 1"
@@ -535,7 +657,7 @@ class Generator:
             {
                 "display_name": "Margaret Ellison",
                 "relationship": "My mother",
-                "situation_template_id": "nursing_home",
+                "situation_template_id": self.situation,
                 "is_active": 1,
                 "born_edtf": "1941-03",
             },
@@ -2044,9 +2166,30 @@ MILESTONES = [
 ]
 
 
-def generate(seed, point, out):
+def starting_hands():
+    """Every situation's starting hand, by template id, from the catalog.
+
+    **Read from `templates/data/situations.json` rather than copied**, because a
+    starting hand that disagrees with the catalog is a fixture showing a screen
+    the app would never draw.
+    """
+    data = json.loads(
+        (ROOT / "templates" / "data" / "situations.json").read_text(encoding="utf-8")
+    )
+    return {
+        item["id"]: [(card["type"], card.get("size", "small"))
+                     for card in item.get("starting_hand", [])]
+        for item in data["templates"]
+    }
+
+
+def generate(seed, point, out, situation=DEFAULT_SITUATION, quiet=False):
     if point not in POINTS:
         raise SystemExit(f"unknown point {point!r}. One of: {', '.join(POINTS)}")
+    if situation not in starting_hands():
+        raise SystemExit(
+            f"unknown situation {situation!r}. One of: {', '.join(sorted(starting_hands()))}"
+        )
 
     out = Path(out)
     if out.exists():
@@ -2055,7 +2198,7 @@ def generate(seed, point, out):
 
     db = sqlite3.connect(out)
     db.executescript(SCHEMA.read_text(encoding="utf-8"))
-    Generator(seed, POINTS[point]).build(db)
+    Generator(seed, POINTS[point], situation=situation, quiet=quiet).build(db)
     counts = {
         table: db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
         for table in (
@@ -2083,9 +2226,20 @@ def main():
     parser.add_argument("--at", default="year5", help=f"one of {', '.join(POINTS)}")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--out", required=True)
+    parser.add_argument(
+        "--situation",
+        default=DEFAULT_SITUATION,
+        help="the situation this notebook chose at onboarding, which also"
+        " decides its Today layout when it is not the default",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="nothing scheduled, nothing open, nothing waiting. Grid screen 10",
+    )
     args = parser.parse_args()
 
-    counts = generate(args.seed, args.at, args.out)
+    counts = generate(args.seed, args.at, args.out, args.situation, args.quiet)
     print(f"Wrote {args.out} at {args.at}, seed {args.seed}.")
     for table, count in counts.items():
         print(f"  {table}: {count}")

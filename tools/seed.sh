@@ -23,15 +23,31 @@ set -euo pipefail
 HORIZON="${1:-month6}"
 SEED="${2:-6}"
 PASSPHRASE="${3:-walk-month-six}"
+# **Anything else goes straight to the generator.** Grid screens 09 and 10 are
+# a second situation's starting hand and a notebook with nothing outstanding,
+# and neither is a horizon: they are the same history in a different state.
+#
+#   tools/seed.sh month6 6 walk-quiet --quiet
+#   tools/seed.sh month6 6 walk-home --situation home_family
+#
+# **Shifted only when there is something to shift, and empty arguments are
+# dropped.** `device.sh` expands an empty array to one empty string, so a plain
+# `tools/device.sh` arrived here with an argument that was not one, and the
+# generator refused it. `set -u` also makes an empty array expansion an error,
+# hence the guard on the expansion below.
+if [ "$#" -gt 3 ]; then shift 3; else set --; fi
+EXTRA=()
+for a in "$@"; do [ -n "$a" ] && EXTRA+=("$a"); done
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ADB="${ADB:-/home/Kamsiob/Android/Sdk/platform-tools/adb}"
 PACKAGE="${PACKAGE:-com.kamsiob.healthtrail}"
-DB="/tmp/health-trail-$HORIZON-$SEED.db"
-CONTAINER="/tmp/health-trail-$HORIZON-$SEED.htx"
+VARIANT="$(printf '%s' "${EXTRA[*]-}" | tr -c 'a-zA-Z0-9' '-' | sed 's/-*$//')"
+DB="/tmp/health-trail-$HORIZON-$SEED$VARIANT.db"
+CONTAINER="/tmp/health-trail-$HORIZON-$SEED$VARIANT.htx"
 
 echo "Generating $HORIZON, seed $SEED"
-python3 "$ROOT/tools/fixtures/generate.py" --at "$HORIZON" --seed "$SEED" --out "$DB" | tail -n +2
+python3 "$ROOT/tools/fixtures/generate.py" --at "$HORIZON" --seed "$SEED" --out "$DB" ${EXTRA[@]+"${EXTRA[@]}"} | tail -n +2
 python3 "$ROOT/tools/fixtures/pack.py" --db "$DB" --out "$CONTAINER" --passphrase "$PASSPHRASE" >/dev/null
 
 "$ADB" push "$CONTAINER" /sdcard/Download/seed.htx >/dev/null

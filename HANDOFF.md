@@ -81,7 +81,14 @@ It is grouped under the binder's own section names with the situation's suggesti
 
 **Three defects came out of building it, two caught before the phone.** `ink3` on text, which a check refuses because the app has two text levels; a catalog key that existed nowhere, which another check refuses because `Strings.resolve` throws; and a remove dot running underneath a long tab, because the corner reserved the chevron's width and a dot is a touch target. **The isolate marks nested for the third time**, this time in the sheet's own title.
 
-**What is left in milestone 1, and each says why on its own issue:** screens #293, #294, #295, #300 and #301.
+**#300 and #301 are done, and they needed the fixture to learn two things it could not do.**
+
+- **`--situation ID` writes that template's starting hand untouched**, read from `templates/data/situations.json` rather than copied, and sets the subject's own template id. Screen 09 is two situations side by side and one grammar, and a fixture that only ever knew `nursing_home` could not show it. The spread the default writes is nobody's real Today: it exists to reach every rung.
+- **`--quiet` settles everything without deleting anything.** Screen 10 is the surface's hardest state, and no seed could reach it because every fixture is a notebook in the middle of something. Incidents answered, questions answered, bills paid, the tray filed, nothing ahead. The five years of trail stay exactly where they were, because a quiet week is not an empty notebook.
+
+Both reach the phone through `tools/seed.sh month6 6 <pass> --quiet` or `--situation home_family`, and `tools/device.sh` takes the same arguments.
+
+**What is left in milestone 1:** #293, #294 and #295, which are one arranged year-three layout and the digest's return voice. **They need fixture work too**: a layout that is not the template default, an appointment falling on the generated today, and a last visit four months back, which lives on the device rather than in the notebook.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 
