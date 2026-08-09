@@ -29,9 +29,9 @@
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **18 repository checks pass**, `python3 tools/checks/run_all.py`. The eighteenth is `check_readable_labels.py`, which holds every table and column the archive renders to a word in all four catalogs.
 - **187 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
-- **510 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone, after #327.
+- **510 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone, after #328.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
-- **The phone was returned to its starting values on 2026-08-09 and can be unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone. **It holds the month six fixture notebook**, which is what `tools/seed.sh` leaves, and none of it is real. **One test archive is in `Download`**, `healthtrail-export-20260809-1007.zip`, beside the ones from 2026-08-04, and it holds nothing but the fixture.
+- **The phone was returned to its starting values on 2026-08-09 and can be unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone. **It holds the month six fixture notebook**, which is what `tools/seed.sh` leaves, and none of it is real. **Three test archives are in `Download`** from that day, beside the ones from 2026-08-04, and every one of them holds nothing but the fixture.
 - **The destructive command guard is live and proven.** It refused two real commands on 2026-08-08, a recursive directory removal and an app data wipe, both correctly. Section 9.
 
 ### The five that actually get broken
