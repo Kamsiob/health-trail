@@ -114,6 +114,17 @@ walk "Open it" 4
 # written. It is not part of this app and it is dismissed rather than answered.
 walk "No thanks" 2
 
+# **The restore screen asks which of two things to do, since #211**, and the
+# confirm button is disabled and says "Choose one of these first" until it is
+# answered. This script tapped the button's old label and got nothing, so the
+# seed reported failure and the notebook stayed empty. That is the cost of
+# automating a screen: a choice added for a person is a step added here.
+#
+# **Replace, always.** A seed is a notebook being put in place, not two being
+# combined, and merging into whatever was there before would make the fixture
+# depend on what the last run left.
+walk "Replace what is here" 2
+
 walk "Replace everything with this" 10
 
 # **It says what happened rather than assuming it.** A seed script that cannot
