@@ -1174,3 +1174,35 @@ Two real Arabic exports, each decrypted on this laptop with `tools/decrypt/decry
 That is not a curiosity. **8.5 asserts an archive regenerates byte identical, and `/contract` exists so that a second reader renders the same archive rather than reimplementing it.** Two readers that disagree about digits cannot both satisfy 8.5. `ReadableDate` already argues this exact point for dates and spells month names itself rather than asking the locale; money did not get the same treatment.
 
 ---
+
+## 10. The importer learns to merge, 2026-08-09
+
+**#211, and the half of it that was left.** Restore could replace a notebook and could not add to one, and merge is the half where the rules have to be written down: whose version of somebody's note survives is a question a record keeping app cannot get wrong quietly.
+
+### The shape
+
+`Merge` is pure, so the rules are unit tested without a device. Thirteen of them. Match by id and nothing else. Later `updated_at` wins, and a tie goes to `origin_device` **because two phones merging the same pair in either direction have to reach the same answer**, or the notebooks diverge permanently and each is certain it is right. Nothing is invented. And **merge never deletes**: a row the file has never heard of is a row the other phone never saw, not one somebody removed, and removal travels as a tombstone that merges by the same rule as everything else. That is what the schema having no hard deletes buys.
+
+`MergeApply` is the thin Android half. It plans first, so a file it cannot place never opens a transaction, which is what makes "fully succeeds or changes nothing" true rather than hoped for.
+
+### What the phone found and no test could
+
+**The merge crashed with `FOREIGN KEY constraint failed`.** Rows go in table by table and a child can arrive before its parent: `chapter` sorts before `subject`, `attachment` before `entry`.
+
+**No test in the class could have caught it, and the reason is worth keeping.** Every archive those tests merge came from the notebook it is merged into, so everything was `unchanged` and **nothing was ever inserted**. The suite was green on a code path it never once executed. A real second phone is all inserts. The new test empties the notebook first so the file is genuinely new, and the fix was proved by removing it and watching the test fail.
+
+**Then three more, all from looking at the screen.** The conflict screen printed `Kept: 1786315875877` for a pinned entry, which is #328's defect turning up in a screen on the day it was closed in the archive. The door to that screen vanished when the app restarted, because the count was set after a merge and never loaded. And the Arabic screen used a Latin comma where the language writes it reversed.
+
+**And two on the restore screen.** A disabled confirm button reading "Replace everything with this" while nothing was chosen, which reads as replace being the default on the one control whose entire point is that there is no default. And "Nothing here is removed" set in alarm red, which teaches people to ignore the color when it means something.
+
+### Two lessons that generalize
+
+**A skip list of table names is a list nothing checks.** The first version named `migration` and the table is `schema_migration`, so the merge read a table with no `id` and threw. Mergeability is asked of the schema now: a table without `id` and `updated_at` cannot be merged whatever it is called. That is the third time in one day the same shape has appeared, after the archive's `DATED` and the fixture's document categories.
+
+**A green suite can be green on a path it never runs.** The insert path had five tests around it and no coverage of it at all, because of what the fixtures happened to contain. **Ask what the test data makes reachable**, not just what the test names say.
+
+### What is not done, and it is on the issue rather than implied
+
+Three of #211's ten criteria are not met. **#332** is the serious one and it was found by reading 8.3 against the code: an attachment row whose file is gone produces an archive **this app then refuses to open**, and export never notices. Per-section view choices do not exist in the schema. And nothing yet lets a person read the unknown tables that `open` names.
+
+---
