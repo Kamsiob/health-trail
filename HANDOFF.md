@@ -107,7 +107,7 @@
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**All sixteen of them, oldest first.** Checked against the board on 2026-08-06 at the end of the overnight run with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+**All sixteen of them, oldest first.** Rechecked against the board on 2026-08-08 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
 
 | Screen | Issue |
 |---|---|
