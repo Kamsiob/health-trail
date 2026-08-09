@@ -1,0 +1,541 @@
+{
+  "_about": "The golden vector for the archive's readable copy. contract/DATA-CONTRACT.md 8.5 and issues #9 and B4. B4 dropped the emulator on the argument that data survival is proven by the round trip against golden vectors in continuous integration rather than by a long lived phone installation, and until this file existed nothing in continuous integration rendered a readable page at all: the regeneration test needs a device and the date vectors are an instrumented test. This is the half that can run without one. Rows in, bytes out, on every push. The rows were taken from a real archive the app wrote, so they are rows the app itself could write, and between them they exercise every one of the twelve rendering decisions. The expected pages are in expected/<locale>/ and they are regenerated deliberately, never automatically: a diff here means the archive's permanent text or its layout changed, which is a decision rather than an accident.",
+  "counts": [
+    1,
+    2,
+    3
+  ],
+  "locales": {
+    "en": {
+      "lang": "en",
+      "dir": "ltr",
+      "tables": {
+        "attachment": "Files",
+        "bill": "Bills",
+        "chapter": "Chapters",
+        "entry": "The trail",
+        "incident": "Incidents",
+        "link": "Connections between records",
+        "medication": "Medications",
+        "person": "The care team",
+        "project": "Projects",
+        "subject": "Who this is about"
+      },
+      "columns": {
+        "amount_minor": "Amount",
+        "archived_at": "Archived",
+        "bill_id": "Bill",
+        "body": "What was written",
+        "born_edtf": "Born",
+        "byte_size": "File size",
+        "caption": "Caption",
+        "chapter_id": "Chapter",
+        "closed_at": "Closed",
+        "closed_note": "Why it was closed",
+        "current_stage_id": "Where it stands",
+        "description": "Description",
+        "display_name": "Name",
+        "document_id": "The paper",
+        "dose_text": "Dose",
+        "due_edtf": "The date",
+        "email": "Email",
+        "ended_edtf": "Ended",
+        "entry_id": "Entry",
+        "finished_edtf": "Finished",
+        "id": "Reference",
+        "incident_id": "Incident",
+        "is_active": "Still current",
+        "is_unfiled": "Still waiting to be filed",
+        "kind": "Kind",
+        "lead": "What this project opens with",
+        "measurement_id": "Measurement",
+        "mime_type": "File type",
+        "name": "Name",
+        "note": "Note",
+        "notes": "Notes",
+        "occurred_edtf": "When",
+        "on_emergency_card": "Shown on the emergency card",
+        "organization_id": "Organization",
+        "original_filename": "Original file name",
+        "paid_edtf": "Paid",
+        "phone": "Phone",
+        "pinned_at": "Pinned",
+        "prescriber_person_id": "Prescribed by",
+        "project_id": "Project",
+        "purpose_text": "What it is for",
+        "reason": "Why",
+        "received_edtf": "Received",
+        "relation": "How they are connected",
+        "relationship": "Relationship",
+        "reported_edtf": "Reported",
+        "resolution_note": "How it was answered",
+        "resolved_at": "Answered",
+        "role_label": "Their role",
+        "role_template_id": "The role it came from",
+        "sha256": "Checksum",
+        "shift_note": "Which shift",
+        "situation_template_id": "The situation it was set up from",
+        "sort_index": "Its place in the order",
+        "source_id": "The reference it pointed at",
+        "source_table": "What it pointed at",
+        "started_edtf": "Started",
+        "state": "Where it stands",
+        "state_note": "About where it stands",
+        "status": "Where it stands",
+        "stop_reason": "Why it was stopped",
+        "stopped_edtf": "Stopped",
+        "subject_id": "Who this is about",
+        "suggested_home": "Where the app suggested it went",
+        "target_id": "The reference it points to",
+        "target_table": "What it points to",
+        "template_id": "The template it came from",
+        "title": "What it was",
+        "transfer_note": "About the transfer",
+        "transferred_from_chapter_id": "Transferred from",
+        "waiting_on": "Waiting on",
+        "waiting_since": "Waiting since"
+      },
+      "vocabularies": {
+        "bill_state": {
+          "needs_attention": "Needs attention",
+          "paid": "Paid"
+        },
+        "entry_kind": {
+          "call": "A call",
+          "note": "A note"
+        },
+        "link_relation": {
+          "about": "About it"
+        },
+        "project_lead": {
+          "steps": "The steps"
+        },
+        "project_status": {
+          "done": "Done"
+        }
+      },
+      "subjectFallback": "This record",
+      "about": "A copy of a care notebook, written by the person who kept it. Everything here is their own notes. It is not a clinical record and nothing in it is advice.",
+      "datedHeading": "What happened, by year",
+      "wholeHeading": "The people, places and things it refers to",
+      "howToHeading": "How to read this",
+      "howToBody": "Every entry shows the id it has in {database}, so anything here can be matched to the machine copy by hand. Photographs and documents are in the {attachments} folder beside this one, and the links here point straight at them. Nothing on these pages needs an internet connection.",
+      "back": "Back to the front page",
+      "undated": "undated",
+      "notRecorded": "not recorded",
+      "yes": "yes",
+      "no": "no",
+      "yearTitle": "{section}, {year}",
+      "coversOne": "Covers {year}",
+      "coversRange": "Covers {from} to {to}",
+      "records": {
+        "1": "1 record.",
+        "2": "2 records.",
+        "3": "3 records."
+      },
+      "covers": {},
+      "money": {
+        "679040|USD": "$6,790.40",
+        "323701|USD": "$3,237.01"
+      }
+    },
+    "ar": {
+      "lang": "ar",
+      "dir": "rtl",
+      "tables": {
+        "attachment": "الملفات",
+        "bill": "الفواتير",
+        "chapter": "الفصول",
+        "entry": "الأثر",
+        "incident": "الحوادث",
+        "link": "الروابط بين السجلات",
+        "medication": "الأدوية",
+        "person": "فريق الرعاية",
+        "project": "المعاملات",
+        "subject": "عمّن يدور هذا السجل"
+      },
+      "columns": {
+        "amount_minor": "المبلغ",
+        "archived_at": "أُرشف",
+        "bill_id": "الفاتورة",
+        "body": "ما كُتب",
+        "born_edtf": "وُلد",
+        "byte_size": "حجم الملف",
+        "caption": "التعليق",
+        "chapter_id": "الفصل",
+        "closed_at": "أُغلق",
+        "closed_note": "سبب الإغلاق",
+        "current_stage_id": "أين وصلت",
+        "description": "الوصف",
+        "display_name": "الاسم",
+        "document_id": "الورقة",
+        "dose_text": "الجرعة",
+        "due_edtf": "التاريخ",
+        "email": "البريد الإلكتروني",
+        "ended_edtf": "انتهى",
+        "entry_id": "المدخلة",
+        "finished_edtf": "انتهت",
+        "id": "المرجع",
+        "incident_id": "الحادثة",
+        "is_active": "ما زال ساريًا",
+        "is_unfiled": "بانتظار الحفظ",
+        "kind": "النوع",
+        "lead": "بماذا تفتتح هذه المعاملة",
+        "measurement_id": "القياس",
+        "mime_type": "نوع الملف",
+        "name": "الاسم",
+        "note": "ملاحظة",
+        "notes": "ملاحظات",
+        "occurred_edtf": "متى",
+        "on_emergency_card": "يظهر في بطاقة الطوارئ",
+        "organization_id": "الجهة",
+        "original_filename": "اسم الملف الأصلي",
+        "paid_edtf": "دُفعت",
+        "phone": "الهاتف",
+        "pinned_at": "ثُبّت",
+        "prescriber_person_id": "وصفه",
+        "project_id": "المعاملة",
+        "purpose_text": "لماذا يُؤخذ",
+        "reason": "السبب",
+        "received_edtf": "وصلت",
+        "relation": "كيف يرتبطان",
+        "relationship": "صلة القرابة",
+        "reported_edtf": "أُبلغ عنه",
+        "resolution_note": "كيف أُجيب عنه",
+        "resolved_at": "أُجيب عنه",
+        "role_label": "دورهم",
+        "role_template_id": "الدور الذي جاء منه",
+        "sha256": "بصمة التحقق",
+        "shift_note": "أي وردية",
+        "situation_template_id": "الوضع الذي أُعدّ منه",
+        "sort_index": "موضعها في الترتيب",
+        "source_id": "المرجع الذي كان يشير إليه",
+        "source_table": "إلى ماذا كان يشير",
+        "started_edtf": "بدأ",
+        "state": "أين وصلت",
+        "state_note": "عن وضعها الحالي",
+        "status": "أين وصلت",
+        "stop_reason": "سبب التوقف",
+        "stopped_edtf": "تَوقّف",
+        "subject_id": "عمّن يدور",
+        "suggested_home": "أين اقترح التطبيق وضعه",
+        "target_id": "المرجع الذي يشير إليه",
+        "target_table": "إلى ماذا يشير",
+        "template_id": "القالب الذي جاء منه",
+        "title": "ما كان",
+        "transfer_note": "عن الانتقال",
+        "transferred_from_chapter_id": "انتقل من",
+        "waiting_on": "بانتظار",
+        "waiting_since": "بانتظار منذ"
+      },
+      "vocabularies": {
+        "bill_state": {
+          "needs_attention": "تحتاج متابعة",
+          "paid": "مدفوعة"
+        },
+        "entry_kind": {
+          "call": "مكالمة",
+          "note": "ملاحظة"
+        },
+        "link_relation": {
+          "about": "يتعلق به"
+        },
+        "project_lead": {
+          "steps": "الخطوات"
+        },
+        "project_status": {
+          "done": "منتهية"
+        }
+      },
+      "subjectFallback": "هذا السجل",
+      "about": "نسخة من دفتر رعاية، كتبه الشخص الذي كان يحتفظ به. كل ما هنا هو ملاحظاته الخاصة. ليس سجلًا طبيًا ولا شيء فيه نصيحة.",
+      "datedHeading": "ما حدث، حسب السنة",
+      "wholeHeading": "الأشخاص والأماكن والأشياء التي يشير إليها",
+      "howToHeading": "كيف تقرأ هذا",
+      "howToBody": "تعرض كل مدخلة المعرّف الخاص بها في {database}، فيمكن مطابقة أي شيء هنا مع النسخة المقروءة آليًا يدويًا. الصور والمستندات في مجلد {attachments} المجاور لهذا المجلد، والروابط هنا تشير إليها مباشرة. لا تحتاج أي صفحة من هذه الصفحات إلى اتصال بالإنترنت.",
+      "back": "العودة إلى الصفحة الأولى",
+      "undated": "بلا تاريخ",
+      "notRecorded": "غير مُدوَّن",
+      "yes": "نعم",
+      "no": "لا",
+      "yearTitle": "{section}، {year}",
+      "coversOne": "يغطي عام {year}",
+      "coversRange": "يغطي من {from} إلى {to}",
+      "records": {
+        "1": "سجل واحد.",
+        "2": "سجلان اثنان.",
+        "3": "3 سجلات."
+      },
+      "covers": {},
+      "money": {
+        "679040|USD": "‏6,790.40 US$",
+        "323701|USD": "‏3,237.01 US$"
+      }
+    }
+  },
+  "tables": {
+    "subject": [
+      {
+        "id": "6a6b6425eace88e484677d0743a753c7",
+        "display_name": "Margaret Ellison",
+        "relationship": "My mother",
+        "born_edtf": "1941-03",
+        "born_zone": null,
+        "situation_template_id": "nursing_home",
+        "notes": null,
+        "is_active": "1",
+        "closed_at": null,
+        "closed_note": null
+      }
+    ],
+    "project": [
+      {
+        "id": "d1e100174551b885776cb210131051b1",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "name": "Move her belongings out of the old room",
+        "template_id": null,
+        "chapter_id": null,
+        "status": "done",
+        "waiting_on": null,
+        "waiting_since": null,
+        "started_edtf": "2026-03-07",
+        "started_zone": null,
+        "finished_edtf": "2026-04-01",
+        "finished_zone": null,
+        "notes": null,
+        "lead": "steps",
+        "current_stage_id": "de1acbe9322bd56677ab8f4604abed96"
+      }
+    ],
+    "entry": [
+      {
+        "id": "0086759d1f133744cfa87e7ad4c4d56c",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "kind": "call",
+        "occurred_edtf": "2026-02-10",
+        "occurred_zone": "America/New_York",
+        "title": "Visited in the afternoon",
+        "body": "They said someone would call back and nobody did.",
+        "chapter_id": "f7c3161fbd566c9f52b46db3402dbd81",
+        "incident_id": null,
+        "is_unfiled": "0",
+        "suggested_home": null,
+        "pinned_at": null
+      },
+      {
+        "id": "01f5a52ccdda788412ac1422373df0cd",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "kind": "note",
+        "occurred_edtf": "2026-05-28",
+        "occurred_zone": "America/New_York",
+        "title": "Care plan meeting",
+        "body": "",
+        "chapter_id": "f7c3161fbd566c9f52b46db3402dbd81",
+        "incident_id": null,
+        "is_unfiled": "0",
+        "suggested_home": null,
+        "pinned_at": null
+      },
+      {
+        "id": "029e7534207f2afb4a6d1e86145eae43",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "kind": "note",
+        "occurred_edtf": "2026-05-09",
+        "occurred_zone": "America/New_York",
+        "title": "Care plan meeting",
+        "body": "Nobody could tell me who had seen her today.",
+        "chapter_id": "f7c3161fbd566c9f52b46db3402dbd81",
+        "incident_id": null,
+        "is_unfiled": "0",
+        "suggested_home": null,
+        "pinned_at": null
+      }
+    ],
+    "chapter": [
+      {
+        "id": "ad05209c2e3eea953646146d5ee14f5c",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "name": "Emergency department, overnight",
+        "kind": null,
+        "organization_id": null,
+        "started_edtf": "2026-06-25",
+        "started_zone": null,
+        "ended_edtf": "2026-06-25",
+        "ended_zone": null,
+        "reason": null,
+        "transferred_from_chapter_id": null,
+        "transfer_note": null,
+        "notes": null,
+        "sort_index": "0"
+      },
+      {
+        "id": "f7c3161fbd566c9f52b46db3402dbd81",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "name": "Maplewood Care Center",
+        "kind": null,
+        "organization_id": null,
+        "started_edtf": "2025-12-29",
+        "started_zone": null,
+        "ended_edtf": null,
+        "ended_zone": null,
+        "reason": null,
+        "transferred_from_chapter_id": null,
+        "transfer_note": null,
+        "notes": null,
+        "sort_index": "0"
+      }
+    ],
+    "incident": [
+      {
+        "id": "d81fadb7832bd291f740f25115e7c891",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "title": "Wrong medication brought to the room",
+        "description": "Reported to the charge nurse. Asked for it in writing.",
+        "chapter_id": "f7c3161fbd566c9f52b46db3402dbd81",
+        "reported_edtf": "2026-06-12",
+        "reported_zone": null,
+        "resolved_at": "1781701200000",
+        "resolution_note": "They changed the schedule. It held for a while.",
+        "shift_note": null
+      },
+      {
+        "id": "fa759ff91deae45ebee47cea011ca074",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "title": "Bruise on her arm nobody could explain",
+        "description": "Reported to the charge nurse. Asked for it in writing.",
+        "chapter_id": "f7c3161fbd566c9f52b46db3402dbd81",
+        "reported_edtf": "2026-01-24",
+        "reported_zone": null,
+        "resolved_at": null,
+        "resolution_note": null,
+        "shift_note": null
+      }
+    ],
+    "medication": [
+      {
+        "id": "0f6401aa9d23f54bb6cd1e50919a5ddc",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "name": "Metformin",
+        "dose_text": "500 mg, twice a day",
+        "purpose_text": "Diabetes",
+        "prescriber_person_id": "e47ffc3d69d011f0382a8045d278f5f2",
+        "started_edtf": "2026-02-14",
+        "started_zone": "America/New_York",
+        "stopped_edtf": null,
+        "stopped_zone": null,
+        "stop_reason": null,
+        "notes": null,
+        "on_emergency_card": "1"
+      },
+      {
+        "id": "5286beff940a6e5004d35206b8989fe4",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "name": "Vitamin D",
+        "dose_text": "1000 units",
+        "purpose_text": null,
+        "prescriber_person_id": "e47ffc3d69d011f0382a8045d278f5f2",
+        "started_edtf": "2026-01-10",
+        "started_zone": "America/New_York",
+        "stopped_edtf": null,
+        "stopped_zone": null,
+        "stop_reason": null,
+        "notes": null,
+        "on_emergency_card": "0"
+      }
+    ],
+    "attachment": [
+      {
+        "id": "76b44751bb9a73a902f66826239b567b",
+        "sha256": "d7383ba41eae048b375b304a712c254a4d0863f707c3c6dcdd9b1796a459573a",
+        "original_filename": "scan-002.jpg",
+        "mime_type": "image/jpeg",
+        "byte_size": "5232",
+        "document_id": "c1570e2a1f6e955df4f7b3c99ac12e6d",
+        "entry_id": null,
+        "bill_id": null,
+        "project_id": null,
+        "measurement_id": null,
+        "caption": null
+      }
+    ],
+    "bill": [
+      {
+        "id": "21d4bd4df74191aee0872a63e2fe6262",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "description": "Physical therapy, out of network",
+        "organization_id": null,
+        "chapter_id": "f7c3161fbd566c9f52b46db3402dbd81",
+        "amount_minor": "679040",
+        "currency": "USD",
+        "received_edtf": "2026-04-21",
+        "received_zone": null,
+        "due_edtf": null,
+        "due_zone": null,
+        "state": "paid",
+        "state_note": null,
+        "paid_edtf": null,
+        "paid_zone": null,
+        "notes": null
+      },
+      {
+        "id": "50948f3034f053341b3fc0d2b5dca028",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "description": "Monthly room and board",
+        "organization_id": null,
+        "chapter_id": "f7c3161fbd566c9f52b46db3402dbd81",
+        "amount_minor": "323701",
+        "currency": "USD",
+        "received_edtf": "2026-01-21",
+        "received_zone": null,
+        "due_edtf": null,
+        "due_zone": null,
+        "state": "needs_attention",
+        "state_note": null,
+        "paid_edtf": null,
+        "paid_zone": null,
+        "notes": null
+      }
+    ],
+    "link": [
+      {
+        "id": "0c30060c447f6f031806ceac67a89091",
+        "source_table": "entry",
+        "source_id": "df31977214c34edbe4f8fba8217df4a3",
+        "target_table": "project",
+        "target_id": "d1e100174551b885776cb210131051b1",
+        "relation": "about",
+        "note": null
+      }
+    ],
+    "person": [
+      {
+        "id": "0ceb57185a349f8661c1bf3d34f9208d",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "display_name": "Angela Reyes",
+        "role_label": "Charge nurse, day shift",
+        "role_template_id": null,
+        "organization_id": null,
+        "phone": "555 0142",
+        "email": null,
+        "shift_note": null,
+        "notes": "Days, 7 to 3. Ask for her by name.",
+        "archived_at": null
+      },
+      {
+        "id": "187beb476f3ec02e20e70658d5dc447a",
+        "subject_id": "6a6b6425eace88e484677d0743a753c7",
+        "display_name": "Dr. Priya Raman",
+        "role_label": "Attending physician",
+        "role_template_id": null,
+        "organization_id": null,
+        "phone": "555 0110",
+        "email": null,
+        "shift_note": null,
+        "notes": "Rounds Tuesdays.",
+        "archived_at": null
+      }
+    ]
+  },
+  "subjectName": "Margaret Ellison",
+  "_money_note": "The money strings are inputs to the renderer rather than claims about ICU, and the Arabic ones were read out of a real Arabic export rather than computed here. That distinction is not academic: java.text.NumberFormat on the JDK renders this same call as ‏٦٬٧٩٠٫٤٠ US$, with Arabic-Indic digits, while Android's ICU produced Latin digits. Two readers of this contract would therefore write different bytes for the same archive, which 8.5's byte identical regeneration cannot survive. Filed rather than papered over."
+}

@@ -325,13 +325,165 @@ val generateReadableFields by tasks.registering {
     }
 }
 
+/**
+ * Turns `contract/test-vectors/readable/vector.json` into a Kotlin constant for
+ * the **unit** test source set.
+ *
+ * **This is what lets the archive's regeneration run without a device.** `B4`
+ * dropped the emulator on the argument that data survival is proven by the
+ * round trip against golden vectors in continuous integration rather than by a
+ * long lived phone installation, and until this existed nothing in continuous
+ * integration rendered a readable page at all: `RegenerationTest` is
+ * instrumented and `DateVectorTest` reads assets, so both need the phone.
+ *
+ * **Generated rather than parsed, for the same reason the field map is.** The
+ * order of a row's columns and of the tables themselves is part of what makes
+ * the output byte identical, and JSON does not guarantee object key order. It
+ * also means the unit test needs no JSON parser, which matters because
+ * `org.json` is an Android stub on the unit test classpath and returns null for
+ * everything.
+ */
+val generateReadableVector by tasks.registering {
+    group = "build"
+    description = "Generates ReadableVector.kt from contract/test-vectors/readable/vector.json."
+
+    val source = contractDir.resolve("test-vectors/readable/vector.json")
+    val outputDir = layout.buildDirectory.dir("generated/readableVector")
+    inputs.file(source)
+    outputs.dir(outputDir)
+
+    doLast {
+        val root = groovy.json.JsonSlurper().parse(source) as Map<*, *>
+        val file = outputDir.get().asFile.resolve(
+            "com/kamsiob/healthtrail/data/ReadableVector.kt",
+        )
+        file.parentFile.mkdirs()
+
+        fun quote(value: Any?): String = "\"" + value.toString()
+            .replace("\\", "\\\\").replace("\"", "\\\"")
+            .replace("$", "\${'$'}").replace("\n", "\\n") + "\""
+
+        fun mapOfStrings(entries: Map<*, *>): String =
+            entries.entries.joinToString(", ") { "${quote(it.key)} to ${quote(it.value)}" }
+
+        file.writeText(
+            buildString {
+                appendLine("package com.kamsiob.healthtrail.data")
+                appendLine()
+                appendLine("// Generated from contract/test-vectors/readable/vector.json by the")
+                appendLine("// build. Do not edit. Change the contract file instead.")
+                appendLine("internal object ReadableVector {")
+                appendLine("    const val SUBJECT_NAME = ${quote(root["subjectName"])}")
+                appendLine()
+                appendLine("    val rows: Map<String, List<Map<String, String?>>> = mapOf(")
+                (root["tables"] as Map<*, *>).forEach { (table, rowList) ->
+                    appendLine("        ${quote(table)} to listOf(")
+                    (rowList as List<*>).forEach { row ->
+                        val cells = (row as Map<*, *>).entries.joinToString(", ") { (column, value) ->
+                            "${quote(column)} to " + if (value == null) "null" else quote(value)
+                        }
+                        appendLine("            mapOf($cells),")
+                    }
+                    appendLine("        ),")
+                }
+                appendLine("    )")
+                appendLine()
+                appendLine("    val words: Map<String, ReadableArchive.Words> = mapOf(")
+                (root["locales"] as Map<*, *>).forEach { (locale, spec) ->
+                    val w = spec as Map<*, *>
+                    appendLine("        ${quote(locale)} to ReadableArchive.Words(")
+                    appendLine("            lang = ${quote(w["lang"])},")
+                    appendLine("            dir = ${quote(w["dir"])},")
+                    appendLine("            tables = mapOf(${mapOfStrings(w["tables"] as Map<*, *>)}),")
+                    appendLine("            columns = mapOf(${mapOfStrings(w["columns"] as Map<*, *>)}),")
+                    appendLine("            vocabularies = mapOf(")
+                    (w["vocabularies"] as Map<*, *>).forEach { (name, values) ->
+                        appendLine(
+                            "                ${quote(name)} to " +
+                                "mapOf(${mapOfStrings(values as Map<*, *>)}),",
+                        )
+                    }
+                    appendLine("            ),")
+                    for (name in listOf("subjectFallback", "about", "datedHeading", "wholeHeading",
+                                        "howToHeading", "howToBody", "back", "undated",
+                                        "notRecorded", "yes", "no")) {
+                        appendLine("            $name = ${quote(w[name])},")
+                    }
+                    // Plain substitution rather than ICU. These templates carry
+                    // no plural and no number, so the two agree, and the unit
+                    // test classpath has no ICU to agree with.
+                    appendLine(
+                        "            covers = { from, to -> if (from == to) " +
+                            "${quote(w["coversOne"])}.replace(\"{year}\", from) else " +
+                            "${quote(w["coversRange"])}.replace(\"{from}\", from)" +
+                            ".replace(\"{to}\", to) },",
+                    )
+                    appendLine(
+                        "            yearTitle = { section, year -> ${quote(w["yearTitle"])}" +
+                            ".replace(\"{section}\", section).replace(\"{year}\", year) },",
+                    )
+                    // **A lookup rather than a format**, because Arabic needs
+                    // six plural forms and only ICU can choose between them.
+                    // Each of these was read off a real Arabic export.
+                    appendLine(
+                        "            records = { count -> mapOf(" +
+                            mapOfStrings(w["records"] as Map<*, *>) +
+                            ").getValue(count.toString()) },",
+                    )
+                    // **A lookup, and the Arabic entries were read off a real
+                    // export rather than computed.** Android's ICU and the JDK
+                    // disagree about this call, so computing it here would lock
+                    // the vector to whatever machine ran the build.
+                    appendLine(
+                        "            money = { minor, code -> mapOf(" +
+                            mapOfStrings(w["money"] as Map<*, *>) +
+                            ").getValue(\"\$minor|\$code\") },",
+                    )
+                    appendLine("        ),")
+                }
+                appendLine("    )")
+                appendLine("}")
+            },
+        )
+    }
+}
+
 // A plain path rather than a Provider: the Android source set API rejects a
 // Provider because it cannot tell generated files from editable ones.
 android.sourceSets.getByName("main").kotlin.srcDir(
     layout.buildDirectory.get().asFile.resolve("generated/readableFields"),
 )
+android.sourceSets.getByName("test").kotlin.srcDir(
+    layout.buildDirectory.get().asFile.resolve("generated/readableVector"),
+)
+// The expected pages are read as ordinary files by the unit test rather than
+// copied anywhere, so the failure message can name the file somebody has to
+// open. The path is handed in as a system property, because a unit test's
+// working directory is the module and the contract is two levels above it.
+tasks.withType<Test>().configureEach {
+    val expected = contractDir.resolve("test-vectors/readable/expected")
+    // **Declared as an input, or the test does not re-run when the vector
+    // changes.** Reading a path out of a system property is invisible to
+    // Gradle's up to date checking, so editing an expected page left
+    // `testDebugUnitTest` UP-TO-DATE and the golden vector unchecked. It would
+    // still have run in continuous integration, on a fresh checkout, which is
+    // the worst version of this: green locally and red only on push.
+    inputs.dir(expected)
+        .withPropertyName("readableVectorExpected")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+        .optional(true)
+    systemProperty("healthtrail.vector.expected", expected.path)
+    // Forwarded rather than inherited: a Gradle test task runs in its own JVM
+    // and does not pass the invocation's system properties down. Without this
+    // the regeneration switch silently does nothing and the test reports that
+    // the expected pages are missing, which is a confusing way to say that a
+    // flag was ignored.
+    providers.systemProperty("healthtrail.vector.write").orNull?.let {
+        systemProperty("healthtrail.vector.write", it)
+    }
+}
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    dependsOn(generateReadableFields)
+    dependsOn(generateReadableFields, generateReadableVector)
 }
 
 // Every variant's assets depend on the copy, including the test variants, so a
@@ -339,7 +491,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 tasks.withType<com.android.build.gradle.tasks.MergeSourceSetFolders>().configureEach {
     dependsOn(copyContractAssets)
 }
-tasks.named("preBuild") { dependsOn(copyContractAssets, generateReadableFields) }
+tasks.named("preBuild") { dependsOn(copyContractAssets, generateReadableFields, generateReadableVector) }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
