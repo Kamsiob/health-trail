@@ -39,7 +39,12 @@ import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.CaptureFab
 import com.kamsiob.healthtrail.ui.components.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
+import com.kamsiob.healthtrail.ui.screens.PROJECT_CARD_TYPES
+import com.kamsiob.healthtrail.ui.screens.cardOffers
+import com.kamsiob.healthtrail.ui.screens.countLineKey
+import com.kamsiob.healthtrail.ui.screens.emptyLineKey
 import com.kamsiob.healthtrail.ui.screens.headingFor
+import com.kamsiob.healthtrail.ui.screens.wordedAnswer
 import com.kamsiob.healthtrail.ui.screens.IncidentScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
 import com.kamsiob.healthtrail.data.Readable
@@ -354,6 +359,19 @@ fun NotebookShell(
         mutableStateOf<List<Repository.TodayCard>?>(null)
     }
     var todayAnswers by remember {
+        mutableStateOf<Map<String, Repository.TodayAnswer>>(emptyMap())
+    }
+    /**
+     * What each card the gallery can offer would say right now, by offer key.
+     *
+     * **Read when the gallery opens rather than when Today gains focus.** These
+     * are the answers for cards that are *not* on the screen, which on a year
+     * five notebook is eight measures and three questions about each of six
+     * projects: twenty six queries, on the front door, every time somebody
+     * looks at it, for a sheet they open a handful of times a year. 21.2 says
+     * the surface pulls on focus and this is not part of that pull.
+     */
+    var offerAnswers by remember {
         mutableStateOf<Map<String, Repository.TodayAnswer>>(emptyMap())
     }
     var togglingStep by remember { mutableStateOf<Repository.ProjectStep?>(null) }
@@ -1666,8 +1684,37 @@ fun NotebookShell(
         }
 
         addingCardTo?.let { onScreen ->
+            // **The previews, read once when the sheet opens.** 21.6 screen 6
+            // asks every entry to preview its small size with real current
+            // data, and a name alone asks somebody to imagine a screen they
+            // have never seen: "Medications, 6" is a decision they can make and
+            // "Medications" is a guess.
+            //
+            // **Wrapped, because a read can fail**, and a gallery that throws
+            // takes the app down from inside edit mode where the person has
+            // unsaved work. A failed read leaves the previews empty, which the
+            // rows render as their names alone.
+            LaunchedEffect(onScreen, revision) {
+                offerAnswers = runCatching {
+                    val subject = repository.activeSubject() ?: return@runCatching emptyMap()
+                    buildMap {
+                        putAll(repository.todayAnswers(subject.id))
+                        for (measure in measures) {
+                            repository.todayAnswerForSource("measure", "measure", measure.id)
+                                ?.let { put("measure-${measure.id}", it) }
+                        }
+                        for (project in projects.filterNot { it.isFinished }) {
+                            for (type in PROJECT_CARD_TYPES) {
+                                repository.todayAnswerForSource(type, "project", project.id)
+                                    ?.let { put("$type-${project.id}", it) }
+                            }
+                        }
+                    }
+                }.getOrDefault(emptyMap())
+            }
+
             AddCardSheet(
-                offers = cardOffers(onScreen, measures, projects, todayAnswers, strings),
+                offers = cardOffers(onScreen, measures, projects, offerAnswers, strings, LocalDate.now()),
                 onAdd = { offer ->
                     // **Written straight away**, so the card is there when the
                     // person looks. Appended to what was already on the draft,
@@ -4013,91 +4060,6 @@ private fun sectionForCard(type: String): Repository.Section? = when (type) {
     "trail_lately", "digest", "unfiled" -> Repository.Section.TRAIL
     "incidents" -> Repository.Section.TRAIL
     else -> null
-}
-
-/**
- * What a person can still put on Today. `DESIGN.md` 21.6 screen 6.
- *
- * **Each offer previews what the card would say right now.** A name alone asks
- * somebody to imagine a screen they have never seen; "Medications, 6" is a
- * decision they can actually make.
- *
- * **A card already on Today is not offered again**, except the ones that point
- * at something: a second measure is a different card from the first, and
- * somebody tracking two things wants two.
- *
- * **The order is the binder's order.** Nothing here is ranked by what the app
- * thinks matters, because that would be the app having a view about somebody's
- * care.
- */
-private fun cardOffers(
-    onScreen: List<Repository.TodayCard>,
-    measures: List<Repository.Measure>,
-    projects: List<Repository.Project>,
-    answers: Map<String, Repository.TodayAnswer>,
-    strings: com.kamsiob.healthtrail.i18n.Strings,
-): List<CardOffer> {
-    val taken = onScreen.map { it.type to it.sourceId }.toSet()
-    // **The card in its plain form, which is the one with no source.** The care
-    // team card comes in two, 21.7, and a card pointed at one person must not
-    // stand in for the row of everyone: without this, choosing a person on the
-    // only care team card took the card itself out of the gallery, so there was
-    // no way back to everybody and no way to a second person.
-    val previewOf = { type: String ->
-        onScreen.firstOrNull { it.type == type && it.sourceId == null }?.let { answers[it.id] }
-    }
-
-    fun label(type: String) = strings["today.card.$type"]
-
-    fun preview(answer: Repository.TodayAnswer?): String = when {
-        answer == null -> strings["today.card.nothing"]
-        answer.isEmpty -> strings["today.card.nothing"]
-        else -> com.kamsiob.healthtrail.i18n.Bidi.join(
-            answer.count?.takeIf { it > 0 }?.toString(),
-            answer.title,
-        )
-    }
-
-    val plain = listOf(
-        "digest", "next_up", "medications", "milestones", "ask_next_time",
-        "incidents", "money", "unfiled", "emergency_card", "care_team",
-        "trail_lately", "recent_documents", "standing_instructions",
-    ).filterNot { type -> taken.contains(type to null) }
-        .map { type -> CardOffer(type, label(type), preview(previewOf(type))) }
-
-    // **The answer names the row and the thing it points at is the second
-    // line.** The other way round put three rows reading "Appeal the level of
-    // care assessment / Project" next to each other, which are three different
-    // cards and looked like the same one listed three times. Seen on the phone.
-    val perMeasure = measures
-        .filterNot { measure -> taken.contains("measure" to measure.id) }
-        .map { measure ->
-            CardOffer(
-                type = "measure",
-                label = strings["today.card.measure.long"],
-                preview = com.kamsiob.healthtrail.i18n.Bidi.isolate(measure.name),
-                sourceTable = "measure",
-                sourceId = measure.id,
-            )
-        }
-
-    val perProject = projects
-        .filterNot { it.isFinished }
-        .flatMap { project ->
-            listOf("project_standing", "project_date", "project_steps")
-                .filterNot { type -> taken.contains(type to project.id) }
-                .map { type ->
-                    CardOffer(
-                        type = type,
-                        label = strings["today.card.$type.long"],
-                        preview = com.kamsiob.healthtrail.i18n.Bidi.isolate(project.name),
-                        sourceTable = "project",
-                        sourceId = project.id,
-                    )
-                }
-        }
-
-    return plain + perMeasure + perProject
 }
 
 /** Four things travelling together, which Kotlin has no name for. */

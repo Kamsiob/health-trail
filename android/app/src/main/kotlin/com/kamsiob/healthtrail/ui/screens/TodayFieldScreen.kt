@@ -1331,8 +1331,24 @@ private fun worded(
     cardType: String,
     answer: Repository.TodayAnswer?,
     today: LocalDate,
+): Repository.TodayAnswer? = wordedAnswer(cardType, answer, today, LocalStrings.current)
+
+/**
+ * The same wording, without a composition. `DESIGN.md` 9.2.
+ *
+ * **One function, two callers, and that is the point.** The gallery previews
+ * what a card would say if it were added, and it was reading the stored values
+ * instead: a project card the screen would show as "Waiting on somebody"
+ * previewed as "Nothing waiting", because status lives in a field the raw
+ * answer counts as empty. A preview that disagrees with the card it is
+ * previewing is worse than no preview.
+ */
+internal fun wordedAnswer(
+    cardType: String,
+    answer: Repository.TodayAnswer?,
+    today: LocalDate,
+    strings: Strings,
 ): Repository.TodayAnswer? {
-    val strings = LocalStrings.current
     if (answer == null || answer.sourceClosed) return answer
     return when (cardType) {
         "project_standing" -> answer.copy(
@@ -1415,7 +1431,7 @@ private fun worded(
  * state a brand new notebook is entirely made of. A crash there would be a
  * crash on the first screen anybody ever sees.
  */
-private fun emptyLineKey(cardType: String): String = when (cardType) {
+internal fun emptyLineKey(cardType: String): String = when (cardType) {
     "next_up" -> "today.card.next_up.none"
     "medications" -> "today.card.medications.none"
     "ask_next_time" -> "today.card.ask_next_time.none"
@@ -1482,7 +1498,7 @@ private fun projectStatusKey(status: String?): String = when (status) {
  * **Null for a card that does not answer with a number**, so a type that gains a
  * count later fails the `when` here rather than inventing a key.
  */
-private fun countLineKey(cardType: String): String? = when (cardType) {
+internal fun countLineKey(cardType: String): String? = when (cardType) {
     "medications" -> "today.card.medications.count"
     "incidents" -> "today.card.incidents.count"
     "unfiled" -> "today.card.unfiled.count"
