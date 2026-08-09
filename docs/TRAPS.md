@@ -32,6 +32,10 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **`walk.sh tap` matches on the label, so it fails in Arabic** when handed an English string, and the bottom navigation mirrors, so a coordinate that hit Today now hits More. **A NOT FOUND usually means below the fold or a different locale**, not absent. Swiping at a y inside the keyboard does nothing, which has read as "the button is unreachable" more than once.
 
+**`walk.sh tap` cannot match a label that carries a name, because the isolate marks are inside it.** `Bidi.join` wraps every part it is handed, so the Remove control on a Today card describes itself as `Remove ⁨Milestones⁩` and no plain string matches. It reports NOT FOUND, which reads as "below the fold" and is not. **Dump the tree and tap the bounds**, and re-dump between taps because removing a card reflows everything under it. Cost twenty minutes on 2026-08-09, and one blind tap landed on a different screen entirely.
+
+**`tap` matches on a substring, so a short word hits the longest sentence containing it.** `walk.sh tap "Remove"` matched a care team card whose answer is "Closed. Still here until you remove it." and opened the card instead of the control. Same night.
+
 **Distrust a negative result from a tool that cannot say what it did not examine.** Five times in one night and several since.
 
 **Look at every screenshot before committing it, and `screenshot.sh` is not the last control.** It refuses unless the app is focused, suppresses heads-up notifications and crops the status bar, and things still get through. A heads-up notification once put the owner's phone number and a contact photo into a capture. On 2026-08-08 the **system clipboard overlay** put his shell prompt into two, because it never takes focus and was not a heads-up, a toast or a popup; the pattern catches `clipboard` now. **Both times the image was caught by a person looking at it.** D53, D72. **Never screenshot the share sheet or the calendar app**: they show real contacts.
