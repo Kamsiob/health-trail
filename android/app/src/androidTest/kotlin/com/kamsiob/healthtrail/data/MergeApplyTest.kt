@@ -55,6 +55,14 @@ class MergeApplyTest {
         return ExportContainer.open(archive, staging, passphrase = secret).getOrThrow()
     }
 
+    /**
+     * Counted including tombstones, which is the whole point of the assertions
+     * below: a merge must neither bring a deleted row back nor lose one, and a
+     * live view can see neither happening.
+     */
+    // allow-base-table: see above.
+    private val ENTRY_ROWS = "SELECT count(*) FROM entry"
+
     private suspend fun countOf(sql: String): Int =
         HealthTrailDatabase.open(context).database.rawQuery(sql, null).use {
             if (it.moveToFirst()) it.getInt(0) else 0
@@ -70,13 +78,13 @@ class MergeApplyTest {
                 body = "Spoke to the night nurse",
             )
         }
-        val before = countOf("SELECT count(*) FROM entry")
+        val before = countOf(ENTRY_ROWS)
 
         val report = MergeApply.merge(context, opened, mergedAt = 1_785_000_100_000L).getOrThrow()
 
         assertEquals("nothing new arrives when the file came from this notebook",
             0, report.inserted)
-        assertEquals(before, countOf("SELECT count(*) FROM entry"))
+        assertEquals(before, countOf(ENTRY_ROWS))
         assertTrue("a merge of a notebook with itself has no conflicts", report.conflicts == 0)
         assertTrue("and everything in it is unchanged", report.unchanged > 0)
     }
@@ -177,7 +185,7 @@ class MergeApplyTest {
             net.zetetic.database.sqlcipher.SQLiteDatabase.OPEN_READWRITE,
         ).use { it.execSQL("UPDATE entry SET chapter_id = 'no-such-chapter'") }
 
-        val entriesBefore = countOf("SELECT count(*) FROM entry")
+        val entriesBefore = countOf(ENTRY_ROWS)
         val conflictsBefore = countOf("SELECT count(*) FROM conflict_log")
 
         val result = MergeApply.merge(context, opened, mergedAt = 1_785_000_100_000L)
@@ -186,7 +194,7 @@ class MergeApplyTest {
         val refused = result.exceptionOrNull() as MergeApply.Refused
         assertTrue("and name what it could not place",
             refused.dangling.any { it.parentTable == "chapter" })
-        assertEquals("nothing was written", entriesBefore, countOf("SELECT count(*) FROM entry"))
+        assertEquals("nothing was written", entriesBefore, countOf(ENTRY_ROWS))
         assertEquals(conflictsBefore, countOf("SELECT count(*) FROM conflict_log"))
     }
 
