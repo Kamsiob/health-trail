@@ -27,8 +27,12 @@ package com.kamsiob.healthtrail.data
  * decided in `contract/readable-fields.json` and `check_readable_coverage.py`
  * fails the build when a new column has no decision. This class renders what
  * that map says to render.
+ *
+ * **Visible beyond this file because [Words] is part of what an export is given**
+ * and `ExportContainer.Source` carries it, alongside the schema and the rows.
+ * Nothing outside the export path calls [render].
  */
-internal object ReadableArchive {
+object ReadableArchive {
 
     /** One row, as column name to value. Null is a null column, not an empty one. */
     typealias Row = Map<String, String?>
@@ -40,15 +44,82 @@ internal object ReadableArchive {
      *   caller. A deleted row is absent from the readable copy by definition:
      *   printing that something was deleted would put back what the person
      *   removed.
-     * @param lang the BCP 47 tag the person used the app in.
-     * @param dir "rtl" or "ltr".
+     * @param words every word the pages say that the person did not write,
+     *   already resolved in their language. Handed in rather than looked up,
+     *   for the reason in the class comment above.
      * @param subjectName who the record is about, for the front door.
      */
     data class Source(
         val tables: Map<String, List<Row>>,
-        val lang: String,
-        val dir: String,
+        val words: Words,
         val subjectName: String?,
+    )
+
+    /**
+     * The archive's own vocabulary, in the person's language.
+     *
+     * **Handed in, never looked up, and that is what makes the localization
+     * safe rather than a second failure.** This object is pure by contract, and
+     * a catalog lookup inside it would tie the strongest guarantee in the format
+     * to whatever the device happened to be set to at render time. So the caller
+     * resolves every word once and passes the result, and the renderer stays a
+     * function of its arguments.
+     *
+     * **The pages were English in every language until 2026-08-09**, which was
+     * found by exporting in Arabic and reading the result: `<html lang="ar"
+     * dir="rtl">` on a correctly mirrored page whose every heading was English.
+     * The direction half of section 8.2 was built and the language half had
+     * never been started. #327.
+     *
+     * **The three templates are functions rather than strings** because they
+     * carry a count or a year, and Arabic needs six plural forms for the count.
+     * Formatting belongs to the catalog, where a translator can see it, and ICU
+     * belongs to the caller, which has a locale. Determinism is unaffected: the
+     * same words and the same rows still produce the same bytes.
+     *
+     * **Dates are the one thing not in here**, and that is deliberate rather
+     * than missed. `ReadableDate` says why in its own comment: the month name is
+     * spelled in English because the stranger a date has to survive is a records
+     * office or a lawyer who may not read the person's language.
+     */
+    data class Words(
+        /** The BCP 47 tag the person used the app in. */
+        val lang: String,
+        /** "rtl" or "ltr". */
+        val dir: String,
+        /** Table name to the section heading a reader sees. */
+        val tables: Map<String, String>,
+        /** Column name to its field label. */
+        val columns: Map<String, String>,
+        /** What the front page is titled when the record names nobody. */
+        val subjectFallback: String,
+        /** The front page's opening paragraph, which is also its disclaimer. */
+        val about: String,
+        val datedHeading: String,
+        val wholeHeading: String,
+        val howToHeading: String,
+        /**
+         * The front page's closing paragraph.
+         *
+         * Carries `{database}` and `{attachments}` where the two paths go. They
+         * are substituted after escaping rather than before, because what
+         * replaces them is markup and escaping it would print the tags.
+         */
+        val howToBody: String,
+        /** The link every page carries back to the front page. */
+        val back: String,
+        /** What the year bucket for rows with no date is called. */
+        val undated: String,
+        /** A field the person never filled. Never blank and never zero. */
+        val notRecorded: String,
+        val yes: String,
+        val no: String,
+        /** The years covered, given the first and the last. Equal when one. */
+        val covers: (String, String) -> String,
+        /** One dated page's title, given its section name and its year. */
+        val yearTitle: (String, String) -> String,
+        /** How many records are on this page. Plural, in the locale's own rules. */
+        val records: (Int) -> String,
     )
 
     /**
@@ -59,6 +130,16 @@ internal object ReadableArchive {
      * asked to lay that out at once on an old phone will simply stop.
      *
      * The pair is the table and the column its year comes from.
+     *
+     * **Two of these named a column that does not exist**, `issued_edtf` on
+     * `bill` and `dated_edtf` on `document`, so every bill and every document
+     * ever exported was grouped under a null date and landed on one `undated`
+     * page. Nothing failed: a missing column reads as null and null is a real
+     * bucket, so the pages were produced, linked and counted, and the year they
+     * belonged to was simply gone. Both tables carry `received_edtf`, which is
+     * the date the person actually recorded. Found on 2026-08-09 by holding
+     * this list to `contract/readable-fields.json` while doing #327, and the
+     * reason it is now held there rather than here.
      */
     private val DATED = listOf(
         "entry" to "occurred_edtf",
@@ -66,8 +147,8 @@ internal object ReadableArchive {
         "appointment" to "scheduled_edtf",
         "measurement" to "occurred_edtf",
         "medication_event" to "occurred_edtf",
-        "bill" to "issued_edtf",
-        "document" to "dated_edtf",
+        "bill" to "received_edtf",
+        "document" to "received_edtf",
         "question" to "created_at",
         "milestone" to "occurred_edtf",
         "cost_entry" to "occurred_edtf",
@@ -105,6 +186,7 @@ internal object ReadableArchive {
      */
     fun render(source: Source, fieldMap: Map<String, TableFields>): Map<String, String> {
         val pages = LinkedHashMap<String, String>()
+        val words = source.words
         val labels = Labels(source, fieldMap)
 
         val datedPages = mutableListOf<PageRef>()
@@ -117,14 +199,24 @@ internal object ReadableArchive {
             // is what determinism means in practice.
             for (year in byYear.keys.sortedDescending()) {
                 val inYear = byYear.getValue(year).sortedBy { it["id"].orEmpty() }
+                // **The path stays in the schema's own words while the title is
+                // translated.** A file name is an address: it is what the index
+                // links to, what a person types, and what somebody who extracted
+                // this folder three years ago already has bookmarked. Translating
+                // it would mean the same notebook exported in two languages
+                // produces two folders that cannot be diffed, and a path with
+                // Arabic in it that some file systems will mangle.
                 val path = "$table-$year.html"
-                val title = "${labels.table(table)}, $year"
+                val title = words.yearTitle(
+                    labels.table(table),
+                    if (year == UNDATED) words.undated else year,
+                )
                 pages[path] = ReadablePage.render(
                     title = title,
-                    lang = source.lang,
-                    dir = source.dir,
+                    lang = words.lang,
+                    dir = words.dir,
                     upLink = "index.html",
-                    upLabel = "Back to the front page",
+                    upLabel = words.back,
                     body = section(title, inYear, fields, labels),
                 )
                 datedPages += PageRef(path, title, inYear.size)
@@ -141,10 +233,10 @@ internal object ReadableArchive {
             val title = labels.table(table)
             pages[path] = ReadablePage.render(
                 title = title,
-                lang = source.lang,
-                dir = source.dir,
+                lang = words.lang,
+                dir = words.dir,
                 upLink = "index.html",
-                upLabel = "Back to the front page",
+                upLabel = words.back,
                 body = section(title, sorted, fields, labels),
             )
             wholePages += PageRef(path, title, sorted.size)
@@ -169,55 +261,60 @@ internal object ReadableArchive {
         dated: List<PageRef>,
         whole: List<PageRef>,
     ): String {
+        val words = source.words
         val body = buildString {
             append("<h1>")
-            append(ReadablePage.escape(source.subjectName ?: "This record"))
+            append(ReadablePage.escape(source.subjectName ?: words.subjectFallback))
             append("</h1>\n")
-            append("<p class=\"sub\">")
-            append(
-                "A copy of a care notebook, written by the person who kept it. " +
-                    "Everything here is their own notes. It is not a clinical record " +
-                    "and nothing in it is advice.",
-            )
-            append("</p>\n")
+            append("<p class=\"sub\">").append(ReadablePage.escape(words.about)).append("</p>\n")
 
             val years = dated.mapNotNull { it.path.substringAfterLast('-').removeSuffix(".html").toIntOrNull() }
             if (years.isNotEmpty()) {
-                append("<p><strong>Covers ")
-                append(years.min())
-                if (years.min() != years.max()) {
-                    append(" to ").append(years.max())
-                }
+                append("<p><strong>")
+                append(ReadablePage.escape(words.covers(years.min().toString(), years.max().toString())))
                 append("</strong></p>\n")
             }
 
             if (dated.isNotEmpty()) {
-                append("<h2>What happened, by year</h2>\n<ul class=\"toc\">\n")
+                append("<h2>").append(ReadablePage.escape(words.datedHeading))
+                append("</h2>\n<ul class=\"toc\">\n")
                 for (ref in dated) append(tocItem(ref))
                 append("</ul>\n")
             }
             if (whole.isNotEmpty()) {
-                append("<h2>The people, places and things it refers to</h2>\n<ul class=\"toc\">\n")
+                append("<h2>").append(ReadablePage.escape(words.wholeHeading))
+                append("</h2>\n<ul class=\"toc\">\n")
                 for (ref in whole) append(tocItem(ref))
                 append("</ul>\n")
             }
 
-            append("<h2>How to read this</h2>\n")
-            append(
-                "<p>Every entry shows the id it has in <code>data/trail.sqlite</code>, " +
-                    "so anything here can be matched to the machine copy by hand. " +
-                    "Photographs and documents are in the <code>attachments</code> " +
-                    "folder beside this one, and the links here point straight at them. " +
-                    "Nothing on these pages needs an internet connection.</p>\n",
-            )
+            append("<h2>").append(ReadablePage.escape(words.howToHeading)).append("</h2>\n")
+            append("<p>").append(howTo(words.howToBody)).append("</p>\n")
         }
         return ReadablePage.render(
-            title = source.subjectName ?: "This record",
-            lang = source.lang,
-            dir = source.dir,
+            title = source.subjectName ?: words.subjectFallback,
+            lang = words.lang,
+            dir = words.dir,
             body = body,
         )
     }
+
+    /**
+     * The closing paragraph, with its two paths set in `<code>`.
+     *
+     * **Escaped first, substituted second, and the order is the whole of it.**
+     * What goes in is a sentence a translator wrote, which may contain anything;
+     * what comes out of the placeholders is markup this file controls. Escaping
+     * after substitution would print the tags, and substituting without escaping
+     * would let a catalog string carry HTML into the page.
+     *
+     * The braces survive escaping untouched, which is what makes this safe: the
+     * escaper rewrites five characters and none of them is a brace.
+     */
+    private fun howTo(template: String): String =
+        ReadablePage.escape(template)
+            .replace("{database}", "<code>data/trail.sqlite</code>")
+            .replace("{attachments}", "<code>attachments</code>")
 
     private fun tocItem(ref: PageRef): String =
         "<li><a href=\"${ReadablePage.escape(ref.path)}\">${ReadablePage.escape(ref.title)}</a>" +
@@ -231,8 +328,8 @@ internal object ReadableArchive {
         labels: Labels,
     ): String = buildString {
         append("<h1>").append(ReadablePage.escape(title)).append("</h1>\n")
-        append("<p class=\"sub\">").append(rows.size)
-        append(if (rows.size == 1) " record." else " records.")
+        append("<p class=\"sub\">")
+        append(ReadablePage.escape(labels.words.records(rows.size)))
         append("</p>\n")
         for (row in rows) append(item(row, fields, labels))
     }
@@ -270,13 +367,14 @@ internal object ReadableArchive {
         labels: Labels,
     ): String {
         val label = labels.column(column)
+        val words = labels.words
         return when (decision) {
             "id" -> "<div class=\"f\"><dt>${ReadablePage.escape(label)}</dt>" +
                 "<dd class=\"id\">${ReadablePage.escape(row[column].orEmpty())}</dd></div>"
 
             "date" -> {
                 val zone = row[column.removeSuffix("_edtf") + "_zone"]
-                ReadablePage.field(label, ReadableDate.render(row[column], zone))
+                ReadablePage.field(label, ReadableDate.render(row[column], zone), words.notRecorded)
             }
 
             // The zone is rendered as part of its own date rather than on its
@@ -291,9 +389,9 @@ internal object ReadableArchive {
             // "no". Section 8.2 keeps null, empty and zero as three different
             // things, and a flag nobody set is not a flag somebody cleared.
             "boolean" -> when (row[column]) {
-                null, "" -> ReadablePage.notRecorded(label)
-                "0" -> ReadablePage.field(label, "no")
-                else -> ReadablePage.field(label, "yes")
+                null, "" -> ReadablePage.notRecorded(label, words.notRecorded)
+                "0" -> ReadablePage.field(label, words.no, words.notRecorded)
+                else -> ReadablePage.field(label, words.yes, words.notRecorded)
             }
 
             // **The one link that leaves the page, and it goes nowhere near a
@@ -310,7 +408,7 @@ internal object ReadableArchive {
             "attachment" -> {
                 val digest = row[column]
                 if (digest.isNullOrBlank()) {
-                    ReadablePage.notRecorded(label)
+                    ReadablePage.notRecorded(label, words.notRecorded)
                 } else {
                     // **`ReadablePage.attachment` existed and nothing called
                     // it.** It was written when the page shell was, for exactly
@@ -324,25 +422,34 @@ internal object ReadableArchive {
             "link" -> {
                 val target = row[column]
                 if (target.isNullOrBlank()) {
-                    ReadablePage.notRecorded(label)
+                    ReadablePage.notRecorded(label, words.notRecorded)
                 } else {
-                    ReadablePage.field(label, labels.nameFor(column, target))
+                    ReadablePage.field(label, labels.nameFor(column, target), words.notRecorded)
                 }
             }
 
-            else -> ReadablePage.field(label, row[column])
+            else -> ReadablePage.field(label, row[column], words.notRecorded)
         }
     }
 
+    /**
+     * The year bucket for rows with no date, as it appears in a file name.
+     *
+     * **The path is never translated**, so this is the English word in every
+     * language and it is a path segment rather than prose. What a reader sees is
+     * `Words.undated`.
+     */
+    private const val UNDATED = "undated"
+
     private fun yearOf(value: String?): String {
-        if (value.isNullOrBlank()) return "undated"
+        if (value.isNullOrBlank()) return UNDATED
         // An epoch millisecond column, for the few dated tables that carry one.
         value.toLongOrNull()?.let { millis ->
             return java.time.Instant.ofEpochMilli(millis)
                 .atZone(java.time.ZoneOffset.UTC).year.toString()
         }
         val year = value.take(4)
-        return if (year.length == 4 && year.all { it.isDigit() }) year else "undated"
+        return if (year.length == 4 && year.all { it.isDigit() }) year else UNDATED
     }
 
     /** A table's rendering decisions, in a fixed order. */
@@ -356,11 +463,22 @@ internal object ReadableArchive {
      * dump wearing a stylesheet, and section 8.2's whole standard is that a
      * stranger can read it.
      *
+     * **The words come from [Words] and this class only chooses between them.**
+     * They were two hard-coded English maps until 2026-08-09, which is why an
+     * Arabic archive was a correctly mirrored page of English. #327.
+     *
      * Anything without a specific word falls back to the column name with its
      * underscores opened out and its suffixes dropped, which is not elegant and
      * is honest: it is visibly a field rather than pretending to be prose.
+     * **In the shipped app that fallback is unreachable**, because
+     * `check_readable_labels.py` fails the build when a rendered table or column
+     * has no label in all four catalogs. It is here for a caller holding a
+     * partial vocabulary, which in practice means a test.
      */
     private class Labels(val source: Source, val fieldMap: Map<String, TableFields>) {
+
+        val words: Words get() = source.words
+
         private val names: Map<String, String> = buildMap {
             for ((table, rows) in source.tables) {
                 for (row in rows) {
@@ -373,119 +491,13 @@ internal object ReadableArchive {
 
         fun nameFor(column: String, id: String): String = names[id] ?: id
 
-        fun table(table: String): String = TABLES[table] ?: open(table)
+        fun table(table: String): String = words.tables[table] ?: open(table)
 
-        fun column(column: String): String = COLUMNS[column] ?: open(
+        fun column(column: String): String = words.columns[column] ?: open(
             column.removeSuffix("_edtf").removeSuffix("_id").removeSuffix("_at"),
         )
 
         private fun open(raw: String): String =
             raw.replace('_', ' ').replaceFirstChar { it.uppercase() }
     }
-
-    private val TABLES = mapOf(
-        "entry" to "The trail",
-        "incident" to "Incidents",
-        "appointment" to "Appointments",
-        "measurement" to "Measurements",
-        "medication_event" to "Medication changes",
-        "bill" to "Bills",
-        "document" to "Documents",
-        "question" to "Questions",
-        "milestone" to "Milestones",
-        "cost_entry" to "Costs",
-        "instruction_violation" to "Times an instruction was not followed",
-        "subject" to "Who this is about",
-        "person" to "The care team",
-        "organization" to "Places and organizations",
-        "chapter" to "Chapters",
-        "care_thread" to "Care threads",
-        "medication" to "Medications",
-        "medication_flag" to "Concerns raised about a medication",
-        "measure" to "What was tracked",
-        "project" to "Projects",
-        "project_step" to "Project steps",
-        "standing_instruction" to "Standing instructions",
-        "emergency_card" to "Emergency card",
-        "emergency_contact" to "Emergency contacts",
-        "cost_sheet" to "Cost sheets",
-        "custom_template" to "Templates the person made",
-        "attachment" to "Files",
-        "link" to "Connections between records",
-        "person_chapter" to "Who was involved in each chapter",
-        "entry_thread" to "Which thread each entry belongs to",
-        "entry_person" to "Who each entry involved",
-        "project_person" to "Who each project involved",
-        "call_detail" to "Details of calls",
-        "visit_detail" to "Details of visits",
-        "project_stage" to "The stages of each project",
-        "project_standing" to "Where each project stood, and since when",
-        "project_date" to "Dates each project had, and where they came from",
-        "project_date_kind" to "The kinds of date each project keeps",
-        "project_paper" to "Papers each project needed",
-        "today_card" to "How Today was arranged",
-    )
-
-    private val COLUMNS = mapOf(
-        "id" to "Reference",
-        "title" to "What it was",
-        "body" to "What was written",
-        "display_name" to "Name",
-        "role_label" to "Their role",
-        "occurred_edtf" to "When",
-        "reported_edtf" to "Reported",
-        "scheduled_edtf" to "Scheduled for",
-        "issued_edtf" to "Dated",
-        "dated_edtf" to "Dated",
-        "started_edtf" to "Started",
-        "ended_edtf" to "Ended",
-        "resolved_at" to "Answered",
-        "resolution_note" to "How it was answered",
-        "shift_note" to "Which shift",
-        "phone" to "Phone",
-        "email" to "Email",
-        "notes" to "Notes",
-        "note" to "Note",
-        "description" to "Description",
-        "kind" to "Kind",
-        "unit" to "Unit",
-        "value_number" to "Value",
-        "value_text" to "Value as written",
-        "archived_at" to "Archived",
-        "pinned_at" to "Pinned",
-        "is_unfiled" to "Still waiting to be filed",
-        "suggested_home" to "Where the app suggested it went",
-        "subject_id" to "Who this is about",
-        "chapter_id" to "Chapter",
-        "incident_id" to "Incident",
-        "organization_id" to "Organization",
-        "measure_id" to "What was tracked",
-        "entry_id" to "Entry",
-        "reported_by_person_id" to "Reported by",
-        "source" to "Where it came from",
-        "holder_label" to "Whose hands",
-        "activity" to "What was happening",
-        "since_edtf" to "Since",
-        "entered_edtf" to "Reached",
-        "due_edtf" to "The date",
-        "source_note" to "Taken from",
-        "source_document_id" to "The paper it came from",
-        "source_entry_id" to "The entry it came from",
-        "current_stage_id" to "Where it stands",
-        "lead" to "What this project opens with",
-        "cluster" to "Which area",
-        "handler_label" to "Who is handling it",
-        "direction" to "Sent or received",
-        "document_id" to "The paper",
-        "project_id" to "Project",
-        "person_id" to "Person",
-        "card_type" to "Which card",
-        "size" to "Its size",
-        "sort_index" to "Its place in the order",
-        "is_lead" to "Held the top of the screen",
-        "source_table" to "What it pointed at",
-        "source_id" to "The reference it pointed at",
-        "label" to "Label",
-        "name" to "Name",
-    )
 }

@@ -245,6 +245,19 @@ object ExportContainer {
          */
         val schemaSql: String,
         /**
+         * Every word the readable copy says, in the person's own language.
+         *
+         * **Passed in for the same reason `schemaSql` is**, and it is the same
+         * argument: this object is the format and the format does not know
+         * where an app keeps its catalogs. `ReadableWords.from` reads them and
+         * hands over a plain value.
+         *
+         * **No default, deliberately.** A default would be an English archive
+         * that nothing complains about, which is precisely the defect this
+         * argument exists to close. #327.
+         */
+        val readableWords: ReadableArchive.Words,
+        /**
          * The person's own reminder, or null if they did not write one.
          *
          * Trimmed and emptied to null by the caller, so the format never has to
@@ -290,7 +303,7 @@ object ExportContainer {
         // Rendered before the manifest, because the manifest reports how many
         // pages there are and a count written before the pages exist is a claim
         // rather than a fact.
-        val readable = readablePages(source.database)
+        val readable = readablePages(source.database, source.readableWords)
 
         // Fresh per file. Reusing a nonce under one key is the mistake that
         // breaks GCM outright rather than merely weakening it.
@@ -725,23 +738,20 @@ object ExportContainer {
      * a failed export, not a quiet one.
      */
     @VisibleForTesting
-    internal fun readablePages(database: File): Map<String, String> = try {
+    internal fun readablePages(
+        database: File,
+        words: ReadableArchive.Words,
+    ): Map<String, String> = try {
         val fields = ReadableFieldMap.tables
         val rows = ReadableRows.read(database, fields.keys)
         ReadableArchive.render(
             ReadableArchive.Source(
                 tables = rows,
-                // The locale the readable copy is written in, section 8.2. The
-                // catalog the app is running is the one the person chose.
-                lang = java.util.Locale.getDefault().toLanguageTag(),
-                dir = if (
-                    android.text.TextUtils.getLayoutDirectionFromLocale(java.util.Locale.getDefault()) ==
-                    android.view.View.LAYOUT_DIRECTION_RTL
-                ) {
-                    "rtl"
-                } else {
-                    "ltr"
-                },
+                // The language the readable copy is written in, section 8.2,
+                // and every word it uses. **Both travel together in [words]**,
+                // because the direction was right and the language was English
+                // for as long as they were two separate questions. #327.
+                words = words,
                 subjectName = ReadableRows.subjectName(rows),
             ),
             fields,

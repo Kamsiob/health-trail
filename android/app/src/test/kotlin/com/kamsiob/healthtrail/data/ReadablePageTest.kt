@@ -64,7 +64,7 @@ class ReadablePageTest {
         // tag, because an archive that loses half a note has failed at its job.
         val html = ReadablePage.render(
             title = "T", lang = "en", dir = "ltr",
-            body = ReadablePage.field("Note", "she said <no> & meant it"),
+            body = ReadablePage.field("Note", "she said <no> & meant it", "not recorded"),
         )
         assertTrue(html.contains("she said &lt;no&gt; &amp; meant it"))
         assertFalse(html.contains("<no>"))
@@ -82,16 +82,26 @@ class ReadablePageTest {
         // and "the archive lost it". A zero is a measurement nobody took being
         // reported as a measurement of zero.
         for (empty in listOf(null, "", "   ")) {
-            val html = ReadablePage.field("Blood type", empty)
+            val html = ReadablePage.field("Blood type", empty, "not recorded")
             assertTrue(html.contains("not recorded"))
             assertFalse(html.contains(">0<"))
         }
     }
 
     @Test
+    fun `the phrase for an unfilled field comes from the caller, not from this file`() {
+        // #327. This file has no locale and the page is written in the language
+        // the person used the app in, so the words arrive as arguments. It said
+        // "not recorded" in Arabic archives until the words were passed in.
+        val html = ReadablePage.field("فصيلة الدم", null, "غير مُدوَّن")
+        assertTrue(html.contains("غير مُدوَّن"))
+        assertFalse(html.contains("not recorded"))
+    }
+
+    @Test
     fun `a filled field renders its value`() {
-        assertTrue(ReadablePage.field("Blood type", "O positive").contains("O positive"))
-        assertFalse(ReadablePage.field("Blood type", "O positive").contains("not recorded"))
+        assertTrue(ReadablePage.field("Blood type", "O positive", "not recorded").contains("O positive"))
+        assertFalse(ReadablePage.field("Blood type", "O positive", "not recorded").contains("not recorded"))
     }
 
     @Test

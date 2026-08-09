@@ -26,6 +26,7 @@ CHECKS = [
     ("check_contract_isolation.py", "/contract stays platform neutral, no second schema"),
     ("check_schema.py", "schema.sql against the data contract, shape and behavior"),
     ("check_readable_coverage.py", "every schema column is rendered in the archive or explicitly not"),
+    ("check_readable_labels.py", "every table and column the archive renders has a word in all four languages"),
     ("check_decrypt_tool.py", "an archive still opens with only the standalone decryptor"),
     ("check_format_spec.py", "the published format specification still matches the code"),
     ("check_query_ordering.py", "every query feeding a render or an export orders itself"),

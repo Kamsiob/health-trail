@@ -109,6 +109,16 @@ object Backup {
                     schemaSql = context.assets
                         .open(com.kamsiob.healthtrail.contract.ContractAssets.SCHEMA_PATH)
                         .use { it.readBytes().decodeToString() },
+                    // **The readable copy's own words, in the person's
+                    // language.** Read here rather than in the container for
+                    // the same reason the schema is: this is the layer that has
+                    // a context, and `ExportContainer` is the format. Asked of
+                    // `Strings.load` rather than of `Locale.getDefault`,
+                    // because the default is not reliably the language the
+                    // person set this app to. #327.
+                    readableWords = ReadableWords.from(
+                        com.kamsiob.healthtrail.i18n.Strings.load(context),
+                    ),
                     passphraseHint = passphraseHint?.trim()?.takeIf { it.isNotEmpty() },
                 ),
                 passphrase = passphrase,

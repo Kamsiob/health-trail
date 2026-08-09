@@ -37,6 +37,17 @@ import com.kamsiob.healthtrail.time.Edtf
  * proves the archive round trips through the container, and the fuller version
  * proves it round trips through `Backup.restore` as well. That needs the import
  * path finished, #211, and it is the natural next step for this file.
+ *
+ * **And it now holds one thing constant that the format does not record.** Since
+ * #327 the pages are written in the person's language, so the bytes are a
+ * function of the vocabulary as well as of the rows. This test loads the same
+ * catalogs on both sides, which is true of an export and a regeneration on one
+ * phone and is exactly the case 8.5 describes. It is not true of a restore onto
+ * a phone set to a different language: the same rows would regenerate correct
+ * pages in that language and they would not be byte identical to the archive's.
+ * **Nothing in `contract/EXPORT-FORMAT.md` carries the locale**, which is the
+ * open question already filed as #210, and this is a second reason to settle it.
+ * Not a session's call, so it is said here rather than fixed.
  */
 class RegenerationTest {
 
@@ -76,7 +87,14 @@ class RegenerationTest {
         val staging = File(work, "staging")
         val opened = ExportContainer.open(archive, staging, passphrase = secret)
         assertTrue("the archive did not open: ${opened.exceptionOrNull()}", opened.isSuccess)
-        val regenerated = ExportContainer.readablePages(opened.getOrThrow().database)
+        // **The same vocabulary, because the pages are now a function of it as
+        // well as of the rows.** `Backup.export` reads the catalogs the same
+        // way, so this is the same value the archive was written with, and the
+        // caveat in the class comment is about the day it would not be.
+        val regenerated = ExportContainer.readablePages(
+            opened.getOrThrow().database,
+            ReadableWords.from(com.kamsiob.healthtrail.i18n.Strings.load(context)),
+        )
 
         assertEquals(
             "the set of readable pages changed across the round trip",

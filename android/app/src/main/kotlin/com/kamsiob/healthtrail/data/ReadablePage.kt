@@ -97,13 +97,19 @@ internal object ReadablePage {
      * person never filled reads as not recorded. A blank cell is ambiguous
      * between "nothing was written" and "the archive lost it", and a zero is a
      * measurement nobody took being reported as a measurement of zero.
+     *
+     * @param word the phrase itself, in the person's language, from
+     *   `ReadableArchive.Words`. **Passed in rather than written here**, because
+     *   this file has no locale and the page is written in the language the
+     *   person used the app in. It said "not recorded" in Arabic archives until
+     *   2026-08-09. #327.
      */
-    fun notRecorded(label: String): String =
-        "<div class=\"f\"><dt>${escape(label)}</dt><dd class=\"none\">not recorded</dd></div>"
+    fun notRecorded(label: String, word: String): String =
+        "<div class=\"f\"><dt>${escape(label)}</dt><dd class=\"none\">${escape(word)}</dd></div>"
 
-    fun field(label: String, value: String?): String =
+    fun field(label: String, value: String?, notRecordedWord: String): String =
         if (value.isNullOrBlank()) {
-            notRecorded(label)
+            notRecorded(label, notRecordedWord)
         } else {
             "<div class=\"f\"><dt>${escape(label)}</dt><dd>${escape(value)}</dd></div>"
         }

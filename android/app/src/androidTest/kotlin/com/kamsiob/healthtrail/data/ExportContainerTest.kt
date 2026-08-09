@@ -56,6 +56,13 @@ class ExportContainerTest {
         subjectCount = 1,
         exportedAt = 1_753_977_600_000L,
         schemaSql = "-- the schema this payload was written against\nCREATE TABLE entry (id TEXT);\n",
+        // The real catalogs, read the way the app reads them, so a container
+        // written here carries the words a real export would carry. #327.
+        readableWords = ReadableWords.from(
+            com.kamsiob.healthtrail.i18n.Strings.load(
+                InstrumentationRegistry.getInstrumentation().targetContext,
+            ),
+        ),
     )
 
     /**
