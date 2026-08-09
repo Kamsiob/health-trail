@@ -279,7 +279,7 @@ fun RestoreScreen(
                             // removed": setting that in alarm red was visible
                             // the moment it was looked at on the phone, and an
                             // app that shouts reassurance teaches people to
-                            // ignore the colour when it means something.
+                            // ignore the color when it means something.
                             color = when (chosen) {
                                 RestoreHow.REPLACE -> colors.alertInk
                                 RestoreHow.MERGE -> colors.ink2
