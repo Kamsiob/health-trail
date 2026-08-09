@@ -88,7 +88,16 @@ It is grouped under the binder's own section names with the situation's suggesti
 
 Both reach the phone through `tools/seed.sh month6 6 <pass> --quiet` or `--situation home_family`, and `tools/device.sh` takes the same arguments.
 
-**What is left in milestone 1:** #293, #294 and #295, which are one arranged year-three layout and the digest's return voice. **They need fixture work too**: a layout that is not the template default, an appointment falling on the generated today, and a last visit four months back, which lives on the device rather than in the notebook.
+**#293 and #294 are done, and they are a pair on purpose.** `--arranged` writes a Today somebody has made their own: a chart leading, a project's next date added, the never-used cards taken off, and **the demoted digest living on as a wide field card**, D111. `--appointment-on YYYY-MM-DD` moves the soonest appointment to a given day. **Seeded twice, differing in exactly one fact, the seven cards are in the same order both times and only the answers change.** That is the trust model, 21.8, and it is the first time it has been shown rather than asserted.
+
+**The date is an argument rather than a clock**, because the generator must stay reproducible: `check_fixtures.py` holds one seed to byte identical output. The first attempt put the appointment on the fixture's own last day, which is six weeks in the past by the time anybody looks at it, so Next up went on naming something in November.
+
+**Two defects came out of it.**
+
+- **A chart promoted to the lead could not draw one.** The lead left `tall` at its default, so a measure at the top of somebody's Today listed its readings. Grid screen 02 is a chart at the lead, so the screen the design asks for could not exist. The lead is full width at display scale, which is more room than a tall card has, and it draws its chart now, gaps as gaps.
+- **`Bidi.isolate` is idempotent now**, which retires a whole family. Four separate defects have been isolate marks nested by a second call, and the rule they kept restating is that the caller joins once. Isolating something already isolated does nothing, so it does nothing.
+
+**What is left in milestone 1:** #295, the digest's return voice, which needs the device's own last-visit mark set back rather than anything in the notebook.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 

@@ -53,7 +53,21 @@ object Bidi {
      * Use it wherever a value composed elsewhere is dropped into a sentence, for
      * example a person's name inside a question or a file name inside a warning.
      */
-    fun isolate(text: String): String = "$FIRST_STRONG_ISOLATE$text$POP_DIRECTIONAL_ISOLATE"
+    fun isolate(text: String): String =
+        // **Isolating something already isolated does nothing, so it does
+        // nothing.** `join` isolates every part it is handed, and a joined
+        // string then passed to a renderer that isolates its lines came out
+        // `⁨⁨Today⁩ · ⁨10:15 AM⁩⁩`. The marks are invisible on screen and they
+        // are not invisible in the semantics tree, which is what a reader
+        // walks and what four separate defects have now been found in. The
+        // rule those four kept restating is that the caller joins once, and
+        // this makes the second call harmless rather than relying on nobody
+        // ever making it.
+        if (FIRST_STRONG_ISOLATE in text) {
+            text
+        } else {
+            "$FIRST_STRONG_ISOLATE$text$POP_DIRECTIONAL_ISOLATE"
+        }
 
     /**
      * Joins the parts that are actually there, each isolated, with [separator].

@@ -665,7 +665,10 @@ private fun LeadSlot(
                 cardType = card.type,
                 sourced = card.sourceId != null,
                 showItems = true,
-                drewChart = false,
+                // **The lead draws its chart**, so a reader hears a chart where
+                // the eye sees one. This said false while the lead could not
+                // draw one at all, and both halves were wrong together.
+                drewChart = (shown?.series?.size ?: 0) > 1,
                 countLine = countLineKey(card.type)?.let { strings[it] },
             ),
         ),
@@ -685,6 +688,13 @@ private fun LeadSlot(
             sourced = card.sourceId != null,
             lead = true,
             showDetail = true,
+            // **The lead has the height for a chart, always.** Grid screen 02
+            // promotes a chart to the lead, and the lead could not draw one:
+            // `tall` was left at its default, so a measure at the top of
+            // somebody's Today listed its readings instead. The screen the
+            // design asks for could not exist. The lead is full width and sits
+            // at display scale, which is more room than a tall card has.
+            tall = true,
             hue = hueForCard(card.type),
         )
 

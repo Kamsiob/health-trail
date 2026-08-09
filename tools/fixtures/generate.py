@@ -111,7 +111,15 @@ INCIDENT_STEPS = [
 class Generator:
     """Everything that writes, in one place, so the seed reaches all of it."""
 
-    def __init__(self, seed, days, situation=DEFAULT_SITUATION, quiet=False):
+    def __init__(
+        self,
+        seed,
+        days,
+        situation=DEFAULT_SITUATION,
+        quiet=False,
+        arranged=False,
+        appointment_on=None,
+    ):
         self.rng = random.Random(seed)
         self.days = days
         self.start = HISTORY_ENDS - timedelta(days=days)
@@ -127,6 +135,22 @@ class Generator:
         # seed could reach it, so the surface's hardest state was the one nobody
         # could look at.
         self.quiet = quiet
+        # **Whether this Today has been made somebody's own.** Grid screen 02 is
+        # a notebook in its third year: a chart promoted to the lead, a
+        # project's date added, what was never used taken off, and the digest
+        # living on as a wide field card, D111. The default spread is a template
+        # hand nobody has touched, so it cannot show that.
+        self.arranged = arranged
+        # **The day something is happening, given rather than found.** Grid
+        # screen 03 is the same layout as 02 with an appointment this morning,
+        # and the pair is the trust model made visible: the digest changes
+        # because the record changed and not one card moves.
+        #
+        # **The generator never reads a clock**, because a fixture nobody can
+        # reproduce is not a fixture: `check_fixtures.py` holds the same seed to
+        # byte identical output. The caller says which day, and for "this
+        # morning" the caller is whoever is standing at the phone.
+        self.appointment_on = appointment_on
         self.device = "fixture-%016x" % seed
         # A counter rather than a clock, so ids are stable across runs and
         # still sort in creation order the way UUIDv7 does in the app.
@@ -223,10 +247,52 @@ class Generator:
         self.connect_entries_to_projects(db, subject_id, projects)
         # Last of all, because a card points at a measure, a project or a
         # person, and every one of them has to exist before the card names it.
+        if self.appointment_on:
+            self.bring_an_appointment_forward(db, subject_id)
         self.today_layout(db, subject_id)
         if self.quiet:
             self.settle_everything(db, subject_id)
         db.commit()
+
+    def bring_an_appointment_forward(self, db, subject_id):
+        """Puts one appointment on the day the notebook ends. Grid screen 03.
+
+        **The pair with screen 02 is the point.** Same layout, different data:
+        the digest sentence changes because the record changed and not one card
+        moves. That is the whole trust model of the surface, 21.8, and it can
+        only be shown by two notebooks that differ in exactly one fact.
+
+        **The soonest one ahead is moved rather than a new one written**, so the
+        notebook still holds the appointments somebody would actually have, and
+        the one this morning is one of them rather than an extra.
+        """
+        row = db.execute(
+            "SELECT id FROM appointment WHERE deleted_at IS NULL AND subject_id = ?"
+            " AND scheduled_start IS NOT NULL ORDER BY scheduled_start LIMIT 1",
+            (subject_id,),
+        ).fetchone()
+        if row is None:
+            return
+        on = date.fromisoformat(self.appointment_on)
+        # **The app's clock is the phone's, and the notebook's history ends
+        # where the generator says.** An appointment placed on the fixture's own
+        # last day is already in the past by the time anybody looks at it, so
+        # Next up went on showing something in November and the morning this
+        # screen is about never arrived. The day comes in as a real date.
+        start = int(
+            datetime(on.year, on.month, on.day, 10, 15, tzinfo=self.ZONE).timestamp() * 1000
+        )
+        db.execute(
+            "UPDATE appointment SET scheduled_edtf = ?, scheduled_start = ?,"
+            " scheduled_end = ?, updated_at = ? WHERE id = ?",
+            (
+                f"{on.isoformat()}T10:15",
+                start,
+                start + 60 * 60 * 1000,
+                self.ms(max(0, self.days - 1)),
+                row[0],
+            ),
+        )
 
     def settle_everything(self, db, subject_id):
         """Nothing scheduled, nothing open, nothing waiting. Grid screen 10.
@@ -463,6 +529,59 @@ class Generator:
         # that changes in `templates/data/situations.json` changes here too. A
         # fixture that disagrees with the catalog shows a screen the app would
         # never draw.
+        # **A Today somebody has made their own.** Grid screen 02, the notebook
+        # in its third year: a chart promoted to the lead, a project's next date
+        # added, the cards that were never used taken off, and **the demoted
+        # digest living on as a wide field card**, D111 item 5. The spread below
+        # is a template hand nobody has touched, which is the opposite of what
+        # that screen is about.
+        #
+        # **The lead is a measure with numbers in it**, because a chart is the
+        # thing being promoted and a measure recorded in words has none to draw.
+        if self.arranged:
+            numeric = db.execute(
+                "SELECT m.id FROM measure m JOIN measurement v ON v.measure_id = m.id "
+                "WHERE m.deleted_at IS NULL AND v.deleted_at IS NULL "
+                "AND v.value_number IS NOT NULL GROUP BY m.id ORDER BY COUNT(*) DESC LIMIT 1"
+            ).fetchone()
+            dated = db.execute(
+                "SELECT p.id FROM project p JOIN project_date d ON d.project_id = p.id "
+                "WHERE p.deleted_at IS NULL AND d.deleted_at IS NULL "
+                "AND p.status NOT IN ('done', 'abandoned') "
+                "GROUP BY p.id ORDER BY MIN(d.due_start) LIMIT 1"
+            ).fetchone()
+            hand = []
+            if numeric:
+                hand.append(("measure", "tall", "measure", numeric[0]))
+            if dated:
+                hand.append(("project_date", "small", "project", dated[0]))
+            hand.append(("next_up", "wide", None, None))
+            hand.append(("medications", "small", None, None))
+            # **The digest, demoted rather than removed.** D111: it stops being
+            # the lead and becomes a wide field card, which is what promoting
+            # anything else to the lead does to whatever was there.
+            hand.append(("digest", "wide", None, None))
+            hand.append(("care_team", "wide", None, None))
+            hand.append(("trail_lately", "tall", None, None))
+            # **Nothing about money, the tray or the papers**, because this is a
+            # notebook whose person never used those cards and took them off.
+            for position, (card_type, size, table, row_id) in enumerate(hand):
+                self.row(
+                    db,
+                    "today_card",
+                    {
+                        "subject_id": subject_id,
+                        "card_type": card_type,
+                        "size": size,
+                        "sort_index": position,
+                        "is_lead": 1 if position == 0 else 0,
+                        "source_table": table,
+                        "source_id": row_id,
+                    },
+                    day=max(0, self.days - 1),
+                )
+            return
+
         if self.situation != DEFAULT_SITUATION:
             for position, (card_type, size) in enumerate(
                 starting_hands()[self.situation]
@@ -2183,7 +2302,15 @@ def starting_hands():
     }
 
 
-def generate(seed, point, out, situation=DEFAULT_SITUATION, quiet=False):
+def generate(
+    seed,
+    point,
+    out,
+    situation=DEFAULT_SITUATION,
+    quiet=False,
+    arranged=False,
+    appointment_on=None,
+):
     if point not in POINTS:
         raise SystemExit(f"unknown point {point!r}. One of: {', '.join(POINTS)}")
     if situation not in starting_hands():
@@ -2198,7 +2325,14 @@ def generate(seed, point, out, situation=DEFAULT_SITUATION, quiet=False):
 
     db = sqlite3.connect(out)
     db.executescript(SCHEMA.read_text(encoding="utf-8"))
-    Generator(seed, POINTS[point], situation=situation, quiet=quiet).build(db)
+    Generator(
+        seed,
+        POINTS[point],
+        situation=situation,
+        quiet=quiet,
+        arranged=arranged,
+        appointment_on=appointment_on,
+    ).build(db)
     counts = {
         table: db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
         for table in (
@@ -2237,9 +2371,31 @@ def main():
         action="store_true",
         help="nothing scheduled, nothing open, nothing waiting. Grid screen 10",
     )
+    parser.add_argument(
+        "--arranged",
+        action="store_true",
+        help="a Today somebody has made their own, with a chart leading."
+        " Grid screen 02",
+    )
+    parser.add_argument(
+        "--appointment-on",
+        default=None,
+        metavar="YYYY-MM-DD",
+        help="move the soonest appointment to this day. Grid screen 03."
+        " A date rather than a switch, because the generator never reads a"
+        " clock: a fixture nobody can reproduce is not a fixture",
+    )
     args = parser.parse_args()
 
-    counts = generate(args.seed, args.at, args.out, args.situation, args.quiet)
+    counts = generate(
+        args.seed,
+        args.at,
+        args.out,
+        args.situation,
+        args.quiet,
+        args.arranged,
+        args.appointment_on,
+    )
     print(f"Wrote {args.out} at {args.at}, seed {args.seed}.")
     for table, count in counts.items():
         print(f"  {table}: {count}")
