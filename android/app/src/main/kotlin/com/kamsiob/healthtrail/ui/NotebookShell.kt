@@ -269,6 +269,15 @@ fun NotebookShell(
     var addingPerson by remember { mutableStateOf(false) }
     /** Roles the active situation names, offered as chips when adding a contact. */
     var roleSuggestions by remember { mutableStateOf<List<String>>(emptyList()) }
+    /**
+     * The card types this person's stated situation starts them with.
+     *
+     * **The gallery puts them first**, 21.6 screen 6. It is the person's own
+     * stated situation and never inference, per 21.5: this app does not watch
+     * its user, and the only two things that shape Today are what they chose
+     * and what they told it.
+     */
+    var suggestedCards by remember { mutableStateOf<Set<String>>(emptySet()) }
     var savingPerson by remember { mutableStateOf<PersonDraft?>(null) }
     // The person or medication being corrected. Null means the form, when
     // open, is adding rather than editing.
@@ -637,6 +646,7 @@ fun NotebookShell(
             // offers them rather than asking the person to type a job title
             // from memory. The catalog has carried them since it was written.
             roleSuggestions = rolesFor(context, subject?.situationTemplateId)
+            suggestedCards = startingHandFor(context, subject?.situationTemplateId)
             // Counts belong to a subject. With no subject there is no notebook
             // to count, and showing zeros would be inventing a notebook that
             // does not exist yet.
@@ -1714,7 +1724,15 @@ fun NotebookShell(
             }
 
             AddCardSheet(
-                offers = cardOffers(onScreen, measures, projects, offerAnswers, strings, LocalDate.now()),
+                offers = cardOffers(
+                    onScreen = onScreen,
+                    measures = measures,
+                    projects = projects,
+                    answers = offerAnswers,
+                    strings = strings,
+                    today = LocalDate.now(),
+                    suggested = suggestedCards,
+                ),
                 onAdd = { offer ->
                     // **Written straight away**, so the card is there when the
                     // person looks. Appended to what was already on the draft,
@@ -3776,6 +3794,29 @@ private suspend fun rolesFor(
         .orEmpty()
 }
 
+/**
+ * The card types a situation's starting hand puts on Today. `DESIGN.md` 21.5.
+ *
+ * **The types rather than the whole hand**, because the gallery is choosing what
+ * to offer rather than rebuilding a layout: what it needs to know is whether
+ * this kind of card is one the situation suggested.
+ *
+ * Empty for somebody who skipped the situation question, which is a real answer
+ * and not a gap: the gallery simply has no group to put first.
+ */
+private suspend fun startingHandFor(
+    context: android.content.Context,
+    templateId: String?,
+): Set<String> {
+    if (templateId == null) return emptySet()
+    return TemplateCatalog.situations(context).all
+        .firstOrNull { it.id == templateId }
+        ?.startingHand
+        ?.map { it.first }
+        ?.toSet()
+        .orEmpty()
+}
+
 private suspend fun emphasisFor(
     context: android.content.Context,
     templateId: String?,
@@ -3889,7 +3930,7 @@ private fun exportFileName(): String {
     return "healthtrail-export-$stamp.zip"
 }
 
-private val SECTION_ORDER = listOf(
+internal val SECTION_ORDER = listOf(
     Repository.Section.CARE_TEAM,
     Repository.Section.MEDICATIONS,
     Repository.Section.APPOINTMENTS,
@@ -4047,7 +4088,7 @@ private fun coachingSteps(
  * answer lives. **Null for a card whose home is not one of the sections**, and
  * those are handled by the caller rather than being sent somewhere close enough.
  */
-private fun sectionForCard(type: String): Repository.Section? = when (type) {
+internal fun sectionForCard(type: String): Repository.Section? = when (type) {
     "next_up" -> Repository.Section.APPOINTMENTS
     "medications" -> Repository.Section.MEDICATIONS
     "ask_next_time" -> Repository.Section.ASK_NEXT_TIME

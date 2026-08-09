@@ -914,6 +914,7 @@
   "today.add.title": "What would you like on Today?",
   "today.add.lead": "Each one answers one question about what you have written down. Add as many as you like, and take any of them off again.",
   "today.add.none": "Everything is already on Today.",
+  "today.add.suggested": "Suggested for how things are now",
   "today.add.this": "Add {name}",
   "today.add.back": "Back to Today",
   "today.card.project_standing.long": "Where it stands",

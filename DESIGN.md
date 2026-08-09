@@ -916,7 +916,7 @@ Every card declares **one query** over the same single database. Queries run whe
 3. **The morning of an appointment.** Same layout as 2, different data. **Data moves; cards never move themselves.**
 4. **Back after four months.** The digest takes the return voice regardless of which card holds the lead.
 5. **Editing Today.** Entered by the **visible Edit button**; touch and hold is a shortcut, never the only path. Remove dot, drag handle, size chips. **Done saves; nothing saves behind your back.**
-6. **Adding a card.** A sheet grouped by section in binder order, each entry previewing its small size **with real current data**. The situation's suggestions first.
+6. **Adding a card.** A sheet grouped by section in binder order, each entry previewing its small size **with real current data**. The situation's suggestions first, as a group of their own at the top, and a card is in one group only. **The whole row adds the card**, D123: rule 23 takes the easier target, and a full width row is one a thumb finds in a corridor. **The preview wraps**, per D105, because it is the thing being read to choose.
 7. **One card's options.** Size chips, the source picker, Make this the lead, and **Move up and Move down as the accessible reorder path**.
 8. **Largest font size.** The field reflows to one column at full width, nothing clipped, **layout order preserved exactly**.
 9. **A different situation's default.** Two situations, two starting hands, one grammar.

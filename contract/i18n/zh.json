@@ -914,6 +914,7 @@
   "today.add.title": "你想在今天页面上放什么？",
   "today.add.lead": "每一张都回答一个关于你所记录内容的问题。想加多少都可以，之后也可以随时移除。",
   "today.add.none": "所有卡片都已在今天页面上。",
+  "today.add.suggested": "根据目前情况推荐",
   "today.add.this": "添加{name}",
   "today.add.back": "返回今天",
   "today.card.project_standing.long": "目前进展",

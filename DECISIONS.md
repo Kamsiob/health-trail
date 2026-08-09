@@ -2225,6 +2225,18 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 ---
 
+### D123. The whole row adds a card in the gallery, rather than an outlined Add beside it
+
+**2026-08-09, #272.** Issue #272 describes the gallery as "a sheet of rows with outlined Add actions", and the catalog has carried an unused `today.add.this`, "Add {name}", since the sheet was written. The sheet ships with the whole dense row as the target instead. **Decided here rather than escalated**, per rule 10, and recorded because the issue text says otherwise and the next reader will notice.
+
+**Rule 23 decides it.** Where more than one answer is defensible, take the one that is easiest for the person, provided it is safe, private and compatible. Both are all three, so the question is which is easier, and a full width row is a target somebody can hit with a thumb in a corridor while an outlined pill at the end of a row is one they have to aim at. `DESIGN.md` 11.3 and 11.12 already make a dense row the shape for a long list somebody scans, and the row is the target everywhere else such a list appears.
+
+**Two things the outlined pill would have bought, and neither survives.** It would let a row be read without being a control, which matters where a row also opens something; here the row does exactly one thing, so there is nothing to tell apart. And it would name the verb, which the row's own click label already does: a reader hears "Add Medications" either way.
+
+**What would change this.** If the gallery ever gains a second thing a row can do, previewing a card at full size before adding it, then the row is two controls and the outlined Add comes back to separate them. `today.add.this` stays in the catalog for that, unused and translated.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 

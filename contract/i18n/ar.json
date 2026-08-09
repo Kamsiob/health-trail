@@ -914,6 +914,7 @@
   "today.add.title": "ماذا تريد أن ترى في اليوم؟",
   "today.add.lead": "كل واحدة تجيب على سؤال واحد عما كتبته. أضف ما تشاء، وأزل أياً منها متى شئت.",
   "today.add.none": "كل شيء موجود بالفعل في اليوم.",
+  "today.add.suggested": "مقترحة للوضع الحالي",
   "today.add.this": "أضف {name}",
   "today.add.back": "العودة إلى اليوم",
   "today.card.project_standing.long": "أين وصل الأمر",

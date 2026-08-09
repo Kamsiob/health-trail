@@ -914,6 +914,7 @@
   "today.add.title": "¿Qué quiere tener en Hoy?",
   "today.add.lead": "Cada una responde una pregunta sobre lo que ha anotado. Añada las que quiera y quite cualquiera después.",
   "today.add.none": "Todo está ya en Hoy.",
+  "today.add.suggested": "Sugeridas para la situación actual",
   "today.add.this": "Añadir {name}",
   "today.add.back": "Volver a Hoy",
   "today.card.project_standing.long": "En qué punto está",

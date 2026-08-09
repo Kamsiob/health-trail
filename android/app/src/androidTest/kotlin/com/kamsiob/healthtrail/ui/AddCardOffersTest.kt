@@ -4,7 +4,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.ui.screens.GALLERY_GROUP_ORDER
 import com.kamsiob.healthtrail.ui.screens.cardOffers
+import com.kamsiob.healthtrail.ui.screens.groupedForGallery
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -54,7 +56,8 @@ class AddCardOffersTest {
         measures: List<Repository.Measure> = emptyList(),
         projects: List<Repository.Project> = emptyList(),
         answers: Map<String, Repository.TodayAnswer> = emptyMap(),
-    ) = cardOffers(onScreen, measures, projects, answers, strings, today)
+        suggested: Set<String> = emptySet(),
+    ) = cardOffers(onScreen, measures, projects, answers, strings, today, suggested)
 
     private fun previewOf(type: String, answers: Map<String, Repository.TodayAnswer>): String? =
         offers(answers = answers).first { it.type == type }.preview
@@ -177,6 +180,80 @@ class AddCardOffersTest {
         assertTrue("medications is offered twice", "medications" !in types)
         assertTrue("money is offered twice", "money" !in types)
         assertTrue("nothing else was offered", "next_up" in types)
+    }
+
+    @Test
+    fun theSituationsSuggestionsComeFirstAndAreNotRepeatedUnderTheirSection() {
+        // 21.6 screen 6, and 21.5: this is the person's own stated situation,
+        // never inference, because the app does not watch its user. A card in
+        // two groups is a card somebody thinks there are two of.
+        val grouped = offers(suggested = setOf("incidents")).groupedForGallery()
+        assertEquals(
+            "the suggestions are not the first group",
+            "today.add.suggested",
+            grouped.first().first,
+        )
+        assertEquals(
+            "the suggested group holds the wrong cards",
+            listOf("incidents"),
+            grouped.first().second.map { it.type },
+        )
+        assertTrue(
+            "a suggested card is repeated under its own section",
+            grouped.drop(1).none { (_, group) -> group.any { it.type == "incidents" } },
+        )
+    }
+
+    @Test
+    fun thereIsNoSuggestedGroupWhenTheSituationSuggestsNothing() {
+        // Somebody who skipped the situation question, which is a real answer.
+        // An empty heading over nothing is the blank area rule 11 rules out.
+        assertTrue(
+            "an empty suggestions group was drawn",
+            offers().groupedForGallery().none { (key, _) -> key == "today.add.suggested" },
+        )
+    }
+
+    @Test
+    fun theGroupsFollowTheBindersOrder() {
+        // The order every other list in the app uses, so the gallery teaches
+        // nothing new. Projects are not a binder section and sit after it,
+        // which is where the navigation puts them.
+        val project = Repository.Project(
+            id = "p-1",
+            name = "Medicaid application",
+            templateId = null,
+            status = "active",
+            waitingOn = null,
+            notes = null,
+            stepCount = 4,
+            doneCount = 1,
+            nextStep = null,
+        )
+        val keys = offers(projects = listOf(project)).groupedForGallery().map { it.first }
+        assertEquals(
+            "the groups are not in the binder's order",
+            keys.sortedBy { GALLERY_GROUP_ORDER.indexOf(it) },
+            keys,
+        )
+        assertEquals(
+            "projects are not last",
+            "notebook.section.projects",
+            keys.last(),
+        )
+    }
+
+    @Test
+    fun everyOfferLandsInAGroupThatHasAName() {
+        // A card whose group nobody named would be filed under an empty
+        // heading, which is worse than being in the wrong one: `Strings.resolve`
+        // throws on a key that does not exist, so it would take the sheet down.
+        for (offer in offers()) {
+            assertTrue(
+                "${offer.type} has no group",
+                offer.groupKey.isNotBlank() && strings[offer.groupKey].isNotBlank(),
+            )
+        }
     }
 
     @Test

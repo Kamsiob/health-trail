@@ -71,12 +71,11 @@
 
 **And the fixture had a defect that showed up here.** Every project's latest word landed on the same day, so **the three newest entries in the whole notebook shared one date at every horizon**: the spine said "June 29, 2026" three times and every node was the same color. Three separate offices do not all call back on the same afternoon. They are nine days apart now.
 
-**#272's worst defect is fixed and the issue is still open.** **Every entry in the add-a-card gallery said "Nothing waiting"**, whatever the record held, because the previews were looked up from the answers of the cards already on Today and the gallery only ever offers the ones that are not. Fourteen identical false sentences on the screen where somebody chooses what to look at. The answers are read when the sheet opens now, through the card's own wording so a preview and its card cannot disagree, and `AddCardOffersTest` holds it. **What is left on #272 is on the issue**: grouping by section in binder order, the situation's suggestions first, and whether the row or an outlined Add is the target.
+**#272, the add-a-card gallery, is done and walked.** **Every entry said "Nothing waiting"**, whatever the record held, because the previews were looked up from the answers of the cards already on Today and the gallery only ever offers the ones that are not. The answers are read when the sheet opens now, through the card's own wording so a preview and its card cannot disagree.
 
-**#271, Today's edit mode, is done and walked.** Drag to reorder is there now, and it was the only thing left: Move up, Move down and To top were already the accessible path 23.2 asks for. **The drag reads the grid's own layout information**, which is already mirrored, so it works identically in Arabic, proved by dragging the same card in both directions and comparing the order after.
+It is grouped under the binder's own section names with the situation's suggestions first, and **the whole row adds the card rather than an outlined Add beside it, which is D123** rather than an oversight: rule 23 takes the easier target.
 
-- **The grip is decorative to a screen reader**, because a reader cannot make the gesture: announcing it offers somebody a control they cannot use and puts a stop in front of the ones they can. Same rule the avatars and the chevron follow.
-- **Adding it found a truncation that was already there.** Four edit controls on a half width card rendered the last one as "Remov". They wrap now.
+**And it was truncating its own previews at font scale 2.0**, mid-word and with no ellipsis: "passed 75 days", "4 steps in the". D105 says a second line somebody reads to choose wraps, and it does now.
 
 **What is left in milestone 1, and each says why on its own issue:** screens #293 through #301, and the rest of the gallery #272.
 

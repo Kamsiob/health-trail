@@ -11,10 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.ui.SECTION_ORDER
+import com.kamsiob.healthtrail.ui.sectionForCard
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.DenseRow
+import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import java.time.LocalDate
@@ -45,6 +48,27 @@ data class CardOffer(
     val preview: String? = null,
     val sourceTable: String? = null,
     val sourceId: String? = null,
+    /**
+     * The catalog key for the heading this offer sits under.
+     *
+     * **The binder's own section names**, 21.6 screen 6, so the gallery teaches
+     * nothing new: a card lives where its answer lives, and somebody looking
+     * for the medications card looks under Medications.
+     */
+    val groupKey: String = "",
+    /**
+     * Whether the person's stated situation puts this card on Today by default.
+     *
+     * **The situation's suggestions come first**, 21.6 screen 6, and 21.5 is
+     * why that is not the app having a view: personalization here is the
+     * person's explicit choice plus the situation they told it about, never
+     * inference, because this app does not watch its user.
+     *
+     * **In practice this group is empty**, because a situation's starting hand
+     * is already on Today. It fills up for somebody who took cards off and came
+     * back looking for one, which is exactly who it is for.
+     */
+    val suggested: Boolean = false,
 ) {
     val key: String get() = sourceId?.let { "$type-$it" } ?: type
 }
@@ -99,18 +123,97 @@ fun AddCardSheet(
             return@SectionScaffold
         }
 
-        items(offers.size, key = { offers[it].key }) { index ->
-            val offer = offers[index]
-            DenseRow(
-                title = Bidi.isolate(offer.label),
-                subtitle = offer.preview,
-                onClick = { onAdd(offer) },
-                modifier = Modifier.testTag(AddCardTags.entry(offer.key)),
-            )
+        // **Grouped under the binder's own section names**, 21.6 screen 6, with
+        // the situation's suggestions first. A flat list of seventeen offers is
+        // the wall the curated catalog exists to prevent, and the grouping is
+        // the one the person already knows from the notebook rather than a
+        // second organizing idea to learn.
+        //
+        // **The order inside a group is the order it arrived in**, which is the
+        // catalog's, and nothing is ranked by what the app thinks matters.
+        for ((groupKey, group) in offers.groupedForGallery()) {
+            item(key = "add-card-group-$groupKey") {
+                GroupHeader(
+                    labelKey = groupKey,
+                    modifier = Modifier.padding(top = Space.m, bottom = Space.xs),
+                )
+            }
+            items(group.size, key = { group[it].key }) { index ->
+                val offer = group[index]
+                DenseRow(
+                    title = Bidi.isolate(offer.label),
+                    subtitle = offer.preview,
+                    // **The preview wraps, because it is the thing being read
+                    // to choose.** D105: a fixed cap is a cap at the smallest
+                    // type size and a truncation at the largest, and at font
+                    // scale 2.0 every row here ended mid-word with no ellipsis:
+                    // "passed 75 days", "4 steps in the". The whole promise of
+                    // this screen is that the answer is on it.
+                    subtitleMaxLines = Int.MAX_VALUE,
+                    // **A hairline between rows and none after the last**, which
+                    // is what makes a group read as a group rather than as a run
+                    // of rows that happens to have a word above it.
+                    divider = offer != group.last(),
+                    onClick = { onAdd(offer) },
+                    modifier = Modifier.testTag(AddCardTags.entry(offer.key)),
+                )
+            }
         }
 
         item { Spacer(Modifier.height(Space.xxl)) }
     }
+}
+
+/**
+ * The offers, in the order and the groups the gallery draws them.
+ *
+ * **The situation's suggestions first, then the binder's order**, 21.6 screen 6.
+ * Those are two rules rather than one and they do not conflict: the suggestions
+ * are a group of their own at the top, and everything else falls into the
+ * section its answer lives in, in the order the notebook already uses.
+ *
+ * **A card is in one group only.** A suggested card is not repeated under its
+ * section, because a person scanning for one card twice is a person who thinks
+ * there are two.
+ *
+ * **The order inside a group is the order it arrived in**, which is the
+ * catalog's. Nothing here is ranked by what the app thinks matters.
+ */
+internal fun List<CardOffer>.groupedForGallery(): List<Pair<String, List<CardOffer>>> {
+    val suggested = filter { it.suggested }
+    val rest = filterNot { it.suggested }
+    val order = GALLERY_GROUP_ORDER.withIndex().associate { (at, key) -> key to at }
+    val groups = rest.groupBy { it.groupKey }
+        .toList()
+        // A group the order does not name goes last rather than disappearing,
+        // which is what a new card type would do before anybody updated a list.
+        .sortedBy { (key, _) -> order[key] ?: order.size }
+    return if (suggested.isEmpty()) groups else listOf(SUGGESTED_GROUP to suggested) + groups
+}
+
+/** The heading over the cards the person's stated situation starts them with. */
+private const val SUGGESTED_GROUP = "today.add.suggested"
+
+/**
+ * The binder's order, as the catalog keys the gallery heads its groups with.
+ *
+ * **Derived from `SECTION_ORDER` rather than written out again**, so a section
+ * that moves in the notebook moves here too. Projects are not a binder section,
+ * so they sit after the binder, which is where the navigation puts them.
+ */
+internal val GALLERY_GROUP_ORDER: List<String> =
+    SECTION_ORDER.map { labelKey(it) } + "notebook.section.projects"
+
+/**
+ * The heading an offer sits under. `DESIGN.md` 21.6 screen 6.
+ *
+ * **A card lives where its answer lives**, so this is the same map the card's
+ * own door uses: somebody looking for the medications card looks under
+ * Medications, and the gallery does not teach a second organizing idea.
+ */
+internal fun galleryGroupKey(type: String): String = when {
+    type in PROJECT_CARD_TYPES -> "notebook.section.projects"
+    else -> sectionForCard(type)?.let { labelKey(it) } ?: "notebook.section.trail"
 }
 
 /**
@@ -145,6 +248,15 @@ internal fun cardOffers(
     strings: Strings,
     /** What day it is, for the one card whose answer is a countdown. */
     today: LocalDate,
+    /**
+     * The card types the person's stated situation starts them with.
+     *
+     * 21.6 screen 6 puts these first. **Empty is the ordinary case**, both for
+     * somebody who skipped the situation question and for anybody who still has
+     * their whole starting hand on Today, since a card already there is not
+     * offered at all.
+     */
+    suggested: Set<String> = emptySet(),
 ): List<CardOffer> {
     val taken = onScreen.map { it.type to it.sourceId }.toSet()
 
@@ -207,7 +319,15 @@ internal fun cardOffers(
         "incidents", "money", "unfiled", "emergency_card", "care_team",
         "trail_lately", "recent_documents", "standing_instructions",
     ).filterNot { type -> taken.contains(type to null) }
-        .map { type -> CardOffer(type, label(type), preview(type, type)) }
+        .map { type ->
+            CardOffer(
+                type = type,
+                label = label(type),
+                preview = preview(type, type),
+                groupKey = galleryGroupKey(type),
+                suggested = type in suggested,
+            )
+        }
 
     // **The answer names the row and the thing it points at is the second
     // line.** The other way round put three rows reading "Appeal the level of
@@ -223,6 +343,8 @@ internal fun cardOffers(
                     ?: Bidi.isolate(measure.name),
                 sourceTable = "measure",
                 sourceId = measure.id,
+                groupKey = galleryGroupKey("measure"),
+                suggested = "measure" in suggested,
             )
         }
 
@@ -242,6 +364,8 @@ internal fun cardOffers(
                             ?: Bidi.isolate(project.name),
                         sourceTable = "project",
                         sourceId = project.id,
+                        groupKey = galleryGroupKey(type),
+                        suggested = type in suggested,
                     )
                 }
         }
