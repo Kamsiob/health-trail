@@ -50,6 +50,7 @@ import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.Plot
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.chartPoints
 import com.kamsiob.healthtrail.ui.components.CardSize
 import com.kamsiob.healthtrail.ui.components.TabChip
@@ -907,7 +908,18 @@ private fun AnswerBody(
     if (showDetail && !drewChart && cardType != "care_team" &&
         answer != null && answer.items.isNotEmpty()
     ) {
-        Column(modifier = Modifier.padding(top = Space.xs)) {
+        Column(
+            modifier = Modifier.padding(top = Space.xs),
+            // **Room between rows only where the rows are pictures.** A list of
+            // medications is text and reads as a block; three thumbnails
+            // touching each other read as one strip of paper rather than three
+            // documents. Everything else keeps the tighter rhythm it had.
+            verticalArrangement = if (cardType == "recent_documents") {
+                Arrangement.spacedBy(Space.xs)
+            } else {
+                Arrangement.Top
+            },
+        ) {
             for (item in answer.items) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // **The person's own paper, at thumbnail size and no
@@ -917,11 +929,18 @@ private fun AnswerBody(
                     // nobody photographed gets the section's fallback drawing
                     // rather than a hole.
                     if (cardType == "recent_documents") {
+                        // **`ROW_SIZE`, which is the component's own smallest
+                        // named size**, rather than a spacing token borrowed as
+                        // a dimension. At 24dp a photograph of a letter is a
+                        // speck: the card claimed to show the person's paper
+                        // and showed a dot beside a title, which is the shape
+                        // of a rule kept in the code and broken on the screen.
+                        // Seen on the phone, and the code read as correct.
                         Thumbnail(
                             sha256 = item.imageSha,
                             attachments = attachments,
                             section = Repository.Section.DOCUMENTS,
-                            size = Space.l,
+                            size = ROW_SIZE,
                         )
                         Spacer(Modifier.width(Space.s))
                     }

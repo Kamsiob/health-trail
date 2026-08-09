@@ -55,7 +55,9 @@
 
 **Milestone 1, Today: the surface is built and verified, and fourteen issues closed on the device on 2026-08-08.** #292, #270, #269, #247, #248, #250 through #257 and #261. The 16.4 checklist was walked in full: both themes, font scale 2.0 with the baseline restored, Arabic right to left with the app restarted so the catalog switched, the empty state from a cleared install, 479 instrumented tests, and TalkBack bound against the app.
 
-**One thing is on `main` unverified**, and it is the only one: #260's document thumbnails. The code compiles and passes the checks and the unit tests, and **it has never been on a screen**, because the phone was unplugged before a clean capture. The commit says so and the issue is open. Look at it before trusting it.
+**Nothing on `main` is unverified now.** #260's document thumbnails were the last one and they have been on a screen: full and few rungs, both themes, font scale 2.0 and Arabic right to left. **They were drawn at 24dp, which is a spacing token borrowed as a dimension and is a speck**, so the card claimed to show the person's paper and showed a dot beside a title. They are at the component's own `ROW_SIZE` now, and the rows have room between them so three pages do not read as one strip.
+
+**The one rung not seen today is this card's empty state**, which needs a cleared install: the destructive command guard refuses `pm clear`, correctly, and `tools/seed.sh` always restores a notebook. The empty Today was walked from a cleared install on 2026-08-08 and a card with no items has no thumbnail to get wrong. Said here rather than ticked.
 
 **#258 is done and walked on the phone.** The care team card now has both variants 21.7 draws: one chosen person with their number as an outlined pill, and the row of everyone as avatars with an overflow mark. The source picker is in the card's options in edit mode. Verified at both themes, font scale 2.0, and Arabic right to left, with all four rungs on screen at once from the fixture, which now writes three sourced cards on purpose.
 
@@ -65,7 +67,7 @@
 - **A control drawn inside a Today card was unreachable by a screen reader**, because the card clears its whole subtree to speak as one sentence. The card now clears its answer only, and carries its one inline action in a slot beside it.
 - **"+12" rendered as "12+" in Arabic**, because a plus is a neutral character and takes the paragraph direction. A remainder became a floor.
 
-**What is left in milestone 1, and each says why on its own issue:** the tall mini spine on the trail #259, thumbnails on documents #260, and screens #293 through #301.
+**What is left in milestone 1, and each says why on its own issue:** the tall mini spine on the trail #259, and screens #293 through #301.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 
@@ -205,4 +207,4 @@ Every one of these was built from the existing components, logged in all three p
 
 **None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed.
 
-**One thing on `main` is unverified and it is labeled everywhere it appears:** #260's document thumbnails. It compiles and passes the checks and the unit tests and **has never been on a screen**, because the phone was unplugged before a clean capture. Section 6 says so, the commit says so, and the issue is open. Look at it before trusting it.
+**Nothing on `main` is unverified.** #260 was the last one and it has been walked. Section 6 has what the screen showed that the code did not.
