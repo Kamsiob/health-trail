@@ -135,6 +135,12 @@ Both reach the phone through `tools/seed.sh month6 6 <pass> --quiet` or `--situa
 
 **And `walk.sh see` has a limit worth knowing before you trust it: it shows the unmerged semantics tree.** A card that merges its parts into one sentence still prints every part there, which reads as a reader stopping six times to learn one thing and is not true. Twenty minutes went into a defect the tool invented. **Only the Compose test API sees the merged tree**, which is the one a reader walks. `docs/TRAPS.md` section 5.
 
+**#210's two remaining procedures were run on 2026-08-09.** **The stranger test passes**: the archive opened on a laptop that has never had the app, with nothing but `tools/decrypt/decrypt.py`, the passphrase and Python. 44 files, no internet.
+
+**The Arabic check fails, and that is what it was for. #327.** Every page carries `lang="ar" dir="rtl"` and **not one carries a single Arabic word of its own**: `ReadableArchive` holds its table and column labels as hard-coded English maps. The direction is right, the person's own words are right, and the app's labels were never translated. 8.2 asks for "faithful to the person's language".
+
+**And two contract documents disagree**, which is on #210 for the owner: `DATA-CONTRACT.md` 8.2 says the inner manifest carries the readable copy's locale, `EXPORT-FORMAT.md` line 181 says it carries `pages` and nothing else, and the code follows the format document. **The format is published byte for byte and `tools/decrypt` is written from it**, so which one is right is not a session's call.
+
 **THE ARCHIVE is largely built and proved on real hardware**, not asserted: a two-layer container at format version 3, a readable copy of 61 pages, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. `docs/RUN-LOG.md` has the account and what each piece was proved with.
 
 ---
