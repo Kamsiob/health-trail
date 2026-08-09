@@ -1161,6 +1161,136 @@ class Repository private constructor(
         )
     }
 
+    /**
+     * One resolution a merge made, in the terms a person can read.
+     *
+     * **Not the JSON.** The schema keeps both versions whole so that nothing is
+     * lost and either can be recovered by hand, and that is a storage promise
+     * rather than a screen. Rule 20: any time the interface asks somebody to
+     * understand how the app stores something, that is the code failing to
+     * absorb its own complexity. So this carries the fields that actually
+     * differed, already paired up.
+     *
+     * @param kept which side was kept, "local" or "incoming". Not shown as
+     *   those words: the screen says "the one written on this phone" or "the
+     *   one in the file", because local and incoming are the database's words.
+     * @param reason one of `Merge.Reason`, turned into a sentence on screen.
+     * @param differences the columns whose values were not the same, with the
+     *   kept value and the other one. **Only the ones that differ**, because a
+     *   row has forty columns and thirty nine of them agreeing is not news.
+     */
+    data class Resolution(
+        val seq: Long,
+        val table: String,
+        val rowId: String,
+        val resolvedAt: Long,
+        val kept: String,
+        val reason: String,
+        val differences: List<Difference>,
+        val seen: Boolean,
+    )
+
+    /** One column where the two versions disagreed. */
+    data class Difference(
+        val column: String,
+        val keptValue: String?,
+        val otherValue: String?,
+    )
+
+    /**
+     * Every resolution a merge has made, newest first.
+     *
+     * **Newest first, unlike most lists here.** The trail reads oldest first
+     * because it is a history somebody follows; this is a notice, and the one
+     * that matters is the one that just happened.
+     */
+    suspend fun conflicts(): List<Resolution> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT seq, table_name, row_id, resolved_at, winner, reason, local_json, " +
+                "incoming_json, seen_at FROM conflict_log ORDER BY seq DESC",
+            null,
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    val winner = cursor.getString(4)
+                    val local = RowJson.read(cursor.getString(6))
+                    val incoming = RowJson.read(cursor.getString(7))
+                    val kept = if (winner == "local") local else incoming
+                    val other = if (winner == "local") incoming else local
+                    add(
+                        Resolution(
+                            seq = cursor.getLong(0),
+                            table = cursor.getString(1),
+                            rowId = cursor.getString(2),
+                            resolvedAt = cursor.getLong(3),
+                            kept = winner,
+                            reason = cursor.getString(5),
+                            differences = (kept.keys + other.keys).sorted()
+                                .filter { kept[it] != other[it] }
+                                // **Only columns a person has a word for**, and
+                                // the field map is what decides that: a column
+                                // it renders has a label in all four catalogs,
+                                // held by check_readable_labels.py, and one it
+                                // does not is bookkeeping or a derived index.
+                                //
+                                // This is not thrift, it is the dynamic key
+                                // trap in docs/TRAPS.md section 3. Asking the
+                                // catalog for a key built from a column name
+                                // throws in debug, so a conflict on a derived
+                                // column would have crashed the notice screen
+                                // the first time somebody opened it.
+                                .filter { nameable(cursor.getString(1), it) }
+                                .map { Difference(it, kept[it], other[it]) },
+                            seen = !cursor.isNull(8),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /** How many resolutions the person has not looked at yet. */
+    suspend fun unseenConflicts(): Int = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT count(*) FROM conflict_log WHERE seen_at IS NULL", null,
+        ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+    }
+
+    /**
+     * Mark every resolution as seen.
+     *
+     * **Not a tombstone and not a deletion.** The row stays, because the
+     * person may want to read it again, and because the schema is explicit
+     * that nothing here is ever discarded. Seen means seen.
+     */
+    suspend fun markConflictsSeen(at: Long = System.currentTimeMillis()) =
+        withContext(Dispatchers.IO) {
+            db().database.write(
+                "UPDATE conflict_log SET seen_at = ? WHERE seen_at IS NULL",
+                arrayOf<Any?>(at),
+            )
+        }
+
+    /** Columns that change on every write and say nothing about the record. */
+    private val BOOKKEEPING = setOf("rev", "updated_at", "created_at", "origin_device")
+
+    /**
+     * Whether this screen can say what a column is.
+     *
+     * **A deletion is always sayable**, and it is the one difference that
+     * matters most: a row removed on one phone and edited on the other is
+     * exactly the case somebody needs to see. It has no archive label because
+     * the archive does not print tombstones, so it carries its own word.
+     */
+    private fun nameable(table: String, column: String): Boolean {
+        if (column in BOOKKEEPING) return false
+        if (column == "deleted_at") return true
+        val fields = ReadableFieldMap.tables[table] ?: return false
+        return fields.rendered.any {
+            it.column == column && it.render != "dateZone" && it.render != "moneyCurrency"
+        }
+    }
+
     /** One person on the care team, with everything a row about them shows. */
     data class Person(
         val id: String,

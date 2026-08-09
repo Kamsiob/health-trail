@@ -235,43 +235,10 @@ internal object MergeApply {
                 at,
                 conflict.winner,
                 conflict.reason,
-                json(conflict.local),
-                json(conflict.incoming),
+                RowJson.write(conflict.local),
+                RowJson.write(conflict.incoming),
             ),
         )
     }
 
-    /**
-     * A row as JSON, written here rather than with a library.
-     *
-     * Every value is a string or null, because that is how it was read, so this
-     * needs escaping and nothing else. Keys are sorted so two runs of the same
-     * merge write the same bytes.
-     */
-    private fun json(row: Merge.Row): String = buildString {
-        append('{')
-        row.keys.sorted().forEachIndexed { index, key ->
-            if (index > 0) append(',')
-            append(quote(key)).append(':')
-            val value = row[key]
-            if (value == null) append("null") else append(quote(value))
-        }
-        append('}')
-    }
-
-    private fun quote(value: String): String = buildString(value.length + 2) {
-        append('"')
-        for (char in value) {
-            when {
-                char == '"' -> append("\\\"")
-                char == '\\' -> append("\\\\")
-                char == '\n' -> append("\\n")
-                char == '\r' -> append("\\r")
-                char == '\t' -> append("\\t")
-                char < ' ' -> append("\\u%04x".format(char.code))
-                else -> append(char)
-            }
-        }
-        append('"')
-    }
 }

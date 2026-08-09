@@ -27,6 +27,7 @@ object MoreTags {
     const val LIBRARY = "more_library"
     const val EXPORT = "more_export"
     const val RESTORE = "more_restore"
+    const val CONFLICTS = "more_conflicts"
     const val SITUATION = "more_situation"
 }
 
@@ -59,6 +60,17 @@ fun MoreScreen(
     modifier: Modifier = Modifier,
     onLibrary: () -> Unit = {},
     onSituation: () -> Unit = {},
+    onConflicts: () -> Unit = {},
+    /**
+     * How many merge resolutions the person has not looked at.
+     *
+     * **The door appears only after a merge has happened**, because a notebook
+     * that has never been merged has nothing behind it, and a permanent row
+     * reading "nothing to look at" is a screen teaching somebody to ignore a
+     * row that will one day matter. Rule 13's other half: an unfilled slot
+     * reads as "not yet", and this one is genuinely "not applicable".
+     */
+    conflicts: Int = 0,
 ) {
     AppearanceScreen(
         choice = choice,
@@ -82,6 +94,8 @@ fun MoreScreen(
                 onSearch = onSearch,
                 onLibrary = onLibrary,
                 onSituation = onSituation,
+                onConflicts = onConflicts,
+                conflicts = conflicts,
             )
         },
         footer = { ComingHere() },
@@ -104,6 +118,8 @@ private fun MoreDestinations(
     onSearch: () -> Unit,
     onLibrary: () -> Unit,
     onSituation: () -> Unit,
+    onConflicts: () -> Unit,
+    conflicts: Int,
 ) {
     val strings = LocalStrings.current
 
@@ -136,7 +152,13 @@ private fun MoreDestinations(
         Destination(strings["more.export"], onExport, MoreTags.EXPORT),
         Destination(strings["more.restore"], onRestore, MoreTags.RESTORE),
         Destination(strings["more.about"], onAbout, MoreTags.ABOUT),
-    )
+    ) + if (conflicts > 0) {
+        // **Beside restore, because that is where it came from.** Rule 18: if
+        // the merge points at this, this belongs where the merge lives.
+        listOf(Destination(strings["more.conflicts"], onConflicts, MoreTags.CONFLICTS))
+    } else {
+        emptyList()
+    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(Modifier.height(Space.sectionGap))

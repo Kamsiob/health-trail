@@ -69,6 +69,7 @@ import com.kamsiob.healthtrail.ui.screens.ViolationScreen
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.ThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ExportScreen
+import com.kamsiob.healthtrail.ui.screens.ConflictsScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreHow
 import com.kamsiob.healthtrail.ui.screens.RestoreState
@@ -455,6 +456,10 @@ fun NotebookShell(
     var savedTemplates by remember { mutableStateOf<Set<String>>(emptySet()) }
     var startingFromOwn by remember { mutableStateOf<Repository.OwnTemplate?>(null) }
     var aboutOpen by remember { mutableStateOf(false) }
+    var conflictsOpen by remember { mutableStateOf(false) }
+    var conflicts by remember { mutableStateOf(emptyList<Repository.Resolution>()) }
+    var unseenConflicts by remember { mutableStateOf(0) }
+    var markConflictsSeen by remember { mutableStateOf(false) }
 
     /** Incidents, which `MASTER_SPEC.md` 4.7 makes threads rather than events. */
     var incidents by remember { mutableStateOf<List<Repository.Incident>>(emptyList()) }
@@ -1121,6 +1126,8 @@ fun NotebookShell(
                             restoreFile = null
                             restoreOpen = true
                         },
+                        onConflicts = { conflictsOpen = true },
+                        conflicts = unseenConflicts,
                     )
                 }
 
@@ -1375,6 +1382,11 @@ fun NotebookShell(
                 // replaced, so it is all reread rather than left showing the
                 // notebook that no longer exists.
                 revision += 1
+                // A merge may have decided something, and the door to reading
+                // what it decided only exists when there is something behind
+                // it. Counted here rather than polled, because this is the one
+                // moment the number can change.
+                unseenConflicts = Repository.open(context).unseenConflicts()
                 applyNow = false
             }
         }
@@ -1598,6 +1610,30 @@ fun NotebookShell(
 
         if (aboutOpen) {
             AboutScreen(onBack = { aboutOpen = false })
+        }
+
+        // **Marked seen after the screen closes, never as it opens.** Marking
+        // on open would clear the notice before the person had read a word of
+        // it, and this is the one screen whose entire purpose is that they do.
+        if (markConflictsSeen) {
+            LaunchedEffect(Unit) {
+                val repo = Repository.open(context)
+                repo.markConflictsSeen()
+                unseenConflicts = repo.unseenConflicts()
+                markConflictsSeen = false
+            }
+        }
+
+        if (conflictsOpen) {
+            // **Read when the screen opens, and marked seen when it closes.**
+            // Marking on open would clear the notice before the person had
+            // scrolled it, and this is the one screen whose whole purpose is
+            // that they read it.
+            LaunchedEffect(Unit) { conflicts = Repository.open(context).conflicts() }
+            ConflictsScreen(
+                resolutions = conflicts,
+                onBack = { conflictsOpen = false; markConflictsSeen = true },
+            )
         }
 
         movingStageOn?.let { project ->
