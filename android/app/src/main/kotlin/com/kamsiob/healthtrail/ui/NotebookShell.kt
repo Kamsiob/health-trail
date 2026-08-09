@@ -650,6 +650,12 @@ fun NotebookShell(
     LaunchedEffect(destination, revision) {
         failed = false
         try {
+            // **Counted on every load, not only after a merge.** It was set
+            // once, when a merge finished, so the door to reading what the
+            // merge decided vanished the next time the app started and the
+            // resolutions became unreachable. A capability only reachable in
+            // the session that created it is not reachable, `DESIGN.md` 13.5.
+            unseenConflicts = repository.unseenConflicts()
             val subject = repository.activeSubject()
             situationId = subject?.situationTemplateId
             val emphasis = emphasisFor(context, subject?.situationTemplateId)

@@ -1354,5 +1354,6 @@
   "conflicts.field.deleted_at": "Whether it was removed",
   "conflicts.removed": "Removed",
   "conflicts.not_removed": "Still here",
-  "restore.confirm.unchosen": "Choose one of these first"
+  "restore.confirm.unchosen": "Choose one of these first",
+  "conflicts.kept.line": "{kept}, {reason}"
 }

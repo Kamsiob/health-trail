@@ -1354,5 +1354,6 @@
   "conflicts.field.deleted_at": "هل حُذف",
   "conflicts.removed": "محذوف",
   "conflicts.not_removed": "ما زال موجودًا",
-  "restore.confirm.unchosen": "اختر أحد هذين أولًا"
+  "restore.confirm.unchosen": "اختر أحد هذين أولًا",
+  "conflicts.kept.line": "{kept}، {reason}"
 }

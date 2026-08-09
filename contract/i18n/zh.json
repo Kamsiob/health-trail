@@ -1354,5 +1354,6 @@
   "conflicts.field.deleted_at": "是否已删除",
   "conflicts.removed": "已删除",
   "conflicts.not_removed": "仍然存在",
-  "restore.confirm.unchosen": "请先选择其中一项"
+  "restore.confirm.unchosen": "请先选择其中一项",
+  "conflicts.kept.line": "{kept}，{reason}"
 }

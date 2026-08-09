@@ -1190,9 +1190,20 @@ class Repository private constructor(
         val seen: Boolean,
     )
 
-    /** One column where the two versions disagreed. */
+    /**
+     * One column where the two versions disagreed.
+     *
+     * @param render what the column is, from `contract/readable-fields.json`,
+     *   so the screen shows a value rather than what the database holds. It
+     *   printed `Kept: 1786315875877` for a pinned entry before this existed,
+     *   which is #328's defect appearing in a screen on the day it was closed
+     *   in the archive.
+     * @param vocabulary for an `enum`, which set of words its value is in.
+     */
     data class Difference(
         val column: String,
+        val render: String,
+        val vocabulary: String?,
         val keptValue: String?,
         val otherValue: String?,
     )
@@ -1240,7 +1251,16 @@ class Repository private constructor(
                                 // column would have crashed the notice screen
                                 // the first time somebody opened it.
                                 .filter { nameable(cursor.getString(1), it) }
-                                .map { Difference(it, kept[it], other[it]) },
+                                .map { column ->
+                                    val field = field(cursor.getString(1), column)
+                                    Difference(
+                                        column = column,
+                                        render = field?.render ?: "timestamp",
+                                        vocabulary = field?.vocabulary,
+                                        keptValue = kept[column],
+                                        otherValue = other[column],
+                                    )
+                                },
                             seen = !cursor.isNull(8),
                         ),
                     )
@@ -1285,11 +1305,17 @@ class Repository private constructor(
     private fun nameable(table: String, column: String): Boolean {
         if (column in BOOKKEEPING) return false
         if (column == "deleted_at") return true
-        val fields = ReadableFieldMap.tables[table] ?: return false
-        return fields.rendered.any {
-            it.column == column && it.render != "dateZone" && it.render != "moneyCurrency"
-        }
+        val field = field(table, column) ?: return false
+        // **An identifier is not something a person can act on.** A conflict
+        // that differs only in what a row points at would show a UUID, which
+        // rule 20 calls the interface asking somebody to understand how the app
+        // stores things. Both versions stay whole in the database either way.
+        return field.render !in setOf("dateZone", "moneyCurrency", "id", "link", "tableName")
     }
+
+    /** What the contract says a column is, or null when it renders nothing. */
+    private fun field(table: String, column: String): ReadableArchive.Field? =
+        ReadableFieldMap.tables[table]?.rendered?.firstOrNull { it.column == column }
 
     /** One person on the care team, with everything a row about them shows. */
     data class Person(

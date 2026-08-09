@@ -125,8 +125,15 @@ fun ConflictsScreen(
                     // person's first question is whether the app did the right
                     // thing, not what the words were.
                     Text(
-                        text = Bidi.join(
-                            listOf(
+                        // **The comma comes from the catalog, not from here.**
+                        // Punctuation is part of a language: Arabic writes it
+                        // as a reversed comma and Chinese as a full width one,
+                        // and a Latin comma was visible in the Arabic screen
+                        // the moment it was looked at. The two halves are still
+                        // isolated, because either can carry a name.
+                        text = strings(
+                            "conflicts.kept.line",
+                            "kept" to Bidi.isolate(
                                 strings[
                                     if (resolution.kept == "local") {
                                         "conflicts.kept.local"
@@ -134,9 +141,8 @@ fun ConflictsScreen(
                                         "conflicts.kept.incoming"
                                     },
                                 ],
-                                strings[reasonKey(resolution.reason)],
                             ),
-                            separator = ", ",
+                            "reason" to Bidi.isolate(strings[reasonKey(resolution.reason)]),
                         ),
                         style = HealthTrail.type.label,
                         color = colors.ink,
@@ -180,13 +186,13 @@ fun ConflictsScreen(
                         Spacer(Modifier.height(Space.xs))
                         Value(
                             labelKey = "conflicts.kept.value",
-                            value = shown(strings, difference.keptValue, removal),
+                            value = shown(strings, difference, difference.keptValue, removal),
                             emphasis = true,
                         )
                         Spacer(Modifier.height(Space.xs))
                         Value(
                             labelKey = "conflicts.other.value",
-                            value = shown(strings, difference.otherValue, removal),
+                            value = shown(strings, difference, difference.otherValue, removal),
                             emphasis = false,
                         )
                     }
@@ -200,20 +206,54 @@ fun ConflictsScreen(
 }
 
 /**
- * A deletion reads as a word, never as the moment it happened.
+ * A stored value as something a person can read.
  *
- * The column holds a timestamp, and "Removed: 1781701200000" is the stored
- * value reaching a person as itself, which is the same defect #328 closed in
- * the archive.
+ * **The screen printed `Kept: 1786315875877` before this existed**, for an
+ * entry somebody had pinned. That is #328's defect appearing in a screen on the
+ * day it was closed in the archive, and it was visible the moment the screen
+ * was looked at on the phone. The contract already says what every column is,
+ * so the decision it carries is what decides how the value reads here too.
+ *
+ * A deletion is the one column with no rendering decision of its own, and it
+ * reads as a word rather than as the moment it happened.
  */
 private fun shown(
     strings: com.kamsiob.healthtrail.i18n.Strings,
+    difference: Repository.Difference,
     value: String?,
     removal: Boolean,
-): String? = when {
-    !removal -> value
-    value.isNullOrBlank() -> strings["conflicts.not_removed"]
-    else -> strings["conflicts.removed"]
+): String? {
+    if (removal) {
+        return if (value.isNullOrBlank()) {
+            strings["conflicts.not_removed"]
+        } else {
+            strings["conflicts.removed"]
+        }
+    }
+    if (value.isNullOrBlank()) return value
+    return when (difference.render) {
+        // A row timestamp, which the column holds as epoch milliseconds.
+        "timestamp" -> value.toLongOrNull()?.let {
+            EventDateText.render(
+                strings,
+                Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString(),
+            )
+        } ?: value
+        // An event date, which the column holds as EDTF and which goes through
+        // the app's own path so its precision is never invented.
+        "date" -> EventDateText.render(strings, value)
+        "boolean" -> if (value == "0") strings["archive.value.no"] else strings["archive.value.yes"]
+        // **Guarded, because this key is built from a stored value.** A row
+        // written by a later version can hold a word this build has never
+        // heard of, and `Strings.resolve` throws in debug rather than falling
+        // back. Printing the token is a lead; crashing the notice screen the
+        // person opened to understand what happened to their record is not.
+        // docs/TRAPS.md section 3.
+        "enum" -> difference.vocabulary
+            ?.let { runCatching { strings["archive.vocabulary.$it.$value"] }.getOrDefault(value) }
+            ?: value
+        else -> value
+    }
 }
 
 /**
