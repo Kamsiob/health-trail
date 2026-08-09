@@ -384,6 +384,28 @@ class Generator:
             "SELECT id FROM project WHERE deleted_at IS NULL "
             "AND status NOT IN ('done', 'abandoned') ORDER BY id LIMIT 1"
         ).fetchone()
+        # **The care team card comes in two**, DESIGN.md 21.7: the row of
+        # everyone, and one chosen person with their number as an outlined pill.
+        # A fixture with only the first has never shown the second, which is the
+        # half of the card the whole "how do I reach them, now" question turns
+        # on. #258.
+        reachable = db.execute(
+            "SELECT id FROM person WHERE deleted_at IS NULL AND archived_at IS NULL "
+            "AND phone IS NOT NULL ORDER BY display_name LIMIT 1"
+        ).fetchone()
+        # **And one nobody has a number for, because plenty of them are.** That
+        # is an ordinary state and not a gap, and it is the state that says so
+        # on the card rather than leaving an empty pill.
+        unreachable = db.execute(
+            "SELECT id FROM person WHERE deleted_at IS NULL AND archived_at IS NULL "
+            "AND phone IS NULL ORDER BY display_name LIMIT 1"
+        ).fetchone()
+        # Somebody who has left, which is the source-closed rung for this card:
+        # it says so, keeps working as a door, and is removed only by hand.
+        departed = db.execute(
+            "SELECT id FROM person WHERE deleted_at IS NULL AND archived_at IS NOT NULL "
+            "ORDER BY display_name LIMIT 1"
+        ).fetchone()
 
         cards = [
             # The lead. The digest is the default lead in every template, 21.7.
@@ -420,6 +442,20 @@ class Generator:
             ("unfiled", "small", None, None),
             ("money", "small", None, None),
             ("care_team", "wide", None, None),
+        ]
+        # **Wide, because that is where the number is allowed to be.** 21.3 puts
+        # an inline outlined action at wide and tall and nowhere smaller, so a
+        # small card pointed at a person would never once have drawn the pill.
+        if reachable:
+            cards.append(("care_team", "wide", "person", reachable[0]))
+        # Wide as well, because "no number yet" is a second line and 21.3 gives
+        # a second line to wide and tall. At small this card is a name and a
+        # role, which is honest and says nothing about the number either way.
+        if unreachable:
+            cards.append(("care_team", "wide", "person", unreachable[0]))
+        if departed:
+            cards.append(("care_team", "small", "person", departed[0]))
+        cards += [
             ("emergency_card", "small", None, None),
             ("trail_lately", "tall", None, None),
             ("recent_documents", "wide", None, None),

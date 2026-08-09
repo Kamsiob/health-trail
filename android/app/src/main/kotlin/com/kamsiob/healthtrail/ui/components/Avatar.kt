@@ -95,6 +95,65 @@ fun Avatar(
 }
 
 /**
+ * The last circle in a row of avatars, saying how many are not drawn.
+ *
+ * **A row of faces that stops has to say it stopped.** A care team card with
+ * room for three faces and nine people would otherwise show three, which reads
+ * as a care team of three: the app would be deciding which three of somebody's
+ * people matter. This is the same "and 8 more" the card lists make, in the
+ * shape the row is already in.
+ *
+ * **The same circle as an [Avatar] and deliberately not a different object.**
+ * It is the last member of the row rather than a control or a label, so it
+ * takes the row's hue, the row's size, and the same pinned text scale.
+ *
+ * **Not tappable.** The card behind it is the door, and a second door inside
+ * the row would spend a touch target on saying the same thing.
+ *
+ * @param label already worded and already counted, because the plus and the
+ *   number belong to the reader's language.
+ */
+@Composable
+fun AvatarOverflow(
+    label: String,
+    hue: TabHue,
+    modifier: Modifier = Modifier,
+    size: Dp = AvatarSize.row,
+) {
+    val colors = HealthTrail.colors
+
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(hue.wash)
+            // Decorative, exactly as an avatar is: the card's own sentence
+            // already says how many more there are, and a reader stopping here
+            // would hear the same fact twice.
+            .clearAndSetSemantics { },
+        contentAlignment = Alignment.Center,
+    ) {
+        CompositionLocalProvider(
+            LocalDensity provides Density(
+                density = LocalDensity.current.density,
+                fontScale = 1f,
+            ),
+        ) {
+            Text(
+                text = label,
+                style = HealthTrail.type.label,
+                // **Quiet, because it is a remainder and not a person.** The
+                // faces beside it carry the hue's ink; this carries the second
+                // ink so the eye reads the names first.
+                color = colors.ink2,
+                maxLines = 1,
+                softWrap = false,
+            )
+        }
+    }
+}
+
+/**
  * Three sizes and no others, so an avatar is the same object everywhere it
  * appears rather than whatever size its screen felt like.
  */

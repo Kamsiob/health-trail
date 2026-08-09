@@ -29,7 +29,7 @@
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **17 repository checks pass**, `python3 tools/checks/run_all.py`.
 - **176 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
-- **482 instrumented tests pass**, last full run 2026-08-08 on the unlocked phone.
+- **492 instrumented tests pass**, last full run 2026-08-08 on the unlocked phone.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
 - **The phone is attached, installed, seeded and at its starting values**, each read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone.
 - **The destructive command guard is live and proven.** It refused two real commands on 2026-08-08, a recursive directory removal and an app data wipe, both correctly. Section 9.
@@ -57,7 +57,15 @@
 
 **One thing is on `main` unverified**, and it is the only one: #260's document thumbnails. The code compiles and passes the checks and the unit tests, and **it has never been on a screen**, because the phone was unplugged before a clean capture. The commit says so and the issue is open. Look at it before trusting it.
 
-**What is left in milestone 1, and each says why on its own issue:** the care team source picker and its dialable number #258, the tall mini spine on the trail #259, thumbnails on documents #260, and screens #293 through #301.
+**#258 is done and walked on the phone.** The care team card now has both variants 21.7 draws: one chosen person with their number as an outlined pill, and the row of everyone as avatars with an overflow mark. The source picker is in the card's options in edit mode. Verified at both themes, font scale 2.0, and Arabic right to left, with all four rungs on screen at once from the fixture, which now writes three sourced cards on purpose.
+
+**Three real defects came out of that and all three are fixed.** Each was invisible in the code.
+
+- **A phone number with a space in it never reached the dialer.** `Uri.fromParts` escapes nothing, so `tel:555 0142` opened an empty keypad. **This was every number in the app**, not just the new card: the care team screen and the emergency card share the helper. `docs/TRAPS.md` section 5.
+- **A control drawn inside a Today card was unreachable by a screen reader**, because the card clears its whole subtree to speak as one sentence. The card now clears its answer only, and carries its one inline action in a slot beside it.
+- **"+12" rendered as "12+" in Arabic**, because a plus is a neutral character and takes the paragraph direction. A remainder became a floor.
+
+**What is left in milestone 1, and each says why on its own issue:** the tall mini spine on the trail #259, thumbnails on documents #260, and screens #293 through #301.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 
@@ -68,6 +76,8 @@
 - The reader's sentence had nested isolate marks, and announced three readings the screen was not showing.
 
 **Two of those were found only because `walk.sh see` was fixed to read content descriptions**, and it had been reading half the tree.
+
+**And `walk.sh see` has a limit worth knowing before you trust it: it shows the unmerged semantics tree.** A card that merges its parts into one sentence still prints every part there, which reads as a reader stopping six times to learn one thing and is not true. Twenty minutes went into a defect the tool invented. **Only the Compose test API sees the merged tree**, which is the one a reader walks. `docs/TRAPS.md` section 5.
 
 **THE ARCHIVE is largely built and proved on real hardware**, not asserted: a two-layer container at format version 3, a readable copy of 61 pages, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. `docs/RUN-LOG.md` has the account and what each piece was proved with.
 

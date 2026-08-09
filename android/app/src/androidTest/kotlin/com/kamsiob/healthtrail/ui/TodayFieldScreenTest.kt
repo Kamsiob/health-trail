@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -61,14 +62,16 @@ class TodayFieldScreenTest {
         type: String,
         size: String = "small",
         isLead: Boolean = false,
+        sourceTable: String? = null,
+        sourceId: String? = null,
     ) = Repository.TodayCard(
         id = id,
         type = type,
         size = size,
         sortIndex = 0,
         isLead = isLead,
-        sourceTable = null,
-        sourceId = null,
+        sourceTable = sourceTable,
+        sourceId = sourceId,
     )
 
     /** The default starting hand, which is what most people will ever see. */
@@ -97,6 +100,8 @@ class TodayFieldScreenTest {
         digest: Digest.Summary = Digest.nothing,
         onSearch: () -> Unit = {},
         onOpen: (Repository.TodayCard) -> Unit = {},
+        onDial: (String) -> Unit = {},
+        people: List<Repository.Person> = emptyList(),
         locale: Locale = Locale.ENGLISH,
         direction: LayoutDirection = LayoutDirection.Ltr,
     ) {
@@ -114,12 +119,29 @@ class TodayFieldScreenTest {
                         digest = digest,
                         onOpen = onOpen,
                         onSearch = onSearch,
+                        onDial = onDial,
+                        people = people,
                         today = today,
                     )
                 }
             }
         }
     }
+
+    /** Somebody on the care team, for the card that points at one person. */
+    private fun person(
+        id: String,
+        name: String,
+        role: String? = null,
+        phone: String? = null,
+    ) = Repository.Person(
+        id = id,
+        displayName = name,
+        roleLabel = role,
+        phone = phone,
+        email = null,
+        notes = null,
+    )
 
     /** The card ids on the field, top to bottom, as the screen actually laid them out. */
     private fun fieldOrder(layout: Repository.TodayLayout): List<String> =
@@ -885,5 +907,297 @@ class TodayFieldScreenTest {
         compose.onNodeWithTag(TodayFieldTags.LEAD).assertIsDisplayed()
         compose.onNodeWithTag(TodayFieldTags.SEARCH).assertIsDisplayed()
         compose.onNodeWithTag(TodayFieldTags.card("c-meds")).assertIsDisplayed()
+    }
+
+    // -- the care team card, #258 -------------------------------------------
+    //
+    // `DESIGN.md` 21.7 draws this card two ways and the difference between them
+    // is whether it points at a person. Its states ladder is here rather than
+    // only on the phone because two of its rungs, the sparse one and the one
+    // where nobody recorded a number, are not reachable from any seed: the
+    // fixture's people include every office contact a project ever involved, so
+    // its count is never small. `report_today_rungs.py` says so out loud.
+
+    /** A layout holding one care team card, so each rung composes on its own. */
+    private fun careTeam(
+        size: String = "wide",
+        sourceId: String? = null,
+    ) = Repository.TodayLayout(
+        lead = card("c-digest", "digest", size = "wide", isLead = true),
+        field = listOf(
+            card(
+                "c-team",
+                "care_team",
+                size = size,
+                sourceTable = sourceId?.let { "person" },
+                sourceId = sourceId,
+            ),
+        ),
+    )
+
+    @Test
+    fun aCareTeamCardPointingAtOnePersonOffersTheirNumber() {
+        // 21.7: "how do I reach them, now". 21.3 allows one inline outlined
+        // action at wide, "a verb or a dialable number", and this is it.
+        var dialed: String? = null
+        show(
+            layout = careTeam(sourceId = "p-1"),
+            answers = mapOf(
+                "c-team" to Repository.TodayAnswer(
+                    title = "Angela Reyes",
+                    detail = "Charge nurse, day shift",
+                    phone = "555 0142",
+                ),
+            ),
+            onDial = { dialed = it },
+        )
+
+        compose.onNodeWithTag(TodayFieldTags.dial("c-team")).assertIsDisplayed()
+        compose.onNodeWithTag(TodayFieldTags.dial("c-team")).performClick()
+        assertEquals(
+            "the pill did not hand the number over exactly as it was recorded",
+            "555 0142",
+            dialed,
+        )
+    }
+
+    @Test
+    fun theCardIsOneStopAndTheNumberIsTheSecond() {
+        // 21.2: a card that announced its tab, its number, its line and its
+        // chevron as four stops would make somebody listen to four things to
+        // learn one. 21.3 gives wide two touch targets, so a reader gets
+        // exactly two: the card, and the number.
+        //
+        // **Measured through the merged tree, which is what a reader walks.**
+        // The device dump shows the unmerged one and cannot answer this: it
+        // prints every text inside a card whether or not anybody can reach it.
+        show(
+            layout = careTeam(sourceId = "p-1"),
+            answers = mapOf(
+                "c-team" to Repository.TodayAnswer(
+                    title = "Angela Reyes",
+                    detail = "Charge nurse, day shift",
+                    phone = "555 0142",
+                ),
+            ),
+        )
+
+        val card = compose.onNodeWithTag(TodayFieldTags.card("c-team"))
+        card.assertHasClickAction()
+        assertTrue(
+            "the card's own sentence is not on the card's own node",
+            card.fetchSemanticsNode()
+                .config.getOrNull(SemanticsProperties.ContentDescription)
+                .orEmpty()
+                .isNotEmpty(),
+        )
+        assertEquals(
+            "a reader has more than the number to step through inside the card",
+            1,
+            card.fetchSemanticsNode().children.size,
+        )
+        assertEquals(
+            "the one stop inside the card is not the number",
+            listOf("Call 555 0142"),
+            card.fetchSemanticsNode().children.single()
+                .config.getOrNull(SemanticsProperties.ContentDescription),
+        )
+    }
+
+    @Test
+    fun theNumberIsNotOfferedAtSmall() {
+        // 21.3's touch-target budget: small carries one target and it is the
+        // whole card. A second one there is the rule broken, not a bonus.
+        show(
+            layout = careTeam(size = "small", sourceId = "p-1"),
+            answers = mapOf(
+                "c-team" to Repository.TodayAnswer(
+                    title = "Angela Reyes",
+                    detail = "Charge nurse, day shift",
+                    phone = "555 0142",
+                ),
+            ),
+        )
+        assertTrue(
+            "a small card is offering a second touch target",
+            compose.onAllNodesWithTag(TodayFieldTags.dial("c-team"))
+                .fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
+    fun aPersonWithNoNumberSaysSoRatherThanShowingAnEmptyPill() {
+        // Rule 13: an unfilled slot reads as not yet, never as an error. The
+        // card is still a door to the person, which is where a number goes.
+        val strings = Strings.load(context)
+        show(
+            layout = careTeam(sourceId = "p-2"),
+            answers = mapOf(
+                "c-team" to Repository.TodayAnswer(
+                    title = "Tonya K.",
+                    detail = "Aide, evenings",
+                ),
+            ),
+        )
+        assertTrue(
+            "a card with no number is showing a pill anyway",
+            compose.onAllNodesWithTag(TodayFieldTags.dial("c-team"))
+                .fetchSemanticsNodes().isEmpty(),
+        )
+        assertTrue(
+            "the card does not say there is no number: ${spokenByCard("c-team")}",
+            strings["careteam.no_phone"] in spokenByCard("c-team"),
+        )
+    }
+
+    @Test
+    fun aCardPointingAtSomebodyWhoLeftSaysSoAndKeepsWorkingAsADoor() {
+        // 21.4's source-closed rung. Archiving is the person saying somebody is
+        // no longer involved, and the card is removed only by their own hand.
+        // **No number is offered**, because suggesting a call they have already
+        // decided against is the app having a view.
+        val strings = Strings.load(context)
+        var opened: Repository.TodayCard? = null
+        show(
+            layout = careTeam(sourceId = "p-3"),
+            answers = mapOf(
+                "c-team" to Repository.TodayAnswer(
+                    title = "Nadine Cross",
+                    sourceClosed = true,
+                ),
+            ),
+            onOpen = { opened = it },
+        )
+
+        assertTrue(
+            "the closed card does not say so: ${spokenByCard("c-team")}",
+            strings["today.card.source_closed"] in spokenByCard("c-team"),
+        )
+        assertTrue(
+            "somebody who left is still being offered for a call",
+            compose.onAllNodesWithTag(TodayFieldTags.dial("c-team"))
+                .fetchSemanticsNodes().isEmpty(),
+        )
+        compose.onNodeWithTag(TodayFieldTags.card("c-team")).performClick()
+        assertEquals("c-team", opened?.id)
+    }
+
+    @Test
+    fun theRowOfEveryoneSaysHowManyItIsNotDrawing() {
+        // The full rung of the other variant. Three faces out of nine is three
+        // faces and a sentence, never a quiet crop: cropping would be the app
+        // deciding which three of somebody's people matter.
+        val strings = Strings.load(context)
+        show(
+            layout = careTeam(),
+            answers = mapOf(
+                "c-team" to Repository.TodayAnswer(
+                    count = 9,
+                    items = listOf(
+                        Repository.TodayItem(label = "Angela Reyes", note = "Charge nurse"),
+                        Repository.TodayItem(label = "Marcus Bell", note = "Social worker"),
+                        Repository.TodayItem(label = "Dr. Priya Raman", note = "Attending"),
+                    ),
+                ),
+            ),
+        )
+        assertTrue(
+            "the card does not say who is not drawn: ${spokenByCard("c-team")}",
+            strings("today.card.more", "count" to 6) in spokenByCard("c-team"),
+        )
+        assertTrue(
+            "the names behind the faces are not read aloud: ${spokenByCard("c-team")}",
+            "Angela Reyes" in spokenByCard("c-team"),
+        )
+    }
+
+    @Test
+    fun aSparseRosterDrawsEverybodyAndClaimsNoMore() {
+        // 21.4's "few". Two people is two faces and no overflow, and the card
+        // never says there are more than the record holds.
+        val strings = Strings.load(context)
+        show(
+            layout = careTeam(),
+            answers = mapOf(
+                "c-team" to Repository.TodayAnswer(
+                    count = 2,
+                    items = listOf(
+                        Repository.TodayItem(label = "Angela Reyes", note = "Charge nurse"),
+                        Repository.TodayItem(label = "Marcus Bell", note = "Social worker"),
+                    ),
+                ),
+            ),
+        )
+        assertTrue(
+            "a sparse roster claims people it does not have: ${spokenByCard("c-team")}",
+            (1..9).none { strings("today.card.more", "count" to it) in spokenByCard("c-team") },
+        )
+        assertTrue(
+            "the card is not answering at all: ${spokenByCard("c-team")}",
+            "Marcus Bell" in spokenByCard("c-team"),
+        )
+    }
+
+    @Test
+    fun anEmptyRosterIsCalmAndNeverAnError() {
+        // 21.4's "none yet". Quiet is allowed to be good news, and this rung is
+        // the whole of a notebook nobody has written a name into yet.
+        val strings = Strings.load(context)
+        show(
+            layout = careTeam(),
+            answers = mapOf("c-team" to Repository.TodayAnswer(count = 0)),
+        )
+        assertTrue(
+            "the empty card does not name its own nothing: ${spokenByCard("c-team")}",
+            strings["today.card.care_team.none"] in spokenByCard("c-team"),
+        )
+    }
+
+    @Test
+    fun choosingWhoTheCardShowsRewordsItStraightAway() {
+        // 21.6 screen 7, and the reason the pick is not left to Done: a control
+        // that appears to do nothing reads as broken. Nothing is saved until
+        // Done all the same, which is what `onSave` not being called says.
+        var saved: List<Repository.TodayCard>? = null
+        val layout = careTeam()
+        liveAnswers.value = mapOf("c-team" to Repository.TodayAnswer(count = 2))
+        compose.setContent {
+            HealthTrailTheme {
+                CompositionLocalProvider(LocalStrings provides Strings.load(context)) {
+                    TodayFieldScreen(
+                        layout = layout,
+                        answers = liveAnswers.value,
+                        onOpen = {},
+                        onSave = { saved = it },
+                        today = today,
+                        people = listOf(
+                            person("p-1", "Angela Reyes", "Charge nurse", "555 0142"),
+                            person("p-2", "Marcus Bell", "Social worker", "555 0187"),
+                        ),
+                    )
+                }
+            }
+        }
+
+        compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
+        compose.onNodeWithTag(TodayFieldTags.who("c-team")).performClick()
+        compose.onNodeWithText("Marcus Bell").performClick()
+
+        assertTrue(
+            "the card did not take the pick: ${spokenByCard("c-team")}",
+            "Marcus Bell" in spokenByCard("c-team"),
+        )
+        assertEquals("nothing should have been saved before Done", null, saved)
+
+        compose.onNodeWithTag(TodayFieldTags.DONE).performClick()
+        assertEquals(
+            "the saved card does not point at the person who was picked",
+            "p-2",
+            saved?.firstOrNull { it.id == "c-team" }?.sourceId,
+        )
+        assertTrue(
+            "the source table was not written with the source",
+            saved?.firstOrNull { it.id == "c-team" }?.sourceTable == "person",
+        )
     }
 }

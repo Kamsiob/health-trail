@@ -108,6 +108,19 @@ fun TodayCard(
      * there.
      */
     speaksAsOneNode: Boolean = true,
+    /**
+     * One inline control, outside everything the card says.
+     *
+     * **21.3 allows exactly one at wide and tall, outlined, a verb or a
+     * dialable number**, and it is here rather than in [content] for a reason
+     * that is not layout: the answer is silenced for a reader so the card is
+     * one stop, and anything inside that silence is silenced with it. The care
+     * team card's number was drawn, focusable by finger, and reachable by no
+     * reader at all until it moved out here.
+     *
+     * **Null on almost every card**, and a card is still a door without one.
+     */
+    action: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
@@ -131,37 +144,54 @@ fun TodayCard(
             .defaultMinSize(minHeight = minHeight)
             .clip(RoundedCornerShape(15.dp))
             .openableByTap(label = openLabel, onTap = onOpen)
-            .then(
-                if (speaksAsOneNode) {
-                    Modifier.clearAndSetSemantics { contentDescription = description }
-                } else {
-                    Modifier.semantics { contentDescription = description }
-                },
-            ),
+            // **The card's own sentence lives on the card's own node**, beside
+            // its tap action, so a reader that stops here is told what the card
+            // says and what pressing it does in one stop.
+            .semantics { contentDescription = description },
     ) {
         Column(modifier = Modifier.padding(Space.sm)) {
-            Text(
-                text = tab,
-                style = type.mono,
-                color = hue.ink,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    // **The chevron's room, kept clear.** The tab had no width
-                    // limit and the chevron floats in the corner over the top
-                    // of it, so a card naming its source, "Project · Appeal the
-                    // level of care assessment", ran its own words underneath
-                    // the chevron and ellipsized behind it. Seen on the phone
-                    // and invisible in the code, because nothing collides until
-                    // the text is long enough.
-                    .padding(end = CHEVRON_ROOM)
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(hue.wash)
-                    .padding(horizontal = Space.s, vertical = 2.dp),
-            )
-            Column(modifier = Modifier.padding(top = Space.s)) {
-                content()
+            Column(
+                // **The answer is silenced, not the card.** 21.2: a card that
+                // announced its tab, its number, its line and its chevron as
+                // four stops would make somebody listen to four things to learn
+                // one, and the caller has already composed those four into the
+                // sentence above. Clearing the answer rather than the whole
+                // card is what leaves room for [action] to be reachable.
+                //
+                // **Given up in edit mode**, and that is not a preference: the
+                // Move up, Move down and Remove controls live in [content], and
+                // clearing it would take the accessible reorder path 21.6
+                // exists to provide away.
+                modifier = if (speaksAsOneNode) {
+                    Modifier.clearAndSetSemantics { }
+                } else {
+                    Modifier
+                },
+            ) {
+                Text(
+                    text = tab,
+                    style = type.mono,
+                    color = hue.ink,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        // **The chevron's room, kept clear.** The tab had no
+                        // width limit and the chevron floats in the corner over
+                        // the top of it, so a card naming its source, "Project ·
+                        // Appeal the level of care assessment", ran its own
+                        // words underneath the chevron and ellipsized behind it.
+                        // Seen on the phone and invisible in the code, because
+                        // nothing collides until the text is long enough.
+                        .padding(end = CHEVRON_ROOM)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(hue.wash)
+                        .padding(horizontal = Space.s, vertical = 2.dp),
+                )
+                Column(modifier = Modifier.padding(top = Space.s)) {
+                    content()
+                }
             }
+            action?.invoke()
         }
         Chevron(
             modifier = Modifier

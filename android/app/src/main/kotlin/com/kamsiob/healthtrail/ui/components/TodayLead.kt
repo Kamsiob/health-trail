@@ -83,6 +83,16 @@ fun TodayLead(
      * inside would be unreachable by a screen reader and by switch access.
      */
     speaksAsOneNode: Boolean = true,
+    /**
+     * One inline control, outside everything the lead says.
+     *
+     * **The same slot [TodayCard] has and for the same reason**: the answer is
+     * silenced so the lead is one stop for a reader, and anything inside that
+     * silence is silenced with it. A care team card promoted to the lead brings
+     * its dialable number with it, and a number nobody can reach with a reader
+     * is not a control.
+     */
+    action: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
@@ -97,32 +107,36 @@ fun TodayLead(
             // reaches it: rule 16 wants everything the person touches to
             // respond, and the lead is the largest tap target on the screen.
             .openableByTap(label = openLabel, onTap = onOpen, resting = Color.Transparent)
-            .then(
-                if (speaksAsOneNode) {
-                    Modifier.clearAndSetSemantics { contentDescription = description }
-                } else {
-                    Modifier.semantics { contentDescription = description }
-                },
-            )
+            // The lead's sentence sits on the lead's own node, beside its tap
+            // action, so one stop says both.
+            .semantics { contentDescription = description }
             .padding(vertical = Space.s),
     ) {
-        Text(
-            text = eyebrow.uppercase(strings.locale),
-            style = HealthTrail.type.mono,
-            color = hue.ink,
-        )
-        Spacer(Modifier.height(Space.s))
-        Row(
-            modifier = Modifier.sizeIn(minHeight = Space.touchTarget),
-            verticalAlignment = Alignment.Top,
+        Column(
+            // Silenced rather than cleared away, exactly as `TodayCard` does
+            // it, and given up in edit mode for the same reason: the controls
+            // are in [content] and clearing it would put them out of reach.
+            modifier = if (speaksAsOneNode) Modifier.clearAndSetSemantics { } else Modifier,
         ) {
-            Column(modifier = Modifier.weight(1f)) { content() }
-            Spacer(Modifier.width(Space.sm))
-            // The chevron sits on the first line of the sentence rather than
-            // centered against a block that can grow to six lines at the
-            // largest font size, where centered would leave it floating beside
-            // nothing.
-            Chevron(modifier = Modifier.padding(top = Space.xs))
+            Text(
+                text = eyebrow.uppercase(strings.locale),
+                style = HealthTrail.type.mono,
+                color = hue.ink,
+            )
+            Spacer(Modifier.height(Space.s))
+            Row(
+                modifier = Modifier.sizeIn(minHeight = Space.touchTarget),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Column(modifier = Modifier.weight(1f)) { content() }
+                Spacer(Modifier.width(Space.sm))
+                // The chevron sits on the first line of the sentence rather
+                // than centered against a block that can grow to six lines at
+                // the largest font size, where centered would leave it floating
+                // beside nothing.
+                Chevron(modifier = Modifier.padding(top = Space.xs))
+            }
         }
+        action?.invoke()
     }
 }

@@ -70,6 +70,13 @@ DATED_OR_SOURCED = {
     "project_standing", "project_date", "project_steps",
 }
 
+# **A card pointing at one row can have that row closed, whether or not it has a
+# date.** The care team card takes a person, DESIGN.md 21.7, and somebody
+# archived is the source-closed rung: the card says so and keeps working as a
+# door. It has nothing dated about it, so 'passed' still cannot happen to it,
+# which is why this is a second set rather than an addition to the one above.
+CAN_CLOSE = DATED_OR_SOURCED | {"care_team"}
+
 
 def count(db, sql, *args):
     row = db.execute(sql, args).fetchone()
@@ -197,6 +204,22 @@ def rungs(db, subject_id, now_ms):
             add("measure", rung_for_count(readings))
             continue
 
+        # **One chosen person, which is the care team card's other variant.**
+        # DESIGN.md 21.7. A person always has a name, so a card pointing at one
+        # is either answering or saying its source is closed: there is no
+        # sparse rung between those, and the row of everyone on the same
+        # surface is what carries 'few' and 'none yet' for this type.
+        if card_type == "care_team":
+            person = db.execute(
+                "SELECT archived_at, deleted_at FROM person WHERE id = ?",
+                (source_id,),
+            ).fetchone()
+            if person is None or person[0] is not None or person[1] is not None:
+                add("care_team", CLOSED)
+            else:
+                add("care_team", FULL)
+            continue
+
         project = db.execute(
             "SELECT status, deleted_at, waiting_on FROM project WHERE id = ?",
             (source_id,),
@@ -299,8 +322,10 @@ def main():
         reachable[card_type] = seen
 
     def applies(card_type, rung):
-        if rung in (PASSED, CLOSED):
+        if rung == PASSED:
             return card_type in DATED_OR_SOURCED
+        if rung == CLOSED:
+            return card_type in CAN_CLOSE
         if rung in (FEW, FULL):
             return card_type not in YES_OR_NO
         return True

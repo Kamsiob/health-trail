@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.ui
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toUri
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -946,15 +947,41 @@ fun NotebookShell(
                             // and nothing saves behind their back. 21.6.
                             onSave = { cards -> savingLayout = cards },
                             onAddCard = { draft -> addingCardTo = draft },
+                            // **The roster, for the care team card's source
+                            // picker and for what a chosen card shows.** 21.7:
+                            // that card takes a person the way the measure and
+                            // project cards take theirs.
+                            people = people,
+                            // **`ACTION_DIAL` and never `ACTION_CALL`**, which
+                            // is the same argument the calendar hand-off makes
+                            // for `ACTION_INSERT`: the dialer opens filled in
+                            // and nothing goes out until the person presses the
+                            // green button, so they see the call before it
+                            // happens. It also asks for no permission.
+                            onDial = { number -> dial(context, number) },
                             onOpen = { card ->
                                 val project = card.sourceId
                                     ?.takeIf { card.sourceTable == "project" }
                                     ?.let { id -> projects.firstOrNull { it.id == id } }
-                                if (project != null) {
-                                    destination = Destination.PROJECTS
-                                    openProject = project
-                                } else {
-                                    sectionForCard(card.type)?.let { openSection = it }
+                                // **A card pointing at one person opens that
+                                // person**, rule 18: the card shows them, so
+                                // they show the card's way back. Opening the
+                                // whole care team instead would answer "tell me
+                                // about this one" with a list.
+                                val person = card.sourceId
+                                    ?.takeIf { card.sourceTable == "person" }
+                                    ?.let { id -> people.firstOrNull { it.id == id } }
+                                when {
+                                    project != null -> {
+                                        destination = Destination.PROJECTS
+                                        openProject = project
+                                    }
+
+                                    person != null -> openPerson = person
+                                    // Somebody archived is not in the roster,
+                                    // and their card is still a door: it opens
+                                    // the section, where they can be found.
+                                    else -> sectionForCard(card.type)?.let { openSection = it }
                                 }
                                 revision += 1
                             },
@@ -3722,13 +3749,27 @@ private suspend fun emphasisFor(
  * able to do silently.
  *
  * A blank number does nothing rather than opening an empty dialer.
+ *
+ * **Percent encoded, and this was a real defect for as long as this existed.**
+ * `Uri.fromParts` builds an opaque URI without escaping anything, so a number
+ * recorded the way people write them down, "555 0142", produced `tel:555 0142`,
+ * and **the dialer opened with an empty keypad**. Every number in the fixture
+ * has a space in it and so does almost every number anybody types, so the one
+ * tap this app promises landed on a blank screen every time. Proved on the
+ * phone by dialing the same number three ways: unescaped opened blank, and both
+ * `tel:5550142` and `tel:555%200142` filled the keypad.
+ *
+ * **The number is never reformatted**, per rule 20 and the record's own rule:
+ * escaping is about the URI, and the dialer decodes it back to exactly what the
+ * person wrote. An international number keeps its plus, which was checked the
+ * same way.
  */
 private fun dial(context: android.content.Context, phone: String?) {
     phone?.takeIf { it.isNotBlank() }?.let { number ->
         context.startActivity(
             android.content.Intent(
                 android.content.Intent.ACTION_DIAL,
-                android.net.Uri.fromParts("tel", number, null),
+                ("tel:" + android.net.Uri.encode(number)).toUri(),
             ),
         )
     }
@@ -3997,8 +4038,13 @@ private fun cardOffers(
     strings: com.kamsiob.healthtrail.i18n.Strings,
 ): List<CardOffer> {
     val taken = onScreen.map { it.type to it.sourceId }.toSet()
+    // **The card in its plain form, which is the one with no source.** The care
+    // team card comes in two, 21.7, and a card pointed at one person must not
+    // stand in for the row of everyone: without this, choosing a person on the
+    // only care team card took the card itself out of the gallery, so there was
+    // no way back to everybody and no way to a second person.
     val previewOf = { type: String ->
-        onScreen.firstOrNull { it.type == type }?.let { answers[it.id] }
+        onScreen.firstOrNull { it.type == type && it.sourceId == null }?.let { answers[it.id] }
     }
 
     fun label(type: String) = strings["today.card.$type"]
@@ -4016,7 +4062,7 @@ private fun cardOffers(
         "digest", "next_up", "medications", "milestones", "ask_next_time",
         "incidents", "money", "unfiled", "emergency_card", "care_team",
         "trail_lately", "recent_documents", "standing_instructions",
-    ).filterNot { type -> taken.any { it.first == type } }
+    ).filterNot { type -> taken.contains(type to null) }
         .map { type -> CardOffer(type, label(type), preview(previewOf(type))) }
 
     // **The answer names the row and the thing it points at is the second

@@ -139,6 +139,10 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **A defect can live entirely inside somebody else's app.** The calendar hand-off put a November 27 appointment on the 26th and the screen said November 27 the whole time. Three attempts, and none of the causes was time zones.
 
+**`walk.sh see` shows the unmerged semantics tree, so it cannot tell you how many stops a reader has.** A card that merges its parts into one sentence still prints every part on its own line there, which reads as "a reader stops six times to learn one thing" and is not true. Twenty minutes went into fixing a defect the tool had invented on 2026-08-09. **The merged tree is what a reader walks, and only the Compose test API can see it**: `onNodeWithTag(...).fetchSemanticsNode().children`. Use `walk.sh` for what is on the screen and a test for how it is heard. What the tool does catch is real: a `clearAndSetSemantics` card shows only its sentence, so parts appearing at all means something is outside the clear.
+
+**A number with a space in it never reached the dialer.** `Uri.fromParts("tel", number, null)` escapes nothing, so `tel:555 0142` opened the keypad blank while `tel:555%200142` filled it in. Every number the fixture holds has a space and so does almost every number anybody writes down, so the one tap the care team promises landed on an empty screen for as long as dialing existed. **Encode the scheme specific part.** Proved by starting the same intent three ways from `adb` rather than by reading the code, which looked correct.
+
 ---
 
 ## 6. Before you commit

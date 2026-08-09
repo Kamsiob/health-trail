@@ -5776,6 +5776,24 @@ class Repository private constructor(
          * a sentence about nothing. Seen on the phone.
          */
         val itemsSampleTheCount: Boolean = true,
+        /**
+         * A number the card may offer to dial, for the care team card.
+         *
+         * **Only the card pointing at one person has one**, 21.7: the question
+         * is "how do I reach them, now", and the answer at wide is that
+         * person's number as an outlined pill. 21.3 allows an inline action at
+         * wide and tall, outlined, a verb or a dialable number, and this is
+         * the number half of that sentence.
+         *
+         * **Stored exactly as the person typed it and never reformatted.** It
+         * goes to `ACTION_DIAL` as it is, and a number the app tidied is a
+         * number that may no longer connect.
+         *
+         * **Null is an ordinary state**, not a gap: plenty of people in a care
+         * team are somebody you only ever see in person, and the card says so
+         * rather than showing an empty pill.
+         */
+        val phone: String? = null,
     ) {
         /** Whether the record has anything to say. The none-yet rung, 21.4. */
         val isEmpty: Boolean get() = (count ?: 0) == 0 && title.isNullOrBlank()
@@ -6173,8 +6191,14 @@ class Repository private constructor(
     /**
      * The answer for a card that points at something, which the map cannot hold.
      *
-     * A measure card and a project card are one per source, so their answers
-     * belong to the instance rather than to the type.
+     * A measure card, a project card and a care team card pointed at one person
+     * are one per source, so their answers belong to the instance rather than
+     * to the type.
+     *
+     * **Null means this card is not sourced**, and the caller falls back to the
+     * answer for its type. That is how the care team card carries two variants
+     * without being two card types: with a source it is one person and their
+     * number, without one it is everybody. 21.7.
      */
     suspend fun todayAnswerForSource(
         cardType: String,
@@ -6276,6 +6300,54 @@ class Repository private constructor(
                         }.reversed()
                     },
                 )
+            }
+
+            // **One chosen person, which is the care team card's other half.**
+            // 21.7 asks "how do I reach them, now" and the grid draws two
+            // answers to it: one person with their number as an outlined pill,
+            // or the row of everyone. A card with a source is the first. A card
+            // without one falls through to the count in [todayAnswers], which
+            // is the second, and that is the whole difference between them.
+            //
+            // **The base table, deliberately**, exactly as the project cards
+            // read theirs. Somebody archived is the person saying they are no
+            // longer involved, and a card pointing at them renders the
+            // source-closed rung, 21.4, which it can only do if it can still
+            // read the name. It stays until the person's own hand removes it.
+            "care_team" -> database.rawQuery(
+                "SELECT display_name, role_label, phone, archived_at, deleted_at " +
+                    // allow-base-table: the source-closed rung is the whole point.
+                    "FROM person WHERE id = ?",
+                arrayOf(sourceId),
+            ).use {
+                // **Gone entirely**, which an import from a notebook that had
+                // them can produce. The card says it cannot reach what it
+                // points at rather than quietly becoming a different card.
+                if (!it.moveToFirst()) TodayAnswer(sourceClosed = true)
+                else {
+                    val closed = !it.isNull(3) || !it.isNull(4)
+                    TodayAnswer(
+                        // **The name is the answer and the tab stays the tab.**
+                        // Unlike a measure, whose name qualifies "Progress ·
+                        // Weight", the question here is who and how, so the
+                        // person's name belongs at display size rather than
+                        // beside the section word.
+                        title = it.getString(0),
+                        detail = it.getString(1)?.takeIf { role -> role.isNotBlank() },
+                        // **No number to offer for somebody no longer
+                        // involved.** The card keeps working as a door to them,
+                        // because the record of who they were is still worth
+                        // reaching, but offering to dial them would be the app
+                        // suggesting a call the person has already decided
+                        // against making.
+                        phone = if (closed) {
+                            null
+                        } else {
+                            it.getString(2)?.takeIf { number -> number.isNotBlank() }
+                        },
+                        sourceClosed = closed,
+                    )
+                }
             }
 
             "project_standing", "project_date", "project_steps" -> {

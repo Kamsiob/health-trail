@@ -42,8 +42,14 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.Avatar
+import com.kamsiob.healthtrail.ui.components.AvatarOverflow
+import com.kamsiob.healthtrail.ui.components.AvatarSize
 import com.kamsiob.healthtrail.ui.components.ChartHeight
+import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
+import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.Plot
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.chartPoints
 import com.kamsiob.healthtrail.ui.components.CardSize
 import com.kamsiob.healthtrail.ui.components.TabChip
@@ -65,7 +71,23 @@ object TodayFieldTags {
     const val ADD = "today-add"
     const val SEARCH = "today-field-search"
     fun card(id: String) = "today-card-$id"
+
+    /** The outlined dialable number on a care team card pointed at one person. */
+    fun dial(id: String) = "today-dial-$id"
+
+    /** The control that opens the source picker, in edit mode. */
+    fun who(id: String) = "today-who-$id"
 }
+
+/**
+ * The picker's answer for "not one person, all of them".
+ *
+ * **A sentinel rather than null**, because `ChipPickerSheet` shows which row is
+ * chosen and everyone is a real choice somebody made rather than the absence of
+ * one. It is stored as no source at all, which is what makes the card render
+ * the row of faces.
+ */
+private const val EVERYONE = "today-care-team-everyone"
 
 /**
  * Today, as the person arranged it. `DESIGN.md` 21.
@@ -153,6 +175,26 @@ fun TodayFieldScreen(
      * here from every card being empty: a broken query would look identical.
      */
     hasAnything: Boolean = true,
+    /**
+     * The care team, for the source picker and for what a chosen card shows.
+     *
+     * **The same roster the care team screen draws**, so a name on Today and a
+     * name in the section can never be two different readings of one row.
+     * Archived people are already out of it, which is the person saying they
+     * are no longer involved: they are not offered as a choice, and a card
+     * already pointing at one keeps rendering its source-closed rung from the
+     * answer rather than being quietly repointed.
+     */
+    people: List<Repository.Person> = emptyList(),
+    /**
+     * Opens the dialer with a number filled in, per 21.7 and `DESIGN.md` 9.1.
+     *
+     * **`ACTION_DIAL` and never `ACTION_CALL`**, which the shell owns: nothing
+     * happens until the person presses the green button themselves, so they see
+     * what is about to go out before it does. The same argument the calendar
+     * hand-off makes for `ACTION_INSERT`, and it holds harder for a phone call.
+     */
+    onDial: (String) -> Unit = {},
 ) {
     val colors = HealthTrail.colors
     val strings = LocalStrings.current
@@ -170,6 +212,21 @@ fun TodayFieldScreen(
     // rather than being staged like a move. A person who taps Add expects the
     // card to be there; staging it would mean the gallery's Add did nothing
     // visible until Done, which is the opposite of what that button says.
+
+    // **Which card is choosing a source**, by id, or null. 21.6 screen 7 puts
+    // the source picker in a card's options, and a card's options are what edit
+    // mode puts on the card itself.
+    var picking by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // **What a card says while it is being edited.** The answers were read once
+    // when Today gained focus, so a staged pick would leave the card naming the
+    // person it pointed at before, and nothing on the screen would say the
+    // choice had landed. The roster is already here for the picker, so the card
+    // is worded from it while editing and from the record the rest of the time.
+    fun answerFor(card: Repository.TodayCard): Repository.TodayAnswer? =
+        staged(card, editing, people)
+            ?: answers[card.id]
+            ?: digestAnswer(card, digest, strings, hasAnything)
 
     // **One column once the type is large enough that half a screen is not a
     // card.** 21.6 screen 8: the field reflows and every card renders at full
@@ -260,9 +317,10 @@ fun TodayFieldScreen(
             item(span = { fullWidth }, key = "today-lead-slot") {
                 LeadSlot(
                     card = lead,
-                    answer = answers[lead.id] ?: digestAnswer(lead, digest, strings, hasAnything),
+                    answer = answerFor(lead),
                     today = today,
                     onOpen = onOpen,
+                    onDial = onDial,
                     editing = editing,
                     // **Down is the lead's only control**, and it is how a lead
                     // is demoted: 21.1 says promoting a card demotes the one
@@ -304,7 +362,7 @@ fun TodayFieldScreen(
                 val position = index + 1
                 CardFor(
                     card = card,
-                    answer = answers[card.id] ?: digestAnswer(card, digest, strings, hasAnything),
+                    answer = answerFor(card),
                     // **Full width is wide.** A card the person made small is
                     // rendering at full width in this layout, and 21.3 ties the
                     // second line of context to width rather than to the label
@@ -316,9 +374,21 @@ fun TodayFieldScreen(
                         CardSize.of(card.size)
                     },
                     onOpen = onOpen,
+                    onDial = onDial,
                     modifier = Modifier.testTag(TodayFieldTags.card(card.id)),
                     today = today,
                     editing = editing,
+                    // **The source picker, and only where a card takes one.**
+                    // 21.6 screen 7. The care team card is the one whose two
+                    // variants are a choice about a person rather than about a
+                    // size, and a measure or a project card is one per source
+                    // by construction: it arrives from the gallery already
+                    // pointing at the thing the person picked there.
+                    onPickSource = if (card.type == "care_team") {
+                        { picking = card.id }
+                    } else {
+                        null
+                    },
                     canMoveDown = index < field.lastIndex,
                     onMove = { earlier ->
                         val to = if (earlier) position - 1 else position + 1
@@ -341,6 +411,58 @@ fun TodayFieldScreen(
                 Spacer(Modifier.height(Space.xxl))
             }
         }
+
+        // **Who this card shows.** 21.6 screen 7 puts the source picker in a
+        // card's options, and this is the choice between the two answers 21.7
+        // draws for the care team card: one person and their number, or the row
+        // of everyone.
+        //
+        // **The same picker the capture form uses**, rather than a chip row
+        // that becomes a wall at ten people: a year five notebook has more
+        // names than a card has width, and the person opening this is looking
+        // for one they already have in mind.
+        //
+        // **Staged like every other change in edit mode**, per 21.6 screen 5:
+        // nothing saves until Done. The card re-words itself from the roster
+        // straight away, so the choice is visible the moment it is made.
+        picking?.let { cardId ->
+            val card = draft.firstOrNull { it.id == cardId }
+            if (card == null) {
+                picking = null
+            } else {
+                ChipPickerSheet(
+                    title = strings["today.card.care_team.pick"],
+                    options = listOf(
+                        PickerOption(
+                            id = EVERYONE,
+                            label = strings["today.card.care_team.everyone"],
+                            detail = strings["today.card.care_team.everyone.detail"],
+                        ),
+                    ) + people.map {
+                        PickerOption(
+                            id = it.id,
+                            label = it.displayName,
+                            detail = it.roleLabel?.takeIf { role -> role.isNotBlank() },
+                        )
+                    },
+                    selectedId = card.sourceId ?: EVERYONE,
+                    onPick = { option ->
+                        val at = draft.indexOfFirst { it.id == cardId }
+                        if (at >= 0) {
+                            val everyone = option.id == EVERYONE
+                            draft = draft.toMutableList().also {
+                                it[at] = it[at].copy(
+                                    sourceTable = if (everyone) null else "person",
+                                    sourceId = if (everyone) null else option.id,
+                                )
+                            }
+                        }
+                        picking = null
+                    },
+                    onDismiss = { picking = null },
+                )
+            }
+        }
     }
 }
 
@@ -358,6 +480,7 @@ private fun LeadSlot(
     answer: Repository.TodayAnswer?,
     today: LocalDate,
     onOpen: (Repository.TodayCard) -> Unit,
+    onDial: (String) -> Unit,
     editing: Boolean,
     canMoveDown: Boolean,
     onMoveDown: () -> Unit,
@@ -395,6 +518,7 @@ private fun LeadSlot(
                 shown,
                 strings,
                 cardType = card.type,
+                sourced = card.sourceId != null,
                 showItems = true,
                 drewChart = false,
                 countLine = countLineKey(card.type)?.let { strings[it] },
@@ -404,10 +528,16 @@ private fun LeadSlot(
         onOpen = { onOpen(card) },
         modifier = Modifier.testTag(TodayFieldTags.LEAD),
         speaksAsOneNode = !editing,
+        // **A promoted care team card brings its number with it.** The lead is
+        // full width, which is what 21.3 ties the inline action to.
+        action = shown?.phone
+            ?.takeIf { dialable(card, shown, CardSize.WIDE) }
+            ?.let { number -> { DialPill(number, card.id, onDial) } },
     ) {
         AnswerBody(
             answer = shown,
             cardType = card.type,
+            sourced = card.sourceId != null,
             lead = true,
             showDetail = true,
             hue = hueForCard(card.type),
@@ -438,6 +568,10 @@ private fun CardFor(
     onResize: (String) -> Unit = {},
     onRemove: () -> Unit = {},
     onPromote: () -> Unit = {},
+    /** Opens the dialer, for the one card that offers a number. */
+    onDial: (String) -> Unit = {},
+    /** Opens the source picker, or null for a card that takes no source. */
+    onPickSource: (() -> Unit)? = null,
     today: LocalDate = LocalDate.now(),
 ) {
     val strings = LocalStrings.current
@@ -460,6 +594,7 @@ private fun CardFor(
                 shown,
                 strings,
                 cardType = card.type,
+                sourced = card.sourceId != null,
                 showItems = size != CardSize.SMALL,
                 drewChart = size == CardSize.TALL && (shown?.series?.size ?: 0) > 1,
                 countLine = countLineKey(card.type)?.let { strings[it] },
@@ -472,6 +607,13 @@ private fun CardFor(
         // In edit mode the card holds controls, and a node that speaks as one
         // thing would swallow them.
         speaksAsOneNode = !editing,
+        // **The dialable number, at wide and tall only**, per 21.3's budget of
+        // one inline action and two touch targets. It goes in the action slot
+        // rather than in the answer, because the answer is silenced so the card
+        // is one stop and a control inside that silence is unreachable.
+        action = shown?.phone
+            ?.takeIf { dialable(card, shown, size) }
+            ?.let { number -> { DialPill(number, card.id, onDial) } },
     ) {
         // The second line appears at wide and tall only, per 21.3: at small the
         // card carries one answer and one line of context, and that line is the
@@ -479,6 +621,7 @@ private fun CardFor(
         AnswerBody(
             answer = shown,
             cardType = card.type,
+            sourced = card.sourceId != null,
             lead = false,
             showDetail = size != CardSize.SMALL,
             tall = size == CardSize.TALL,
@@ -538,6 +681,19 @@ private fun CardFor(
                         spoken = strings("today.edit.remove", "name" to tab),
                         onClick = onRemove,
                     )
+                    // **Which person this card points at**, 21.6 screen 7, and
+                    // only on a card that takes a source. It sits with the
+                    // other options rather than on the card's face, because it
+                    // is a decision made once and the card's face is for the
+                    // answer.
+                    onPickSource?.let { pick ->
+                        EditAction(
+                            label = strings["today.edit.who.short"],
+                            spoken = strings("today.edit.who", "name" to tab),
+                            onClick = pick,
+                            modifier = Modifier.testTag(TodayFieldTags.who(card.id)),
+                        )
+                    }
                 }
             }
         }
@@ -556,6 +712,15 @@ private fun AnswerBody(
     answer: Repository.TodayAnswer?,
     /** The card's type, for the one line of context that names what the count counts. */
     cardType: String,
+    /**
+     * Whether this card points at one row.
+     *
+     * **It is what tells the care team card's two variants apart**, 21.7: with
+     * a source it is one chosen person and their number, without one it is the
+     * row of everyone. The type is the same card either way, because the
+     * question is the same question.
+     */
+    sourced: Boolean,
     lead: Boolean,
     /**
      * Whether this card is wide enough for a second line of context.
@@ -699,7 +864,49 @@ private fun AnswerBody(
     // **A chart or a list, never both.** 21.3 gives tall a chart, a mini spine,
     // or a short list, and a card carrying a line and then the same readings
     // written out underneath it says one thing twice and stops being a shape.
-    if (showDetail && !drewChart && answer != null && answer.items.isNotEmpty()) {
+    // **The row of everyone, which is the care team card's other answer.** 21.7
+    // draws it as faces rather than as a column of names, and rule 22 puts an
+    // avatar wherever the app shows a person. Three names written out is the
+    // same information taking three lines on a card that has two.
+    //
+    // **The overflow says how many are not drawn**, so a card showing three of
+    // nine says nine. Cropping to three quietly would be the app deciding which
+    // three of somebody's care team matter.
+    if (cardType == "care_team" && !sourced && showDetail &&
+        answer != null && answer.items.isNotEmpty()
+    ) {
+        Row(
+            modifier = Modifier.padding(top = Space.s),
+            horizontalArrangement = Arrangement.spacedBy(Space.xs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            for (item in answer.items) {
+                Avatar(name = item.label, hue = hue, size = AvatarSize.row)
+            }
+            val hidden = (answer.count ?: 0) - answer.items.size
+            if (hidden > 0) {
+                AvatarOverflow(
+                    // **Isolated, because a plus is a neutral character.** In
+                    // Arabic the paragraph direction reordered "+12" to "12+",
+                    // which is a different claim: one is a remainder and the
+                    // other reads as a floor. Seen on the phone in Arabic and
+                    // invisible in every other language.
+                    label = Bidi.isolate(
+                        strings("today.card.care_team.overflow", "count" to hidden),
+                    ),
+                    hue = hue,
+                    size = AvatarSize.row,
+                )
+            }
+        }
+    }
+
+    // **The care team card draws its people rather than listing them**, above,
+    // so it is not in the general list. Both at once would say the same three
+    // names twice.
+    if (showDetail && !drewChart && cardType != "care_team" &&
+        answer != null && answer.items.isNotEmpty()
+    ) {
         Column(modifier = Modifier.padding(top = Space.xs)) {
             for (item in answer.items) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -786,6 +993,11 @@ private fun AnswerBody(
         whenText,
         answer?.detail?.takeIf { it.isNotBlank() },
         countedLine,
+        // **Not everybody has a number, and that is not a deficiency.** Rule
+        // 13: an unfilled slot reads as not yet, never as an error, so the card
+        // says what is true and stays a door to the person, where a number can
+        // be added whenever there is one to add.
+        noNumberLine(cardType, sourced, answer)?.let { strings[it] },
     )
         .let { if (showDetail) it else it.take(1) }
     for (line in lines) {
@@ -798,7 +1010,80 @@ private fun AnswerBody(
             modifier = Modifier.padding(top = Space.xs),
         )
     }
+
 }
+
+/**
+ * The dialable number, outlined. `DESIGN.md` 21.3 and 21.7.
+ *
+ * **The one inline action wide and tall are allowed**, and the card itself is
+ * the other of the two touch targets that size gives. It sits in the card's
+ * action slot rather than in its answer, because the answer is silenced for a
+ * reader and a control inside that silence cannot be reached.
+ *
+ * **The number is the visible label**, because that is what somebody checks
+ * before pressing it. A reader hears the verb as well: "5 5 5 0 1 4 2, button"
+ * does not say what the button does.
+ *
+ * **It opens the dialer and places no call**, which is the shell's `ACTION_DIAL`
+ * and the same argument the calendar hand-off makes in 9.1.
+ */
+@Composable
+private fun DialPill(number: String, cardId: String, onDial: (String) -> Unit) {
+    val strings = LocalStrings.current
+    QuietButton(
+        label = Bidi.isolate(number),
+        onClick = { onDial(number) },
+        modifier = Modifier
+            .padding(top = Space.s)
+            .testTag(TodayFieldTags.dial(cardId))
+            // One stop, not two. The pill's own words are the number, and the
+            // sentence a reader hears is the number with the verb in front.
+            .semantics(mergeDescendants = true) {
+                contentDescription = strings("careteam.call.number", "number" to number)
+            },
+    )
+}
+
+/**
+ * The key for "nobody recorded a number for this person", or null.
+ *
+ * **Only where the card is answering for one person**, because the row of
+ * everyone is not short of anything: it is answering "who" rather than "what is
+ * their number". And never for somebody archived, whose card is already saying
+ * the source is closed and would otherwise say two things about one absence.
+ */
+private fun noNumberLine(
+    cardType: String,
+    sourced: Boolean,
+    answer: Repository.TodayAnswer?,
+): String? = if (
+    cardType == "care_team" && sourced && answer != null &&
+    !answer.sourceClosed && answer.phone.isNullOrBlank() && !answer.title.isNullOrBlank()
+) {
+    "careteam.no_phone"
+} else {
+    null
+}
+
+/**
+ * Whether this card is showing a number somebody can press.
+ *
+ * **Asked in one place**, because two things turn on it and they must never
+ * disagree: whether the pill renders, and whether the card may still speak as
+ * one node. A card that gave up its single-node reading without drawing a pill
+ * would make a reader stop twice for nothing, and one that drew a pill while
+ * keeping it would hide the pill from a reader entirely.
+ */
+private fun dialable(
+    card: Repository.TodayCard,
+    answer: Repository.TodayAnswer?,
+    size: CardSize,
+): Boolean = card.type == "care_team" &&
+    size != CardSize.SMALL &&
+    answer != null &&
+    !answer.sourceClosed &&
+    !answer.phone.isNullOrBlank()
 
 /**
  * The card's index tab, naming which one it is.
@@ -1048,6 +1333,8 @@ private fun answerParts(
     strings: Strings,
     /** The card's type, so the empty rung reads aloud as it reads on screen. */
     cardType: String,
+    /** Whether the card points at one row, per [AnswerBody]'s own parameter. */
+    sourced: Boolean = false,
     /**
      * Whether the card is showing its list.
      *
@@ -1127,6 +1414,12 @@ private fun answerParts(
                 answer.detailCount?.let { strings(key, "count" to it) }
             },
         )
+        // **The line about a missing number, and only where the screen shows
+        // it.** Section 9, and it is a second line, which 21.3 gives to wide
+        // and tall. The number itself is not added here: where there is one it
+        // is an outlined pill, which is its own stop and announces itself, and
+        // adding it would make a reader hear it twice.
+        if (showItems) add(noNumberLine(cardType, sourced, answer)?.let { strings[it] })
     }
 }
 
@@ -1154,6 +1447,58 @@ private fun hueForCard(type: String): TabHue = when (type) {
     // section, so gold and the base ladder. 4.3.
     else -> wholeAppHue()
 }
+
+/**
+ * What a care team card says while its source is still being chosen.
+ *
+ * **Nothing saves until Done**, 21.6 screen 5, so a picked person cannot come
+ * back through the record until then, and the answers were read when Today
+ * gained focus. Without this the card would name whoever it pointed at before
+ * and the pick would look like it had done nothing, which is the failure mode a
+ * staged control has to avoid: a control that appears to do nothing reads as
+ * broken.
+ *
+ * **The same two variants and the same shape**, built from the roster the
+ * picker is already showing rather than from a second query, so what the card
+ * says while editing and what it says after Done cannot differ.
+ *
+ * **Null for everything else**, including a card pointing at somebody archived,
+ * who is not in the roster: that card keeps rendering the source-closed rung
+ * from the record, which is the truth about it.
+ */
+private fun staged(
+    card: Repository.TodayCard,
+    editing: Boolean,
+    people: List<Repository.Person>,
+): Repository.TodayAnswer? {
+    if (!editing || card.type != "care_team") return null
+    // Sorted by name, which is the order the card's own query uses, so the
+    // three faces here are the three faces after Done.
+    val roster = people.sortedBy { it.displayName }
+    val chosen = card.sourceId
+    if (chosen != null) {
+        val person = roster.firstOrNull { it.id == chosen } ?: return null
+        return Repository.TodayAnswer(
+            title = person.displayName,
+            detail = person.roleLabel?.takeIf { it.isNotBlank() },
+            phone = person.phone?.takeIf { it.isNotBlank() },
+        )
+    }
+    return Repository.TodayAnswer(
+        count = roster.size,
+        items = roster.take(TODAY_CARD_FACES).map {
+            Repository.TodayItem(label = it.displayName, note = it.roleLabel)
+        },
+    )
+}
+
+/**
+ * How many faces a care team card draws before it says how many more.
+ *
+ * The repository takes the same handful for the same reason, and the two have
+ * to agree or a staged pick would redraw the row on Done.
+ */
+private const val TODAY_CARD_FACES = 3
 
 /**
  * The digest card's answer, from the summary the shell already computed.
@@ -1230,14 +1575,19 @@ private fun SizeChip(label: String, selected: Boolean, onClick: () -> Unit) {
  * for the eye and [spoken] is for the ear.
  */
 @Composable
-private fun EditAction(label: String, spoken: String, onClick: () -> Unit) {
+private fun EditAction(
+    label: String,
+    spoken: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val colors = HealthTrail.colors
     Text(
         text = label,
         style = HealthTrail.type.mono,
         color = colors.blueDeep,
         maxLines = 1,
-        modifier = Modifier
+        modifier = modifier
             .clip(Radius.pill)
             .clickable(onClickLabel = spoken, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = spoken }
