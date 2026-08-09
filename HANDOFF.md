@@ -4,7 +4,7 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-08.
+**Last rewritten:** 2026-08-09.
 
 ---
 
@@ -24,7 +24,7 @@
 | Delegating | `AGENTS.md`. Subagents never write anything |
 | **Never, to orient** | `docs/RUN-LOG.md`. It is history and a thousand lines of it |
 
-### Verified rather than asserted, 2026-08-08
+### Verified rather than asserted, 2026-08-09
 
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **17 repository checks pass**, `python3 tools/checks/run_all.py`.
