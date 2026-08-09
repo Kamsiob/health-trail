@@ -17,6 +17,9 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.time.Distance
+import com.kamsiob.healthtrail.time.Edtf
+import java.time.ZoneId
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DateRow
 import com.kamsiob.healthtrail.ui.components.DenseRow
@@ -51,6 +54,7 @@ object ProjectHomeTags {
     const val ENDED = "project-home-ended"
     const val STORY = "project-home-story"
     const val REOPEN = "project-home-reopen"
+    const val RETURN = "project-home-return"
 }
 
 /**
@@ -191,6 +195,41 @@ fun ProjectHomeScreen(
                         modifier = Modifier.testTag(ProjectHomeTags.MOVE_STAGE),
                     )
                 }
+                Spacer(Modifier.height(Space.sectionGap))
+            }
+        }
+
+        // **A project nobody has touched for months greets you.** 20.5 screen
+        // 16, and lapse tolerance is law: it says plainly what it held while
+        // the person was gone and offers one gentle way back in, which is
+        // confirming where it stands.
+        //
+        // **No shame, no streaks, nothing owed.** It does not say how long it
+        // has been since they last did anything, it says how long the file has
+        // been holding this, which is a fact about the record rather than about
+        // them. Rule 13.
+        //
+        // **Not on a closed project**, which leads with how it ended: a file
+        // that finished in March is not waiting for anybody.
+        val away = if (project.isFinished) null else monthsAway(entries)
+        if (away != null) {
+            item {
+                StandingCard(
+                    eyebrow = strings["project.return"],
+                    holder = strings(returnKey(away), "count" to away.count),
+                    since = returnLine(entries, standing, strings),
+                    modifier = Modifier.testTag(ProjectHomeTags.RETURN),
+                    actions = {
+                        // **One way back in, and it is the smallest one.** Not
+                        // a list of everything that could be caught up on:
+                        // confirming where it stands is one tap and it is the
+                        // only thing that goes stale on its own.
+                        QuietButton(
+                            label = strings["project.return.confirm"],
+                            onClick = onUpdateStanding,
+                        )
+                    },
+                )
                 Spacer(Modifier.height(Space.sectionGap))
             }
         }
@@ -482,15 +521,24 @@ fun ProjectHomeScreen(
             }
         }
 
+        // **The greeting stands in for the standing card, it does not sit above
+        // it.** The return block already says where it stood and offers the one
+        // way back in, so drawing the standing card underneath put the same
+        // action on the screen twice, two rows apart, which law 2 rules out:
+        // one costume per thing. Grid screen 16 draws the greeting and the
+        // folds and no standing card, for the same reason.
+        val standingOrGreeting: (@Composable () -> Unit)? =
+            if (away != null) null else standingBlock
+
         val order: List<@Composable () -> Unit> = when (project.lead) {
-            "date" -> listOf(dateBlock, standingBlock, latestBlock)
+            "date" -> listOfNotNull(dateBlock, standingOrGreeting, latestBlock)
             "steps" -> listOfNotNull(
                 if (steps.isNotEmpty()) stepsBlock else null,
-                standingBlock,
+                standingOrGreeting,
                 dateBlock,
                 latestBlock,
             )
-            else -> listOf(standingBlock, dateBlock, latestBlock)
+            else -> listOfNotNull(standingOrGreeting, dateBlock, latestBlock)
         }
 
         order.forEachIndexed { index, block ->
@@ -717,4 +765,63 @@ private fun storyLine(
         papers.size.takeIf { it > 0 }?.let { strings("project.story.papers", "count" to it) },
         peopleCount.takeIf { it > 0 }?.let { strings("project.story.people", "count" to it) },
     )
+}
+
+/**
+ * How long this project has been sitting, or null when it has not been.
+ *
+ * **Months, plural, which is what screen 16 is about.** A fortnight without a
+ * call on a process that moves at the speed of a county office is not somebody
+ * coming back, it is Tuesday, and a greeting on every project every time would
+ * be exactly the wallpaper `Distance` already refuses to be.
+ *
+ * **Measured from the last thing written down about it**, which is a fact about
+ * the file rather than about the person. Nothing here counts visits, and this
+ * app does not watch its user.
+ *
+ * **A coarse date produces nothing**, per rule 17: the distance between
+ * "sometime in the spring" and today is not a number anybody gave.
+ */
+private fun monthsAway(entries: List<Repository.TrailEntry>): Distance.Gap? {
+    val last = entries.firstOrNull() ?: return null
+    if (!Edtf.isDayPrecise(last.occurredEdtf)) return null
+    val gap = Distance.between(
+        olderMillis = last.occurredStart,
+        newerMillis = System.currentTimeMillis(),
+        zone = ZoneId.systemDefault(),
+    ) ?: return null
+    // `Distance` reports days, weeks, months and years. Only the last two mean
+    // somebody has been away rather than busy.
+    return gap.takeIf { it.key == "trail.gap.months" || it.key == "trail.gap.years" }
+}
+
+/**
+ * How long it has been, in this screen's own voice.
+ *
+ * **Not the trail's gap wording**, which is written for a marker between two
+ * rows and says "1 month earlier". Here the sentence is addressed to somebody
+ * who has just come back, so it says how long the file has been holding this
+ * and that it kept everything. That reassurance is the whole point of the
+ * screen: `DESIGN.md` 20.5 screen 16, no shame, no streaks, nothing owed.
+ */
+private fun returnKey(gap: Distance.Gap): String =
+    if (gap.key == "trail.gap.years") "project.return.years" else "project.return.months"
+
+/**
+ * What the file was holding while nobody was looking.
+ *
+ * **The last thing written down and where it stood**, which together are the
+ * answer to "what did I leave this in the middle of". Both are already on the
+ * screen further down; saying them here is what saves somebody scrolling to
+ * remember before they can decide anything.
+ */
+@Composable
+private fun returnLine(
+    entries: List<Repository.TrailEntry>,
+    standing: Repository.ProjectStanding?,
+    strings: Strings,
+): String {
+    val last = entries.firstOrNull()?.occurredEdtf?.takeIf { it.isNotBlank() }
+        ?.let { strings("project.return.last", "date" to EventDateText.render(strings, it)) }
+    return Bidi.join(last, standing?.holderLabel)
 }
