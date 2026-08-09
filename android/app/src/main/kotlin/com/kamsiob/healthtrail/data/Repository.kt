@@ -5846,6 +5846,27 @@ class Repository private constructor(
          * real and ordinary state.
          */
         val imageSha: String? = null,
+        /**
+         * What kind of thing this was, for a row drawn on a spine.
+         *
+         * **The node's color, which `DESIGN.md` 5.2 makes a vocabulary rather
+         * than a decoration**: a call is gold, a visit is blue, an incident is
+         * alert, and everything else takes the quiet ink rather than borrowing
+         * one of the three. The stored value travels and the screen decides the
+         * color, because a color is a rendering and this is a record.
+         */
+        val kind: String? = null,
+        /**
+         * When it happened, in milliseconds, for measuring the gap to the row
+         * above it.
+         *
+         * **Separate from [noteEdtf] because they answer different questions.**
+         * The EDTF says what precision the person gave and is what gets
+         * rendered; this is the resolved instant the distance is arithmetic on.
+         * A coarse date has one and must not produce a marker from it, which is
+         * the caller's decision because only the caller knows the precision.
+         */
+        val noteStart: Long? = null,
     )
 
 
@@ -6166,22 +6187,46 @@ class Repository private constructor(
                     // The date the latest entry carries, which the card showed
                     // nowhere: "what were the last few entries" with no when.
                     whenEdtf = latest?.second,
-                    // **The last few, which is what the card is called.** 21.7
-                    // wants a three entry mini spine at tall, #259; this is the
-                    // same three entries in the shape every other card uses
-                    // until that lands.
-                    // **Offset by one, because the newest entry is already the
-                    // answer above.** Without it the card said "Care plan
-                    // meeting" at display size and then listed "Care plan
-                    // meeting" again as the first of the last few. Same defect
-                    // the measure card had, fixed there and written back in
-                    // here.
-                    items = manyOf(
-                        "SELECT coalesce(title, body), occurred_edtf FROM live_entry " +
-                            "WHERE subject_id = ? ORDER BY occurred_start DESC LIMIT ? OFFSET 1",
-                        subjectId, TODAY_CARD_ITEMS.toString(),
-                        dates = true,
-                    ),
+                    // **The last few, which is what the card is called**, and
+                    // the newest one is in here rather than skipped: at tall
+                    // these are the three waypoints of the mini spine 21.7 asks
+                    // for, and a spine that starts at the second entry is a
+                    // spine missing its head. #259.
+                    //
+                    // **The screen drops the first one at wide**, where the
+                    // newest entry is already the answer at display size and
+                    // listing it again made the card say "Care plan meeting"
+                    // twice. That is a rendering rule and it lives with the
+                    // renderer that has the size in front of it.
+                    //
+                    // **The kind and the resolved instant travel too**, because
+                    // a spine node's color comes from the kind and its gap
+                    // marker is arithmetic on two instants. Neither is display
+                    // text and neither is decided here.
+                    items = database.rawQuery(
+                        "SELECT coalesce(title, body), occurred_edtf, kind, occurred_start " +
+                            "FROM live_entry WHERE subject_id = ? " +
+                            "ORDER BY occurred_start DESC LIMIT ?",
+                        arrayOf(subjectId, TODAY_CARD_ITEMS.toString()),
+                    ).use { cursor ->
+                        buildList {
+                            while (cursor.moveToNext()) {
+                                add(
+                                    TodayItem(
+                                        label = cursor.getString(0),
+                                        noteEdtf = cursor.getString(1)
+                                            ?.takeIf { it.isNotBlank() },
+                                        kind = cursor.getString(2),
+                                        noteStart = if (cursor.isNull(3)) {
+                                            null
+                                        } else {
+                                            cursor.getLong(3)
+                                        },
+                                    ),
+                                )
+                            }
+                        }
+                    },
                 )
             }
 

@@ -28,6 +28,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Distance
+import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
@@ -180,7 +181,7 @@ fun ProjectTrailScreen(
             // forbids inventing precision, and a gap measured from a month the
             // person wrote as a month is arithmetic on something that was never
             // that precise.
-            val gap = if (isDayPrecise(previous?.whenEdtf) && isDayPrecise(item.whenEdtf)) {
+            val gap = if (Edtf.isDayPrecise(previous?.whenEdtf) && Edtf.isDayPrecise(item.whenEdtf)) {
                 Distance.between(previous?.whenStart, item.whenStart, zone)
             } else {
                 null
@@ -355,15 +356,6 @@ private fun kindLabelFor(item: Repository.ProjectTrailItem): String = when (item
  */
 private fun passedKey(gapKey: String): String =
     gapKey.replace("trail.gap.", "project.trail.gap.")
-
-/**
- * Whether a date is precise enough to measure a distance from.
- *
- * A bare year or a year and month is a real answer, rule 17, and subtracting
- * two of them would put a number on something the person never said.
- */
-private fun isDayPrecise(edtf: String?): Boolean =
-    edtf != null && Regex("^\\d{4}-\\d{2}-\\d{2}").containsMatchIn(edtf)
 
 /**
  * What the node's color says a row is, per section 5.2.

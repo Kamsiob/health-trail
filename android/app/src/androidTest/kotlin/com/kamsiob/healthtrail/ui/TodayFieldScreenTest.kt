@@ -909,6 +909,155 @@ class TodayFieldScreenTest {
         compose.onNodeWithTag(TodayFieldTags.card("c-meds")).assertIsDisplayed()
     }
 
+    // -- the trail card's mini spine, #259 ----------------------------------
+    //
+    // `DESIGN.md` 21.7 asks this card for a three-entry mini spine at tall,
+    // gap markers included, and 5.2.4 is why the markers are the point: two
+    // calls a week apart read as a week of calls, and the same two rows four
+    // months apart read as somebody left alone until something happened. A list
+    // shows the same rows either way.
+    //
+    // **The marker is here rather than only on the phone because no seed
+    // produces it.** It needs a fortnight of silence at the head of the trail,
+    // and every fixture ends its history on the day it is generated, so the
+    // newest entries are always days apart. Said out loud on the issue too.
+
+    /** A day, as the instant the record stores for it. */
+    private fun at(year: Int, month: Int, day: Int): Long =
+        java.time.LocalDate.of(year, month, day)
+            .atStartOfDay(java.time.ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+
+    /** One entry on the card, newest first, as the query hands them over. */
+    private fun entry(
+        label: String,
+        edtf: String,
+        kind: String = "call",
+        start: Long? = null,
+    ) = Repository.TodayItem(
+        label = label,
+        noteEdtf = edtf,
+        kind = kind,
+        noteStart = start,
+    )
+
+    private fun trailCard(size: String = "tall") = Repository.TodayLayout(
+        lead = card("c-digest", "digest", size = "wide", isLead = true),
+        field = listOf(card("c-trail", "trail_lately", size = size)),
+    )
+
+    @Test
+    fun theTrailCardDrawsItsLastFewAsASpineAndSaysEachOnce() {
+        // The spine's first waypoint is the newest entry, which is the same
+        // thing the smaller sizes say at display scale, so the title is not
+        // repeated over the top of it. This card has had that defect once.
+        show(
+            layout = trailCard(),
+            answers = mapOf(
+                "c-trail" to Repository.TodayAnswer(
+                    title = "Care plan meeting",
+                    whenEdtf = "2026-06-29",
+                    items = listOf(
+                        entry("Care plan meeting", "2026-06-29", start = at(2026, 6, 29)),
+                        entry("Called about the bill", "2026-06-28", start = at(2026, 6, 28)),
+                        entry("Visited in the afternoon", "2026-06-27", "visit", at(2026, 6, 27)),
+                    ),
+                ),
+            ),
+        )
+
+        val said = spokenByCard("c-trail")
+        assertEquals(
+            "the newest entry is said twice: $said",
+            1,
+            Regex(Regex.escape("Care plan meeting")).findAll(said).count(),
+        )
+        assertTrue("the second entry is missing: $said", "Called about the bill" in said)
+        assertTrue("the third entry is missing: $said", "Visited in the afternoon" in said)
+    }
+
+    @Test
+    fun theSpineSaysHowLongThePauseWas() {
+        // 5.2.4, and the reason this card is drawn rather than listed. Three
+        // weeks of silence is the difference between a week of calls and
+        // somebody left alone, and the rows look identical without it.
+        val strings = Strings.load(context)
+        show(
+            layout = trailCard(),
+            answers = mapOf(
+                "c-trail" to Repository.TodayAnswer(
+                    title = "Called the ward",
+                    whenEdtf = "2026-06-29",
+                    items = listOf(
+                        entry("Called the ward", "2026-06-29", start = at(2026, 6, 29)),
+                        entry("Nothing since the review", "2026-06-08", start = at(2026, 6, 8)),
+                    ),
+                ),
+            ),
+        )
+        assertTrue(
+            "the spine says nothing about the three weeks between them: ${spokenByCard("c-trail")}",
+            strings("trail.gap.weeks", "count" to 3) in spokenByCard("c-trail"),
+        )
+    }
+
+    @Test
+    fun aCoarselyGivenDateNeverProducesAGapMarker() {
+        // Rule 17. The distance between "sometime in April" and a day in June
+        // is not a number anybody gave, and a confident "two months earlier"
+        // derived from it is exactly the invented precision the date model
+        // exists to prevent.
+        val strings = Strings.load(context)
+        show(
+            layout = trailCard(),
+            answers = mapOf(
+                "c-trail" to Repository.TodayAnswer(
+                    title = "Called the ward",
+                    whenEdtf = "2026-06-29",
+                    items = listOf(
+                        entry("Called the ward", "2026-06-29", start = at(2026, 6, 29)),
+                        entry("Sometime in the spring", "2026-04", start = at(2026, 4, 1)),
+                    ),
+                ),
+            ),
+        )
+        val said = spokenByCard("c-trail")
+        assertTrue(
+            "a coarse date was measured against a precise one: $said",
+            listOf("trail.gap.days", "trail.gap.weeks", "trail.gap.months", "trail.gap.years")
+                .none { key -> (1..12).any { strings(key, "count" to it) in said } },
+        )
+    }
+
+    @Test
+    fun atWideTheTrailCardListsFromTheSecondEntry() {
+        // The newest entry is the answer at display scale there, and listing it
+        // under itself made the card say "Care plan meeting" twice. The drop is
+        // the renderer's, because at tall all three are waypoints and a query
+        // that had skipped one would leave the spine without its head.
+        show(
+            layout = trailCard(size = "wide"),
+            answers = mapOf(
+                "c-trail" to Repository.TodayAnswer(
+                    title = "Care plan meeting",
+                    whenEdtf = "2026-06-29",
+                    items = listOf(
+                        entry("Care plan meeting", "2026-06-29", start = at(2026, 6, 29)),
+                        entry("Called about the bill", "2026-06-28", start = at(2026, 6, 28)),
+                    ),
+                ),
+            ),
+        )
+        val said = spokenByCard("c-trail")
+        assertEquals(
+            "the newest entry is said twice at wide: $said",
+            1,
+            Regex(Regex.escape("Care plan meeting")).findAll(said).count(),
+        )
+        assertTrue("the older entry is missing at wide: $said", "Called about the bill" in said)
+    }
+
     // -- the care team card, #258 -------------------------------------------
     //
     // `DESIGN.md` 21.7 draws this card two ways and the difference between them

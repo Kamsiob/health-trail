@@ -227,6 +227,27 @@ object Edtf {
      * still a claim about November, and widening it would quietly turn the
      * person's hedge into a different answer than the one they gave.
      */
+    /**
+     * Whether a stored date names a single day, or a moment within one.
+     *
+     * **The question every distance has to ask first.** A bare year or a year
+     * and a month is a real answer, rule 17, and the distance between two of
+     * them is not a number anybody gave: subtracting them would turn somebody's
+     * "sometime in April" into a confident "three weeks earlier". So a gap
+     * marker, a countdown, and anything else measured between two dates asks
+     * this before it computes.
+     *
+     * **Through the parser rather than by inspecting the string.** There were
+     * two private copies of this, one on the trail and one on a project's
+     * trail, and the second was a regular expression matching four digits, a
+     * dash and two more. That is the parser rewritten badly in one line, and it
+     * would have called an interval starting on a day day-precise.
+     */
+    fun isDayPrecise(text: String?): Boolean {
+        val parsed = text?.takeIf { it.isNotBlank() }?.let { parse(it) } ?: return false
+        return parsed.precision == Precision.DAY || parsed.precision == Precision.MOMENT
+    }
+
     fun resolve(date: Date, zone: ZoneId): Range {
         val body = date.canonical.trimQualifier()
         if (date.precision == Precision.UNKNOWN) return Range(null, null)

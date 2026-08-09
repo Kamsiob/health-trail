@@ -598,23 +598,14 @@ private fun gapAbove(
     zone: ZoneId,
 ): Distance.Gap? {
     if (previous == null) return null
-    if (!isDayPrecise(entry.occurredEdtf) || !isDayPrecise(previous.occurredEdtf)) return null
+    if (!Edtf.isDayPrecise(entry.occurredEdtf) || !Edtf.isDayPrecise(previous.occurredEdtf)) {
+        return null
+    }
     return Distance.between(
         olderMillis = entry.occurredStart,
         newerMillis = previous.occurredStart,
         zone = zone,
     )
-}
-
-/**
- * True when this date names a single day or a moment within one.
- *
- * Read through `Edtf.parse` rather than by inspecting the string here, so there
- * is one parser and one answer.
- */
-private fun isDayPrecise(edtf: String?): Boolean {
-    val parsed = edtf?.takeIf { it.isNotBlank() }?.let { Edtf.parse(it) } ?: return false
-    return parsed.precision == Edtf.Precision.DAY || parsed.precision == Edtf.Precision.MOMENT
 }
 
 /**
@@ -655,7 +646,7 @@ private fun RouteRow(
  * not true.
  */
 @Composable
-private fun nodeColor(kind: String): Color {
+internal fun nodeColor(kind: String): Color {
     val colors = HealthTrail.colors
     return when (kind) {
         "call" -> colors.gold

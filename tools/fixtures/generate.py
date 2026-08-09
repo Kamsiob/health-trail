@@ -281,7 +281,20 @@ class Generator:
             for turn, words in enumerate(said):
                 # Spread back from the end of the history, so the last one is
                 # genuinely the latest and the ones behind it are a history.
-                day = max(0, self.days - 1 - (len(said) - 1 - turn) * 26)
+                #
+                # **And each process is at a different point in its own back
+                # and forth**, which is the realism this was missing and it
+                # showed. Without the per-project offset every project's latest
+                # word landed on the same day, so **the three newest entries in
+                # the whole notebook shared one date at every horizon**: the
+                # trail card said "June 29, 2026" three times down its spine and
+                # no gap marker could ever appear on it, at any seed. Three
+                # separate offices do not all call back on the same afternoon.
+                # #259.
+                day = max(
+                    0,
+                    self.days - 1 - index * PROCESSES_APART - (len(said) - 1 - turn) * 26,
+                )
                 entry_id = self.row(
                     db,
                     "entry",
@@ -1938,6 +1951,16 @@ PEOPLE = [
 # **The last one is on two projects on purpose.** The cross-project door is the
 # one new navigation idea on that surface and a fixture that never puts anybody
 # in two processes cannot show it, which is the same defect as #229 and #237.
+# How far apart two processes are in their own back and forth.
+#
+# **Nine days, which is over `Distance.THRESHOLD_DAYS` when two of them stack.**
+# A marker appears at fourteen days and no sooner, so a spacing under seven
+# would have produced the same silent spine this exists to fix. Nine puts the
+# newest three entries of a notebook at roughly nought, nine and eighteen days,
+# which is one office that came back last week and one that has not been heard
+# from in over two, and that is what a caregiver's trail actually looks like.
+PROCESSES_APART = 9
+
 PROJECT_CONTACTS = [
     ("Denise Alvarado", "Intake caseworker", "555 0114"),
     ("R. Boyd", "Intake supervisor", "555 0117"),

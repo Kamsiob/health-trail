@@ -29,7 +29,7 @@
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **17 repository checks pass**, `python3 tools/checks/run_all.py`.
 - **176 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
-- **492 instrumented tests pass**, last full run 2026-08-08 on the unlocked phone.
+- **496 instrumented tests pass**, last full run 2026-08-08 on the unlocked phone.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
 - **The phone is attached, installed, seeded and at its starting values**, each read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone.
 - **The destructive command guard is live and proven.** It refused two real commands on 2026-08-08, a recursive directory removal and an app data wipe, both correctly. Section 9.
@@ -67,7 +67,11 @@
 - **A control drawn inside a Today card was unreachable by a screen reader**, because the card clears its whole subtree to speak as one sentence. The card now clears its answer only, and carries its one inline action in a slot beside it.
 - **"+12" rendered as "12+" in Arabic**, because a plus is a neutral character and takes the paragraph direction. A remainder became a floor.
 
-**What is left in milestone 1, and each says why on its own issue:** the tall mini spine on the trail #259, and screens #293 through #301.
+**#259 is done and walked.** The trail card draws its last three entries as a mini spine at tall, on the same route with the same node colors the trail itself uses, each row carrying the date and the kind because a color never carries meaning alone. **The gap markers are the reason it is drawn rather than listed**, and they cannot be reached from any seed: every fixture ends its history on the day it is generated, so the head of the trail is never quiet. They are held in `TodayFieldScreenTest` and the issue says so.
+
+**And the fixture had a defect that showed up here.** Every project's latest word landed on the same day, so **the three newest entries in the whole notebook shared one date at every horizon**: the spine said "June 29, 2026" three times and every node was the same color. Three separate offices do not all call back on the same afternoon. They are nine days apart now.
+
+**What is left in milestone 1, and each says why on its own issue:** screens #293 through #301, plus edit mode and the gallery, #271 and #272.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 

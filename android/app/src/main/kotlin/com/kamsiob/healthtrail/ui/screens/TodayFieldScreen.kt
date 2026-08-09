@@ -45,12 +45,17 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Avatar
 import com.kamsiob.healthtrail.ui.components.AvatarOverflow
 import com.kamsiob.healthtrail.ui.components.AvatarSize
+import com.kamsiob.healthtrail.time.Distance
+import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.components.ChartHeight
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
+import com.kamsiob.healthtrail.ui.components.DistanceMarker
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.Plot
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
+import com.kamsiob.healthtrail.ui.components.RouteDash
+import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.chartPoints
 import com.kamsiob.healthtrail.ui.components.CardSize
 import com.kamsiob.healthtrail.ui.components.TabChip
@@ -596,6 +601,7 @@ private fun CardFor(
                 strings,
                 cardType = card.type,
                 sourced = card.sourceId != null,
+                spine = drewSpine(card.type, shown, tall = size == CardSize.TALL),
                 showItems = size != CardSize.SMALL,
                 drewChart = size == CardSize.TALL && (shown?.series?.size ?: 0) > 1,
                 countLine = countLineKey(card.type)?.let { strings[it] },
@@ -748,6 +754,8 @@ private fun AnswerBody(
     val type = HealthTrail.type
     val strings = LocalStrings.current
 
+    val spine = drewSpine(cardType, answer, tall)
+
     // **When it is, which nothing rendered until 2026-08-08.** `whenEdtf` is
     // read from the record for Next up, Milestones and a measure, carried
     // through `TodayAnswer`, and was dropped on the floor by every renderer, so
@@ -780,7 +788,7 @@ private fun AnswerBody(
             Text(text = strings[it], style = type.bodyS, color = colors.ink2)
         }
     }
-    answer?.title?.let {
+    answer?.title?.takeIf { !spine }?.let {
         Text(
             text = Bidi.isolate(it),
             style = if (lead) type.hero else type.displayS,
@@ -902,10 +910,20 @@ private fun AnswerBody(
         }
     }
 
+    // **The mini spine, at tall only.** 21.7. The last few entries as waypoints
+    // on the trail's own gold route, with the gap markers 5.2.4 exists for: two
+    // calls a week apart read as a week of calls, and the same two rows four
+    // months apart read as somebody left alone until something happened. A list
+    // shows the same rows either way, which is the whole reason this card is
+    // drawn rather than listed.
+    if (spine) {
+        MiniSpine(items = answer!!.items, hue = hue)
+    }
+
     // **The care team card draws its people rather than listing them**, above,
-    // so it is not in the general list. Both at once would say the same three
-    // names twice.
-    if (showDetail && !drewChart && cardType != "care_team" &&
+    // and the trail card draws them as a spine at tall, so neither is in the
+    // general list. Both at once would say the same three things twice.
+    if (showDetail && !drewChart && !spine && cardType != "care_team" &&
         answer != null && answer.items.isNotEmpty()
     ) {
         Column(
@@ -920,7 +938,17 @@ private fun AnswerBody(
                 Arrangement.Top
             },
         ) {
-            for (item in answer.items) {
+            // **The trail card's newest entry is already the answer above it**,
+            // so the list starts at the second. Every other card lists all of
+            // what it has. Dropped here rather than in the query, because at
+            // tall all three are waypoints on the spine and a query that had
+            // skipped one would have left the spine without its head.
+            val listed = if (cardType == "trail_lately") {
+                answer.items.drop(1)
+            } else {
+                answer.items
+            }
+            for (item in listed) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // **The person's own paper, at thumbnail size and no
                     // larger.** 21.7 says this card never renders private
@@ -1009,7 +1037,11 @@ private fun AnswerBody(
         answer.detailCount?.let { strings(key, "count" to it) }
     }
     val lines = listOfNotNull(
-        whenText,
+        // **Not above a spine.** The newest entry's date is already the first
+        // waypoint's eyebrow, and repeating it over the top of the drawing
+        // would say the same date twice on a card whose whole point is that the
+        // dates are laid out along a line.
+        whenText?.takeIf { !spine },
         answer?.detail?.takeIf { it.isNotBlank() },
         countedLine,
         // **Not everybody has a number, and that is not a deficiency.** Rule
@@ -1030,6 +1062,135 @@ private fun AnswerBody(
         )
     }
 
+}
+
+/**
+ * Whether the trail card is drawing its mini spine rather than listing.
+ *
+ * **Asked in one place**, because three things turn on it and they must never
+ * disagree: whether the spine draws, whether the title and the date above it
+ * are suppressed so the card does not say the newest entry twice, and what a
+ * reader hears. Section 9 is the whole reason the third one is in this list.
+ *
+ * **Tall only**, per 21.3: a spine is what tall is for, and drawing one across
+ * a half-width cell is a decoration rather than a shape anybody can read.
+ */
+private fun drewSpine(
+    cardType: String,
+    answer: Repository.TodayAnswer?,
+    tall: Boolean,
+): Boolean = cardType == "trail_lately" &&
+    tall &&
+    answer != null &&
+    !answer.sourceClosed &&
+    answer.items.isNotEmpty()
+
+/**
+ * The last few entries as waypoints on the trail's own route. `DESIGN.md` 21.7.
+ *
+ * **The same spine the trail draws, not a second drawing of it.** `SpineRow`,
+ * `DistanceMarker`, the gold route with the trail's dash, and the node colors
+ * the trail already gives a call, a visit and an incident: somebody who learns
+ * the vocabulary on the trail reads this card without being taught twice, which
+ * is what 5.2 means by a system rather than one screen's drawing.
+ *
+ * **The gap markers are the reason this is drawn and not listed.** 5.2.4: two
+ * calls a week apart read as a week of calls, and the same two rows four months
+ * apart read as somebody left alone until something happened. A list shows the
+ * same rows either way. **Under fourteen days there is no marker at all**,
+ * because a line between every pair is wallpaper.
+ *
+ * **No judgment and no color by value**, per rule 2 and 21.8. The marker is
+ * arithmetic on two dates the person recorded, nothing says a gap was too long,
+ * and no gap is colored.
+ *
+ * **A coarsely given date produces no marker.** Rule 17: the distance between
+ * "sometime in April" and a day in June is not a number anybody gave, and a
+ * confident "two months later" derived from it would be invented precision.
+ *
+ * **Not doors.** 21.3 gives tall three touch targets and the card is already
+ * one; three more would be four. The card opens the trail, where every entry is
+ * its own row and its own door.
+ */
+@Composable
+private fun MiniSpine(items: List<Repository.TodayItem>, hue: TabHue) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    val type = HealthTrail.type
+    val zone = java.time.ZoneId.systemDefault()
+
+    Column(modifier = Modifier.padding(top = Space.s)) {
+        items.forEachIndexed { index, item ->
+            // The row above is the newer one, because the card reads newest
+            // first, which is the order the trail itself uses.
+            val newer = items.getOrNull(index - 1)
+            val gap = if (Edtf.isDayPrecise(item.noteEdtf) && Edtf.isDayPrecise(newer?.noteEdtf)) {
+                Distance.between(
+                    olderMillis = item.noteStart,
+                    newerMillis = newer?.noteStart,
+                    zone = zone,
+                )
+            } else {
+                null
+            }
+
+            if (gap != null) {
+                SpineRow(
+                    continuesAbove = true,
+                    continuesBelow = true,
+                    routeColor = hue.base,
+                    dash = RouteDash.TRAIL,
+                ) {
+                    DistanceMarker(strings(gap.key, "count" to gap.count))
+                }
+            }
+
+            SpineRow(
+                continuesAbove = index > 0,
+                continuesBelow = index < items.lastIndex,
+                node = nodeColor(item.kind.orEmpty()),
+                routeColor = hue.base,
+                dash = RouteDash.TRAIL,
+            ) {
+                Column(modifier = Modifier.padding(bottom = Space.s)) {
+                    // **The date and the kind, which is the eyebrow every trail
+                    // row carries.** The kind is here because 2.2 says every
+                    // color carries a word alongside it: the node is gold for a
+                    // call and blue for a visit, and without the word the color
+                    // is carrying that meaning on its own, which fails in
+                    // grayscale and for a colorblind reader. The date renders
+                    // through `EventDateText` and never as the EDTF it is
+                    // stored as.
+                    val eyebrow = Bidi.join(
+                        item.noteEdtf?.let { EventDateText.render(strings, it) },
+                        item.kind?.takeIf { it.isNotBlank() }
+                            ?.let { strings[kindNameKey(it)] },
+                    )
+                    if (eyebrow.isNotBlank()) {
+                        Text(
+                            text = eyebrow,
+                            style = type.mono,
+                            color = colors.ink2,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    Text(
+                        text = Bidi.isolate(item.label),
+                        style = type.bodyS,
+                        color = colors.ink,
+                        // **Two lines, not one.** These are sentences somebody
+                        // wrote, and a card that exists to show what was said
+                        // lately cutting each of them to a single line shows
+                        // three beginnings. D105's rule read the other way: the
+                        // cap is what is being read, so it is generous.
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -1355,6 +1516,14 @@ private fun answerParts(
     /** Whether the card points at one row, per [AnswerBody]'s own parameter. */
     sourced: Boolean = false,
     /**
+     * Whether the card drew its mini spine, so the ear gets what the eye gets.
+     *
+     * Section 9. With the spine the newest entry is the first waypoint rather
+     * than a title above it, and the gaps between waypoints are on the screen
+     * in words, so both have to be true of the sentence too.
+     */
+    spine: Boolean = false,
+    /**
      * Whether the card is showing its list.
      *
      * **The reader hears what is on the screen and not what is in the model.**
@@ -1386,25 +1555,57 @@ private fun answerParts(
             add(answer.count?.takeIf { it > 0 }?.toString())
             if ((answer.count ?: 0) > 0) add(countLine)
         }
-        add(answer.title)
+        if (!spine) add(answer.title)
         // **The date the screen shows**, per section 9. It was absent here for
         // as long as it was absent there, so the omission was consistent and
         // wrong twice.
-        add(answer.whenEdtf?.takeIf { it.isNotBlank() }?.let { EventDateText.render(strings, it) })
+        if (!spine) {
+            add(
+                answer.whenEdtf?.takeIf { it.isNotBlank() }
+                    ?.let { EventDateText.render(strings, it) },
+            )
+        }
         // **The ear gets what the eye gets: a chart or a list, never both.**
         // 21.3 gives tall one or the other and the screen picks the chart when
         // there is a series, so announcing the list too made a reader listen to
         // three readings that were not on the screen and then be told there
         // were twelve. Section 9.
-        if (showItems && !drewChart) {
+        if ((showItems || spine) && !drewChart) {
+            // **The rows the screen is showing and no others.** The trail card
+            // lists from the second entry at wide, because the first one is
+            // already the answer above it, and shows all three on the spine.
+            val rows = if (cardType == "trail_lately" && !spine) {
+                answer.items.drop(1)
+            } else {
+                answer.items
+            }
             // **Raw parts, never a joined line.** `Bidi.join` isolates every
             // part it is handed, so adding an already joined item wrapped it a
             // second time and the sentence came out `⁨⁨137.3⁩ · ⁨May 5⁩⁩`. The
             // caller joins once, at the end, over flat parts.
-            for (item in answer.items) {
+            rows.forEachIndexed { index, item ->
+                // **The gaps, because they are on the screen in words.** A
+                // reader hearing three entries with no distances between them
+                // is hearing a list, which is the thing the spine exists not to
+                // be. Same rule and same threshold as the drawing.
+                if (spine) {
+                    val newer = rows.getOrNull(index - 1)
+                    if (Edtf.isDayPrecise(item.noteEdtf) && Edtf.isDayPrecise(newer?.noteEdtf)) {
+                        Distance.between(
+                            olderMillis = item.noteStart,
+                            newerMillis = newer?.noteStart,
+                            zone = java.time.ZoneId.systemDefault(),
+                        )?.let { gap -> add(strings(gap.key, "count" to gap.count)) }
+                    }
+                }
                 add(item.label.ifBlank { strings["project.steps.ungrouped"] })
                 add(item.note)
                 add(item.noteEdtf?.let { EventDateText.render(strings, it) })
+                // The word the node's color is saying, per 2.2, and only where
+                // the screen shows it.
+                if (spine) {
+                    add(item.kind?.takeIf { it.isNotBlank() }?.let { strings[kindNameKey(it)] })
+                }
                 add(
                     item.amountMinor?.let {
                         formatMoney(strings, it, item.currency ?: "USD")
