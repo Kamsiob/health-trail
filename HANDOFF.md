@@ -29,7 +29,7 @@
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **17 repository checks pass**, `python3 tools/checks/run_all.py`.
 - **176 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
-- **505 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone.
+- **510 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
 - **The phone is attached, installed, seeded and at its starting values**, each read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone.
 - **The destructive command guard is live and proven.** It refused two real commands on 2026-08-08, a recursive directory removal and an app data wipe, both correctly. Section 9.
@@ -77,7 +77,11 @@ It is grouped under the binder's own section names with the situation's suggesti
 
 **And it was truncating its own previews at font scale 2.0**, mid-word and with no ellipsis: "passed 75 days", "4 steps in the". D105 says a second line somebody reads to choose wraps, and it does now.
 
-**What is left in milestone 1, and each says why on its own issue:** screens #293 through #301, and the rest of the gallery #272.
+**#296, #297 and #298, the three screens behind edit mode and the gallery, are done and walked.** Building them found that **edit mode had departed from the grid**: every card carried three size chips and four named actions, which on a twenty card Today is about a hundred and forty controls at one weight. The grid and the spec under it both say a card carries a **remove dot and a drag handle**, and everything else lives in **the card's own options sheet**, opened from the card. That is what ships now, and edit mode reads as a surface rather than a control panel.
+
+**Three defects came out of building it, two caught before the phone.** `ink3` on text, which a check refuses because the app has two text levels; a catalog key that existed nowhere, which another check refuses because `Strings.resolve` throws; and a remove dot running underneath a long tab, because the corner reserved the chevron's width and a dot is a touch target. **The isolate marks nested for the third time**, this time in the sheet's own title.
+
+**What is left in milestone 1, and each says why on its own issue:** screens #293, #294, #295, #300 and #301.
 
 **What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
 

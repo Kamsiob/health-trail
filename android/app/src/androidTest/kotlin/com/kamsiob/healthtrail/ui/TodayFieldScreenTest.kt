@@ -23,6 +23,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.screens.CardOptionsTags
 import com.kamsiob.healthtrail.ui.screens.TodayFieldScreen
 import com.kamsiob.healthtrail.ui.screens.TodayFieldTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
@@ -972,29 +973,43 @@ class TodayFieldScreenTest {
     }
 
     @Test
-    fun everyCardInEditModeOffersTheNamedReorderPathAsWellAsTheGrip() {
-        // 23.2, and the reason the grip is a shortcut. Move up and Move down
-        // work one handed, with a reader on, and with switch access; a drag
-        // works with none of those, so it can never be the only way.
+    fun everyCardInEditModeCarriesAGripAndOpensItsOptions() {
+        // Grid screen 05: in edit mode a card carries a remove dot and a drag
+        // handle, and everything else is in its options, screen 07. Inline it
+        // was three chips and four actions on every card, which on a twenty
+        // card Today is the wall rule 15 describes.
         val layout = startingHand()
         show(layout)
         compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
 
-        val strings = Strings.load(context)
-        // **Found in the unmerged tree on purpose.** The grip is decorative to
-        // a reader, because a reader cannot make the gesture, so it does not
-        // appear as a stop of its own. That it is drawn at all is checked here;
-        // that the named path exists is checked below, and that is the one a
-        // reader uses.
         for (card in layout.field) {
             compose.onNodeWithTag(TodayFieldTags.drag(card.id), useUnmergedTree = true)
                 .assertIsDisplayed()
         }
+        // The card is the door to its options, so the size chips are not on it.
         assertTrue(
-            "the named reorder path is missing",
-            compose.onAllNodesWithText(strings["today.edit.up.short"])
-                .fetchSemanticsNodes().isNotEmpty(),
+            "a size chip is still on the card's face",
+            compose.onAllNodesWithText(Strings.load(context)["today.edit.size.small"])
+                .fetchSemanticsNodes().isEmpty(),
         )
+    }
+
+    @Test
+    fun aCardsOptionsHoldTheNamedReorderPath() {
+        // 23.2. Move up and Move down work one handed, with a reader on, and
+        // with switch access; the drag works with none of those, so the named
+        // path is the mechanism and the drag is the shortcut.
+        val layout = startingHand()
+        show(layout)
+        compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
+        compose.onNodeWithTag(TodayFieldTags.card("c-meds")).performClick()
+
+        compose.onNodeWithTag(CardOptionsTags.SHEET).assertIsDisplayed()
+        compose.onNodeWithTag(CardOptionsTags.UP).assertIsDisplayed()
+        compose.onNodeWithTag(CardOptionsTags.DOWN).assertIsDisplayed()
+        compose.onNodeWithTag(CardOptionsTags.LEAD).assertIsDisplayed()
+        compose.onNodeWithTag(CardOptionsTags.REMOVE).assertIsDisplayed()
+        compose.onNodeWithTag(CardOptionsTags.size("wide")).assertIsDisplayed()
     }
 
     // -- the trail card's mini spine, #259 ----------------------------------
@@ -1417,7 +1432,10 @@ class TodayFieldScreenTest {
         }
 
         compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
-        compose.onNodeWithTag(TodayFieldTags.who("c-team")).performClick()
+        // Through the card's own options, per grid screen 07, which is where
+        // the source picker lives with everything else about the card.
+        compose.onNodeWithTag(TodayFieldTags.card("c-team")).performClick()
+        compose.onNodeWithTag(CardOptionsTags.WHO).performClick()
         compose.onNodeWithText("Marcus Bell").performClick()
 
         assertTrue(

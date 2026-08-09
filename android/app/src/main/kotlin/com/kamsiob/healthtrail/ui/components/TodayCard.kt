@@ -31,6 +31,17 @@ import com.kamsiob.healthtrail.ui.theme.Space
  */
 private val CHEVRON_ROOM: Dp = 8.dp + 8.dp + 8.dp
 
+/**
+ * The room a corner control needs instead.
+ *
+ * **The dot is a touch target and the chevron is a drawing**, so reserving the
+ * chevron's width for it ran a long tab underneath it: "Tracking · How she
+ * see..." ellipsized into the remove dot in edit mode. Same family as the
+ * defect the chevron itself caused, and nothing collides until the text is long
+ * enough. Section 9's floor plus the padding around it.
+ */
+private val CORNER_ROOM: Dp = 48.dp + 8.dp
+
 /** How much room a card takes on the field. `DESIGN.md` 21.3. */
 enum class CardSize {
     /** Half width. One answer, one line of context. One touch target. */
@@ -121,6 +132,17 @@ fun TodayCard(
      * **Null on almost every card**, and a card is still a door without one.
      */
     action: (@Composable () -> Unit)? = null,
+    /**
+     * What sits in the corner, or null for the chevron every card wears.
+     *
+     * **A card is a door and the chevron says so**, 21.2. In edit mode it is
+     * not a door to its section any more, it is a door to its own options, and
+     * the corner carries the remove dot instead: grid screen 05 puts the dot on
+     * the card and the spec under it says the dot exists only inside edit mode,
+     * which is what keeps "nothing bare responds to touch" true in ordinary
+     * reading.
+     */
+    corner: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
@@ -182,7 +204,7 @@ fun TodayCard(
                         // words underneath the chevron and ellipsized behind it.
                         // Seen on the phone and invisible in the code, because
                         // nothing collides until the text is long enough.
-                        .padding(end = CHEVRON_ROOM)
+                        .padding(end = if (corner == null) CHEVRON_ROOM else CORNER_ROOM)
                         .clip(RoundedCornerShape(5.dp))
                         .background(hue.wash)
                         .padding(horizontal = Space.s, vertical = 2.dp),
@@ -193,10 +215,8 @@ fun TodayCard(
             }
             action?.invoke()
         }
-        Chevron(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(Space.s),
-        )
+        Box(modifier = Modifier.align(Alignment.TopEnd)) {
+            corner?.invoke() ?: Chevron(modifier = Modifier.padding(Space.s))
+        }
     }
 }

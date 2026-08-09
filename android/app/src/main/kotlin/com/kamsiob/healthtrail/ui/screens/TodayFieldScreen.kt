@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.ui.screens
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.ui.semantics.contentDescription
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.Radius
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
@@ -66,6 +68,7 @@ import com.kamsiob.healthtrail.ui.components.DistanceMarker
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.Plot
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
@@ -240,6 +243,10 @@ fun TodayFieldScreen(
     // the source picker in a card's options, and a card's options are what edit
     // mode puts on the card itself.
     var picking by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // **Which card has its options open**, by id, or null. 21.6 screen 7: one
+    // sheet holds a card's whole life, and it is opened from the card itself.
+    var options by rememberSaveable { mutableStateOf<String?>(null) }
 
     // **What a card says while it is being edited.** The answers were read once
     // when Today gained focus, so a staged pick would leave the card naming the
@@ -482,31 +489,9 @@ fun TodayFieldScreen(
                     },
                     today = today,
                     editing = editing,
-                    // **The source picker, and only where a card takes one.**
-                    // 21.6 screen 7. The care team card is the one whose two
-                    // variants are a choice about a person rather than about a
-                    // size, and a measure or a project card is one per source
-                    // by construction: it arrives from the gallery already
-                    // pointing at the thing the person picked there.
-                    onPickSource = if (card.type == "care_team") {
-                        { picking = card.id }
-                    } else {
-                        null
-                    },
-                    canMoveDown = index < field.lastIndex,
-                    onMove = { earlier ->
-                        val to = if (earlier) position - 1 else position + 1
-                        draft = draft.toMutableList().apply { add(to, removeAt(position)) }
-                    },
-                    onResize = { size ->
-                        draft = draft.toMutableList()
-                            .also { it[position] = it[position].copy(size = size) }
-                    },
+                    onOptions = { options = card.id },
                     onRemove = {
                         draft = draft.toMutableList().apply { removeAt(position) }
-                    },
-                    onPromote = {
-                        draft = draft.toMutableList().apply { add(0, removeAt(position)) }
                     },
                 )
             }
@@ -529,6 +514,62 @@ fun TodayFieldScreen(
         // **Staged like every other change in edit mode**, per 21.6 screen 5:
         // nothing saves until Done. The card re-words itself from the roster
         // straight away, so the choice is visible the moment it is made.
+        // **One card's whole life, opened from the card.** 21.6 screen 7. Every
+        // change goes to the draft, so this sheet's own Done closes it and
+        // nothing else: what saves is Done on Today.
+        options?.let { cardId ->
+            val at = draft.indexOfFirst { it.id == cardId }
+            val card = draft.getOrNull(at)
+            if (card == null || at < 1) {
+                options = null
+            } else {
+                CardOptionsSheet(
+                    name = optionsName(card, answerFor(card)),
+                    size = card.size,
+                    onResize = { size ->
+                        draft = draft.toMutableList()
+                            .also { it[at] = it[at].copy(size = size) }
+                    },
+                    onPromote = {
+                        draft = draft.toMutableList().apply { add(0, removeAt(at)) }
+                        options = null
+                    },
+                    onMoveUp = if (at > 1) {
+                        {
+                            draft = draft.toMutableList().apply { add(at - 1, removeAt(at)) }
+                            options = null
+                        }
+                    } else {
+                        null
+                    },
+                    onMoveDown = if (at < draft.lastIndex) {
+                        {
+                            draft = draft.toMutableList().apply { add(at + 1, removeAt(at)) }
+                            options = null
+                        }
+                    } else {
+                        null
+                    },
+                    onRemove = {
+                        draft = draft.toMutableList().apply { removeAt(at) }
+                        options = null
+                    },
+                    // **The source picker, and only where a card takes one.**
+                    // The care team card is the one whose two variants are a
+                    // choice about a person rather than about a size; a measure
+                    // or a project card is one per source by construction, since
+                    // it arrives from the gallery already pointing at the thing
+                    // the person picked there.
+                    onPickSource = if (card.type == "care_team") {
+                        { picking = card.id }
+                    } else {
+                        null
+                    },
+                    onDismiss = { options = null },
+                )
+            }
+        }
+
         picking?.let { cardId ->
             val card = draft.firstOrNull { it.id == cardId }
             if (card == null) {
@@ -667,15 +708,12 @@ private fun CardFor(
     onOpen: (Repository.TodayCard) -> Unit,
     modifier: Modifier = Modifier,
     editing: Boolean = false,
-    canMoveDown: Boolean = false,
-    onMove: (earlier: Boolean) -> Unit = {},
-    onResize: (String) -> Unit = {},
+    /** Opens this card's options sheet. 21.6 screen 7. */
+    onOptions: () -> Unit = {},
+    /** Takes the card off Today, from the dot in its corner. */
     onRemove: () -> Unit = {},
-    onPromote: () -> Unit = {},
     /** Opens the dialer, for the one card that offers a number. */
     onDial: (String) -> Unit = {},
-    /** Opens the source picker, or null for a card that takes no source. */
-    onPickSource: (() -> Unit)? = null,
     /** Whether the finger is carrying this card right now. */
     dragging: Boolean = false,
     onDragStart: () -> Unit = {},
@@ -710,10 +748,22 @@ private fun CardFor(
                 countLine = countLineKey(card.type)?.let { strings[it] },
             ),
         ),
-        onOpen = { onOpen(card) },
-        openLabel = strings("today.card.open", "name" to tab),
+        // **In edit mode the card is a door to its own options**, grid screen
+        // 07, rather than to the section its answer lives in. Leaving it
+        // opening the section would take somebody out of an unsaved edit.
+        onOpen = { if (editing) onOptions() else onOpen(card) },
+        openLabel = if (editing) {
+            strings("today.options.open", "name" to tab)
+        } else {
+            strings("today.card.open", "name" to tab)
+        },
         size = size,
         modifier = modifier,
+        corner = if (editing) {
+            { RemoveDot(spoken = strings("today.edit.remove", "name" to tab), onClick = onRemove) }
+        } else {
+            null
+        },
         // In edit mode the card holds controls, and a node that speaks as one
         // thing would swallow them.
         speaksAsOneNode = !editing,
@@ -738,97 +788,46 @@ private fun CardFor(
             hue = hueForCard(card.type),
         )
 
-        // **The controls, and only while editing.** 21.6 screen 7 gives Move
-        // up and Move down as the accessible reorder path, so reordering works
-        // one-handed, with the reader on, and with switch access. Drag is a
-        // shortcut on top of this, never instead of it.
+        // **In edit mode a card carries a grip and nothing else.** Grid screen
+        // 05 and the spec under it: the remove dot and the drag handle live on
+        // the card, and size, position, source and removal live in the card's
+        // own options sheet, screen 07. **Inline, all of it was a wall**: three
+        // chips and four named actions on every card is about a hundred and
+        // forty controls on a twenty card Today, every one of them the same
+        // weight, which is precisely what rule 15 says uniform weight does.
+        //
+        // **The card itself opens its options**, which is what "opened from the
+        // card in edit mode" means and what makes this one target rather than
+        // two. The remove dot is the one shortcut on the face, in the corner
+        // where the chevron sits when the card is a door.
         if (editing) {
-            Column(modifier = Modifier.padding(top = Space.s)) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Space.xs),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    for (option in listOf("small", "wide", "tall")) {
-                        SizeChip(
-                            label = strings["today.edit.size.$option"],
-                            selected = card.size == option,
-                            onClick = { onResize(option) },
-                        )
-                    }
-                    Spacer(Modifier.weight(1f))
-                    // **The shortcut, at the end of the row of options.** 21.6
-                    // screen 5 gives edit mode a drag handle, and 23.2 is why it
-                    // is a shortcut and not the mechanism: Move up, Move down
-                    // and To top are the reorder path, they work one handed,
-                    // with a reader, and with switch access, and a gesture is
-                    // the fast way for somebody who can make it.
-                    DragHandle(
-                        dragging = dragging,
-                        onDragStart = onDragStart,
-                        onDrag = onDrag,
-                        onDragEnd = onDragEnd,
-                        modifier = Modifier.testTag(TodayFieldTags.drag(card.id)),
-                    )
-                }
-                // **The word is short and the sentence is the reader's.**
-                // "Move Medications down" is a correct sentence and it is far
-                // too long for a half width card: it wrapped to one letter per
-                // line and stretched the card to four times its height. Seen on
-                // the phone. The visible word is Up, Down, Remove; the reader
-                // still hears which card it moves, which is the part that
-                // matters when you cannot see the card it is sitting on.
-                // **They wrap rather than clip.** Four controls and a card half
-                // a screen wide do not fit on one line, and the last of them
-                // rendered as "Remov": rule 11 rules out truncation, and a
-                // control whose word is cut in half is a control somebody has
-                // to guess at. Wrapping is what a row of actions does when the
-                // screen is narrow, and it is the same answer at font scale 2.0
-                // where every word is longer.
-                FlowRow(
-                    modifier = Modifier.padding(top = Space.xs),
-                    horizontalArrangement = Arrangement.spacedBy(Space.s),
-                ) {
-                    EditAction(
-                        label = strings["today.edit.up.short"],
-                        spoken = strings("today.edit.up", "name" to tab),
-                        onClick = { onMove(true) },
-                    )
-                    if (canMoveDown) {
-                        EditAction(
-                            label = strings["today.edit.down.short"],
-                            spoken = strings("today.edit.down", "name" to tab),
-                            onClick = { onMove(false) },
-                        )
-                    }
-                    // **Promoting to the lead is its own action**, 21.1,
-                    // because reaching the top by tapping Move up eleven times
-                    // is not the same offer. Promoting demotes the card that
-                    // was there back into the field, which is what moving to
-                    // position zero does.
-                    EditAction(
-                        label = strings["today.edit.lead.short"],
-                        spoken = strings("today.edit.lead", "name" to tab),
-                        onClick = onPromote,
-                    )
-                    EditAction(
-                        label = strings["today.edit.remove.short"],
-                        spoken = strings("today.edit.remove", "name" to tab),
-                        onClick = onRemove,
-                    )
-                    // **Which person this card points at**, 21.6 screen 7, and
-                    // only on a card that takes a source. It sits with the
-                    // other options rather than on the card's face, because it
-                    // is a decision made once and the card's face is for the
-                    // answer.
-                    onPickSource?.let { pick ->
-                        EditAction(
-                            label = strings["today.edit.who.short"],
-                            spoken = strings("today.edit.who", "name" to tab),
-                            onClick = pick,
-                            modifier = Modifier.testTag(TodayFieldTags.who(card.id)),
-                        )
-                    }
-                }
+            Row(
+                modifier = Modifier.padding(top = Space.s).fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // **A label, not a link.** The whole card is the target here,
+                // so putting the action color on one word would say press this
+                // word, which is not where the tap goes. Law 2 bans bare text
+                // links outright for exactly that reason, and this is quiet
+                // type saying what the card now opens.
+                Text(
+                    text = strings["today.edit.options"],
+                    style = HealthTrail.type.mono,
+                    color = HealthTrail.colors.ink2,
+                    maxLines = 1,
+                )
+                Spacer(Modifier.weight(1f))
+                // **The shortcut, and 23.2 is why it is only that.** Move up and
+                // Move down in the sheet are the reorder path: they work one
+                // handed, with a reader on, and with switch access, and a drag
+                // works with none of those.
+                DragHandle(
+                    dragging = dragging,
+                    onDragStart = onDragStart,
+                    onDrag = onDrag,
+                    onDragEnd = onDragEnd,
+                    modifier = Modifier.testTag(TodayFieldTags.drag(card.id)),
+                )
             }
         }
     }
@@ -2056,3 +2055,70 @@ private fun EditAction(
  * readable screen is the opposite of designing for it.
  */
 private const val WIDE_TYPE_SCALE = 1.5f
+
+/**
+ * The dot that takes a card off Today. `DESIGN.md` 21.6 screen 5.
+ *
+ * **It exists only inside edit mode**, which is what keeps "nothing bare
+ * responds to touch" true in ordinary reading: outside edit mode this corner is
+ * the chevron, and the card is a door rather than a thing with controls on it.
+ *
+ * **A minus rather than a cross.** A cross reads as "delete", and this deletes
+ * nothing: the card comes off an arrangement and everything it was answering
+ * about is still written down. The sheet says so in words, and the shape should
+ * not say something louder than the words.
+ *
+ * **Drawn rather than an icon glyph**, like every other mark here, so it cannot
+ * fall back to a box and it takes the theme's own ink.
+ */
+@Composable
+private fun RemoveDot(spoken: String, onClick: () -> Unit) {
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, colors.sand)
+
+    Box(
+        modifier = Modifier
+            .padding(Space.xs)
+            .size(Space.touchTarget)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                onClickLabel = spoken,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .semantics(mergeDescendants = true) { contentDescription = spoken },
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(modifier = Modifier.size(DOT_SIZE)) {
+            drawCircle(color = surface)
+            drawLine(
+                color = colors.ink2,
+                start = Offset(size.width * 0.3f, size.height / 2f),
+                end = Offset(size.width * 0.7f, size.height / 2f),
+                strokeWidth = DOT_STROKE.toPx(),
+                cap = StrokeCap.Round,
+            )
+        }
+    }
+}
+
+/** The dot itself, inside a touch target that is section 9's floor. */
+private val DOT_SIZE = 24.dp
+
+/** How heavy the minus is. */
+private val DOT_STROKE = 2.dp
+
+/**
+ * What the options sheet calls the card it is about.
+ *
+ * **The tab and what it points at**, which is the same name the card wears, so
+ * somebody who opened the options of one of four project cards can tell which
+ * one they are looking at.
+ */
+@Composable
+private fun optionsName(
+    card: Repository.TodayCard,
+    answer: Repository.TodayAnswer?,
+): String = tabFor(card, answer, LocalStrings.current)

@@ -356,7 +356,7 @@ A row may be 46dp tall and still carry a 48dp touch target through invisible pad
 | **Sticky section header** | So the person always knows where they are |
 | **Edge scrubber** | Jump by year and month, riding **a reserved margin rather than sitting over the words**, in a band of roughly half the screen height. Every label is also its own tap target, so the gesture is never the only way. **Landing in a closed fold opens it**, because answering a jump with a door is not answering it. Same "not on a short list" rule as the search bar |
 | **Stage dots** | Where somebody is in a staged conversation, per law 3. Two to five stages. The current dot is **wider**, never a different color alone, and the row is **one node to a reader** saying which stage of how many in words. **Never a progress meter**: it says where you are and never how much is left to do, because rule 13 rules out grading the person's own diligence. Not for a screen with sections, which is not a sequence somebody agreed to |
-| **Sheet** | Rises from the bottom, 24dp top corners, scrim behind |
+| **Sheet** | Rises from the bottom, 24dp top corners, scrim behind. **One question per sheet**, per law 3, and it says whether anything it does is saved. **It scrolls**, because a sheet that cannot reach its own Done at font scale 2.0 is one somebody is stuck in |
 | **FAB** | Gold, 48dp, bottom-trailing corner, opening a labeled menu that blooms upward from it |
 | **Bottom navigation** | Four tabs, even spacing, active tab marked with a tonal pill behind its icon |
 
@@ -915,9 +915,9 @@ Every card declares **one query** over the same single database. Queries run whe
 2. **Today, year three, made his own.** A chart promoted to lead, a project's date added, the digest demoted to a wide field card.
 3. **The morning of an appointment.** Same layout as 2, different data. **Data moves; cards never move themselves.**
 4. **Back after four months.** The digest takes the return voice regardless of which card holds the lead.
-5. **Editing Today.** Entered by the **visible Edit button**; touch and hold is a shortcut, never the only path. Remove dot, drag handle, size chips. **Done saves; nothing saves behind your back.**
+5. **Editing Today.** Entered by the **visible Edit button**; touch and hold is a shortcut, never the only path. **A card carries a remove dot and a drag handle and nothing else**, and the card itself opens its options. Inline, all of it was a wall: three chips and four named actions on every card is about a hundred and forty controls on a twenty card Today, at one weight, which is rule 15's uniform weight exactly. **Done saves; nothing saves behind your back.**
 6. **Adding a card.** A sheet grouped by section in binder order, each entry previewing its small size **with real current data**. The situation's suggestions first, as a group of their own at the top, and a card is in one group only. **The whole row adds the card**, D123: rule 23 takes the easier target, and a full width row is one a thumb finds in a corridor. **The preview wraps**, per D105, because it is the thing being read to choose.
-7. **One card's options.** Size chips, the source picker, Make this the lead, and **Move up and Move down as the accessible reorder path**.
+7. **One card's options.** Opened from the card in edit mode. Size chips, the source picker where the card takes one, Make this the lead, **Move up and Move down as the accessible reorder path**, and taking it off Today, which says in words that nothing written down is removed. **One sheet holds a card's whole life**, and law 3 is why it is one sheet: it asks one question, which is what this card should be. **Nothing here saves**; its Done closes the sheet and Today's Done is what writes.
 8. **Largest font size.** The field reflows to one column at full width, nothing clipped, **layout order preserved exactly**.
 9. **A different situation's default.** Two situations, two starting hands, one grammar.
 10. **A quiet day.** **The dashboard's hardest state: it must not invent urgency to look useful.**
