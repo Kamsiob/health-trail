@@ -1143,3 +1143,34 @@ Two real Arabic exports, each decrypted on this laptop with `tools/decrypt/decry
 **The destructive command guard refused a recursive directory removal aimed at a scratch folder**, correctly and without being asked. Third real refusal. **It also refused this section**, because the sentence above named the verb, which is #323 and is not a reason to weaken it: the text was written to a file and appended instead.
 
 ---
+
+## 9. B4's argument becomes true, 2026-08-09
+
+**#9's last item, and it turned out to be a claim the repository had never made good on.** B4 dropped the emulator from this project on an explicit argument:
+
+> Data survival is proven by the export and import round trip against the golden vectors in continuous integration, which is repeatable, runs on every push, and does not depend on any one device's history.
+
+**Nothing in continuous integration rendered a readable page at all.** `RegenerationTest` is instrumented, `DateVectorTest` reads assets, and both need the phone that B4 says should not be the proof. So the reasoning that justified dropping the emulator pointed at a test that did not exist, and on any day the phone was unreachable the strongest guarantee in the format was unchecked. **Nothing anywhere said so**, which is the same shape as every other defect this week: a promise that reads as kept.
+
+### What it is
+
+`contract/test-vectors/readable/`, rendered by an ordinary JVM unit test.
+
+- **Fifteen rows across ten tables**, lifted out of an archive the app itself wrote, so they are rows the app could write. The fixture rule, applied to a vector.
+- **All twelve rendering decisions reached**, and a third test fails if a decision is added that the vector does not reach, so it cannot quietly stop covering the thing it exists for.
+- **English and Arabic**, because almost no rendering defect is visible in English.
+- **The failure names the file and the character**, proved by changing one word in an expected page and reading the message rather than assuming it.
+
+### Two things worth keeping
+
+**A golden vector needs a regeneration path, and it must be deliberate.** `-Dhealthtrail.vector.write=true`, then read the diff. A test that quietly rewrites its own expectation is a test that always passes, so the switch is explicit, documented, and never on by default.
+
+**Reading a path out of a system property is invisible to Gradle.** Editing an expected page left `testDebugUnitTest` UP-TO-DATE, so the vector could change and the test would not run. It would still have run in continuous integration on a fresh checkout, which is the worst version of that bug: **green locally and red only on push**, with the failure arriving after the commit rather than before it. The expected pages are a declared task input now.
+
+### What the vector caught in its first hour
+
+**#331.** Its money strings had to come from somewhere, and computing them here rather than reading them off a real export produced a different answer: the JDK renders `‏٦٬٧٩٠٫٤٠ US$` where Android produced `‏6,790.40 US$`. Same code, same locale, same currency, different digits.
+
+That is not a curiosity. **8.5 asserts an archive regenerates byte identical, and `/contract` exists so that a second reader renders the same archive rather than reimplementing it.** Two readers that disagree about digits cannot both satisfy 8.5. `ReadableDate` already argues this exact point for dates and spells month names itself rather than asking the locale; money did not get the same treatment.
+
+---
