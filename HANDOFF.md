@@ -57,6 +57,10 @@
 
 **Projects is next.** **#289 and #290 are done.** A project nobody has touched for months greets you with what the file held and one way back in, and a closed one leads with how it ended. **#290 is done**: a closed project leads with how it ended, the whole story in honest counts, and Open it again. Two record gaps came with it, both of them columns that had been in the schema since Phase 0 with nothing writing them: **closing a project never wrote down when it closed**, in the app or in the fixture, so the span screen 17 asks for could not be computed. Both write it now, and reopening clears it.
 
+**The five Projects components are in `DESIGN.md` section 7 now**, each with when to use it and when not to, which is what section 19 asks of a component and what 20.6 did not carry: 20.6 says what each is and what it wears, and says nothing about when it is the wrong choice. #263 through #267.
+
+**#268, the reference line, stays open and is blocked by #303**: nothing in the app can put a reference number on an entry, so the component has still never rendered with real data.
+
 **#288 is not started and the reason is on the issue.** Its one action is Make the PDF and **nothing in the app can make a PDF**. The engine is #228 on milestone 5, two milestones later. Rule 11 rules out a screen whose only action does nothing, so it waits, and the owner picks whether #288 moves to milestone 5 or #228 moves forward.
 
 **Milestone 1, Today: the surface was built and verified, and fourteen issues closed on the device on 2026-08-08.** #292, #270, #269, #247, #248, #250 through #257 and #261. The 16.4 checklist was walked in full: both themes, font scale 2.0 with the baseline restored, Arabic right to left with the app restarted so the catalog switched, the empty state from a cleared install, 479 instrumented tests, and TalkBack bound against the app.
