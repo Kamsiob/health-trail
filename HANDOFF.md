@@ -53,7 +53,11 @@
 
 **#192, one medication, closed with its remainder split out rather than left vague.** Its questions are built and the fixture never exercises them, **#229**; its incidents cannot be expressed because the schema has no link from an incident to a medication, **#230**, which is the owner's call.
 
-**Milestone 1, Today: the surface is built and verified, and fourteen issues closed on the device on 2026-08-08.** #292, #270, #269, #247, #248, #250 through #257 and #261. The 16.4 checklist was walked in full: both themes, font scale 2.0 with the baseline restored, Arabic right to left with the app restarted so the catalog switched, the empty state from a cleared install, 479 instrumented tests, and TalkBack bound against the app.
+**Milestone 1, Today, is finished.** All ten grid screens are built and walked, the parent #243 is closed, and the only issue left on that milestone is the tracker. **Fifteen issues closed on 2026-08-09** on top of the twenty on 2026-08-08.
+
+**Projects is next**, and #321 names the first one: #288, screen 15.
+
+**Milestone 1, Today: the surface was built and verified, and fourteen issues closed on the device on 2026-08-08.** #292, #270, #269, #247, #248, #250 through #257 and #261. The 16.4 checklist was walked in full: both themes, font scale 2.0 with the baseline restored, Arabic right to left with the app restarted so the catalog switched, the empty state from a cleared install, 479 instrumented tests, and TalkBack bound against the app.
 
 **Nothing on `main` is unverified now.** #260's document thumbnails were the last one and they have been on a screen: full and few rungs, both themes, font scale 2.0 and Arabic right to left. **They were drawn at 24dp, which is a spacing token borrowed as a dimension and is a speck**, so the card claimed to show the person's paper and showed a dot beside a title. They are at the component's own `ROW_SIZE` now, and the rows have room between them so three pages do not read as one strip.
 
