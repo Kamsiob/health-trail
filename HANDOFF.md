@@ -31,7 +31,7 @@
 - **176 unit tests pass and they need no phone.** On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
 - **510 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
-- **The phone is attached, installed, seeded and at its starting values**, each read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone.
+- **The phone was returned to its starting values and unplugged on 2026-08-09**, each setting read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale, the accessibility services string the KDE Connect one, the app theme following the phone. **It holds the month six fixture notebook**, which is what `tools/seed.sh` leaves, and none of it is real.
 - **The destructive command guard is live and proven.** It refused two real commands on 2026-08-08, a recursive directory removal and an app data wipe, both correctly. Section 9.
 
 ### The five that actually get broken
@@ -44,104 +44,37 @@
 
 ## 6. What is built
 
-**Design direction v4 is adopted and most of the app is in it.** `reference/screen-grid.html` is the v4 grid. `DESIGN.md` was rewritten rather than patched.
+**Design direction v4 is adopted and most of the app is in it.** `reference/screen-grid.html` is the v4 grid, with `today-grid.html` and `projects-grid.html` for those two surfaces.
 
-- **Step 1, the foundation: complete.** Every token in both themes, the type scale with all three faces verified per locale, the geometry, and all sixteen components. #149 through #168 closed.
-- **Step 2, the four destinations: complete.** #169 through #172 closed.
-- **Step 3, the section screens: complete but for #182**, which is blocked. Fourteen closed on device verification.
-- **Step 4, the detail screens: thirteen of twenty closed.** #189 through #198, #200, #201 and #202. #199 is blocked; #203 through #208 are untouched.
+- **The foundation, the four destinations and the section screens: complete**, but for #182, which is blocked.
+- **The detail screens: thirteen of twenty.** #199 is blocked, #203 through #208 are untouched, and they are milestone 4.
+- **Milestone 1, Today: finished.** All ten grid screens built and walked, parent #243 closed, and the only issue left on that milestone is the tracker #321.
+- **Milestone 2, Projects: four issues left and all four are blocked.** Section 9 says on what.
+- **THE ARCHIVE is largely built and proved on real hardware**: a two-layer container at format version 3, a readable copy, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. **The stranger test passes**, run on 2026-08-09 on a laptop that has never had the app.
 
-**#192, one medication, closed with its remainder split out rather than left vague.** Its questions are built and the fixture never exercises them, **#229**; its incidents cannot be expressed because the schema has no link from an incident to a medication, **#230**, which is the owner's call.
+**Nothing on `main` is unverified.** Every screen that has shipped has been on the phone at both themes, font scale 2.0 and Arabic right to left.
 
-**Milestone 1, Today, is finished.** All ten grid screens are built and walked, the parent #243 is closed, and the only issue left on that milestone is the tracker. **Fifteen issues closed on 2026-08-09** on top of the twenty on 2026-08-08.
+**The account of how it got here is `docs/RUN-LOG.md`, and it is history rather than orientation.** Section 6 of that file is 2026-08-09, the day milestone 1 finished: twenty-two issues, ten defects that were invisible in the code and obvious on a screen, four fixture modes that did not exist, and two decisions taken rather than escalated.
 
-**Milestone 2 has no unblocked work left**, and the archive is next. Its four remaining issues are stopped: **#303** needs a schema decision that is the owner's, per rule 3, and **#268** is blocked behind it; **#288** needs a PDF engine that does not exist and is scheduled two milestones later as #228; **#244** is the parent.
+### Four things that are true and are not ticked anywhere
 
-**Projects, what was done.** **#289 and #290 are done.** A project nobody has touched for months greets you with what the file held and one way back in, and a closed one leads with how it ended. **#290 is done**: a closed project leads with how it ended, the whole story in honest counts, and Open it again. Two record gaps came with it, both of them columns that had been in the schema since Phase 0 with nothing writing them: **closing a project never wrote down when it closed**, in the app or in the fixture, so the span screen 17 asks for could not be computed. Both write it now, and reopening clears it.
+Each is said out loud on its own issue rather than counted as done.
 
-**#315 is fixed, D124.** Saving a project as a template twice made two library rows with the same name and no way to tell them apart. **The two rows were never the defect**, since the second save is a different shape somebody may want; the defect was the library saying nothing about which was which. Each row carries the date it was saved now. **Its one limit, said rather than hidden:** two saves on the same day still look alike, and the case the issue describes is months apart.
+- **The care team card's sparse rung** and **the trail spine's gap markers** are not reachable from any seed. Held in `TodayFieldScreenTest` instead.
+- **The digest's corrected and removed counts** render, and no seed produces them: the generator's updates land on rows it inserted in the same window.
+- **The document card's empty rung** needs a cleared install, which the destructive command guard refuses, correctly.
+- **#273's two template hands are provisional** and the owner has not looked at them.
 
-**#275 is done**, and looking at it at font scale 2.0 found that **the gold FAB was sitting on top of the Start one button**. `fabSafeActionBar` is the modifier D81 exists for and that screen was not using it. A control somebody cannot reach because another control is on top of it is the most basic possible defect, and it is invisible in a mockup because nothing overlaps until the FAB is real.
+### The tools the fixture grew, because five screens were unreachable without them
 
-**The five Projects components are in `DESIGN.md` section 7 now**, each with when to use it and when not to, which is what section 19 asks of a component and what 20.6 did not carry: 20.6 says what each is and what it wears, and says nothing about when it is the wrong choice. #263 through #267.
+    tools/device.sh year2 6 walk-year-three  --arranged
+    tools/device.sh year2 6 walk-appointment --arranged --appointment-on YYYY-MM-DD
+    tools/device.sh month6 6 walk-home       --situation home_family
+    tools/device.sh month6 6 walk-quiet      --quiet
 
-**#268, the reference line, stays open and is blocked by #303**: nothing in the app can put a reference number on an entry, so the component has still never rendered with real data.
-
-**#288 is not started and the reason is on the issue.** Its one action is Make the PDF and **nothing in the app can make a PDF**. The engine is #228 on milestone 5, two milestones later. Rule 11 rules out a screen whose only action does nothing, so it waits, and the owner picks whether #288 moves to milestone 5 or #228 moves forward.
-
-**Milestone 1, Today: the surface was built and verified, and fourteen issues closed on the device on 2026-08-08.** #292, #270, #269, #247, #248, #250 through #257 and #261. The 16.4 checklist was walked in full: both themes, font scale 2.0 with the baseline restored, Arabic right to left with the app restarted so the catalog switched, the empty state from a cleared install, 479 instrumented tests, and TalkBack bound against the app.
-
-**Nothing on `main` is unverified now.** #260's document thumbnails were the last one and they have been on a screen: full and few rungs, both themes, font scale 2.0 and Arabic right to left. **They were drawn at 24dp, which is a spacing token borrowed as a dimension and is a speck**, so the card claimed to show the person's paper and showed a dot beside a title. They are at the component's own `ROW_SIZE` now, and the rows have room between them so three pages do not read as one strip.
-
-**The one rung not seen today is this card's empty state**, which needs a cleared install: the destructive command guard refuses `pm clear`, correctly, and `tools/seed.sh` always restores a notebook. The empty Today was walked from a cleared install on 2026-08-08 and a card with no items has no thumbnail to get wrong. Said here rather than ticked.
-
-**#258 is done and walked on the phone.** The care team card now has both variants 21.7 draws: one chosen person with their number as an outlined pill, and the row of everyone as avatars with an overflow mark. The source picker is in the card's options in edit mode. Verified at both themes, font scale 2.0, and Arabic right to left, with all four rungs on screen at once from the fixture, which now writes three sourced cards on purpose.
-
-**Three real defects came out of that and all three are fixed.** Each was invisible in the code.
-
-- **A phone number with a space in it never reached the dialer.** `Uri.fromParts` escapes nothing, so `tel:555 0142` opened an empty keypad. **This was every number in the app**, not just the new card: the care team screen and the emergency card share the helper. `docs/TRAPS.md` section 5.
-- **A control drawn inside a Today card was unreachable by a screen reader**, because the card clears its whole subtree to speak as one sentence. The card now clears its answer only, and carries its one inline action in a slot beside it.
-- **"+12" rendered as "12+" in Arabic**, because a plus is a neutral character and takes the paragraph direction. A remainder became a floor.
-
-**#259 is done and walked.** The trail card draws its last three entries as a mini spine at tall, on the same route with the same node colors the trail itself uses, each row carrying the date and the kind because a color never carries meaning alone. **The gap markers are the reason it is drawn rather than listed**, and they cannot be reached from any seed: every fixture ends its history on the day it is generated, so the head of the trail is never quiet. They are held in `TodayFieldScreenTest` and the issue says so.
-
-**And the fixture had a defect that showed up here.** Every project's latest word landed on the same day, so **the three newest entries in the whole notebook shared one date at every horizon**: the spine said "June 29, 2026" three times and every node was the same color. Three separate offices do not all call back on the same afternoon. They are nine days apart now.
-
-**#272, the add-a-card gallery, is done and walked.** **Every entry said "Nothing waiting"**, whatever the record held, because the previews were looked up from the answers of the cards already on Today and the gallery only ever offers the ones that are not. The answers are read when the sheet opens now, through the card's own wording so a preview and its card cannot disagree.
-
-It is grouped under the binder's own section names with the situation's suggestions first, and **the whole row adds the card rather than an outlined Add beside it, which is D123** rather than an oversight: rule 23 takes the easier target.
-
-**And it was truncating its own previews at font scale 2.0**, mid-word and with no ellipsis: "passed 75 days", "4 steps in the". D105 says a second line somebody reads to choose wraps, and it does now.
-
-**#296, #297 and #298, the three screens behind edit mode and the gallery, are done and walked.** Building them found that **edit mode had departed from the grid**: every card carried three size chips and four named actions, which on a twenty card Today is about a hundred and forty controls at one weight. The grid and the spec under it both say a card carries a **remove dot and a drag handle**, and everything else lives in **the card's own options sheet**, opened from the card. That is what ships now, and edit mode reads as a surface rather than a control panel.
-
-**Three defects came out of building it, two caught before the phone.** `ink3` on text, which a check refuses because the app has two text levels; a catalog key that existed nowhere, which another check refuses because `Strings.resolve` throws; and a remove dot running underneath a long tab, because the corner reserved the chevron's width and a dot is a touch target. **The isolate marks nested for the third time**, this time in the sheet's own title.
-
-**#300 and #301 are done, and they needed the fixture to learn two things it could not do.**
-
-- **`--situation ID` writes that template's starting hand untouched**, read from `templates/data/situations.json` rather than copied, and sets the subject's own template id. Screen 09 is two situations side by side and one grammar, and a fixture that only ever knew `nursing_home` could not show it. The spread the default writes is nobody's real Today: it exists to reach every rung.
-- **`--quiet` settles everything without deleting anything.** Screen 10 is the surface's hardest state, and no seed could reach it because every fixture is a notebook in the middle of something. Incidents answered, questions answered, bills paid, the tray filed, nothing ahead. The five years of trail stay exactly where they were, because a quiet week is not an empty notebook.
-
-Both reach the phone through `tools/seed.sh month6 6 <pass> --quiet` or `--situation home_family`, and `tools/device.sh` takes the same arguments.
-
-**#293 and #294 are done, and they are a pair on purpose.** `--arranged` writes a Today somebody has made their own: a chart leading, a project's next date added, the never-used cards taken off, and **the demoted digest living on as a wide field card**, D111. `--appointment-on YYYY-MM-DD` moves the soonest appointment to a given day. **Seeded twice, differing in exactly one fact, the seven cards are in the same order both times and only the answers change.** That is the trust model, 21.8, and it is the first time it has been shown rather than asserted.
-
-**The date is an argument rather than a clock**, because the generator must stay reproducible: `check_fixtures.py` holds one seed to byte identical output. The first attempt put the appointment on the fixture's own last day, which is six weeks in the past by the time anybody looks at it, so Next up went on naming something in November.
-
-**Two defects came out of it.**
-
-- **A chart promoted to the lead could not draw one.** The lead left `tall` at its default, so a measure at the top of somebody's Today listed its readings. Grid screen 02 is a chart at the lead, so the screen the design asks for could not exist. The lead is full width at display scale, which is more room than a tall card has, and it draws its chart now, gaps as gaps.
-- **`Bidi.isolate` is idempotent now**, which retires a whole family. Four separate defects have been isolate marks nested by a second call, and the rule they kept restating is that the caller joins once. Isolating something already isolated does nothing, so it does nothing.
-
-**#295 is done, and the return voice reads as it should**: "177 new things since you were last here", a plain count, nothing owed and nothing shamed, with the field showing true current answers underneath.
-
-**It is set up on the device rather than in the notebook**, because the last visit is a preference and not a record:
+**The appointment date is an argument rather than a clock**, because `check_fixtures.py` holds one seed to byte identical output. **The last visit is a preference on the phone rather than a record**, so grid screen 04 is set up with `run-as` against the debug build:
 
     adb shell run-as com.kamsiob.healthtrail sh -c 'echo <base64 xml> | base64 -d > /data/data/com.kamsiob.healthtrail/shared_prefs/health-trail-visits.xml'
-
-**The digest was dropping two of its three counts.** The previous Today showed corrected and removed alongside the total and this surface asked for neither, though the catalog has carried both sentences since the first Today. It says all three now, and only where there is something to say: a week with nothing corrected is not told so, because a zero there is a tally of the person's own diligence, which rule 13 rules out. **No seed reaches those two yet**: the fixture's fourteen updates land on rows it inserted in the same window, and the digest counts a row once per category.
-
-**Milestone 1 is done.** All ten Today screens are built and walked, and **#273's two drafted hands have now been seen on the phone**, which is what `--situation` made possible: hospital stay and short term rehab, at both themes and font scale 2.0. **They remain provisional and the owner has not looked at them yet.**
-
-**What the screen showed that the code could not.** Every one of these passed the compiler, the checks, lint and the instrumented suite, and every one was obvious in a screenshot.
-
-- A card's tab ran underneath the corner chevron and ellipsized behind it. Nothing collides until the text is long enough.
-- A tall card reserved 168dp whatever it had to say, so a measure with one reading was a hundred points of empty box.
-- The measure query read `value_text` only, which is null for a measure recorded as a number, so a weight card with a hundred readings said "No readings yet" directly above its own chart.
-- "and 5 more" subtracted clusters from steps, which is a sentence about nothing.
-- The reader's sentence had nested isolate marks, and announced three readings the screen was not showing.
-
-**Two of those were found only because `walk.sh see` was fixed to read content descriptions**, and it had been reading half the tree.
-
-**And `walk.sh see` has a limit worth knowing before you trust it: it shows the unmerged semantics tree.** A card that merges its parts into one sentence still prints every part there, which reads as a reader stopping six times to learn one thing and is not true. Twenty minutes went into a defect the tool invented. **Only the Compose test API sees the merged tree**, which is the one a reader walks. `docs/TRAPS.md` section 5.
-
-**#210's two remaining procedures were run on 2026-08-09.** **The stranger test passes**: the archive opened on a laptop that has never had the app, with nothing but `tools/decrypt/decrypt.py`, the passphrase and Python. 44 files, no internet.
-
-**The Arabic check fails, and that is what it was for. #327.** Every page carries `lang="ar" dir="rtl"` and **not one carries a single Arabic word of its own**: `ReadableArchive` holds its table and column labels as hard-coded English maps. The direction is right, the person's own words are right, and the app's labels were never translated. 8.2 asks for "faithful to the person's language".
-
-**And two contract documents disagree**, which is on #210 for the owner: `DATA-CONTRACT.md` 8.2 says the inner manifest carries the readable copy's locale, `EXPORT-FORMAT.md` line 181 says it carries `pages` and nothing else, and the code follows the format document. **The format is published byte for byte and `tools/decrypt` is written from it**, so which one is right is not a session's call.
-
-**THE ARCHIVE is largely built and proved on real hardware**, not asserted: a two-layer container at format version 3, a readable copy of 61 pages, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. `docs/RUN-LOG.md` has the account and what each piece was proved with.
 
 ---
 
@@ -159,7 +92,7 @@ Both reach the phone through `tools/seed.sh month6 6 <pass> --quiet` or `--situa
 
     python3 tools/checks/run_all.py                    # 17 content and contract checks, seconds
     tools/verify.sh                                    # the honest runner, includes lintDebug
-    cd android && ./gradlew :app:connectedDebugAndroidTest   # 297 tests, about six minutes
+    cd android && ./gradlew :app:connectedDebugAndroidTest   # 510 tests, about eight minutes
 
 **Run `tools/verify.sh`, not the checks you happen to remember.** CI once failed on a lint error in code that had been walked on the device and passed every content check and 185 instrumented tests.
 
@@ -179,7 +112,9 @@ Both reach the phone through `tools/seed.sh month6 6 <pass> --quiet` or `--situa
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**All sixteen of them, oldest first.** Rechecked against the board on 2026-08-08 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+**All sixteen of them, oldest first.** Rechecked against the board on 2026-08-09 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+
+**Nothing built on 2026-08-09 added to this list**, and that was checked rather than assumed: every screen and state built that day is drawn in one of the three grids, so rule 12 never applied. The card's options sheet is grid screen 07, the closed project is 17, the greeting is 16, and the Today work is screens 01 through 10.
 
 | Screen | Issue |
 |---|---|
@@ -211,11 +146,13 @@ Every one of these was built from the existing components, logged in all three p
 **What is blocked is decisions, and each says on its own issue exactly what has to be chosen:**
 
 - **#182 and #199** need a schema decision. There is no test, no round and no result in `contract/schema.sql`, so there is nothing to build against. Skip them.
-- **#303** needs somewhere for a reference number to live. `ReferenceLine` has still never rendered with real data.
+- **#303** needs somewhere for a reference number to live, and **#268 is blocked behind it**: `ReferenceLine` has still never rendered with real data.
+- **#288** needs a PDF engine, and **nothing in the app can make a PDF**. The engine is #228 on milestone 5, two milestones later. Rule 11 rules out a screen whose only action does nothing. **The owner picks**: move #288 to milestone 5, or move #228 forward.
 - **#238** needs a decision on whether a milestone may point at a measure at all, which comes close to interpreting a measurement.
 - **#319 and #320** need a direction for the `app_meta` problem: text already stored unnormalized, and a restored phone writing under the source phone's identity.
+- **#210 carries a question rather than a block**: `DATA-CONTRACT.md` 8.2 says the inner manifest carries the readable copy's locale and `EXPORT-FORMAT.md` line 181 says it carries `pages` and nothing else. The code follows the format document, **which is the published one and is what `tools/decrypt` was written from**, so which is right is not a session's call.
 
-**None of it stops the work.** Everything in milestones 1 through 6 is buildable without any of these.
+**Milestone 2 is entirely blocked and nothing else is.** Milestones 3 through 6 are buildable without any of these.
 
 ## 10. The phone
 
@@ -250,7 +187,7 @@ Every one of these was built from the existing components, logged in all three p
 |---|---|
 | What to do next | Issue #321, then this file |
 | What will bite me doing this | `docs/TRAPS.md`, one section, chosen from its table |
-| Why something is the way it is | `DECISIONS.md`, D1 through D122. Search it, do not read it |
+| Why something is the way it is | `DECISIONS.md`, D1 through D124. Search it, do not read it |
 | What it should look like | `DESIGN.md`. **Three grids**: `reference/screen-grid.html` generally, `projects-grid.html` and `today-grid.html` for those two surfaces. Section 14 is the undrawn-screen map; 20 and 21 are the two new surfaces |
 | What the data may do | `contract/DATA-CONTRACT.md`, and `contract/EXPORT-FORMAT.md` for the archive |
 | What the app is for | `MASTER_SPEC.md` |

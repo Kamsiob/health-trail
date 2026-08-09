@@ -1005,3 +1005,60 @@ The fixture wrote a day precision EDTF beside a 10am instant, which is **a row t
 
 ---
 
+
+## 6. The day milestone 1 finished, 2026-08-09
+
+**Twenty-two issues closed.** Milestone 1, Today, went from fourteen open to none: #258, #259, #260, #271, #272, #273, #293, #294, #295, #296, #297, #298, #300, #301 and the parent #243. Milestone 2 went from thirteen to four, all of those blocked: #263 through #267, #275, #289, #290 and #315.
+
+**Every one was verified on the phone** at both themes, font scale 2.0 and Arabic right to left, and every screenshot was looked at before it was committed.
+
+### What the screens showed that the code could not
+
+- **A phone number with a space in it never reached the dialer.** `Uri.fromParts` escapes nothing, so `tel:555 0142` opened an empty keypad while `tel:555%200142` filled it in. **That was every number in the app**, not one card: the care team screen and the emergency card share the helper, so the one tap this app promises had been landing on a blank screen for as long as dialing existed. Proved by starting the same intent three ways from `adb` rather than by reading the code, which looked correct.
+- **A control drawn inside a Today card was reachable by finger and by no reader at all**, because the card cleared its whole subtree in order to speak as one sentence. The card clears its answer only now and carries its one inline action in a slot beside it.
+- **The add-a-card gallery previewed "Nothing waiting" for every entry**, whatever the record held, because the previews were looked up from the answers of the cards already on Today and the gallery only ever offers the ones that are not. The lookup could never hit.
+- **A chart promoted to the lead could not draw a chart.** The lead left `tall` at its default, so grid screen 02, which is a chart at the lead, could not exist.
+- **The gold FAB sat on top of the Start one button** at font scale 2.0. `fabSafeActionBar` is the modifier D81 exists for and the projects list was not using it.
+- **Edit mode carried about a hundred and forty controls** on a twenty card Today: three size chips and four named actions on every card. The grid says a card carries a remove dot and a drag handle and everything else lives in its options sheet.
+- **A document thumbnail was drawn at 24dp**, a spacing token borrowed as a dimension, so the card that exists to show somebody their own paper showed a dot beside a title.
+- **The gallery truncated its own previews mid-word** at font scale 2.0, with no ellipsis: "passed 75 days", "4 steps in the".
+- **"+12" rendered as "12+" in Arabic**, because a plus is a neutral character and takes the paragraph direction. A remainder read as a floor.
+- **Two edit controls on a half width card rendered the last as "Remov".**
+
+**Four separate defects were isolate marks nested by a second call**, so `Bidi.isolate` does nothing to a string that is already isolated and that family is closed.
+
+**`isDayPrecise` existed twice, privately, on two screens**, and one of the two was a regular expression matching four digits and two dashes, which is the parser rewritten badly and would have called an interval starting on a day day-precise. One answer now, on `Edtf`.
+
+### What the fixture learned
+
+None of grid screens 02, 03, 04, 09 or 10 was reachable from a seed, which is why none of them had ever been looked at.
+
+    tools/device.sh year2 6 walk-year-three  --arranged
+    tools/device.sh year2 6 walk-appointment --arranged --appointment-on 2026-08-09
+    tools/device.sh month6 6 walk-home       --situation home_family
+    tools/device.sh month6 6 walk-quiet      --quiet
+
+**The date is an argument rather than a clock**, because `check_fixtures.py` holds one seed to byte identical output and a fixture nobody can reproduce is not a fixture. The first attempt put the appointment on the fixture's own last day, which is six weeks in the past by the time anybody looks at it.
+
+**The last visit is a preference on the phone**, not a record, so screen 04 is set up with `run-as` against the debug build rather than from the notebook.
+
+**Two fixture defects were found on the way.** Every project's latest word landed on the same day, so the three newest entries in the whole notebook shared one date at every horizon and the trail spine drew three identical nodes. And closing a project never wrote down when it closed, in the app or in the fixture, so the span screen 17 asks for could not be computed.
+
+### Two decisions, taken rather than escalated
+
+**D123.** The whole row adds a card in the gallery rather than an outlined Add beside it. Rule 23 takes the easier target, and `today.add.this` stays in the catalog for the day a row does two things.
+
+**D124.** Saving a project as a template twice keeps both and the library says when each was saved. The two rows were never the defect; the library saying nothing about which was which was.
+
+### The archive
+
+**The stranger test passes.** An archive written from the phone opened on a laptop that has never had the app, with nothing but `tools/decrypt/decrypt.py`, the passphrase and Python. 44 files, no internet at any point.
+
+**The Arabic check fails, which is what it was for.** Every readable page carries `lang="ar" dir="rtl"` and not one carries a single Arabic word of its own, because `ReadableArchive` holds its forty table names and sixty column labels as hard-coded English maps. **#327.**
+
+### Two traps in the tooling
+
+- **`walk.sh see` shows the unmerged semantics tree**, so it cannot say how many stops a reader has. Twenty minutes went into a defect it invented. Only the Compose test API sees the merged tree.
+- **`walk.sh tap` cannot match a label carrying a name**, because `Bidi.join` puts isolate marks inside it, and it matches on substrings so a short word hits the longest sentence containing it.
+
+---
