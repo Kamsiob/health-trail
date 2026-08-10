@@ -50,6 +50,7 @@ FIELD_MAP = ROOT / "contract/readable-fields.json"
 VOCABULARIES = ROOT / "contract/readable-vocabularies.json"
 SCHEMA = ROOT / "contract/schema.sql"
 I18N = ROOT / "contract/i18n"
+TEMPLATE_DATA = ROOT / "templates" / "data"
 
 LOCALES = ["en", "es", "zh", "ar"]
 
@@ -207,6 +208,74 @@ def vocabulary_problems(field_map, vocabularies, schema, catalogs):
     return problems
 
 
+def catalog_problems(field_map):
+    """A link into a shipped catalog names one that exists and answers uniquely.
+
+    **The failure this exists for prints a confident wrong name**, which is worse
+    than the identifier it replaced. `discharge_planning` is both a care thread
+    and a project template and `dietary` is both a thread and a standing
+    instruction, so a lookup that searched every catalog would answer, and answer
+    wrongly, on a page nobody reads until it matters. #329.
+
+    Three things are held: the catalog a column names exists, its ids are unique
+    inside it, and no catalog is declared that nothing uses.
+    """
+    problems = []
+
+    entries = {}
+    if TEMPLATE_DATA.is_dir():
+        situations = json.loads(
+            (TEMPLATE_DATA / "situations.json").read_text(encoding="utf-8")
+        )["templates"]
+        projects = json.loads(
+            (TEMPLATE_DATA / "projects.json").read_text(encoding="utf-8")
+        )["templates"]
+        progress = json.loads(
+            (TEMPLATE_DATA / "progress-and-instructions.json").read_text(encoding="utf-8")
+        )
+        entries = {
+            "situations": [x["id"] for x in situations],
+            "projects": [x["id"] for x in projects],
+            "presets": [x["id"] for x in progress["progress_presets"]],
+            "instructions": [x["id"] for x in progress["standing_instructions"]],
+        }
+
+    if not entries:
+        return ["templates/data is missing, so the readable copy's catalogs cannot be checked."]
+
+    for name, ids in sorted(entries.items()):
+        duplicates = sorted({i for i in ids if ids.count(i) > 1})
+        if duplicates:
+            problems.append(
+                f"the {name} catalog has more than one entry with the same id: "
+                f"{', '.join(duplicates)}. The readable copy resolves a link by id "
+                f"inside one catalog, so a duplicate renders whichever came first."
+            )
+
+    used = set()
+    for table, spec in sorted(field_map.items()):
+        for column, decision in sorted(spec.get("columns", {}).items()):
+            name = decision.get("catalog")
+            if not name:
+                continue
+            if decision.get("render") != "link":
+                problems.append(
+                    f"readable-fields.json: {table}.{column} names a catalog but its "
+                    f"render is {decision.get('render')!r}. Only `link` consults one."
+                )
+                continue
+            if name not in entries:
+                problems.append(
+                    f"readable-fields.json: {table}.{column} names the catalog {name!r}, "
+                    f"which templates/data does not have. The page would fall back to "
+                    f"printing the identifier and nothing would fail."
+                )
+                continue
+            used.add(name)
+
+    return problems
+
+
 def raw_number_problems(field_map, schema):
     """Columns whose type says the plain value cannot be what a reader should see.
 
@@ -316,6 +385,7 @@ def main() -> int:
                 )
 
     problems.extend(vocabulary_problems(field_map, vocabularies, schema, catalogs))
+    problems.extend(catalog_problems(field_map))
     problems.extend(raw_number_problems(field_map, schema))
 
     # A label nothing renders is a translation four people maintain for no

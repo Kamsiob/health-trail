@@ -41,6 +41,18 @@ internal object ReadableWords {
     fun from(
         strings: Strings,
         fieldMap: Map<String, ReadableArchive.TableFields> = ReadableFieldMap.tables,
+        /**
+         * Shipped catalog entry id to its name, from [catalogNames]. #329.
+         *
+         * **Passed in rather than read here**, for the same reason this whole
+         * object exists: reading the bundled JSON needs a `Context` and a
+         * coroutine, and `from` is neither. The caller that has both is
+         * `Backup.export`, which already reads the schema and the catalogs.
+         *
+         * Empty by default so a caller that only wants words, which in practice
+         * means a test, does not have to load five catalogs to get them.
+         */
+        catalogNames: Map<String, Map<String, String>> = emptyMap(),
     ): ReadableArchive.Words {
         val tables = fieldMap.keys
             .filter { fieldMap.getValue(it).rendered.isNotEmpty() }
@@ -98,8 +110,41 @@ internal object ReadableWords {
                 strings("archive.page.year.title", "section" to section, "year" to year)
             },
             records = { count -> strings("archive.page.records", "count" to count) },
+            catalogNames = catalogNames,
         )
     }
+
+    /**
+     * The shipped catalogs, by name, each as entry id to what it is called. #329.
+     *
+     * **Four catalogs, keyed by name rather than merged.** The first attempt
+     * merged them into one map by id and it was wrong: `discharge_planning` is
+     * both a care thread and a project template, and `dietary` is both a thread
+     * and a standing instruction. A merged map answers confidently and wrongly,
+     * which is worse than printing the identifier. Which catalog a column
+     * resolves into is declared beside its render decision in
+     * `contract/readable-fields.json`, exactly as an enum declares its
+     * vocabulary.
+     *
+     * **The care threads are deliberately not a catalog here.** Five thread ids
+     * carry different labels in different situations, so there is no single
+     * right answer for one of them, and `care_thread` already stores the label
+     * it was created with on its own row. `care_thread.template_id` is
+     * `notRendered` for that reason rather than resolved to a name the person
+     * never saw.
+     *
+     * **`person.role_template_id` has no catalog and nothing writes it.** It is
+     * `notRendered` in the field map until something does.
+     */
+    suspend fun catalogNames(
+        context: android.content.Context,
+    ): Map<String, Map<String, String>> = mapOf(
+        "situations" to TemplateCatalog.situations(context).all.associate { it.id to it.name },
+        "projects" to TemplateCatalog.projects(context).associate { it.id to it.name },
+        "presets" to TemplateCatalog.presets(context).associate { it.id to it.name },
+        "instructions" to TemplateCatalog.instructions(context)
+            .starters.associate { it.id to it.name },
+    )
 
     /**
      * What goes in `<html lang="...">`.

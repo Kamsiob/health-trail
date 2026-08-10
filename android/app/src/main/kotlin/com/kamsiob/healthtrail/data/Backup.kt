@@ -227,6 +227,12 @@ object Backup {
                     // person set this app to. #327.
                     readableWords = ReadableWords.from(
                         com.kamsiob.healthtrail.i18n.Strings.load(context),
+                        // **The shipped catalogs' own names**, so a page says
+                        // what a template is called rather than printing the
+                        // identifier it is filed under. Read here for the same
+                        // reason the schema and the words are: this is the layer
+                        // that has a context. #329.
+                        catalogNames = ReadableWords.catalogNames(context),
                     ),
                     passphraseHint = passphraseHint?.trim()?.takeIf { it.isNotEmpty() },
                 ),

@@ -286,7 +286,7 @@ val generateReadableFields by tasks.registering {
                             // The optional half of a decision, written as named
                             // arguments so the generated file reads as prose
                             // rather than as a row of positional strings.
-                            val extras = listOf("vocabulary", "currency", "currencyFrom")
+                            val extras = listOf("vocabulary", "currency", "currencyFrom", "catalog")
                                 .mapNotNull { name ->
                                     decision[name]?.toString()?.takeIf { it.isNotEmpty() }
                                         ?.let { "$name = \"$it\"" }
@@ -401,6 +401,18 @@ val generateReadableVector by tasks.registering {
                         appendLine(
                             "                ${quote(name)} to " +
                                 "mapOf(${mapOfStrings(values as Map<*, *>)}),",
+                        )
+                    }
+                    appendLine("            ),")
+                    // **The same names in every locale, deliberately.** A
+                    // template's name is content in `templates/data` rather than
+                    // a string with four translations, so this is not a gap in
+                    // the vector. #329, D130.
+                    appendLine("            catalogNames = mapOf(")
+                    (w["catalogNames"] as? Map<*, *>).orEmpty().forEach { (name, entries) ->
+                        appendLine(
+                            "                ${quote(name)} to " +
+                                "mapOf(${mapOfStrings(entries as Map<*, *>)}),",
                         )
                     }
                     appendLine("            ),")

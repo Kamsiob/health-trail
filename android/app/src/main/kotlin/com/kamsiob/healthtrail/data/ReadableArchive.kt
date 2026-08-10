@@ -140,6 +140,33 @@ object ReadableArchive {
         val yearTitle: (String, String) -> String,
         /** How many records are on this page. Plural, in the locale's own rules. */
         val records: (Int) -> String,
+        /**
+         * Catalog name, to shipped entry id, to what that entry is called. #329.
+         *
+         * **A `link` column usually points at another row in this archive**, and
+         * [Labels.nameFor] finds the name on that row. Some point into a catalog
+         * that ships as data, so there is no row to find and the raw identifier
+         * was printed: a page said a project came from `legal_documents` where
+         * the catalog says what that template is called.
+         *
+         * **Keyed by catalog, exactly as [vocabularies] is, and for the same
+         * reason.** A flat map by id was the first attempt and it was wrong:
+         * `discharge_planning` is both a care thread and a project template, and
+         * `dietary` is both a thread and a standing instruction, so a flat map
+         * prints a confident wrong name. Which catalog a column resolves into is
+         * declared in `contract/readable-fields.json` beside the render
+         * decision, the same way an enum declares its vocabulary.
+         *
+         * **The names are in one language, and that is the decision rather than
+         * an omission.** A template's name is content in the catalog rather than
+         * a string with four translations, so an Arabic archive says the English
+         * name of the template, because that is what the template is called.
+         * D130.
+         *
+         * Empty by default, so every existing caller and every test that builds
+         * `Words` by hand keeps working and gets the old behavior.
+         */
+        val catalogNames: Map<String, Map<String, String>> = emptyMap(),
     )
 
     /**
@@ -456,7 +483,7 @@ object ReadableArchive {
                 if (target.isNullOrBlank()) {
                     ReadablePage.notRecorded(label, words.notRecorded)
                 } else {
-                    ReadablePage.field(label, labels.nameFor(column, target), words.notRecorded)
+                    ReadablePage.field(label, labels.nameFor(field, target), words.notRecorded)
                 }
             }
 
@@ -563,6 +590,16 @@ object ReadableArchive {
         val render: String,
         /** For `enum`: which vocabulary in [Words.vocabularies] the value is in. */
         val vocabulary: String? = null,
+        /**
+         * For `link`: which catalog in [Words.catalogNames] the id lives in.
+         *
+         * **Null for the ordinary case**, which is a link to another row in this
+         * archive. Set only where the target is a shipped catalog entry, and
+         * then it is required rather than guessed: ids collide across the
+         * catalogs, so searching all of them would print a confident wrong name.
+         * #329.
+         */
+        val catalog: String? = null,
         /** For `money`: the column on this same row holding the ISO currency. */
         val currency: String? = null,
         /**
@@ -620,7 +657,26 @@ object ReadableArchive {
             }
         }
 
-        fun nameFor(column: String, id: String): String = names[id] ?: id
+        /**
+         * What a `link` column's target is called.
+         *
+         * **A row in this archive first, then the catalog the column declares,
+         * then the identifier itself.** The first is the ordinary case. The
+         * second is #329: some columns point into a catalog that ships as data
+         * rather than at a row, so there was never a row to find and the page
+         * printed the identifier. The third is the honest fallback, kept because
+         * a value written by a later version, or by a template this build has
+         * never heard of, is still part of the record and printing the token is
+         * a lead.
+         *
+         * **The catalog is asked only when the field names one.** A `link` with
+         * no catalog is a link to a row, and searching every catalog for its id
+         * is how `discharge_planning` would come back as a project template on a
+         * care thread's page.
+         */
+        fun nameFor(field: Field, id: String): String = names[id]
+            ?: field.catalog?.let { words.catalogNames[it]?.get(id) }
+            ?: id
 
         /**
          * Which currency an amount is in.

@@ -357,8 +357,6 @@
       "id",
       "subject_id",
       "label",
-      "template_id",
-      "color_index",
       "started_edtf",
       "started_zone",
       "ended_edtf",
@@ -395,11 +393,10 @@
         "render": "value"
       },
       "template_id": {
-        "render": "link",
-        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+        "notRendered": "Which catalog thread this was turned on from. The row's own label is what the thread is called and it is rendered directly above, so this adds nothing a reader can use. It is also ambiguous: the same thread id carries different labels in different situations, so resolving it through the catalog would print a name the person never saw. #329."
       },
       "color_index": {
-        "render": "value"
+        "notRendered": "Presentation state belonging to the app's theme, not a claim about the world. The column holds an index into a palette, so a page said \"Its color: 0\", which means nothing outside this app, and section 8.2's whole standard is that the archive is read without it. The thread's own label is what says which thread it is. #329."
       },
       "started_edtf": {
         "render": "date",
@@ -1371,7 +1368,8 @@
       },
       "preset_id": {
         "render": "link",
-        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+        "note": "Points at a shipped catalog entry rather than at a row in this archive, so it is resolved through the presets catalog and rendered as that entry's name. The page used to print the identifier. #329.",
+        "catalog": "presets"
       },
       "unit": {
         "render": "value"
@@ -1980,7 +1978,8 @@
       },
       "template_id": {
         "render": "link",
-        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+        "note": "Points at a shipped catalog entry rather than at a row in this archive, so it is resolved through the projects catalog and rendered as that entry's name. The page used to print the identifier. #329.",
+        "catalog": "projects"
       },
       "chapter_id": {
         "render": "link",
@@ -2287,7 +2286,8 @@
       },
       "template_id": {
         "render": "link",
-        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+        "note": "Points at a shipped catalog entry rather than at a row in this archive, so it is resolved through the instructions catalog and rendered as that entry's name. The page used to print the identifier. #329.",
+        "catalog": "instructions"
       },
       "name": {
         "render": "value"
@@ -2413,7 +2413,8 @@
       },
       "situation_template_id": {
         "render": "link",
-        "note": "Rendered as the name of the thing it points at, with a relative link to its page. A reader never sees a UUID as a relationship."
+        "note": "Points at a shipped catalog entry rather than at a row in this archive, so it is resolved through the situations catalog and rendered as that entry's name. The page used to print the identifier. #329.",
+        "catalog": "situations"
       },
       "notes": {
         "render": "value"

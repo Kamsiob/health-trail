@@ -137,6 +137,11 @@
       "money": {
         "679040|USD": "$6,790.40",
         "323701|USD": "$3,237.01"
+      },
+      "catalogNames": {
+        "situations": {
+          "nursing_home": "Nursing home"
+        }
       }
     },
     "ar": {
@@ -270,6 +275,11 @@
       "money": {
         "679040|USD": "‏6,790.40 US$",
         "323701|USD": "‏3,237.01 US$"
+      },
+      "catalogNames": {
+        "situations": {
+          "nursing_home": "Nursing home"
+        }
       }
     }
   },
@@ -537,5 +547,6 @@
     ]
   },
   "subjectName": "Margaret Ellison",
-  "_money_note": "The money strings are inputs to the renderer rather than claims about ICU, and the Arabic ones were read out of a real Arabic export rather than computed here. That distinction is not academic: java.text.NumberFormat on the JDK renders this same call as ‏٦٬٧٩٠٫٤٠ US$, with Arabic-Indic digits, while Android's ICU produced Latin digits. Two readers of this contract would therefore write different bytes for the same archive, which 8.5's byte identical regeneration cannot survive. Filed rather than papered over."
+  "_money_note": "The money strings are inputs to the renderer rather than claims about ICU, and the Arabic ones were read out of a real Arabic export rather than computed here. That distinction is not academic: java.text.NumberFormat on the JDK renders this same call as ‏٦٬٧٩٠٫٤٠ US$, with Arabic-Indic digits, while Android's ICU produced Latin digits. Two readers of this contract would therefore write different bytes for the same archive, which 8.5's byte identical regeneration cannot survive. Filed rather than papered over.",
+  "_catalog_note": "The shipped catalogs' own names, for the link columns whose target is a catalog entry rather than a row in this archive. #329. The same in every locale on purpose: a template's name is content in templates/data rather than a string with four translations, so an Arabic archive says what the template is called. D130."
 }
