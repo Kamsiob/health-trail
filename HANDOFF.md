@@ -48,7 +48,7 @@
 
 ## 6. What is built
 
-**Design direction v4 is adopted and most of the app is in it.** `reference/screen-grid.html` is the v4 grid, with `today-grid.html` and `projects-grid.html` for those two surfaces.
+**Design direction v4 is adopted and most of the app is in it.** **Cards are no longer flat**, 2026-08-10: `ui/theme/Raise.kt` is the one place a surface is lifted, `Elevation` is read by something at last, and dark theme stays flat because 4.7 says elevation there is `paper` to `card` rather than a shadow. #324, and it was retroactive per rule 14. `reference/screen-grid.html` is the v4 grid, with `today-grid.html` and `projects-grid.html` for those two surfaces.
 
 - **The foundation, the four destinations and the section screens: complete**, but for #182, which is blocked.
 - **The detail screens: thirteen of twenty.** #199 is blocked, #203 through #208 are untouched, and they are milestone 4.

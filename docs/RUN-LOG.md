@@ -1338,3 +1338,33 @@ The pattern engine's vectors, because there is no pattern engine, and #15's crit
 **And the second reader.** `web/` holds a README. Until #16 exists these are golden vectors with one reader, which is better than tests with one reader and is not what the issue asks for.
 
 ---
+
+## 15. The tokens that were specified and read by nothing, 2026-08-10
+
+**#324.** `Elevation` sat in `Dimens.kt` in full: both shadow layers, the small variant, the print hairline, each with a comment explaining what it was for. A grep for `Elevation.` across the sources returned **exactly one hit, the line that defines the object.** There was no `.shadow(` anywhere in the app.
+
+**So every card and every group was a flat rectangle**, and `GroupedSurface`'s own documentation said "no border, and the shadow is the definition" while it drew a fill and nothing else.
+
+### Why it survived
+
+**Light theme hides it.** `paper` is `#F6F1E6` and `card` is `#FFFFFF`, so a card is legible against the page by warmth alone. Nothing looked broken. What was lost was the layering: five cards on Today read as five painted areas rather than five things on a desk, and the desk is the whole metaphor of the surface.
+
+**A specified token with no reader is a particular kind of debt.** It reads as done in the design document, it reads as done in the theme file, and the only place it is not done is the one place anybody looks.
+
+### What was built
+
+One file, `ui/theme/Raise.kt`, because a treatment copied into six components is six treatments within a year. `raisedCard` applies both of 4.7's layers; `raisedSlightly` applies the row and thumbnail layer. **Both are no-ops in dark**, and that is the direction rather than an optimization: a shadow on a dark surface reads as dirt rather than depth, so dark carries `paper` to `card` to `sand` instead.
+
+The tint is warm, from `rgba(60,54,38)`. A neutral shadow on a cream page makes the paper look dirty.
+
+### Two judgments worth recording
+
+**The sheets were left alone.** They are Material's `ModalBottomSheet` over a 62 percent black scrim, which is the strongest separation in the app. A 10 percent warm shadow under that is invisible, and adding it would be a token applied to tick a box.
+
+**The hero and the Today lead were left alone**, because both sit directly on paper by design and a shadow under either turns them into cards, which is the defect #270 was fixed for.
+
+### And a small one
+
+`check_copy.py` caught `grey` in a code comment on the first run. Rules 4 and 5 doing their job on prose nobody would ever have read again, which is the argument for having the check read every file rather than only the ones a person sees.
+
+---
