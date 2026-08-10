@@ -1206,3 +1206,33 @@ That is not a curiosity. **8.5 asserts an archive regenerates byte identical, an
 Three of #211's ten criteria are not met. **#332** is the serious one and it was found by reading 8.3 against the code: an attachment row whose file is gone produces an archive **this app then refuses to open**, and export never notices. Per-section view choices do not exist in the schema. And nothing yet lets a person read the unknown tables that `open` names.
 
 ---
+
+## 11. The export learns to look, 2026-08-10
+
+**#332, the only open defect where the app could produce something it cannot read back.** Found the night before by reading `contract/DATA-CONTRACT.md` 8.3 against the code rather than by anything failing.
+
+### The chain, in one paragraph
+
+`Attachments.all()` lists files on disk, not rows. So a live `attachment` row whose bytes had gone shipped as a row with no file, `ExportContainer.open` refused the whole archive by name, and nothing at export time noticed. The person was told it succeeded. **The failure lands at restore**, on the new phone, with the old one gone.
+
+### What was built, and what deliberately was not
+
+**The export looks.** `Backup.export` returns `Backup.Written`, the manifest plus a list of what it could not find, each entry carrying the hash, the original filename, and `created_at`. 8.3 asks for the name and the date to survive, and a bare content hash says nothing to anybody.
+
+**It reads the staged copy, not the live database.** The staged copy is what ships. A row written between staging and now is not in the archive, so warning about it would name a file the archive never claimed; a row deleted in that window is still in the archive and still has to be checked.
+
+**The query is the import's own, copied deliberately**, tombstone clause and all. A deleted attachment's bytes are legitimately gone while its row still travels, so checking those would fire on nearly every real notebook. And a warning that named a different file from the one blocking the restore would be worse than no warning at all.
+
+**What was not built is the manifest field**, and that is the point rather than an omission. `contract/EXPORT-FORMAT.md` is published byte for byte and `tools/decrypt/` was written from it, so a new field is a decision. Three shapes are on the issue. **The archive is still one this app cannot open, and the screen now says so.**
+
+### Three things worth carrying forward
+
+1. **A test that ends on its own cleanup returns what the cleanup returned.** `fun x() = runBlocking { ... staging.deleteRecursively() }` is a method returning `Boolean`, and JUnit refuses **the whole class** with `should be void`, naming the method rather than the expression. Two tests did it at once and the class would not load. Cleanup belongs in `@After`.
+2. **A test that leaves the app's database in a bad state breaks classes it has never heard of.** These tests exist to create the one condition every other export test must not meet, and the database persists across classes in a connected run. Left uncleaned, `RoundTripTest`, `RegenerationTest` and `MergeApplyTest` would all fail on an archive that will not open, naming a hash from a fixture they do not know about. **Tombstoned in teardown**, which is what the app itself would leave.
+3. **Assert the property, not the instance.** The first version asserted that import refused on *this exact hash* and it failed, because `open` stops at the first bad row it finds and which row that is depends on the whole database. The property worth asserting is that **export cannot be silent about anything import will refuse on**, which is both stronger and robust to what the run left behind.
+
+### The walk
+
+Two of the month six fixture's four attachment files were moved to `files/parked` so the state was genuine rather than mocked, and moved back afterward with the count read again. Both themes, font scale 2.0, and Arabic right to left. **The Arabic dual form renders**, `ملفين مرفقين` rather than a plural, which is the six form catalog entry working and is the kind of thing only rendering proves. Four captures on #335, a row in `DESIGN.md` section 14, a line in `HANDOFF.md` section 8.1, and D129 for the three decisions.
+
+---
