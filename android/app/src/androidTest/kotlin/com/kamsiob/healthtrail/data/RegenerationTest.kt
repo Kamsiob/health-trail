@@ -38,16 +38,24 @@ import com.kamsiob.healthtrail.time.Edtf
  * proves it round trips through `Backup.restore` as well. That needs the import
  * path finished, #211, and it is the natural next step for this file.
  *
- * **And it now holds one thing constant that the format does not record.** Since
- * #327 the pages are written in the person's language, so the bytes are a
- * function of the vocabulary as well as of the rows. This test loads the same
- * catalogs on both sides, which is true of an export and a regeneration on one
- * phone and is exactly the case 8.5 describes. It is not true of a restore onto
- * a phone set to a different language: the same rows would regenerate correct
- * pages in that language and they would not be byte identical to the archive's.
- * **Nothing in `contract/EXPORT-FORMAT.md` carries the locale**, which is the
- * open question already filed as #210, and this is a second reason to settle it.
- * Not a session's call, so it is said here rather than fixed.
+ * **It holds one thing constant, and the archive records it now.** Since #327 the
+ * pages are written in the person's language, so their bytes are a function of
+ * the vocabulary as well as of the rows. This test loads the same catalogs on
+ * both sides, which is true of an export and a regeneration on one phone and is
+ * exactly the case 8.5 describes.
+ *
+ * **Until 2026-08-10 nothing recorded which language that was**, so a restore
+ * onto a phone set to another language would regenerate correct pages that were
+ * not the archive's bytes, and no reader could have known. `MANIFEST.json`
+ * carries `readable.locale` now, which `contract/DATA-CONTRACT.md` 8.2 always
+ * asked for and `EXPORT-FORMAT.md` did not list. #210.
+ *
+ * **What is still not proven here**, said plainly rather than assumed closed:
+ * this test regenerates in the device's own language, which happens to be the
+ * one the archive was written in, so it exercises the field's presence and not
+ * its use. **Regenerating in the recorded locale rather than the current one is
+ * what would close it**, and it needs a `Strings` loaded for a named tag rather
+ * than for the device.
  */
 class RegenerationTest {
 

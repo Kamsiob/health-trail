@@ -2357,6 +2357,18 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **This resolves D128's open note.** The golden vector computed its money strings by lookup because computing them would have locked it to whichever machine ran the build. It computes them now.
 
+### D132. Two contract documents disagreed, and the precedence list settled it rather than the owner
+
+**2026-08-10, #210 and #332.** `contract/DATA-CONTRACT.md` 8.2 lists what the inner manifest carries and has always included three things the code never wrote: the export's timezone, the locale the readable copy was written in, and **the list of any attachment whose bytes could not be read at export time.** `contract/EXPORT-FORMAT.md` listed `readable` as carrying `pages` and nothing else and said nothing about a missing list, so the code followed the format document.
+
+**Both had been deferred to the owner as published format changes, twice, and that was the wrong reading.** `CLAUDE.md`'s precedence is explicit: verified code, then `HANDOFF.md`, then `DECISIONS.md`, **then the data contract for data questions**, then `DESIGN.md`. The format document sits below the contract. So this was never a decision about what the format should carry; it was an unimplemented requirement plus a document that had fallen behind. **The format document was corrected and the contract was not touched.**
+
+**The distinction worth keeping, because the next one will look the same.** A format change is the owner's when the contract does not say what to do, which is what #332 looked like from `EXPORT-FORMAT.md` alone. It is not the owner's when the contract already says what to do and something else disagrees. **Reading the higher document before escalating is the cheap step that was skipped twice.**
+
+**What it bought.** `readable.locale` is what lets a regeneration reproduce the archive it came from, which 8.5's guarantee had quietly depended on since #327. `attachments.missing` turns #332's silent failure into a stated one: the archive opens, the row arrives with its name and date, and the person learns a photograph existed and is gone. **An attachment absent and undeclared is still refused**, which is what separates a record with a gap from a copy damaged in transit, and is why it is a list rather than a flag.
+
+**`tools/decrypt` needed no change**, which is worth recording because it is what made the correction safe: the tool reads only the outer manifest's version and encryption parameters, so every field added here is additive to a reader that has already shipped.
+
 ---
 
 ## BLOCKED

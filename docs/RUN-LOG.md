@@ -1268,3 +1268,37 @@ Two pieces of work in one run, and the second one caught the first kind of defec
 **The general form, since it has now happened twice:** where two paths must produce identical bytes, a parameter with a default on either of them is a way for them to disagree silently. Make it required and let the compiler ask.
 
 ---
+
+## 13. Two documents disagreed, and reading the higher one closed two issues, 2026-08-10
+
+**#210's locale question and #332's second half had both been deferred to the owner as published format changes.** Both were wrong, in the same way, and the cost was two sessions writing careful escalations instead of ten minutes of work.
+
+### What was actually true
+
+`contract/DATA-CONTRACT.md` 8.2 lists what the inner manifest carries. It has always included the export's timezone, **the locale the readable copy was written in**, and **the list of any attachment whose bytes could not be read at export time.**
+
+`contract/EXPORT-FORMAT.md` listed `readable` as carrying `pages` and nothing else, and said nothing about a missing list. The code followed the format document, because that is the published one and is what `tools/decrypt` was written from, and so wrote none of the three.
+
+**`CLAUDE.md` already says which wins.** Verified code, then `HANDOFF.md`, then `DECISIONS.md`, **then the data contract for data questions**, then `DESIGN.md`. The format document is below the contract. So neither of these was a decision about what the format should carry. Both were unimplemented requirements plus a document that had fallen behind, and the fix is to correct the document.
+
+### The distinction, because the next one will look the same
+
+**A format change is the owner's when the contract does not say what to do.** That is what #332 looked like from `EXPORT-FORMAT.md` alone, and the reasoning written on the issue at the time was internally sound. **It is not the owner's when the contract already says what to do and something else disagrees.** Reading the higher document before escalating is the cheap step that was skipped twice.
+
+### What it bought
+
+**`readable.locale`** is what lets a regeneration reproduce the archive it came from. 8.5's byte identical guarantee had quietly depended on it since #327 made the pages speak the person's language, and nothing recorded which language that was.
+
+**`attachments.missing`** turns #332's silent failure into a stated one. The archive opens, the row arrives with its name and its date, and the person learns a photograph existed and is gone rather than never learning it was there.
+
+**An attachment that is absent and undeclared is still refused.** That difference is the whole reason it is a list rather than a flag: it separates a record with a gap from a copy damaged in transit. The test for it has to be built by hand now, because the app cannot produce an undeclared gap any more.
+
+**`tools/decrypt` needed no change**, and that is what made the correction safe rather than merely correct: it reads only the outer manifest's version and encryption parameters, so every field is additive to a reader that has already shipped.
+
+### The proof, which was not a test
+
+The month six fixture with one of its four attachment files moved aside. Exported: the screen said "Saved" and then named the file it could not find. Decrypted on the laptop: the manifest carried the hash, `scan-000.jpg`, and the timestamp, plus `readable.locale` and `exported_zone`. **Then restored, in the app, on the phone: "Restored. Your notebook is what was in the file."** 182 trail items back, every section, three attachment files present and the fourth recorded as gone.
+
+**On the build #332 was opened against, that same file was refused by name**, at restore, on the new phone, with the old one gone.
+
+---
