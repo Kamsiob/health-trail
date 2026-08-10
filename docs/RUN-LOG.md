@@ -1368,3 +1368,25 @@ The tint is warm, from `rgba(60,54,38)`. A neutral shadow on a cream page makes 
 `check_copy.py` caught `grey` in a code comment on the first run. Rules 4 and 5 doing their job on prose nobody would ever have read again, which is the argument for having the check read every file rather than only the ones a person sees.
 
 ---
+
+## 16. The fix was already in and nothing was holding it down, 2026-08-10
+
+**#231.** Five screens were reported as telling a reader that tapping a card removes it, and offering a remove that ran an empty function. All five had already been converted to `openableByTap` with a proper verb.
+
+**What had not happened is anything stopping it coming back.** One of the five had a test. The other four were correct and unguarded, sitting in exactly the blind spot the original defect lived in, and `OpenNotRemoveTest`'s own comment names that blind spot: **a screenshot of the fixed screen and the broken one are the same image.** It survived six screens and a design review because there was nothing to see.
+
+**So the close was not "confirm the code" but "make the shape unrepeatable".** `check_dead_gestures.py` holds two rules across all 166 sources rather than five screens: no handler is assigned a lambda that does nothing, and `openableByTap` is never labeled with a remove string. The second is the inversion by name.
+
+**`@Preview` is skipped by shape rather than by a marker on each one**, because a marker on every preview is noise that teaches people to add markers, and then the marker stops meaning anything.
+
+### The device pass, and what it could and could not prove
+
+TalkBack was enabled beside the existing service, with the prior values recorded first and read back after, per rule 19's exception. On Care threads **every clickable node reports `long-clickable="false"`**: no card offers a long press.
+
+**What it could not prove is the words.** The click label is a Compose action label and uiautomator does not surface it. That gap is written on the issue rather than glossed: the label is asserted by a test on one screen, by the check for the inversion class, and by reading five call sites, and a per-screen merged-semantics test for the other four would be the stronger version and is not written.
+
+### And it shrank the next issue
+
+#218 is nine screens, not seventeen. The other eight had already moved, which is what #231 was. The check deliberately does **not** refuse `removableByLongPress` itself, because that would fail the build on nine screens working as designed until #218 lands.
+
+---
