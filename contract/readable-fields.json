@@ -362,8 +362,7 @@
       "ended_edtf",
       "ended_zone",
       "end_note",
-      "notes",
-      "sort_index"
+      "notes"
     ],
     "columns": {
       "id": {
@@ -433,7 +432,7 @@
         "render": "value"
       },
       "sort_index": {
-        "render": "value"
+        "notRendered": "The person's own arrangement, as an index into a list the archive does not present. ReadableRows orders every page by id on purpose, because ordering by anything the person can edit would reorder the whole archive when they corrected a typo, so a page said \"Its position in the order: 0\" while the rows around it ran in a different order entirely. A number that contradicts the document it sits in is worse than no number. #329."
       }
     }
   },
@@ -477,8 +476,7 @@
       "reason",
       "transferred_from_chapter_id",
       "transfer_note",
-      "notes",
-      "sort_index"
+      "notes"
     ],
     "columns": {
       "id": {
@@ -556,7 +554,7 @@
         "render": "value"
       },
       "sort_index": {
-        "render": "value"
+        "notRendered": "The person's own arrangement, as an index into a list the archive does not present. ReadableRows orders every page by id on purpose, because ordering by anything the person can edit would reorder the whole archive when they corrected a typo, so a page said \"Its position in the order: 0\" while the rows around it ran in a different order entirely. A number that contradicts the document it sits in is worse than no number. #329."
       }
     }
   },
@@ -922,8 +920,7 @@
       "person_id",
       "display_name",
       "phone",
-      "relationship",
-      "sort_index"
+      "relationship"
     ],
     "columns": {
       "id": {
@@ -963,7 +960,7 @@
         "render": "value"
       },
       "sort_index": {
-        "render": "value"
+        "notRendered": "The person's own arrangement, as an index into a list the archive does not present. ReadableRows orders every page by id on purpose, because ordering by anything the person can edit would reorder the whole archive when they corrected a typo, so a page said \"Its position in the order: 0\" while the rows around it ran in a different order entirely. A number that contradicts the document it sits in is worse than no number. #329."
       }
     }
   },
@@ -1336,8 +1333,7 @@
       "gap_tolerance",
       "advice_risk",
       "show_medication_markers",
-      "notes",
-      "sort_index"
+      "notes"
     ],
     "columns": {
       "id": {
@@ -1397,7 +1393,7 @@
         "render": "value"
       },
       "sort_index": {
-        "render": "value"
+        "notRendered": "The person's own arrangement, as an index into a list the archive does not present. ReadableRows orders every page by id on purpose, because ordering by anything the person can edit would reorder the whole archive when they corrected a typo, so a page said \"Its position in the order: 0\" while the rows around it ran in a different order entirely. A number that contradicts the document it sits in is worse than no number. #329."
       }
     }
   },
@@ -2084,7 +2080,6 @@
       "id",
       "project_id",
       "text",
-      "sort_index",
       "completed_edtf",
       "completed_zone",
       "note",
@@ -2119,7 +2114,7 @@
         "render": "value"
       },
       "sort_index": {
-        "render": "value"
+        "notRendered": "The person's own arrangement, as an index into a list the archive does not present. ReadableRows orders every page by id on purpose, because ordering by anything the person can edit would reorder the whole archive when they corrected a typo, so a page said \"Its position in the order: 0\" while the rows around it ran in a different order entirely. A number that contradicts the document it sits in is worse than no number. #329."
       },
       "completed_edtf": {
         "render": "date",
@@ -2504,7 +2499,6 @@
       "id",
       "project_id",
       "name",
-      "sort_index",
       "entered_edtf",
       "entered_zone"
     ],
@@ -2536,7 +2530,7 @@
         "render": "value"
       },
       "sort_index": {
-        "render": "value"
+        "notRendered": "The person's own arrangement, as an index into a list the archive does not present. ReadableRows orders every page by id on purpose, because ordering by anything the person can edit would reorder the whole archive when they corrected a typo, so a page said \"Its position in the order: 0\" while the rows around it ran in a different order entirely. A number that contradicts the document it sits in is worse than no number. #329."
       },
       "entered_edtf": {
         "render": "date",
@@ -2698,8 +2692,7 @@
     "order": [
       "id",
       "project_id",
-      "label",
-      "sort_index"
+      "label"
     ],
     "columns": {
       "id": {
@@ -2729,7 +2722,7 @@
         "render": "value"
       },
       "sort_index": {
-        "render": "value"
+        "notRendered": "The person's own arrangement, as an index into a list the archive does not present. ReadableRows orders every page by id on purpose, because ordering by anything the person can edit would reorder the whole archive when they corrected a typo, so a page said \"Its position in the order: 0\" while the rows around it ran in a different order entirely. A number that contradicts the document it sits in is worse than no number. #329."
       }
     }
   },
@@ -2738,7 +2731,6 @@
       "id",
       "project_id",
       "name",
-      "sort_index",
       "direction",
       "document_id"
     ],
@@ -2770,7 +2762,7 @@
         "render": "value"
       },
       "sort_index": {
-        "render": "value"
+        "notRendered": "The person's own arrangement, as an index into a list the archive does not present. ReadableRows orders every page by id on purpose, because ordering by anything the person can edit would reorder the whole archive when they corrected a typo, so a page said \"Its position in the order: 0\" while the rows around it ran in a different order entirely. A number that contradicts the document it sits in is worse than no number. #329."
       },
       "direction": {
         "render": "enum",
@@ -2789,7 +2781,6 @@
       "subject_id",
       "card_type",
       "size",
-      "sort_index",
       "is_lead",
       "source_table",
       "source_id"
@@ -2829,7 +2820,7 @@
         "note": "Section 8.2: a stored value is not display text. The value is a member of the card_size vocabulary and renders as its word in the person's language. #328."
       },
       "sort_index": {
-        "render": "value"
+        "notRendered": "The person's own arrangement, as an index into a list the archive does not present. ReadableRows orders every page by id on purpose, because ordering by anything the person can edit would reorder the whole archive when they corrected a typo, so a page said \"Its position in the order: 0\" while the rows around it ran in a different order entirely. A number that contradicts the document it sits in is worse than no number. #329."
       },
       "is_lead": {
         "render": "boolean"

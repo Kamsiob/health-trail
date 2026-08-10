@@ -1142,7 +1142,6 @@
   "archive.field.person_id": "Persona",
   "archive.field.card_type": "Qué tarjeta",
   "archive.field.size": "Su tamaño",
-  "archive.field.sort_index": "Su lugar en el orden",
   "archive.field.is_lead": "Ocupaba la parte superior de la pantalla",
   "archive.field.source_table": "A qué apuntaba",
   "archive.field.source_id": "La referencia a la que apuntaba",

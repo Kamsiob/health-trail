@@ -1142,7 +1142,6 @@
   "archive.field.person_id": "人",
   "archive.field.card_type": "哪张卡片",
   "archive.field.size": "尺寸",
-  "archive.field.sort_index": "排列位置",
   "archive.field.is_lead": "位于屏幕顶部",
   "archive.field.source_table": "指向的内容",
   "archive.field.source_id": "指向的编号",

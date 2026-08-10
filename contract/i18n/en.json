@@ -1142,7 +1142,6 @@
   "archive.field.person_id": "Person",
   "archive.field.card_type": "Which card",
   "archive.field.size": "Its size",
-  "archive.field.sort_index": "Its place in the order",
   "archive.field.is_lead": "Held the top of the screen",
   "archive.field.source_table": "What it pointed at",
   "archive.field.source_id": "The reference it pointed at",

@@ -1142,7 +1142,6 @@
   "archive.field.person_id": "الشخص",
   "archive.field.card_type": "أي بطاقة",
   "archive.field.size": "حجمها",
-  "archive.field.sort_index": "موضعها في الترتيب",
   "archive.field.is_lead": "كانت في أعلى الشاشة",
   "archive.field.source_table": "إلى ماذا كان يشير",
   "archive.field.source_id": "المرجع الذي كان يشير إليه",
