@@ -87,13 +87,24 @@ class RegenerationTest {
         val staging = File(work, "staging")
         val opened = ExportContainer.open(archive, staging, passphrase = secret)
         assertTrue("the archive did not open: ${opened.exceptionOrNull()}", opened.isSuccess)
-        // **The same vocabulary, because the pages are now a function of it as
-        // well as of the rows.** `Backup.export` reads the catalogs the same
-        // way, so this is the same value the archive was written with, and the
-        // caveat in the class comment is about the day it would not be.
+        // **The same vocabulary and the same catalogs, because the pages are
+        // now a function of both as well as of the rows.** `Backup.export`
+        // reads them the same way, so this is the same value the archive was
+        // written with, and the caveat in the class comment is about the day it
+        // would not be.
+        //
+        // **The catalogs were missed here for an afternoon and this test is
+        // what found it**, on 2026-08-10: the archive said `Nursing home` and
+        // the regeneration said `nursing_home`, so byte identity broke on
+        // exactly the thing 8.5 exists to hold. `ReadableWords.from` takes no
+        // default for them now, so the next omission is a compile error rather
+        // than a diff. #329.
         val regenerated = ExportContainer.readablePages(
             opened.getOrThrow().database,
-            ReadableWords.from(com.kamsiob.healthtrail.i18n.Strings.load(context)),
+            ReadableWords.from(
+                com.kamsiob.healthtrail.i18n.Strings.load(context),
+                catalogNames = ReadableWords.catalogNames(context),
+            ),
         )
 
         assertEquals(

@@ -2325,6 +2325,22 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **What is not decided here, because it is not a session's to decide.** Putting the missing list in `MANIFEST.json` is a change to a format published byte for byte in `contract/EXPORT-FORMAT.md`, which `tools/decrypt/` was written from. Three shapes are written on #332 and the third, additive within version 3 with the document and the tool updated in the same change, is the one this session would take. **Until that is settled the archive is still one the app cannot open**, and the screen now says so instead of the person learning it later.
 
+### D130. The archive prints a template's own name, in one language, and stops printing two indexes
+
+**2026-08-10, #329.** A real Arabic export said a subject was set up from `nursing_home`, a project came from `legal_documents`, a care thread's page read "Its color: 0", and forty nine fields read "Its place in the order: 0". Four decisions, and the second is the one that could have gone quietly wrong.
+
+**A link column declares which catalog it resolves into, and the resolution never guesses.** The obvious implementation was one map from id to name across all the shipped catalogs, and it is wrong: `discharge_planning` is both a care thread and a project template, and `dietary` is both a thread and a standing instruction. A merged map answers, confidently, with the wrong name, on a page nobody reads until it matters. So the catalog is declared beside the render decision in `contract/readable-fields.json`, exactly as an enum declares its vocabulary, and a `link` with no catalog is a link to a row and consults nothing.
+
+**The names are in one language, and that is the decision rather than an omission.** A template's name is content in `templates/data`, not a string with four translations, so an Arabic archive says `Nursing home`. That is what the template is called. The alternative is translating fifty seven template names into four languages, which is real work with a real benefit and is a different piece of work from making the page stop printing an identifier.
+
+**`care_thread.template_id` is not rendered rather than resolved.** Five thread ids carry different labels in different situations, so there is no single right answer for one of them, and resolving it would print a name the person never saw. The row already stores the label it was created with, directly above it on the same page.
+
+**Two integers stop being rendered, for the same reason in two shapes.** `color_index` is an index into the app's own palette, which means nothing in a document whose whole standard is that it is read without the app. `sort_index` is the person's own arrangement, which is real, **but the archive orders every page by id on purpose** so that correcting a typo does not reorder the whole document. Printing a position into an order the pages do not follow tells a reader something the document then contradicts. **A number that disagrees with its own document is worse than no number.**
+
+**What holds it.** `check_readable_labels.py` refuses a catalog that does not exist, a catalog on anything but a link, and duplicate ids inside a catalog, and it caught the eight orphaned label keys the two removals left behind. The golden vector carries the catalog names, so all of it showed as a six line diff rather than as a surprise.
+
+**How it was found is the part worth keeping.** Not by reading the field map, which said `render: link` and looked correct. By exporting for real, decrypting on the laptop, and grepping the produced pages for bare integers and schema tokens. That is the third time that sweep has found something the code review did not.
+
 ---
 
 ## BLOCKED

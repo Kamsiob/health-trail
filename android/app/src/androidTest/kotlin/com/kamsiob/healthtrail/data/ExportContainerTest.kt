@@ -62,6 +62,10 @@ class ExportContainerTest {
             com.kamsiob.healthtrail.i18n.Strings.load(
                 InstrumentationRegistry.getInstrumentation().targetContext,
             ),
+            // Empty, and said out loud rather than defaulted. This container's
+            // payload is one made-up table with one column and no row points at
+            // a catalog entry, so there is nothing to resolve. #329.
+            catalogNames = emptyMap(),
         ),
     )
 

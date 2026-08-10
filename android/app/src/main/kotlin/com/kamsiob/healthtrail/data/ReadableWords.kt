@@ -42,17 +42,23 @@ internal object ReadableWords {
         strings: Strings,
         fieldMap: Map<String, ReadableArchive.TableFields> = ReadableFieldMap.tables,
         /**
-         * Shipped catalog entry id to its name, from [catalogNames]. #329.
+         * The shipped catalogs, from [catalogNames]. #329.
          *
          * **Passed in rather than read here**, for the same reason this whole
          * object exists: reading the bundled JSON needs a `Context` and a
-         * coroutine, and `from` is neither. The caller that has both is
-         * `Backup.export`, which already reads the schema and the catalogs.
+         * coroutine, and `from` is neither.
          *
-         * Empty by default so a caller that only wants words, which in practice
-         * means a test, does not have to load five catalogs to get them.
+         * **No default, deliberately, and this is the second time that rule has
+         * earned itself.** `ExportContainer.Source.readableWords` has no default
+         * because one would be an English archive that nothing complains about,
+         * #327. This had one for an afternoon, and `RegenerationTest` failed on
+         * it: the export wrote `Nursing home` and the regeneration wrote
+         * `nursing_home`, so 8.5's byte identity broke on exactly the guarantee
+         * it exists to hold. **An empty map is a legitimate answer and it has to
+         * be given rather than fallen into**, because the two sides of a
+         * regeneration have to be asked the same question.
          */
-        catalogNames: Map<String, Map<String, String>> = emptyMap(),
+        catalogNames: Map<String, Map<String, String>>,
     ): ReadableArchive.Words {
         val tables = fieldMap.keys
             .filter { fieldMap.getValue(it).rendered.isNotEmpty() }
