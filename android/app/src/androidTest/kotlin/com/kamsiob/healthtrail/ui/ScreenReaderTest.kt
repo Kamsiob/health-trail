@@ -7,6 +7,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -29,6 +30,7 @@ import com.kamsiob.healthtrail.data.ExportContainer
 import com.kamsiob.healthtrail.ui.screens.RestoreScreen
 import com.kamsiob.healthtrail.ui.screens.RestoreState
 import com.kamsiob.healthtrail.ui.screens.ExportState
+import com.kamsiob.healthtrail.ui.screens.ExportTags
 import com.kamsiob.healthtrail.ui.screens.AcknowledgeSheet
 import com.kamsiob.healthtrail.ui.screens.AnswerSheet
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
@@ -1021,6 +1023,44 @@ class ScreenReaderTest {
             ExportScreen(state = ExportState.WORKING, onExport = { _, _ -> }, onBack = {})
         }
         assertEverythingIsLabeled("export, working")
+    }
+
+    /**
+     * The finished screen, and the version of it that has something to add.
+     *
+     * **Two cases rather than one, because they are different screens.** The
+     * plain one replaced the form with a title and a sentence; this one adds a
+     * headed block naming what the export could not find, and the block is the
+     * only thing on the screen a reader has never met. #332.
+     *
+     * **It also renders the three catalog keys**, which is what proves them.
+     * `check_string_keys.py` holds the code to the catalogs and the catalogs to
+     * each other, and neither of those runs `MessageFormat` over a plural
+     * pattern with six Arabic forms in it. Only rendering does.
+     */
+    @Test
+    fun exportLabelsEverythingWhenSaved() {
+        compose.show {
+            ExportScreen(state = ExportState.DONE, onExport = { _, _ -> }, onBack = {})
+        }
+        assertEverythingIsLabeled("export, saved")
+    }
+
+    @Test
+    fun exportLabelsEverythingWhenSavedWithoutAFile() {
+        compose.show {
+            ExportScreen(
+                state = ExportState.DONE,
+                onExport = { _, _ -> },
+                onBack = {},
+                // Two rather than one, so the plural form is the one exercised.
+                // A count of one passes on a template that has no plural rule
+                // at all.
+                missingAttachments = 2,
+            )
+        }
+        compose.onNodeWithTag(ExportTags.MISSING).assertIsDisplayed()
+        assertEverythingIsLabeled("export, saved without a file")
     }
 
     /**

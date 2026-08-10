@@ -51,17 +51,51 @@ class MissingAttachmentTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     private lateinit var archive: File
 
+    /**
+     * Where [ExportContainer.open] unpacks, cleaned up here rather than in the
+     * tests.
+     *
+     * **Because a test that ends on its own cleanup returns whatever the
+     * cleanup returned**, and a `runBlocking` expression body then makes the
+     * method non-void, which JUnit refuses for the whole class with a message
+     * about the method rather than about the expression. Both tests that open
+     * an archive hit it at once.
+     */
+    private lateinit var staging: File
+
     private val secret get() = "a passphrase for the missing attachment tests".toCharArray()
+
+    /**
+     * Every hash this test made a row for, so [tearDown] can put the database
+     * back.
+     *
+     * **This class leaves the app's real database in the one state every other
+     * export test must not meet.** The database persists across classes in a
+     * connected run, so a live attachment row with no file left behind here
+     * would make `RoundTripTest`, `RegenerationTest` and `MergeApplyTest` all
+     * fail on an archive that will not open, naming a hash from a fixture they
+     * have never heard of. That is a defect this class would be inserting into
+     * the suite rather than finding.
+     */
+    private val made = mutableListOf<String>()
 
     @Before
     fun setUp() {
         Repository.closeForTest()
+        made.clear()
         archive = File(context.cacheDir, "missing-${System.nanoTime()}.htz")
+        staging = File(context.cacheDir, "missing-staging-${System.nanoTime()}")
     }
 
     @After
     fun tearDown() {
+        // Tombstoned rather than removed, because a tombstone is what the app
+        // itself would leave and the container allows a deleted attachment to
+        // have no bytes. Removing the rows would be the one thing rule 3 says
+        // never happens to a row.
+        made.forEach { runBlocking { tombstoneAttachment(it) } }
         archive.delete()
+        staging.deleteRecursively()
         Repository.closeForTest()
     }
 
@@ -85,11 +119,16 @@ class MissingAttachmentTest {
             mimeType = "image/jpeg",
             originalFilename = "$title.jpg",
         )
+        made += hash
         return hash
     }
 
-    private suspend fun subject(): String =
-        Repository.open(context).createSubject(displayName = "Margaret", relationship = "Mom")
+    /** One per test, rather than one per document, which would be five Margarets. */
+    private var subject: String? = null
+
+    private suspend fun subject(): String = subject ?: Repository.open(context)
+        .createSubject(displayName = "Margaret", relationship = "Mom")
+        .also { subject = it }
 
     /** Takes the bytes out from under a live row, which is the whole fixture. */
     private suspend fun loseTheFile(hash: String) {
@@ -137,7 +176,6 @@ class MissingAttachmentTest {
         assertTrue("the row carries no created_at", missing.createdAt > 0)
 
         // And the same archive is the one the app refuses, on the same hash.
-        val staging = File(context.cacheDir, "missing-open-${System.nanoTime()}")
         val problem = ExportContainer.open(
             archive,
             staging,
@@ -149,12 +187,18 @@ class MissingAttachmentTest {
             "opening the archive failed for some other reason: ${reason.message}",
             reason is ExportContainer.Problem.AttachmentMissing,
         )
-        assertEquals(
-            "the export warned about one file and the import refused on another",
-            hash,
-            (reason as ExportContainer.Problem.AttachmentMissing).hash,
+        // **That the refusal names a file the export warned about, rather than
+        // this exact one.** `open` stops at the first row it finds with no
+        // file, and which row that is depends on the whole database, which in a
+        // connected run holds whatever the classes before this one left. The
+        // property worth asserting is not which file it picked; it is that
+        // export cannot be silent about anything import will refuse on.
+        val refused = (reason as ExportContainer.Problem.AttachmentMissing).hash
+        assertTrue(
+            "the import refused on $refused, which the export never warned about: " +
+                written.missingAttachments,
+            written.missingAttachments.any { it.sha256 == refused },
         )
-        staging.deleteRecursively()
     }
 
     /**
@@ -203,7 +247,6 @@ class MissingAttachmentTest {
 
         // And the archive still opens, which is the assertion that proves the
         // clause above matters rather than merely being consistent.
-        val staging = File(context.cacheDir, "missing-tomb-${System.nanoTime()}")
         val opened = ExportContainer.open(
             archive,
             staging,
@@ -215,7 +258,6 @@ class MissingAttachmentTest {
                 opened.exceptionOrNull()?.message,
             opened.isSuccess,
         )
-        staging.deleteRecursively()
     }
 
     /**

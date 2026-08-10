@@ -4,7 +4,7 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-09, after the archive's language, its values, its regeneration in continuous integration, and the importer's merge.
+**Last rewritten:** 2026-08-10, after the export learned to look for the files it was about to leave behind.
 
 ---
 
@@ -24,15 +24,15 @@
 | Delegating | `AGENTS.md`. Subagents never write anything |
 | **Never, to orient** | `docs/RUN-LOG.md`. It is history and a thousand lines of it |
 
-### Verified rather than asserted, 2026-08-09
+### Verified rather than asserted, 2026-08-10
 
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
 - **18 repository checks pass**, `python3 tools/checks/run_all.py`. The eighteenth is `check_readable_labels.py`, which holds every table and column the archive renders to a word in all four catalogs.
 - **212 unit tests pass and they need no phone**, and **three of them are the archive's regeneration**, which until 2026-08-09 could only run on the phone. `contract/test-vectors/readable/`. On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
-- **515 instrumented tests pass**, last full run 2026-08-09 on the unlocked phone, after #211's merge landed.
+- **520 instrumented tests pass**, last full run 2026-08-10 on the unlocked phone. **Six more were added after that run and were run separately**: `MissingAttachmentTest`'s four, and two on `ScreenReaderTest`, all green. **The next full run is the one that states a single number**, so treat 526 as expected rather than as verified.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
-- **The phone was returned to its starting values on 2026-08-09 and unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, heads-up 1, no per-app locale so the app runs in English, and the accessibility services string the KDE Connect one. **It holds the month six fixture notebook** with the disclaimer accepted, which is what `tools/seed.sh` leaves, and none of it is real.
-- **Three test archives sit in `Download` from 2026-08-09**, beside the ones from 2026-08-04, and every one holds nothing but the fixture. **Their passphrases are `arabic327`, `arabic328` and `arabic328b`**, written down here because a locked file whose passphrase nobody recorded is a file nobody can use, and these are the fastest way to reach the merge screens without exporting first.
+- **The phone was returned to its starting values on 2026-08-10 and unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, `ui_night_mode` 2, no per-app locale so the app runs in English, and the accessibility services string the KDE Connect one. **It holds the month six fixture notebook** with the disclaimer accepted, which is what `tools/seed.sh` leaves, and none of it is real. **Its four attachment files are all present**: two were moved to `files/parked` to reach #335's screen and were moved back, verified by count.
+- **Three more test archives sit in `Download` from 2026-08-10**, beside the ones from 2026-08-09 and 2026-08-04, and every one holds nothing but the fixture. **The 2026-08-10 three all use the passphrase `missing332`** and **all three are archives the app refuses to open**, deliberately: they were written with two attachment files absent, which is exactly what #332 is about. The older ones are `arabic327`, `arabic328` and `arabic328b`, and those do open. A locked file whose passphrase nobody recorded is a file nobody can use.
 - **The destructive command guard is live and proven.** It refused three real commands, two on 2026-08-08 and one on 2026-08-09, and it also refused a run log paragraph that merely named a blocked verb, which is #323. Section 9.
 
 ### The six that actually get broken
@@ -55,7 +55,8 @@
 - **THE ARCHIVE is largely built and proved on real hardware**: a two-layer container at format version 3, a readable copy, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. **The stranger test passes**, run on 2026-08-09 on a laptop that has never had the app.
 - **The readable copy is written in the person's language and so are its values**, #327 and #328. Verified by exporting in Arabic, decrypting with the passphrase alone, and reading the pages in a browser: 128 field labels, 39 headings, 81 stored values across 17 vocabularies, money as money, and no bare epoch anywhere. **What is left is two ordinary integers**, `sort_index` and `color_index`, and `color_index` reads as "Its color: 0", which is a palette index a reader cannot use.
 - **The contract now carries three files for the readable copy, not one.** `contract/readable-fields.json` is what each column renders as, `contract/readable-vocabularies.json` is the fixed vocabularies those decisions name, and `contract/test-vectors/readable/` is the golden vector. All three are generated into the app by the build, so nothing is hand kept on the Kotlin side.
-- **The importer merges as well as replaces**, #211. `Merge` is pure so the rules that decide whose version of a note survives are unit tested without a phone: match by id, later `updated_at` wins, `origin_device` breaks a tie so two phones reach the same answer in either direction, and merge never deletes because removal travels as a tombstone. Every resolution goes to `conflict_log` with both sides whole, and **there is a screen that reads it**. **Two criteria of #211 are not met and say so on the issue**: a missing attachment is #332, and per-section view choices are not a thing the schema carries.
+- **The importer merges as well as replaces**, #211. `Merge` is pure so the rules that decide whose version of a note survives are unit tested without a phone: match by id, later `updated_at` wins, `origin_device` breaks a tie so two phones reach the same answer in either direction, and merge never deletes because removal travels as a tombstone. Every resolution goes to `conflict_log` with both sides whole, and **there is a screen that reads it**. **Two criteria of #211 are not met and say so on the issue**: a missing attachment is #332, whose first half landed on 2026-08-10 and whose second half is a format decision, and per-section view choices are not a thing the schema carries.
+- **The export looks before it writes**, #332. `Attachments.all` lists files rather than rows, so a live attachment row whose bytes were gone shipped as a row with no file and the archive could not be opened again, while the screen said "Saved" and nothing else. `Backup.export` now returns the manifest plus what it could not find, **using the same query `ExportContainer.open` refuses on** so the warning and the refusal cannot name different files, and the screen says it under "Saved" rather than instead of it. D129.
 - **B4's argument is finally true.** It dropped the emulator because "data survival is proven by the round trip against the golden vectors in continuous integration", and **nothing in continuous integration rendered a readable page at all** until 2026-08-09: `RegenerationTest` is instrumented and `DateVectorTest` reads assets. `ReadableVectorTest` is the half that needs no Android. **Regenerate it deliberately**, `-Dhealthtrail.vector.write=true`, and read the diff.
 
 **Nothing on `main` is unverified.** Every screen that has shipped has been on the phone at both themes, font scale 2.0 and Arabic right to left, **including the two the merge added on 2026-08-09**, which are waiting on the owner's eye rather than on a walk.
@@ -131,7 +132,7 @@ Each is said out loud on its own issue rather than counted as done.
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**Eighteen of them, oldest first.** Rechecked against the board on 2026-08-09 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+**Nineteen of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
 
 **The Today work of 2026-08-09 added nothing to this list**, and that was checked rather than assumed: every screen and state built that morning is drawn in one of the three grids, so rule 12 never applied. The card's options sheet is grid screen 07, the closed project is 17, the greeting is 16, and the Today work is screens 01 through 10. **The merge work that evening added two**, because the grid draws restore with one outcome and draws nothing at all for reading what a merge decided.
 
@@ -155,8 +156,9 @@ Every one of these was built from the existing components, logged in all three p
 | Keeping a project as a template, and who it is waiting on | #317 |
 | Merge or replace, on the restore screen | #333 |
 | What the merge decided | #334 |
+| The export finished and could not find a file | #335 |
 
-**Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. The other nine have been waiting longer.
+**Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. **One is the export's second outcome**, #335, added 2026-08-10. The other nine have been waiting longer.
 
 ---
 
@@ -171,7 +173,7 @@ Every one of these was built from the existing components, logged in all three p
 - **#288** needs a PDF engine, and **nothing in the app can make a PDF**. The engine is #228 on milestone 5, two milestones later. Rule 11 rules out a screen whose only action does nothing. **The owner picks**: move #288 to milestone 5, or move #228 forward.
 - **#238** needs a decision on whether a milestone may point at a measure at all, which comes close to interpreting a measurement.
 - **#319 and #320** need a direction for the `app_meta` problem: text already stored unnormalized, and a restored phone writing under the source phone's identity. **The merge now depends on this**: `app_meta` is deliberately not merged because of it, which is why #211's "per-section view choices restore" criterion cannot be met.
-- **#332 is half a session's work and half the owner's.** An attachment row whose file is gone produces an archive this app then refuses to open, and export never notices. Making export look is straightforward; **recording what it found in `MANIFEST.json` is a published format change**, the same shape as #210's question. **It is the only open defect where the app can produce something it cannot read back**, which is why it is the next action.
+- **#332's first half is built and its second half is now purely the owner's.** The export looks and the screen says what it found, 2026-08-10, D129 and #335. **What is left is one decision: whether the missing list may go into `MANIFEST.json`**, which is a change to a format published byte for byte and written into `tools/decrypt/`. Three shapes are on the issue and the third, additive within version 3 with the document and the tool updated in the same change, is the one this session would take. **Until it is chosen the app can still produce an archive it cannot read back**, which is why the issue stays release blocking.
 - **#331 needs a direction rather than a fix.** The JDK and Android format the same money differently, Arabic-Indic digits against Latin, so 8.5's byte identical regeneration cannot hold across two readers of the contract. Three shapes are on the issue and the third, formatting money in this repository the way `ReadableDate` already spells month names, is probably right.
 - **#210 carries a question rather than a block**: `DATA-CONTRACT.md` 8.2 says the inner manifest carries the readable copy's locale and `EXPORT-FORMAT.md` line 181 says it carries `pages` and nothing else. The code follows the format document, **which is the published one and is what `tools/decrypt` was written from**, so which is right is not a session's call. **It stopped being cosmetic on 2026-08-09**: since #327 the readable pages are written in the person's language, so 8.5's byte identical regeneration now depends on a language the archive does not record. Said on #210 and in `RegenerationTest`'s class comment.
 

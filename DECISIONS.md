@@ -2313,6 +2313,20 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 ---
 
+### D129. An export that could not find a file still saves, and says so under "Saved"
+
+**2026-08-10, #332.** A live `attachment` row whose bytes are gone produced an archive this app then refuses to open, and nothing said so. Three things were decided rather than escalated.
+
+**The export still writes the file.** Refusing would leave somebody with no archive at all, and the payload is the half that restores: the rest of the notebook is in it and every other row is sound. The reasoning is the same one `ExportContainer.readablePages` already uses when the human copy cannot be built, that losing the payload to protect something else is the wrong trade at the moment somebody is exporting. **So the screen says "Saved" and then says what is not in it**, rather than turning a finished export into a failure.
+
+**And it says the consequence, which is the uncomfortable half.** An archive naming a file it does not carry is one this app will not open, so the copy tells the person to keep any earlier archive they still have. Naming a missing file without naming what it costs would be half a sentence, and the whole defect was that the person found out at restore time on the new phone.
+
+**The export looks at the staged copy, with the import's own query.** Reading the live database instead would report rows that are not in the archive and miss rows that are, since the staging is a snapshot. Using a different query from `ExportContainer.open`'s would let the warning and the refusal name different files, which is worse than no warning. **The tombstone clause is copied deliberately**: a deleted attachment's bytes are legitimately absent, so checking those would fire on nearly every real notebook.
+
+**What is not decided here, because it is not a session's to decide.** Putting the missing list in `MANIFEST.json` is a change to a format published byte for byte in `contract/EXPORT-FORMAT.md`, which `tools/decrypt/` was written from. Three shapes are written on #332 and the third, additive within version 3 with the document and the tool updated in the same change, is the one this session would take. **Until that is settled the archive is still one the app cannot open**, and the screen now says so instead of the person learning it later.
+
+---
+
 ## BLOCKED
 Anything only the owner can resolve. Each entry states exactly what he needs to do, in terms he can act on without reading any code.
 
