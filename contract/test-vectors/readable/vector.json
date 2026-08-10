@@ -134,10 +134,6 @@
         "3": "3 records."
       },
       "covers": {},
-      "money": {
-        "679040|USD": "$6,790.40",
-        "323701|USD": "$3,237.01"
-      },
       "catalogNames": {
         "situations": {
           "nursing_home": "Nursing home"
@@ -272,10 +268,6 @@
         "3": "3 سجلات."
       },
       "covers": {},
-      "money": {
-        "679040|USD": "‏6,790.40 US$",
-        "323701|USD": "‏3,237.01 US$"
-      },
       "catalogNames": {
         "situations": {
           "nursing_home": "Nursing home"
@@ -547,6 +539,6 @@
     ]
   },
   "subjectName": "Margaret Ellison",
-  "_money_note": "The money strings are inputs to the renderer rather than claims about ICU, and the Arabic ones were read out of a real Arabic export rather than computed here. That distinction is not academic: java.text.NumberFormat on the JDK renders this same call as ‏٦٬٧٩٠٫٤٠ US$, with Arabic-Indic digits, while Android's ICU produced Latin digits. Two readers of this contract would therefore write different bytes for the same archive, which 8.5's byte identical regeneration cannot survive. Filed rather than papered over.",
+  "_money_note": "There is no money map here any more, and its absence is the point. Until 2026-08-10 these strings were read out of a real export rather than computed, because java.text.NumberFormat answered differently on Android and on the JDK for the same locale and currency: Latin digits on one, Arabic-Indic on the other. #331 took money out of the platform's hands, so the vector now calls ReadableMoney like everything else and the amount is the same on every machine that reads this contract. D128 anticipated exactly this and said these strings should be computed the day they became computable.",
   "_catalog_note": "The shipped catalogs' own names, for the link columns whose target is a catalog entry rather than a row in this archive. #329. The same in every locale on purpose: a template's name is content in templates/data rather than a string with four translations, so an Arabic archive says what the template is called. D130."
 }

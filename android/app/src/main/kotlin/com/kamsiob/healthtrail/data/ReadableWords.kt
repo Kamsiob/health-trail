@@ -1,7 +1,6 @@
 package com.kamsiob.healthtrail.data
 
 import com.kamsiob.healthtrail.i18n.Strings
-import com.kamsiob.healthtrail.i18n.formatMoney
 
 /**
  * The archive's vocabulary, read out of the shared catalogs.
@@ -93,7 +92,15 @@ internal object ReadableWords {
             tables = tables,
             columns = columns,
             vocabularies = vocabularies,
-            money = { minor, code -> formatMoney(strings, minor, code) },
+            // **The archive's own rule, not the platform's.** `formatMoney`
+            // asks `java.text.NumberFormat`, which answers differently on
+            // Android and on a JVM for the same locale and currency, so an
+            // amount in the readable copy depended on which machine opened the
+            // archive and 8.5's byte identity became a claim about one phone.
+            // The screens still ask the platform, deliberately: a person reading
+            // their own notebook should see money the way their phone writes it.
+            // #331, and the same argument `ReadableDate` already makes.
+            money = { minor, code -> ReadableMoney.format(minor, code) },
             subjectFallback = strings["archive.page.subject.fallback"],
             about = strings["archive.page.about"],
             datedHeading = strings["archive.page.dated.heading"],

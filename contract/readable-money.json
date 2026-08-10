@@ -1,0 +1,56 @@
+{
+  "_about": "How the archive's readable copy renders an amount, and the only data it needs to do it. contract/DATA-CONTRACT.md 8.2 and 8.5, issue #331.",
+
+  "_why": "The readable copy used to ask java.text.NumberFormat, which is backed by Android's bundled ICU on the phone and by the JDK's CLDR of a different vintage anywhere else. The same call, the same locale tag and the same currency produced Latin digits on one and Arabic-Indic on the other, so 8.5's byte identical regeneration could hold on one phone and fail on any second reader of this contract. /contract exists because there are meant to be two readers. So money is formatted here, from this file, by rules a reader can implement in an afternoon, exactly as ReadableDate spells month names itself rather than asking the locale.",
+
+  "_rules": [
+    "The amount is stored as an integer number of minor units and is never converted to a floating point number at any point.",
+    "The number of minor units in one major unit is 10 raised to the exponent below. The exponent for a code not listed is 2.",
+    "Digits are the Latin digits 0 to 9, always, in every language. This is the same deliberate exception ReadableDate makes for month names: the stranger this document must survive is a records office or a lawyer, and a figure that is unreadable to them is worse than a figure that is not in their conventional digits.",
+    "The integer part is grouped in threes from the right, separated by a comma. The fractional part is separated by a period and is always exactly as many digits as the exponent, including trailing zeros, because 5.00 and 5.0 and 5 are three different statements about a bill.",
+    "A negative amount carries a leading minus sign before everything else.",
+    "The ISO 4217 code follows the amount after one ordinary space. The code rather than a symbol, because $ is at least six different currencies and a symbol is exactly the ambiguity this whole section exists to remove.",
+    "An exponent of 0 renders no separator and no fractional part at all."
+  ],
+
+  "_examples": {
+    "679040 USD": "6,790.40 USD",
+    "0 USD": "0.00 USD",
+    "-2550 USD": "-2,550 minor units is -25.50 USD",
+    "1234567890 USD": "12,345,678.90 USD",
+    "500 JPY": "500 JPY",
+    "1234 JPY": "1,234 JPY",
+    "1234567 BHD": "1,234.567 BHD"
+  },
+
+  "_exponents_note": "Only the codes whose exponent is not 2, from ISO 4217. Everything else is 2, which is the overwhelming majority and is the default rather than a list nobody can audit. A code this file has never heard of renders with 2, which is the right guess and is stated rather than silent.",
+
+  "exponents": {
+    "BIF": 0,
+    "CLP": 0,
+    "DJF": 0,
+    "GNF": 0,
+    "ISK": 0,
+    "JPY": 0,
+    "KMF": 0,
+    "KRW": 0,
+    "PYG": 0,
+    "RWF": 0,
+    "UGX": 0,
+    "UYI": 0,
+    "VND": 0,
+    "VUV": 0,
+    "XAF": 0,
+    "XOF": 0,
+    "XPF": 0,
+    "BHD": 3,
+    "IQD": 3,
+    "JOD": 3,
+    "KWD": 3,
+    "LYD": 3,
+    "OMR": 3,
+    "TND": 3,
+    "CLF": 4,
+    "UYW": 4
+  }
+}

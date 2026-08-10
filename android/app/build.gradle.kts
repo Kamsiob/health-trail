@@ -164,6 +164,9 @@ run {
         if (!contractDir.resolve("readable-vocabularies.json").isFile) {
             add(contractDir.resolve("readable-vocabularies.json").path)
         }
+        if (!contractDir.resolve("readable-money.json").isFile) {
+            add(contractDir.resolve("readable-money.json").path)
+        }
         if (!templatesDataDir.isDirectory) add(templatesDataDir.path)
     }
     if (missing.isNotEmpty()) {
@@ -250,14 +253,17 @@ val generateReadableFields by tasks.registering {
 
     val source = contractDir.resolve("readable-fields.json")
     val vocabularySource = contractDir.resolve("readable-vocabularies.json")
+    val moneySource = contractDir.resolve("readable-money.json")
     val outputDir = layout.buildDirectory.dir("generated/readableFields")
     inputs.file(source)
     inputs.file(vocabularySource)
+    inputs.file(moneySource)
     outputs.dir(outputDir)
 
     doLast {
         val root = groovy.json.JsonSlurper().parse(source) as Map<*, *>
         val vocabularies = groovy.json.JsonSlurper().parse(vocabularySource) as Map<*, *>
+        val money = groovy.json.JsonSlurper().parse(moneySource) as Map<*, *>
         val file = outputDir.get().asFile.resolve(
             "com/kamsiob/healthtrail/data/ReadableFieldMap.kt",
         )
@@ -317,6 +323,20 @@ val generateReadableFields by tasks.registering {
                             "        \"$name\" to listOf(" +
                                 values.joinToString(", ") { "\"$it\"" } + "),",
                         )
+                    }
+                appendLine("    )")
+                appendLine("}")
+                appendLine()
+                appendLine("// The ISO 4217 codes whose minor unit is not two digits.")
+                appendLine("// Generated from contract/readable-money.json. Anything absent is 2,")
+                appendLine("// which ReadableMoney states rather than leaves silent. #331.")
+                appendLine("internal object ReadableCurrency {")
+                appendLine("    val exponents: Map<String, Int> = mapOf(")
+                (money["exponents"] as Map<*, *>).keys
+                    .map { it.toString() }
+                    .sorted()
+                    .forEach { code ->
+                        appendLine("        \"$code\" to ${(money["exponents"] as Map<*, *>)[code]},")
                     }
                 appendLine("    )")
                 appendLine("}")
@@ -442,14 +462,18 @@ val generateReadableVector by tasks.registering {
                             mapOfStrings(w["records"] as Map<*, *>) +
                             ").getValue(count.toString()) },",
                     )
-                    // **A lookup, and the Arabic entries were read off a real
-                    // export rather than computed.** Android's ICU and the JDK
-                    // disagree about this call, so computing it here would lock
-                    // the vector to whatever machine ran the build.
+                    // **Computed now, where it used to be a lookup.** The
+                    // entries were read off a real export because
+                    // `java.text.NumberFormat` answered differently on Android
+                    // and on the JDK, so computing them here would have locked
+                    // the vector to whichever machine ran the build. #331 took
+                    // money out of the platform's hands, so the vector calls the
+                    // same function the export does and the amount is the same
+                    // everywhere. D128 said to do this the day it became
+                    // possible.
                     appendLine(
-                        "            money = { minor, code -> mapOf(" +
-                            mapOfStrings(w["money"] as Map<*, *>) +
-                            ").getValue(\"\$minor|\$code\") },",
+                        "            money = { minor, code -> " +
+                            "ReadableMoney.format(minor, code) },",
                     )
                     appendLine("        ),")
                 }
