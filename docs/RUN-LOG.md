@@ -1442,3 +1442,25 @@ The heading is the control: days to months to years. **Picking a month drops bac
 The issue put the form half "with #206". Doing the fixture half alone would have made the screenshot correct while a person starting fresh still could not file anything: **the screen would have looked finished and been unreachable**, which is the shape this whole issue is about.
 
 ---
+
+## 19. The filter the grid drew and nobody had decided, 2026-08-10
+
+**#220.** Screen 08 draws a Filter in the trail's header. #173 built law 4's other three tools and **left this one out on purpose**, writing down four questions rather than guessing. Every one of them was a real question and none of them was answerable by looking at the grid.
+
+### The four, answered
+
+**By kind, and nothing else.** Thread, unfiled and pinned each already have a place: threads have their own screens and the scoped search, unfiled has a tray, pinned has a group at the top of this very list. Three more doors to three existing rooms is not a filter, it is duplication.
+
+**It forgets on the way out.** This is the one that mattered, and the reasoning generalizes: **a remembered view changes how a list is drawn, and a remembered filter changes what is in it.** The view toggle is remembered per section and is a different thing. Somebody opening the trail in a hallway to check whether a call happened, looking at a list with calls filtered out from last week, is being shown a record that is lying to them. Setting it again is the cheaper mistake.
+
+**It composes with the search, and the search's own hint counts the filtered set.** Saying "Search 182 entries" over a list of 21 is the screen describing a list that is not on it.
+
+**A filtered trail counts what it is hiding rather than what it is showing.** For somebody who has lost track, the number that matters is how much of their record is not on the screen.
+
+### The one that came out of building rather than deciding
+
+**One chip per name, not per stored kind.** `kindNameKey` already folds `transfer` and `milestone` into "A note", which is how the trail names them everywhere else. One chip per kind would have put two chips reading "A note" side by side filtering different things, and it would have looked completely reasonable in the code.
+
+**The first attempt also reached for `strings["entry.kind.$kind"]`**, a dynamic key, on a set the schema allows nine values for and the catalogs have seven. That throws rather than falling back, which is `docs/TRAPS.md` section 3's opening trap. Using the existing `kindNameKey`, a literal `when` with a safe `else`, avoided it and produced the grouping above as a side effect.
+
+---

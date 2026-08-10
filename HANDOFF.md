@@ -4,7 +4,7 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-10, after the export learned to look for the files it was about to leave behind.
+**Last rewritten:** 2026-08-10, at the end of a long run: the archive's last content defects, the named failure modes, and four of milestone 4.
 
 ---
 
@@ -27,12 +27,13 @@
 ### Verified rather than asserted, 2026-08-10
 
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
-- **20 repository checks pass**, `python3 tools/checks/run_all.py`. The twentieth is `check_dead_gestures.py`, which refuses a handler assigned a lambda that does nothing and an `openableByTap` labeled with a remove string. Both are invisible in a screenshot, which is how six screens shipped announcing a removal that did nothing. #231. The nineteenth is `check_digest_sections.py`, which holds every table the Today digest maps to the change log's own trigger literals in `contract/schema.sql`. It was written because the mapping named a table that does not exist and Progress was missing from the digest for the life of the project. #336. The eighteenth is `check_readable_labels.py`, which holds every table and column the archive renders to a word in all four catalogs, **and since 2026-08-10 also holds a `link` column's declared catalog to `templates/data`**, because a catalog lookup that guesses answers wrongly rather than failing. #329.
-- **223 unit tests pass and they need no phone**, and **three of them are the archive's regeneration**, which until 2026-08-09 could only run on the phone. `contract/test-vectors/readable/`. On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
-- **534 instrumented tests pass**, last full run 2026-08-10 on the unlocked phone. **Nothing instrumented changed after that run**: the digest work of 2026-08-10 is unit tests and checks only.
+- **20 repository checks pass**, `python3 tools/checks/run_all.py`. **Three landed on 2026-08-10** and each holds something that is invisible by looking: `check_digest_sections.py` holds the digest's table mapping to the change log's own trigger literals, `check_dead_gestures.py` refuses a handler assigned a lambda that does nothing and an `openableByTap` labeled with a remove string, and `check_readable_labels.py` gained a clause holding a `link` column's declared catalog to `templates/data`.
+- **218 unit tests pass and they need no phone**, and **three of them are the archive's regeneration**, which until 2026-08-09 could only run on the phone. `contract/test-vectors/readable/`. On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
+- **534 instrumented tests pass**, last full run 2026-08-10 on the unlocked phone, after the trail filter landed.
 - **The phone's dark theme is on a custom schedule**, `customStart=17:00 customEnd=06:30`, so `ui_night_mode` reads 2 overnight and 1 after half past six. **A session that records it as a baseline at night and reads it back in the morning will think it changed.** It did not; leave it alone.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
-- **The phone was returned to its starting values on 2026-08-10 and unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, `ui_night_mode` 2, no per-app locale so the app runs in English, and the accessibility services string the KDE Connect one. **It holds the month six fixture notebook** with the disclaimer accepted, which is what `tools/seed.sh` leaves, and none of it is real. **Its four attachment files are all present**: two were moved to `files/parked` to reach #335's screen and were moved back, verified by count.
+- **The phone was returned to its starting values on 2026-08-10 and unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, touch exploration 0, no per-app locale so the app runs in English, and the accessibility services string the KDE Connect one alone. **It holds the current build and the month six fixture notebook** with the disclaimer accepted, and none of it is real. All four attachment files present.
+- **The owner is testing the build by hand.** Four things landed on 2026-08-10 that he has not seen: the date picker's month and year views, the trail's kind filter, cards having a shadow in light theme, and the document folder field.
 - **The four named failure modes that were open on #212 are down to two**, 2026-08-10. Time, numbers and absence each have their own tests now, `RoundTripTimeTest` and `RoundTripValueTest`, eleven between them. **Unicode is #227 and is a change to every write path rather than a test**, and the four gigabyte half of scale needs a fixture nobody has written.
 - **Four more test archives sit in `Download` from 2026-08-10**, beside the ones from 2026-08-09 and 2026-08-04, and every one holds nothing but the fixture. **Three of them use `missing332` and all three are archives the app refuses to open**, deliberately: they were written with two attachment files absent, which is exactly what #332 is about. **The fourth is `catalog329`, it is Arabic, it opens, and it is the one #329 was proved on.** The older ones are `arabic327`, `arabic328` and `arabic328b`, and those open too. A locked file whose passphrase nobody recorded is a file nobody can use.
 - **The destructive command guard is live and proven.** It refused three real commands, two on 2026-08-08 and one on 2026-08-09, and it also refused a run log paragraph that merely named a blocked verb, which is #323. Section 9.
@@ -54,6 +55,8 @@
 - **The detail screens: thirteen of twenty.** #199 is blocked, #203 through #208 are untouched, and they are milestone 4.
 - **Milestone 1, Today: finished.** All ten grid screens built and walked, parent #243 closed, and the only issue left on that milestone is the tracker #321.
 - **Milestone 2, Projects: four issues left and all four are blocked.** Section 9 says on what.
+- **Milestone 3, the archive: five issues left and every one is blocked on something a session cannot do.** #15 needs a second platform, which is #16 and does not exist. #211's last criterion is the `app_meta` question. #212's last two modes are #227 and a four gigabyte fixture nobody has written. #210 and #9 are parents. **Four issues closed there on 2026-08-10**: #329, #331, #332, and #210's locale question.
+- **Milestone 4, the rest of the v4 conversion: twelve issues left, down from sixteen.** #324, #231, #132 and #221 closed on 2026-08-10. **#218 is the next substantial one** and is nine screens rather than the seventeen it says, because #231 shrank it.
 - **THE ARCHIVE is largely built and proved on real hardware**: a two-layer container at format version 3, a readable copy, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. **The stranger test passes**, run on 2026-08-09 on a laptop that has never had the app.
 - **The readable copy is written in the person's language and so are its values**, #327, #328 and #329. Verified by exporting in Arabic, decrypting with the passphrase alone, and reading the pages in a browser: 128 field labels, 39 headings, 81 stored values across 17 vocabularies, money as money, and no bare epoch anywhere. **#329 closed the last of it on 2026-08-10**: a link into a shipped catalog resolves to that entry's name, and the two indexes stopped being printed. **A sweep of a real Arabic archive now finds no raw identifier, no schema token in a `<dd>`, no five digit integer, and no bare `0` or `1`.** D130.
 - **The contract now carries four files for the readable copy, not one.** `contract/readable-money.json` is the fourth, added 2026-08-10 for #331: the rules an amount renders by and the ISO 4217 codes whose minor unit is not two digits. **Money is no longer asked of the platform**, because `java.text.NumberFormat` answered differently on Android and on a JVM and 8.5's byte identity was therefore a claim about one phone. D131.
@@ -136,7 +139,7 @@ Each is said out loud on its own issue rather than counted as done.
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**Nineteen of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+**Twenty of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
 
 **The Today work of 2026-08-09 added nothing to this list**, and that was checked rather than assumed: every screen and state built that morning is drawn in one of the three grids, so rule 12 never applied. The card's options sheet is grid screen 07, the closed project is 17, the greeting is 16, and the Today work is screens 01 through 10. **The merge work that evening added two**, because the grid draws restore with one outcome and draws nothing at all for reading what a merge decided.
 
@@ -161,8 +164,9 @@ Every one of these was built from the existing components, logged in all three p
 | Merge or replace, on the restore screen | #333 |
 | What the merge decided | #334 |
 | The export finished and could not find a file | #335 |
+| The date picker, zoomed to months and to years | #337 |
 
-**Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. **One is the export's second outcome**, #335, added 2026-08-10. The other nine have been waiting longer.
+**Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. **Two are from 2026-08-10**, #335 the export's second outcome and #337 the date picker's two new views. The other nine have been waiting longer.
 
 ---
 
