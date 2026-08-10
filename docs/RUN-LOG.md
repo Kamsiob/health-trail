@@ -1236,3 +1236,35 @@ Three of #211's ten criteria are not met. **#332** is the serious one and it was
 Two of the month six fixture's four attachment files were moved to `files/parked` so the state was genuine rather than mocked, and moved back afterward with the count read again. Both themes, font scale 2.0, and Arabic right to left. **The Arabic dual form renders**, `ملفين مرفقين` rather than a plural, which is the six form catalog entry working and is the kind of thing only rendering proves. Four captures on #335, a row in `DESIGN.md` section 14, a line in `HANDOFF.md` section 8.1, and D129 for the three decisions.
 
 ---
+
+## 12. The named failure modes, and the archive stops printing identifiers, 2026-08-10
+
+Two pieces of work in one run, and the second one caught the first kind of defect the repository is best at hiding.
+
+### #212, three of the eight named modes
+
+**Time, numbers and absence.** The other five were already covered or blocked: unicode is #227 and is a change to every write path rather than a test, and the four gigabyte half of scale needs a fixture nobody has written.
+
+**Numbers and absence had been blocked on the importer rather than on attention**, and the reason is the useful part: 8.5's regeneration test renders both sides with the same code from the same bytes, **so a value mangled identically on the way out and the way back matches itself and passes**. Only reading the restored database catches them. #211 landing is what unblocked eleven tests.
+
+**Time is the contract's own sentence as an assertion.** July 6 in New York, restored in Tokyo, still July 6, and the same going west, because an off by one zone defect is directional and one direction passes on half of a broken implementation. Plus a forty five minute zone and both daylight saving boundaries, whose lengths are asserted **before** the round trip so a resolver that was already wrong cannot round trip its own mistake faithfully and pass.
+
+**The zone is changed in the process, never on the phone.** `TimeZone.setDefault` is what `ZoneId.systemDefault()` reads, restored in teardown. Rule 19's settings exception covers font scale, animation and the reader and nothing else, and the default zone is process wide, so a test that left it set would move every later class in the run to another country.
+
+### #329, and the sweep that found more than the issue did
+
+**The issue named four identifier columns and one color.** Fixing them was ordinary. Two things about it are worth keeping.
+
+**The obvious implementation was wrong in the worst available way.** One map from id to name across all the shipped catalogs. `discharge_planning` is both a care thread and a project template; `dietary` is both a thread and a standing instruction. A merged map does not fail, it **answers, confidently, with the wrong name**, on a page nobody reads until it matters. Which catalog a column resolves into is declared beside its render decision now, exactly as an enum declares its vocabulary.
+
+**Sweeping the produced archive found a third integer the issue had not named.** Forty nine fields across nine tables reading "Its place in the order: 0". `ReadableRows` orders every page by id on purpose, so the number described a sequence the pages do not follow. **A number that disagrees with its own document is worse than no number.** That is now three times the grep-a-real-archive sweep has found something reading the code did not.
+
+### The one that got away, and what caught it
+
+**`RegenerationTest` failed on a defect introduced by the fix itself.** The export wrote `Nursing home`, the regeneration wrote `nursing_home`, and 8.5's byte identity broke on exactly the guarantee it exists to hold.
+
+**The cause was an empty default on a parameter.** `ReadableWords.from` took `catalogNames` with a default, so one side of a round trip could be asked a different question from the other without anybody writing anything wrong. `ExportContainer.Source.readableWords` already has no default for the same reason, written down at the time as "a default would be an English archive that nothing complains about". **That is the second time the rule has earned itself in two days**, so the default is gone and the next omission is a compile error rather than a diff.
+
+**The general form, since it has now happened twice:** where two paths must produce identical bytes, a parameter with a default on either of them is a way for them to disagree silently. Make it required and let the compiler ask.
+
+---
