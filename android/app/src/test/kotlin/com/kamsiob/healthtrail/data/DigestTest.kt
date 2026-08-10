@@ -1,154 +1,122 @@
 package com.kamsiob.healthtrail.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * The digest, against fixed vectors.
+ * The digest, against the contract's golden vectors.
+ * `contract/test-vectors/digest.json`, issue #15.
  *
- * These run on the JVM with no database and no composition, because the thing
- * that has to be right is the counting rule rather than the pixels. The same
- * vectors are what a second platform would have to reproduce, which is the
- * point of #15.
+ * **These cases used to live in this file as Kotlin**, which made them one
+ * platform's tests rather than the contract's vectors. #15 asks for input
+ * fixtures paired with the exact expected output, run by the Kotlin suite **and**
+ * by the web scaffold, so that if the two engines disagree on one input
+ * continuous integration says so. **A vector only one platform can read cannot
+ * do that**, so they moved to `/contract` on 2026-08-10 and this file reads them.
+ *
+ * **They run on the JVM with no database and no composition**, because the thing
+ * that has to be right is the counting rule rather than the pixels.
+ *
+ * **What this still does not prove**, said plainly: there is no second engine
+ * yet. `web/` holds a README and nothing else, which is #16. Until that exists
+ * these are golden vectors with one reader, and the acceptance criterion about
+ * continuous integration failing when two platforms disagree cannot be met by
+ * anything in this repository.
+ *
+ * **Regenerating is not a thing here.** Unlike the readable vector, these
+ * expectations are written by hand in the contract file with a sentence saying
+ * why each one is what it is. A case whose answer changed is a decision, and it
+ * is made by editing that file and reading the diff.
  */
 class DigestTest {
 
-    private fun change(
-        table: String,
-        rowId: String,
-        op: String,
-        at: Long,
-    ) = Digest.Change(table = table, rowId = rowId, op = op, changedAt = at)
-
-    private val visit = 1_000L
-
+    /**
+     * Every case in the contract, run as itself.
+     *
+     * **One test method rather than one per case**, because the cases are data
+     * now: adding one to the contract file must not need a Kotlin edit, or the
+     * file stops being the source and becomes a copy. The failure message names
+     * the case and quotes the contract's own reason for it, so a red run says
+     * which rule broke rather than which line did.
+     */
     @Test
-    fun aFirstVisitHasNothingToReport() {
-        assertTrue(Digest.since(emptyList(), since = 0).isEmpty)
-    }
+    fun `every case in the contract holds`() {
+        assertTrue("the contract carries no cases", DigestVector.cases.isNotEmpty())
 
-    @Test
-    fun nothingWrittenSinceTheLastVisitReportsNothing() {
-        val before = listOf(change("entry", "a", "insert", at = 900))
-        assertTrue(Digest.since(before, since = visit).isEmpty)
-    }
+        for (case in DigestVector.cases) {
+            val summary = Digest.since(case.changes, since = case.since)
+            val where = "${case.name}\n  the contract says: ${case.why}\n "
 
-    @Test
-    fun theBoundaryIsStrictSoAVisitNeverCountsItsOwnLastRowTwice() {
-        val exactly = listOf(change("entry", "a", "insert", at = visit))
-        assertTrue(
-            "a change logged at the moment of the last visit was already on screen then",
-            Digest.since(exactly, since = visit).isEmpty,
-        )
-    }
-
-    @Test
-    fun newThingsAreCountedWhereTheyLive() {
-        val changes = listOf(
-            change("entry", "e1", "insert", at = 1100),
-            change("entry", "e2", "insert", at = 1200),
-            change("person", "p1", "insert", at = 1300),
-        )
-
-        val summary = Digest.since(changes, since = visit)
-
-        assertEquals(
-            listOf(
-                Digest.Added(Repository.Section.CARE_TEAM, 1),
-                Digest.Added(Repository.Section.TRAIL, 2),
-            ),
-            summary.added,
-        )
-        assertEquals(3, summary.newThings)
-    }
-
-    @Test
-    fun sectionsComeBackInTheNotebooksOrderRatherThanByHowBusyTheyWere() {
-        // Care team is second in the notebook and the trail is sixth, so a week
-        // with far more trail entries must not push the trail to the top.
-        val changes = buildList {
-            repeat(9) { add(change("entry", "e$it", "insert", at = 1100L + it)) }
-            add(change("person", "p1", "insert", at = 2000))
-        }
-
-        val order = Digest.since(changes, since = visit).added.map { it.section }
-
-        assertEquals(
-            listOf(Repository.Section.CARE_TEAM, Repository.Section.TRAIL),
-            order,
-        )
-    }
-
-    @Test
-    fun oneRowWrittenManyTimesIsOneCorrection() {
-        val fussing = (1..4).map { change("entry", "e1", "update", at = 1000L + it * 10) }
-
-        val summary = Digest.since(fussing, since = visit)
-
-        assertEquals(1, summary.corrected)
-        assertEquals(0, summary.newThings)
-    }
-
-    @Test
-    fun aRowCreatedAndThenRemovedInTheSameSpanIsOnlyRemoved() {
-        val changes = listOf(
-            change("entry", "e1", "insert", at = 1100),
-            change("entry", "e1", "update", at = 1200),
-            change("entry", "e1", "delete", at = 1300),
-        )
-
-        val summary = Digest.since(changes, since = visit)
-
-        assertEquals("it should not also be announced as new", 0, summary.newThings)
-        assertEquals(0, summary.corrected)
-        assertEquals(1, summary.removed)
-    }
-
-    @Test
-    fun aRowThatWasCreatedBeforeAndCorrectedSinceIsACorrection() {
-        val changes = listOf(
-            change("entry", "e1", "insert", at = 500),
-            change("entry", "e1", "update", at = 1500),
-        )
-
-        val summary = Digest.since(changes, since = visit)
-
-        assertEquals(0, summary.newThings)
-        assertEquals(1, summary.corrected)
-    }
-
-    @Test
-    fun bookkeepingTablesAreLeftOutRatherThanCountedIntoSomething() {
-        // A table with no section is either the app's own storage or something a
-        // later schema added. Neither is a thing the person put anywhere.
-        val changes = listOf(
-            change("app_meta", "device_id", "insert", at = 1100),
-            change("sync_peer", "x", "insert", at = 1200),
-            change("entry", "e1", "insert", at = 1300),
-        )
-
-        val summary = Digest.since(changes, since = visit)
-
-        assertEquals(listOf(Digest.Added(Repository.Section.TRAIL, 1)), summary.added)
-    }
-
-    @Test
-    fun everySectionATableFeedsIsOneTheNotebookActuallyHas() {
-        // Guards against a table being mapped to a section that was renamed,
-        // which would compile and then quietly stop reporting.
-        val tables = listOf(
-            "entry", "person", "medication", "appointment", "chapter", "care_thread",
-            "reading", "document", "bill", "standing_instruction", "question",
-            "emergency_card", "emergency_contact", "project",
-        )
-        tables.forEach { table ->
-            val section = Digest.sectionOf(table)
-            assertTrue("$table maps to no section", section != null)
-            assertTrue(
-                "$table maps to a section the notebook does not have",
-                section in Repository.Section.entries,
+            assertEquals(
+                "$where added does not match, and its order is part of the answer",
+                case.added,
+                summary.added.map { it.section.name to it.count },
+            )
+            assertEquals("$where corrected does not match", case.corrected, summary.corrected)
+            assertEquals("$where removed does not match", case.removed, summary.removed)
+            assertEquals(
+                "$where the total of new things does not match its own section counts",
+                case.added.sumOf { it.second },
+                summary.newThings,
+            )
+            assertEquals(
+                "$where isEmpty disagrees with the counts beside it",
+                case.added.isEmpty() && case.corrected == 0 && case.removed == 0,
+                summary.isEmpty,
             )
         }
+    }
+
+    /**
+     * The mapping is the contract's, and the engine agrees with it.
+     *
+     * **This is the assertion whose absence hid #336 for the life of the
+     * project.** The test that used to be here walked a hard-coded list in this
+     * file that said `reading`, and so did the code, so two copies of one
+     * mistake agreed with each other and Progress reported nothing forever.
+     *
+     * **The list is in the contract now and `check_digest_sections.py` holds
+     * that list to `contract/schema.sql`.** So the chain runs schema, to
+     * contract, to engine, and no link in it is a list somebody typed twice.
+     */
+    @Test
+    fun `the engine maps exactly what the contract says it maps`() {
+        assertTrue("the contract carries no sections", DigestVector.sections.isNotEmpty())
+
+        for ((table, section) in DigestVector.sections) {
+            val mapped = Digest.sectionOf(table)
+            assertTrue("$table maps to no section, and the contract says $section", mapped != null)
+            assertEquals("$table maps to the wrong section", section, mapped!!.name)
+        }
+    }
+
+    /**
+     * And it maps nothing the contract does not.
+     *
+     * **The half that stops the mapping growing quietly.** A table added to the
+     * engine and not to the contract would be counted into a section on the
+     * person's screen with nothing anywhere saying it should be.
+     */
+    @Test
+    fun `the engine maps nothing the contract leaves out`() {
+        for (table in DigestVector.unmapped) {
+            assertNull(
+                "$table is left out by the contract and the engine counts it into a section",
+                Digest.sectionOf(table),
+            )
+        }
+    }
+
+    /**
+     * A table nobody has heard of is left out rather than counted.
+     *
+     * The `else` branch, asserted directly, because everything above it only
+     * proves the branches that exist.
+     */
+    @Test
+    fun `a table from a later schema is left out`() {
+        assertNull(Digest.sectionOf("something_a_later_version_added"))
     }
 }

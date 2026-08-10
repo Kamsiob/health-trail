@@ -1,0 +1,227 @@
+{
+  "_about": "The golden vector for the digest engine, which is what the Today card says changed since the person was last here. contract/DATA-CONTRACT.md section 7 and issue #15.",
+
+  "_why_here": "These cases lived inside DigestTest as Kotlin until 2026-08-10, which made them one platform's tests rather than the contract's vectors. #15 asks for input fixtures paired with the exact expected output, run by the Kotlin suite and by the web scaffold, so that if the two engines disagree on the same input continuous integration says so. A vector only one platform can read is a test.",
+
+  "_rules": [
+    "since is exclusive. A change logged at exactly the moment of the last visit was already on screen during it, so two consecutive visits never count one row twice.",
+    "A row is counted once per category however many times it was written. Somebody correcting the same entry four times made one correction.",
+    "A row that was created and then removed in the same span reports only as removed. It never existed as far as the next visit is concerned.",
+    "A row created before the span and corrected inside it is a correction, not a new thing.",
+    "added comes back in the notebook's own section order, never ordered by count, because ranking by volume moves the sections between visits and the notebook's one promise is that the places never move.",
+    "A table with no section is left out rather than counted into something.",
+    "corrected and removed are totals rather than per section, so somebody's own tidying up never gets the same weight on the screen as the care itself."
+  ],
+
+  "_sections_note": "Which table belongs to which section. Held to contract/schema.sql by check_digest_sections.py, because the mapping said 'reading' for the whole life of the project and there has never been a table by that name, so every reading anybody recorded was silently left out of the digest. #336.",
+
+  "sections": {
+    "entry": "TRAIL",
+    "person": "CARE_TEAM",
+    "medication": "MEDICATIONS",
+    "appointment": "APPOINTMENTS",
+    "chapter": "CHAPTERS",
+    "care_thread": "THREADS",
+    "measure": "PROGRESS",
+    "measurement": "PROGRESS",
+    "document": "DOCUMENTS",
+    "bill": "MONEY",
+    "standing_instruction": "STANDING_INSTRUCTIONS",
+    "question": "ASK_NEXT_TIME",
+    "emergency_card": "EMERGENCY_CARD",
+    "emergency_contact": "EMERGENCY_CARD",
+    "project": "PROJECTS"
+  },
+
+  "_unmapped_note": "Named so that 'left out' is a decision with a list rather than an absence. These are tables the change log writes that no section claims, because they are the app's own bookkeeping or a join between two things the person put somewhere else.",
+
+  "unmapped": [
+    "app_meta",
+    "sync_peer",
+    "entry_person",
+    "entry_thread",
+    "person_chapter",
+    "call_detail",
+    "visit_detail",
+    "medication_event",
+    "medication_flag",
+    "instruction_violation",
+    "milestone",
+    "incident",
+    "organization",
+    "cost_sheet",
+    "cost_entry",
+    "custom_template",
+    "link",
+    "subject",
+    "today_card",
+    "attachment",
+    "project_date",
+    "project_date_kind",
+    "project_paper",
+    "project_person",
+    "project_stage",
+    "project_standing",
+    "project_step"
+  ],
+
+  "cases": [
+    {
+      "name": "a first visit has nothing to report",
+      "why": "Zero changes and no previous visit. #15 asks for the zero case by name.",
+      "since": 0,
+      "changes": [],
+      "expect": { "added": [], "corrected": 0, "removed": 0 }
+    },
+    {
+      "name": "nothing written since the last visit reports nothing",
+      "why": "Changes exist and all of them predate the visit.",
+      "since": 1000,
+      "changes": [{ "table": "entry", "row": "a", "op": "insert", "at": 900 }],
+      "expect": { "added": [], "corrected": 0, "removed": 0 }
+    },
+    {
+      "name": "the boundary is strict",
+      "why": "A change logged at exactly the moment of the last visit was already on screen then. Counting it would report it twice across two consecutive visits.",
+      "since": 1000,
+      "changes": [{ "table": "entry", "row": "a", "op": "insert", "at": 1000 }],
+      "expect": { "added": [], "corrected": 0, "removed": 0 }
+    },
+    {
+      "name": "one new thing",
+      "why": "#15 asks for the one case by name, and it is the plural boundary the catalogs care about.",
+      "since": 1000,
+      "changes": [{ "table": "entry", "row": "e1", "op": "insert", "at": 1100 }],
+      "expect": { "added": [{ "section": "TRAIL", "count": 1 }], "corrected": 0, "removed": 0 }
+    },
+    {
+      "name": "two new things",
+      "why": "#15 asks for the two case by name. Arabic has a dual form, so one and two are different sentences rather than the same sentence with a different number.",
+      "since": 1000,
+      "changes": [
+        { "table": "entry", "row": "e1", "op": "insert", "at": 1100 },
+        { "table": "entry", "row": "e2", "op": "insert", "at": 1200 }
+      ],
+      "expect": { "added": [{ "section": "TRAIL", "count": 2 }], "corrected": 0, "removed": 0 }
+    },
+    {
+      "name": "new things are counted where they live",
+      "why": "Two sections at once, each with its own count.",
+      "since": 1000,
+      "changes": [
+        { "table": "entry", "row": "e1", "op": "insert", "at": 1100 },
+        { "table": "entry", "row": "e2", "op": "insert", "at": 1200 },
+        { "table": "person", "row": "p1", "op": "insert", "at": 1300 }
+      ],
+      "expect": {
+        "added": [
+          { "section": "CARE_TEAM", "count": 1 },
+          { "section": "TRAIL", "count": 2 }
+        ],
+        "corrected": 0,
+        "removed": 0
+      }
+    },
+    {
+      "name": "sections come back in the notebook's order rather than by how busy they were",
+      "why": "Care team is second in the notebook and the trail is sixth, so nine trail entries against one person must not push the trail to the top. Ranking by volume would move the sections between visits.",
+      "since": 1000,
+      "changes": [
+        { "table": "entry", "row": "e0", "op": "insert", "at": 1100 },
+        { "table": "entry", "row": "e1", "op": "insert", "at": 1101 },
+        { "table": "entry", "row": "e2", "op": "insert", "at": 1102 },
+        { "table": "entry", "row": "e3", "op": "insert", "at": 1103 },
+        { "table": "entry", "row": "e4", "op": "insert", "at": 1104 },
+        { "table": "entry", "row": "e5", "op": "insert", "at": 1105 },
+        { "table": "entry", "row": "e6", "op": "insert", "at": 1106 },
+        { "table": "entry", "row": "e7", "op": "insert", "at": 1107 },
+        { "table": "entry", "row": "e8", "op": "insert", "at": 1108 },
+        { "table": "person", "row": "p1", "op": "insert", "at": 2000 }
+      ],
+      "expect": {
+        "added": [
+          { "section": "CARE_TEAM", "count": 1 },
+          { "section": "TRAIL", "count": 9 }
+        ],
+        "corrected": 0,
+        "removed": 0
+      }
+    },
+    {
+      "name": "one row written many times is one correction",
+      "why": "Somebody fussing with a phone keyboard is not four events.",
+      "since": 1000,
+      "changes": [
+        { "table": "entry", "row": "e1", "op": "update", "at": 1010 },
+        { "table": "entry", "row": "e1", "op": "update", "at": 1020 },
+        { "table": "entry", "row": "e1", "op": "update", "at": 1030 },
+        { "table": "entry", "row": "e1", "op": "update", "at": 1040 }
+      ],
+      "expect": { "added": [], "corrected": 1, "removed": 0 }
+    },
+    {
+      "name": "a row created and then removed in the same span is only removed",
+      "why": "It never existed as far as the next visit is concerned. Announcing it as both new and gone describes the app's bookkeeping rather than their week.",
+      "since": 1000,
+      "changes": [
+        { "table": "entry", "row": "e1", "op": "insert", "at": 1100 },
+        { "table": "entry", "row": "e1", "op": "update", "at": 1200 },
+        { "table": "entry", "row": "e1", "op": "delete", "at": 1300 }
+      ],
+      "expect": { "added": [], "corrected": 0, "removed": 1 }
+    },
+    {
+      "name": "a row created before and corrected since is a correction",
+      "why": "The insert is outside the span, so only the correction is this week's news.",
+      "since": 1000,
+      "changes": [
+        { "table": "entry", "row": "e1", "op": "insert", "at": 500 },
+        { "table": "entry", "row": "e1", "op": "update", "at": 1500 }
+      ],
+      "expect": { "added": [], "corrected": 1, "removed": 0 }
+    },
+    {
+      "name": "bookkeeping tables are left out rather than counted into something",
+      "why": "A table with no section is the app's own storage or something a later schema added. Neither is a thing the person put anywhere.",
+      "since": 1000,
+      "changes": [
+        { "table": "app_meta", "row": "device_id", "op": "insert", "at": 1100 },
+        { "table": "sync_peer", "row": "x", "op": "insert", "at": 1200 },
+        { "table": "entry", "row": "e1", "op": "insert", "at": 1300 }
+      ],
+      "expect": { "added": [{ "section": "TRAIL", "count": 1 }], "corrected": 0, "removed": 0 }
+    },
+    {
+      "name": "a reading recorded in Progress is counted in Progress",
+      "why": "This is #336, and it is the case whose absence hid the defect. The mapping said 'reading', which is not a table, so every measurement fell through and the digest reported a quiet week for a week spent taking readings.",
+      "since": 1000,
+      "changes": [
+        { "table": "measurement", "row": "m1", "op": "insert", "at": 1100 },
+        { "table": "measurement", "row": "m2", "op": "insert", "at": 1200 }
+      ],
+      "expect": { "added": [{ "section": "PROGRESS", "count": 2 }], "corrected": 0, "removed": 0 }
+    },
+    {
+      "name": "a new thing to track is also Progress",
+      "why": "measure is the thing being tracked and measurement is the reading. Adding something to track is as much a thing the person did in Progress as taking a reading, the same way emergency_card and emergency_contact both map to the emergency card.",
+      "since": 1000,
+      "changes": [
+        { "table": "measure", "row": "weight", "op": "insert", "at": 1100 },
+        { "table": "measurement", "row": "m1", "op": "insert", "at": 1200 }
+      ],
+      "expect": { "added": [{ "section": "PROGRESS", "count": 2 }], "corrected": 0, "removed": 0 }
+    },
+    {
+      "name": "corrections and removals are totals rather than per section",
+      "why": "A correction is usually somebody fixing their own typing. Breaking it out section by section would give their tidying up the same weight on the screen as the care itself.",
+      "since": 1000,
+      "changes": [
+        { "table": "entry", "row": "e1", "op": "update", "at": 1100 },
+        { "table": "bill", "row": "b1", "op": "update", "at": 1200 },
+        { "table": "person", "row": "p1", "op": "delete", "at": 1300 },
+        { "table": "medication", "row": "d1", "op": "delete", "at": 1400 }
+      ],
+      "expect": { "added": [], "corrected": 2, "removed": 2 }
+    }
+  ]
+}

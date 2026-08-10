@@ -484,6 +484,111 @@ val generateReadableVector by tasks.registering {
     }
 }
 
+/**
+ * Turns `contract/test-vectors/digest.json` into a Kotlin constant for the
+ * **unit** test source set.
+ *
+ * **So the digest's cases belong to the contract rather than to one platform's
+ * test file.** They lived inside `DigestTest` as Kotlin until 2026-08-10, which
+ * made them tests rather than vectors: #15 asks for input fixtures paired with
+ * the exact expected output, run by the Kotlin suite **and** by the web
+ * scaffold, so that if the two engines disagree on one input continuous
+ * integration says so. A vector only one platform can read cannot do that.
+ *
+ * **Generated rather than parsed at run time**, for the same reason the readable
+ * vector is: a unit test JVM has no `org.json`, and the order of the cases and
+ * of each expected section list is part of what is being asserted.
+ */
+val generateDigestVector by tasks.registering {
+    group = "build"
+    description = "Generates DigestVector.kt from contract/test-vectors/digest.json."
+
+    val source = contractDir.resolve("test-vectors/digest.json")
+    val outputDir = layout.buildDirectory.dir("generated/digestVector")
+    inputs.file(source)
+    outputs.dir(outputDir)
+
+    doLast {
+        val root = groovy.json.JsonSlurper().parse(source) as Map<*, *>
+        val file = outputDir.get().asFile.resolve(
+            "com/kamsiob/healthtrail/data/DigestVector.kt",
+        )
+        file.parentFile.mkdirs()
+
+        fun quote(value: Any?): String = "\"" + value.toString()
+            .replace("\\", "\\\\").replace("\"", "\\\"")
+            .replace("$", "\${'$'}").replace("\n", "\\n") + "\""
+
+        file.writeText(
+            buildString {
+                appendLine("package com.kamsiob.healthtrail.data")
+                appendLine()
+                appendLine("// Generated from contract/test-vectors/digest.json by the build.")
+                appendLine("// Do not edit. Change the contract file instead.")
+                appendLine("internal object DigestVector {")
+                appendLine()
+                appendLine("    data class Case(")
+                appendLine("        val name: String,")
+                appendLine("        val why: String,")
+                appendLine("        val since: Long,")
+                appendLine("        val changes: List<Digest.Change>,")
+                appendLine("        val added: List<Pair<String, Int>>,")
+                appendLine("        val corrected: Int,")
+                appendLine("        val removed: Int,")
+                appendLine("    )")
+                appendLine()
+                appendLine("    /** Table name to the section it belongs to, from the contract. */")
+                appendLine("    val sections: Map<String, String> = mapOf(")
+                (root["sections"] as Map<*, *>).forEach { (table, section) ->
+                    appendLine("        ${quote(table)} to ${quote(section)},")
+                }
+                appendLine("    )")
+                appendLine()
+                appendLine("    /** Tables the change log writes that no section claims, named rather than absent. */")
+                appendLine("    val unmapped: List<String> = listOf(")
+                (root["unmapped"] as List<*>).forEach { appendLine("        ${quote(it)},") }
+                appendLine("    )")
+                appendLine()
+                appendLine("    val cases: List<Case> = listOf(")
+                (root["cases"] as List<*>).forEach { raw ->
+                    val case = raw as Map<*, *>
+                    val expect = case["expect"] as Map<*, *>
+                    appendLine("        Case(")
+                    appendLine("            name = ${quote(case["name"])},")
+                    appendLine("            why = ${quote(case["why"])},")
+                    appendLine("            since = ${(case["since"] as Number).toLong()}L,")
+                    appendLine("            changes = listOf(")
+                    (case["changes"] as List<*>).forEach { rawChange ->
+                        val change = rawChange as Map<*, *>
+                        appendLine(
+                            "                Digest.Change(" +
+                                "table = ${quote(change["table"])}, " +
+                                "rowId = ${quote(change["row"])}, " +
+                                "op = ${quote(change["op"])}, " +
+                                "changedAt = ${(change["at"] as Number).toLong()}L),",
+                        )
+                    }
+                    appendLine("            ),")
+                    appendLine("            added = listOf(")
+                    (expect["added"] as List<*>).forEach { rawAdded ->
+                        val added = rawAdded as Map<*, *>
+                        appendLine(
+                            "                ${quote(added["section"])} to " +
+                                "${(added["count"] as Number).toInt()},",
+                        )
+                    }
+                    appendLine("            ),")
+                    appendLine("            corrected = ${(expect["corrected"] as Number).toInt()},")
+                    appendLine("            removed = ${(expect["removed"] as Number).toInt()},")
+                    appendLine("        ),")
+                }
+                appendLine("    )")
+                appendLine("}")
+            },
+        )
+    }
+}
+
 // A plain path rather than a Provider: the Android source set API rejects a
 // Provider because it cannot tell generated files from editable ones.
 android.sourceSets.getByName("main").kotlin.srcDir(
@@ -491,6 +596,9 @@ android.sourceSets.getByName("main").kotlin.srcDir(
 )
 android.sourceSets.getByName("test").kotlin.srcDir(
     layout.buildDirectory.get().asFile.resolve("generated/readableVector"),
+)
+android.sourceSets.getByName("test").kotlin.srcDir(
+    layout.buildDirectory.get().asFile.resolve("generated/digestVector"),
 )
 // The expected pages are read as ordinary files by the unit test rather than
 // copied anywhere, so the failure message can name the file somebody has to
@@ -519,7 +627,7 @@ tasks.withType<Test>().configureEach {
     }
 }
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    dependsOn(generateReadableFields, generateReadableVector)
+    dependsOn(generateReadableFields, generateReadableVector, generateDigestVector)
 }
 
 // Every variant's assets depend on the copy, including the test variants, so a

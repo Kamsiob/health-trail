@@ -118,6 +118,14 @@ object Digest {
      * of the schema adds are not things the person put anywhere, so announcing
      * them would be the app describing its own storage on the one screen that
      * exists to describe their week.
+     *
+     * **Held to `contract/schema.sql` by `check_digest_sections.py`.** Every
+     * name here has to be one the change log can actually write, which is the
+     * set of `VALUES ('<table>'` literals in the schema's own triggers. Nothing
+     * checked that until 2026-08-10 and the answer was wrong: `reading` is not
+     * a table and never was, so Progress reported nothing, forever. The test
+     * that walked this mapping walked a hard-coded list that said `reading`
+     * too, so both copies were wrong in the same way. #336.
      */
     internal fun sectionOf(table: String): Repository.Section? = when (table) {
         "entry" -> Repository.Section.TRAIL
@@ -126,7 +134,18 @@ object Digest {
         "appointment" -> Repository.Section.APPOINTMENTS
         "chapter" -> Repository.Section.CHAPTERS
         "care_thread" -> Repository.Section.THREADS
-        "reading" -> Repository.Section.PROGRESS
+        // **`measurement` is the reading and `measure` is the thing being
+        // tracked, and both belong to Progress.** Adding something to track is
+        // as much a thing the person did there as taking a reading, which is
+        // the same reason `emergency_card` and `emergency_contact` both map to
+        // the emergency card.
+        //
+        // **This said `reading` until 2026-08-10 and there has never been a
+        // table by that name.** So every reading anybody recorded fell to the
+        // `else` below and was left out, and the digest reported a quiet week
+        // for a week spent taking measurements. It failed in the direction that
+        // looks like calm, which is why nobody saw it. #336.
+        "measure", "measurement" -> Repository.Section.PROGRESS
         "document" -> Repository.Section.DOCUMENTS
         "bill" -> Repository.Section.MONEY
         "standing_instruction" -> Repository.Section.STANDING_INSTRUCTIONS
