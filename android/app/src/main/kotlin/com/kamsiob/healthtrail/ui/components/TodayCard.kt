@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -164,6 +165,9 @@ fun TodayCard(
         modifier = modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = minHeight)
+            // #324. The card is a thing on a desk, and the desk is the
+            // whole metaphor of the surface.
+            .raisedCard(RoundedCornerShape(15.dp))
             .clip(RoundedCornerShape(15.dp))
             .openableByTap(label = openLabel, onTap = onOpen)
             // **The card's own sentence lives on the card's own node**, beside

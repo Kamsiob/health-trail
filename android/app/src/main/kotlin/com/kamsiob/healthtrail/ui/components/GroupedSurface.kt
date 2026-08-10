@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 
 /**
@@ -45,6 +46,11 @@ fun GroupedSurface(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            // **The shadow before the clip**, so it is drawn outside the
+            // surface rather than inside it. This component's own comment has
+            // always said "no border, and the shadow is the definition", and
+            // until 2026-08-10 it drew a fill and nothing else. #324.
+            .raisedCard(Radius.card)
             .clip(Radius.card)
             .background(HealthTrail.colors.card),
     ) {

@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.TabHue
@@ -59,6 +60,7 @@ fun RoundCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .raisedCard(Radius.card)
             .clip(Radius.card)
             .background(colors.card),
     ) {

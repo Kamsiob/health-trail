@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -75,6 +76,7 @@ fun StandingCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .raisedCard(Radius.card)
             .clip(Radius.card)
             .background(colors.card)
             .padding(horizontal = Space.sm, vertical = Space.sm),

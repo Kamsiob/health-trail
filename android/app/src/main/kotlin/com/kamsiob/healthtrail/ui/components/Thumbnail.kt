@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Attachments
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.raisedSlightly
 import com.kamsiob.healthtrail.ui.theme.Radius
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -99,6 +100,9 @@ fun Thumbnail(
             // A gallery cell sets its own width and asks for a square; every
             // other use names a size.
             .then(if (size == FILL) Modifier.aspectRatio(1f) else Modifier.size(size))
+            // 4.7's small variant rather than the card treatment: a
+            // thumbnail lifts without joining the cards' conversation.
+            .raisedSlightly(Radius.thumbnail)
             .clip(Radius.thumbnail)
             .background(colors.sand)
             // Decorative: the caption always names the item beside it, and a

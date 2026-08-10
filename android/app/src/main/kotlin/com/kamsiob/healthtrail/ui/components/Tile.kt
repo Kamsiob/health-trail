@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -91,6 +92,11 @@ fun Tile(
             // thing: "Care team, 9 items, button".
             .semantics(mergeDescendants = true) { }
             .sizeIn(minHeight = if (compact) COMPACT_MIN_HEIGHT else STANDARD_MIN_HEIGHT)
+            // #324. The border below is the focus ring and is transparent
+            // until something focuses this, so it is not a second definition
+            // competing with the shadow. 4.7 bans a border as a card's *only*
+            // definition, which is what this used to be one of.
+            .raisedCard(Radius.card)
             .clip(Radius.card)
             .background(surface)
             .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
