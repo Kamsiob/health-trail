@@ -1717,7 +1717,18 @@ class Generator:
                 {
                     "subject_id": subject_id,
                     "title": DOCUMENTS[index % len(DOCUMENTS)],
-                    "category": self.rng.choice(["medical", "legal", "financial", "facility"]),
+                    # **A folder is the person's own word for a pile of paper**,
+                    # so the fixture writes words rather than the schema keys it
+                    # used to invent. `medical`, `legal`, `financial` and
+                    # `facility` are the app's internal vocabulary showing on a
+                    # screenshot, which rule 20 rules out. #221.
+                    #
+                    # **Assigned by position rather than at random**, so one
+                    # seed keeps producing one notebook, and **one in five is
+                    # left unfiled on purpose**: "Everything else" is the fold a
+                    # fresh notebook is entirely made of and it has to be
+                    # exercised rather than assumed.
+                    "category": FOLDERS[index % len(FOLDERS)],
                     "chapter_id": chapters[min(len(chapters) - 1, index % len(chapters))],
                     "original_location": self.rng.choice(ORIGINALS),
                     "received_edtf": (self.start + timedelta(days=day)).isoformat(),
@@ -2188,6 +2199,17 @@ DOCUMENTS = [
     "Insurance card, both sides",
     "Level of care assessment",
     "Grievance, filed",
+]
+
+# The piles a caregiver actually keeps, in their own words. One `None`, because
+# not everything gets filed and the documents screen folds the unfiled into
+# "Everything else". #221.
+FOLDERS = [
+    "Hospital and doctors",
+    "Insurance",
+    "Legal and power of attorney",
+    None,
+    "The facility",
 ]
 
 ORIGINALS = [

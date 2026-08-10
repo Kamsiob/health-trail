@@ -622,6 +622,14 @@ fun NotebookShell(
     var bills by remember { mutableStateOf<List<Repository.Bill>>(emptyList()) }
     var addingBill by remember { mutableStateOf(false) }
     var documents by remember { mutableStateOf<List<Repository.Document>>(emptyList()) }
+
+    /**
+     * The folders this notebook already has, offered by the document form. #221.
+     *
+     * **Reloaded with everything else**, so saving into a new folder makes that
+     * folder offerable to the next document without a second trip.
+     */
+    var documentFolders by remember { mutableStateOf<List<String>>(emptyList()) }
     var addingDocument by remember { mutableStateOf(false) }
     var savingDocument by remember { mutableStateOf<DocumentDraft?>(null) }
     // Said only when a file was refused, and cleared the moment the person
@@ -715,6 +723,7 @@ fun NotebookShell(
             violationCounts = subject?.let { repository.violationCounts(it.id) }.orEmpty()
             bills = subject?.let { repository.bills(it.id) }.orEmpty()
             documents = subject?.let { repository.documents(it.id) }.orEmpty()
+            documentFolders = subject?.let { repository.documentFolders(it.id) }.orEmpty()
             projects = subject?.let { repository.projects(it.id) }.orEmpty()
             // The mini road and the two answers, for every project at once
             // rather than three queries each. DESIGN.md 20.5 screen 2.
@@ -3241,6 +3250,7 @@ fun NotebookShell(
             AddDocumentScreen(
                 existing = editingDocument,
                 error = documentError,
+                folders = documentFolders,
                 onSave = { draft -> savingDocument = draft },
                 onCancel = {
                     addingDocument = false
@@ -3267,6 +3277,7 @@ fun NotebookShell(
                         title = title,
                         originalLocation = documentDraft.originalLocation,
                         notes = documentDraft.notes,
+                        category = documentDraft.category,
                     )
                     addingDocument = false
                     capturing = null
@@ -3295,6 +3306,7 @@ fun NotebookShell(
                             sha256 = file?.sha256,
                             byteSize = file?.byteSize ?: 0,
                             mimeType = picked?.let { context.contentResolver.getType(it) },
+                            category = documentDraft.category,
                         )
                         addingDocument = false
                         capturing = null
@@ -3711,6 +3723,7 @@ fun NotebookShell(
         if (kind == CaptureKind.DOCUMENT) {
             AddDocumentScreen(
                 error = documentError,
+                folders = documentFolders,
                 onSave = { draft ->
                     capturing = null
                     savingDocument = draft

@@ -30,6 +30,7 @@ object OneDocTags {
     const val IMAGE = "document_image"
     const val EDIT = "document_edit"
     const val CHAPTER = "document_chapter"
+    const val FOLDER = "document_folder"
     fun project(id: String) = "document_project_$id"
 }
 
@@ -146,6 +147,31 @@ fun DocumentScreen(
                         divider = false,
                         onClick = { onOpenChapter(chapterId) },
                         modifier = Modifier.testTag(OneDocTags.CHAPTER),
+                    )
+                }
+                Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
+        // **Which pile it is in, said on the thing itself.** The documents
+        // screen folds by this and until 2026-08-10 nothing could write it, so
+        // there was nothing to say. Now that a person can file a document, the
+        // document has to be able to say where it was filed, which is rule 18:
+        // if the folder shows the document, the document shows the folder. #221.
+        document.category?.takeIf { it.isNotBlank() }?.let { folder ->
+            item {
+                Spacer(Modifier.height(Space.s))
+                GroupHeader(labelKey = "document.folder")
+                Spacer(Modifier.height(Space.headerGap))
+                GroupedSurface {
+                    DenseRow(
+                        title = Bidi.isolate(folder),
+                        divider = false,
+                        // **No chevron and no tap**, because a folder is not a
+                        // screen: it is a fold on the documents list. A row
+                        // that looked openable and was not would be the defect
+                        // rule 11 names.
+                        modifier = Modifier.testTag(OneDocTags.FOLDER),
                     )
                 }
                 Spacer(Modifier.height(Space.cardGap))

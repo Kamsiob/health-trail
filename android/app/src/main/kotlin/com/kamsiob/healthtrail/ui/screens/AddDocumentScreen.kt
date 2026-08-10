@@ -39,6 +39,9 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
+import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -50,6 +53,7 @@ object AddDocTags {
     const val PICK = "add_doc_pick"
     const val SAVE = "add_doc_save"
     const val CANCEL = "add_doc_cancel"
+    const val FOLDERS = "add_doc_folders"
     fun field(key: String) = "add_doc_$key"
 }
 
@@ -59,6 +63,14 @@ data class DocumentDraft(
     val originalLocation: String = "",
     val notes: String = "",
     val picked: Uri? = null,
+    /**
+     * The person's own word for the pile this belongs in. Blank means none.
+     *
+     * **Their word rather than a fixed set.** The documents screen folds by
+     * this, and a fixed vocabulary would be the app deciding what kinds of
+     * paper exist in somebody's life. Rule 20. #221.
+     */
+    val category: String = "",
 )
 
 /**
@@ -91,6 +103,15 @@ fun AddDocumentScreen(
     /** The record being corrected, or null when this one is new. */
     existing: Repository.Document? = null,
     error: String? = null,
+    /**
+     * The folders this notebook already has, offered as suggestions.
+     *
+     * **Empty on a fresh notebook, and that is the honest resting state.** The
+     * field is still there and still typeable; there is simply nothing to
+     * suggest yet. Offering an invented starter set would be the app deciding
+     * what kinds of paper a person's life contains.
+     */
+    folders: List<String> = emptyList(),
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -101,6 +122,7 @@ fun AddDocumentScreen(
                 title = existing?.title.orEmpty(),
                 originalLocation = existing?.originalLocation.orEmpty(),
                 notes = existing?.notes.orEmpty(),
+                category = existing?.category.orEmpty(),
             ),
         )
     }
@@ -209,6 +231,48 @@ fun AddDocumentScreen(
                     hint = strings["docs.original.hint"],
                     fieldTestTag = AddDocTags.field("original"),
                 )
+                Spacer(Modifier.height(Space.m))
+
+                // **The folder, which the screen has always folded by and no
+                // form ever wrote.** Every document a person saved landed in
+                // "Everything else", and the folds were visible only because
+                // the fixture invented categories. #221.
+                //
+                // **A field with suggestions rather than a picker**, because
+                // the folder is the person's own word for a pile of paper. The
+                // chips are what this notebook already has, so the second
+                // insurance letter goes where the first one went with one tap
+                // and the first one was free to be called anything.
+                //
+                // **Tapping the chip that is already chosen clears it**, which
+                // is how a document comes back out of a folder without the
+                // person having to select the text and delete it.
+                HealthTrailTextField(
+                    label = strings["docs.folder"],
+                    value = draft.category,
+                    onValueChange = { draft = draft.copy(category = it) },
+                    hint = strings["docs.folder.hint"],
+                    fieldTestTag = AddDocTags.field("folder"),
+                )
+                if (folders.isNotEmpty()) {
+                    Spacer(Modifier.height(Space.s))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+                        verticalArrangement = Arrangement.spacedBy(Space.xs),
+                        modifier = Modifier.fillMaxWidth().testTag(AddDocTags.FOLDERS),
+                    ) {
+                        folders.forEach { folder ->
+                            val chosen = draft.category.trim().equals(folder, ignoreCase = true)
+                            ChoiceChip(
+                                label = folder,
+                                selected = chosen,
+                                onClick = {
+                                    draft = draft.copy(category = if (chosen) "" else folder)
+                                },
+                            )
+                        }
+                    }
+                }
                 Spacer(Modifier.height(Space.m))
 
                 DictatableField(

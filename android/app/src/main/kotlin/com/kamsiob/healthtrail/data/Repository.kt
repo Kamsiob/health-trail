@@ -2428,6 +2428,17 @@ class Repository private constructor(
         byteSize: Long = 0,
         mimeType: String? = null,
         originalFilename: String? = null,
+        /**
+         * The person's own word for the pile this belongs in, or null.
+         *
+         * **Null is the ordinary answer and it is not a gap.** The documents
+         * screen folds by this and calls the unfoldered pile "Everything else",
+         * which is a real place rather than a fallback. Nothing in the app
+         * wrote it until 2026-08-10, so every document a person saved landed
+         * there and folders were visible only because the fixture invented
+         * them. #221.
+         */
+        category: String? = null,
     ): String = withContext(Dispatchers.IO) {
         val database = db().database
         database.beginTransaction()
@@ -2439,6 +2450,7 @@ class Repository private constructor(
                     "title" to title,
                     "original_location" to originalLocation?.ifBlank { null },
                     "notes" to notes?.ifBlank { null },
+                    "category" to category?.trim()?.ifBlank { null },
                 ) + dateColumns("received", received),
             )
             if (sha256 != null) {
@@ -2606,19 +2618,48 @@ class Repository private constructor(
         title: String,
         originalLocation: String?,
         notes: String?,
+        /**
+         * The folder, which a correction may set **or clear**.
+         *
+         * Blank becomes null rather than an empty string, so "no folder" is one
+         * value rather than two that look the same on a screen and different in
+         * an archive. 8.4's absence rule.
+         */
+        category: String? = null,
     ) = withContext(Dispatchers.IO) {
         db().database.write(
             "UPDATE document SET title = ?, original_location = ?, notes = ?, " +
-                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+                "category = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
                 title,
                 originalLocation?.ifBlank { null },
                 notes?.ifBlank { null },
+                category?.trim()?.ifBlank { null },
                 System.currentTimeMillis(),
                 documentId,
             ),
         )
     }
+
+    /**
+     * The folders this notebook already has, most used first.
+     *
+     * **Offered rather than imposed.** A folder is the person's own word for a
+     * pile of paper, so the form suggests what they have already said and lets
+     * them type anything. Ordered by how much is in each, because the pile they
+     * file into most is the one they are most likely to want again.
+     */
+    suspend fun documentFolders(subjectId: String): List<String> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT category, COUNT(*) AS n FROM live_document " +
+                    "WHERE subject_id = ? AND category IS NOT NULL AND TRIM(category) <> '' " +
+                    "GROUP BY category ORDER BY n DESC, category ASC",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
+            }
+        }
 
     /** Moves a bill to another state. Nothing else about it changes. */
     suspend fun setBillState(billId: String, state: String) = withContext(Dispatchers.IO) {
