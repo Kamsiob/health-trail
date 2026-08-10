@@ -1416,3 +1416,29 @@ The heading is the control: days to months to years. **Picking a month drops bac
 `NonObservableLocale` refused a locale read inside the new composable. It is right, and the reason is worth remembering: **a composable that reads the default locale does not recompose when the locale changes.** `monthName` had always been a plain function for exactly that reason, which nothing said out loud until the lint said it.
 
 ---
+
+## 18. A folder nothing could put anything in, 2026-08-10
+
+**#221.** The documents screen folds by `category` and **no screen in the app ever wrote it.** Every document a person saved landed in "Everything else", forever, and the folds were visible at all only because the fixture invented categories.
+
+**And the fixture invented the wrong thing.** It picked from `medical`, `legal`, `financial`, `facility`, which are the app's internal vocabulary showing on a screenshot. Rule 20 rules that out, and it is the same defect class as #219.
+
+### The shape of the fix
+
+**A text field with the notebook's existing folders as chips above it**, not a picker. A folder is the person's own word for a pile of paper, so a fixed vocabulary would be the app deciding what kinds of paper exist in somebody's life.
+
+**The chips are empty on a fresh notebook and that is correct.** The field is still there and still typeable; there is nothing to suggest yet. Offering an invented starter set would be the same defect from the other direction, which is worth saying because it is the tempting thing to do with an empty row of chips.
+
+**Blank becomes null rather than an empty string**, so "no folder" is one value rather than two that look identical on a screen and different in an archive. 8.4's absence rule, applied at the write rather than discovered at the round trip.
+
+### The thing the issue did not ask for
+
+**The document's own screen now names its folder.** Rule 18: if the folder shows the document, the document shows the folder. It was never wrong before, because there was never a folder to show, which is how a one-way link hides.
+
+**No chevron on that row.** A folder is a fold on a list rather than a screen, and a row that looked openable and was not is exactly what rule 11 names.
+
+### Why the fixture half could not have shipped alone
+
+The issue put the form half "with #206". Doing the fixture half alone would have made the screenshot correct while a person starting fresh still could not file anything: **the screen would have looked finished and been unreachable**, which is the shape this whole issue is about.
+
+---
