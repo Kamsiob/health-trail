@@ -26,6 +26,100 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase
 object Backup {
 
     /**
+     * An attachment row that is live and whose bytes are not on this phone.
+     *
+     * **This is what happens when storage failed**, when a file was removed
+     * outside the app, or when a copy was interrupted. The row is still the
+     * person's record and it still knows what the photograph was called and
+     * when it arrived; only the bytes are gone.
+     *
+     * **The name and the date are carried rather than the hash alone** because
+     * `contract/DATA-CONTRACT.md` 8.3 says what has to survive: an attachment
+     * missing at export time is imported "with its name and date intact, so the
+     * person sees that a photo existed and is gone, rather than never learning
+     * it was there". A bare content hash cannot say that to anybody.
+     */
+    data class MissingAttachment(
+        val sha256: String,
+        val originalFilename: String?,
+        val createdAt: Long,
+    )
+
+    /**
+     * What an export produced, and what it noticed while producing it.
+     *
+     * **[export] used to return the manifest alone**, which had no room to say
+     * that anything was wrong, so a notebook with an attachment row whose file
+     * was gone produced an archive this app then refuses to open and told the
+     * person it had succeeded. #332. The failure landed at restore, on the new
+     * phone, with the old one gone, which is the shape `DATA-CONTRACT.md`
+     * section 8 opens by calling worse than an honest failure.
+     *
+     * **[missingAttachments] is empty on every archive this project has made**,
+     * and on every export where nothing went wrong. It is not a warning that
+     * fires routinely; it is the one that has never fired and must not be
+     * silent the day it does.
+     */
+    data class Written(
+        val manifest: ExportContainer.Manifest,
+        val missingAttachments: List<MissingAttachment>,
+    )
+
+    /**
+     * Every live attachment row whose bytes the archive does not carry.
+     *
+     * **Read from the staged copy rather than the live database**, because the
+     * staged copy is what actually ships. A row written between staging and now
+     * is not in the archive, so reporting it would name a file the archive
+     * never claimed, and a row deleted in that window is still in the archive
+     * and still has to be checked.
+     *
+     * **The query is deliberately the same one [ExportContainer.open] refuses
+     * on**, down to the tombstone clause, so what export looks for and what
+     * import rejects cannot drift apart. A deleted attachment's bytes are
+     * legitimately gone while its row still travels, because the row is how a
+     * restore learns the deletion happened at all.
+     *
+     * **One entry per file, not per row.** Two entries can name one photograph,
+     * since a file is named by the hash of its bytes, and telling somebody two
+     * files are missing when one is would be a count they cannot reconcile with
+     * anything they can see.
+     */
+    internal fun missingAttachments(
+        staged: File,
+        present: Set<String>,
+    ): List<MissingAttachment> = android.database.sqlite.SQLiteDatabase.openDatabase(
+        staged.path,
+        null,
+        android.database.sqlite.SQLiteDatabase.OPEN_READONLY,
+    ).use { open ->
+        open.rawQuery(
+            // allow-base-table: an export carries tombstones, and the live view
+            // would hide exactly the rows whose files are allowed to be absent.
+            // Ordered explicitly, per 8.4, so two exports of one notebook report
+            // the same list in the same order.
+            "SELECT sha256, original_filename, created_at FROM attachment " +
+                "WHERE deleted_at IS NULL ORDER BY created_at, sha256",
+            null,
+        ).use { cursor ->
+            val seen = mutableSetOf<String>()
+            buildList {
+                while (cursor.moveToNext()) {
+                    val hash = cursor.getString(0)
+                    if (hash in present || !seen.add(hash)) continue
+                    add(
+                        MissingAttachment(
+                            sha256 = hash,
+                            originalFilename = if (cursor.isNull(1)) null else cursor.getString(1),
+                            createdAt = cursor.getLong(2),
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
      * Everything the container needs, gathered from the live database.
      *
      * **Row counts include tables with zero rows**, because the manifest's job
@@ -66,7 +160,7 @@ object Backup {
          * protection, and a misleading one for whoever reads this next.
          */
         passphraseHint: String? = null,
-    ): ExportContainer.Manifest = withContext(Dispatchers.IO) {
+    ): Written = withContext(Dispatchers.IO) {
         val database = HealthTrailDatabase.open(context)
 
         // **The archive carries a plain SQLite file, never the encrypted one as
@@ -88,7 +182,22 @@ object Backup {
         val staged = decryptedCopy(context, database, exportedAt)
 
         val store = Attachments.open(context)
-        val attachments = store.all().map { store.fileFor(it) }
+        val onDisk = store.all()
+        val attachments = onDisk.map { store.fileFor(it) }
+
+        // **The export looks before it writes.** `Attachments.all` lists files
+        // on disk rather than rows, so a live attachment row whose bytes are
+        // gone ships as a row with no file, and [ExportContainer.open] then
+        // refuses the whole archive by name. Nothing noticed, and the person was
+        // told the export succeeded. #332.
+        //
+        // **What is not here is the other half**, and it is deliberately not
+        // here: `contract/EXPORT-FORMAT.md` is published byte for byte and
+        // `tools/decrypt/` was written from it, so putting this list into
+        // `MANIFEST.json` is a format decision rather than a session's. Until
+        // that is settled the finding travels to the caller instead, so the
+        // person is told at the moment they can still do something about it.
+        val missing = missingAttachments(staged, onDisk.toSet())
 
         try {
             ExportContainer.write(
@@ -122,7 +231,7 @@ object Backup {
                     passphraseHint = passphraseHint?.trim()?.takeIf { it.isNotEmpty() },
                 ),
                 passphrase = passphrase,
-            )
+            ).let { Written(manifest = it, missingAttachments = missing) }
         } finally {
             staged.delete()
         }

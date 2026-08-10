@@ -299,7 +299,7 @@ class RoundTripTest {
             archive,
             exportedAt = 1_754_000_000_000L,
             passphrase = DEFAULT_PASSPHRASE.toCharArray(),
-        )
+        ).manifest
         val staging = File(context.cacheDir, "manifest-${System.nanoTime()}")
         val opened = ExportContainer
             .open(archive, staging, DEFAULT_PASSPHRASE.toCharArray())
@@ -371,7 +371,7 @@ class RoundTripTest {
         seed()
         val manifest = Backup.export(
             context, archive, exportedAt = 1_754_000_000_000L, passphrase = secret.toCharArray(),
-        )
+        ).manifest
 
         assertTrue("the manifest does not say it is encrypted", manifest.encrypted)
         val parameters = manifest.encryption!!

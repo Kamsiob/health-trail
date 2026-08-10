@@ -564,6 +564,14 @@ fun NotebookShell(
     var searchFailed by remember { mutableStateOf(false) }
     var exportOpen by remember { mutableStateOf(false) }
     var exportState by remember { mutableStateOf(ExportState.READY) }
+    /**
+     * How many attached files the last export could not find. #332.
+     *
+     * **Beside the state rather than inside it**, because it is not a state:
+     * the export finished either way and the file is written either way. What
+     * it changes is what the finished screen has to say.
+     */
+    var exportMissing by remember { mutableStateOf(0) }
     // Held between choosing a passphrase and choosing where the file goes,
     // because the system picker is a round trip through another activity.
     var pendingPassphrase by remember { mutableStateOf<String?>(null) }
@@ -1194,6 +1202,7 @@ fun NotebookShell(
                     pendingHint = null
                 },
                 onAgain = { exportState = ExportState.READY },
+                missingAttachments = exportMissing,
             )
         }
 
@@ -1203,7 +1212,7 @@ fun NotebookShell(
         if (exportTarget != null) {
             LaunchedEffect(exportTarget) {
                 val passphrase = pendingPassphrase
-                exportState = withContext(Dispatchers.IO) {
+                val outcome = withContext(Dispatchers.IO) {
                     runCatching {
                         // **Written to a cache file first, then copied out.**
                         // Backup.export takes a File, and a partial write to
@@ -1223,7 +1232,7 @@ fun NotebookShell(
                             // writing the whole record in the clear.
                             val chosen = passphrase?.takeIf { it.isNotEmpty() }
                                 ?: error("export reached with no passphrase")
-                            Backup.export(
+                            val written = Backup.export(
                                 context = context,
                                 target = staged,
                                 exportedAt = System.currentTimeMillis(),
@@ -1233,14 +1242,20 @@ fun NotebookShell(
                             context.contentResolver.openOutputStream(exportTarget)?.use { out ->
                                 staged.inputStream().use { it.copyTo(out) }
                             } ?: error("no output stream")
+                            // **Returned rather than reported here**, so what the
+                            // export noticed reaches the screen the person is
+                            // looking at. An export that finished short and said
+                            // only "Saved" is #332, and the person finds out on
+                            // the new phone with the old one gone.
+                            written
                         } finally {
                             staged.delete()
                         }
-                    }.fold(
-                        onSuccess = { ExportState.DONE },
-                        onFailure = { ExportState.FAILED },
-                    )
+                    }
                 }
+                exportMissing = outcome.getOrNull()?.missingAttachments?.size ?: 0
+                exportState =
+                    if (outcome.isSuccess) ExportState.DONE else ExportState.FAILED
                 writeTo = null
                 pendingPassphrase = null
                 pendingHint = null

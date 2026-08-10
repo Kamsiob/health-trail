@@ -32,6 +32,7 @@ object ExportTags {
     const val STATUS = "export_status"
     const val REVEAL = "export_reveal"
     const val AGAIN_ACTION = "export_again_action"
+    const val MISSING = "export_missing"
 }
 
 /** What the export screen is doing right now. */
@@ -63,6 +64,11 @@ enum class ExportState { READY, WORKING, DONE, FAILED }
  * **Nothing here reports success until the bytes are written.** "Saved" appears
  * after the file exists at the chosen place, never when the export began, and
  * a failure says plainly that nothing was saved and the notebook is untouched.
+ *
+ * **And "Saved" is not always the whole of it.** An export can succeed and still
+ * be short of something, which is what [missingAttachments] carries. Saying only
+ * "Saved" in that case is the defect #332 is about, moved from the code into the
+ * copy: the person finds out on the new phone, with the old one gone.
  */
 @Composable
 fun ExportScreen(
@@ -72,6 +78,16 @@ fun ExportScreen(
     modifier: Modifier = Modifier,
     /** Puts the screen back to its resting state so another copy can be saved. */
     onAgain: () -> Unit = {},
+    /**
+     * How many attached files the export could not find on this phone.
+     *
+     * **Zero on every archive this project has made**, and zero whenever
+     * nothing has gone wrong, so this is a state that has never yet been seen
+     * rather than one somebody meets routinely. It ships built anyway, per rule
+     * 11, because the day it is not zero is the day somebody's storage failed
+     * and the archive is the thing standing between them and the record.
+     */
+    missingAttachments: Int = 0,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -145,6 +161,42 @@ fun ExportScreen(
                     style = HealthTrail.type.bodyL,
                     color = colors.ink2,
                 )
+
+                // **What the export could not find, said here rather than
+                // discovered at restore.** `Attachments.all` lists files rather
+                // than rows, so a live attachment row whose bytes are gone
+                // shipped as a row with no file and the archive could not be
+                // opened again, while this screen said "Saved" and nothing
+                // else. #332.
+                //
+                // **It sits under "Saved" rather than replacing it**, because
+                // the file was written and the rest of the notebook is in it.
+                // Turning a successful export into a failure would be as
+                // dishonest in the other direction, and it would leave somebody
+                // with no archive at all.
+                if (missingAttachments > 0) {
+                    Spacer(Modifier.height(Space.sectionGap))
+                    GroupHeader(labelKey = "export.done.missing.header")
+                    Spacer(Modifier.height(Space.headerGap))
+                    Text(
+                        text = strings("export.done.missing", "count" to missingAttachments),
+                        style = HealthTrail.type.bodyL,
+                        color = colors.alertInk,
+                        modifier = Modifier.testTag(ExportTags.MISSING),
+                    )
+                    Spacer(Modifier.height(Space.s))
+                    // **The consequence, plainly.** An archive that names a file
+                    // it does not carry is one this app refuses to open, so an
+                    // earlier copy is the thing that still restores. Telling
+                    // somebody a file is missing without telling them that is
+                    // half the sentence.
+                    Text(
+                        text = strings["export.done.missing.keep"],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
+                    )
+                }
+
                 Spacer(Modifier.height(Space.l))
                 QuietButton(
                     label = strings["export.done.again"],
