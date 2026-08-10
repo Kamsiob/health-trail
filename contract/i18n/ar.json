@@ -326,6 +326,8 @@
   "section.back.today": "العودة إلى اليوم",
   "trail.search.hint": "ابحث في {count} مدخل",
   "trail.search.clear": "امسح البحث",
+  "trail.filter.showing": "{count, plural, zero {يعرض كل شيء} one {مدخل واحد مخفي بالتصفية} two {مدخلان مخفيان بالتصفية} few {# مدخلات مخفية بالتصفية} many {# مدخلًا مخفيًا بالتصفية} other {# مدخل مخفي بالتصفية}}",
+  "trail.filter.clear": "اعرض كل شيء",
   "trail.search.count": "{count, plural, zero {لا شيء مطابق} one {مدخل واحد مطابق} two {مدخلان مطابقان} few {# مدخلات مطابقة} many {# مدخلًا مطابقًا} other {# مدخل مطابق}}",
   "trail.search.none": "لا شيء مما دوّنته يستعمل هذه الكلمات. البحث يشمل ما كتبته، لا التواريخ.",
   "trail.pinned": "مثبّت",

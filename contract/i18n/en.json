@@ -326,6 +326,8 @@
   "section.back.today": "Back to Today",
   "trail.search.hint": "Search {count} entries",
   "trail.search.clear": "Clear the search",
+  "trail.filter.showing": "{count, plural, =0 {Showing everything} one {1 entry hidden by the filter} other {# entries hidden by the filter}}",
+  "trail.filter.clear": "Show everything",
   "trail.search.count": "{count, plural, one {1 entry matches} other {# entries match}}",
   "trail.search.none": "Nothing you have written down uses those words. This searches what you wrote, not dates.",
   "trail.pinned": "Pinned",

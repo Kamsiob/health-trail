@@ -326,6 +326,8 @@
   "section.back.today": "Volver a Hoy",
   "trail.search.hint": "Buscar en {count} anotaciones",
   "trail.search.clear": "Borrar la búsqueda",
+  "trail.filter.showing": "{count, plural, =0 {Mostrando todo} one {1 entrada oculta por el filtro} other {# entradas ocultas por el filtro}}",
+  "trail.filter.clear": "Mostrar todo",
   "trail.search.count": "{count, plural, one {1 anotación coincide} other {# anotaciones coinciden}}",
   "trail.search.none": "Nada de lo que usted ha anotado usa esas palabras. Esto busca lo que usted escribió, no las fechas.",
   "trail.pinned": "Fijadas",

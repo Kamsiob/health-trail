@@ -2381,6 +2381,22 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **The unmapped tables are listed rather than left absent.** "This table is deliberately not counted" and "nobody thought about this table" look identical in code. A list makes the first one say so.
 
+### D134. The trail filters by kind, forgets on the way out, and says how much it is hiding
+
+**2026-08-10, #220.** The grid drew a Filter in the trail's header and #173 left it out rather than guessing, with four questions written down. All four are answered here.
+
+**It filters by kind and by nothing else.** Thread, unfiled and pinned each already have their own place: threads have their own screens and the scoped search, unfiled has a tray, pinned has a group at the top of this very list. Adding them here would be three second doors, and the one axis the trail has no other way to narrow is what kind of thing happened.
+
+**It forgets when the person leaves the screen**, and this is the decision that mattered. The view toggle is remembered per section, per `DESIGN.md` section 7, and this is deliberately not the same case: **a remembered view changes how the trail is drawn and a remembered filter changes what is in it.** Somebody opening the trail in a hallway to check whether a call happened, looking at a list with calls filtered out from a week ago, is being shown a record that is lying to them. The cost is setting it again, and that is the cheaper mistake.
+
+**It composes with the search, and the search says so.** Both narrow the same list, so the search looks inside the filter, and the search's own hint counts the filtered set. Saying "Search 182 entries" over a list of 21 would be the screen describing a list that is not on it.
+
+**A filtered trail says how much it is hiding, with the way out in the same line.** It counts what is **not** on the screen rather than what is, because the number that matters to somebody who has lost track is how much of their record is missing from view.
+
+**One chip per name rather than per stored kind.** `kindNameKey` already folds `transfer` and `milestone` into "A note", so one chip per kind would put two chips reading "A note" side by side filtering different things. The chip filters everything the app calls by that word.
+
+**Only the kinds the notebook actually has**, and only when there is more than one, because a chip for a kind nobody has written narrows to nothing and a row of one chip is a control with no decision in it.
+
 ---
 
 ## BLOCKED

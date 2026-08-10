@@ -45,6 +45,10 @@ import com.kamsiob.healthtrail.ui.components.PinMark
 import com.kamsiob.healthtrail.ui.components.PinnedGroupText
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
+import com.kamsiob.healthtrail.ui.components.ChoiceChip
+import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.StickySectionHeader
@@ -60,6 +64,9 @@ object TrailTags {
     const val NAME = "trail"
     const val SEARCH = "trail_search"
     const val SCRUBBER = "trail_scrubber"
+    const val FILTER = "trail_filter"
+    const val FILTER_STATE = "trail_filter_state"
+    fun kind(kind: String) = "trail_filter_$kind"
     fun entry(id: String) = "trail_entry_$id"
     fun pin(id: String) = "trail_pin_$id"
     fun month(label: String) = "trail_month_$label"
@@ -144,9 +151,43 @@ fun TrailScreen(
 
     val listState = rememberLazyListState()
 
-    val plan = remember(entries, strings, zone, query, openMonths, earlierOpen) {
+    /**
+     * Which kinds the person is looking at, or empty for all of them. #220.
+     *
+     * **It resets when they leave this screen**, and that is the decision
+     * rather than an oversight. The view toggle is remembered per section, per
+     * `DESIGN.md` section 7, and this is not the same case: a remembered view
+     * changes how the trail is drawn and a remembered filter changes **what is
+     * in it**. Somebody opening the trail in a hallway to check whether a call
+     * happened, and seeing a list with the calls filtered out from a week ago,
+     * is looking at a record that is lying to them. D134.
+     */
+    var kinds by remember(entries) { mutableStateOf(emptySet<String>()) }
+
+    /**
+     * One chip per name, over the kinds this notebook actually has.
+     *
+     * **What is here rather than what the schema allows**, because a chip for a
+     * kind nobody has ever written narrows to nothing, which is a control that
+     * looks broken.
+     *
+     * **Grouped by the name rather than by the stored kind.** `kindNameKey`
+     * already folds `transfer` and `milestone` into "A note", which is how the
+     * trail names them everywhere else, so one chip per stored kind would put
+     * two chips reading "A note" side by side filtering different things. The
+     * chip filters everything the app calls by that word.
+     */
+    val kindGroups: List<Pair<String, Set<String>>> = remember(entries) {
+        entries.map { it.kind }
+            .distinct()
+            .sortedBy { KIND_ORDER.indexOf(it).takeIf { at -> at >= 0 } ?: KIND_ORDER.size }
+            .groupBy { kindNameKey(it) }
+            .map { (key, kinds) -> key to kinds.toSet() }
+    }
+
+    val plan = remember(entries, strings, zone, query, kinds, openMonths, earlierOpen) {
         planTrail(
-            entries = entries,
+            entries = entries.filter { kinds.isEmpty() || it.kind in kinds },
             strings = strings,
             zone = zone,
             query = query,
@@ -246,11 +287,80 @@ fun TrailScreen(
                 ScopedSearch(
                     value = query,
                     onValueChange = { query = it },
-                    hint = strings("trail.search.hint", "count" to entries.size),
+                    // **The count the search will actually look through**, which
+                    // is the filtered set rather than the whole trail. Both
+                    // controls narrow this one list and they compose: the
+                    // search looks inside the filter. Saying 182 while showing
+                    // 21 would be the screen describing a list that is not on
+                    // it. #220.
+                    hint = strings(
+                        "trail.search.hint",
+                        "count" to entries.count { kinds.isEmpty() || it.kind in kinds },
+                    ),
                     clearLabel = strings["trail.search.clear"],
                     testTag = TrailTags.SEARCH,
                 )
                 Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
+        // **The filter, beside the search, because both narrow this one list.**
+        // Screen 08 draws it in the header; it sits under the search here for
+        // the same reason the search sits above the pins, which is that a
+        // control for a list belongs with the list it narrows.
+        //
+        // **Chips rather than a sheet**, per law 2 and the issue: the choices
+        // are few, they are all visible, and nothing is hidden behind a tap.
+        //
+        // **Only shown once there is more than one kind to choose between.** A
+        // row of one chip is a control with no decision in it.
+        if (kindGroups.size > 1) {
+            item(key = "filter") {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(Space.xs),
+                    verticalArrangement = Arrangement.spacedBy(Space.xs),
+                    modifier = Modifier.fillMaxWidth().testTag(TrailTags.FILTER),
+                ) {
+                    kindGroups.forEach { (key, group) ->
+                        val on = group.all { it in kinds }
+                        ChoiceChip(
+                            label = strings[key],
+                            selected = on,
+                            onClick = { kinds = if (on) kinds - group else kinds + group },
+                            modifier = Modifier.testTag(TrailTags.kind(group.first())),
+                        )
+                    }
+                }
+                Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
+        // **A filtered trail says so, in one line, with the way out in it.**
+        // Somebody who forgot they set a filter is looking at a record with
+        // things missing from it, and the trail's whole promise is that it is
+        // everything. This is the sentence that keeps that promise honest.
+        //
+        // **It counts what is hidden rather than what is shown**, because the
+        // number that matters to somebody who has lost track is how much of
+        // their record is not on the screen.
+        if (kinds.isNotEmpty()) {
+            item(key = "filtered") {
+                val hidden = entries.size - entries.count { it.kind in kinds }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = Space.s),
+                ) {
+                    Text(
+                        text = strings("trail.filter.showing", "count" to hidden),
+                        style = HealthTrail.type.mono,
+                        color = HealthTrail.colors.ink2,
+                        modifier = Modifier.weight(1f).testTag(TrailTags.FILTER_STATE),
+                    )
+                    TextAction(
+                        label = strings["trail.filter.clear"],
+                        onClick = { kinds = emptySet() },
+                    )
+                }
             }
         }
 
@@ -433,6 +543,20 @@ private data class TrailPlan(
  * what lets the scrubber know which list index a year lands on. A layout that
  * decides its own shape while it is being emitted cannot answer that question.
  */
+/**
+ * The order the kinds appear in the filter, which is the notebook's own.
+ *
+ * **Not alphabetical and not by how many there are.** Alphabetical is a
+ * different order in every language, and ordering by count moves the chips
+ * around as somebody writes, which is the same argument the digest makes for
+ * never ranking sections by volume. A kind this list has never heard of sorts
+ * to the end rather than being dropped.
+ */
+private val KIND_ORDER = listOf(
+    "call", "visit", "incident", "measurement",
+    "question", "document", "note", "transfer", "milestone",
+)
+
 private fun planTrail(
     entries: List<Repository.TrailEntry>,
     strings: Strings,
