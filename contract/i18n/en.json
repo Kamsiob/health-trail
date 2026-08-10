@@ -614,7 +614,7 @@
   "export.done.again": "Save another copy",
   "export.done.missing.header": "Not in this file",
   "export.done.missing": "{count, plural, one {One attached file could not be found on this phone, so it is not in this archive.} other {# attached files could not be found on this phone, so they are not in this archive.}}",
-  "export.done.missing.keep": "Nothing was removed from your notebook: the entries are still here, with their names and dates. Keep any earlier copy of this archive you still have, because this one cannot be put back while a file it names is missing.",
+  "export.done.missing.keep": "Nothing was removed from your notebook, and this archive still restores. The entries are still here with their names and dates, and the archive says which files were missing, so a restore shows that a photograph existed and is gone rather than never mentioning it.",
   "more.export": "Export your notebook",
   "section.back.more2": "Back to More",
   "restore.title": "Restore from a file",

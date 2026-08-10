@@ -185,11 +185,14 @@ fun ExportScreen(
                         modifier = Modifier.testTag(ExportTags.MISSING),
                     )
                     Spacer(Modifier.height(Space.s))
-                    // **The consequence, plainly.** An archive that names a file
-                    // it does not carry is one this app refuses to open, so an
-                    // earlier copy is the thing that still restores. Telling
-                    // somebody a file is missing without telling them that is
-                    // half the sentence.
+                    // **The consequence, plainly, and it changed on
+                    // 2026-08-10.** Until then an archive naming a file it did
+                    // not carry was one this app refused to open, and the copy
+                    // said to keep an earlier one. The manifest carries the
+                    // missing list now, so the archive restores and the entries
+                    // arrive with their names and dates. The sentence has to
+                    // say that instead, because copy that overstates a loss is
+                    // its own defect. #332.
                     Text(
                         text = strings["export.done.missing.keep"],
                         style = HealthTrail.type.bodyM,

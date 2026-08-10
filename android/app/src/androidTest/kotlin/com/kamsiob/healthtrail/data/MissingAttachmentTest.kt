@@ -25,19 +25,20 @@ import org.junit.runner.RunWith
  * `contract/DATA-CONTRACT.md` section 8 opens by calling worse than an honest
  * failure.
  *
- * **What this proves is that the export now looks, and that it looks for exactly
- * what the import refuses on.** The first test asserts both halves against one
- * archive: [Backup.export] names the file, and opening that same archive fails
- * with [ExportContainer.Problem.AttachmentMissing] naming the same hash. Those
- * two agreeing is the whole point, because a report that did not match the
- * refusal would be a second opinion rather than a warning.
+ * **Both halves are built now**, as of 2026-08-10. The export looks and records
+ * what it found, `MANIFEST.json` carries the list that
+ * `contract/DATA-CONTRACT.md` 8.2 always asked for, and [ExportContainer.open]
+ * accepts an archive that declares what it is missing. So the archive opens, the
+ * row arrives with its name and its date, and the person learns a photograph
+ * existed and is gone rather than never learning it was there, which is 8.3.
  *
- * **What this does not prove**, said plainly so a green run is not read as more
- * than it is: **the archive is still one this app cannot open.** Closing that
- * needs the missing list in `MANIFEST.json`, which is a change to a published
- * format and belongs with the owner, and then `open` accepting a row the
- * manifest says was already missing. Until then the person is told at the moment
- * they can still do something about it, and that is all.
+ * **The distinction the list exists to make is the important assertion here.**
+ * An archive that declares a missing attachment is a record with a gap in it. An
+ * archive whose attachment is simply absent is damaged in transit. Collapsing
+ * the two would mean a truncated copy opens quietly and restores short, which is
+ * the silent partial correctness section 8 opens by refusing, so
+ * [anUndeclaredMissingAttachmentIsStillRefused] builds that case by hand and
+ * asserts the refusal survives.
  *
  * **The rows are rows the app itself writes.** Every attachment here comes from
  * `Repository.createDocument`, which is the app's own path, so the fixture rule
@@ -175,30 +176,103 @@ class MissingAttachmentTest {
         assertEquals("discharge summary.jpg", missing!!.originalFilename)
         assertTrue("the row carries no created_at", missing.createdAt > 0)
 
-        // And the same archive is the one the app refuses, on the same hash.
-        val problem = ExportContainer.open(
+        // **And the archive opens**, which is the half that changed on
+        // 2026-08-10. Until then this same file was refused by name, at
+        // restore, on the new phone with the old one gone, and that was the
+        // whole defect. The manifest declares what is gone now, so the archive
+        // is one that knows what it is missing rather than one that is damaged.
+        // #332, and `contract/DATA-CONTRACT.md` 8.2 always asked for the list.
+        val opened = ExportContainer.open(
             archive,
             staging,
             passphrase = secret,
             expected = Backup.schema(context),
-        ).exceptionOrNull()
-        val reason = (problem as ExportContainer.ExportProblem).problem
-        assertTrue(
-            "opening the archive failed for some other reason: ${reason.message}",
-            reason is ExportContainer.Problem.AttachmentMissing,
         )
-        // **That the refusal names a file the export warned about, rather than
-        // this exact one.** `open` stops at the first row it finds with no
-        // file, and which row that is depends on the whole database, which in a
-        // connected run holds whatever the classes before this one left. The
-        // property worth asserting is not which file it picked; it is that
-        // export cannot be silent about anything import will refuse on.
-        val refused = (reason as ExportContainer.Problem.AttachmentMissing).hash
         assertTrue(
-            "the import refused on $refused, which the export never warned about: " +
-                written.missingAttachments,
-            written.missingAttachments.any { it.sha256 == refused },
+            "an archive that declares its missing attachment was still refused: " +
+                opened.exceptionOrNull()?.message,
+            opened.isSuccess,
         )
+
+        // **And it says so in the manifest**, with the name and the date 8.3
+        // requires, so a reader learns a photograph existed and is gone rather
+        // than never learning it was there.
+        val declared = opened.getOrThrow().manifest.missingAttachments
+            .singleOrNull { it.sha256 == hash }
+        assertTrue("the manifest does not name the missing file: $declared", declared != null)
+        assertEquals("discharge summary.jpg", declared!!.originalFilename)
+        assertEquals(missing.createdAt, declared.createdAt)
+    }
+
+    /**
+     * An attachment that is absent and **not** declared is still refused.
+     *
+     * **This is the difference the list exists to make**, and without it the fix
+     * for #332 would have turned a loud failure into a silent one. An archive
+     * that declares a missing attachment is a record with a gap in it. An
+     * archive whose attachment is simply absent is damaged in transit, and it
+     * has to fail, or a truncated copy opens quietly and restores short.
+     *
+     * **Built by hand, because the app cannot produce one any more.** That is
+     * the point: the export always declares what it could not find now, so the
+     * only way to get an undeclared gap is to write a container whose manifest
+     * says nothing while its `attachments/` folder is empty. The database is the
+     * app's own, taken out of a real archive, so the rows are rows the app
+     * wrote.
+     */
+    @Test
+    fun anUndeclaredMissingAttachmentIsStillRefused() = runBlocking {
+        val hash = document("a letter", "the bytes of a letter that will be dropped".toByteArray())
+        export()
+        val sound = ExportContainer.open(archive, staging, passphrase = secret).getOrThrow()
+        assertTrue(
+            "the fixture's own archive is missing the file it should carry",
+            sound.attachments.any { it.name == hash },
+        )
+
+        // The same database, and no attachments at all, with a manifest that
+        // declares nothing missing. This is what a damaged transfer looks like
+        // from the reader's side.
+        val undeclared = File(context.cacheDir, "undeclared-${System.nanoTime()}.htz")
+        val elsewhere = File(context.cacheDir, "undeclared-staging-${System.nanoTime()}")
+        try {
+            ExportContainer.write(
+                target = undeclared,
+                source = ExportContainer.Source(
+                    database = sound.database,
+                    attachments = emptyList(),
+                    appVersion = sound.manifest.appVersion,
+                    originDevice = sound.manifest.originDevice,
+                    rowCounts = sound.manifest.rowCounts,
+                    subjectCount = sound.manifest.subjectCount,
+                    exportedAt = sound.manifest.exportedAt,
+                    schemaSql = "-- not read by this test\n",
+                    readableWords = ReadableWords.from(
+                        com.kamsiob.healthtrail.i18n.Strings.load(context),
+                        catalogNames = ReadableWords.catalogNames(context),
+                    ),
+                    // The whole fixture: nothing declared, and nothing carried.
+                    missingAttachments = emptyList(),
+                ),
+                passphrase = secret,
+            )
+
+            val opened = ExportContainer.open(
+                undeclared,
+                elsewhere,
+                passphrase = secret,
+                expected = Backup.schema(context),
+            )
+            val reason = (opened.exceptionOrNull() as? ExportContainer.ExportProblem)?.problem
+            assertTrue(
+                "an archive missing a file it never declared was accepted, so a damaged " +
+                    "copy now restores short and says nothing",
+                reason is ExportContainer.Problem.AttachmentMissing,
+            )
+        } finally {
+            undeclared.delete()
+            elsewhere.deleteRecursively()
+        }
     }
 
     /**

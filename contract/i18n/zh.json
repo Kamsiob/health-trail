@@ -614,7 +614,7 @@
   "export.done.again": "再保存一份",
   "export.done.missing.header": "此文件中没有的内容",
   "export.done.missing": "{count, plural, other {有 # 个附件在这部手机上找不到，因此不在此存档中。}}",
-  "export.done.missing.keep": "笔记本里没有任何内容被删除：相关记录仍在，名称和日期都在。请保留您手上任何更早的存档副本，因为只要此存档提到的文件不在，它就无法还原。",
+  "export.done.missing.keep": "笔记本里没有任何内容被删除，此存档仍然可以还原。相关记录仍在，名称和日期都在，存档也记下了缺失的文件，因此还原后会显示某张照片曾经存在而现在已丢失，而不是完全不提它。",
   "more.export": "导出您的笔记本",
   "section.back.more2": "返回更多",
   "restore.title": "从文件恢复",

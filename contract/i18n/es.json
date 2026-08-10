@@ -614,7 +614,7 @@
   "export.done.again": "Guardar otra copia",
   "export.done.missing.header": "No está en este archivo",
   "export.done.missing": "{count, plural, one {No se encontró un archivo adjunto en este teléfono, así que no está en este archivo comprimido.} other {No se encontraron # archivos adjuntos en este teléfono, así que no están en este archivo comprimido.}}",
-  "export.done.missing.keep": "No se quitó nada de su cuaderno: las entradas siguen aquí, con sus nombres y sus fechas. Conserve cualquier copia anterior que todavía tenga, porque esta no se puede restaurar mientras falte un archivo que ella misma nombra.",
+  "export.done.missing.keep": "No se quitó nada de su cuaderno, y este archivo comprimido todavía se puede restaurar. Las entradas siguen aquí con sus nombres y sus fechas, y el archivo indica qué archivos faltaban, así que una restauración muestra que una fotografía existió y se perdió en lugar de no mencionarla nunca.",
   "more.export": "Exportar su cuaderno",
   "section.back.more2": "Volver a Más",
   "restore.title": "Restaurar desde un archivo",

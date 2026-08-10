@@ -130,6 +130,27 @@ object ExportContainer {
      */
     const val READABLE = "readable/"
 
+    /**
+     * An attachment the archive names and does not carry, listed in the manifest.
+     *
+     * **`contract/DATA-CONTRACT.md` 8.2 always required this** and the format
+     * document never carried it, so it was never written. 8.3 says what it is
+     * for: an attachment missing at export time is imported "with its name and
+     * date intact, so the person sees that a photo existed and is gone, rather
+     * than never learning it was there". A bare content hash says that to
+     * nobody, so the name and the date travel with it.
+     *
+     * **It is what turns a silent failure into a stated one.** Without it, a
+     * live attachment row whose bytes were gone produced an archive [open]
+     * refused by name, at restore, on the new phone, with the old one gone.
+     * With it, the archive opens and says what is missing. #332.
+     */
+    data class MissingAttachment(
+        val sha256: String,
+        val originalFilename: String?,
+        val createdAt: Long,
+    )
+
     /** What a reader learned before deciding whether it can import. */
     data class Manifest(
         val formatVersion: Int,
@@ -182,6 +203,39 @@ object ExportContainer {
          * their row counts out there.
          */
         val passphraseHint: String? = null,
+        /**
+         * The BCP 47 tag the readable copy is written in. #210.
+         *
+         * **`contract/DATA-CONTRACT.md` 8.2 always said the inner manifest
+         * carries this and `EXPORT-FORMAT.md` never listed it**, so the code
+         * followed the format document and wrote nothing. The two disagreed and
+         * `CLAUDE.md`'s precedence settles it: the data contract governs a data
+         * question. The format document is corrected rather than the contract.
+         *
+         * **It stopped being cosmetic when the pages stopped being English.**
+         * Since #327 the readable copy is written in the person's language, so
+         * 8.5's regeneration is a function of a language the archive did not
+         * record: the same rows regenerate correct pages on a phone set to
+         * another language, and they are not these bytes. Recording it is what
+         * lets a regeneration reproduce the archive it came from.
+         */
+        val readableLocale: String? = null,
+        /**
+         * The IANA zone the exporting device was in. 8.2 asks for it by name.
+         *
+         * Beside `exportedAt` rather than folded into it, for the same reason
+         * every event date in the schema carries a zone next to its instant: an
+         * epoch alone cannot say what time it was where somebody was standing.
+         */
+        val exportedZone: String? = null,
+        /**
+         * Attachments this archive names and does not carry. 8.2 and #332.
+         *
+         * **Empty on every sound archive**, which is every archive this project
+         * has produced. It is not a warning that fires routinely; it is the one
+         * that must not be silent the day storage failed.
+         */
+        val missingAttachments: List<MissingAttachment> = emptyList(),
     ) {
         companion object
     }
@@ -264,6 +318,21 @@ object ExportContainer {
          * decide whether a hint of three spaces is a hint.
          */
         val passphraseHint: String? = null,
+        /**
+         * Live attachment rows whose bytes were not on the device. #332.
+         *
+         * **Gathered by the caller because only it has the store.** This object
+         * is the format; it knows what the manifest must say and not where a
+         * phone keeps its files.
+         */
+        val missingAttachments: List<MissingAttachment> = emptyList(),
+        /**
+         * The IANA zone the device was in, beside [exportedAt]. 8.2.
+         *
+         * Passed in rather than read, for the same reason `exportedAt` is: a
+         * value taken from the clock inside here is a value no test can pin.
+         */
+        val exportedZone: String? = null,
     )
 
     /**
@@ -404,6 +473,12 @@ object ExportContainer {
             subjectCount = source.subjectCount,
             readablePages = readable.size,
             passphraseHint = source.passphraseHint,
+            // **The language the pages are actually in**, taken from the words
+            // that rendered them rather than from the device, so the manifest
+            // cannot disagree with the folder beside it. #210.
+            readableLocale = source.readableWords.lang,
+            exportedZone = source.exportedZone,
+            missingAttachments = source.missingAttachments,
         )
 
         // Every file's hash, gathered as it is written, for CHECKSUMS.txt.
@@ -1156,8 +1231,12 @@ object ExportContainer {
         // The payload is a plain SQLite file, which is what makes it portable,
         // and that is also what makes these last two checks possible at all.
         if (expected != null) {
-            inspect(database, attachments.map { it.name }.toSet(), expected)
-                ?.let { return@withContext failure<Opened>(it) }
+            inspect(
+                database,
+                attachments.map { it.name }.toSet(),
+                expected,
+                manifest.missingAttachments.map { it.sha256 }.toSet(),
+            )?.let { return@withContext failure<Opened>(it) }
         }
 
         Result.success(Opened(manifest, database, attachments))
@@ -1273,6 +1352,7 @@ object ExportContainer {
         database: File,
         present: Set<String>,
         expected: Schema,
+        declaredMissing: Set<String>,
     ): Problem? {
         val db = try {
             SQLiteDatabase.openDatabase(database.path, null, SQLiteDatabase.OPEN_READONLY)
@@ -1284,7 +1364,7 @@ object ExportContainer {
         }
 
         return db.use { open ->
-            unknownShape(open, expected) ?: missingAttachment(open, present)
+            unknownShape(open, expected) ?: missingAttachment(open, present, declaredMissing)
         }
     }
 
@@ -1342,7 +1422,29 @@ object ExportContainer {
      * that records its own removal would reject every export taken after
      * somebody deleted a photograph.
      */
-    private fun missingAttachment(open: SQLiteDatabase, present: Set<String>): Problem? {
+    private fun missingAttachment(
+        open: SQLiteDatabase,
+        present: Set<String>,
+        /**
+         * Hashes the manifest already says are gone, which are not a failure.
+         *
+         * **This is the clause that turns a silent failure into a stated one.**
+         * Before it, an attachment row whose bytes were gone at export produced
+         * an archive this app refused by name, at restore, on the new phone,
+         * with the old one gone. The export now looks and records what it
+         * found, so a file the manifest declares missing is a fact the archive
+         * is carrying rather than damage in transit. `contract/DATA-CONTRACT.md`
+         * 8.3: it imports "with its name and date intact, so the person sees
+         * that a photo existed and is gone, rather than never learning it was
+         * there". #332.
+         *
+         * **A hash that is absent and undeclared still fails.** That is the
+         * difference between an archive that knows what it is missing and one
+         * that was damaged, and it is the whole reason this is a list rather
+         * than a flag.
+         */
+        declaredMissing: Set<String>,
+    ): Problem? {
         val hasAttachments = open.rawQuery(
             "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'attachment'",
             null,
@@ -1357,7 +1459,7 @@ object ExportContainer {
         ).use { cursor ->
             while (cursor.moveToNext()) {
                 val hash = cursor.getString(0)
-                if (hash !in present) {
+                if (hash !in present && hash !in declaredMissing) {
                     return Problem.AttachmentMissing(
                         hash,
                         "This export refers to an attached file that is not in it. The " +
@@ -1465,6 +1567,25 @@ object ExportContainer {
             JSONObject().apply {
                 put("count", attachmentCount)
                 put("total_bytes", attachmentBytes)
+                // **Only when there are any**, so an archive from a sound
+                // notebook does not carry a field that exists to say nothing
+                // went wrong. A reader treats absent and empty the same.
+                if (missingAttachments.isNotEmpty()) {
+                    put(
+                        "missing",
+                        org.json.JSONArray().apply {
+                            missingAttachments.forEach { gone ->
+                                put(
+                                    JSONObject().apply {
+                                        put("sha256", gone.sha256)
+                                        gone.originalFilename?.let { put("original_filename", it) }
+                                        put("created_at", gone.createdAt)
+                                    },
+                                )
+                            }
+                        },
+                    )
+                }
             },
         )
         put("subject_count", subjectCount)
@@ -1472,8 +1593,12 @@ object ExportContainer {
             "readable",
             JSONObject().apply {
                 put("pages", readablePages)
+                // 8.2 always asked for this and the format document never
+                // listed it. #210.
+                readableLocale?.let { put("locale", it) }
             },
         )
+        exportedZone?.let { put("exported_zone", it) }
     }
 
     private fun ZipInputStream.readText(): String = readBytes().decodeToString()
@@ -1519,5 +1644,22 @@ internal fun ExportContainer.Manifest.Companion.from(json: JSONObject): ExportCo
         attachmentCount = attachments.optInt("count"),
         attachmentBytes = attachments.optLong("total_bytes"),
         subjectCount = json.optInt("subject_count"),
+        readableLocale = json.optJSONObject("readable")
+            ?.optString("locale")?.takeIf { it.isNotBlank() },
+        exportedZone = json.optString("exported_zone").takeIf { it.isNotBlank() },
+        missingAttachments = attachments.optJSONArray("missing")
+            ?.let { array ->
+                (0 until array.length()).mapNotNull { at ->
+                    array.optJSONObject(at)?.let { gone ->
+                        ExportContainer.MissingAttachment(
+                            sha256 = gone.optString("sha256"),
+                            originalFilename = gone.optString("original_filename")
+                                .takeIf { it.isNotBlank() },
+                            createdAt = gone.optLong("created_at"),
+                        )
+                    }
+                }
+            }
+            .orEmpty(),
     )
 }

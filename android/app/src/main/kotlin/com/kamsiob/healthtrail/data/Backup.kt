@@ -28,22 +28,15 @@ object Backup {
     /**
      * An attachment row that is live and whose bytes are not on this phone.
      *
-     * **This is what happens when storage failed**, when a file was removed
-     * outside the app, or when a copy was interrupted. The row is still the
-     * person's record and it still knows what the photograph was called and
-     * when it arrived; only the bytes are gone.
+     * **Moved into [ExportContainer] on 2026-08-10, and the move is the point.
      *
-     * **The name and the date are carried rather than the hash alone** because
-     * `contract/DATA-CONTRACT.md` 8.3 says what has to survive: an attachment
-     * missing at export time is imported "with its name and date intact, so the
-     * person sees that a photo existed and is gone, rather than never learning
-     * it was there". A bare content hash cannot say that to anybody.
+     * It began as an export-time finding this layer returned to its caller,
+     * because the manifest had nowhere to put it. `contract/DATA-CONTRACT.md`
+     * 8.2 always said the manifest carries the list, so once the format
+     * document was corrected to match the contract it stopped being a finding
+     * and became part of what an archive says about itself. #332, #210.
      */
-    data class MissingAttachment(
-        val sha256: String,
-        val originalFilename: String?,
-        val createdAt: Long,
-    )
+    typealias MissingAttachment = ExportContainer.MissingAttachment
 
     /**
      * What an export produced, and what it noticed while producing it.
@@ -108,7 +101,7 @@ object Backup {
                     val hash = cursor.getString(0)
                     if (hash in present || !seen.add(hash)) continue
                     add(
-                        MissingAttachment(
+                        ExportContainer.MissingAttachment(
                             sha256 = hash,
                             originalFilename = if (cursor.isNull(1)) null else cursor.getString(1),
                             createdAt = cursor.getLong(2),
@@ -235,6 +228,14 @@ object Backup {
                         catalogNames = ReadableWords.catalogNames(context),
                     ),
                     passphraseHint = passphraseHint?.trim()?.takeIf { it.isNotEmpty() },
+                    // **What the export looked for and did not find**, so the
+                    // archive states it rather than failing to open on the new
+                    // phone with the old one gone. #332.
+                    missingAttachments = missing,
+                    // 8.2 asks for the zone beside the instant, by name. An
+                    // epoch alone cannot say what time it was where somebody
+                    // was standing.
+                    exportedZone = ZoneId.systemDefault().id,
                 ),
                 passphrase = passphrase,
             ).let { Written(manifest = it, missingAttachments = missing) }

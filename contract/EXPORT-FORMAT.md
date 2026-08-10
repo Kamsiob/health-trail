@@ -178,7 +178,27 @@ attachments/        one file per attachment, named by its SHA-256 in lowercase h
 
 **`README.txt` is byte-identical to the outer one.** Two files with the same name and different words teach a reader to trust neither. The inner copy exists so a folder somebody extracted years ago, long separated from the zip it came out of, still says what it is.
 
-**`MANIFEST.json` here is the full manifest**: everything in section 2 plus `origin_device`, `database` (its `sha256`, `byte_size`, `schema_version` and `row_counts`), `attachments` (`count`, `total_bytes`), `subject_count`, and `readable` (`pages`). The outer manifest is this object with the describing half removed, not a different object.
+**`MANIFEST.json` here is the full manifest**: everything in section 2 plus `origin_device`, `exported_zone`, `database` (its `sha256`, `byte_size`, `schema_version` and `row_counts`), `attachments` (`count`, `total_bytes`, and `missing` when there are any), `subject_count`, and `readable` (`pages` and `locale`). The outer manifest is this object with the describing half removed, not a different object.
+
+**Three of those were added on 2026-08-10 and the correction is worth stating**, because this document had them wrong rather than merely incomplete. `DATA-CONTRACT.md` 8.2 always listed the export's timezone, the locale the readable copy was written in, and the list of any attachment whose bytes could not be read. This document listed `readable` as carrying `pages` and nothing else, so the code followed this document and wrote none of them. **The data contract governs a data question**, per the precedence in `CLAUDE.md`, so this document is corrected rather than the contract. Issues #210 and #332.
+
+**`exported_zone` is the IANA zone id the exporting device was in**, beside `exported_at`. An epoch alone cannot say what time it was where somebody was standing, which is the same reason every event date in the schema carries a zone next to its instant.
+
+**`readable.locale` is the BCP 47 tag the readable pages are written in**, taken from the words that rendered them rather than from the device, so the manifest cannot disagree with the folder beside it. **A reader needs it to regenerate those pages**: since the pages are written in the person's language, the same rows regenerate correct pages in a different language on a phone set to one, and those are not this archive's bytes. Without this field 8.5's byte identical regeneration is a claim about one phone.
+
+**`attachments.missing` lists the attachments this archive names and does not carry.** Absent when there are none, which is every sound archive; absent and empty mean the same thing. Each entry is an object with `sha256`, `created_at`, and `original_filename` where the record has one:
+
+```json
+"attachments": {
+  "count": 41,
+  "total_bytes": 90371233,
+  "missing": [
+    { "sha256": "9d98...64ce", "original_filename": "discharge summary.jpg", "created_at": 1785000000000 }
+  ]
+}
+```
+
+**A reader must not refuse an archive over an attachment this list declares.** The row travels, its name and its date travel, and the bytes are gone: `DATA-CONTRACT.md` 8.3 requires it to import as a known-missing attachment "with its name and date intact, so the person sees that a photo existed and is gone, rather than never learning it was there". **An attachment that is absent and not declared is still a failure**, and that difference is the whole reason this is a list rather than a flag: it separates an archive that knows what it is missing from one that was damaged in transit.
 
 `row_counts` carries every table including the ones with zero rows. It exists so an import can state plainly what is about to be imported before doing it, and so a partial file is detectable before any work starts.
 
