@@ -2369,6 +2369,18 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **`tools/decrypt` needed no change**, which is worth recording because it is what made the correction safe: the tool reads only the outer manifest's version and encryption parameters, so every field added here is additive to a reader that has already shipped.
 
+### D133. A vector belongs to the contract, and the mapping it pins is held to the schema
+
+**2026-08-10, #15 and #336.** The digest's cases lived inside `DigestTest` as Kotlin. Moving them to `contract/test-vectors/digest.json` found that `Digest.sectionOf` mapped `reading`, which is not a table and never has been, so every measurement anybody recorded was left out of the Today digest: **244 new things where it should have said 261**, on the six month fixture.
+
+**The vector is the contract's, not the test's, and that is the whole distinction.** #15 asks for fixtures paired with expected output that **both** platforms run, so that a disagreement is a build failure. Cases written in Kotlin cannot do that however good they are. `DigestTest` reads them as data now, so adding a case needs no Kotlin edit; the moment it does, the file has stopped being the source and become a copy.
+
+**The mapping is pinned in three places that cannot agree with each other by accident.** `contract/schema.sql`'s change log triggers are the authority for what a change row can say. `check_digest_sections.py` holds the engine's mapping to those literals. `contract/test-vectors/digest.json` carries the mapping, and the test asserts the engine matches it **in both directions**: everything the contract maps, and nothing it leaves out.
+
+**Why three and not one.** The old test walked a hard-coded list *in the test* that also said `reading`. Two copies of one mistake agree forever, and a check that reads the same wrong list is not a check. **The rule this generalizes to is the one `docs/RUN-LOG.md` already states twice: hold the set to the file that generates it, never to a second copy of the set.** `DATED` named two columns that did not exist and cost every bill and document a null date; this cost every reading its place on the front screen.
+
+**The unmapped tables are listed rather than left absent.** "This table is deliberately not counted" and "nobody thought about this table" look identical in code. A list makes the first one say so.
+
 ---
 
 ## BLOCKED

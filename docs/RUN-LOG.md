@@ -1302,3 +1302,39 @@ The month six fixture with one of its four attachment files moved aside. Exporte
 **On the build #332 was opened against, that same file was refused by name**, at restore, on the new phone, with the old one gone.
 
 ---
+
+## 14. Moving the vectors into the contract found a defect nobody could see, 2026-08-10
+
+**#15 asked for the digest's cases to live in `contract/test-vectors/` where both platforms can run them.** They lived inside `DigestTest` as Kotlin. Moving them is bookkeeping; what it found is not.
+
+### The defect
+
+`Digest.sectionOf` mapped `"reading"` to Progress. **There has never been a table called `reading`.** The schema has `measure` and `measurement`, and the change log triggers write exactly those two names, so every reading anybody recorded fell through to the `else` branch and was left out of the Today digest.
+
+**On the six month fixture that is 244 new things where it should say 261**, computed from a real decrypted archive by applying the engine's own counting rule to its change log. Seventeen of the person's own readings, invisible, on the front screen.
+
+**It fails in the direction that looks like calm.** A quiet digest is exactly what a quiet week looks like, so there was nothing to notice.
+
+### Why nothing caught it, which is the part worth keeping
+
+`DigestTest` had a case that walked the mapping and asserted every table resolved to a section. **It walked a hard-coded list in the test file that also said `reading`.** So it asserted the mapping the code had rather than the mapping the schema had, and two copies of one mistake agree with each other forever.
+
+**This is the third time this exact shape has cost something.** `DATED` named two columns that do not exist and every bill and document ever exported was filed under a null date. The archive's dynamic label keys were absent from all four catalogs at once and passed both checks that looked at them. Now this.
+
+**The rule, stated once more because it keeps earning itself: hold the set to the file that generates it, never to a second copy of the set.** The authority here is the change log's own `VALUES ('<table>'` trigger literals, because that is the complete set of names a change row can ever carry.
+
+### What is in place now
+
+Three things that cannot agree with each other by accident. `check_digest_sections.py`, the nineteenth check, holds the engine's mapping to the schema's literals. `contract/test-vectors/digest.json` carries the mapping and fourteen cases, each with the sentence saying why its answer is what it is. `DigestTest` asserts the engine matches the contract **in both directions**, so a table added to the engine and not to the contract fails too.
+
+**The unmapped tables are listed rather than absent**, because "deliberately not counted" and "nobody thought about it" look identical in code.
+
+**Proved not vacuous** by putting the old mapping back and watching two tests and the check fail, then restoring it.
+
+### What did not move
+
+The pattern engine's vectors, because there is no pattern engine, and #15's criteria about gaps and minimum-data thresholds assume one. The digest counts and stops: it has no threshold and says nothing about a gap, deliberately, because anything it could say about one would be an opinion about somebody's care.
+
+**And the second reader.** `web/` holds a README. Until #16 exists these are golden vectors with one reader, which is better than tests with one reader and is not what the issue asks for.
+
+---
