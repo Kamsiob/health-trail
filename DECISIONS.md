@@ -2341,6 +2341,22 @@ Decided under rule 23: of two defensible answers, the one that is easiest for th
 
 **How it was found is the part worth keeping.** Not by reading the field map, which said `render: link` and looked correct. By exporting for real, decrypting on the laptop, and grepping the produced pages for bare integers and schema tokens. That is the third time that sweep has found something the code review did not.
 
+### D131. The archive formats money itself, and the screens still ask the platform
+
+**2026-08-10, #331.** `java.text.NumberFormat` gave `‏6,790.40 US$` on the phone and `‏٦٬٧٩٠٫٤٠ US$` on this laptop for the same call, the same locale tag and the same currency, because Android's bundled ICU and the JDK's CLDR are of different vintages and disagree about the default numbering system for a bare `ar` tag.
+
+**Why that was a defect rather than a curiosity.** 8.5's byte identical regeneration is the strongest guarantee the format has, and an amount that depends on which machine opens the archive makes it a guarantee about one phone. **`/contract` exists because there are meant to be two readers**, and a web platform with `Intl.NumberFormat` would have produced a third answer, with the failure looking like data loss rather than like a formatting difference.
+
+**The third of the three shapes on the issue, and the argument was already written down.** `ReadableDate` spells the month name itself rather than asking the locale, on the reasoning that the stranger a date must survive is a records office or a lawyer who may not read the person's language. **Money has exactly the same argument and had not been given the same treatment.**
+
+**The rules and the data are in `contract/readable-money.json`**, not in Kotlin, because a second reader needs them. The only data required is the ISO 4217 codes whose minor unit is not two digits; everything else is two, **stated rather than silent**, so an unknown code renders with the right guess instead of being refused. The table is generated into Kotlin by the build like the field map and the vocabularies, so there is no second copy.
+
+**The screens keep asking the platform, and that is deliberate.** Arabic-Indic digits are correct Arabic, and a person reading their own notebook should see money the way their own phone writes it. The archive is the document that leaves.
+
+**A bidi effect was found by rendering rather than by reasoning, and was left alone.** An Arabic page lays `6,790.40 USD` out as `USD 6,790.40`, because the paragraph runs right to left. **The bytes are identical either way** and both orders are unambiguous. `Bidi.isolate`'s `U+2066` and `U+2069` would pin the visual order and would put invisible control characters into a document whose whole standard is that it opens in whatever exists in ten years. **A screen has somebody looking at it and can afford marks a font might one day print. An archive cannot.**
+
+**This resolves D128's open note.** The golden vector computed its money strings by lookup because computing them would have locked it to whichever machine ran the build. It computes them now.
+
 ---
 
 ## BLOCKED
