@@ -34,6 +34,10 @@ CHECKS = [
         "check_digest_sections.py",
         "every table the digest maps is one the change log actually writes",
     ),
+    (
+        "check_dead_gestures.py",
+        "no control announces an action it does not perform",
+    ),
     ("check_contrast.py", "every color pair in both themes against the WCAG AA floors"),
     ("check_ink3_is_not_text.py", "ink3 is non-text only, so no label is drawn at 2.37:1"),
     ("check_self_contained.py", "nothing outside this project is named in the repository"),
