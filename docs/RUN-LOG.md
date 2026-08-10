@@ -1390,3 +1390,29 @@ TalkBack was enabled beside the existing service, with the prior values recorded
 #218 is nine screens, not seventeen. The other eight had already moved, which is what #231 was. The check deliberately does **not** refuse `removableByLongPress` itself, because that would fail the build on nine screens working as designed until #218 lands.
 
 ---
+
+## 17. The picker that charged by the month, 2026-08-10
+
+**#132.** The date picker's heading was a label between two month arrows. Moving back a year cost twelve taps. Reaching a birth year cost about a thousand.
+
+**On a screen the app actively sends people back to.** Rule 17 makes every date editable forever from the entry itself and rule 13 makes a partial answer a finished one, so the app encourages somebody to return and fix a date later, and then charged them by the month for it.
+
+### What it is now
+
+The heading is the control: days to months to years. **Picking a month drops back to days and picking a year drops back to months**, so the next tap is the one they were already going to make. The common case, this month or last, is untouched.
+
+**Measured on the device rather than estimated:** back one year is three taps where it was twelve, and March 1941 is **nine taps** where it was about a thousand. The answer carried back to the form as March 14, 1941.
+
+**The year bound is chosen by the person, not by a round number.** A hundred and twenty years back, because this app records a birth date and the subject of a care notebook is frequently in their nineties. A picker that cannot reach the year somebody was born cannot answer the question the setup screen asks.
+
+### The defect that only walking it found
+
+**The arrows announced "Previous month" while stepping a year, and then sixteen years.** A control naming an action it does not perform, which is rule 11 and the same shape as #231, closed an hour earlier the same day.
+
+**It was invisible in the code**, which reads correctly at every line, and audible immediately in the reader's own words. That is the argument for walking a navigation change rather than reading it, and it is the second time in one day that the reader caught something the eye could not: the first was the phantom long press.
+
+### And a lint catch worth keeping
+
+`NonObservableLocale` refused a locale read inside the new composable. It is right, and the reason is worth remembering: **a composable that reads the default locale does not recompose when the locale changes.** `monthName` had always been a plain function for exactly that reason, which nothing said out loud until the lint said it.
+
+---
