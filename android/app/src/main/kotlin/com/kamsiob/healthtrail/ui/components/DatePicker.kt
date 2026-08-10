@@ -56,6 +56,13 @@ object DatePickerTags {
     const val TIME = "date_picker_time"
     fun day(day: Int) = "date_picker_day_$day"
     fun month(month: Int) = "date_picker_month_$month"
+
+    /** The heading, which is the way up from days to months to years. #132. */
+    const val ZOOM = "date_picker_zoom"
+    const val MONTHS = "date_picker_months"
+    const val YEARS = "date_picker_years"
+    fun monthCell(month: Int) = "date_picker_month_cell_$month"
+    fun yearCell(year: Int) = "date_picker_year_cell_$year"
 }
 
 /**
@@ -104,6 +111,17 @@ fun DatePickerSheet(
     var wholeMonth by remember { mutableStateOf(opening.wholeMonth) }
     var time by remember { mutableStateOf(opening.time) }
 
+    /**
+     * How far out the picker is zoomed. #132.
+     *
+     * **Days is where it opens and where it returns to**, because the common
+     * answer is this month or last and that case must stay exactly as fast as
+     * it was. Picking a month drops back to days, and picking a year drops back
+     * to months, so a person walking back four years lands on a day grid
+     * without a third tap to get there.
+     */
+    var zoom by remember { mutableStateOf(Zoom.DAYS) }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -139,48 +157,105 @@ fun DatePickerSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            MonthHeader(
+            // **The heading is the way out of a swipe count.** It used to be a
+            // label between two month arrows, so moving back a year was twelve
+            // taps and moving back to a birth year was hundreds. Tapping it
+            // zooms out; the arrows still step by whatever is on screen. #132.
+            PickerHeader(
+                zoom = zoom,
                 month = month,
-                onPrevious = { month = month.minusMonths(1) },
-                onNext = { month = month.plusMonths(1) },
+                onPrevious = {
+                    month = when (zoom) {
+                        Zoom.DAYS -> month.minusMonths(1)
+                        Zoom.MONTHS -> month.minusYears(1)
+                        Zoom.YEARS -> month.minusYears(YEARS_PER_PAGE.toLong())
+                    }
+                },
+                onNext = {
+                    month = when (zoom) {
+                        Zoom.DAYS -> month.plusMonths(1)
+                        Zoom.MONTHS -> month.plusYears(1)
+                        Zoom.YEARS -> month.plusYears(YEARS_PER_PAGE.toLong())
+                    }
+                },
+                onZoomOut = {
+                    zoom = when (zoom) {
+                        Zoom.DAYS -> Zoom.MONTHS
+                        Zoom.MONTHS -> Zoom.YEARS
+                        Zoom.YEARS -> Zoom.YEARS
+                    }
+                },
             )
 
             Spacer(Modifier.height(Space.sm))
 
-            MonthGrid(
-                month = month,
-                selected = if (wholeMonth) null else day,
-                today = today,
-                dimmed = wholeMonth,
-                onPick = { picked ->
-                    day = picked
-                    wholeMonth = false
-                },
-            )
-
-            Spacer(Modifier.height(Space.m))
-
-            // The whole month, as an answer in its own right rather than as a
-            // fallback. Selecting it clears the day, because "November" and
-            // "the eighteenth" are different claims and the app may hold only
-            // the one the person made.
-            ChoiceChip(
-                label = strings("date.month", "date" to monthName(month)),
-                selected = wholeMonth,
-                onClick = {
-                    wholeMonth = !wholeMonth
-                    if (wholeMonth) day = null
-                },
-                modifier = Modifier.testTag(DatePickerTags.month(month.monthValue)),
-            )
-
-            if (day != null && !wholeMonth) {
-                Spacer(Modifier.height(Space.m))
-                TimeRow(
-                    time = time,
-                    onToggle = { time = if (time == null) DEFAULT_TIME else null },
-                    onChange = { time = it },
+            when (zoom) {
+                Zoom.DAYS -> MonthGrid(
+                    month = month,
+                    selected = if (wholeMonth) null else day,
+                    today = today,
+                    dimmed = wholeMonth,
+                    onPick = { picked ->
+                        day = picked
+                        wholeMonth = false
+                    },
                 )
+
+                // **Picking a month drops straight back to days.** The person
+                // came here to get somewhere, not to look at months.
+                Zoom.MONTHS -> MonthsGrid(
+                    year = month.year,
+                    selected = month.monthValue,
+                    today = today,
+                    onPick = { picked ->
+                        month = YearMonth.of(month.year, picked)
+                        zoom = Zoom.DAYS
+                    },
+                )
+
+                // **And a year drops back to months rather than to days**, so
+                // the next tap is the one they were already going to make.
+                Zoom.YEARS -> YearsGrid(
+                    around = month.year,
+                    selected = month.year,
+                    today = today,
+                    onPick = { picked ->
+                        month = YearMonth.of(picked, month.monthValue)
+                        zoom = Zoom.MONTHS
+                    },
+                )
+            }
+
+            // **Both of these belong to a chosen day and are hidden while the
+            // picker is zoomed out.** A chip offering "the whole of November"
+            // under a grid of years is an answer to a question nobody is
+            // looking at, and it would change the month out from under the
+            // grid on screen. #132.
+            if (zoom == Zoom.DAYS) {
+                Spacer(Modifier.height(Space.m))
+
+                // The whole month, as an answer in its own right rather than as
+                // a fallback. Selecting it clears the day, because "November"
+                // and "the eighteenth" are different claims and the app may
+                // hold only the one the person made.
+                ChoiceChip(
+                    label = strings("date.month", "date" to monthName(month)),
+                    selected = wholeMonth,
+                    onClick = {
+                        wholeMonth = !wholeMonth
+                        if (wholeMonth) day = null
+                    },
+                    modifier = Modifier.testTag(DatePickerTags.month(month.monthValue)),
+                )
+
+                if (day != null && !wholeMonth) {
+                    Spacer(Modifier.height(Space.m))
+                    TimeRow(
+                        time = time,
+                        onToggle = { time = if (time == null) DEFAULT_TIME else null },
+                        onChange = { time = it },
+                    )
+                }
             }
 
             Spacer(Modifier.height(Space.l))
@@ -270,24 +345,298 @@ private fun answer(
     else -> Edtf.day(LocalDate.of(month.year, month.monthValue, day))
 }
 
+/**
+ * How far out the picker is zoomed. #132.
+ *
+ * **Three steps and no more.** Days, months, years. A fourth for decades would
+ * be a level nobody asks for by name, and the year grid already holds enough
+ * years that stepping it by a page covers a lifetime in a few taps.
+ */
+private enum class Zoom { DAYS, MONTHS, YEARS }
+
+/** How many years one page of the year grid holds, which is four rows of four. */
+private const val YEARS_PER_PAGE = 16
+
+/**
+ * The oldest year the picker will offer.
+ *
+ * **A hundred and twenty years back, because this app records a birth date.**
+ * The subject of a care notebook is frequently in their nineties, and a picker
+ * that cannot reach the year somebody was born is a picker that cannot answer
+ * the question the setup screen asks. Bounded rather than infinite, per the
+ * acceptance criteria, and bounded by the person rather than by a round number.
+ */
+private const val YEARS_BACK = 120
+
+/**
+ * And the newest. Appointments are scheduled ahead, rarely by more than a year.
+ */
+private const val YEARS_FORWARD = 5
+
+/**
+ * The heading, which is both a label and the way out of a swipe count.
+ *
+ * **It used to be a label between two arrows.** Moving back a year cost twelve
+ * taps and reaching a birth year cost hundreds, on a screen the app actively
+ * encourages people to come back to, because rule 17 makes every date editable
+ * forever and rule 13 makes a partial answer a finished one. `DESIGN.md` 10.10:
+ * taps are the currency. #132.
+ *
+ * **The arrows step whatever is on screen**, so they keep working the way they
+ * read: a month at a time on the day grid, a year at a time on the month grid,
+ * a page at a time on the year grid.
+ *
+ * **The year view's heading does not zoom further**, because there is nothing
+ * above it. It stays a label there rather than becoming a button that does
+ * nothing, which is rule 11.
+ */
 @Composable
-private fun MonthHeader(month: YearMonth, onPrevious: () -> Unit, onNext: () -> Unit) {
+private fun PickerHeader(
+    zoom: Zoom,
+    month: YearMonth,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onZoomOut: () -> Unit,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
+
+    val label = when (zoom) {
+        Zoom.DAYS -> monthName(month)
+        Zoom.MONTHS -> month.year.toString()
+        Zoom.YEARS -> {
+            val page = yearsPage(month.year)
+            strings(
+                "date.pick.years.range",
+                "from" to page.first().toString(),
+                "to" to page.last().toString(),
+            )
+        }
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Stepper(label = strings["date.pick.previous"], pointsForward = false, onClick = onPrevious)
-        Text(
-            text = monthName(month),
-            style = HealthTrail.type.displayS,
-            color = colors.ink,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1f),
+        // **The arrows say what they actually do at this zoom.** They stepped
+        // by a month, a year or sixteen years while announcing "previous
+        // month" in all three, which is a control naming an action it does not
+        // perform. Rule 11, and the same shape as #231.
+        Stepper(
+            label = strings[
+                when (zoom) {
+                    Zoom.DAYS -> "date.pick.previous"
+                    Zoom.MONTHS -> "date.pick.previous.year"
+                    Zoom.YEARS -> "date.pick.previous.years"
+                }
+            ],
+            pointsForward = false,
+            onClick = onPrevious,
         )
-        Stepper(label = strings["date.pick.next"], pointsForward = true, onClick = onNext)
+
+        if (zoom == Zoom.YEARS) {
+            Text(
+                text = label,
+                style = HealthTrail.type.displayS,
+                color = colors.ink,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            val interaction = remember { MutableInteractionSource() }
+            val surface by pressedSurface(interaction, Color.Transparent)
+            val ring by focusRingAlpha(interaction)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(Radius.tile)
+                    .background(surface)
+                    .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
+                    .clickable(
+                        interactionSource = interaction,
+                        indication = null,
+                        role = Role.Button,
+                        onClick = onZoomOut,
+                    )
+                    .semantics {
+                        contentDescription = strings(
+                            if (zoom == Zoom.DAYS) {
+                                "date.pick.zoom.months"
+                            } else {
+                                "date.pick.zoom.years"
+                            },
+                            "date" to label,
+                        )
+                    }
+                    .testTag(DatePickerTags.ZOOM),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = label,
+                    style = HealthTrail.type.displayS,
+                    color = colors.ink,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(vertical = Space.xs),
+                )
+            }
+        }
+
+        Stepper(
+            label = strings[
+                when (zoom) {
+                    Zoom.DAYS -> "date.pick.next"
+                    Zoom.MONTHS -> "date.pick.next.year"
+                    Zoom.YEARS -> "date.pick.next.years"
+                }
+            ],
+            pointsForward = true,
+            onClick = onNext,
+        )
+    }
+}
+
+/** The sixteen years one page of the year grid shows, containing [year]. */
+private fun yearsPage(year: Int): List<Int> {
+    val newest = LocalDate.now().year + YEARS_FORWARD
+    val oldest = LocalDate.now().year - YEARS_BACK
+    // Pages are anchored to the newest year so the current decade never lands
+    // split across two pages, which is where almost every answer is.
+    val offset = ((newest - year) / YEARS_PER_PAGE) * YEARS_PER_PAGE
+    val top = newest - offset
+    return (top downTo maxOf(oldest, top - YEARS_PER_PAGE + 1)).toList().sorted()
+}
+
+/**
+ * The twelve months of one year, as a grid.
+ *
+ * **Named in full rather than abbreviated.** Three letter month names are a
+ * different word in every language and a worse word in most, and there is room
+ * for the real one at three across.
+ */
+@Composable
+private fun MonthsGrid(
+    year: Int,
+    selected: Int,
+    today: LocalDate,
+    onPick: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().testTag(DatePickerTags.MONTHS),
+        verticalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        (1..12).chunked(3).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Space.xs),
+            ) {
+                row.forEach { number ->
+                    CalendarCell(
+                        label = monthLabel(year, number),
+                        selected = number == selected,
+                        isNow = year == today.year && number == today.monthValue,
+                        onClick = { onPick(number) },
+                        modifier = Modifier.weight(1f).testTag(DatePickerTags.monthCell(number)),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** One page of years, four across. */
+@Composable
+private fun YearsGrid(
+    around: Int,
+    selected: Int,
+    today: LocalDate,
+    onPick: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().testTag(DatePickerTags.YEARS),
+        verticalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        yearsPage(around).chunked(4).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Space.xs),
+            ) {
+                row.forEach { year ->
+                    CalendarCell(
+                        label = year.toString(),
+                        selected = year == selected,
+                        isNow = year == today.year,
+                        onClick = { onPick(year) },
+                        modifier = Modifier.weight(1f).testTag(DatePickerTags.yearCell(year)),
+                    )
+                }
+                // A short last row keeps its cells the same width as the rows
+                // above rather than stretching to fill, which would make the
+                // oldest years look like a different kind of control.
+                repeat(4 - row.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+/**
+ * One month or one year, as a cell.
+ *
+ * **The same treatment `DayCell` uses**, deliberately: selected is a filled
+ * wash with a ring, today carries the same quiet dot, and the press step and
+ * focus ring come from the same helpers. Two calendars in one sheet that looked
+ * like two different controls would be the defect section 11 exists to prevent.
+ */
+@Composable
+private fun CalendarCell(
+    label: String,
+    selected: Boolean,
+    isNow: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val resting = if (selected) colors.blueWash else Color.Transparent
+    val surface by pressedSurface(interaction, resting)
+    val ring by focusRingAlpha(interaction)
+
+    Box(
+        modifier = modifier
+            .minimumInteractiveComponentSize()
+            .height(Space.touchTarget)
+            .clip(Radius.tile)
+            .background(surface)
+            .border(
+                2.dp,
+                colors.blue.copy(alpha = maxOf(if (selected) 1f else 0f, ring)),
+                Radius.tile,
+            )
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = label,
+                style = HealthTrail.type.bodyM,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                color = if (selected) colors.blueDeep else colors.ink,
+                textAlign = TextAlign.Center,
+            )
+            if (isNow) {
+                Spacer(Modifier.height(1.dp))
+                Box(
+                    modifier = Modifier
+                        .size(4.dp)
+                        .clip(CircleShape)
+                        .background(colors.ink3),
+                )
+            }
+        }
     }
 }
 
@@ -506,6 +855,18 @@ private fun TimeRow(
         }
     }
 }
+
+/**
+ * One month's name on its own, without its year.
+ *
+ * **Outside the composable deliberately.** Lint's `NonObservableLocale` refuses
+ * a locale read inside one, and it is right: a composable that reads the
+ * default locale does not recompose when the locale changes. `monthName` has
+ * always been a plain function for the same reason and this sits beside it.
+ */
+private fun monthLabel(year: Int, month: Int): String =
+    YearMonth.of(year, month).month
+        .getDisplayName(JavaTextStyle.FULL_STANDALONE, java.util.Locale.getDefault())
 
 private fun monthName(month: YearMonth): String =
     "${month.month.getDisplayName(JavaTextStyle.FULL_STANDALONE, java.util.Locale.getDefault())} " +
