@@ -959,7 +959,7 @@ The fixture wrote a day precision EDTF beside a 10am instant, which is **a row t
 
 **The English catalog reordered itself in Arabic**, on a screen nobody had isolated: every sentence's full stop jumped to the front of its last line, ".your own" rather than "your own.". Fixed on the picker. **#226's worklist is the rest of this**, and it is worth taking seriously.
 
-**332 instrumented tests pass**, up from 325. **One flake seen once and not since**: `RoundTripTest.unknownSurvivesAsUnknownRatherThanAsNullOrToday` failed with "attempt to write a readonly database" inside `Backup.recomputeRanges`, then passed on the next run with no change. Not investigated, and recorded here rather than forgotten.
+**332 instrumented tests pass**, up from 325. **One flake seen once and not since**: `RoundTripTest.unknownSurvivesAsUnknownRatherThanAsNullOrToday` failed with "attempt to write a readonly database" inside `Backup.recomputeRanges`, then passed on the next run with no change. Not investigated, and recorded here rather than forgotten. **It was seen again on 2026-08-11 in the same class with the same exception, so "not since" did not hold. It is #346**, and the code is 1032, `SQLITE_READONLY_DBMOVED`, which means the file moved out from under an open connection rather than anything about permissions.
 
 **A missing catalog key crashed the app on opening**, and nothing caught it: the four catalogs agreed with each other, seventeen checks passed, the Kotlin compiled and lint was clean, because nothing compared the literals in the code against the catalog. **`check_string_keys.py` now does**, and it was proved against the real crash rather than assumed.
 
