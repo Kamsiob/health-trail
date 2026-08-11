@@ -2519,6 +2519,26 @@ If it has a line stamped inside the session that is reading it, the guard is liv
 
 ---
 
+### D137. An in content action is a pill sized to its label, and the way back is the only full width outlined bar
+
+**2026-08-11, #340, and D118 decided this in 2026-08-06 without anybody sweeping it.** `SectionScaffold` draws a full width outlined pill at the foot of every screen to mean the way back. **Eighteen in content actions were wearing the identical costume**, so the foot of eight section screens was two identical bars of which only the second leaves, one incident carried five in a column, and About carried three.
+
+**What makes it a defect rather than a preference**: the costume is the only thing distinguishing navigation from action on those screens, and law 2's whole argument is that a costume must be recognizable without context. Two bars that look the same and do different things is the same class of problem as a control that says one thing and does another.
+
+**Three carve-outs, each with a reason rather than an exception.**
+
+**A sheet is not affected.** It has no way back at its foot for anything to collide with, only a Cancel, and a sheet's actions are the sheet's whole content. Every edit sheet keeps its full width buttons.
+
+**A filled action is not affected.** It is a different costume entirely, and law 2 gives it to the one primary action. `PrepScreen`'s "Share this as a document" and the restore screen's "Choose a file" are both full width, both filled, and both the point of their screen. **The restore screen's was outlined and became filled** rather than being resized, because the question the sweep asks is what the control is, and that one is the reason the screen exists.
+
+**A frozen file is not fixed at all**, per `docs/REMOVAL-LEDGER.md`. Five of the thirty-three sites are on the superseded project screen and stay exactly as they are.
+
+**One site was not a width problem and resizing it would have hidden that.** The violation form drew its own full width "Cancel" directly above the scaffold's "Back to what you have asked for", and the scaffold's `onBack` **is** `onCancel`: two identical bars doing the identical thing under two different words. It is deleted rather than resized. `DESIGN.md` 15.1 already records the same call for the emergency card's four Change pills.
+
+**And the sweep found a second defect of the same shape in the copy**, which is worth recording because it is the same mistake in a different medium: seven screens printed their own sentence twice, once in an 11sp mono chip and once at display weight underneath, because `SectionScaffold`'s heading defaults to its title. Four are fixed by the chip saying where you are. **Three need a heading written**, which is copy in four languages and a judgment about what somebody came to that screen to find out, and that is #341.
+
+---
+
 ### B1. Commit signing. Resolved 2026-07-31
 
 **Outcome.** The owner registered the SSH signing key. Verified rather than assumed: the account now lists one signing key titled "kamsiob commit signing", and `repos/Kamsiob/health-trail/commits/main` reports `verified=true, reason=valid`.
