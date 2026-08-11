@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -90,8 +91,20 @@ fun DenseRow(
      * type and a truncation in the largest. A row that must not clip must not
      * count its lines at all. Found on the phone at maximum font scale, which
      * is why 16.2 requires that pass rather than a reading of the code.
+     *
+     * **So the default is no cap, and it used to be one line.** Every row that
+     * had not thought about it clipped a person's own words silently, in the
+     * middle of a word, with nothing on screen to say anything was missing:
+     * a role, a dose, what a document is. That is the shape rule 11 bans, and
+     * a default is where a rule gets broken quietly rather than deliberately.
+     * **The defaults are the screens nobody looked at**, which is exactly the
+     * set #207 exists to sweep.
+     *
+     * Callers that still pass a number get an ellipsis rather than a clean
+     * cut, so a capped row at least says there is more. Nothing in this app
+     * should end mid-word with no mark.
      */
-    subtitleMaxLines: Int = 1,
+    subtitleMaxLines: Int = Int.MAX_VALUE,
     /**
      * An avatar, a thumbnail, a waypoint, or a thread swatch. Never an icon
      * tile, which belongs to tiles and to the table of contents.
@@ -198,6 +211,7 @@ fun DenseRow(
                         style = type.bodyM,
                         color = colors.ink2,
                         maxLines = subtitleMaxLines,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = subtitleTestTag?.let { Modifier.testTag(it) } ?: Modifier,
                     )
                 }

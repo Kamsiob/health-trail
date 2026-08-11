@@ -55,6 +55,10 @@ CHECKS = [
         "check_bidi_isolation.py",
         "the person's own words reach a screen isolated, or say in a comment why not",
     ),
+    (
+        "check_silent_clip.py",
+        "no text stops mid-word without an ellipsis, so nothing truncates invisibly",
+    ),
 ]
 
 # TESTING-PERSONAS.md section 5 checks that are not implemented yet, each named

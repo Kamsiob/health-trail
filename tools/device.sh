@@ -32,11 +32,27 @@ SEED_ARGS=()
 for a in "$@"; do [ "$a" = "--seed-only" ] || SEED_ARGS+=("$a"); done
 
 if [ "${1:-}" != "--seed-only" ]; then
-  if ! "$ADB" shell pm list packages | grep -q "$PKG"; then
-    echo "The app is not installed, which is what an instrumented run leaves behind."
-    [ -f "$APK" ] || { echo "No debug APK at $APK. Build it first." >&2; exit 1; }
-    "$ADB" install -r "$APK" | tail -1
+  [ -f "$APK" ] || { echo "No debug APK at $APK. Build it first." >&2; exit 1; }
+
+  # **Always, rather than only when the package is missing.** Installing only
+  # when absent meant a phone that already had the app kept whatever build was
+  # on it, so a walk after a source change walked the change that was not
+  # there. It reads as the fix not working, which is the most expensive way to
+  # be wrong: the next move is to go and break the fix that was correct.
+  # `install -r` keeps the data, and the seed below replaces it anyway.
+  #
+  # **And the APK is only as new as the last assemble.** compileDebugKotlin
+  # does not build one, so a session that compiles, installs and walks is
+  # walking the build before its own change. Said out loud rather than left to
+  # a timestamp nobody reads.
+  NEWEST="$(find "$ROOT/android/app/src/main" -name '*.kt' -newer "$APK" -print -quit 2>/dev/null || true)"
+  if [ -n "$NEWEST" ]; then
+    echo "The APK is older than the source. Run: (cd android && ./gradlew assembleDebug)" >&2
+    echo "  first source file newer than the APK: ${NEWEST#"$ROOT"/}" >&2
+    exit 1
   fi
+
+  "$ADB" install -r "$APK" | tail -1
 fi
 
 "$ROOT/tools/seed.sh" "${SEED_ARGS[@]:-}" | tail -2

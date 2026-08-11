@@ -827,6 +827,7 @@ private fun CardFor(
                     style = HealthTrail.type.mono,
                     color = HealthTrail.colors.ink2,
                     maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.weight(1f))
                 // **The shortcut, and 23.2 is why it is only that.** Move up and
@@ -2068,6 +2069,7 @@ private fun EditAction(
         style = HealthTrail.type.mono,
         color = colors.blueDeep,
         maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         modifier = modifier
             .clip(Radius.pill)
             .clickable(onClickLabel = spoken, role = Role.Button, onClick = onClick)

@@ -104,7 +104,9 @@ fun DateRow(
             text = Bidi.isolate(countdown),
             style = if (prominent) type.monoL else type.bodyL,
             color = colors.ink,
-            maxLines = 1,
+            // **No cap.** "In 3 days" is short in English and is a phrase in
+            // every other language this ships in, and a countdown that ends
+            // mid-word tells somebody a date they do not have.
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(

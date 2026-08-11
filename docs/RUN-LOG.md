@@ -1638,3 +1638,19 @@ Every search hit maps to a notebook section and opens that section's screen. **P
 Now a project hit opens the project. **And the `else` is gone**: the thirteenth section is named, which makes the branch exhaustive, which means a fourteenth section added later fails to compile instead of quietly shipping the one screen in the app with nothing on it. **Rule 11 is not a thing to remember at review time if the build can hold it.**
 
 **The route in was an annotation, not a screen.** Writing down why something is correct means reading it, and reading it is where the question got asked.
+
+### A dense row's subtitle stopped clipping, and a check now holds it
+
+**`maxLines` on its own is truncation with the evidence removed.** Compose clips at the line box: the last word ends where the box ends, no ellipsis, no fade, nothing on screen to say a sentence continued. `DenseRow` capped its subtitle at one line **by default**, so every row in the app that had never thought about the question cut somebody's own words in half silently: a role, a dose, what a document is.
+
+**A default is where a rule gets broken quietly rather than deliberately.** The screens that never got looked at are exactly the screens the default decides for, which is the whole of what #207 is for. The default is now no cap at all, callers that still pass a number get an ellipsis, and at font scale 2.0 the care team reads "Aide, evenings · The one who actually calls back." over two lines where it used to stop at "actually".
+
+`check_silent_clip.py` is the twenty-third check and it holds the floor under `DESIGN.md` 16.2 rather than replacing it: it cannot see a cap that fits in English and not in German, and it can see that nothing clips without a mark. Two places argued their way out of it in a comment, the bottom navigation and a countdown, and both were changed anyway.
+
+### The stale build, said out loud because it happened three times
+
+**`tools/device.sh` installed only when the package was missing**, so a phone that already had the app kept whatever build was on it. A walk after a source change walked the change that was not there, the project fix looked broken, and the next move would have been to go and break a fix that was correct. **That is the most expensive way to be wrong.**
+
+It now installs every time, `install -r` so the data survives, and it **refuses outright when any source file is newer than the APK**, naming the file and the command. `compileDebugKotlin` does not build an APK, which is the other half of the same mistake and the reason the refusal says so in words.
+
+**Three separate versions of one error tonight**: a compile that never ran behind a grep for failures, a suite that was skipped because it needed `--device`, and an install that silently did nothing. All three read as success. **A step that cannot say what it did is not a step.**

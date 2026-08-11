@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.border
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -355,7 +356,11 @@ private fun ResultRow(
                         text = Bidi.isolate(it),
                         style = HealthTrail.type.bodyM,
                         color = colors.ink2,
+                        // **Three lines and then a mark**, never three lines
+                        // and a clean cut. A search result is somebody's own
+                        // sentence and the row has to say there is more of it.
                         maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
                     )
         }
     }

@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.min
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -194,8 +195,12 @@ private fun NavTab(
             // Two lines rather than one, because the longest word in the
             // longest language will not fit on one at any size, and a second
             // line is better than an ellipsis on a word somebody is navigating
-            // by.
+            // by. **The ellipsis is the floor under that, not a change to
+            // it**: at two lines it is unreachable in all four languages, and
+            // if a fifth ever reaches it, a mark is better than a word cut
+            // off with nothing to show for it.
             maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
