@@ -2539,6 +2539,24 @@ If it has a line stamped inside the session that is reading it, the guard is liv
 
 ---
 
+### D138. Sixteen presets is a starting set, so a person can name their own thing to track
+
+**2026-08-11, #203.** Progress offered sixteen catalog presets and nothing else, so a family weighing a wound, counting good days, or writing down how far she walked to the door **had no way to say so**. The sixteen therefore read as the only sixteen things that count, which is the app deciding what is worth writing down.
+
+**This is the same decision `createProject` already made**, one section above it in the repository, and the wording there is the argument: "Sixteen catalog processes is a good starting set and it is not the world: a family fighting something the catalog never heard of had no way in at all, which made the sixteen read as the only sixteen things that count." **When the same shape turns up twice, the second one is not a new decision.**
+
+**It is a third answer to the first question, not a second screen.** Law 3 asks one question at a time and "what are you tracking" is still the question, so naming your own is a face of the same screen, reached from under the catalog rather than beside it. Under, because after the first week the answer is usually a chip at the top and this is the rarer errand. **Not hidden**, because 13.5 calls a capability only its author can find unfinished, and sixteen presets with no way past them was exactly that.
+
+**A number and words stay two things**, which is the schema's own distinction rather than a flag on one column, and the person says which. **A unit is asked only where a unit could mean anything**: words have none, and a field asking for one under "how the wound looks" is the app not listening to the answer it just got.
+
+**A name is the only required field**, because there is nothing to put a value against otherwise, and rule 13 holds for everything else.
+
+**Nothing named here carries a claim.** `preset_id` stays null, which is what the schema already means by something the person set up themselves; `advice_risk` is low and the style is the plain one, which is what lets the rendering layer hold the content rules without looking a preset up. The chart says so in its own description: a plain line with no scale and no judgment.
+
+**What was deliberately not built**, and it is on the issue rather than in a comment: grouping the presets and searching them both need group metadata that `templates/data/progress-and-instructions.json` does not carry, which is a content change to a published CC BY-SA catalog. **Sixteen short rows is also not much of a wall**, so whether a search over sixteen items is furniture is worth deciding rather than assuming.
+
+---
+
 ### B1. Commit signing. Resolved 2026-07-31
 
 **Outcome.** The owner registered the SSH signing key. Verified rather than assumed: the account now lists one signing key titled "kamsiob commit signing", and `repos/Kamsiob/health-trail/commits/main` reports `verified=true, reason=valid`.

@@ -1548,3 +1548,17 @@ Six things have a screen of their own, so removal is at the foot of it: a person
 ### One thing this file was wrong about
 
 **The phone is not on a dark schedule.** `HANDOFF.md` said it flipped to dark at 17:00 and back at 06:30, and warned that a session recording a baseline at night would misread it in the morning. Checked at 22:00 and again at 00:03 on 2026-08-11: `ui_night_mode` reads 1 and `cmd uimode night` reads "no" at both. Corrected there, because a stale warning about a baseline is itself a way to misread a baseline.
+
+## 23. Sixteen was not the world, twice, 2026-08-11
+
+**#203's substantive half.** Progress offered sixteen catalog presets and nothing else, so a family weighing a wound or counting good days had no way to say so, and the sixteen read as the only sixteen things that count.
+
+**The interesting part is that this decision had already been made.** `createProject` says it in as many words about sixteen catalog processes, one section above `createOwnMeasure` in the same file, and the second one is not a new decision so much as the first one being noticed again. **When the same shape turns up twice, look for the sentence somebody already wrote.** D138.
+
+**Two things in the build were worth keeping.**
+
+A tag on a door and a tag on the stage it opens must be different names. The reader test could not say which node it meant, and the failure read as the door being missing.
+
+And `performScrollTo` cannot reach a node a `LazyColumn` has not composed. It reports "could not find any node", which reads as the node not existing rather than as the list not having been asked to reach it. `performScrollToNode` is the one that asks.
+
+**And one thing that is only funny in hindsight**: the screen built while #341 was being written, which was about screens saying their own sentence twice, shipped with its heading and its field label identical. Caught by opening it rather than by reading the diff. The fix was one string.
