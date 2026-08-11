@@ -67,7 +67,15 @@ fun AboutScreen(
 
     SectionScaffold(
         name = AboutTags.NAME,
-        title = strings["about.title"],
+        // **The tab says where you are and the heading says what you came
+        // for**, which is the scaffold's own rule and the one this screen was
+        // breaking: passing the title alone put "About Health Trail" in the
+        // 11sp mono chip and again underneath at display weight, the same
+        // sentence twice in two type sizes. Section 1 bans it and #189 gave
+        // the scaffold a heading for exactly this. About is reached from More,
+        // so More is where you are.
+        title = strings["nav.more"],
+        headingKey = "about.title",
         subtitle = strings["about.lead"],
         onBack = onBack,
         backLabelKey = "section.back.more",
@@ -87,7 +95,10 @@ fun AboutScreen(
                 onClick = {
                     context.startActivity(Intent(Intent.ACTION_VIEW, PRIVACY_URL.toUri()))
                 },
-                modifier = Modifier.fillMaxWidth().testTag(AboutTags.PRIVACY),
+                // **Sized to its label**, D118. This screen ended in three
+                // identical full width outlined pills of which only the last
+                // leaves, which is the exact shape that decision names.
+                modifier = Modifier.testTag(AboutTags.PRIVACY),
             )
             Spacer(Modifier.height(Space.sectionGap))
         }
@@ -106,7 +117,7 @@ fun AboutScreen(
                 onClick = {
                     context.startActivity(Intent(Intent.ACTION_VIEW, SUPPORT_URL.toUri()))
                 },
-                modifier = Modifier.fillMaxWidth().testTag(AboutTags.SUPPORT),
+                modifier = Modifier.testTag(AboutTags.SUPPORT),
             )
             Spacer(Modifier.height(Space.sectionGap))
         }

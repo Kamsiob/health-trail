@@ -168,6 +168,11 @@ private fun MoreDestinations(
                 chevron = true,
                 divider = !isLast,
                 onClick = destination.onOpen,
+                // **A reader is told the tap opens the place**, rather than
+                // "double tap to activate", which names no act at all. The row
+                // already says where it goes, so the label is the verb and not
+                // the destination said twice.
+                clickLabel = strings["open.action"],
                 modifier = Modifier.testTag(destination.testTag),
             )
         }
