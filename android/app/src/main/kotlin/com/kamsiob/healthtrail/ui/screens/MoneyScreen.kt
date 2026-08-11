@@ -238,8 +238,14 @@ private fun BillRow(
             bill.stateNote?.takeIf { it.isNotBlank() },
             bill.notes?.takeIf { it.isNotBlank() },
         ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
+        // **Isolated, like the same amount in the fold above it.** The row
+        // rendered it raw while the fold's summary went through `Bidi.join`,
+        // which is one amount wearing two treatments on one screen. Seen in
+        // Arabic on the phone, where a number beside a currency beside a
+        // right to left heading is three runs and the app should say which is
+        // which rather than leaving it to the algorithm.
         trailing = bill.amountMinor
-            ?.let { formatMoney(strings, it, bill.currency) }
+            ?.let { Bidi.isolate(formatMoney(strings, it, bill.currency)) }
             ?: strings["money.no_amount"],
         chevron = true,
         divider = !isLast,
