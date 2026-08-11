@@ -328,8 +328,15 @@ private fun SectionRow(
 ) {
     val strings = LocalStrings.current
     val hue = hueFor(row.section)
-    val emergency = row.section == Repository.Section.EMERGENCY_CARD
-    val countKey = if (emergency) "notebook.count.emergency_card" else "notebook.count"
+    // **Each section counts in its own units**, which is what the grid
+    // draws: "9 people", "3 current", "1,630 entries". It said "N items"
+    // for all twelve, and **"Money: 6 items" tells somebody nothing they
+    // came for.** #347.
+    //
+    // **The key is derived from the section rather than listed here**, so a
+    // section added later fails loudly at its missing key instead of
+    // quietly falling back to a generic word. D133.
+    val countKey = "notebook.count.${row.section.name.lowercase()}"
 
     DenseRow(
         title = strings[labelKey(row.section)],
@@ -416,8 +423,8 @@ private fun SectionTile(
     // the table showing through onto the app's front door, which is rule 20
     // exactly. It says whether there is anything on it instead, and it does not
     // grade how much, per rule 13.
-    val emergency = row.section == Repository.Section.EMERGENCY_CARD
-    val countKey = if (emergency) "notebook.count.emergency_card" else "notebook.count"
+    // Same derivation as the row above, for the same reason. #347.
+    val countKey = "notebook.count.${row.section.name.lowercase()}"
 
     Tile(
         label = strings[labelKey(row.section)],

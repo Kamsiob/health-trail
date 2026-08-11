@@ -137,12 +137,21 @@ class NotebookScreenTest {
     fun anEmptySectionSaysNothingYetRatherThanShowingAZero() {
         show()
         val strings = Strings.load(context)
-        val empty = strings("notebook.count", "count" to 0)
+        // **Per section now**, #347: each section counts in its own units, so
+        // there is no one string to compare every row against.
+        fun emptyFor(section: Repository.Section) =
+            strings("notebook.count.${section.name.lowercase()}", "count" to 0)
 
-        assertTrue(
-            "the empty count renders a digit, which reads as a scorecard: $empty",
-            !empty.contains("0"),
-        )
+        // **No section's empty count may render a digit**, which would read as
+        // a scorecard rather than as an invitation. Rule 13.
+        order.forEach { section ->
+            val empty = emptyFor(section)
+            assertTrue(
+                "${section.name} renders a digit when empty, which reads as a " +
+                    "scorecard: $empty",
+                !empty.contains("0"),
+            )
+        }
 
         // Every section is empty in this fixture, so every one of them has to
         // say it. Walked row by row rather than counted in one pass, because
@@ -157,13 +166,8 @@ class NotebookScreenTest {
         // generic string for all twelve and went red the moment that landed.
         order.forEach { section ->
             scrollTo(section)
-            val expected = if (section == Repository.Section.EMERGENCY_CARD) {
-                strings("notebook.count.emergency_card", "count" to 0)
-            } else {
-                empty
-            }
             compose.onNodeWithTag(NotebookTags.count(section), useUnmergedTree = true)
-                .assertTextEquals(expected)
+                .assertTextEquals(emptyFor(section))
         }
     }
 
@@ -173,7 +177,7 @@ class NotebookScreenTest {
         val strings = Strings.load(context)
 
         scrollTo(Repository.Section.THREADS)
-        compose.onNodeWithText(strings("notebook.count", "count" to 5)).assertIsDisplayed()
+        compose.onNodeWithText(strings("notebook.count.threads", "count" to 5)).assertIsDisplayed()
     }
 
     @Test
@@ -181,9 +185,25 @@ class NotebookScreenTest {
         // The plural boundary, which is where a hand rolled count string breaks
         // first and where composing from a message template earns its keep.
         val strings = Strings.load(context)
-        val one = strings("notebook.count", "count" to 1)
-        val two = strings("notebook.count", "count" to 2)
-        assertTrue("one and two render identically: $one", one != two)
+        // **Every section, not one**, since #347 gave each its own noun and a
+        // plural boundary can break in any of them independently.
+        // **The sections the notebook actually shows**, which is not every
+        // `Section`: `PROJECTS` is a destination of its own and has no row
+        // here, so it has no count key and asking for one throws. That the
+        // key is derived is the point, per #347, and this is the seam where
+        // the two lists have to agree.
+        order
+            // **The emergency card is exempt and that is the design.** It is a
+            // single thing rather than a list, so it says whether there is
+            // anything on it rather than how much, and one and two are both
+            // "Filled in" on purpose.
+            .filter { it != Repository.Section.EMERGENCY_CARD }
+            .forEach { section ->
+            val key = "notebook.count.${section.name.lowercase()}"
+            val one = strings(key, "count" to 1)
+            val two = strings(key, "count" to 2)
+            assertTrue("${section.name}: one and two render identically: $one", one != two)
+        }
     }
 
     // -- what the situation template is allowed to change -------------------
@@ -221,7 +241,7 @@ class NotebookScreenTest {
         scrollTo(Repository.Section.MONEY)
         compose.onNodeWithTag(NotebookTags.count(Repository.Section.MONEY), useUnmergedTree = true)
             .assertIsDisplayed()
-        compose.onNodeWithText(strings("notebook.count", "count" to 3)).assertIsDisplayed()
+        compose.onNodeWithText(strings("notebook.count.money", "count" to 3)).assertIsDisplayed()
     }
 
     @Test
@@ -352,17 +372,12 @@ class NotebookScreenTest {
             emphasis = mapOf(Repository.Section.MONEY to Emphasis.FOLDED),
         )
         val strings = Strings.load(context)
-        val many = strings("notebook.count", "count" to 1247)
-
         order.forEach { section ->
             scrollTo(section)
-            val expected = if (section == Repository.Section.EMERGENCY_CARD) {
-                strings("notebook.count.emergency_card", "count" to 1247)
-            } else {
-                many
-            }
             compose.onNodeWithTag(NotebookTags.count(section), useUnmergedTree = true)
-                .assertTextEquals(expected)
+                .assertTextEquals(
+                    strings("notebook.count.${section.name.lowercase()}", "count" to 1247),
+                )
         }
     }
 }
