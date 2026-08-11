@@ -1780,3 +1780,11 @@ So the state is held where it can be held, as a composed error string in `Screen
 **Rule 16: a control that does nothing visible reads as broken.** It was worse than nothing here, because the two documents it ignored are the two somebody is most likely to be looking for. The view choice now reaches them.
 
 **Neither the reader test nor any check could have caught this**, and that is the point worth keeping: both views label everything correctly, both render, both pass. **The defect was that they were the same**, which only a person switching between them can see.
+
+### Walking the lists in Arabic, because one of them had already lied
+
+**The medications list rendering a dose raw was not going to be the only one**, so the remaining lists were walked the same way at the end of the night. Care threads reads correctly: an English thread name isolated, an Arabic count and an Arabic date joined by the app's dot.
+
+**Money had the same shape as medications.** The row rendered its amount raw while the fold's summary directly above it went through `Bidi.join`, so **one amount wore two treatments on one screen.** A number beside a currency beside a right to left heading is three runs, and the app should say which is which rather than leave it to the algorithm.
+
+**Both were invisible to the check for the same reason and a different one.** The medication dose is a string property in a slot the check did not read; the money amount is not a string property at all, it is a number the app formats, so the model-property rule can never see it. **The rule finds the person's words. The treatment being consistent is a different question**, and the only instrument for it is somebody switching between two screens in a language that reorders.
