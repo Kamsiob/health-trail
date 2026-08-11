@@ -2555,6 +2555,28 @@ If it has a line stamped inside the session that is reading it, the guard is liv
 
 **What was deliberately not built**, and it is on the issue rather than in a comment: grouping the presets and searching them both need group metadata that `templates/data/progress-and-instructions.json` does not carry, which is a content change to a published CC BY-SA catalog. **Sixteen short rows is also not much of a wall**, so whether a search over sixteen items is furniture is worth deciding rather than assuming.
 
+### D139. A decision about the code lives next to the code, not in a list
+
+**2026-08-11.** The isolate audit finished with about forty places that are correct as they are, for four different reasons. Those decisions had to be written down somewhere or the next session would rediscover all forty.
+
+**An allowlist in the checking tool was the obvious answer and it is the wrong one.** It is a list of file paths and line numbers that goes stale the first time somebody adds an import, and a person reading the screen file never sees it at all. **The decision would be furthest from the code exactly when it matters most**, which is when somebody is changing that line.
+
+So the decision is a `// bidi-ok:` comment on the line, and the check reads it. **It shows up in the diff that moves the code**, which is precisely when the question deserves asking again, and deleting it is how somebody reopens the question: the build then fails until it is answered.
+
+**This generalizes and is meant to.** Where a check has to allow exceptions, the exception belongs in the source with its reason, not in the check with a line number. `check_dead_gestures.py` reads its frozen file out of `docs/REMOVAL-LEDGER.md` for the same reason and D133 says the general form of it.
+
+**What it does not do.** It cannot tell a right decision from a wrong one. A green check says every place has been decided, and Arabic on the device is still the only thing that says every decision was right.
+
+### D140. A verification step asserts something positive, or it is not a step
+
+**2026-08-11.** Three separate things reported success tonight without running: a compile whose output was piped through a grep for compiler errors, run from a directory with no `gradlew` in it, so no wrapper meant no output meant no matches meant a pass. A suite that `tools/verify.sh` skipped because it was not passed `--device`, and which said so in a section headed "Skipped, which is not the same as passed". And an install that `tools/device.sh` did not perform because the package was already there, so the walk afterward walked the previous build and the fix under test looked broken.
+
+**All three read as success, and one of them was about to cost a correct fix**: the next move after a fix that appears not to work is to go and change it.
+
+**So: grep for the success line, never for the failure line.** `BUILD SUCCESSFUL`, a test count, an install result. A filter that only looks for failure treats silence as a pass, and silence is what a command that never ran produces.
+
+**And a tool that can quietly do nothing should refuse instead.** `tools/device.sh` now installs every time and stops outright when any source file is newer than the APK, naming the file and the command that fixes it. `compileDebugKotlin` does not build an APK: only `assembleDebug` does, and that sentence is now in the tool rather than in somebody's memory.
+
 ---
 
 ### B1. Commit signing. Resolved 2026-07-31
