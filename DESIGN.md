@@ -264,7 +264,7 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 | Role | Face | Size / line | Weight | Use |
 |---|---|---|---|---|
 | Hero | Bricolage | 21 to 24sp / 1.18 | 800, tracking -0.015em | The one thing, section 2 law 1 |
-| Display M | Bricolage | 19 to 20sp / 1.1 | 800, -0.02em | Screen titles, the current chapter, a round's reason |
+| Display M | Bricolage | **22sp** / 1.1, and 19 to 20 where a screen's own title is set smaller | 800, -0.02em | Screen titles, the current chapter, a round's reason |
 | Row title | Bricolage | 13sp / 1.3 | 700 | The title line of a group row |
 | Body | Atkinson | 13sp / 1.5 | 400 | Supporting content. **The floor** |
 | Body S | Atkinson | 12sp / 1.4 | 400 | Folded rows on sand, row subtitles |
@@ -272,6 +272,10 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 | Nav label | Atkinson | 11sp / 1.3 | 700 | Bottom navigation only. Exempt from the floor |
 | Mono | JetBrains Mono | 11sp / 1.5 | 700, tracking 0.12em, uppercase | Eyebrows, counts, dates as data, amounts. Exempt from the floor |
 | Mono L | JetBrains Mono | 22 to 30sp | 700, tracking 0, tabular | A number at display size, in the big-number component and nowhere else |
+| Display L | Bricolage | 28sp / 1.2 | 800 | **Implemented and not in the grid's `.h1` vocabulary.** The heading of a thing's own screen, above a section title. Checked against a drawing on #345 |
+| Display S | Bricolage | 18sp / 1.33 | 800 | **Implemented and not in the grid's `.h1` vocabulary.** A card's own title where a row title is too quiet. Checked against a drawing on #345 |
+
+**This ladder was corrected on 2026-08-11 and the correction is the point of D142.** It said Display M was 19 to 20sp. **The grid's `.h1` is 22px** with per-screen overrides at 19 and 20, and the app has been 22sp all along, so **the prose was the only one of the three that was wrong** and a session building a new screen from this table would have set its title two steps under both. Display L and Display S were missing from it entirely while being used across the app.
 
 **The jump from 21sp to 13sp is large on purpose and is meant to be felt at arm's length.** It is what law 1 is made of. Closing it to make a screen look balanced is the most common way to lose the hierarchy.
 
