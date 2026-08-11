@@ -1722,3 +1722,11 @@ The other ten catalog claims hold, checked by following each to its source: the 
 Three were still raw after a night of sweeping the same screens twice: a person's notes and an entry's body on their own screen, a thread's entry body, and the person a question is waiting on. **Found by reading `PersonScreen` for a completely different reason**, which is the fourth time tonight that has been the route in.
 
 The check has a second rule now, and **it was proved by reverting one isolate and watching it go red** rather than by trusting that a new rule works. That is the same discipline as D140: a step that cannot demonstrate it did something has not demonstrated anything.
+
+### What the night added up to
+
+**Eight issues closed** and four filed. **603 instrumented tests** where the night began at 534, **218 unit tests**, lint, and **23 repository checks** where there were 20. Three of the checks are new and each holds something that was invisible by looking: that nothing clips without a mark, that every screen is walked by the reader, and that the person's own words are either isolated or say in a comment why they are not.
+
+**The through line, said once rather than in every section above.** Every defect that mattered was found by opening something for a different reason than the one that found it. #57's five minute confirmation produced a rule 17 defect. #205's two screens produced a sweep across fifteen. An annotation written to explain why a line was correct produced the project search defect. Reading a screen for a stray separator produced three raw renders and a blind spot in the check meant to catch them. **Writing down why something is correct means reading it, and reading it is where the question gets asked.**
+
+**And the counterweight, which cost more time than any defect did.** Three separate steps reported success without running: a compile behind a grep for failures, a suite skipped for want of a flag, and an install that quietly did nothing. All three read exactly like a pass. **The rule that came out of it is in D140 and it is one sentence: assert something positive, or it is not a step.**
