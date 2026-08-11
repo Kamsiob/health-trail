@@ -1680,3 +1680,11 @@ The copy is fixed in four languages. **Offering restore from that screen is #343
 **The Arabic catalog already had a zero branch for both**, which is a fair sign of which locale was written most carefully, and a reminder that the source language is not automatically the most correct one.
 
 Six strings, four languages, six plural forms each in Arabic. **When you add a string with a count in it, ask what it says at one, and at zero.** That sentence is in TRAPS section 3 now.
+
+### The first four screens at font scale 2.0, on a phone with nothing on it
+
+**The suite uninstalls the app, so the moment after it finishes is the only free first run there is.** Installed without seeding, set to 2.0, and walked in: the disclaimer gate, setup, the situation picker, the empty notebook. **All four hold.** Every label wraps, every action stays reachable, the eyebrows stay legible, and the twelve rows of "Nothing yet" read as twelve invitations rather than twelve absences.
+
+**Two things looked wrong and were measured instead of believed**, which is the second and third time tonight that has been the right move. The disclaimer's last card is sliced mid-word by the bottom of the scroll area: its node ends at 2113 and the accept button starts at 2188, so it is a scroll viewport edge with its own scrollbar showing, not a truncation. And the gold capture button sits over the last row of the empty notebook: the row's words end at x 678 and the button starts at 956, and the row is tappable across its width regardless.
+
+**A hard edge at the bottom of a scrolling area is what scrolling looks like.** Calling it a defect would have meant adding a fade to every scroll container in the app to fix nothing.

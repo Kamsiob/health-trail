@@ -638,6 +638,8 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 | The date picker sheet | 06 Capture the note | A sheet over where you stand |
 | Every add and edit sheet | 06 Capture the note | Sheets rise, one question at a time |
 | Every error and empty state | 07 Filing | One thing, said plainly, with the one action |
+| The notebook cannot be opened | 07 Filing | The Keystore key is gone, so there is no notebook behind this and no navigation out of it. **Three sentences and no action**: what happened, what it means for what the person wrote, and the file they exported. **It shipped for a month saying "That did not work. Nothing was changed."**, the copy for an action that failed, because `RootState` was private and nothing could compose it. Internal now, with `RootStatesTest`. **Offering restore from here is #343**, and until that lands the screen tells somebody to install the app again, which is honest and is not finished |
+| The notebook is opening | 07 Filing | One quiet word on warm paper, the `Waiting` component. **No spinner and no progress bar**: neither knows how long a database read takes. Its KDoc described a spinner that was never in the code, which is how a component gets built to match a comment |
 
 **Nothing in this app needs a new pattern.** If a screen seems to, re-read section 13 step 3: it is almost always doing two jobs.
 
