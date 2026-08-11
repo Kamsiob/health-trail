@@ -158,6 +158,27 @@ fun DocumentsScreen(
         // thing to spot. Two across, which is the largest a picture can be while
         // two of them still fit above the fold.
         item(key = "recent") {
+            // **The view choice reaches these too.** They used to be cells
+            // whatever the toggle said, and the toggle sits directly above
+            // them: with every folder closed, which is how this screen opens,
+            // choosing List changed the pill and nothing else on the screen.
+            // **A control that does nothing visible reads as broken**, rule 16,
+            // and it was worse than nothing here because the two documents it
+            // was ignoring are the two somebody looked at most recently.
+            if (view.value == VIEW_LIST) {
+                GroupedSurface {
+                    recent.forEachIndexed { index, document ->
+                        DocumentRow(
+                            document = document,
+                            attachments = attachments,
+                            divider = index < recent.size - 1,
+                            onOpen = { onOpen(document) },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(Space.sectionGap))
+                return@item
+            }
             // **One per row once the grid is down to one column.** At font scale
             // 2.0 the folded grids give way to a single column, per 11.2, and
             // the pair was still sitting two across: half a screen of picture

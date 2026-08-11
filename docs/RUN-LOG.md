@@ -1770,3 +1770,13 @@ It now waits for the requested language to reach the head of `context.resources.
 So the state is held where it can be held, as a composed error string in `ScreenReaderTest`, and **what cannot be proved from here is that the 25 MB boundary is the boundary the code applies to a real file**. That is the same shape as the reader pass and the disclaimer gate in dark: a thing this machine cannot see, **said out loud rather than quietly skipped**, and it is in `docs/TRAPS.md` section 1 now.
 
 **With that, every state in 13.3 has been taken across the app rather than screen by screen**: empty, one-item, many-item, partially filled, long text, longest language, loading, error, and right to left.
+
+### A toggle that changed a pill and nothing else
+
+**Found by looking at a screen for an unrelated reason**, checking that dense rows still read well after the wrap change. The documents screen has a Pictures and List toggle. Choosing List changed which half of the pill was dark **and nothing else on the screen moved.**
+
+**Two views, pixel identical below the toggle**, proved by hashing both screenshots rather than by squinting at them. The reason is that the toggle only reaches documents inside a folder, and **every folder is closed when the screen opens**, so the only two documents visible, the two most recently looked at, were drawn as picture cells whatever the toggle said.
+
+**Rule 16: a control that does nothing visible reads as broken.** It was worse than nothing here, because the two documents it ignored are the two somebody is most likely to be looking for. The view choice now reaches them.
+
+**Neither the reader test nor any check could have caught this**, and that is the point worth keeping: both views label everything correctly, both render, both pass. **The defect was that they were the same**, which only a person switching between them can see.
