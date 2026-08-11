@@ -330,9 +330,11 @@ private fun Card(
             .padding(Space.cardPadding),
     ) {
         eyebrow?.let {
+            // bidi-ok: every caller isolates before handing it here.
             Text(text = it, style = HealthTrail.type.mono, color = colors.ink2)
             Spacer(Modifier.height(Space.xs))
         }
+        // bidi-ok: every caller isolates before handing it here.
         Text(text = title, style = HealthTrail.type.displayS, color = colors.ink)
         body?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(Space.xs))

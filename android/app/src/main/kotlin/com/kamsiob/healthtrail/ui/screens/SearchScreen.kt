@@ -329,6 +329,7 @@ private fun ResultRow(
         // name in another is two runs and reorders without it.
         val eyebrow = Bidi.join(listOfNotNull(date, where))
         if (eyebrow.isNotEmpty()) {
+            // bidi-ok: joined by Bidi.join two lines above, which isolates every part.
             Text(text = eyebrow, style = HealthTrail.type.mono, color = colors.ink2)
             Spacer(Modifier.height(Space.xs))
         }

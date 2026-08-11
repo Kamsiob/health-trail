@@ -105,7 +105,7 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **A parser hides a duplicate from every check that reads the parsed thing.** All four catalogs carried `project.step.handled_by` twice and `check_i18n.py` compares dictionaries, so the second copy was gone before the first comparison ran. It happened to be harmless, which was luck. The check reads raw text for this now.
 
-**Almost no bidi defect is visible in English at font scale 1.0.** Text the person typed gets rearranged in Arabic. `Bidi.isolate` and `Bidi.join` are the fix, `DESIGN.md` section 15 carries the rule, and `report_bidi_isolation.py` generates the worklist, tracked at **#226**.
+**Almost no bidi defect is visible in English at font scale 1.0.** Text the person typed gets rearranged in Arabic. `Bidi.isolate` and `Bidi.join` are the fix, `DESIGN.md` section 15 carries the rule, and `check_bidi_isolation.py` now fails the build on any place that is neither isolated nor annotated `// bidi-ok:` with a reason. **A green check means every place has been decided, not that every decision is right**: only Arabic on the device shows that. #226.
 
 **Anything joined with a separator by hand is a candidate.** `RoadStrip` lays its waypoints out so they flip in Arabic, and its fallback line concatenated the stage names by hand so they did not: the road ran one way while its own names ran the other. `Bidi.join`'s default separator is already ` · `.
 

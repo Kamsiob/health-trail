@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.components.DictatableField
@@ -71,7 +72,7 @@ fun ViolationScreen(
         // doing, and which request it is about. #341.
         title = strings["notebook.section.standing_instructions"],
         headingKey = "violation.title",
-        subtitle = instruction.name,
+        subtitle = Bidi.isolate(instruction.name),
         // **The way back is the cancel**, which is why this screen draws no
         // second one. It used to carry a full width outlined "Cancel" directly
         // above a full width outlined "Back to what you have asked for", two
@@ -87,7 +88,7 @@ fun ViolationScreen(
             // is looking at what they actually asked for rather than at a
             // paraphrase of it.
             instruction.wording.takeIf { it.isNotBlank() }?.let {
-                Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
+                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
                 Spacer(Modifier.height(Space.sectionGap))
             }
 

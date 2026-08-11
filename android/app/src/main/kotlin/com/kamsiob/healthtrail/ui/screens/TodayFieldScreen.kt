@@ -1853,6 +1853,7 @@ private fun staged(
     if (chosen != null) {
         val person = roster.firstOrNull { it.id == chosen } ?: return null
         return Repository.TodayAnswer(
+            // bidi-ok: isolated where it is rendered, not where it is built.
             title = person.displayName,
             detail = person.roleLabel?.takeIf { it.isNotBlank() },
             phone = person.phone?.takeIf { it.isNotBlank() },
@@ -1861,6 +1862,7 @@ private fun staged(
     return Repository.TodayAnswer(
         count = roster.size,
         items = roster.take(TODAY_CARD_FACES).map {
+            // bidi-ok: isolated where it is rendered, not where it is built.
             Repository.TodayItem(label = it.displayName, note = it.roleLabel)
         },
     )

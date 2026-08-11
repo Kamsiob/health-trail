@@ -153,7 +153,9 @@ fun ChipPickerSheet(
                 ) {
                     items(shown, key = { it.id }) { option ->
                         DenseRow(
+                            // bidi-ok: every caller isolates before handing it here.
                             title = option.label,
+                            // bidi-ok: every caller isolates before handing it here.
                             subtitle = option.detail,
                             leading = option.routeColor?.let { color ->
                                 { RouteSwatch(color = color, index = option.routeIndex) }

@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
@@ -97,6 +98,7 @@ fun AddMilestoneScreen(
     var draft by remember(existing?.id) {
         mutableStateOf(
             MilestoneDraft(
+                // bidi-ok: the value inside a field being edited. Isolate marks here would become characters the person has to delete.
                 label = existing?.label.orEmpty(),
                 note = existing?.note.orEmpty(),
                 occurred = existing?.occurredEdtf?.let { Edtf.parse(it) },
@@ -175,7 +177,7 @@ fun AddMilestoneScreen(
                     ChoiceChipGroup(label = strings["milestones.where"]) {
                         chapters.forEach { chapter ->
                             ChoiceChip(
-                                label = chapter.name,
+                                label = Bidi.isolate(chapter.name),
                                 selected = draft.chapterId == chapter.id,
                                 // Tapping the chosen one again clears it,
                                 // because "actually I do not know where they

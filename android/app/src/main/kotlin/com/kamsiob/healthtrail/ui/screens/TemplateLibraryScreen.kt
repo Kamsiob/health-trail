@@ -303,10 +303,12 @@ private fun TemplateCard(
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
+            // bidi-ok: every caller isolates before handing it here.
             Text(text = title, style = HealthTrail.type.displayS, color = colors.ink)
 
             if (provenance.isNotBlank()) {
                 Spacer(Modifier.height(Space.xs))
+                // bidi-ok: every caller isolates before handing it here.
                 Text(text = provenance, style = HealthTrail.type.bodyM, color = colors.ink2)
             }
 

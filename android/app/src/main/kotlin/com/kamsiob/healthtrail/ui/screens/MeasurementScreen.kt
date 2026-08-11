@@ -478,9 +478,11 @@ private fun PresetRow(preset: TemplateCatalog.Preset, onClick: () -> Unit) {
             .testTag(MeasurementTags.preset(preset.id))
             .padding(Space.cardPadding),
     ) {
+        // bidi-ok: a catalog label, in the app's own words rather than the person's.
         Text(text = preset.name, style = HealthTrail.type.displayS, color = colors.ink)
         if (preset.cadence.isNotBlank()) {
             Spacer(Modifier.height(Space.xs))
+            // bidi-ok: a catalog label, in the app's own words rather than the person's.
             Text(text = preset.cadence, style = HealthTrail.type.bodyS, color = colors.ink2)
         }
     }

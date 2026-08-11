@@ -134,6 +134,7 @@ fun AddDocumentScreen(
     var draft by remember(existing?.id) {
         mutableStateOf(
             DocumentDraft(
+                // bidi-ok: the value inside a field being edited. Isolate marks here would become characters the person has to delete.
                 title = existing?.title.orEmpty(),
                 originalLocation = existing?.originalLocation.orEmpty(),
                 received = existing?.receivedEdtf?.let { Edtf.parse(it) },

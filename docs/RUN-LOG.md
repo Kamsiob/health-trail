@@ -1620,3 +1620,21 @@ The trail, the confirmation sheet, the chapters, the capture form's chips, and t
 ### And a flag that was there all along
 
 `tools/verify.sh` skips the instrumented suite unless it is passed `--device`, and says so in its own output under "Skipped, which is not the same as passed". **The runner had already been written to distinguish those two things.** Reading its last ten lines rather than its exit code is the difference.
+
+### The worklist became a gate
+
+**115 candidates, and the last of them decided at about four in the morning.** Sixty-odd were isolated because the words are the person's own. The rest carry `// bidi-ok:` and a reason on the line, in four kinds: a caller that isolates one level up, a label from the catalog rather than from the family, something the app formats itself, and the three that must never be isolated at all, a field being edited, a draft on its way to the database, and anything building a filename.
+
+**The report was reading one line of a multi-line argument.** The commonest shape in this codebase narrows a value on one line and isolates it on the next, so it called 21 already-fixed places defects. A number that is wrong in the safe direction still costs the time it takes to check twenty one of them by hand, and a report that is wrong twice is a report people stop opening.
+
+**A worklist becomes a gate the moment its residue is zero**, so `report_bidi_isolation.py` is now `check_bidi_isolation.py` and `run_all.py` runs 22. It no longer says anything about work already done. What it catches from here is the next screen somebody writes, and the way to reopen a decision is to delete the comment that made it.
+
+### The screen with nothing on it, and how somebody reached it
+
+**Searching for the name of your own project opened a placeholder that said the screen was not built.** Found by following the `bidi-ok` annotation on the placeholder's own heading and asking the dull question the annotation forced: whose words are these, and who ever sees them.
+
+Every search hit maps to a notebook section and opens that section's screen. **Projects are not a notebook section**, they are a destination of their own, so the map ended at `else`, and `else` was a placeholder. The trail already had an exception on the line above, because a trail hit opens the entry rather than the list. Projects needed the same kind of exception and never got one.
+
+Now a project hit opens the project. **And the `else` is gone**: the thirteenth section is named, which makes the branch exhaustive, which means a fourteenth section added later fails to compile instead of quietly shipping the one screen in the app with nothing on it. **Rule 11 is not a thing to remember at review time if the build can hold it.**
+
+**The route in was an annotation, not a screen.** Writing down why something is correct means reading it, and reading it is where the question got asked.

@@ -123,6 +123,7 @@ fun MedicationScreen(
                 },
             )
             facts.forEach {
+                // bidi-ok: a catalog label, in the app's own words rather than the person's.
                 Text(text = it, style = HealthTrail.type.mono, color = colors.ink2)
                 Spacer(Modifier.height(Space.xs))
             }

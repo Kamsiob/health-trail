@@ -620,14 +620,14 @@ private fun OpenRow(item: OpenItem) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = item.label,
+                text = Bidi.isolate(item.label),
                 style = HealthTrail.type.bodyL,
                 color = colors.ink,
             )
             if (item.detail != null) {
                 Spacer(Modifier.height(Space.xs))
                 Text(
-                    text = item.detail,
+                    text = Bidi.isolate(item.detail),
                     style = HealthTrail.type.mono,
                     color = colors.ink2,
                 )
@@ -677,7 +677,7 @@ private fun NextAppointment(
         )
         Spacer(Modifier.height(Space.xs))
         Text(
-            text = appointment.title,
+            text = Bidi.isolate(appointment.title),
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )

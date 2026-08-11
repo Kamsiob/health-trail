@@ -153,6 +153,7 @@ private fun DayCell(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
+                // bidi-ok: the app formats this itself, so it is never somebody's own words.
                 text = day.label,
                 style = type.mono,
                 color = when {

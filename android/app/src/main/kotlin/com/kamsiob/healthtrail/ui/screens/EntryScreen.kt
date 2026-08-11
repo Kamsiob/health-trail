@@ -143,7 +143,7 @@ fun EntryScreen(
         if (heading.repeatBody) {
             entry.body?.takeIf { it.isNotBlank() }?.let {
                 item {
-                    Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
+                    Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
                     Spacer(Modifier.height(Space.sectionGap))
                 }
             }
@@ -180,7 +180,7 @@ fun EntryScreen(
                                 },
                             )
                         },
-                        label = title,
+                        label = Bidi.isolate(title),
                         note = if (detail.incidentIsOpen) {
                             strings["readable.state.open"]
                         } else {
@@ -262,7 +262,7 @@ fun EntryScreen(
                         testTag = EntryTags.MEDICATION,
                         onClick = onOpenMedication,
                         leading = { WaypointDot(color = colors.blue) },
-                        label = name,
+                        label = Bidi.isolate(name),
                         note = strings["entry.medication"],
                     )
                     Spacer(Modifier.height(Space.cardGap))
@@ -277,7 +277,7 @@ fun EntryScreen(
                         leading = {
                             WaypointDot(color = colors.gold, state = Waypoint.MILESTONE)
                         },
-                        label = name,
+                        label = Bidi.isolate(name),
                         note = strings["entry.chapter"],
                     )
                     Spacer(Modifier.height(Space.cardGap))
@@ -408,8 +408,10 @@ private fun LinkRow(
         Box(contentAlignment = Alignment.Center) { leading() }
         Spacer(Modifier.width(Space.sm))
         Column(modifier = Modifier.weight(1f)) {
+            // bidi-ok: every caller isolates before handing it here.
             Text(text = label, style = HealthTrail.type.displayS, color = colors.ink)
             Spacer(Modifier.height(Space.xs))
+            // bidi-ok: every caller isolates before handing it here.
             Text(text = note, style = HealthTrail.type.mono, color = colors.ink2)
         }
     }
@@ -440,6 +442,7 @@ private fun EditableRow(label: String, testTag: String, onClick: () -> Unit) {
             .padding(horizontal = Space.m, vertical = Space.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // bidi-ok: every caller isolates before handing it here.
         Text(text = label, style = HealthTrail.type.mono, color = colors.ink)
         Spacer(Modifier.width(Space.s))
         Text(text = strings["entry.date.change"], style = HealthTrail.type.mono, color = colors.blue)

@@ -91,8 +91,10 @@ fun ChoiceRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
+                // bidi-ok: every caller isolates before handing it here.
                 Text(text = label, style = HealthTrail.type.label, color = colors.ink)
                 Spacer(Modifier.height(Space.xs))
+                // bidi-ok: every caller isolates before handing it here.
                 Text(text = detail, style = HealthTrail.type.bodyM, color = colors.ink2)
             }
             if (selected) {

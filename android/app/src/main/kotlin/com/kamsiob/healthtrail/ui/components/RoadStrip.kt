@@ -219,6 +219,7 @@ private fun LabelsOrList(stages: List<RoadStage>, current: Int, mirrored: Boolea
             ) {
                 stages.forEachIndexed { index, stage ->
                     Text(
+                        // bidi-ok: a catalog label, in the app's own words rather than the person's.
                         text = stage.name,
                         style = type.mono,
                         // **ink2 and not ink3 for a stage not yet reached.**

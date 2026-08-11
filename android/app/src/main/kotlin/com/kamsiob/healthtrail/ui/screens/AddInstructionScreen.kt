@@ -106,6 +106,7 @@ fun AddInstructionScreen(
                 for ((tagKey, starters) in grouped) {
                     val tag = catalog.tags[tagKey]
                     item(key = "tag_$tagKey") {
+                        // bidi-ok: a catalog label, in the app's own words rather than the person's.
                         GroupHeaderText(label = tag?.label ?: tagKey)
                         Spacer(Modifier.height(Space.xs))
                         if (tag != null) {
@@ -169,6 +170,7 @@ private fun StarterCard(
             .testTag(AddInstructionTags.starter(starter.id))
             .padding(Space.cardPadding),
     ) {
+        // bidi-ok: a catalog label, in the app's own words rather than the person's.
         Text(text = starter.name, style = HealthTrail.type.displayS, color = colors.ink)
 
         Spacer(Modifier.height(Space.sm))
@@ -178,10 +180,12 @@ private fun StarterCard(
             color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
+        // bidi-ok: a catalog label, in the app's own words rather than the person's.
         Text(text = starter.wording, style = HealthTrail.type.bodyL, color = colors.ink)
 
         starter.basis.takeIf { it.isNotBlank() }?.let { basis ->
             Spacer(Modifier.height(Space.sm))
+            // bidi-ok: a catalog label, in the app's own words rather than the person's.
             Text(text = basis, style = HealthTrail.type.bodyS, color = colors.ink2)
         }
 
@@ -193,6 +197,7 @@ private fun StarterCard(
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
+            // bidi-ok: a catalog label, in the app's own words rather than the person's.
             Text(text = askFor, style = HealthTrail.type.bodyM, color = colors.ink2)
         }
 

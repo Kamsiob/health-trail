@@ -412,6 +412,7 @@ fun TrailScreen(
                     // would mean the app picking a month for them, which is the
                     // precision rule 17 forbids inventing.
                     StickySectionHeader(
+                        // bidi-ok: the app formats this itself, so it is never somebody's own words.
                         title = row.label,
                         count = strings("trail.month.count", "count" to row.count),
                         openLabel = row.firstMillis?.let { strings["review.open"] },
@@ -422,6 +423,7 @@ fun TrailScreen(
 
                 is TrailRowSpec.Fold -> item(key = "fold_${row.label}") {
                     FoldRowText(
+                        // bidi-ok: the app formats this itself, so it is never somebody's own words.
                         label = row.label,
                         expanded = false,
                         onToggle = {
@@ -798,7 +800,7 @@ private fun TrailRow(entry: Repository.TrailEntry, onOpen: () -> Unit) {
     val surface by pressedSurface(interaction, Color.Transparent)
     val date = EventDateText.render(strings, entry.occurredEdtf)
     val kind = strings[kindNameKey(entry.kind)]
-    val title = entry.title?.takeIf { it.isNotBlank() } ?: kind
+    val title = entry.title?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) } ?: kind
 
     Column(
         modifier = Modifier

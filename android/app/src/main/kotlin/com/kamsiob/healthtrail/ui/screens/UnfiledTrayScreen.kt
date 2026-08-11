@@ -328,6 +328,7 @@ private fun UnfiledRow(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
+    // bidi-ok: matched against, never rendered.
     val text = listOfNotNull(entry.title, entry.body).joinToString(" ")
     // Computed once per entry rather than on every recomposition. Both come
     // from the same scoring, so the alternates can never be better matches
@@ -463,7 +464,7 @@ private fun UnfiledRow(
             options = threads.map { thread ->
                 PickerOption(
                     id = thread.id,
-                    label = thread.label,
+                    label = Bidi.isolate(thread.label),
                     routeColor = colors.threadRoutes[
                         thread.colorIndex.mod(colors.threadRoutes.size),
                     ],
@@ -525,7 +526,7 @@ private fun FileHere(
         )
         Spacer(Modifier.width(Space.s))
         Text(
-            text = thread.label,
+            text = Bidi.isolate(thread.label),
             style = if (emphasized) HealthTrail.type.label else HealthTrail.type.bodyM,
             color = if (emphasized) colors.blueDeep else colors.ink,
         )

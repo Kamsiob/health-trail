@@ -1432,6 +1432,7 @@ fun NotebookShell(
                 val intent = Share.documentIntent(
                     context = context,
                     fileName = Readable.fileName(
+                        // bidi-ok: this builds a filename. An invisible mark ends up in the name of a file somebody shares.
                         title = incident.title,
                         isoDate = java.time.LocalDate.now().toString(),
                         fallback = strings["readable.fallback"],
@@ -1489,6 +1490,7 @@ fun NotebookShell(
                 val intent = Share.documentIntent(
                     context = context,
                     fileName = Readable.fileName(
+                        // bidi-ok: this builds a filename. An invisible mark ends up in the name of a file somebody shares.
                         title = sheet.appointment.title,
                         isoDate = java.time.LocalDate.now().toString(),
                         fallback = strings["readable.fallback"],
@@ -1623,10 +1625,23 @@ fun NotebookShell(
                     // entries, and each of them owns its own detail. Those are
                     // the next ones to land.
                     searchOpen = false
-                    if (hit.section == Repository.Section.TRAIL) {
-                        openEntry = hit.id
-                    } else {
-                        openSection = hit.section
+                    // **A project is not a notebook section**, and search is
+                    // the one place that could forget it. Everything else here
+                    // maps a hit to a section screen, projects have no section
+                    // screen because they are a destination of their own, and
+                    // the section route ended at a placeholder that said the
+                    // screen was not built. **Somebody searching for the name
+                    // of their own project found the one screen in the app
+                    // that has nothing on it.** Rule 11, and the reason the
+                    // routing below now lists every case rather than falling
+                    // through an else.
+                    when {
+                        hit.section == Repository.Section.TRAIL -> openEntry = hit.id
+                        hit.section == Repository.Section.PROJECTS -> {
+                            destination = Destination.PROJECTS
+                            openProject = projects.firstOrNull { it.id == hit.id }
+                        }
+                        else -> openSection = hit.section
                     }
                 },
                 onBack = { searchOpen = false },
@@ -2698,10 +2713,20 @@ fun NotebookShell(
                     onBack = { openSection = null },
                 )
 
-                else -> {
-                    val section = openSection!!
+                // **Named rather than left to an else, so the compiler is the
+                // guard.** Projects are a destination of their own and have no
+                // section screen, and while this branch said `else` a section
+                // added later would have compiled cleanly and shipped the one
+                // screen in the app with nothing on it. Rule 11 is not a thing
+                // to remember at review time if the build can hold it.
+                //
+                // Nothing sets this any more: search used to, and now opens the
+                // project itself. It stays reachable only if some later route
+                // forgets again, and then it says so rather than looking blank.
+                Repository.Section.PROJECTS -> {
                     NotBuiltYet(
-                        name = strings[labelKey(section)],
+                        // bidi-ok: a section label from the catalog, in the app's own words.
+                        name = strings[labelKey(Repository.Section.PROJECTS)],
                         onClose = { openSection = null },
                     )
                 }
@@ -3309,6 +3334,7 @@ fun NotebookShell(
         if (documentDraft != null) {
             LaunchedEffect(documentDraft) {
                 val subject = repository.activeSubject()
+                // bidi-ok: a draft on its way to the database. Isolate marks here would be stored as part of what the person typed.
                 val title = documentDraft.title.trim()
                 val correctingDocument = editingDocument
                 if (correctingDocument != null && title.isNotBlank()) {
@@ -3473,6 +3499,7 @@ fun NotebookShell(
                 if (correctingAppointment != null && appointmentDraft.title.isNotBlank()) {
                     repository.updateAppointment(
                         appointmentId = correctingAppointment.id,
+                        // bidi-ok: a draft on its way to the database. Isolate marks here would be stored as part of what the person typed.
                         title = appointmentDraft.title.trim(),
                         scheduled = appointmentDraft.scheduled ?: Edtf.unknown(),
                         locationNote = appointmentDraft.where,
@@ -3481,6 +3508,7 @@ fun NotebookShell(
                 } else if (subject != null && appointmentDraft.title.isNotBlank()) {
                     repository.createAppointment(
                         subjectId = subject.id,
+                        // bidi-ok: a draft on its way to the database. Isolate marks here would be stored as part of what the person typed.
                         title = appointmentDraft.title.trim(),
                         scheduled = appointmentDraft.scheduled ?: Edtf.unknown(),
                         locationNote = appointmentDraft.where,
@@ -3517,6 +3545,7 @@ fun NotebookShell(
                 if (correcting != null && milestoneDraft.label.isNotBlank()) {
                     repository.updateMilestone(
                         milestoneId = correcting.id,
+                        // bidi-ok: a draft on its way to the database. Isolate marks here would be stored as part of what the person typed.
                         label = milestoneDraft.label.trim(),
                         occurred = milestoneDraft.occurred ?: Edtf.unknown(),
                         chapterId = milestoneDraft.chapterId,
@@ -3525,6 +3554,7 @@ fun NotebookShell(
                 } else if (subject != null && milestoneDraft.label.isNotBlank()) {
                     repository.createMilestone(
                         subjectId = subject.id,
+                        // bidi-ok: a draft on its way to the database. Isolate marks here would be stored as part of what the person typed.
                         label = milestoneDraft.label.trim(),
                         occurred = milestoneDraft.occurred ?: Edtf.unknown(),
                         chapterId = milestoneDraft.chapterId,
@@ -3833,6 +3863,7 @@ fun NotebookShell(
                     repository.recordMeasurement(
                         measureId = measureId,
                         number = measurement.number,
+                        // bidi-ok: a draft on its way to the database. Isolate marks here would be stored as part of what the person typed.
                         text = measurement.text,
                         unit = measurement.unit,
                         occurred = measurement.occurred,
@@ -3861,6 +3892,7 @@ fun NotebookShell(
                         // it is for. Folding them into one string lost the
                         // column the schema keeps precisely so a question can be
                         // filtered to the person it is waiting on.
+                        // bidi-ok: a draft on its way to the database. Isolate marks here would be stored as part of what the person typed.
                         text = draft.note,
                         roleLabel = draft.who,
                         occurred = draft.occurred,
@@ -4191,6 +4223,7 @@ private fun NotBuiltYet(
             .padding(horizontal = Space.screenHorizontal, vertical = Space.l)
             .testTag(ShellTags.NOT_BUILT),
     ) {
+        // bidi-ok: a route name in the developer's words on a placeholder screen, never the person's.
         Text(text = name, style = HealthTrail.type.displayL, color = HealthTrail.colors.ink)
         Spacer(Modifier.height(Space.s))
         Text(

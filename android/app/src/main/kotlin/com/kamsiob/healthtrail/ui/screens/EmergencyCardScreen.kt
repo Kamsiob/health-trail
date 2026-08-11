@@ -375,6 +375,7 @@ private fun CardField(entry: CardEntry) {
             .padding(Space.cardPadding),
     ) {
         Text(
+            // bidi-ok: a catalog label, in the app's own words rather than the person's.
             text = entry.label,
             style = HealthTrail.type.mono,
             color = colors.alertInk,

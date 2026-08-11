@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
@@ -160,11 +161,13 @@ fun EmergencyCardEditScreen(
                     ChoiceChipGroup(label = strings["emergency.group.who"]) {
                         people.forEach { person ->
                             ChoiceChip(
-                                label = person.displayName.ifBlank {
-                                    person.phone.orEmpty().ifBlank {
-                                        person.roleLabel.orEmpty()
-                                    }
-                                },
+                                label = Bidi.isolate(
+                                    person.displayName.ifBlank {
+                                        person.phone.orEmpty().ifBlank {
+                                            person.roleLabel.orEmpty()
+                                        }
+                                    },
+                                ),
                                 selected = person.id in onTheCard,
                                 onClick = { onToggleContact(person) },
                             )

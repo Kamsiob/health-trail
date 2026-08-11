@@ -81,6 +81,7 @@ fun AddAppointmentScreen(
     var draft by remember(existing?.id) {
         mutableStateOf(
             AppointmentDraft(
+                // bidi-ok: the value inside a field being edited. Isolate marks here would become characters the person has to delete.
                 title = existing?.title.orEmpty(),
                 where = existing?.locationNote.orEmpty(),
                 notes = existing?.notes.orEmpty(),

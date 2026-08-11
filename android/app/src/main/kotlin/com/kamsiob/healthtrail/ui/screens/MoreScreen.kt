@@ -164,6 +164,7 @@ private fun MoreDestinations(
         Spacer(Modifier.height(Space.sectionGap))
         GroupedRows(items = destinations) { destination, isLast ->
             DenseRow(
+                // bidi-ok: a catalog label, in the app's own words rather than the person's.
                 title = destination.label,
                 chevron = true,
                 divider = !isLast,

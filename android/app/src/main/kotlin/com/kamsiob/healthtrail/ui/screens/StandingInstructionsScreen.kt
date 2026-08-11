@@ -229,6 +229,7 @@ private fun InstructionRow(
             Spacer(Modifier.height(Space.sm))
             Column(modifier = Modifier.testTag(InstructionTags.tag(instruction.id))) {
                 Text(
+                    // bidi-ok: a catalog label, in the app's own words rather than the person's.
                     text = tag.label,
                     style = HealthTrail.type.mono,
                     color = if (instruction.tag == "federal") {
@@ -271,6 +272,7 @@ private fun InstructionRow(
         }
         Text(
             text = instruction.acknowledgedHow?.takeIf { it.isNotBlank() }
+                ?.let { Bidi.isolate(it) }
                 ?: strings["instructions.ack.none"],
             style = HealthTrail.type.bodyM,
             color = if (instruction.acknowledgedHow.isNullOrBlank()) {
@@ -282,7 +284,7 @@ private fun InstructionRow(
 
         instruction.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             Spacer(Modifier.height(Space.sm))
-            Text(text = notes, style = HealthTrail.type.bodyM, color = colors.ink2)
+            Text(text = Bidi.isolate(notes), style = HealthTrail.type.bodyM, color = colors.ink2)
         }
 
         // **The count, and immediately after it the sentence that says what it
