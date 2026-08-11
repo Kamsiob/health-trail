@@ -59,6 +59,10 @@ CHECKS = [
         "check_silent_clip.py",
         "no text stops mid-word without an ellipsis, so nothing truncates invisibly",
     ),
+    (
+        "check_cross_references.py",
+        "every section pointer between documents resolves to a section that exists",
+    ),
 ]
 
 # TESTING-PERSONAS.md section 5 checks that are not implemented yet, each named

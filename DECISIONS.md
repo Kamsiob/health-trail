@@ -4,6 +4,8 @@ Every judgment call made without asking, recorded at the moment it was made rath
 
 The purpose of this file is to stop the same question being reopened and relitigated by a session that has forgotten the answer. Rejected approaches are recorded with the reason they were rejected, because that is the part a future session cannot reconstruct.
 
+**Section numbers in an entry are as of the date of that entry.** `DESIGN.md` was renumbered in the v4 rewrite, so an older entry pointing at section 5.5 means the section that carried that number when the decision was made. **They are deliberately not corrected**: an entry is a record of what was decided against what existed then, and editing its references would make the record say something that was not true when it was written. Follow the content, not the number. #344, and `check_cross_references.py` skips this file for the same reason.
+
 The BLOCKED section at the end lists anything only the owner can resolve, each with exactly what he needs to do.
 
 ---

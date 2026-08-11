@@ -2,6 +2,8 @@
 
 **This is history, and nothing here is the current state of the work.** `HANDOFF.md` is.
 
+**Section numbers here are as of the entry that carries them**, for the same reason `DECISIONS.md` gives: correcting them would falsify a dated account. Follow the content.
+
 **Do not read this file to orient yourself.** It exists so that the account of how something came to be is not lost, and so a session wondering "was this ever built, and how was it checked" has somewhere to look. It is appended to and it is never the thing that tells you what to do next.
 
 **It was split out of `HANDOFF.md` on 2026-08-04**, because that file had reached sixteen thousand words and `CLAUDE.md` rule 1 requires it be read at the start of every session. A file that costs most of a context window to read is one that gets skimmed, and rule 1 is worth more than the narrative.
