@@ -176,9 +176,16 @@ fun DisclaimerScreen(onAccept: () -> Unit) {
                             Intent(Intent.ACTION_VIEW, SUPPORT_URL.toUri()),
                         )
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag(DisclaimerTags.SUPPORT),
+                    // **Sized to its label, because it is an offer.**
+                    // `SupportButton`'s own comment sets the bar: it must
+                    // never read as a request, and both screens are fully
+                    // passable without noticing it. Drawn the full width of
+                    // the screen it was the second loudest thing on the gate,
+                    // directly under the sentence saying the app is free and
+                    // asks for nothing, which is the sentence it undoes. D59
+                    // put it after the reassurance for that reason and the
+                    // width was working against the same argument. #204.
+                    modifier = Modifier.testTag(DisclaimerTags.SUPPORT),
                 )
             }
 
