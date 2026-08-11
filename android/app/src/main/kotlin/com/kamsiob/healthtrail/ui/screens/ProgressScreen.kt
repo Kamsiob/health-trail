@@ -371,13 +371,13 @@ private fun ReadingRow(reading: Repository.Reading, measure: Repository.Measure)
                 ?: measure.unit?.takeIf { it.isNotBlank() }
             if (unit != null) {
                 Spacer(Modifier.width(Space.xs))
-                Text(text = unit, style = HealthTrail.type.bodyM, color = colors.ink2)
+                Text(text = Bidi.isolate(unit), style = HealthTrail.type.bodyM, color = colors.ink2)
             }
         }
 
         reading.note?.takeIf { it.isNotBlank() }?.let { note ->
             Spacer(Modifier.height(Space.xs))
-            Text(text = note, style = HealthTrail.type.bodyM, color = colors.ink2)
+            Text(text = Bidi.isolate(note), style = HealthTrail.type.bodyM, color = colors.ink2)
         }
 
         // Only said when it is not the ordinary case. Labeling every family

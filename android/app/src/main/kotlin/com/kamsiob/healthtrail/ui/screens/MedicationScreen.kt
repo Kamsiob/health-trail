@@ -91,7 +91,7 @@ fun MedicationScreen(
         title = strings["notebook.section.medications"],
         heading = Bidi.isolate(medication.name),
         section = Repository.Section.MEDICATIONS,
-        subtitle = medication.doseText?.takeIf { it.isNotBlank() }
+        subtitle = medication.doseText?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) }
             ?: strings["medication.nodose"],
         onBack = onBack,
         backLabelKey = backLabelKey,
@@ -99,7 +99,7 @@ fun MedicationScreen(
     ) {
         item {
             medication.purposeText?.takeIf { it.isNotBlank() }?.let {
-                Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
+                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
                 Spacer(Modifier.height(Space.m))
             }
 
@@ -129,7 +129,7 @@ fun MedicationScreen(
 
             medication.notes?.takeIf { it.isNotBlank() }?.let {
                 Spacer(Modifier.height(Space.s))
-                Text(text = it, style = HealthTrail.type.bodyM, color = colors.ink2)
+                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyM, color = colors.ink2)
             }
 
             Spacer(Modifier.height(Space.sectionGap))
@@ -194,7 +194,7 @@ fun MedicationScreen(
                                     Spacer(Modifier.height(Space.xs))
                                 }
                                 Text(
-                                    text = question.text,
+                                    text = Bidi.isolate(question.text),
                                     style = HealthTrail.type.bodyL,
                                     color = colors.ink,
                                 )
@@ -264,11 +264,11 @@ fun MedicationScreen(
                             )
                             event.doseText?.takeIf { it.isNotBlank() }?.let {
                                 Spacer(Modifier.height(Space.xs))
-                                Text(text = it, style = HealthTrail.type.bodyM, color = colors.ink2)
+                                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyM, color = colors.ink2)
                             }
                             event.note?.takeIf { it.isNotBlank() }?.let {
                                 Spacer(Modifier.height(Space.xs))
-                                Text(text = it, style = HealthTrail.type.bodyM, color = colors.ink2)
+                                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyM, color = colors.ink2)
                             }
                         }
                         Spacer(Modifier.height(Space.cardGap))

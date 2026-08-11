@@ -304,7 +304,7 @@ fun IncidentScreen(
     ) {
         incident.description?.takeIf { it.isNotBlank() }?.let {
             item {
-                Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
+                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
                 Spacer(Modifier.height(Space.sectionGap))
             }
         }
@@ -471,7 +471,7 @@ fun IncidentScreen(
                 Spacer(Modifier.height(Space.s))
                 GroupHeader(labelKey = "incident.resolution")
                 Spacer(Modifier.height(Space.headerGap))
-                Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
+                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
             }
         }
 

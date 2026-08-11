@@ -1436,7 +1436,10 @@ class TodayFieldScreenTest {
         // the source picker lives with everything else about the card.
         compose.onNodeWithTag(TodayFieldTags.card("c-team")).performClick()
         compose.onNodeWithTag(CardOptionsTags.WHO).performClick()
-        compose.onNodeWithText("Marcus Bell").performClick()
+        // **Substring, because the name arrives wrapped.** A person's own name
+        // renders inside isolate marks so that a Latin name in an Arabic list
+        // keeps its own direction, which means no exact match ever finds it.
+        compose.onNodeWithText("Marcus Bell", substring = true).performClick()
 
         assertTrue(
             "the card did not take the pick: ${spokenByCard("c-team")}",

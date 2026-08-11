@@ -89,7 +89,7 @@ fun PersonScreen(
         title = strings["notebook.section.care_team"],
         heading = Bidi.isolate(person.displayName.ifBlank { strings["person.unnamed"] }),
         section = Repository.Section.CARE_TEAM,
-        subtitle = person.roleLabel?.takeIf { it.isNotBlank() }
+        subtitle = person.roleLabel?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) }
             ?: strings["person.norole"],
         onBack = onBack,
         backLabelKey = backLabelKey,
@@ -117,7 +117,7 @@ fun PersonScreen(
         // reaches them after the decision has been made.
         person.notes?.takeIf { it.isNotBlank() }?.let {
             item {
-                Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
+                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
                 Spacer(Modifier.height(Space.l))
             }
         }
@@ -209,6 +209,7 @@ fun PersonScreen(
                             }
                             Text(
                                 text = entry.title?.takeIf { it.isNotBlank() }
+                                    ?.let { Bidi.isolate(it) }
                                     ?: strings[kindNameKey(entry.kind)],
                                 style = HealthTrail.type.displayS,
                                 color = colors.ink,

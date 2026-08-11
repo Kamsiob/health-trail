@@ -504,7 +504,7 @@ fun ProjectHomeScreen(
                         Spacer(Modifier.height(Space.xs))
                         inArea.forEach { step ->
                             StepRow(
-                                text = step.text,
+                                text = Bidi.isolate(step.text),
                                 done = step.isDone,
                                 handler = step.handlerLabel,
                                 onToggle = { onToggleStep(step) },
@@ -517,7 +517,7 @@ fun ProjectHomeScreen(
                     }
                     loose.forEach { step ->
                         StepRow(
-                            text = step.text,
+                            text = Bidi.isolate(step.text),
                             done = step.isDone,
                             handler = step.handlerLabel,
                             onToggle = { onToggleStep(step) },
@@ -608,7 +608,7 @@ fun ProjectHomeScreen(
             if (stepsOpen) {
                 items(steps, key = { it.id }) { step ->
                     StepRow(
-                        text = step.text,
+                        text = Bidi.isolate(step.text),
                         done = step.isDone,
                         handler = step.handlerLabel,
                         onToggle = { onToggleStep(step) },

@@ -164,6 +164,7 @@ fun ThreadScreen(
                             }
                             Text(
                                 text = entry.title?.takeIf { it.isNotBlank() }
+                                    ?.let { Bidi.isolate(it) }
                                     ?: strings[kindNameKey(entry.kind)],
                                 style = HealthTrail.type.displayS,
                                 color = colors.ink,

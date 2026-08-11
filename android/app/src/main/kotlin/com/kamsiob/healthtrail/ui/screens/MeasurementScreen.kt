@@ -36,6 +36,7 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import java.time.LocalDate
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
@@ -242,7 +243,7 @@ private fun PickWhatToTrack(
                         ChoiceChipGroup(label = "") {
                             measures.forEach { measure ->
                                 ChoiceChip(
-                                    label = measure.name,
+                                    label = Bidi.isolate(measure.name),
                                     selected = false,
                                     onClick = { onPickMeasure(measure) },
                                     modifier = Modifier.testTag(
@@ -514,7 +515,7 @@ private fun RecordValue(
                     .padding(horizontal = Space.screenHorizontal),
             ) {
                 Spacer(Modifier.height(Space.l))
-                Text(text = name, style = HealthTrail.type.displayL, color = colors.ink)
+                Text(text = Bidi.isolate(name), style = HealthTrail.type.displayL, color = colors.ink)
                 Spacer(Modifier.height(Space.s))
                 Text(
                     text = strings["capture.sub"],

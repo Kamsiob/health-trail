@@ -587,8 +587,9 @@ fun TodayFieldScreen(
                     ) + people.map {
                         PickerOption(
                             id = it.id,
-                            label = it.displayName,
-                            detail = it.roleLabel?.takeIf { role -> role.isNotBlank() },
+                            label = Bidi.isolate(it.displayName),
+                            detail = it.roleLabel?.takeIf { role -> role.isNotBlank() }
+                                ?.let { role -> Bidi.isolate(role) },
                         )
                     },
                     selectedId = card.sourceId ?: EVERYONE,

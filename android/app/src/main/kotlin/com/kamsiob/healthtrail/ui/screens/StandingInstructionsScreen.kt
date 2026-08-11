@@ -12,6 +12,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -207,14 +208,14 @@ private fun InstructionRow(
         }
 
         Text(
-            text = instruction.name,
+            text = Bidi.isolate(instruction.name),
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
 
         Spacer(Modifier.height(Space.xs))
         Text(
-            text = instruction.wording,
+            text = Bidi.isolate(instruction.wording),
             style = HealthTrail.type.bodyM,
             color = colors.ink2,
         )

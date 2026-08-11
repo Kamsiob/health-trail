@@ -350,7 +350,12 @@ private fun ResultRow(
 
         hit.detail?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(Space.xs))
-            Text(text = it, style = HealthTrail.type.bodyM, color = colors.ink2, maxLines = 3)
+            Text(
+                        text = Bidi.isolate(it),
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
+                        maxLines = 3,
+                    )
         }
     }
 }

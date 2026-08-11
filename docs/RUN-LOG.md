@@ -1600,3 +1600,23 @@ The last row of the empty notebook **appeared** to sit under the gold button in 
 ### And one rule broken, said plainly
 
 **The font scale was changed while an instrumented run was in flight**, which `docs/TRAPS.md` section 2 warns against in as many words. It landed during the data tests and the UI tests ran at the restored value, and the run finished 598 of 598, so the result stands. It should not have happened.
+
+## 25. The names that reorder, and a check that was checking nothing, 2026-08-11
+
+**#226's second and third slices, and one method failure worth more than either.**
+
+### Forty-three of 115
+
+The trail, the confirmation sheet, the chapters, the capture form's chips, and then the detail screens: a medication's purpose, dose and notes, a person's role and notes, an incident's description and how it resolved, a standing instruction's name and wording, a reading's unit and note, the title of an entry wherever one is listed. The rule for choosing has not changed and it is the whole method: **it is the person's own words and it reaches a `Text` directly.**
+
+**The capture form was walked in Arabic on the phone** before any of the rest were touched. Five names each in their own left to right run, in a chip row flowing right to left, beside a "show all 15" mixing an Arabic phrase with a Western numeral. That is the screen where the app asks somebody to type a name, so it is the one that has to get a name right.
+
+### The check that was checking nothing
+
+`./gradlew` was run from the repository root, where there is no wrapper, with its output piped through a `grep` for compiler errors. **No wrapper means no output means no lines matched means the check reported success**, and it did that twice before the shape was noticed: once for a compile and once for what was supposed to be the whole instrumented suite.
+
+**A filter that only looks for failure reads silence as a pass.** The fix is not to remember where the wrapper lives. It is that a verification step has to assert something positive, `BUILD SUCCESSFUL` or a test count, so that a command which never ran cannot be mistaken for one that ran clean. `tools/verify.sh` already does exactly this and was sitting one directory away the entire time.
+
+### And a flag that was there all along
+
+`tools/verify.sh` skips the instrumented suite unless it is passed `--device`, and says so in its own output under "Skipped, which is not the same as passed". **The runner had already been written to distinguish those two things.** Reading its last ten lines rather than its exit code is the difference.

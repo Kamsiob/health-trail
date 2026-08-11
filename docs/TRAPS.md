@@ -75,6 +75,10 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **`tools/verify.sh` is the honest runner and the only one that reaches everything.** It captures every step's exit code, never stops at the first failure, reports SKIPPED distinctly from PASS, and exits nonzero naming what failed. CI once failed on a lint error in code that had been walked on the device and had passed every content check and 185 instrumented tests. Running `run_all.py` plus the suite by hand feels like verifying and skips whatever is not in that habit.
 
+**A command that never ran looks exactly like a command that ran clean.** `./gradlew` does not exist at the repository root, it is in `android/`, and a root invocation piped through `grep -E "^e:|error:"` prints nothing at all: no wrapper, no output, no lines matched, and the step reads as a pass. It did that twice in a row on 2026-08-11, once for a compile and once for what was supposed to be the entire instrumented suite. **Grep for the success line rather than for failure**, `BUILD SUCCESSFUL` or a test count, so silence cannot be mistaken for a clean run. Better still, use `tools/verify.sh`, which asserts on exit codes rather than on output.
+
+**`tools/verify.sh` skips the instrumented suite unless it is passed `--device`.** It says so in its own last lines, under a heading that reads "Skipped, which is not the same as passed". Reading those lines rather than the exit code is the whole difference: a run with 218 unit tests and no device tests exits zero and is not a verified build.
+
 **"Checks pass" does not mean the suite compiles.** `compileDebugAndroidTestKotlin` is not in the main compile path. `ScreenReaderTest` was broken for a day while `run_all.py` and `compileDebugKotlin` both reported clean.
 
 **Copy the suite's report before rerunning anything.** A single class rerun overwrites `androidTest-results/connected/debug/TEST-*.xml`, and two flakes lost their assertion and stack that way. Copy it into the scratchpad the moment the suite goes red.
