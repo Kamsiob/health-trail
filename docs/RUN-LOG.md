@@ -1714,3 +1714,11 @@ The other ten catalog claims hold, checked by following each to its source: the 
 **It is also where a reader is likeliest to meet a node that announces nothing**, because an absent value renders as a fallback in one place and as nothing at all in another, and only one of those speaks. Two cases now walk it.
 
 **And the export that fails had no case at all.** Ready, working and both finished faces were covered; the failure was not. Export is the only recovery path this app has for its own encryption, per D24, so that is the state on that screen that matters most.
+
+### The commonest shape in the codebase was invisible to the check that was written for it
+
+**`person.notes?.takeIf { it.isNotBlank() }?.let { Text(text = it) }`** is how this app renders an optional value, and the rendered argument is the single word `it`, so the property name the check looks for sits on a different line. **The check could not see the shape it exists for.**
+
+Three were still raw after a night of sweeping the same screens twice: a person's notes and an entry's body on their own screen, a thread's entry body, and the person a question is waiting on. **Found by reading `PersonScreen` for a completely different reason**, which is the fourth time tonight that has been the route in.
+
+The check has a second rule now, and **it was proved by reverting one isolate and watching it go red** rather than by trusting that a new rule works. That is the same discipline as D140: a step that cannot demonstrate it did something has not demonstrated anything.
