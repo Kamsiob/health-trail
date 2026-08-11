@@ -521,6 +521,7 @@
   "docs.pick": "选择照片",
   "docs.replace": "重新选择",
   "docs.title": "文件名称",
+  "docs.received": "这份文件是什么时候的",
   "docs.title.hint": "出院小结、保险函件、已签署的表格",
   "docs.original": "纸质原件在哪里",
   "docs.original.hint": "办事人员通常不接受电子版",

@@ -521,6 +521,7 @@
   "docs.pick": "Choose a photograph",
   "docs.replace": "Choose a different one",
   "docs.title": "What it is",
+  "docs.received": "When is it from",
   "docs.title.hint": "Discharge summary, insurance letter, the signed form",
   "docs.original": "Where the paper original is",
   "docs.original.hint": "The digital copy is rarely the one a clerk will accept",

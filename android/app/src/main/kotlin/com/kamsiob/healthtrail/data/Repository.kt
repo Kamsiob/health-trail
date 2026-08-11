@@ -2717,18 +2717,37 @@ class Repository private constructor(
          * an archive. 8.4's absence rule.
          */
         category: String? = null,
+        /**
+         * When the paper is from, corrected.
+         *
+         * **This did not exist and the date could not be changed at all**,
+         * while `createDocument` stamped today into every row, so a letter
+         * from three weeks ago was dated the day it was photographed forever.
+         * #339, and rule 17 requires every date be editable from the entry
+         * itself.
+         *
+         * Null leaves the four columns alone, which is what a caller with
+         * nothing to say about the date means.
+         */
+        received: Edtf.Date? = null,
     ) = withContext(Dispatchers.IO) {
+        val date = received?.let { dateColumns("received", it) }.orEmpty()
+        val sets = listOf("title = ?", "original_location = ?", "notes = ?", "category = ?") +
+            date.keys.map { "$it = ?" } +
+            listOf("updated_at = ?", "rev = rev + 1")
         db().database.write(
-            "UPDATE document SET title = ?, original_location = ?, notes = ?, " +
-                "category = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
-            arrayOf<Any?>(
-                title,
-                originalLocation?.ifBlank { null },
-                notes?.ifBlank { null },
-                category?.trim()?.ifBlank { null },
-                System.currentTimeMillis(),
-                documentId,
-            ),
+            "UPDATE document SET " + sets.joinToString(", ") + " WHERE id = ?",
+            (
+                listOf<Any?>(
+                    title,
+                    originalLocation?.ifBlank { null },
+                    notes?.ifBlank { null },
+                    category?.trim()?.ifBlank { null },
+                ) + date.values + listOf<Any?>(
+                    System.currentTimeMillis(),
+                    documentId,
+                )
+                ).toTypedArray(),
         )
     }
 

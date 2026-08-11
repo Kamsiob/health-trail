@@ -3318,6 +3318,7 @@ fun NotebookShell(
                         originalLocation = documentDraft.originalLocation,
                         notes = documentDraft.notes,
                         category = documentDraft.category,
+                        received = documentDraft.received,
                     )
                     addingDocument = false
                     capturing = null
@@ -3340,7 +3341,14 @@ fun NotebookShell(
                         repository.createDocument(
                             subjectId = subject.id,
                             title = title,
-                            received = Edtf.day(LocalDate.now()),
+                            // **What the person said, and unknown when they
+                            // said nothing.** This was `Edtf.day(now())`, so
+                            // every document was stamped with the day it was
+                            // photographed and nothing could correct it: a
+                            // letter from three weeks ago arrived today,
+                            // forever, in the notebook and in the archive.
+                            // #339, rule 17, and DESIGN.md 9.2.
+                            received = documentDraft.received ?: Edtf.unknown(),
                             originalLocation = documentDraft.originalLocation,
                             notes = documentDraft.notes,
                             sha256 = file?.sha256,

@@ -35,6 +35,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
@@ -42,6 +44,8 @@ import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
+import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -54,6 +58,7 @@ object AddDocTags {
     const val SAVE = "add_doc_save"
     const val CANCEL = "add_doc_cancel"
     const val FOLDERS = "add_doc_folders"
+    const val PICK_DATE = "add_doc_pick_date"
     fun field(key: String) = "add_doc_$key"
 }
 
@@ -61,6 +66,16 @@ object AddDocTags {
 data class DocumentDraft(
     val title: String = "",
     val originalLocation: String = "",
+    /**
+     * When the paper is from, at whatever precision the person gave.
+     *
+     * **Null until they say**, and null saves as unknown rather than as today.
+     * This form had no date at all and the shell stamped `LocalDate.now()` into
+     * every document, so a letter from three weeks ago was recorded as arriving
+     * on the day somebody photographed it, and nothing could correct it. #339,
+     * rule 17, and `DESIGN.md` 9.2.
+     */
+    val received: Edtf.Date? = null,
     val notes: String = "",
     val picked: Uri? = null,
     /**
@@ -121,11 +136,14 @@ fun AddDocumentScreen(
             DocumentDraft(
                 title = existing?.title.orEmpty(),
                 originalLocation = existing?.originalLocation.orEmpty(),
+                received = existing?.receivedEdtf?.let { Edtf.parse(it) },
                 notes = existing?.notes.orEmpty(),
                 category = existing?.category.orEmpty(),
             ),
         )
     }
+
+    var picking by remember { mutableStateOf(false) }
 
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
@@ -233,6 +251,43 @@ fun AddDocumentScreen(
                 )
                 Spacer(Modifier.height(Space.m))
 
+                // **When the paper is from, and the person says or does not.**
+                // This form had no date and the shell stamped today into every
+                // document, so a letter from three weeks ago was recorded as
+                // arriving on the day it was photographed and nothing could
+                // correct it. #339.
+                //
+                // **Not sure is a real answer that saves**, per rule 17, and
+                // leaving both chips alone saves as unknown rather than as
+                // today: the app never quietly fills a date in.
+                ChoiceChipGroup(label = strings["docs.received"]) {
+                    ChoiceChip(
+                        label = strings["capture.when.exact"],
+                        selected = draft.received != null &&
+                            draft.received?.precision != Edtf.Precision.UNKNOWN,
+                        onClick = { picking = true },
+                        modifier = Modifier.testTag(AddDocTags.PICK_DATE),
+                    )
+                    ChoiceChip(
+                        label = strings["date.pick.clear"],
+                        selected = draft.received?.precision == Edtf.Precision.UNKNOWN,
+                        onClick = { draft = draft.copy(received = Edtf.unknown()) },
+                    )
+                }
+
+                // **Shown back at exactly the precision it was given**, which
+                // is the whole point: "sometime in March" stays a month.
+                draft.received?.let { chosen ->
+                    Spacer(Modifier.height(Space.s))
+                    Text(
+                        text = EventDateText.render(strings, chosen),
+                        style = HealthTrail.type.bodyL,
+                        color = colors.ink,
+                    )
+                }
+
+                Spacer(Modifier.height(Space.m))
+
                 // **The folder, which the screen has always folded by and no
                 // form ever wrote.** Every document a person saved landed in
                 // "Everything else", and the folds were visible only because
@@ -312,6 +367,17 @@ fun AddDocumentScreen(
 
             Spacer(Modifier.height(Space.l))
         }
+    }
+
+    if (picking) {
+        DatePickerSheet(
+            initial = draft.received,
+            onPick = {
+                draft = draft.copy(received = it)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 
