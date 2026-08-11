@@ -101,6 +101,16 @@ Types in use: `feat`, `fix`, `docs`, `design`, `data`, `i18n`, `test`, `build`, 
 
 Every commit references its issue with `Refs #N`, or `Closes #N` when it genuinely finishes the work. The specific convention matters far less than following it without exception.
 
+## Branch hygiene
+
+**One branch per issue, named for its issue.** `feat/207-empty-states`, `fix/58-subject-scoped-counts`. The number is what lets somebody arriving later connect a branch to the reasoning behind it.
+
+**Branches are deleted automatically when their pull request merges.** The repository setting is on and was verified on 2026-08-11. Nothing needs deleting by hand after a merge.
+
+**No long-lived branches besides `main`.** If a branch outlives the issue it was named for, the issue was too big.
+
+**Do not use `git branch --merged` to decide what is safe to delete here.** This repository squash-merges, which rewrites a branch's commits into one new commit with a different sha, so git cannot see that the work is already in `main` and will report merged branches as unmerged. **GitHub is the source of truth**, because it records which pull request merged which branch: `gh pr list --state merged --json number,headRefName`. `DECISIONS.md` D144.
+
 ## Pull requests
 
 Substantive work goes through a branch and a pull request. Branch names reference the issue, as in `feat/12-noto-fallback-chain`. One logical change per branch.

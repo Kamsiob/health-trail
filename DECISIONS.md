@@ -2652,6 +2652,26 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D144. Branch cleanup, and why `git branch --merged` is the wrong instrument here
+
+**Date:** 2026-08-11. **Asked for by the owner**, on the assumption that 65 remote branches were dead pull request branches left behind by an auto-delete setting that was off.
+
+**Two of the three assumptions were wrong, and the difference matters for what gets deleted.**
+
+**Auto-delete was already on.** Verified by reading the setting rather than by setting it: `delete_branch_on_merge` was already `true`, which is why **44 of the 46 merged pull requests already have no branch**. Two survived, from before the setting was turned on, and those two were deleted here against pull requests **#70** and **#65**.
+
+**The other 63 branches were never pull request branches at all.** They have no pull request, merged or closed. They are direct pushes from long autonomous runs that then committed to `main` rather than opening a pull request. **That is why cleanup did not happen automatically: there was no merge event to trigger it.**
+
+**And every one of them is an ancestor of `main`.** `git rev-list --count origin/main..origin/<branch>` is zero for all 63, so none of them holds a commit `main` lacks. They were merged by direct commit rather than squashed.
+
+**The squash-merge trap still stands and is still worth recording**, because it applies to the branches that did go through pull requests. Squash-merging rewrites a branch's commits into one new commit with a different sha, so **`git branch --merged` cannot see that the work is in `main` and reports merged branches as unmerged**. Reaching for it here would produce a list that is wrong in the dangerous direction. **GitHub records which pull request merged which branch**, and that is the source of truth: `gh pr list --state merged --json number,headRefName`.
+
+**Nothing in group two was deleted**, under the owner's standing rule that a branch with no merged pull request is reported rather than removed, no matter how obviously stale. An empty diff usually means squash-merged work and can also mean a session that reverted itself before crashing, and **those two look identical from here.**
+
+**33 local branches have no remote and none carries a commit `main` lacks.** Reported and not touched, under the standing cleanup deferral.
+
+---
+
 ---
 
 ### B1. Commit signing. Resolved 2026-07-31
