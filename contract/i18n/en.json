@@ -96,6 +96,7 @@
   "incident.back": "Back to incidents",
   "person.unnamed": "Somebody on the care team",
   "person.norole": "Everything written down that involved them.",
+  "person.capture": "Write something down about them",
   "person.call": "Call {number}",
   "person.edit": "Correct their details",
   "person.entries": "Everything that involved them",

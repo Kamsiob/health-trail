@@ -96,6 +96,7 @@
   "incident.back": "العودة إلى الحوادث",
   "person.unnamed": "شخص في فريق الرعاية",
   "person.norole": "كل ما دُوّن وكان لهم علاقة به.",
+  "person.capture": "دوّن شيئًا عنه",
   "person.call": "اتصل بـ {number}",
   "person.edit": "صحّح بياناتهم",
   "person.entries": "كل ما يخصهم",

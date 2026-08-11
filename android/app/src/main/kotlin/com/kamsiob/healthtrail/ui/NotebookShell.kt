@@ -3003,6 +3003,18 @@ fun NotebookShell(
                 entries = personEntries,
                 onCall = { number -> dial(context, number) },
                 onEdit = { editingPerson = person; addingPerson = true; openPerson = null },
+                // **The name travels, the kind does not.** What happened is
+                // the person's to say, so this opens the same sheet the gold
+                // button opens and carries only who it is about. #46, rule 18.
+                //
+                // **The person's screen closes first**, so back from the
+                // capture form lands on the care team rather than on a screen
+                // about somebody the entry is now already attached to.
+                onCapture = {
+                    captureDraft = CaptureFormState().togglePerson(person)
+                    openPerson = null
+                    sheetOpen = true
+                },
                 onRemove = {
                     removing = Removal(
                         section = Repository.Section.CARE_TEAM,

@@ -33,6 +33,7 @@ object PersonTags {
     const val NAME = "person"
     const val CALL = "person_call"
     const val EDIT = "person_edit"
+    const val CAPTURE = "person_capture"
     const val REMOVE = "person_remove"
     fun entry(id: String) = "person_entry_$id"
 }
@@ -65,6 +66,22 @@ fun PersonScreen(
     entries: List<Repository.TrailEntry>,
     onCall: (String) -> Unit,
     onEdit: () -> Unit,
+    /**
+     * Writing something down about them, from the screen that already knows
+     * who they are.
+     *
+     * **This screen had no way to record anything at all.** Somebody who had
+     * just come off the phone with the charge nurse, looking at her card with
+     * her number on it, had to leave, press the gold button, choose a kind,
+     * and find her name again in a picker. **Four taps to say a thing the app
+     * was already standing next to**, which is the shape rule 18 names: carry
+     * the context forward instead of asking again. #46.
+     *
+     * **It opens the capture sheet rather than choosing a kind**, because what
+     * happened is the person's to say and guessing it would be the app filing
+     * for them. The name is carried through; nothing else is.
+     */
+    onCapture: () -> Unit,
     /**
      * Taking them off the care team, from the one screen that shows who they
      * are. **The list row used to do this on a long press**, which meant a
@@ -141,6 +158,17 @@ fun PersonScreen(
             // width outlined is what `SectionScaffold` uses at the foot of
             // every screen to mean the way back, and an in-content action
             // wearing it competes with the one control that leaves.
+            // **Recording comes before correcting**, because it is the thing
+            // somebody standing in a corridor actually came to do, and rule 15
+            // gives the more common errand the better position. Both are quiet
+            // pills sized to their labels: the number above them is the one
+            // thing on this screen that carries weight.
+            QuietButton(
+                label = strings["person.capture"],
+                onClick = onCapture,
+                modifier = Modifier.testTag(PersonTags.CAPTURE),
+            )
+            Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["person.edit"],
                 onClick = onEdit,

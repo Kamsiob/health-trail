@@ -96,6 +96,7 @@
   "incident.back": "Volver a incidentes",
   "person.unnamed": "Alguien del equipo de cuidado",
   "person.norole": "Todo lo anotado que les involucró.",
+  "person.capture": "Anotar algo sobre esta persona",
   "person.call": "Llamar a {number}",
   "person.edit": "Corregir sus datos",
   "person.entries": "Todo lo que los involucró",

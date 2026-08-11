@@ -96,6 +96,7 @@
   "incident.back": "返回事件",
   "person.unnamed": "照护团队里的某个人",
   "person.norole": "记下的、与这个人有关的所有内容。",
+  "person.capture": "记下关于这个人的事",
   "person.call": "拨打 {number}",
   "person.edit": "修改他们的信息",
   "person.entries": "与他们有关的一切",
