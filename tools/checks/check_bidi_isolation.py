@@ -38,6 +38,15 @@ edited, a draft on its way to the database, and anything building a filename,
 because in all three the invisible marks become part of the data. The ordinary
 one is a caller that isolates a level up.
 
+**Where it is known to be blind.** An argument that mentions `strings`
+anywhere is skipped, and that is one heuristic doing two jobs: it is right when
+the whole value came from the catalog, and wrong when the catalog only supplies
+a fallback. `ProjectSetupScreen` joined a family's own stage names with a dot
+and ended the expression `.ifBlank { strings[...] }`, and this check walked past
+it on 2026-08-11. Tightening the rule would fill the output with the case it was
+written to suppress, so **the honest statement is that a green result covers
+what the rule can see**, and a raw join with a catalog fallback is outside it.
+
 **Why it still cannot decide on its own.** Once a value is inside a `Text`,
 nothing in the source distinguishes a string that came from the database from
 one that came from the catalog by way of a variable. That is what the

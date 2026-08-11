@@ -1688,3 +1688,11 @@ Six strings, four languages, six plural forms each in Arabic. **When you add a s
 **Two things looked wrong and were measured instead of believed**, which is the second and third time tonight that has been the right move. The disclaimer's last card is sliced mid-word by the bottom of the scroll area: its node ends at 2113 and the accept button starts at 2188, so it is a scroll viewport edge with its own scrollbar showing, not a truncation. And the gold capture button sits over the last row of the empty notebook: the row's words end at x 678 and the button starts at 956, and the row is tappable across its width regardless.
 
 **A hard edge at the bottom of a scrolling area is what scrolling looks like.** Calling it a defect would have meant adding a fade to every scroll container in the app to fix nothing.
+
+### And the new check walked past one, which is worth more than the check
+
+**`check_bidi_isolation.py` skips any argument that mentions `strings`**, on the reasoning that the value came from the catalog. That is one heuristic doing two jobs, and the second one is wrong: `ProjectSetupScreen` joined a family's own stage names with a literal dot and ended the expression `.ifBlank { strings[...] }`, so the catalog only supplied the fallback and the check walked straight past it.
+
+**Found by reading the code for a different reason**, which is now the third time tonight that has been the route: looking for places a blank optional field could produce a stray separator, and finding a raw join instead. Both rows use `Bidi.join` now, which isolates each part and drops the blanks, so the separator question answered itself.
+
+**The blind spot is written into the check's own docstring rather than papered over.** Tightening the rule would fill the output with the case it exists to suppress, so the honest statement is that a green result covers what the rule can see. **A check that overstates what it proves is worse than one that admits its edge**, because the overstatement is what stops somebody looking.

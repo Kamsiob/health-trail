@@ -155,7 +155,12 @@ fun ProjectSetupScreen(
             GroupedSurface {
                 DenseRow(
                     title = strings["project.setup.stages"],
-                    subtitle = stages.joinToString(" · ") { it.name }
+                    // **Joined by Bidi rather than by a dot**, because these
+                    // are names a family typed and a run of them in one script
+                    // inside a layout in another reorders without an isolate
+                    // around each. `Bidi.join` also drops the blanks, so a
+                    // stage with no name cannot produce a stray separator.
+                    subtitle = Bidi.join(stages.map { it.name })
                         .ifBlank { strings["project.setup.nothing_yet"] },
                     subtitleMaxLines = 2,
                     chevron = true,
@@ -199,7 +204,7 @@ fun ProjectSetupScreen(
                 )
                 DenseRow(
                     title = strings["project.setup.kinds"],
-                    subtitle = dateKinds.joinToString(" · ")
+                    subtitle = Bidi.join(dateKinds)
                         .ifBlank { strings["project.setup.nothing_yet"] },
                     subtitleMaxLines = 2,
                     divider = false,
