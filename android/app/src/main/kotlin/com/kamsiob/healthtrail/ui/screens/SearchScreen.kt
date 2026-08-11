@@ -112,7 +112,13 @@ fun SearchScreen(
 
     SectionScaffold(
         name = SearchTags.NAME,
+        // **The chip stays "Search" rather than saying where you came from**,
+        // because this screen has two doors: More and Today's search door.
+        // A chip reading "More" would be a lie half the time, which is the
+        // reason the other four could take that fix and this one could not.
+        // #341.
         title = strings["search.title"],
+        headingKey = "search.heading",
         subtitle = strings["search.subtitle"],
         onBack = onBack,
         backLabelKey = backLabelKey,

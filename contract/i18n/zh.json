@@ -319,6 +319,8 @@
   "money.heading": "账单的状况",
   "instructions.heading": "你提出过的要求",
   "questions.heading": "随身带着",
+  "incidents.heading": "你提出过的问题",
+  "search.heading": "一个地方全都能找",
   "careteam.empty": "还没有添加任何人。把您打交道最多的人放在这里，一触即可拨号。",
   "careteam.call": "拨打",
   "careteam.no_phone": "暂无号码",

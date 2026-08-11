@@ -64,7 +64,13 @@ fun ViolationScreen(
 
     SectionScaffold(
         name = ViolationTags.NAME,
-        title = strings["violation.title"],
+        // **The chip says which section, the heading says what you came for.**
+        // "A time it was not followed" was in both slots, once at 11sp in mono
+        // and once at display weight. The instruction's own name is the
+        // subtitle, so the three lines are now where you are, what you are
+        // doing, and which request it is about. #341.
+        title = strings["notebook.section.standing_instructions"],
+        headingKey = "violation.title",
         subtitle = instruction.name,
         // **The way back is the cancel**, which is why this screen draws no
         // second one. It used to carry a full width outlined "Cancel" directly

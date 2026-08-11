@@ -111,7 +111,13 @@ fun MedicationEventScreen(
 
     SectionScaffold(
         name = MedEventTags.NAME,
-        title = strings("medevent.title", "name" to medicationName),
+        // **The chip says which section, the heading says what you came for.**
+        // This put "What changed with Donepezil" in the 11sp mono chip and
+        // again at display weight underneath. The sentence is already a
+        // heading; what it needed was a chip that is not the same sentence.
+        // #341.
+        title = strings["notebook.section.medications"],
+        heading = strings("medevent.title", "name" to medicationName),
         subtitle = strings["medevent.lead"],
         onBack = onCancel,
         backLabelKey = "section.back.medications",

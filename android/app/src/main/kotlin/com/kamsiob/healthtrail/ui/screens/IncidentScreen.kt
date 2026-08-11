@@ -89,7 +89,13 @@ fun IncidentsScreen(
 
     SectionScaffold(
         name = IncidentTags.LIST_NAME,
+        // **The chip says where you are and the heading says what you came
+        // for**, and this screen said "Incidents" in both slots. The heading
+        // names the person's own act rather than the app's judgment about a
+        // facility, which is the same choice "What you have asked for" makes
+        // on the standing instructions. #341.
         title = strings["incidents.title"],
+        headingKey = "incidents.heading",
         subtitle = strings["incidents.subtitle"],
         onBack = onBack,
         modifier = modifier,
