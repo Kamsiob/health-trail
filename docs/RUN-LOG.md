@@ -1520,3 +1520,31 @@ Six things have a screen of their own, so removal is at the foot of it: a person
 **All three came from installing the app with no data and tapping through the disclaimer, setup and a setting.** None of them is visible in a diff, and the suite was green throughout.
 
 **Getting to a first run at all is worth writing down**, because the obvious route is refused: wiping the app's data directly is on the blocklist and the guard turned it down, correctly. The sanctioned route is the one D50 already names, which is that `connectedAndroidTest` uninstalls the app when it finishes, so an install straight afterward is a genuine first run with nothing behind it.
+
+## 22. A night of retroactive work, 2026-08-11
+
+**Four issues closed and three filed, and the filed ones are the more useful half.**
+
+### What closed
+
+**#218**, removal off the long press, is section 20 above. **#135**, a setting's first days list, is section 21. **#339**, a document stamped with today that nobody could correct, came out of walking #57's criteria rather than from a report. **#340**, eighteen in content actions wearing the way back's costume, came out of converting About for #205.
+
+**Every one of the last three was found by looking at something else.** That is the pattern worth naming: #57 was expected to be a five minute confirmation that an issue was already met, and it produced a rule 17 defect that had been shipping since the document form was built. #205 was expected to be a conversion of two screens, and it produced a sweep across fifteen.
+
+### The three that were filed rather than fixed, and why each was the right call
+
+**#341, three screens printing their own sentence twice.** Four of the seven were fixed in the same pass, because their chip could simply say where you are. The other three need a heading **written**: a question the app asks, in four languages, matching the standard of "Who you call" and "Where bills stand". That is copy work and it is not five minutes.
+
+**#342, `ScreenReaderTest` walks 44 of the 75 screens** while `DESIGN.md` 12 says it walks every one. **The claim is what makes this worth filing rather than shrugging at**: a document that overstates a check is worse than a missing check, because the next person reads the claim and stops looking. The fix wants a check holding the directory to the test, per D133, and thirty fixtures.
+
+**And #57 stays open on a question that is the owner's**: the document form picks a photograph and does not take one, deliberately, because the photo picker asks for no permission and the camera would. That is a good argument and it means the criterion needs a decision rather than an implementation.
+
+### Two limits met, and both are recorded rather than worked around
+
+**A reader pass cannot be captured over adb.** TalkBack binds, processes this app's events, and reports every clickable node as unlabeled, because `uiautomator` gives the view tree rather than the merged semantics tree, which D68 already recorded costing an afternoon. #205 and #231 hit the same wall from different directions.
+
+**And the disclaimer gate cannot be seen in dark from here**, because it shows before the app has a theme choice of its own, so reaching it means changing the phone's night mode. Rule 19 grants an exception for font scale, animation and the reader, and says in as many words that it does not extend to anything else on the phone. Recorded on #204 with the one line that settles it by hand.
+
+### One thing this file was wrong about
+
+**The phone is not on a dark schedule.** `HANDOFF.md` said it flipped to dark at 17:00 and back at 06:30, and warned that a session recording a baseline at night would misread it in the morning. Checked at 22:00 and again at 00:03 on 2026-08-11: `ui_night_mode` reads 1 and `cmd uimode night` reads "no" at both. Corrected there, because a stale warning about a baseline is itself a way to misread a baseline.

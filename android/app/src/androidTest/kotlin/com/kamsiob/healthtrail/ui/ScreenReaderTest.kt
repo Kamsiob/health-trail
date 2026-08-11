@@ -73,7 +73,18 @@ import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
+import com.kamsiob.healthtrail.ui.screens.BillScreen
+import com.kamsiob.healthtrail.ui.screens.DocumentScreen
+import com.kamsiob.healthtrail.ui.screens.IncidentScreen
+import com.kamsiob.healthtrail.ui.screens.MedicationScreen
+import com.kamsiob.healthtrail.ui.screens.PersonScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
+import com.kamsiob.healthtrail.ui.screens.AppearanceScreen
+import com.kamsiob.healthtrail.ui.screens.ChapterScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
+import com.kamsiob.healthtrail.ui.screens.ThreadScreen
+import com.kamsiob.healthtrail.ui.screens.ViolationScreen
+import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 import com.kamsiob.healthtrail.ui.screens.PrepTags
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
 import com.kamsiob.healthtrail.ui.screens.SetupScreen
@@ -192,6 +203,270 @@ class ScreenReaderTest {
     private fun assertEverythingIsLabeled(screen: String) {
         val problems = unlabeled()
         assertTrue("$screen\n" + problems.joinToString("\n"), problems.isEmpty())
+    }
+
+
+    // ---- the detail screens, added for #342 ------------------------------
+    //
+    // **These are the screens somebody spends the most time on** and none of
+    // them was walked here: a person, a medication, a bill, a document, an
+    // incident, a project. `DESIGN.md` 12 said this test walks every screen
+    // and it walked 44 of 75, which is a claim overstating a check, and a
+    // claim like that is worse than a missing check because the next person
+    // reads it and stops looking.
+    //
+    // **Each fixture carries real states rather than an empty screen**, since
+    // an empty one has few nodes to label and would pass for free.
+
+    @Test
+    fun onePersonLabelsEverything() {
+        compose.show {
+            PersonScreen(
+                person = Repository.Person(
+                    "p1", "Angela Reyes", "Charge nurse, day shift", "5550142", null,
+                    "Days, 7 to 3. Ask for her by name.",
+                ),
+                entries = listOf(
+                    Repository.TrailEntry(
+                        id = "e1", kind = "call", title = "Called about the shower schedule",
+                        body = "She said it was a staffing decision.",
+                        occurredEdtf = "2026-05-29", occurredStart = 1L, createdAt = 1L,
+                        isUnfiled = false, threads = emptyList(), pinnedAt = null,
+                    ),
+                ),
+                onCall = {},
+                onEdit = {},
+                onRemove = {},
+                onOpenEntry = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one person, with an entry")
+    }
+
+    @Test
+    fun oneMedicationLabelsEverything() {
+        compose.show {
+            MedicationScreen(
+                medication = Repository.Medication(
+                    "m1", "Donepezil", "5 mg, evenings", "Memory", null, true, null,
+                ),
+                history = listOf(
+                    Repository.MedicationEvent(
+                        "ev1", "started", "2026-01-10", "5 mg, evenings", null,
+                        "Maplewood Care Center",
+                    ),
+                ),
+                questions = listOf(
+                    Repository.Question(
+                        "q1", "Can the dose move earlier?", "The attending", null, null, null,
+                    ),
+                ),
+                onOpenQuestion = {},
+                onEdit = {},
+                onRemove = {},
+                onRecordChange = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one medication, with history and a question")
+    }
+
+    @Test
+    fun oneBillLabelsEverything() {
+        compose.show {
+            BillScreen(
+                bill = Repository.Bill(
+                    "b1", "Monthly room and board", 323701, "USD", "needs_attention",
+                    "They billed the wrong plan", "2026-01-21", null,
+                    chapterId = "c1", chapterName = "Maplewood Care Center",
+                ),
+                onEdit = {},
+                onRemove = {},
+                onOpenChapter = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one bill, with the place it came from")
+    }
+
+    @Test
+    fun oneDocumentLabelsEverything() {
+        compose.show {
+            DocumentScreen(
+                document = Repository.Document(
+                    "d1", "Insurance card, both sides", "Insurance", "Filed with the county",
+                    null, "2026-06-22", null, null,
+                    chapterId = "c1", chapterName = "Maplewood Care Center",
+                ),
+                onEdit = {},
+                onRemove = {},
+                onOpenChapter = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one document")
+    }
+
+    @Test
+    fun oneIncidentLabelsEverything() {
+        compose.show {
+            IncidentScreen(
+                incident = Repository.Incident(
+                    "i1", "Bruise on her arm nobody could explain",
+                    "Reported to the charge nurse.", "2026-01-24", 1L, null, null,
+                    "Maplewood Care Center", 1,
+                ),
+                entries = listOf(
+                    Repository.TrailEntry(
+                        id = "e1", kind = "call", title = "Reported it to the charge nurse",
+                        body = "Asked for it in writing.",
+                        occurredEdtf = "2026-01-24", occurredStart = 1L, createdAt = 1L,
+                        isUnfiled = false, threads = emptyList(), pinnedAt = null,
+                    ),
+                ),
+                people = listOf(
+                    Repository.Person("p1", "Angela Reyes", "Charge nurse", "5550142", null, null),
+                ),
+                documents = emptyList(),
+                onOpenPerson = {},
+                onOpenEntry = {},
+                onAdd = {},
+                onShare = {},
+                onResolve = {},
+                onReopen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one incident, still open")
+    }
+
+    @Test
+    fun oneProjectLabelsEverything() {
+        compose.show {
+            ProjectHomeScreen(
+                project = Repository.Project(
+                    id = "pr1", name = "The waiver application", templateId = "medicaid_ltc",
+                    status = "active", waitingOn = null, notes = null,
+                    stepCount = 2, doneCount = 1, nextStep = "Gather the statements",
+                    lead = "standing",
+                ),
+                stages = listOf(
+                    Repository.ProjectStage("s1", "Applied", 0, "2026-03-05", 1L),
+                    Repository.ProjectStage("s2", "In review", 1, null, null),
+                ),
+                standing = Repository.ProjectStanding(
+                    id = "st1", holderLabel = "The county", personId = null,
+                    organizationId = null, activity = "reviewing it", sinceEdtf = "2026-03",
+                    sinceStart = 1L, entryId = null, note = null,
+                ),
+                nextDate = Repository.ProjectDate(
+                    id = "d1", kind = "Decision expected", dueEdtf = "2026-09-12",
+                    dueStart = 2L, sourceNote = "the letter of March 5",
+                    sourceDocumentId = null, sourceEntryId = null,
+                ),
+                latestWord = null,
+                countdown = "12 days",
+                dateKind = "Decision expected",
+                dateWhen = "September 12, 2026",
+                standingSince = "reviewing it",
+                steps = listOf(
+                    Repository.ProjectStep("x1", "Get the form", "2026-03-06", null, null, "Me"),
+                    Repository.ProjectStep("x2", "Gather the statements", null, null, null, null),
+                ),
+                papers = emptyList(),
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one project, standing led")
+    }
+
+
+    @Test
+    fun oneCareThreadLabelsEverything() {
+        compose.show {
+            ThreadScreen(
+                thread = Repository.CareThread("t1", "Nursing", 0),
+                entries = listOf(
+                    Repository.TrailEntry(
+                        id = "e1", kind = "call", title = "Asked about the dressing",
+                        body = "They will change it daily.",
+                        occurredEdtf = "2026-04-02", occurredStart = 1L, createdAt = 1L,
+                        isUnfiled = false, threads = emptyList(), pinnedAt = null,
+                    ),
+                ),
+                onOpenEntry = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one care thread")
+    }
+
+    @Test
+    fun oneChapterLabelsEverything() {
+        compose.show {
+            ChapterScreen(
+                detail = Repository.ChapterDetail(
+                    chapter = Repository.Chapter(
+                        "c1", "Maplewood Care Center", "Moved in after the hospital",
+                        "Room 214, west wing.", "2026-01-08", null,
+                    ),
+                    entries = listOf(
+                        Repository.TrailEntry(
+                            id = "e1", kind = "visit", title = "First care plan meeting",
+                            body = "Everyone was there.",
+                            occurredEdtf = "2026-02-01", occurredStart = 1L, createdAt = 1L,
+                            isUnfiled = false, threads = emptyList(), pinnedAt = null,
+                        ),
+                    ),
+                    incidents = listOf(
+                        Repository.Incident(
+                            "i1", "Bruise nobody could explain", null, "2026-01-24", 1L,
+                            null, null, "Maplewood Care Center", 1,
+                        ),
+                    ),
+                    documents = listOf(
+                        Repository.Document(
+                            "d1", "Admission agreement", null, "The blue folder", null,
+                            "2026-01-08", null, null,
+                        ),
+                    ),
+                    milestones = listOf(
+                        Repository.Milestone(
+                            "ms1", "She settled in", "2026-02", 1L, "c1",
+                            "Maplewood Care Center", null,
+                        ),
+                    ),
+                ),
+                onOpenEntry = {},
+                onOpenIncident = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one chapter, with everything hanging off it")
+    }
+
+    @Test
+    fun writingDownAViolationLabelsEverything() {
+        compose.show {
+            ViolationScreen(
+                instruction = Repository.StandingInstruction(
+                    "s1", "Call me about any fall", "Please call me right away.",
+                    "federal", "2026-08-02", null, null, null,
+                ),
+                onSave = {},
+                onCancel = {},
+            )
+        }
+        assertEverythingIsLabeled("writing down a time it was not followed")
+    }
+
+    @Test
+    fun appearanceLabelsEverything() {
+        compose.show {
+            AppearanceScreen(choice = ThemeChoice.FOLLOW_SYSTEM, onChoose = {})
+        }
+        assertEverythingIsLabeled("appearance on its own")
     }
 
     @Test
