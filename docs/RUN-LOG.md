@@ -1804,3 +1804,15 @@ So the state is held where it can be held, as a composed error string in `Screen
 **The strongest single finding was structural rather than textual.** Three audits ask whether a screen is internally coherent and none asked whether it matches the drawing it was approved from, so a screen could pass all three and still not look like the design. **An audit that never compares against the source of truth is a self-consistency check wearing a fidelity check's name.**
 
 **And one correction refused on principle.** `check_cross_references.py` found ten more stale pointers in `DECISIONS.md` and this file. They stay. An entry records what was decided against what existed then, and editing its references would make the record say something that was not true when it was written. Both files say so at the top instead, and the check skips them by name.
+
+### The fidelity pass, and what a comparison is actually for
+
+**#345's first day, and the shape of the answer was not the shape of the question.**
+
+**The token layer is faithful and that was worth proving.** Nine of eleven colors match the grid exactly, the other two are recorded accessibility corrections, the spacing and radius vocabulary agrees, and the elevation matches to the alpha. **Material defaults were named as a cause and are not one**: every `Text` carries a style, every `Surface` its color, every sheet its shape, and the theme hands Material a mapped typography so a stray component lands in the right place.
+
+**Three defects came out of the numbers.** A card radius nobody tokenized, three off the drawing on the most looked at surface. A type ladder in `DESIGN.md` that said 19 to 20 while the grid and the app both said 22, which would have had the next new screen built two steps under everything already there. And two colors the prose had deliberately corrected, which **D142 as written would have told a fidelity pass to restore**, failing contrast in the name of fidelity. That last one is why the first run of a comparison is worth more than the tenth.
+
+**One defect came out of the composition, and it is the one that matters to a person.** The grid gives every notebook section a count in its own units: "9 people", "3 current", **"$15,072.98 not settled"**. The app says "N items" for all twelve. **"Money: 6 items" tells somebody nothing they came for.** #347.
+
+**That is the lesson to carry.** Numbers can be diffed and composition has to be looked at, and **the looking found the defect that changes what somebody understands**, while the diffing found three that change how it looks. Both are worth doing. Only one of them can be automated, which is exactly why 16.6 asks for a side by side rather than another check.
