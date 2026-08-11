@@ -219,8 +219,14 @@ private fun LabelsOrList(stages: List<RoadStage>, current: Int, mirrored: Boolea
             ) {
                 stages.forEachIndexed { index, stage ->
                     Text(
-                        // bidi-ok: a catalog label, in the app's own words rather than the person's.
-                        text = stage.name,
+                        // **A family's own words, not the catalog's.** A stage
+                        // arrives from a template and `ProjectRoadScreen` lets
+                        // anybody rename it, which is what this was annotated
+                        // as catalog copy and is not. `RoadStripTest` was
+                        // already asserting `Bidi.join` on the same names one
+                        // node up, which is the test disagreeing with the
+                        // comment and being right.
+                        text = Bidi.isolate(stage.name),
                         style = type.mono,
                         // **ink2 and not ink3 for a stage not yet reached.**
                         // The grid draws it in the faintest tone it has, and on

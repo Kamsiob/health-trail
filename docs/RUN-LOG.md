@@ -1696,3 +1696,13 @@ Six strings, four languages, six plural forms each in Arabic. **When you add a s
 **Found by reading the code for a different reason**, which is now the third time tonight that has been the route: looking for places a blank optional field could produce a stray separator, and finding a raw join instead. Both rows use `Bidi.join` now, which isolates each part and drops the blanks, so the separator question answered itself.
 
 **The blind spot is written into the check's own docstring rather than papered over.** Tightening the rule would fill the output with the case it exists to suppress, so the honest statement is that a green result covers what the rule can see. **A check that overstates what it proves is worse than one that admits its edge**, because the overstatement is what stops somebody looking.
+
+### Auditing my own annotations found one wrong out of forty
+
+**Every `bidi-ok` written this morning was read back against the code it claims about**, since a wrong annotation is worse than a missing isolate: it is a decision that looks made.
+
+**One was wrong.** The road strip's stage names were annotated "a catalog label, in the app's own words rather than the person's". A stage arrives from a template and `ProjectRoadScreen` lets anybody rename it, so they are the family's words the moment somebody touches them. **`RoadStripTest` was already asserting `Bidi.join` on the same names one node up**, which is a test disagreeing with a comment and being right, and neither noticed the other.
+
+The other ten catalog claims hold, checked by following each to its source: the emergency card's field labels are all `strings[...]`, More's destinations are, a standing instruction's tag is, the medication facts are, and the instruction starters and progress presets are catalog content the app ships. Every `ChipPicker` and `ChoiceRow` caller isolates before handing a value down, so the "one level up" claims hold too.
+
+**A decision written next to the code can still be wrong. What it cannot be is invisible**, which is the whole of D139: it took ten minutes to audit forty of them because they were all in the diff.
