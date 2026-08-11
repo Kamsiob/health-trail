@@ -7,6 +7,8 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isRoot
@@ -1038,7 +1040,12 @@ class ScreenReaderTest {
                 onCancel = {},
             )
         }
-        compose.onNodeWithTag(MeasurementTags.OWN).performScrollTo().performClick()
+        // **`performScrollToNode` rather than `performScrollTo`**, because a
+        // LazyColumn does not compose what is below the fold at all, so the
+        // node cannot be found before the list has been asked to reach it.
+        compose.onNodeWithTag(MeasurementTags.PICK)
+            .performScrollToNode(hasTestTag(MeasurementTags.OWN))
+        compose.onNodeWithTag(MeasurementTags.OWN).performClick()
         assertEverythingIsLabeled("naming something to track")
     }
 

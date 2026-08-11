@@ -260,6 +260,7 @@
   "measurement.own.action": "Seguir otra cosa",
   "measurement.own.lead": "Lo que usted esté vigilando. La app lo anota y lo guarda, y nunca dice lo que significa.",
   "measurement.own.name": "Qué está siguiendo",
+  "measurement.own.name.field": "Cómo se llama",
   "measurement.own.name.hint": "Cuánto bebió, cuánto caminó, cómo se ve la herida",
   "measurement.own.kind": "Es un número o palabras",
   "measurement.own.kind.number": "Un número",

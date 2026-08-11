@@ -260,6 +260,7 @@
   "measurement.own.action": "تتبّع شيئًا آخر",
   "measurement.own.lead": "أي شيء تراقبه. التطبيق يدوّنه ويحتفظ به، ولا يقول أبدًا ما معناه.",
   "measurement.own.name": "ما الذي تتتبّعه",
+  "measurement.own.name.field": "ما اسمه",
   "measurement.own.name.hint": "كم شربت، كم مشت، كيف يبدو الجرح",
   "measurement.own.kind": "أهو رقم أم كلمات",
   "measurement.own.kind.number": "رقم",

@@ -61,7 +61,10 @@ object MeasurementTags {
     const val RECORD_ONLY = "measurement_record_only"
     fun preset(id: String) = "measurement_preset_$id"
     fun measure(id: String) = "measurement_measure_$id"
+    /** The door in the picker. */
     const val OWN = "measurement_own"
+    /** The stage it opens, which is a different node and needs its own name. */
+    const val OWN_STAGE = "measurement_own_stage"
     const val OWN_NAME = "measurement_own_name"
     const val OWN_UNIT = "measurement_own_unit"
     const val OWN_NUMBER = "measurement_own_number"
@@ -335,7 +338,7 @@ private fun NameSomethingElse(
                 .fillMaxSize()
                 .systemBarsPadding()
                 .imePadding()
-                .testTag(MeasurementTags.OWN),
+                .testTag(MeasurementTags.OWN_STAGE),
         ) {
             Column(
                 modifier = Modifier
@@ -357,8 +360,13 @@ private fun NameSomethingElse(
                 )
 
                 Spacer(Modifier.height(Space.l))
+                // **The field's label is not the heading again.** The heading
+                // asks what you are tracking; the field says what to type. The
+                // same words in both slots is the defect #341 spent a night
+                // taking out of four other screens, and it went in here while
+                // that was being written.
                 HealthTrailTextField(
-                    label = strings["measurement.own.name"],
+                    label = strings["measurement.own.name.field"],
                     value = name,
                     onValueChange = { name = it },
                     hint = strings["measurement.own.name.hint"],

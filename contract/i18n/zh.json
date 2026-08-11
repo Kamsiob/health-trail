@@ -260,6 +260,7 @@
   "measurement.own.action": "记录别的事情",
   "measurement.own.lead": "你在留意的任何事情。应用把它记下来并保存，从不评判它的含义。",
   "measurement.own.name": "你在记录什么",
+  "measurement.own.name.field": "叫什么",
   "measurement.own.name.hint": "喝了多少、走了多远、伤口看起来怎么样",
   "measurement.own.kind": "是数字还是文字",
   "measurement.own.kind.number": "数字",
