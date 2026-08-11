@@ -38,6 +38,13 @@ edited, a draft on its way to the database, and anything building a filename,
 because in all three the invisible marks become part of the data. The ordinary
 one is a caller that isolates a level up.
 
+**Two rules, because one shape was invisible to the first.** The first reads
+the whole rendered argument and looks for a model property in it. The second
+catches `person.notes?.takeIf { it.isNotBlank() }?.let { Text(text = it) }`,
+where the argument is the single word `it` and the property name is on another
+line. Three of those were still raw when the second rule was written, on
+screens that had already been swept twice.
+
 **Where it is known to be blind.** An argument that mentions `strings`
 anywhere is skipped, and that is one heuristic doing two jobs: it is right when
 the whole value came from the catalog, and wrong when the catalog only supplies
@@ -134,6 +141,39 @@ def model_properties() -> set[str]:
     return properties
 
 
+# `person.notes?.takeIf { it.isNotBlank() }?.let { Text(text = it, ...) }`.
+# The rendered argument is the single word `it`, so the property name the rule
+# above looks for is on a different line and the whole shape was invisible to
+# it. Three of these were still raw on 2026-08-11, found by reading a screen
+# for an unrelated reason.
+BOUND = re.compile(r"(\w+)\.(\w+)\?\.takeIf \{ it\.isNotBlank\(\) \}\?\.let \{\s*$")
+RENDERS_IT = re.compile(r"^\s*text = it,?\s*$")
+
+
+def bound_and_rendered_raw(source: str, properties: set[str]) -> list[tuple[int, str]]:
+    """Every nullable model value bound to `it` and rendered without isolating.
+
+    Looks no further than ten lines, which is past the longest of these and
+    well short of the next unrelated `Text`.
+    """
+    found: list[tuple[int, str]] = []
+    lines = source.split("\n")
+    for index, line in enumerate(lines):
+        match = BOUND.search(line)
+        if not match or match.group(2) not in properties:
+            continue
+        window = lines[index: index + 10]
+        if "bidi-ok" in "\n".join(window) or "bidi-ok" in lines[max(0, index - 1)]:
+            continue
+        for offset, later in enumerate(window):
+            if "Bidi" in later:
+                break
+            if RENDERS_IT.match(later):
+                found.append((index + offset + 1, match.group(0).strip()))
+                break
+    return found
+
+
 def main() -> int:
     properties = model_properties()
     if not properties:
@@ -153,6 +193,8 @@ def main() -> int:
                 continue
             line = source[: match.start()].count("\n") + 1
             found.append((str(path.relative_to(ROOT)), line, expression.strip()))
+        for line, shape in bound_and_rendered_raw(source, properties):
+            found.append((str(path.relative_to(ROOT)), line, shape))
 
     if not found:
         print(f"{len(properties)} string properties across the models.")

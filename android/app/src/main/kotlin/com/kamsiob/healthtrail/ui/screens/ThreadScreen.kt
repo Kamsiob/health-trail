@@ -172,7 +172,7 @@ fun ThreadScreen(
                             entry.body?.takeIf { it.isNotBlank() }?.let {
                                 Spacer(Modifier.height(Space.xs))
                                 Text(
-                                    text = it,
+                                    text = Bidi.isolate(it),
                                     style = HealthTrail.type.bodyM,
                                     color = colors.ink2,
                                     maxLines = 3,

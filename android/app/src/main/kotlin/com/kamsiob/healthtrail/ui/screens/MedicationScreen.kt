@@ -188,7 +188,7 @@ fun MedicationScreen(
                             ) {
                                 question.roleLabel?.takeIf { it.isNotBlank() }?.let {
                                     Text(
-                                        text = it,
+                                        text = Bidi.isolate(it),
                                         style = HealthTrail.type.mono,
                                         color = colors.ink2,
                                     )
