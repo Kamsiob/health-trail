@@ -409,14 +409,93 @@ class Repository private constructor(
          * is there alone.
          */
         startingHand: List<Pair<String, String>> = emptyList(),
+        /**
+         * The first days list this setting ships, and the papers it produces.
+         *
+         * **Both sat in the template data with nothing reading them**, #135, so
+         * a person who picked "Nursing home" got its threads and none of the
+         * ten things worth doing in the first week. That is the highest value
+         * content in the whole catalog and it was invisible.
+         *
+         * **They become a project rather than a thirteenth section.** A project
+         * already is a named process holding steps that can be edited, marked
+         * done and removed, and papers that are named slots waiting for a
+         * document, and `DESIGN.md` 20.2 says the checklist "remains, as steps,
+         * and leads only in the one shape where the work truly is many small
+         * arrangements". The first days is exactly that shape. D136.
+         */
+        checklist: List<String> = emptyList(),
+        documents: List<String> = emptyList(),
+        /**
+         * What that project is called, in the person's own language.
+         *
+         * **The caller composes it**, the same way it composes a thread's
+         * label, because a repository that reached into the catalog would be
+         * writing display text out of the data layer.
+         *
+         * Null from a caller that does not want the project at all, which is
+         * how a test asks for the old behavior.
+         */
+        firstDaysName: String? = null,
     ) = withContext(Dispatchers.IO) {
         db().database.write(
             "UPDATE subject SET situation_template_id = ?, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ?",
             arrayOf<Any>(templateId, System.currentTimeMillis(), subjectId),
         )
+
+        // **One per setting, and a second setting gets its own.** Moving from a
+        // hospital stay to a nursing home is genuinely a new set of first days
+        // with different people to call, so the new list is real work rather
+        // than a duplicate. Applying the same setting twice is not, and this is
+        // what stops it: the guard is the template the project came from.
+        val firstDays = if (
+            firstDaysName != null &&
+            (checklist.isNotEmpty() || documents.isNotEmpty()) &&
+            // **The guard that stops a setting applied twice making two
+            // lists**, and it reads the same query the template library
+            // already reads rather than a second copy of it, per D133. A
+            // tombstoned project does not count, because somebody who removed
+            // their first days list and set the setting up again is asking
+            // for it back.
+            projectsFromTemplate(subjectId, templateId).isEmpty()
+        ) {
+            startProject(
+                subjectId = subjectId,
+                templateId = templateId,
+                name = firstDaysName,
+                steps = checklist,
+                // **Steps lead**, 20.3, because this shape is many small
+                // arrangements rather than one slow process being waited on.
+                lead = "steps",
+                // **No stages and no date kinds.** The first days is not a
+                // process with named stages somebody agreed to, and a road
+                // drawn over it would say there is a sequence when there is
+                // not. 20.6 and the road strip's own rule.
+                papers = documents,
+            )
+        } else {
+            null
+        }
+
         if (startingHand.isNotEmpty() && todayLayout(subjectId) == null) {
-            setTodayLayout(subjectId, startingHand)
+            // **The list goes on Today, because invisible was the defect.**
+            // Left in the Projects tab alone it would be one tab away with
+            // nothing pointing at it, which is the same absence in a nicer
+            // place. It is appended rather than promoted: 21.1 allows exactly
+            // one lead and the setting's own hand already has one, and 21.8
+            // means the person can move or remove it from the first minute.
+            val hand = if (firstDays == null) {
+                startingHand
+            } else {
+                startingHand + ("project_steps" to "wide")
+            }
+            val sources = if (firstDays == null) {
+                emptyMap()
+            } else {
+                mapOf(hand.lastIndex to ("project" to firstDays))
+            }
+            setTodayLayout(subjectId, hand, sources)
         }
         threads.forEachIndexed { index, (threadTemplateId, label) ->
             insert(

@@ -2279,6 +2279,13 @@ fun NotebookShell(
                         // only when there is not one already: a person whose
                         // care setting changed keeps the desk they arranged.
                         startingHand = change.situation.startingHand,
+                        // **A new setting is a new set of first days**, and
+                        // this is where MASTER_SPEC 4.6's carry forward comes
+                        // out right by construction: the old setting's list is
+                        // a project and nothing here touches it. #135.
+                        checklist = change.situation.checklist,
+                        documents = change.situation.documents,
+                        firstDaysName = strings["situation.firstdays"],
                     )
                     // **The move, not just a new name.** A chapter boundary
                     // that starts a place without ending the one before it

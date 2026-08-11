@@ -205,6 +205,14 @@ fun AppRoot(
                         // blank dashboard and forty options builds nothing. It
                         // is a starting hand, editable from the first minute.
                         startingHand = current.situation.startingHand,
+                        // **The two halves that sat in the data reading
+                        // nothing**, #135. The first days list and the papers
+                        // this setting produces become a project, and its name
+                        // is composed here rather than in the repository for
+                        // the same reason a thread's label is.
+                        checklist = current.situation.checklist,
+                        documents = current.situation.documents,
+                        firstDaysName = strings["situation.firstdays"],
                     )
                     state = RootState.Ready(current.repository)
                 }
