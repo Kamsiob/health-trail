@@ -85,7 +85,12 @@ import com.kamsiob.healthtrail.ui.screens.AddMilestoneScreen
 import com.kamsiob.healthtrail.ui.screens.ConflictsScreen
 import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.MedicationEventScreen
+import com.kamsiob.healthtrail.ui.screens.AddCardSheet
+import com.kamsiob.healthtrail.ui.screens.CardOffer
+import com.kamsiob.healthtrail.ui.screens.CardOptionsSheet
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
+import com.kamsiob.healthtrail.ui.screens.TodayFieldScreen
+import com.kamsiob.healthtrail.ui.screens.StartProjectPreviewSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateKindsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectPapersScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectRoadScreen
@@ -817,6 +822,115 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("writing down a medication change")
+    }
+
+
+    // **Today's two sheets and the preview**, which are the last of the ones a
+    // person reaches by hand. #342.
+
+    @Test
+    fun addingACardLabelsEverything() {
+        compose.show {
+            AddCardSheet(
+                offers = listOf(
+                    CardOffer(
+                        type = "medications",
+                        label = "Medications",
+                        preview = "6 on the list now",
+                        suggested = true,
+                    ),
+                    CardOffer(
+                        type = "project_steps",
+                        label = "The waiver application",
+                        preview = "10 steps in the plan",
+                        sourceTable = "project",
+                        sourceId = "pr1",
+                        // **A catalog key, not a group name.** The screen hands
+                        // this straight to GroupHeader, and `Strings.resolve`
+                        // throws on a key no catalog defines rather than falling
+                        // back, deliberately. A fixture with "projects" in it
+                        // crashed the sheet, which is TRAPS section 3's first
+                        // trap seen from the test's side.
+                        groupKey = "notebook.section.projects",
+                    ),
+                ),
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("adding a card to Today")
+    }
+
+    @Test
+    fun oneCardsOptionsLabelEverything() {
+        compose.show {
+            CardOptionsSheet(
+                name = "Medications",
+                size = "small",
+                onResize = {},
+                onPromote = {},
+                onMoveUp = {},
+                onMoveDown = {},
+                onRemove = {},
+                onPickSource = {},
+                onDismiss = {},
+            )
+        }
+        assertEverythingIsLabeled("one card's options")
+    }
+
+    @Test
+    fun whatATemplateSetsUpLabelsEverything() {
+        val catalog = runBlocking { TemplateCatalog.projects(context) }
+        compose.show {
+            StartProjectPreviewSheet(
+                template = catalog.first(),
+                onCreate = {},
+                onDismiss = {},
+            )
+        }
+        assertEverythingIsLabeled("what a project template sets up")
+    }
+
+
+    /**
+     * **Today itself, which is the screen the app opens on**, and the last one
+     * this check did not reach. #342.
+     *
+     * A lead and four cards, two of which answer with something and two of
+     * which are empty, because 21.4's states ladder makes those draw
+     * differently and a field of empty cards would pass for free.
+     */
+    @Test
+    fun theTodayFieldLabelsEverything() {
+        fun card(id: String, type: String, size: String = "small", lead: Boolean = false) =
+            Repository.TodayCard(
+                id = id, type = type, size = size, sortIndex = 0, isLead = lead,
+                sourceTable = null, sourceId = null,
+            )
+        compose.show {
+            TodayFieldScreen(
+                layout = Repository.TodayLayout(
+                    lead = card("c-digest", "digest", size = "wide", lead = true),
+                    field = listOf(
+                        card("c-next", "next_up"),
+                        card("c-meds", "medications"),
+                        card("c-ask", "ask_next_time"),
+                        card("c-emerg", "emergency_card"),
+                    ),
+                ),
+                answers = mapOf(
+                    "c-next" to Repository.TodayAnswer(
+                        title = "Care plan meeting", whenEdtf = "2026-08-20",
+                    ),
+                    "c-meds" to Repository.TodayAnswer(count = 6),
+                    "c-ask" to Repository.TodayAnswer(),
+                    "c-emerg" to Repository.TodayAnswer(),
+                ),
+                onOpen = {},
+            )
+        }
+        assertEverythingIsLabeled("Today, the screen the app opens on")
     }
 
     @Test

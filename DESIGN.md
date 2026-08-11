@@ -525,7 +525,7 @@ The same substance appears in the About screen and the store listing. It is not 
 - **Nothing important sits where a one-handed thumb cannot reach it**, which is a layout constraint rather than a nicety.
 - **Date controls** are fully operable by reader and at maximum font size, and a reader reads an imprecise date as the person expressed it rather than as a resolved timestamp.
 
-**Every touchable node says what it is, and the build checks it.** `ScreenReaderTest` walks a screen's semantics tree, in every window including a sheet's own, and fails on any node carrying a click that has neither text nor a content description. **It walks 70 of the 75 screens, not all of them**, and the number is here rather than a claim of completeness because a document that overstates a check is worse than a missing check: the next person reads the claim and stops looking. **#342** is the gap and the five it does not reach.
+**Every touchable node says what it is, and the build checks it.** `ScreenReaderTest` walks a screen's semantics tree, in every window including a sheet's own, and fails on any node carrying a click that has neither text nor a content description. **It walks every one of them, and a check holds that to the directory rather than to anybody's memory**: `check_reader_coverage.py` fails on a screen `ScreenReaderTest` does not construct. **It said "every screen" once before and walked 44 of 75**, which is why the claim is now held by something rather than made. #342, and D133 is why the set lives in the directory.
 
 That half is automated. **It does not replace running the reader by hand**, because traversal order and how a label actually sounds still need ears.
 

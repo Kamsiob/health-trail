@@ -38,6 +38,10 @@ CHECKS = [
         "check_dead_gestures.py",
         "no control announces an action it does not perform",
     ),
+    (
+        "check_reader_coverage.py",
+        "every screen is walked by the reader check, so the claim cannot drift",
+    ),
     ("check_contrast.py", "every color pair in both themes against the WCAG AA floors"),
     ("check_ink3_is_not_text.py", "ink3 is non-text only, so no label is drawn at 2.37:1"),
     ("check_self_contained.py", "nothing outside this project is named in the repository"),
