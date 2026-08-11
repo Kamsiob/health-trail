@@ -686,7 +686,11 @@ The small touches that separate finished from correct. **They apply everywhere, 
 
 Recorded here per section 19, rather than left for a later session to find and mistake for drift.
 
-**Screen 08, the trail.** The grid draws a "Filter" control and a pin toggle in the header beside the search field. Neither is built. The filter is real work with its own question, which is what a person filters by (kind, thread, unfiled) and whether that survives leaving the screen; it is filed rather than guessed at. The pin toggle in the header would be a second way to reach a set the pinned group already shows at the top of the same screen.
+**Screen 08, the trail.** The grid draws a "Filter" control and a pin toggle in the header beside the search field.
+
+**The filter is built and this entry said it was not**, corrected 2026-08-11 during the #345 fidelity pass. It filters **by kind**, as a row of outlined chips under the search field rather than as a control in the header, and it says how much it is hiding. **The question this entry filed rather than guessed at has been answered for one of its three parts**: kind. Filtering by thread and by unfiled are still not built, and whether a filter survives leaving the screen is still open.
+
+**The pin toggle is still not built and the reasoning stands**: it would be a second way to reach a set the pinned group already shows at the top of the same screen.
 
 **Screens 04 to 06, capture.** The grid draws the three stages as who or what, then when, then the note. This screen keeps the note first, which is the order it arrived at on the phone: somebody taps capture having just put a phone down and the thing in their head is what was said. Rule 15 puts the thing that matters most in the best position, and law 3's own goal, finishing in under fifteen seconds standing up, is met by typing one sentence and saving without ever seeing stages two or three.
 
