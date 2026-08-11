@@ -63,6 +63,10 @@ CHECKS = [
         "check_cross_references.py",
         "every section pointer between documents resolves to a section that exists",
     ),
+    (
+        "check_token_drift.py",
+        "the count of measurements not coming from a token falls and never rises",
+    ),
 ]
 
 # TESTING-PERSONAS.md section 5 checks that are not implemented yet, each named
