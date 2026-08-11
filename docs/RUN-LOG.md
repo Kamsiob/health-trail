@@ -1816,3 +1816,13 @@ So the state is held where it can be held, as a composed error string in `Screen
 **One defect came out of the composition, and it is the one that matters to a person.** The grid gives every notebook section a count in its own units: "9 people", "3 current", **"$15,072.98 not settled"**. The app says "N items" for all twelve. **"Money: 6 items" tells somebody nothing they came for.** #347.
 
 **That is the lesson to carry.** Numbers can be diffed and composition has to be looked at, and **the looking found the defect that changes what somebody understands**, while the diffing found three that change how it looks. Both are worth doing. Only one of them can be automated, which is exactly why 16.6 asks for a side by side rather than another check.
+
+### Five screens compared, and the score is four documents to two screens
+
+**Today, the notebook, the trail, capture and one entry**, each against its drawing at the same width.
+
+**Two screens had drifted.** The notebook says "N items" for all twelve sections where the grid gives each its own count, including Money at "$15,072.98 not settled", which is the number somebody opens Money to find. #347. And an entry does not say where it sits in its thread, where the grid says "step 4 of its thread", which is the whole reason a thread exists. #348.
+
+**Four documents had gone stale.** The type ladder said Display M was 19 to 20 while the grid and the app both said 22. 15.1 said the trail's filter was not built, and it was built last night. Capture's "Skip this" was a real departure from the grid's "Next", recorded only in a code comment. And D142 itself, as written, would have told this pass to restore two colors that fail contrast.
+
+**That ratio is the finding.** The screens are in better shape than the documents describing them, which inverts what the fidelity work was expected to show, and it means **a session reading the documents to build a new screen is at more risk than the screens already built.**
