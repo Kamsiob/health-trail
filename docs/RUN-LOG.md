@@ -1654,3 +1654,9 @@ Now a project hit opens the project. **And the `else` is gone**: the thirteenth 
 It now installs every time, `install -r` so the data survives, and it **refuses outright when any source file is newer than the APK**, naming the file and the command. `compileDebugKotlin` does not build an APK, which is the other half of the same mistake and the reason the refusal says so in words.
 
 **Three separate versions of one error tonight**: a compile that never ran behind a grep for failures, a suite that was skipped because it needed `--device`, and an install that silently did nothing. All three read as success. **A step that cannot say what it did is not a step.**
+
+### One loading treatment, and a comment that described a component nobody built
+
+**The app had two loading states, six identical lines apart**, one in `AppRoot` while the database opens and one in `NotebookShell` while the counts load. Neither was wrong and that is the point: two copies of a thing are two treatments that have not drifted yet. Rule 22 says one treatment for the whole app, so they are now one `Waiting`, on the section 7 inventory with its own "when not to".
+
+**And the KDoc above one of them described a spinner on warm paper.** There is no spinner and there never was. **A comment claiming a component that does not exist is worse than no comment**, because the next person changes the code to match the comment: somebody would eventually have added the spinner the file asked for, on a screen whose whole job is to not be a moment. Corrected to say what is actually there and why, which is that neither a spinner nor a progress bar knows how long a database read takes.

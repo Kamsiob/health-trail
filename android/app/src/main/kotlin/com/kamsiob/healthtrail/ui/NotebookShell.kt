@@ -160,6 +160,7 @@ import com.kamsiob.healthtrail.ui.screens.CardOffer
 import com.kamsiob.healthtrail.ui.screens.TodayFieldScreen
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
+import com.kamsiob.healthtrail.ui.components.Waiting
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -4153,17 +4154,9 @@ internal val SECTION_ORDER = listOf(
     Repository.Section.EMERGENCY_CARD,
 )
 
+/** The app's one loading treatment, so the shell and the root cannot drift. */
 @Composable
-private fun Loading() {
-    val strings = LocalStrings.current
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-            text = strings["common.loading"],
-            style = HealthTrail.type.bodyM,
-            color = HealthTrail.colors.ink2,
-        )
-    }
-}
+private fun Loading() = Waiting()
 
 /**
  * The counts could not be read.

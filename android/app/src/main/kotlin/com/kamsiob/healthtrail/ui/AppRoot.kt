@@ -30,6 +30,7 @@ import com.kamsiob.healthtrail.ui.screens.SetupAnswers
 import com.kamsiob.healthtrail.ui.screens.SetupScreen
 import com.kamsiob.healthtrail.ui.screens.SituationPickerScreen
 import com.kamsiob.healthtrail.data.TemplateCatalog
+import com.kamsiob.healthtrail.ui.components.Waiting
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -255,33 +256,30 @@ private sealed interface RootState {
 }
 
 /**
- * Shown while the database opens. Deliberately quiet: a spinner on a warm paper
- * background, no branding moment, no progress bar pretending to know how long
- * something takes.
+ * Shown while the database opens. Deliberately quiet: one word on warm paper,
+ * no branding moment, and **no spinner and no progress bar**, because neither
+ * knows how long a database read takes and both would be the app performing
+ * effort at somebody who is waiting.
+ *
+ * **The KDoc here used to describe a spinner that was never in the code**, and
+ * a comment claiming a component that does not exist is worse than no comment:
+ * the next person changes the code to match the comment. Corrected 2026-08-11.
+ *
+ * The word itself is [Waiting], which is the app's one loading treatment.
  */
 @Composable
 private fun OpeningScreen() {
-    val strings = LocalStrings.current
     Surface(
         modifier = Modifier
             .fillMaxSize()
             .testTag(AppRootTags.LOADING),
         color = HealthTrail.colors.paper,
     ) {
-        Column(
+        Waiting(
             modifier = Modifier
-                .fillMaxSize()
                 .systemBarsPadding()
                 .padding(Space.screenHorizontal),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = strings["common.loading"],
-                style = HealthTrail.type.bodyM,
-                color = HealthTrail.colors.ink2,
-            )
-        }
+        )
     }
 }
 

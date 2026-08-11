@@ -365,6 +365,7 @@ A row may be 46dp tall and still carry a 48dp touch target through invisible pad
 | **Sheet** | Rises from the bottom, 24dp top corners, scrim behind. **One question per sheet**, per law 3, and it says whether anything it does is saved. **It scrolls**, because a sheet that cannot reach its own Done at font scale 2.0 is one somebody is stuck in |
 | **FAB** | Gold, 48dp, bottom-trailing corner, opening a labeled menu that blooms upward from it |
 | **Bottom navigation** | Four tabs, even spacing, active tab marked with a tonal pill behind its icon |
+| **Waiting** | One quiet word, centered, while something is read. **No spinner, no progress bar, no skeleton rows**: a bar would claim to know how long a database read takes, and skeleton rows draw a shape the real answer may not have, so an empty section would flash three gray rows and then show nothing, which reads as something having been lost. **One treatment for the whole app**, because there were two, six identical lines apart, which is how loading states drift |
 
 **Any component in the current codebase that is not on this list is retired.** Do not keep a one-off around because a single screen uses it. Rebuild that screen from the inventory. The retirements are enumerated in `DECISIONS.md` D82.
 
