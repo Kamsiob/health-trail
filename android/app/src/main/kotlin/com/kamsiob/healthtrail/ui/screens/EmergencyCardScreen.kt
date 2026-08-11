@@ -86,28 +86,45 @@ fun EmergencyCardScreen(
         section = Repository.Section.EMERGENCY_CARD,
         headingKey = "emergency.heading",
     ) {
+        // Computed before anything draws, because the header at the top of the
+        // screen depends on it as much as the body below does.
+        val hasSomething = (card != null && !card.isEmpty) ||
+            contacts.isNotEmpty() ||
+            medications.isNotEmpty()
+
         // **Two doors, at the top, where a person looks for them.** The grid
         // draws a Change pill on every block. That is four identical controls
         // opening one editor, which is the same noise the trail's per-row pin
         // turned out to be, so there is one of each instead. `DESIGN.md` 15.1
         // records the departure.
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Space.s),
-            ) {
-                QuietButton(
-                    label = strings["emergency.share"],
-                    onClick = onShare,
-                    modifier = Modifier.weight(1f).testTag(EmergencyTags.SHARE),
-                )
-                QuietButton(
-                    label = strings["emergency.change"],
-                    onClick = onEdit,
-                    modifier = Modifier.weight(1f).testTag(EmergencyTags.CHANGE),
-                )
+        //
+        // **Neither appears on an empty card**, and they are two different
+        // reasons. **Sharing one would hand somebody a document with nothing
+        // on it**, which is the same call `PrepScreen` makes about a phone
+        // with no calendar: an action that cannot do anything shows no action
+        // at all rather than one that fails when tapped. **And Change would be
+        // the second way to say "Fill in the card"**, which the empty state
+        // already offers, so it is one action under two names on one screen,
+        // which is the very noise this row exists to have removed.
+        if (hasSomething) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Space.s),
+                ) {
+                    QuietButton(
+                        label = strings["emergency.share"],
+                        onClick = onShare,
+                        modifier = Modifier.weight(1f).testTag(EmergencyTags.SHARE),
+                    )
+                    QuietButton(
+                        label = strings["emergency.change"],
+                        onClick = onEdit,
+                        modifier = Modifier.weight(1f).testTag(EmergencyTags.CHANGE),
+                    )
+                }
+                Spacer(Modifier.height(Space.sectionGap))
             }
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **Who to call comes first, above everything else on the card.**
@@ -153,10 +170,6 @@ fun EmergencyCardScreen(
         // printed "Nothing on the card yet" directly underneath a medication
         // that was plainly on it. Found by looking at the screen; nothing in
         // the code looked wrong.
-        val hasSomething = (card != null && !card.isEmpty) ||
-            contacts.isNotEmpty() ||
-            medications.isNotEmpty()
-
         if (!hasSomething) {
             item {
                 SectionEmpty(name = EmergencyTags.NAME, text = strings["emergency.empty"], section = Repository.Section.EMERGENCY_CARD, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
@@ -224,12 +237,17 @@ fun EmergencyCardScreen(
             item { Spacer(Modifier.height(Space.s)) }
         }
 
-        item {
-            QuietButton(
-                label = strings["emergency.edit"],
-                onClick = onEdit,
-                modifier = Modifier.testTag(EmergencyTags.EDIT),
-            )
+        // **The one action on an empty card, and the only one.** On a filled
+        // card the Change pill at the top is the same door, so this would be
+        // the third control opening one editor.
+        if (!hasSomething) {
+            item {
+                QuietButton(
+                    label = strings["emergency.edit"],
+                    onClick = onEdit,
+                    modifier = Modifier.testTag(EmergencyTags.EDIT),
+                )
+            }
         }
     }
 }
