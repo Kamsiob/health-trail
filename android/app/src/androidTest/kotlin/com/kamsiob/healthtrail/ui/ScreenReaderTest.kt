@@ -84,7 +84,11 @@ import com.kamsiob.healthtrail.ui.screens.ChapterScreen
 import com.kamsiob.healthtrail.ui.screens.AddMilestoneScreen
 import com.kamsiob.healthtrail.ui.screens.ConflictsScreen
 import com.kamsiob.healthtrail.ui.screens.LogCallSheet
+import com.kamsiob.healthtrail.ui.screens.MedicationEventScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectDateKindsScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectPapersScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectRoadScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StageSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
@@ -748,6 +752,71 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("logging a call on a project")
+    }
+
+
+    @Test
+    fun aProjectsRoadLabelsEverything() {
+        compose.show {
+            ProjectRoadScreen(
+                projectName = "The waiver application",
+                stages = listOf(
+                    Repository.ProjectStage("s1", "Applied", 0, "2026-03-05", 1L),
+                    Repository.ProjectStage("s2", "In review", 1, null, null),
+                ),
+                onAdd = {},
+                onOpen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a project's road")
+    }
+
+    @Test
+    fun aProjectsPaperPlacesLabelEverything() {
+        compose.show {
+            ProjectPapersScreen(
+                projectName = "The waiver application",
+                papers = listOf(
+                    Repository.ProjectPaper("pp1", "The award letter", 0, "received", "d1"),
+                    Repository.ProjectPaper("pp2", "The certified copy", 1, null, null),
+                ),
+                onAdd = {},
+                onOpen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a project's places for paper")
+    }
+
+    @Test
+    fun aProjectsDateKindsLabelEverything() {
+        compose.show {
+            ProjectDateKindsScreen(
+                projectName = "The waiver application",
+                kinds = listOf(
+                    Repository.ProjectDateKind("k1", "Decision expected"),
+                    Repository.ProjectDateKind("k2", "Hearing"),
+                ),
+                onAdd = {},
+                onOpen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a project's date kinds")
+    }
+
+    @Test
+    fun writingDownAMedicationChangeLabelsEverything() {
+        compose.show {
+            MedicationEventScreen(
+                medicationId = "m1",
+                medicationName = "Donepezil",
+                onSave = {},
+                onCancel = {},
+            )
+        }
+        assertEverythingIsLabeled("writing down a medication change")
     }
 
     @Test
