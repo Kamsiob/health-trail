@@ -2589,6 +2589,8 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **This supersedes D58 and the supersession is deliberate.** D58 decided on 2026-08-01 that a translated language ships provided the selection screen carries a friendly disclaimer and the translation has had a good faith check. That decision moved the obligation from a gate into the interface. **This one moves it back to a gate for v1 only**, on the grounds that a disclaimer tells somebody the words might be wrong and does not tell them which words. D58's mechanism is kept in full and is not deleted: the `reviewed_by_native_speaker` flag, its per-catalog reading, and the disclaimer copy all stay, because they are exactly what is needed when the languages return.
 
+**Confirmed by the owner on 2026-08-11**, after it was escalated rather than resolved in the session. His words: the reasoning here is better than the reasoning it replaces, and **D58's mechanism stays intact because it becomes correct again the moment a verified translation ships**. The supersession is of D58's conclusion for version one, not of its machinery and not of its argument about where an obligation should live.
+
 **What this is not.** It is a scope decision, not an architecture rollback, and the difference is the whole of it.
 
 **Removed from the shipped product:** three locales from the language list, and nothing else.
@@ -2631,6 +2633,22 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **What this is not.** It is not a redesign and it authorizes none. **Everything it asks for was approved already**; it asks the built screens to match it.
 
 **Retroactive, per rule 14**, and that is the expensive half. The bar did not change, the enforcement did, and every screen already built is in scope.
+
+---
+
+### D143. A dated record keeps its stale pointers, and a later session must not fix them
+
+**Date:** 2026-08-11. **Confirmed by the owner in the alignment pass.**
+
+**The situation.** `check_cross_references.py` found ten references in `DECISIONS.md` and `docs/RUN-LOG.md` pointing at `DESIGN.md` sections that no longer exist, left behind by the v4 renumbering. They resolve to nothing.
+
+**They stay exactly as they are, and this entry exists so that stays a decision rather than an oversight somebody tidies.**
+
+**Why.** An entry in either file records what was decided or done **on a date, against the document as it stood on that date**. Editing its cross references would make the record claim a correspondence that did not exist when it was written. **A record whose contents can be quietly updated to match today is not a record**, and the entire value of both files is that a later session can trust them to say what was actually true at the time. A resolving link is worth less than that.
+
+**What is done instead, which is the honest fix.** Both files say at the top that their section numbers are as of the entry and that the reader should follow the content rather than the number. `check_cross_references.py` skips both by name and its docstring explains why, so the exclusion reads as reasoning rather than as an exemption somebody granted themselves.
+
+**Do not "fix" them.** Not by hand, not as part of a sweep, and not because a tool reports them. If a future check flags them again, the check is wrong for this file and not the other way round. **This applies to any dated record added later**, including `CHANGELOG.md`.
 
 ---
 

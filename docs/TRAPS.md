@@ -131,6 +131,8 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 ## 4. Before you write or change a check
 
+**Ten cross references in `DECISIONS.md` and `docs/RUN-LOG.md` point at `DESIGN.md` sections that no longer exist, and they are not a bug.** They are dated records of what was decided against the document as it stood then, and `check_cross_references.py` skips both files by name for that reason. **Do not fix them and do not widen the check to cover them.** D143. If a tool flags them, the tool is wrong for those two files.
+
 **Prove it by breaking the data and watching it fail.** A check that has never failed is a check nobody knows the shape of.
 
 **A probe that edits a real file is restored by copy, never by git.** On 2026-08-05 a probe was undone with `git checkout -- templates/data/projects.json`, which rule 6 bans by name, and it discarded an hour of uncommitted work on the same file. **Copy the file into the scratchpad first and copy it back**, or commit before probing.
