@@ -1778,6 +1778,22 @@ class ScreenReaderTest {
         assertEverythingIsLabeled("export")
     }
 
+    /**
+     * **The failed export, which is the state that matters most here.**
+     *
+     * Export is the only recovery path this app has for its own encryption,
+     * per D24, so the screen that says it did not work is load bearing. It was
+     * the one `ExportState` no test composed: READY, WORKING and the two
+     * finished faces all had cases and this did not.
+     */
+    @Test
+    fun exportLabelsEverythingAfterItFailed() {
+        compose.show {
+            ExportScreen(state = ExportState.FAILED, onExport = { _, _ -> }, onBack = {})
+        }
+        assertEverythingIsLabeled("export, failed")
+    }
+
     @Test
     fun exportLabelsEverythingWhileWorking() {
         // Every control is disabled in this state, which is exactly when a
