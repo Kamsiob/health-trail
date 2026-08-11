@@ -60,6 +60,7 @@
   "entry.untitled": "شيء دوّنته",
   "entry.belongs": "أين يقع هذا",
   "entry.thread": "خيط رعاية",
+  "entry.thread.step": "الخطوة {step} من {total} في هذا المسار",
   "entry.chapter": "فصل",
   "entry.project": "معاملة",
   "entry.medication": "دواء",

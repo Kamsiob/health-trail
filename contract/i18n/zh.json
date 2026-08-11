@@ -60,6 +60,7 @@
   "entry.untitled": "你记下的一件事",
   "entry.belongs": "这条属于哪里",
   "entry.thread": "照护线索",
+  "entry.thread.step": "本线索的第 {step} 步，共 {total} 步",
   "entry.chapter": "篇章",
   "entry.project": "事项",
   "entry.medication": "药物",

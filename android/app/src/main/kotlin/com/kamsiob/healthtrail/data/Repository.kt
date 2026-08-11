@@ -4133,6 +4133,8 @@ class Repository private constructor(
          * about two applications has done exactly that. The screen draws each.
          */
         val projects: List<EntryProject> = emptyList(),
+        /** Where this entry sits in each thread it belongs to, keyed by thread id. #348. */
+        val threadPositions: Map<String, ThreadPosition> = emptyMap(),
     )
 
     /**
@@ -4143,18 +4145,50 @@ class Repository private constructor(
      */
     data class EntryProject(val id: String, val name: String, val status: String)
 
+    /**
+     * Where one entry sits inside one of its threads.
+     *
+     * **Per link rather than per entry**, because an entry can belong to more
+     * than one thread and is a different step of each.
+     */
+    data class ThreadPosition(val step: Int, val total: Int)
+
     /** One entry read on its own, or null when it is gone. */
     suspend fun entry(entryId: String): EntryDetail? = withContext(Dispatchers.IO) {
         val database = db().database
         val threads = mutableListOf<CareThread>()
+        val positions = mutableMapOf<String, ThreadPosition>()
         database.rawQuery(
-            "SELECT t.id, t.label, t.color_index FROM live_entry_thread et " +
+            // **Where this entry sits in each of its threads.** A thread is a
+            // sequence somebody is trying to follow, so the entry's own screen
+            // says which step it is rather than repeating the word "thread",
+            // per the grid's screen 09 and #348.
+            //
+            // **Counted from the oldest**, which is the opposite of how the
+            // thread screen lists them. That screen shows the newest first
+            // because that is what somebody scanning wants; a step number only
+            // means anything counting forward from the start.
+            //
+            // **Ties keep the same number rather than being broken by id.** Two
+            // entries written for the same moment are the same step of the
+            // story, and inventing an order between them would be the app
+            // deciding something the record does not say.
+            "SELECT t.id, t.label, t.color_index, " +
+                "(SELECT COUNT(*) FROM live_entry_thread p " +
+                " JOIN live_entry pe ON pe.id = p.entry_id " +
+                " WHERE p.thread_id = t.id AND coalesce(pe.occurred_start, pe.created_at) <= " +
+                "   coalesce(e.occurred_start, e.created_at)) AS step, " +
+                "(SELECT COUNT(*) FROM live_entry_thread a WHERE a.thread_id = t.id) AS total " +
+                "FROM live_entry_thread et " +
                 "JOIN live_care_thread t ON t.id = et.thread_id " +
+                "JOIN live_entry e ON e.id = et.entry_id " +
                 "WHERE et.entry_id = ? ORDER BY t.sort_index, t.created_at",
             arrayOf(entryId),
         ).use { cursor ->
             while (cursor.moveToNext()) {
-                threads += CareThread(cursor.getString(0), cursor.getString(1), cursor.getInt(2))
+                val id = cursor.getString(0)
+                threads += CareThread(id, cursor.getString(1), cursor.getInt(2))
+                positions[id] = ThreadPosition(cursor.getInt(3), cursor.getInt(4))
             }
         }
 
@@ -4194,6 +4228,7 @@ class Repository private constructor(
                 medicationId = cursor.getString(13),
                 medicationName = cursor.getString(14),
                 projects = projectsOnEntryBlocking(database, entryId),
+                threadPositions = positions,
             )
         }
     }

@@ -60,6 +60,7 @@
   "entry.untitled": "Something you wrote down",
   "entry.belongs": "Where this sits",
   "entry.thread": "Care thread",
+  "entry.thread.step": "Step {step} of {total} in this thread",
   "entry.chapter": "Chapter",
   "entry.project": "Project",
   "entry.medication": "Medication",

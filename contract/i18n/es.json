@@ -60,6 +60,7 @@
   "entry.untitled": "Algo que anotó",
   "entry.belongs": "Dónde encaja esto",
   "entry.thread": "Hilo de cuidado",
+  "entry.thread.step": "Paso {step} de {total} en este hilo",
   "entry.chapter": "Capítulo",
   "entry.project": "Trámite",
   "entry.medication": "Medicamento",

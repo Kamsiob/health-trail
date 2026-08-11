@@ -216,7 +216,25 @@ fun EntryScreen(
                         onClick = { onOpenThread(thread) },
                         leading = { RouteSwatch(color = route, index = thread.colorIndex) },
                         label = Bidi.isolate(thread.label),
-                        note = strings["entry.thread"],
+                        // **Where this sits in the thread, not the word
+                        // "thread" again.** A care thread is a sequence
+                        // somebody is following, and the step is what says
+                        // three things came before this one. The row above
+                        // already showed the thread's name, so repeating the
+                        // kind here told the person nothing. The grid's screen
+                        // 09 draws it as "This is step 4 of its thread". #348.
+                        //
+                        // **Falls back to the plain word** when the position is
+                        // unknown, which is what an entry linked to a thread it
+                        // is somehow not counted in would be, rather than
+                        // rendering a step of zero.
+                        note = detail.threadPositions[thread.id]?.let {
+                            strings(
+                                "entry.thread.step",
+                                "step" to it.step,
+                                "total" to it.total,
+                            )
+                        } ?: strings["entry.thread"],
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
