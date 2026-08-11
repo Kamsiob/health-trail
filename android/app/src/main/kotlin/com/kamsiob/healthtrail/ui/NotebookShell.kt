@@ -3928,6 +3928,7 @@ fun NotebookShell(
                         subjectId = subject.id,
                         kind = draft.kind.entryKind(),
                         title = draft.who,
+                        // bidi-ok: a draft on its way to the database.
                         body = draft.note,
                         occurred = draft.occurred,
                         // An entry nobody could place goes to the Unfiled tray

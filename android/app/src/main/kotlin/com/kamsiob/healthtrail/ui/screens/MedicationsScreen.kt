@@ -183,7 +183,12 @@ private fun MedicationRow(
     DenseRow(
         title = Bidi.isolate(medication.name),
         subtitle = detail,
-        trailing = medication.doseText?.takeIf { it.isNotBlank() },
+        // **Isolated, like the name above it.** The list showed a dose raw
+        // while the medication's own screen isolated the same string, which is
+        // one record reading two ways. Seen in Arabic on the phone: nothing in
+        // the source said which of the two was right.
+        trailing = medication.doseText?.takeIf { it.isNotBlank() }
+            ?.let { Bidi.isolate(it) },
         chevron = true,
         divider = !isLast,
         onClick = onOpen,

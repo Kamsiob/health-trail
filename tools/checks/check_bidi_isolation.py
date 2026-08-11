@@ -38,6 +38,19 @@ edited, a draft on its way to the database, and anything building a filename,
 because in all three the invisible marks become part of the data. The ordinary
 one is a caller that isolates a level up.
 
+**It reads nine argument names, and it used to read four.** `text`, `title`,
+`subtitle` and `label` were the obvious ones, and `trailing` was not among
+them, so the medications list rendered a dose raw while the medication's own
+screen isolated the same string. **One record read two ways and nothing in the
+source said which was right**; it was seen in Arabic on the phone, which is
+what #226 says all along about this class of defect. `detail`, `eyebrow`,
+`body` and `heading` came in at the same time and found three more.
+
+**`value` and `note` are deliberately not on the list.** Both are overwhelmingly
+the current contents of a text field or a draft on its way to the database,
+which are two of the three things that must never be isolated, and adding them
+would mean annotating twenty form fields to say the same sentence twenty times.
+
 **Two rules, because one shape was invisible to the first.** The first reads
 the whole rendered argument and looks for a model property in it. The second
 catches `person.notes?.takeIf { it.isNotBlank() }?.let { Text(text = it) }`,
@@ -79,7 +92,10 @@ REPOSITORY = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/data/Re
 SCREENS = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 
 # Arguments that end up rendered as words a person reads.
-RENDERED = re.compile(r"(?:text|title|subtitle|label)\s*=\s*([^\n]+)")
+RENDERED = re.compile(
+    r"\b(?:text|title|subtitle|label|trailing|detail|eyebrow|body|heading)"
+    r"\s*=\s*([^\n]+)"
+)
 
 
 CONTINUES = re.compile(r"^\s*(\?\.|\?:|\.)")

@@ -1530,8 +1530,9 @@ internal fun wordedAnswer(
                     else -> strings("project.countdown.passed", "count" to -days)
                 },
                 // The kind, which is what the date is, in the person's own
-                // words. It is free text they typed, so it renders as it is.
-                detail = if (days == null) answer.detail else answer.title,
+                // words. It is free text they typed, so it is isolated.
+                detail = (if (days == null) answer.detail else answer.title)
+                    ?.let { Bidi.isolate(it) },
             )
         }
 
@@ -1856,6 +1857,7 @@ private fun staged(
         return Repository.TodayAnswer(
             // bidi-ok: isolated where it is rendered, not where it is built.
             title = person.displayName,
+            // bidi-ok: the same, one line up.
             detail = person.roleLabel?.takeIf { it.isNotBlank() },
             phone = person.phone?.takeIf { it.isNotBlank() },
         )
