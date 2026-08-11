@@ -168,6 +168,13 @@ fun ChaptersScreen(
                 DenseRow(
                     title = strings["milestones.door"],
                     subtitle = strings["milestones.subtitle"],
+                    // **A sentence wraps**, D105. Capped at one line this read
+                    // "The moments you decided were worth marking. Nothing
+                    // here is" and stopped, which is the truncation rule 11
+                    // bans outright, and it is worse than a shortened label
+                    // because the half that was cut is the half that says the
+                    // app works nothing out.
+                    subtitleMaxLines = Int.MAX_VALUE,
                     leading = {
                         WaypointDot(
                             color = HealthTrail.colors.gold,
