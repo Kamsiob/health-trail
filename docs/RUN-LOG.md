@@ -1760,3 +1760,13 @@ It now waits for the requested language to reach the head of `context.resources.
 **Three decisions inside a small change.** Recording sits above correcting, because it is the errand somebody actually arrives with and correcting a spelling is the rare one. **The kind does not travel**, because what happened is the person's to say and choosing it for them would be the app filing on their behalf. And the person's screen closes first, so back from the form lands on the care team rather than on a screen about somebody the entry is already attached to.
 
 **The test asserts the draft rather than the navigation.** A control that opens the sheet and forgets who it was about looks identical on the screen and leaves the person doing the same picking as before. **That is the defect wearing the fix's clothes**, and a test that only checks the sheet opened would be green for it.
+
+### The one state that cannot be reached from this machine
+
+**A document over the size limit was attempted with a real file**, a 30 MB one pushed to `Download`. The document form's "Choose a photograph" opens the system picker, which is the correct thing for the app to do, and on this phone it opens the owner's real photo library. Reaching `Download` from there means going through the picker's own browser, past his photographs, on his daily driver.
+
+**Backed out at the picker, and the pushed file was removed.** The same call as the password manager two nights ago: the moment somebody's own life appears on the screen, the walk stops.
+
+So the state is held where it can be held, as a composed error string in `ScreenReaderTest`, and **what cannot be proved from here is that the 25 MB boundary is the boundary the code applies to a real file**. That is the same shape as the reader pass and the disclaimer gate in dark: a thing this machine cannot see, **said out loud rather than quietly skipped**, and it is in `docs/TRAPS.md` section 1 now.
+
+**With that, every state in 13.3 has been taken across the app rather than screen by screen**: empty, one-item, many-item, partially filled, long text, longest language, loading, error, and right to left.
