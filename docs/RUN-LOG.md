@@ -1496,3 +1496,27 @@ Six things have a screen of their own, so removal is at the foot of it: a person
 **A check across every source file, not a test per screen**, which is #231's lesson. `check_dead_gestures.py` refuses `combinedClickable` and `onLongClick` outright and **reads the frozen file list out of `docs/REMOVAL-LEDGER.md`** rather than carrying a second copy of it, per D133. Proved both ways: it catches a planted long press and exempts exactly one file.
 
 **And a test, because a check cannot see that a control does anything.** `RemovalIsVisibleTest`: eight rows declare no long press, nine visible removals each scroll into reach and call back once. Five of its seventeen assertions failed on the first device run and every one was the test being wrong about the screen, which is worth keeping: three asked a sheet for a scrollable ancestor it does not have, one put its fixture in a fold the screen keeps closed, and one forgot that asked questions are folded away.
+
+## 21. The ten things nobody could see, 2026-08-11
+
+**#135, and the fix needed nothing that did not already exist.**
+
+`templates/data/situations.json` has carried a ten item checklist and six document slots for every one of the fourteen settings since Phase 1, and **nothing in the app read either one**. P2's requirement is one sentence, that a situation template applies its roles, threads, checklist and document slots, and two of the four did not exist. For a nursing home the checklist is the direct number for the unit rather than the main line, the current medication list, who calls when something changes, and the written grievance procedure. **That is what somebody needs in the week they know least, and it was sitting in a JSON file.**
+
+### The question the issue said to settle first, and the answer that was already written down
+
+**Where does the checklist live**, given it must not become a thirteenth section. It does not need anywhere new: **it is a project**. A project already is a named process holding steps somebody edits, marks done and removes, and papers that are named slots waiting for a document. `startProject` already takes exactly these arguments. `project_step`, `project_paper` and the `project_steps` Today card type all already existed, and `setTodayLayout` already took a source per card.
+
+**`DESIGN.md` 20.2 is the section that seems to forbid this and is actually what permits it.** It exists to explain why a checklist could not carry the Projects surface, and it ends by saying the checklist "remains, as steps, and leads only in the one shape where the work truly is many small arrangements". The first days is that shape exactly.
+
+### What a first run showed, and none of it would have failed any test
+
+**The Today card said "Everything else, 0 of 10".** Two defects in one line: a completion tally over the whole list, and a label that is the name of the bin for steps that did not fit anywhere. It was the first thing the app said to somebody who had had it for one minute. Rule 13 rules out a meter on the person's own diligence, and 20.2 says a wall of unchecked boxes makes the waiting feel like their failure.
+
+**And the card was last**, under seven cards each saying "nothing yet", which is what a new notebook is. On day one it was the only card with anything in it and the only thing anybody could act on, sitting at the bottom.
+
+**And the project setup row said "6 placeholders, 0 filled".** `ProjectPaperworkScreen`'s own comment says why that is wrong, in as many words. **One decision written down twice and disagreeing with itself**, which is D133's shape in copy rather than in code. The second key is deleted and the row uses the papers screen's own.
+
+**All three came from installing the app with no data and tapping through the disclaimer, setup and a setting.** None of them is visible in a diff, and the suite was green throughout.
+
+**Getting to a first run at all is worth writing down**, because the obvious route is refused: wiping the app's data directly is on the blocklist and the guard turned it down, correctly. The sanctioned route is the one D50 already names, which is that `connectedAndroidTest` uninstalls the app when it finishes, so an install straight afterward is a genuine first run with nothing behind it.

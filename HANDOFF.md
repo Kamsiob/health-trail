@@ -4,7 +4,7 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-11, after #218: removal came off the long press in nine screens and onto the thing's own screen.
+**Last rewritten:** 2026-08-11, after #218 and #135: removal came off the long press, and a setting's first days list finally exists.
 
 ---
 
@@ -56,7 +56,7 @@
 - **Milestone 1, Today: finished.** All ten grid screens built and walked, parent #243 closed, and the only issue left on that milestone is the tracker #321.
 - **Milestone 2, Projects: four issues left and all four are blocked.** Section 9 says on what.
 - **Milestone 3, the archive: five issues left and every one is blocked on something a session cannot do.** #15 needs a second platform, which is #16 and does not exist. #211's last criterion is the `app_meta` question. #212's last two modes are #227 and a four gigabyte fixture nobody has written. #210 and #9 are parents. **Four issues closed there on 2026-08-10**: #329, #331, #332, and #210's locale question.
-- **Milestone 4, the rest of the v4 conversion: eleven issues left, down from sixteen.** #324, #231, #132 and #221 closed on 2026-08-10, and **#218 on 2026-08-11**. **#135 is the next substantial one**, and the plan needs no schema change: a situation's checklist becomes a steps-led project and its document slots become that project's papers, both of which the schema already carries, with a `project_steps` card on Today pointed at it through `source_table` and `source_id`.
+- **Milestone 4, the rest of the v4 conversion: ten issues left, down from sixteen.** #324, #231, #132 and #221 closed on 2026-08-10, and **#218 and #135 on 2026-08-11**. **#57 is worth checking before anything else**: `CaptureKind.DOCUMENT` is wired to `AddDocumentScreen` and the interim screen is gone, so it may already be met and only needs walking against its criteria.
 - **THE ARCHIVE is largely built and proved on real hardware**: a two-layer container at format version 3, a readable copy, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. **The stranger test passes**, run on 2026-08-09 on a laptop that has never had the app.
 - **The readable copy is written in the person's language and so are its values**, #327, #328 and #329. Verified by exporting in Arabic, decrypting with the passphrase alone, and reading the pages in a browser: 128 field labels, 39 headings, 81 stored values across 17 vocabularies, money as money, and no bare epoch anywhere. **#329 closed the last of it on 2026-08-10**: a link into a shipped catalog resolves to that entry's name, and the two indexes stopped being printed. **A sweep of a real Arabic archive now finds no raw identifier, no schema token in a `<dd>`, no five digit integer, and no bare `0` or `1`.** D130.
 - **The contract now carries four files for the readable copy, not one.** `contract/readable-money.json` is the fourth, added 2026-08-10 for #331: the rules an amount renders by and the ISO 4217 codes whose minor unit is not two digits. **Money is no longer asked of the platform**, because `java.text.NumberFormat` answered differently on Android and on a JVM and 8.5's byte identity was therefore a claim about one phone. D131.
@@ -68,6 +68,7 @@
 
 **Nothing on `main` is unverified.** Every screen that has shipped has been on the phone at both themes, font scale 2.0 and Arabic right to left, **including the two the merge added on 2026-08-09**, which are waiting on the owner's eye rather than on a walk.
 
+- **A setting applies its first days list and its papers, not only its threads**, #135, 2026-08-11. The ten checklist items and six document slots each setting has always carried are **a steps-led project** now, named "The first days", with the slots as its papers, and Today's first card points at it. **No schema change**: `project_step`, `project_paper` and the `project_steps` card type all already existed. D136.
 - **Removal is reached by looking, everywhere**, #218, 2026-08-11. `removableByLongPress` is deleted. Six things have a screen of their own and removal is an outlined "Remove this" at the foot of it; a question and a standing instruction have a sheet instead and it is there. **A question that has not been asked yet has a face of its own now**, because it had no tap at all before and the gesture was the only thing it answered to. D135, and the shape cannot come back: `check_dead_gestures.py` refuses `combinedClickable` and `onLongClick` in any live screen.
 
 **The account of how it got here is `docs/RUN-LOG.md`, and it is history rather than orientation.** Section 6 of that file is 2026-08-09, the day milestone 1 finished: twenty-two issues, ten defects that were invisible in the code and obvious on a screen, four fixture modes that did not exist, and two decisions taken rather than escalated.

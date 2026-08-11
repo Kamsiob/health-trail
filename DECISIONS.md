@@ -2497,6 +2497,28 @@ If it has a line stamped inside the session that is reading it, the guard is liv
 
 ---
 
+### D136. A setting's first days list is a project, and Today points at it
+
+**2026-08-11, #135.** `templates/data/situations.json` has carried a ten item checklist and six document slots per setting since Phase 1 and **nothing in the app read either one**. P2's requirement is one sentence, that a situation template applies its roles, threads, checklist and document slots, and two of the four did not exist. The checklist is the highest value content in the whole catalog: for a nursing home it is the direct number for the unit rather than the main line, the current medication list, who calls when something changes, and the written grievance procedure. **That is what somebody needs in the week they know least.**
+
+**The question #135 said to settle first was where the checklist lives**, and the answer is that it does not need anywhere new. **It is a project.** A project already is a named process holding steps somebody edits, marks done and removes, and papers that are named slots waiting for a document. `project_step` and `project_paper` both exist, both have screens, and `startProject` already takes exactly these arguments. **No schema change, no thirteenth section, and no new component.**
+
+**`DESIGN.md` 20.2 is the reason this is not a contradiction.** That section exists to explain why a checklist could not carry the Projects surface, and it ends by saying the checklist "remains, as steps, and leads only in the one shape where the work truly is many small arrangements". The first days is exactly that shape: ten small errands the person controls, rather than one slow process being waited on. So it leads with steps and **gets no road**, because it is not a sequence anybody agreed to.
+
+**Today carries a `project_steps` card pointed at it, because invisible was the defect.** Left in the Projects tab alone the list would be one tab away with nothing pointing at it, which is the same absence in a nicer place. The card is **first in the field and never the lead**: 21.1 allows exactly one lead and the setting's own hand already has one. **This is the one moment the app decides an order**, which is what a starting hand is, and 21.8 holds from the first minute after.
+
+**One list per setting.** The same setting applied twice makes one, guarded by `projectsFromTemplate`, which is the query the template library already runs rather than a second copy of it. A **different** setting gets its own, because moving from a hospital stay to a nursing home is genuinely a new set of first days with different people to call. `MASTER_SPEC.md` 4.6's carry forward is then true by construction rather than by a merge: the old list is a project and nothing about applying a new setting reaches it.
+
+**Two rule 13 defects came out of a first run, and neither was visible anywhere else.**
+
+**The card said "Everything else, 0 of 10".** A completion tally over the whole list, under the name of the bin for steps that did not fit anywhere, as the first thing the app said to somebody who had had it for a minute. A card whose only group is the unnamed one shows the count of the plan and nothing else now. Where a project genuinely has clusters, each still says how many of its own steps are done, which is 21.7 and is what orients somebody with work in three places.
+
+**And the project setup row said "6 placeholders, 0 filled".** `ProjectPaperworkScreen`'s own comment already says why that is wrong, in as many words: a project with six places and two filled is somebody waiting on other people's post. **One decision written down twice and disagreeing with itself**, which is D133's shape in copy rather than in code. The row uses the papers screen's own key now and the second key is deleted.
+
+**Neither would have been caught by any test in this repository.** Both came from installing the app with no data, tapping through the disclaimer and setup, and looking at the screen. Rule 21.
+
+---
+
 ### B1. Commit signing. Resolved 2026-07-31
 
 **Outcome.** The owner registered the SSH signing key. Verified rather than assumed: the account now lists one signing key titled "kamsiob commit signing", and `repos/Kamsiob/health-trail/commits/main` reports `verified=true, reason=valid`.
