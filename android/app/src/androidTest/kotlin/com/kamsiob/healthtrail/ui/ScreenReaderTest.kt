@@ -82,6 +82,10 @@ import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
 import com.kamsiob.healthtrail.ui.screens.AppearanceScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectPaperworkScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectPeopleScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectTrailScreen
 import com.kamsiob.healthtrail.ui.screens.ThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ViolationScreen
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
@@ -467,6 +471,123 @@ class ScreenReaderTest {
             AppearanceScreen(choice = ThemeChoice.FOLLOW_SYSTEM, onChoose = {})
         }
         assertEverythingIsLabeled("appearance on its own")
+    }
+
+
+    @Test
+    fun aProjectsTrailLabelsEverything() {
+        compose.show {
+            ProjectTrailScreen(
+                projectName = "The waiver application",
+                items = listOf(
+                    Repository.ProjectTrailItem(
+                        kind = Repository.ProjectTrailKind.ENTRY,
+                        id = "e1",
+                        whenEdtf = "2026-03-05",
+                        whenStart = 1L,
+                        title = "Called the caseworker",
+                        note = "She said to call back after the 15th.",
+                        entry = Repository.TrailEntry(
+                            id = "e1", kind = "call", title = "Called the caseworker",
+                            body = "She said to call back after the 15th.",
+                            occurredEdtf = "2026-03-05", occurredStart = 1L, createdAt = 1L,
+                            isUnfiled = false, threads = emptyList(), pinnedAt = null,
+                        ),
+                    ),
+                    Repository.ProjectTrailItem(
+                        kind = Repository.ProjectTrailKind.STAGE,
+                        id = "s1",
+                        whenEdtf = "2026-03-05",
+                        whenStart = 1L,
+                        title = "Applied",
+                        note = null,
+                    ),
+                ),
+                onOpenEntry = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a project's trail")
+    }
+
+    @Test
+    fun aProjectsPeopleLabelEverything() {
+        compose.show {
+            ProjectPeopleScreen(
+                projectName = "The waiver application",
+                people = listOf(
+                    Repository.ProjectPerson(
+                        person = Repository.Person(
+                            "p1", "Denise Alvarado", "Intake caseworker", "5550142", null, null,
+                        ),
+                        mentions = 4,
+                        lastEdtf = "2026-06-29",
+                        lastStart = 1L,
+                        // The cross project door, which is the one new
+                        // navigation idea on this surface and has to announce.
+                        alsoIn = listOf(
+                            Repository.EntryProject("pr2", "The appeal", "active"),
+                        ),
+                    ),
+                ),
+                careTeamSize = 15,
+                onOpenPerson = {},
+                onOpenProject = {},
+                onCall = {},
+                onOpenCareTeam = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a project's people")
+    }
+
+    @Test
+    fun aProjectsPapersLabelEverything() {
+        compose.show {
+            ProjectPaperworkScreen(
+                projectName = "The waiver application",
+                papers = listOf(
+                    // **One filled and one waiting**, because an empty slot and
+                    // a filled one draw differently and both have to announce.
+                    Repository.ProjectPaperCard(
+                        paper = Repository.ProjectPaper("pp1", "The award letter", 0, "received", "d1"),
+                        documentId = "d1",
+                        title = "Award letter",
+                        sha256 = null,
+                        receivedEdtf = "2026-06-22",
+                        originalLocation = "Filed with the county",
+                    ),
+                    Repository.ProjectPaperCard(
+                        paper = Repository.ProjectPaper("pp2", "The certified copy", 1, null, null),
+                        documentId = null,
+                        title = null,
+                        sha256 = null,
+                        receivedEdtf = null,
+                        originalLocation = null,
+                    ),
+                ),
+                onOpenDocument = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a project's papers, one filled and one waiting")
+    }
+
+    @Test
+    fun aProjectsStepsLabelEverything() {
+        compose.show {
+            ProjectStepsScreen(
+                projectName = "The waiver application",
+                steps = listOf(
+                    Repository.ProjectStep("x1", "Get the form", "2026-03-06", null, null, "Me"),
+                    Repository.ProjectStep("x2", "Gather the statements", null, null, null, null),
+                ),
+                onAdd = {},
+                onOpen = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a project's starting steps")
     }
 
     @Test
