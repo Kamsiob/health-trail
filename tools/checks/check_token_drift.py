@@ -9,7 +9,7 @@ D142, and it is one of the three mechanical causes of built screens drifting
 from the grid files.
 
 **This is a ratchet rather than a gate, because a gate would have to fail today.**
-There are 161 of these across 51 files. Failing the build on all of them would
+There were 161 of these across 51 files when this was written. Failing the build on all of them would
 mean either a day of work before anything else can land or somebody adding
 `|| true`, and the second is what actually happens. So the check fails only when
 the number **rises**, which costs nothing to keep passing and makes every new one
@@ -36,7 +36,8 @@ ROOT = Path(__file__).resolve().parents[2]
 UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 
 # Recorded 2026-08-11 against the tree at D142. It goes down and never up.
-BASELINE = 161
+# 161 at D142. 158 after the first fidelity pass took three radii into tokens.
+BASELINE = 158
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

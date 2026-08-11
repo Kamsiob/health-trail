@@ -84,10 +84,18 @@ object Space {
 @Immutable
 object Radius {
     /** Cards and groups, 16 to 18dp under v4, with no border. */
-    val card = RoundedCornerShape(17.dp)
+    /**
+     * **18dp, which is what both grid files draw**, `.group` in each. It was
+     * 17dp, inside the 16 to 18 range section 6 states and one off the drawing.
+     * D142 makes the grids authoritative on measurement, so it is 18.
+     */
+    val card = RoundedCornerShape(18.dp)
 
     /** Inset tile, icon in its wash, chip container, the search bar's siblings. */
     val tile = RoundedCornerShape(13.dp)
+
+    /** A fold, `.fold` in both grids at 14px. `FoldRow` drew its own before. */
+    val fold = RoundedCornerShape(14.dp)
 
     val thumbnail = RoundedCornerShape(13.dp)
 

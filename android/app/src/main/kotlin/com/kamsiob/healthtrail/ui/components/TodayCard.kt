@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.TabHue
+import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -167,8 +168,12 @@ fun TodayCard(
             .defaultMinSize(minHeight = minHeight)
             // #324. The card is a thing on a desk, and the desk is the
             // whole metaphor of the surface.
-            .raisedCard(RoundedCornerShape(15.dp))
-            .clip(RoundedCornerShape(15.dp))
+            // **The card token, not a number typed here.** This drew its own
+            // 15dp while the token was 17 and both grids draw 18, so the most
+            // looked at surface in the app was three off the drawing and
+            // nothing pointed at it. D142.
+            .raisedCard(Radius.card)
+            .clip(Radius.card)
             .openableByTap(label = openLabel, onTap = onOpen)
             // **The card's own sentence lives on the card's own node**, beside
             // its tap action, so a reader that stops here is told what the card

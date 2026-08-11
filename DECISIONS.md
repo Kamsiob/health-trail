@@ -2626,7 +2626,7 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 - **The grids are authoritative on measurement.** Spacing, radius, elevation, type scale, and composition are read off the grid for the screen being built.
 - **`DESIGN.md` names tokens and stops restating their values screen by screen.** A value written in two places drifts in one of them and nobody can tell which is current.
-- **Where prose and a grid disagree on a number, the grid wins** and the prose is corrected.
+- **Where prose and a grid disagree on a number, the grid wins** and the prose is corrected, **except where this document records a measured accessibility correction**, which supersedes the grid. Found immediately: the grid's `ink-2` and `blue` measure 4.36:1 and 4.37:1 on `sand`, under the 4.5 floor, and D89 corrected both. **A fidelity pass that restored the grid's values there would be restoring a failure.**
 - **A fidelity check joins the closing conditions of every screen issue**, section 16.6: the device screenshot beside the grid's drawing of that screen, compared on spacing, type scale, radius and elevation, and composition.
 - **The theme is audited for hardcoded values and inherited Material defaults** that should come from a token.
 
