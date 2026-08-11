@@ -402,6 +402,10 @@ This is checked mechanically by the overflow audit in section 16, at both font s
 
 **Every detail screen has one outlined Edit.** A single field shows Change beside it.
 
+**Removal is reached from the thing itself, never from a row in a list.** An outlined "Remove this" at the foot of the thing's own screen, or in the sheet its row opens where it has no screen, and it opens the confirmation rather than removing anything. **So there is still no destructive control resting on any list**, which is 5.4's requirement, and there is no capability that only somebody who already knew the gesture could find, which is 13.5's. `DECISIONS.md` D135, and it is retroactive.
+
+**In content, an action is a pill sized to its label.** Full width outlined is what the scaffold uses at the foot of every screen to mean the way back, so a second and a third one above it make a column of identical bars of which only the last leaves. A sheet is the exception and has no way back to collide with. D118.
+
 **Tapping a row opens it.** Selection states exist only inside sheets. **Any swipe action also has a visible button path.**
 
 **Every save button takes what is there.** Partial is a finished state. Empty reads as not yet and never as an error. **Drafts survive leaving the screen.**
@@ -670,6 +674,8 @@ Recorded here per section 19, rather than left for a later session to find and m
 **Screen 17, the emergency card.** The grid draws a Change pill on every block. That is four identical controls opening one editor, which is the same noise the trail's per-row pin turned out to be. There is one Change and one Share, at the top, where a person looks for the doors.
 
 **Screen 13, Progress.** The grid draws the measures under the hero as chevron rows. A chevron means a screen opens, per law 2, and the per-measure history screen is #199 and does not exist yet. A chevron pointing at nothing is the dead end rule 18 forbids, so until that screen exists the rows are a choice: tapping one makes it the hero, which is the adaptive layout working rather than a substitute for it.
+
+**Every detail screen and two sheets, the removal control.** The grid draws no removal anywhere, because removal was a long press when the grid was drawn. It is an outlined "Remove this" at the foot of the thing's own screen now, and in the sheet its row opens where the thing has no screen. D135, and section 9 carries the rule.
 
 **Screen 08, the pin itself.** The grid implies the pin is something you do from the trail. It is done from the entry instead. Built on the row first, it put a second target on every one of sixteen hundred rows to serve a decision somebody makes a handful of times, and on the phone ten pin buttons down one screen were the loudest thing on it, which inverts rule 15. The row keeps the mark as state.
 

@@ -2477,6 +2477,26 @@ If it has a line stamped inside the session that is reading it, the guard is liv
 
 **What is protecting the work until then.** Rule 6 followed by hand, which has held through two long unattended runs, and Claude Code's own auto mode classifier, which is what actually refused the destructive commands both times.
 
+### D135. Removal is reached from the thing itself, and the long press is deleted
+
+**2026-08-11, #218.** Nine screens removed a row by long press. **The gesture was never the defect on its own.** It declared an explicit long click semantics action, so a **reader** user was handed removal in their action list. A **sighted** person who did not already know to press and hold could not remove anything at all. That is `DESIGN.md` 13.5 exactly, a capability findable only by somebody who already knew to look for it, and it is worse than a plain missing feature because the app looked complete from both sides.
+
+**The argument that made the long press right is still a good argument, and the answer keeps it.** `DESIGN.md` 5.4 rules out a destructive control resting on a screen, and a Remove button on every row of eight sections is that resting state multiplied. **The resolution is that the visible control is not destructive.** An outlined "Remove this" opens the confirmation, and the confirmation is the only thing that removes anything. Nothing on any row changed at all: there is still no destructive affordance on a list.
+
+**Where it went was decided by what the thing has, not by a rule applied evenly.** Six things have a screen of their own, so removal is at the foot of it: a person, a medication, a bill, a document, an appointment's prep sheet, and a project. Two do not, so removal is in the sheet the row already opens: a standing instruction's acknowledgment sheet, and a question's answer sheet. The ninth screen, `IncidentScreen`, only ever imported the modifier.
+
+**A question had two states and only one of them could be opened**, which is why this issue could not be closed by moving one control. An asked question opened its answer sheet on a tap; one still waiting had no tap at all, so the long press was the only thing it answered to. **The answer sheet has two faces now**, one sheet because it is one thing at two points in its life: still waiting offers to mark it asked, already asked keeps the field. Splitting them would make somebody learn two places to find one question.
+
+**One label for the whole app rather than eight near identical ones.** `remove.action` is "Remove this" and `open.action` is "Open this", and every converted row and foot uses them. Eight strings saying "Open this appointment", "Open this bill" and so on would be eight chances to drift and eight translations to keep in step, and the row's own words already name the thing a reader is standing on. `entry.remove` was renamed rather than duplicated, per D133: two keys with identical text agree with each other forever, including about a mistake.
+
+**The shape is held by a check across every source file rather than by a test per screen**, which is the lesson #231 paid for. `check_dead_gestures.py` now refuses `combinedClickable` and `onLongClick` outright, and **reads the frozen file list out of `docs/REMOVAL-LEDGER.md`** rather than carrying a second copy of it, so the one screen that is history stays exempt by the file that declares it history. Proved not vacuous both ways: it catches a planted long press and it exempts exactly one file.
+
+**A check cannot see that a control does anything**, so `RemovalIsVisibleTest` is the other half: eight rows declare no long press, and nine visible removals each scroll into reach and call back exactly once. **`performScrollTo` before the click is deliberate**, because a control at the foot of a list that nobody can reach at font scale 2.0 would pass a presence assertion.
+
+**Two things came along because adding to a screen exposed them.** `DenseRow` had no click label at all, and nobody had noticed because `removableByLongPress` was supplying one by accident while describing a gesture that no longer exists. And the foot actions on the six screens were full width outlined pills, which is the treatment `SectionScaffold` uses for the way back, so adding a second one would have made the D118 defect worse rather than inheriting it. They are sized to their label now. Both are retroactive per rule 14.
+
+---
+
 ### B1. Commit signing. Resolved 2026-07-31
 
 **Outcome.** The owner registered the SSH signing key. Verified rather than assumed: the account now lists one signing key titled "kamsiob commit signing", and `repos/Kamsiob/health-trail/commits/main` reports `verified=true, reason=valid`.
