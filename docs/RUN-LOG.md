@@ -1464,3 +1464,35 @@ The issue put the form half "with #206". Doing the fixture half alone would have
 **The first attempt also reached for `strings["entry.kind.$kind"]`**, a dynamic key, on a set the schema allows nine values for and the catalogs have seven. That throws rather than falling back, which is `docs/TRAPS.md` section 3's opening trap. Using the existing `kindNameKey`, a literal `when` with a safe `else`, avoided it and produced the grouping above as a side effect.
 
 ---
+
+## 20. The gesture that served the reader and failed everybody else, 2026-08-11
+
+**#218, and it was the last substantial thing on milestone 4 that nobody had decided how to do.**
+
+Nine screens removed a row by long press. **The gesture was never the whole defect**, and that is why it survived from Phase 1 through a design direction change and a screen-by-screen conversion: it declared an explicit long click semantics action, so a screen reader user was handed removal in their action list and could use it. A sighted person who did not already know to press and hold could not remove anything at all.
+
+**That inversion is the one `DESIGN.md` 13.5 names**, a capability findable only by somebody who already knew to look for it, and it is worse than a plainly missing feature because the app looks complete from both sides. It also cannot be seen: a screenshot of the broken screen and the fixed one are the same image.
+
+### The argument that made it right, and why the answer keeps it
+
+`DESIGN.md` 5.4 rules out a destructive control resting on a screen, and a Remove button on every row of eight sections is exactly that, multiplied. **That argument is still good.** What resolves it is that the visible control is not destructive: an outlined "Remove this" opens the confirmation, and the confirmation is the only thing that removes anything. **Nothing on any row changed at all.**
+
+### Where it went, decided by what the thing has
+
+Six things have a screen of their own, so removal is at the foot of it: a person, a medication, a bill, a document, an appointment's prep sheet, and a project. Two do not, so removal is in the sheet the row already opens. The ninth screen only ever imported the modifier.
+
+**A question was the one that could not be solved by moving a control.** An asked question opened its answer sheet on a tap; one still waiting had no tap at all, so the long press was the only thing it answered to. The answer sheet has two faces now, one sheet because it is one thing at two points in its life. #338 is its design review.
+
+### Three things the work turned up on its way
+
+**`DenseRow` had no click label**, and nobody had noticed, because the removal modifier had been supplying one by accident while describing a gesture. A reader was told "double tap to activate" on rows that open things, and the label that made it look handled was the sentence about pressing and holding.
+
+**The foot actions were full width outlined pills**, which is what the scaffold uses at the foot of every screen to mean the way back. Adding a second one would have made D118's defect worse rather than inheriting it, so they are sized to their label now, retroactively, on all six.
+
+**And the sheet version of the same mistake was found by looking rather than by reasoning.** Drawn full width, "Remove this" sat directly under "Cancel" as a third identical bar: the control that leaves and the control that removes, one costume, a thumb's width apart. The commit that introduced it carried a comment explaining why a sheet was the exception. It was not. Rule 21 caught in one screenshot what the argument had gotten wrong.
+
+### What holds it down
+
+**A check across every source file, not a test per screen**, which is #231's lesson. `check_dead_gestures.py` refuses `combinedClickable` and `onLongClick` outright and **reads the frozen file list out of `docs/REMOVAL-LEDGER.md`** rather than carrying a second copy of it, per D133. Proved both ways: it catches a planted long press and exempts exactly one file.
+
+**And a test, because a check cannot see that a control does anything.** `RemovalIsVisibleTest`: eight rows declare no long press, nine visible removals each scroll into reach and call back once. Five of its seventeen assertions failed on the first device run and every one was the test being wrong about the screen, which is worth keeping: three asked a sheet for a scrollable ancestor it does not have, one put its fixture in a fold the screen keeps closed, and one forgot that asked questions are folded away.

@@ -638,6 +638,8 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 
 **Nothing in this app needs a new pattern.** If a screen seems to, re-read section 13 step 3: it is almost always doing two jobs.
 
+| A question that has not been asked yet, opened | 21 Ask next time | The grid draws the list and no sheet for a question at all. A question still waiting had no tap, so the gesture was the only thing it answered to. **Built 2026-08-11**, #218, review at #338 |
+
 **This table is kept complete.** A screen built from it gets its row confirmed. A screen discovered that is not on it gets a row added at the moment it is built, per 13.4.
 
 ---

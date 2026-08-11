@@ -4,7 +4,7 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-10, at the end of a long run: the archive's last content defects, the named failure modes, and four of milestone 4.
+**Last rewritten:** 2026-08-11, after #218: removal came off the long press in nine screens and onto the thing's own screen.
 
 ---
 
@@ -27,13 +27,13 @@
 ### Verified rather than asserted, 2026-08-10
 
 - The working tree is clean and everything is on `origin/main`. **Check rather than trust**: `git status --porcelain`.
-- **20 repository checks pass**, `python3 tools/checks/run_all.py`. **Three landed on 2026-08-10** and each holds something that is invisible by looking: `check_digest_sections.py` holds the digest's table mapping to the change log's own trigger literals, `check_dead_gestures.py` refuses a handler assigned a lambda that does nothing and an `openableByTap` labeled with a remove string, and `check_readable_labels.py` gained a clause holding a `link` column's declared catalog to `templates/data`.
+- **20 repository checks pass**, `python3 tools/checks/run_all.py`. **`check_dead_gestures.py` grew a third rule on 2026-08-11**: no live screen puts an action behind a long press, and the frozen file that still carries one is exempt by reading `docs/REMOVAL-LEDGER.md` rather than by a second copy of the list. **Three landed on 2026-08-10** and each holds something that is invisible by looking: `check_digest_sections.py` holds the digest's table mapping to the change log's own trigger literals, `check_dead_gestures.py` refuses a handler assigned a lambda that does nothing and an `openableByTap` labeled with a remove string, and `check_readable_labels.py` gained a clause holding a `link` column's declared catalog to `templates/data`.
 - **218 unit tests pass and they need no phone**, and **three of them are the archive's regeneration**, which until 2026-08-09 could only run on the phone. `contract/test-vectors/readable/`. On a day when the device is unreachable this is most of what is left, and it is worth writing logic where these can reach it rather than only into a composable.
-- **534 instrumented tests pass**, last full run 2026-08-10 on the unlocked phone, after the trail filter landed.
+- **551 instrumented tests pass**, last full run 2026-08-11 on the unlocked phone, after #218. **`RemovalIsVisibleTest` is the seventeen new ones**: eight rows declare no long press, and nine visible removals each scroll into reach and call back once.
 - **The phone's dark theme is on a custom schedule**, `customStart=17:00 customEnd=06:30`, so `ui_night_mode` reads 2 overnight and 1 after half past six. **A session that records it as a baseline at night and reads it back in the morning will think it changed.** It did not; leave it alone.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
 - **The phone was returned to its starting values on 2026-08-10 and unplugged**, each setting read back rather than assumed: font scale 1.0, animator null, touch exploration 0, no per-app locale so the app runs in English, and the accessibility services string the KDE Connect one alone. **It holds the current build and the month six fixture notebook** with the disclaimer accepted, and none of it is real. All four attachment files present.
-- **The owner is testing the build by hand.** Four things landed on 2026-08-10 that he has not seen: the date picker's month and year views, the trail's kind filter, cards having a shadow in light theme, and the document folder field.
+- **The owner is testing the build by hand.** Five things he has not seen: the date picker's month and year views, the trail's kind filter, cards having a shadow in light theme, the document folder field, and **removal moving onto each thing's own screen**, 2026-08-11.
 - **The four named failure modes that were open on #212 are down to two**, 2026-08-10. Time, numbers and absence each have their own tests now, `RoundTripTimeTest` and `RoundTripValueTest`, eleven between them. **Unicode is #227 and is a change to every write path rather than a test**, and the four gigabyte half of scale needs a fixture nobody has written.
 - **Four more test archives sit in `Download` from 2026-08-10**, beside the ones from 2026-08-09 and 2026-08-04, and every one holds nothing but the fixture. **Three use `missing332` and one uses `catalog329`**, and **all four open on the current build**. The `missing332` three were written before #332 closed, with two attachment files absent, and were refused by name at the time; the manifest declares a missing attachment now, so the same files restore. `catalog329` is Arabic and is the one #329 was proved on. **A fifth, `gone332`, is the one that proved the restore**: written with a file genuinely absent, opened, and restored into the app. The older ones are `arabic327`, `arabic328` and `arabic328b`, and those open too. A locked file whose passphrase nobody recorded is a file nobody can use.
 - **The destructive command guard is live and proven.** It refused three real commands, two on 2026-08-08 and one on 2026-08-09, and it also refused a run log paragraph that merely named a blocked verb, which is #323. Section 9.
@@ -56,7 +56,7 @@
 - **Milestone 1, Today: finished.** All ten grid screens built and walked, parent #243 closed, and the only issue left on that milestone is the tracker #321.
 - **Milestone 2, Projects: four issues left and all four are blocked.** Section 9 says on what.
 - **Milestone 3, the archive: five issues left and every one is blocked on something a session cannot do.** #15 needs a second platform, which is #16 and does not exist. #211's last criterion is the `app_meta` question. #212's last two modes are #227 and a four gigabyte fixture nobody has written. #210 and #9 are parents. **Four issues closed there on 2026-08-10**: #329, #331, #332, and #210's locale question.
-- **Milestone 4, the rest of the v4 conversion: twelve issues left, down from sixteen.** #324, #231, #132 and #221 closed on 2026-08-10. **#218 is the next substantial one** and is nine screens rather than the seventeen it says, because #231 shrank it.
+- **Milestone 4, the rest of the v4 conversion: eleven issues left, down from sixteen.** #324, #231, #132 and #221 closed on 2026-08-10, and **#218 on 2026-08-11**. **#135 is the next substantial one**, and the plan needs no schema change: a situation's checklist becomes a steps-led project and its document slots become that project's papers, both of which the schema already carries, with a `project_steps` card on Today pointed at it through `source_table` and `source_id`.
 - **THE ARCHIVE is largely built and proved on real hardware**: a two-layer container at format version 3, a readable copy, a standalone decryptor at `tools/decrypt/` tested in CI, and the format published byte for byte in `contract/EXPORT-FORMAT.md`. **The stranger test passes**, run on 2026-08-09 on a laptop that has never had the app.
 - **The readable copy is written in the person's language and so are its values**, #327, #328 and #329. Verified by exporting in Arabic, decrypting with the passphrase alone, and reading the pages in a browser: 128 field labels, 39 headings, 81 stored values across 17 vocabularies, money as money, and no bare epoch anywhere. **#329 closed the last of it on 2026-08-10**: a link into a shipped catalog resolves to that entry's name, and the two indexes stopped being printed. **A sweep of a real Arabic archive now finds no raw identifier, no schema token in a `<dd>`, no five digit integer, and no bare `0` or `1`.** D130.
 - **The contract now carries four files for the readable copy, not one.** `contract/readable-money.json` is the fourth, added 2026-08-10 for #331: the rules an amount renders by and the ISO 4217 codes whose minor unit is not two digits. **Money is no longer asked of the platform**, because `java.text.NumberFormat` answered differently on Android and on a JVM and 8.5's byte identity was therefore a claim about one phone. D131.
@@ -67,6 +67,8 @@
 - **B4's argument is finally true.** It dropped the emulator because "data survival is proven by the round trip against the golden vectors in continuous integration", and **nothing in continuous integration rendered a readable page at all** until 2026-08-09: `RegenerationTest` is instrumented and `DateVectorTest` reads assets. `ReadableVectorTest` is the half that needs no Android. **Regenerate it deliberately**, `-Dhealthtrail.vector.write=true`, and read the diff.
 
 **Nothing on `main` is unverified.** Every screen that has shipped has been on the phone at both themes, font scale 2.0 and Arabic right to left, **including the two the merge added on 2026-08-09**, which are waiting on the owner's eye rather than on a walk.
+
+- **Removal is reached by looking, everywhere**, #218, 2026-08-11. `removableByLongPress` is deleted. Six things have a screen of their own and removal is an outlined "Remove this" at the foot of it; a question and a standing instruction have a sheet instead and it is there. **A question that has not been asked yet has a face of its own now**, because it had no tap at all before and the gesture was the only thing it answered to. D135, and the shape cannot come back: `check_dead_gestures.py` refuses `combinedClickable` and `onLongClick` in any live screen.
 
 **The account of how it got here is `docs/RUN-LOG.md`, and it is history rather than orientation.** Section 6 of that file is 2026-08-09, the day milestone 1 finished: twenty-two issues, ten defects that were invisible in the code and obvious on a screen, four fixture modes that did not exist, and two decisions taken rather than escalated.
 
@@ -104,9 +106,9 @@ Each is said out loud on its own issue rather than counted as done.
 
 **Never route around a check to make progress, and never delete or weaken a test to make a build pass.**
 
-    python3 tools/checks/run_all.py                    # 18 content and contract checks, seconds
+    python3 tools/checks/run_all.py                    # 20 content and contract checks, seconds
     tools/verify.sh                                    # the honest runner, includes lintDebug
-    cd android && ./gradlew :app:connectedDebugAndroidTest   # 515 tests, about ten minutes
+    cd android && ./gradlew :app:connectedDebugAndroidTest   # 551 tests, about eleven minutes
 
 **Run `tools/verify.sh`, not the checks you happen to remember.** CI once failed on a lint error in code that had been walked on the device and passed every content check and 185 instrumented tests.
 
@@ -139,7 +141,7 @@ Each is said out loud on its own issue rather than counted as done.
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**Twenty of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
+**Twenty-one of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent.
 
 **The Today work of 2026-08-09 added nothing to this list**, and that was checked rather than assumed: every screen and state built that morning is drawn in one of the three grids, so rule 12 never applied. The card's options sheet is grid screen 07, the closed project is 17, the greeting is 16, and the Today work is screens 01 through 10. **The merge work that evening added two**, because the grid draws restore with one outcome and draws nothing at all for reading what a merge decided.
 
@@ -165,8 +167,9 @@ Every one of these was built from the existing components, logged in all three p
 | What the merge decided | #334 |
 | The export finished and could not find a file | #335 |
 | The date picker, zoomed to months and to years | #337 |
+| A question that has not been asked yet, opened | #338 |
 
-**Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. **Two are from 2026-08-10**, #335 the export's second outcome and #337 the date picker's two new views. The other nine have been waiting longer.
+**Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. **Two are from 2026-08-10**, #335 the export's second outcome and #337 the date picker's two new views, and **one from 2026-08-11**, #338, the face a question wears before it has been asked. The other nine have been waiting longer.
 
 ---
 
@@ -185,7 +188,7 @@ Every one of these was built from the existing components, logged in all three p
 - **#227 blocks the last of #212.** Unicode normalization is a change to every write path and a half applied one is worse than none.
 - **#16 blocks #15.** There is no second platform to run the golden vectors against, so they are vectors with one reader.
 
-**Milestone 2 is entirely blocked, and as of 2026-08-10 so is milestone 3**: its five remaining issues each wait on the owner or on #16. **Milestone 4 is where the work is**, twelve issues, and none of them is blocked.
+**Milestone 2 is entirely blocked, and as of 2026-08-10 so is milestone 3**: its five remaining issues each wait on the owner or on #16. **Milestone 4 is where the work is**, eleven issues, and none of them is blocked.
 
 ## 10. The phone
 
