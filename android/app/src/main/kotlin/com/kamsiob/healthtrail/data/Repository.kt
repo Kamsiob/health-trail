@@ -482,18 +482,30 @@ class Repository private constructor(
             // **The list goes on Today, because invisible was the defect.**
             // Left in the Projects tab alone it would be one tab away with
             // nothing pointing at it, which is the same absence in a nicer
-            // place. It is appended rather than promoted: 21.1 allows exactly
-            // one lead and the setting's own hand already has one, and 21.8
-            // means the person can move or remove it from the first minute.
+            // place.
+            //
+            // **First in the field, and never the lead.** 21.1 allows exactly
+            // one lead and the setting's own hand already has one. Appended
+            // instead, it sat under seven cards each saying "nothing yet",
+            // which is what a brand new notebook is: on day one this is the
+            // only card with anything in it and the only thing anybody can
+            // act on, and rule 15 puts that where the eye lands first.
+            // Seen on a first run rather than reasoned about.
+            //
+            // **This is the one moment the app decides an order**, which is
+            // what a starting hand is. 21.8 holds from the first minute after:
+            // the person can move it or take it off and nothing puts it back.
             val hand = if (firstDays == null) {
                 startingHand
             } else {
-                startingHand + ("project_steps" to "wide")
+                listOf(startingHand.first()) +
+                    ("project_steps" to "wide") +
+                    startingHand.drop(1)
             }
             val sources = if (firstDays == null) {
                 emptyMap()
             } else {
-                mapOf(hand.lastIndex to ("project" to firstDays))
+                mapOf(1 to ("project" to firstDays))
             }
             setTodayLayout(subjectId, hand, sources)
         }
@@ -6851,11 +6863,29 @@ class Repository private constructor(
                     count = clusters.sumOf {
                         it.note?.substringAfter('/')?.toIntOrNull() ?: 0
                     },
-                    // **A step with no cluster is still in a group.** Filtering
-                    // the blank label away meant a project whose steps are not
-                    // clustered showed a bare number at wide and nothing else.
-                    // The group keeps its place and the screen names it.
-                    items = clusters,
+                    // **A step with no cluster is still in a group**, so the
+                    // blank label is not filtered away: a project whose steps
+                    // are clustered except for a few would otherwise lose the
+                    // few, and the group keeps its place and the screen names
+                    // it.
+                    //
+                    // **Except when it is the only group, where it is a score
+                    // and nothing else.** A plan with no clusters at all rendered
+                    // one line reading "Everything else, 0 of 10", which is a
+                    // completion tally over the whole list under a bin name
+                    // meaning "the ones that did not fit anywhere". Rule 13
+                    // rules out a meter on the person's own diligence, and 20.2
+                    // says in as many words that a wall of unchecked boxes makes
+                    // the waiting feel like their failure. Seen on a brand new
+                    // notebook where it was the first thing the app said.
+                    //
+                    // **The count above it stays**, because how many steps the
+                    // plan has is a fact about the plan.
+                    items = if (clusters.size == 1 && clusters.single().label.isBlank()) {
+                        emptyList()
+                    } else {
+                        clusters
+                    },
                     itemsSampleTheCount = false,
                 )
             }

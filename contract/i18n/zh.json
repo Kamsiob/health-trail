@@ -1049,7 +1049,6 @@
   "project.setup.steps": "起始步骤",
   "project.setup.papers": "常用文件",
   "project.setup.kinds": "日期类型",
-  "project.setup.papers.count": "{count, plural, other {# 个占位}}，已填 {filled}",
   "project.setup.never_changes": "修改这个事务不会改变它所来自的模板。",
   "project.setup.template": "留着下次用",
   "project.setup.status": "事务状态",

@@ -177,10 +177,21 @@ fun ProjectSetupScreen(
                 )
                 DenseRow(
                     title = strings["project.setup.papers"],
+                    // **How many places there are, and not how many are
+                    // filled.** `ProjectPaperworkScreen` says why in as many
+                    // words: a project with six places and two filled is
+                    // somebody waiting on other people's post, and a
+                    // completion count pointed at that is what rule 13 rules
+                    // out. This row was counting it anyway, which is one
+                    // decision written down twice and disagreeing with itself.
+                    // Seen on a brand new notebook, where it read "0 filled"
+                    // about somebody who had had the app for a minute.
+                    //
+                    // **The papers screen's own key**, rather than a second one
+                    // saying nearly the same thing in four languages. D133.
                     subtitle = strings(
-                        "project.setup.papers.count",
+                        "project.paperwork.count",
                         "count" to papers.size,
-                        "filled" to papers.count { it.isFilled },
                     ),
                     chevron = true,
                     onClick = onOpenPapers,

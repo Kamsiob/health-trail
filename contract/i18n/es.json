@@ -1049,7 +1049,6 @@
   "project.setup.steps": "Pasos iniciales",
   "project.setup.papers": "Documentos habituales",
   "project.setup.kinds": "Tipos de fecha",
-  "project.setup.papers.count": "{count, plural, one {1 espacio} other {# espacios}}, {filled} con documento",
   "project.setup.never_changes": "Cambiar este trámite nunca cambia la plantilla de la que salió.",
   "project.setup.template": "Guarde esto para la próxima vez",
   "project.setup.status": "Estado del trámite",

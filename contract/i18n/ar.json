@@ -1049,7 +1049,6 @@
   "project.setup.steps": "الخطوات الأولى",
   "project.setup.papers": "الأوراق المعتادة",
   "project.setup.kinds": "أنواع التواريخ",
-  "project.setup.papers.count": "{count, plural, zero {لا مواضع} one {موضع واحد} two {موضعان} few {# مواضع} many {# موضعًا} other {# موضع}}، {filled} مملوءة",
   "project.setup.never_changes": "تغيير هذه المعاملة لا يغيّر القالب الذي جاءت منه.",
   "project.setup.template": "احتفظ بهذا للمرة القادمة",
   "project.setup.status": "حالة المعاملة",

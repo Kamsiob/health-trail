@@ -127,9 +127,11 @@ class FirstDaysTest {
      * **Today points at it**, because invisible was the defect being fixed.
      *
      * Left in the Projects tab alone the list would be one tab away with
-     * nothing pointing at it, which is the same absence in a nicer place. The
-     * card is appended rather than promoted: 21.1 allows exactly one lead and
-     * the setting's own hand already has one.
+     * nothing pointing at it, which is the same absence in a nicer place.
+     *
+     * **First in the field and never the lead.** Appended, it sat under seven
+     * cards each saying "nothing yet", which is what a brand new notebook is.
+     * On day one this is the only card with anything in it.
      */
     @Test
     fun todayCarriesACardPointedAtIt() = runBlocking {
@@ -141,7 +143,7 @@ class FirstDaysTest {
 
         val layout = repository.todayLayout(subjectId)
         assertNotNull(layout)
-        val card = layout!!.all.last()
+        val card = layout!!.field.first()
         assertEquals("project_steps", card.type)
         assertEquals("project", card.sourceTable)
         assertEquals(project.id, card.sourceId)

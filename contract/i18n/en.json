@@ -1049,7 +1049,6 @@
   "project.setup.steps": "Starting steps",
   "project.setup.papers": "Usual papers",
   "project.setup.kinds": "Date kinds",
-  "project.setup.papers.count": "{count, plural, one {1 placeholder} other {# placeholders}}, {filled} filled",
   "project.setup.never_changes": "Changing this project never changes the template it came from.",
   "project.setup.template": "Keep this for the next one",
   "project.setup.status": "Where this project is",
