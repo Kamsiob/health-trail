@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -61,10 +60,15 @@ fun ReferenceLine(
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
+    // **Held in a local first**, which is not a style preference. Referencing
+    // the token inline inside this modifier chain crashes Compose lint's
+    // `ModifierParameterDetector`, reproducibly, on this file alone. The token
+    // is `.refline` at 7px in the Projects grid either way.
+    val shape = Radius.referenceLine
 
     Row(
         modifier = modifier
-            .clip(Radius.referenceLine)
+            .clip(shape)
             .background(colors.sand)
             .padding(horizontal = Space.s, vertical = Space.xs)
             // One node and one sentence: a reader saying the label and then

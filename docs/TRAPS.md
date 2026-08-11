@@ -131,6 +131,10 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 ## 4. Before you write or change a check
 
+**Compose lint's `ModifierParameterDetector` crashes on some token references inside a modifier chain, and it fails the build without naming a rule.** On 2026-08-11 `.clip(Radius.referenceLine)` in `ReferenceLine.kt` crashed `lintAnalyzeDebug` with "this is a bug in lint", while the identical chain with a literal shape passed. **Hold the token in a local first** and the crash goes away. It is a tooling defect rather than a code defect, **and it looks like neither**: the message names no rule and points at the file rather than the line.
+
+**Read `lint.log` from the run you are looking at.** `tools/verify.sh` writes each run to its own `/tmp/tmp.XXXX`, and an older directory sitting beside it will happily say BUILD SUCCESSFUL about a different run. Sort by time.
+
 **Ten cross references in `DECISIONS.md` and `docs/RUN-LOG.md` point at `DESIGN.md` sections that no longer exist, and they are not a bug.** They are dated records of what was decided against the document as it stood then, and `check_cross_references.py` skips both files by name for that reason. **Do not fix them and do not widen the check to cover them.** D143. If a tool flags them, the tool is wrong for those two files.
 
 **Prove it by breaking the data and watching it fail.** A check that has never failed is a check nobody knows the shape of.
