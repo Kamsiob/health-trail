@@ -1660,3 +1660,13 @@ It now installs every time, `install -r` so the data survives, and it **refuses 
 **The app had two loading states, six identical lines apart**, one in `AppRoot` while the database opens and one in `NotebookShell` while the counts load. Neither was wrong and that is the point: two copies of a thing are two treatments that have not drifted yet. Rule 22 says one treatment for the whole app, so they are now one `Waiting`, on the section 7 inventory with its own "when not to".
 
 **And the KDoc above one of them described a spinner on warm paper.** There is no spinner and there never was. **A comment claiming a component that does not exist is worse than no comment**, because the next person changes the code to match the comment: somebody would eventually have added the spinner the file asked for, on a screen whose whole job is to not be a moment. Corrected to say what is actually there and why, which is that neither a spinner nor a progress bar knows how long a database read takes.
+
+### The screen that says the worst thing said the wrong thing
+
+**When the Keystore key is gone, the notebook cannot be opened, and the screen that says so said "That did not work. Nothing was changed."** That is the copy for an action that failed. In the one place in the app where it matters most it says nothing about what happened, it implies there is something else to try, and "nothing was changed" is true and beside the point.
+
+**D24 had already written the right words, in 2026-07.** The key is gone, a factory reset or some device transfers take it, what the person wrote is still on the phone and nothing can read it without that key, and the honest answer is the file they exported. **The decision was made, recorded, and never reached the screen it decided.** That is the second time tonight the answer was a sentence somebody had already written, after D138.
+
+**Why it survived: nothing can reach it.** `RootState` and the screen are both private, so no test composes it, and seeing it on a phone means a factory reset or real damage. **A state nobody can reach is a state nobody reviews.** That is the general shape of what #207 keeps finding, and it is now the first piece of work on #343 rather than an afterthought to it.
+
+The copy is fixed in four languages. **Offering restore from that screen is #343 and is not done**: telling somebody to install the app again is honest and it is not finished, and rule 20 says an app that asks the person to go and do something it could do itself is declining to absorb its own complexity.

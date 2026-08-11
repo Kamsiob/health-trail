@@ -16,7 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -288,9 +287,24 @@ private fun OpeningScreen() {
  *
  * This is the honest form of a bad outcome. It does not offer a retry, because
  * retrying cannot work, and offering one would waste the person's time at the
- * worst possible moment. It will offer import once the export container exists,
- * which is issue #9, and that is why backup is load bearing rather than
- * optional. See DECISIONS.md D24.
+ * worst possible moment. See `DECISIONS.md` D24.
+ *
+ * **It used to say "That did not work. Nothing was changed."** That is the
+ * copy for an action that failed, and it is the wrong sentence in the one
+ * place in the app where it matters most: it says nothing about what happened,
+ * it implies there is something else to try, and "nothing was changed" is true
+ * and beside the point when the notebook cannot be opened at all. Found on
+ * 2026-08-11 by reading D24 against the screen it decided.
+ *
+ * **What it says now is what D24 decided years of design ago**: the key is
+ * gone, a factory reset or some device transfers take it, what the person
+ * wrote is still on the phone and nothing can read it without that key, and
+ * the one real answer is the file they exported. D24 is also why backup is
+ * load bearing rather than optional: it is the only recovery path this app
+ * has for its own encryption.
+ *
+ * **What it still does not do is offer restore from here**, which is #343.
+ * Telling somebody to install the app again is honest and it is not finished.
  */
 @Composable
 private fun UnrecoverableScreen() {
@@ -309,9 +323,24 @@ private fun UnrecoverableScreen() {
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = strings["common.error.generic"],
+                text = strings["unrecoverable.title"],
+                style = HealthTrail.type.displayM,
+                color = HealthTrail.colors.ink,
+            )
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = strings["unrecoverable.body"],
                 style = HealthTrail.type.bodyL,
                 color = HealthTrail.colors.ink,
+            )
+            Spacer(Modifier.height(Space.m))
+            // **The answer, not an apology.** D24 says the honest one is the
+            // export, so it is the last thing read and it is the only thing
+            // here that tells somebody what to do next.
+            Text(
+                text = strings["unrecoverable.next"],
+                style = HealthTrail.type.bodyM,
+                color = HealthTrail.colors.ink2,
             )
         }
     }
