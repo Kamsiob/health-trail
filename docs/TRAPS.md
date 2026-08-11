@@ -99,6 +99,8 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 ## 3. Before you change copy or a catalog
 
+**A `{count}` that is not inside a plural form reads "1 entries".** The catalog has 52 ICU plural strings and had five flat ones, and two of those put a number next to a noun: `trail.search.hint` said "Search 1 entries" and the progress chart described "1 readings" to a screen reader. **The one-item state is the one nobody has**, because every fixture has several of everything. Fixed 2026-08-11. When you add a string with a count in it, ask what it says at one, and at zero.
+
 **A catalog key is a string literal and the compiler never sees it.** `ChangeSituationScreen` asked for `more.title`, which has never existed, and `Strings.resolve` throws rather than falling back. The screen crashed the app the first time it was opened, having passed seventeen checks, the Kotlin compiler and lint, because `check_i18n.py` holds the four catalogs to **each other** and nothing held the **code** to them. `check_string_keys.py` reads the other direction now.
 
 **A key built from a variable is checked by nothing.** `check_string_keys.py` skips it by design, and its stated safety net is the instrumented suite, which is a net with a hole in it whenever the phone is unreachable. **Prefer a literal in a `when`.** Where a dynamic key is unavoidable, hold the whole set some other way, as `TodayCardKeyTest` holds the schema's card types to the catalog and `check_readable_labels.py` holds the archive's rendered tables and columns to all four.
