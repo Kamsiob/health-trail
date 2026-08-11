@@ -694,6 +694,10 @@ Recorded here per section 19, rather than left for a later session to find and m
 
 **Screens 04 to 06, capture.** The grid draws the three stages as who or what, then when, then the note. This screen keeps the note first, which is the order it arrived at on the phone: somebody taps capture having just put a phone down and the thing in their head is what was said. Rule 15 puts the thing that matters most in the best position, and law 3's own goal, finishing in under fifteen seconds standing up, is met by typing one sentence and saving without ever seeing stages two or three.
 
+**And the forward control says "Skip this" where the grid says "Next · when was it".** Recorded here 2026-08-11; the reasoning was already in the code and belongs in this list. **Nothing in capture is required, and a button that says Next implies the question behind it has to be answered first**, which is rule 13 on a control rather than in a sentence. "Save what you have" is live from stage one, so somebody who types one line and saves never meets the other two questions at all.
+
+**One thing worth an owner's eye**, raised on #345 rather than decided here: once the field has something in it, "Skip this" is describing something the person is not doing. A label that reads "Skip this" while empty and "Next" once filled would keep the rule and lose the oddness. **The catalogs already carry `capture.next`, "Next", in all four languages, and nothing uses it.**
+
 **Screen 17, the emergency card.** The grid draws a Change pill on every block. That is four identical controls opening one editor, which is the same noise the trail's per-row pin turned out to be. There is one Change and one Share, at the top, where a person looks for the doors.
 
 **Screen 13, Progress.** The grid draws the measures under the hero as chevron rows. A chevron means a screen opens, per law 2, and the per-measure history screen is #199 and does not exist yet. A chevron pointing at nothing is the dead end rule 18 forbids, so until that screen exists the rows are a choice: tapping one makes it the hero, which is the adaptive layout working rather than a substitute for it.
