@@ -18,7 +18,7 @@ Requirements:
 - **Parameterized by time.** It can generate a notebook as it would look on day one, day 30, month 6, year 1, year 2, and year 5.
 - **Realistic in shape, not just volume.** Uneven entry frequency with real gaps, several chapters with transfers between them, parallel care threads that start and end, incidents that resolve and one that never does, bills in every state, standing instructions with recorded violations, projects at various stages, measurements with gaps, milestones, documents with attachments, and an Unfiled tray with items in it.
 - **Includes the awkward cases on purpose**: unicode in every field, a note 8,000 characters long, a person with one name, an entry with only a rough date, a measurement with no unit, an attachment at the size limit, a chapter that lasted one day, a thread with a single session, and a bill for zero dollars.
-- **Available in all four languages**, so the personas can be run in Arabic and Chinese with real strings rather than English text in an RTL layout.
+- **Available in all four languages**, so the personas can be run with real strings rather than English text in a mirrored layout. **Version one is walked in English**, per D141, and right to left is walked against a forced layout direction. The other three catalogs stay complete and stay checked, because that is what keeps them from rotting while they wait.
 - **Runs against an emulator, never the owner's device.**
 
 Every persona below names the fixture it runs against. A persona run that cannot be reproduced from a seed is not a test, it is an anecdote.
@@ -168,7 +168,7 @@ These are the app's promises, and a promise that is not tested is a promise that
 2. No screen renders a target range, a normal range, a threshold, a color-coded value, an arrow, or any judgment on a measurement. Assert against the rendered chart and row components, not only the copy.
 3. No chart interpolates across a gap.
 4. Pattern and trend language appears only above the minimum-data threshold. Below it, verify the exact fallback string.
-5. Deterministic engine output is byte-identical to the golden test vectors in `/contract/test-vectors/`, in all four locales, including the zero, one, and two entry cases and the plural boundaries.
+5. Deterministic engine output is byte-identical to the golden test vectors in `/contract/test-vectors/`, **in all four locales**, including the zero, one, and two entry cases and the plural boundaries. **This one stays at four deliberately**, per D141: the vectors are how the three waiting catalogs are held correct while they wait, and they cost nothing to keep passing.
 6. Every standing instruction rendering shows a tag, and the federal tag's explanation is reachable.
 7. Every template string in `templates/data/*.json` is present in the four locale catalogs, so a missing translation fails the build rather than silently falling back to English.
 8. The round trip equality test from the data contract passes: export, wipe, import, assert field by field including tombstones, ordering, timestamps to the millisecond, relationships, and attachment hashes.

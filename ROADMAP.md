@@ -27,7 +27,7 @@ It is for the person who becomes the information hub because providers rarely ta
 ### The nearest things still open
 
 - **The export container.** Attachments and the container itself are done. Encryption, import, and the field by field round trip are not. This is the only proof that data survives an update, so nothing ships without it.
-- **The template catalog in four languages.** The interface is translated and the 1500 strings of template content are not, so an Arabic reader currently gets an Arabic app wrapped around English content.
+- **The template catalog in four languages.** The interface is translated and the 1500 strings of template content are not, so an Arabic reader currently gets an Arabic app wrapped around English content. **Version one ships English for exactly this reason**, D141: a confident wrong translation of what a federal rule requires is a person acting on false information about their rights.
 - **Today, with the digest engine**, and the trail itself.
 
 ---
@@ -43,7 +43,7 @@ Each of these is one coherent area, and each ends with its testing gate passed a
 5. **Search and assembly.** Universal search, scoped search per section, assembled collections, any day reconstruction, the family update draft, and the PDF export engine.
 6. **System integration.** Home screen widget, quick settings tile, share sheet target.
 7. **Portability.** Automated local backup to a folder you choose, restore, situation change, closing a trail, and the full data wipe.
-8. **Hardening and release.** Every persona walked, accessibility verified, all four languages including right to left, performance at five year scale, and the release.
+8. **Hardening and release.** Every persona walked, accessibility verified, **English with right to left verified against a forced layout direction**, per D141, performance at five year scale, and the release.
 
 ---
 

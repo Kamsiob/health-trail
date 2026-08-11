@@ -260,7 +260,11 @@ An optional bring-your-own-key local AI layer remains a possible far-future addi
 
 ## 7. Languages
 
-English, Spanish, Chinese, and Arabic, all four in v1.
+**Version one ships English. Spanish, Chinese, and Arabic follow when a native speaker who understands the American care system is available.** Owner decision, 2026-08-11, `DECISIONS.md` D141, superseding the all four in v1 commitment this section used to carry and superseding D58 by name.
+
+**The reasoning is a safety one.** About 1,500 strings here are regulatory and rights content: what federal rules require and what somebody is entitled to ask for. A confident wrong translation of that is a person acting on false information about their rights. Rule 2 says the app never concludes, and a machine translation of a rule is a conclusion nobody checked.
+
+**This is scope, not architecture.** The catalogs stay at four, the app ships one. Everything below still holds and none of it is deferred, because all of it is either English work or structural work that is far cheaper now than retrofitted:
 
 Consequences that must be handled from Phase 0 rather than retrofitted:
 
@@ -269,11 +273,13 @@ Consequences that must be handled from Phase 0 rather than retrofitted:
 - **The message template architecture** described in section 5.
 - **Three terms must never use their direct cognate**, because the cognate misleads or stigmatizes: hospice, power of attorney, and social worker. The descriptive phrasing is carried in the template data's `localization_note` fields.
 - Spanish uses formal usted throughout, and elders are addressed as Señor or Señora.
-- Every template string must exist in all four locale catalogs or the build fails, rather than silently falling back to English.
+- Every template string must exist in all four locale catalogs or the build fails, rather than silently falling back to English. **This survives D141 deliberately**: holding the four catalogs to each other is what stops the three that are waiting from rotting into a cancelation while they wait.
 
 ### 7.0 What makes a translated language shippable
 
-**Decided by the owner on 2026-08-01, D58. This governs, and it replaces the rule that an unreviewed language is not shippable.**
+**Superseded for version one by D141, 2026-08-11, and kept in full because it governs again the moment a language returns.** D141 ships English only, so nothing below applies to the v1 release. It is not deleted, because the mechanism it describes, the per-catalog `reviewed_by_native_speaker` flag and the disclaimer that reads from it, is exactly what a returning language needs and is already built.
+
+**Decided by the owner on 2026-08-01, D58. This governed until D141, and it replaced the rule that an unreviewed language is not shippable.**
 
 **The rule applies to translation, not to language.** English is authored rather than translated, so it is reviewed by definition and never carries a disclaimer. The rest of this section is about the translated catalogs.
 
@@ -356,7 +362,7 @@ Phase 0 is deliberately larger than usual. Every item in it is something that ca
 
 **Phase 7. Portability.** Automated local backup with durable folder permission and scheduling, restore flows, situation change, closing a trail, and the full data wipe with two-tier confirmation.
 
-**Phase 8. Hardening and release.** Every persona in `TESTING-PERSONAS.md` walked at its fixture. Accessibility verification. All four languages including RTL screenshot comparison. Performance targets at five-year scale met as pass or fail. The content compliance audit running in continuous integration. The cold read test on the repository with findings recorded. Real screenshots captured from the running app in both themes. Store assets generated from the design system. Version chosen with reasoning stated. Upload key generated and stored outside the repository. The bundle uploaded, the Google-signed universal APK downloaded and published as the GitHub release asset per the corrected release process in `PROJECT-DELTAS.md`. `LAUNCH.md` listing the owner's exact remaining clicks and nothing else.
+**Phase 8. Hardening and release.** Every persona in `TESTING-PERSONAS.md` walked at its fixture. Accessibility verification. **English, with right to left verified against a forced layout direction rather than against Arabic content**, per D141. Screenshot comparison for the shipped locale. Performance targets at five-year scale met as pass or fail. The content compliance audit running in continuous integration. The cold read test on the repository with findings recorded. Real screenshots captured from the running app in both themes. Store assets generated from the design system. Version chosen with reasoning stated. Upload key generated and stored outside the repository. The bundle uploaded, the Google-signed universal APK downloaded and published as the GitHub release asset per the corrected release process in `PROJECT-DELTAS.md`. `LAUNCH.md` listing the owner's exact remaining clicks and nothing else.
 
 ---
 
@@ -365,7 +371,7 @@ Phase 0 is deliberately larger than usual. Every item in it is something that ca
 1. It works on the device or the emulator, verified rather than assumed.
 2. Its tests exist, compile, and pass, and every fixed bug has a regression test.
 3. It survives the export, wipe, import round trip with field-by-field equality, **and the regeneration test in `contract/DATA-CONTRACT.md` section 8.5**: the readable copy regenerated from the reimported database is byte-identical to the one in the original archive. Anything the app can store, the archive contains, the readable copy renders, and the import restores.
-4. It matches `DESIGN.md` in both themes, at the largest font size, with a screen reader, and in all four languages including RTL, **and it passes the costume audit and the overflow audit in `DESIGN.md` section 16, on the phone.**
+4. It matches `DESIGN.md` in both themes, at the largest font size, with a screen reader, **in English, and with right to left verified against a forced layout direction**, per D141, **and it matches the grid file's measurements for that screen**, per section 16.6, **and it passes the costume audit and the overflow audit in `DESIGN.md` section 16, on the phone.**
 5. It contains no medical or legal advice, no interpretation, no ranges, no thresholds, no color-coded values, no em dashes.
 6. Its issue is closed with acceptance criteria met and verified, and its commit references the issue number.
 7. The living documents describe the app as it now is, corrected in the same commit.
