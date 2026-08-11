@@ -97,6 +97,20 @@ object Radius {
     /** A fold, `.fold` in both grids at 14px. `FoldRow` drew its own before. */
     val fold = RoundedCornerShape(14.dp)
 
+    /**
+     * The capture button, `.fab` at 17px in all three grids.
+     *
+     * **A circle here would be the one fully round object on a screen made of
+     * soft rectangles**, which is why the drawing is not one.
+     */
+    val fab = RoundedCornerShape(17.dp)
+
+    /** The reference line, `.refline` at 7px in the Projects grid. */
+    val referenceLine = RoundedCornerShape(7.dp)
+
+    /** A card's source tab, `.wtab` at 5px in the Today grid. */
+    val sourceTab = RoundedCornerShape(5.dp)
+
     val thumbnail = RoundedCornerShape(13.dp)
 
     /** A sheet rises with 24dp top corners, DESIGN.md section 6. */

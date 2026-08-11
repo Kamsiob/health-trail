@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -63,7 +64,7 @@ fun ReferenceLine(
 
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(7.dp))
+            .clip(Radius.referenceLine)
             .background(colors.sand)
             .padding(horizontal = Space.s, vertical = Space.xs)
             // One node and one sentence: a reader saying the label and then

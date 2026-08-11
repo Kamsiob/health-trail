@@ -214,7 +214,7 @@ fun TodayCard(
                         // Seen on the phone and invisible in the code, because
                         // nothing collides until the text is long enough.
                         .padding(end = if (corner == null) CHEVRON_ROOM else CORNER_ROOM)
-                        .clip(RoundedCornerShape(5.dp))
+                        .clip(Radius.sourceTab)
                         .background(hue.wash)
                         .padding(horizontal = Space.s, vertical = 2.dp),
                 )

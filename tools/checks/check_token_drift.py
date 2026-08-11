@@ -36,8 +36,10 @@ ROOT = Path(__file__).resolve().parents[2]
 UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 
 # Recorded 2026-08-11 against the tree at D142. It goes down and never up.
-# 161 at D142. 158 after the first fidelity pass took three radii into tokens.
-BASELINE = 158
+# 161 at D142. 158 after the first fidelity pass, 155 after the second.
+# Every radius outside the theme is a token now, each naming the grid selector
+# it came from, so a later reader can check it against the drawing.
+BASELINE = 155
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

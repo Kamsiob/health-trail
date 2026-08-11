@@ -116,4 +116,4 @@ fun CaptureFab(
  * platform control dropped on top of it. A circle here would be the one fully
  * round object on a screen made of soft rectangles.
  */
-private val FabShape = androidx.compose.foundation.shape.RoundedCornerShape(17.dp)
+private val FabShape = Radius.fab
