@@ -686,6 +686,8 @@ Recorded here per section 19, rather than left for a later session to find and m
 
 **Every detail screen and two sheets, the removal control.** The grid draws no removal anywhere, because removal was a long press when the grid was drawn. It is an outlined "Remove this" at the foot of the thing's own screen now, and in the sheet its row opens where the thing has no screen. D135, and section 9 carries the rule.
 
+**The eyebrow above a card, everywhere it appears.** A date beside a chapter name sat above an incident, a medication event, a search result and a project's spoken road, and three of the four joined the two with a literal separator while search used `Bidi.join` and the app's dot. **One treatment, per rule 22**, so all four now read the same and each part keeps its own direction inside a layout running the other way. Unified 2026-08-11. This is a departure only in the sense that nothing drew it: the grid never shows two eyebrows on one screen, which is exactly how three of them drifted apart.
+
 **Screen 08, the pin itself.** The grid implies the pin is something you do from the trail. It is done from the entry instead. Built on the row first, it put a second target on every one of sixteen hundred rows to serve a decision somebody makes a handful of times, and on the phone ten pin buttons down one screen were the loudest thing on it, which inverts rule 15. The row keeps the mark as state.
 
 ---
