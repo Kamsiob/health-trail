@@ -1740,3 +1740,13 @@ The check has a second rule now, and **it was proved by reverting one isolate an
 It now waits for the requested language to reach the head of `context.resources.configuration.locales` as well. **That waits for the platform to have moved rather than for the answer**, which the KDoc was right to warn against: polling for what the app resolves would make the assertion prove itself. Timing out leaves the check exactly where it was, so the change can only add patience.
 
 **And the failure was read before it was explained.** The report was copied out of `build/outputs` first, because a single class rerun overwrites it, and the rerun is the second thing you want to do.
+
+### Arabic on the phone found what the check could not see, which is the whole argument of #226
+
+**The medications list showed a dose raw while the medication's own screen isolated the same string.** One record reading two ways, and nothing in the source said which of the two was right. `check_bidi_isolation.py` reads the argument names it was given and `trailing` was not one of them, so it had nothing to say.
+
+**It reads nine argument names now and it used to read four**, and the new ones found three more: the kind of a date on a Today card, a role in a picker, and a draft on its way to the database that was correct as it was and now says so. `value` and `note` stay off the list deliberately: both are almost always a field's current contents or a draft, which are two of the three things that must never be isolated, and adding them would mean writing the same sentence into twenty form fields.
+
+**What the walk confirmed**, which matters as much as what it found. A person's own screen in Arabic: the name, the role and two English sentences each holding their own direction inside a right to left layout, the avatar and the spine mirrored, an Arabic phrase carrying a Western phone number in the right order, and the foot reading as one pill sized to its label above one full width way back. A medication event's eyebrow reads an Arabic date, the app's dot, and an English chapter name, in that order, which is the treatment unified an hour earlier.
+
+**That is the second time tonight the phone said something no check could.** The first was the empty notebook at font scale 2.0. Both were the fourth or fifth thing tried after the work looked finished.
