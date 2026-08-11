@@ -1730,3 +1730,13 @@ The check has a second rule now, and **it was proved by reverting one isolate an
 **The through line, said once rather than in every section above.** Every defect that mattered was found by opening something for a different reason than the one that found it. #57's five minute confirmation produced a rule 17 defect. #205's two screens produced a sweep across fifteen. An annotation written to explain why a line was correct produced the project search defect. Reading a screen for a stray separator produced three raw renders and a blind spot in the check meant to catch them. **Writing down why something is correct means reading it, and reading it is where the question gets asked.**
 
 **And the counterweight, which cost more time than any defect did.** Three separate steps reported success without running: a compile behind a grep for failures, a suite skipped for want of a flag, and an install that quietly did nothing. All three read exactly like a pass. **The rule that came out of it is in D140 and it is one sentence: assert something positive, or it is not a step.**
+
+### The last run went red, and it was worth the ten minutes
+
+**604 tests, one failed.** `AppLanguageTest` asserted that Japanese falls back to English and got Arabic, which is what the test before it had chosen. It passed alone, immediately, which is the worst way for a test to be wrong and is exactly what its own KDoc says about the last time this happened.
+
+**The class already polls for the locale change, and it polls the wrong object.** `applicationLocales` is what the system was told. **The context's configuration is what `Strings.load` actually reads**, and it catches up a moment later. A poll on the wrong object is indistinguishable from no poll at all: it passes almost always, and when the phone is busy, which is the eleventh minute of a full suite, it does not.
+
+It now waits for the requested language to reach the head of `context.resources.configuration.locales` as well. **That waits for the platform to have moved rather than for the answer**, which the KDoc was right to warn against: polling for what the app resolves would make the assertion prove itself. Timing out leaves the check exactly where it was, so the change can only add patience.
+
+**And the failure was read before it was explained.** The report was copied out of `build/outputs` first, because a single class rerun overwrites it, and the rerun is the second thing you want to do.

@@ -85,6 +85,8 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **Copy the suite's report before rerunning anything.** A single class rerun overwrites `androidTest-results/connected/debug/TEST-*.xml`, and two flakes lost their assertion and stack that way. Copy it into the scratchpad the moment the suite goes red.
 
+**`AppLanguageTest` fails inside a full run and passes alone, and the locale leak is not the only cause.** Setting `applicationLocales` is asynchronous and the class already polls for it; **the context's own configuration catches up separately**, and `Strings.load` reads the configuration. On 2026-08-11 it asserted that Japanese falls back to English and got Arabic, which is what the test before it had chosen. It now waits for the requested language to reach the head of `context.resources.configuration.locales` as well. **A poll on the wrong object is indistinguishable from no poll at all.**
+
 **Clear the app locale before running the suite.** `AppLanguageTest` failed twice because a right to left check left the per app locale set to Arabic: `connectedDebugAndroidTest` only clears it when it actually reinstalls. `adb shell cmd locale set-app-locales com.kamsiob.healthtrail --user 0 --locales ""` first. #306.
 
 **A screen that clears its descendants' semantics cannot be tested through its text, and will not tell you so.** `RoadStrip` and every Today card speak as one node by design, so `onNodeWithText` finds nothing inside them. **A test written against the rendered text fails looking exactly like the defect it was meant to catch**, which is what fourteen of `TodayFieldScreenTest`'s did the first time they ran. Assert on the composed `contentDescription` instead, and strip the isolate marks before comparing.

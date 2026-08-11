@@ -6,6 +6,7 @@ import android.os.LocaleList
 import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.Locale
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assume.assumeTrue
@@ -86,6 +87,28 @@ class AppLanguageTest {
             wanted,
             locales.applicationLocales,
         )
+
+        // **And then wait for the configuration, which is a different thing.**
+        // `applicationLocales` is what the system was told; the context's own
+        // configuration is what `Strings.load` reads, and it catches up a
+        // moment later. Polling only the first of those is why this class
+        // still failed inside a full run while passing alone: on 2026-08-11 it
+        // asserted that Japanese falls back to English and got Arabic, which
+        // is what the test before it had chosen.
+        //
+        // **This waits for the platform to have moved, not for the answer.**
+        // The language asked for appearing at the head of the configuration is
+        // independent of what the app then resolves it to, which is what the
+        // assertions are about, so this cannot make a test prove itself.
+        // Timing out changes nothing: it leaves the check exactly where it was
+        // before this loop existed.
+        val language = Locale.forLanguageTag(tag).language
+        val settledBy = SystemClock.uptimeMillis() + SETTLE_MILLIS
+        while (context.resources.configuration.locales.get(0).language != language &&
+            SystemClock.uptimeMillis() < settledBy
+        ) {
+            SystemClock.sleep(20)
+        }
         return Strings.load(context)
     }
 
