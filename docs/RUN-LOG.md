@@ -1562,3 +1562,41 @@ A tag on a door and a tag on the stage it opens must be different names. The rea
 And `performScrollTo` cannot reach a node a `LazyColumn` has not composed. It reports "could not find any node", which reads as the node not existing rather than as the list not having been asked to reach it. `performScrollToNode` is the one that asks.
 
 **And one thing that is only funny in hindsight**: the screen built while #341 was being written, which was about screens saying their own sentence twice, shipped with its heading and its field label identical. Caught by opening it rather than by reading the diff. The fix was one string.
+
+## 24. The states, and the words in them, 2026-08-11 after midnight
+
+**#207's first pass and #226's first slice, both driven from the phone.**
+
+### What an empty notebook showed
+
+**Two defects, and both only exist in a state the fixture can never produce.**
+
+A row was **truncating its own sentence**: "The moments you decided were worth marking. Nothing here is" and then nothing. Rule 11 bans truncation outright and D105 already says why. **The half that was cut is the half saying the app works nothing out**, which makes it worse than a shortened label. Swept every screen and it was the only one.
+
+An **empty emergency card offered three actions where one is right**: Share, which would hand somebody a document with nothing on it, and Change, which was the second name for the Fill in the card the empty state already offered. `PrepScreen` had already decided the first half for a phone with no calendar app, and 15.1 had already decided the second half for this very screen.
+
+### And two things that looked wrong and are not
+
+**The empty notebook is twelve rows each saying "Nothing yet"**, with no separate empty layout. The screen's own comment says why, and it was read before anything was changed: the empty state is the resting state, so there is no separate layout to fall into and no way to reach one.
+
+**A notebook with no situation shows all twelve sections unfolded.** That looks like the person who answered "Not sure yet" being punished for it and is the opposite: nothing hides, everything is one tap away, and the app presumes nothing.
+
+**Checking first is the point of both.** Two hours of "fixing" either would have been two hours spent making the app worse.
+
+### Measure rather than look
+
+The last row of the empty notebook **appeared** to sit under the gold button in Arabic, where it plainly does not in English, because Arabic rows are taller. The dump says the row ends at 1991 and the button starts at 2037. **The plausible fix would have been a fix to nothing.**
+
+### The words themselves
+
+`report_bidi_isolation.py` printed 115 candidates and says in its own output that only Arabic on the device settles them. **Sixteen are done**, chosen by one rule: it is the person's own words and it reaches a `Text` directly. The trail was the biggest, 182 rows of somebody's own sentences rendered raw, and the confirmation sheet was the worst, since showing back the wrong-way-round name of the thing about to be removed is the one place that must be unambiguous.
+
+**Three kinds must never be touched, and they are on #226 so nobody does**: the value inside a field being edited, where the marks become part of what the person types; a draft on its way to the database, for the same reason; and anything building a filename, where an invisible mark ends up in the name of a file somebody shares.
+
+### One trap met
+
+**Typing into a password field brought the phone's password manager with it**, offering to save the passphrase, on the owner's daily driver. Declined, and the screenshot of the error state was discarded rather than committed because the manager's own bar was in it. Recorded in `HANDOFF.md` beside the two other device facts that are policy rather than technique.
+
+### And one rule broken, said plainly
+
+**The font scale was changed while an instrumented run was in flight**, which `docs/TRAPS.md` section 2 warns against in as many words. It landed during the data tests and the UI tests ran at the restored value, and the run finished 598 of 598, so the result stands. It should not have happened.
