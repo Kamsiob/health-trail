@@ -81,7 +81,10 @@ import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
 import com.kamsiob.healthtrail.ui.screens.AppearanceScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
+import com.kamsiob.healthtrail.ui.screens.AddMilestoneScreen
+import com.kamsiob.healthtrail.ui.screens.ConflictsScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectSetupScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectPaperworkScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectPeopleScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
@@ -588,6 +591,82 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("a project's starting steps")
+    }
+
+
+    @Test
+    fun whatTheMergeDecidedLabelsEverything() {
+        compose.show {
+            ConflictsScreen(
+                resolutions = listOf(
+                    Repository.Resolution(
+                        seq = 1L,
+                        table = "entry",
+                        rowId = "e1",
+                        resolvedAt = 1L,
+                        kept = "mine",
+                        reason = "later_updated_at",
+                        differences = listOf(
+                            Repository.Difference(
+                                column = "title",
+                                render = "text",
+                                vocabulary = null,
+                                keptValue = "Called the caseworker",
+                                otherValue = "Called the case worker",
+                            ),
+                        ),
+                        seen = false,
+                    ),
+                ),
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("what the merge decided")
+    }
+
+    @Test
+    fun addingAMilestoneLabelsEverything() {
+        compose.show {
+            AddMilestoneScreen(
+                onSave = {},
+                onCancel = {},
+                chapters = listOf(
+                    Repository.Chapter(
+                        "c1", "Maplewood Care Center", null, null, "2026-01-08", null,
+                    ),
+                ),
+            )
+        }
+        assertEverythingIsLabeled("adding a milestone")
+    }
+
+    @Test
+    fun aProjectsSetupLabelsEverything() {
+        compose.show {
+            ProjectSetupScreen(
+                project = Repository.Project(
+                    id = "pr1", name = "The waiver application", templateId = "medicaid_ltc",
+                    status = "active", waitingOn = "The county", notes = null,
+                    stepCount = 2, doneCount = 1, nextStep = null, lead = "standing",
+                ),
+                stages = listOf(Repository.ProjectStage("s1", "Applied", 0, "2026-03-05", 1L)),
+                steps = listOf(
+                    Repository.ProjectStep("x1", "Get the form", null, null, null, null),
+                ),
+                papers = listOf(Repository.ProjectPaper("pp1", "The award letter", 0, null, null)),
+                dateKinds = listOf("Decision expected"),
+                onSetLead = {},
+                onSetStatus = {},
+                onSetWaitingOn = {},
+                onSaveAsTemplate = {},
+                onOpenSteps = {},
+                onOpenRoad = {},
+                onOpenKinds = {},
+                onOpenPapers = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("a project's setup")
     }
 
     @Test
