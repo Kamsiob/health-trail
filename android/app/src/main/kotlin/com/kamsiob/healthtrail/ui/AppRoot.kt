@@ -227,7 +227,7 @@ fun AppRoot(
     }
 }
 
-private sealed interface RootState {
+internal sealed interface RootState {
     data object Opening : RootState
     data object Unrecoverable : RootState
     data class Gate(val repository: Repository) : RootState
@@ -267,7 +267,7 @@ private sealed interface RootState {
  * The word itself is [Waiting], which is the app's one loading treatment.
  */
 @Composable
-private fun OpeningScreen() {
+internal fun OpeningScreen() {
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -307,7 +307,7 @@ private fun OpeningScreen() {
  * Telling somebody to install the app again is honest and it is not finished.
  */
 @Composable
-private fun UnrecoverableScreen() {
+internal fun UnrecoverableScreen() {
     val strings = LocalStrings.current
     Surface(
         modifier = Modifier
