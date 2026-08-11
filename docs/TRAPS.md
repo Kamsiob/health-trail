@@ -95,6 +95,8 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **`performScrollToNode` gives up early and lies about it.** It stopped two rows short on the Arabic catalog and reported the rows as absent. **Scroll by the list's own item key** with `performScrollToKey`, which asks the list where the item is. That needs the test tag on the `LazyColumn` itself: the scroll action merges upward and looks like it works, while `IndexForKey` does not.
 
+**Never start a second `verify.sh --device` while one is running, and check rather than assume.** One run uninstalls the app while the other installs it, and the symptom does not look like a collision: **the first test fails, the run dies after one test, and the log says `DELETE_FAILED_INTERNAL_ERROR`, `Error during Sync: Remote object doesn't exist!`, and `Process crashed`.** That reads like the product crashing on launch. On 2026-08-11 a run was started while the previous one was still in its instrumented phase, having read the process count in the same command that launched the new run rather than before it. **`ps -eo cmd | grep -c '[t]ools/verify.sh'` first, as its own step, and read the answer.**
+
 **Do not touch the phone while the suite runs.** A capture attempted mid-run force-stopped the app under the suite and produced one bogus failure.
 
 **Batch it.** Run the one class you changed while iterating; run the whole suite once before committing. It costs about seven and a half minutes.
