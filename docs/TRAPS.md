@@ -206,4 +206,6 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **Continuous integration** triggers on `push` to main, on `pull_request` and on `workflow_dispatch`. If pull request events stop firing: `gh workflow run ci.yml --ref <branch>`, then poll. **Do not read an absence of checks on a pull request as a passing build.**
 
+**`gh issue comment` takes no `-q`, and fails quietly when given one.** A comment written to a file and posted with `--body-file -q .html_url` printed nothing and posted nothing, which looks exactly like a comment that posted and printed nothing. **Check the issue, not the exit code.**
+
 **Backticks in a `gh issue comment --body` are run by the shell.** A paragraph of a comment on #46 posted with four code spans replaced by nothing, and the shell said `command not found` four times in the middle of a successful post, which is easy to read past. **Write the body to a file and pass `--body-file`**, or `-F body=@file` for an edit through the API. The damage is silent in the rendered comment: the sentence still reads as a sentence, with the names missing.
