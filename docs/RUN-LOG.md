@@ -1750,3 +1750,13 @@ It now waits for the requested language to reach the head of `context.resources.
 **What the walk confirmed**, which matters as much as what it found. A person's own screen in Arabic: the name, the role and two English sentences each holding their own direction inside a right to left layout, the avatar and the spine mirrored, an Arabic phrase carrying a Western phone number in the right order, and the foot reading as one pill sized to its label above one full width way back. A medication event's eyebrow reads an Arabic date, the app's dot, and an English chapter name, in that order, which is the treatment unified an hour earlier.
 
 **That is the second time tonight the phone said something no check could.** The first was the empty notebook at font scale 2.0. Both were the fourth or fifth thing tried after the work looked finished.
+
+### The screen that could not write anything down
+
+**#46's remaining half, and it was smaller than the issue made it sound.** `PersonScreen` had two actions, calling and correcting, and no way to record anything at all. Somebody who had just come off the phone with the charge nurse, looking at her card with her number on it, left, pressed the gold button, chose a kind, and found her name again in a picker. **Four taps to say a thing the app was standing next to**, and rule 18 asks for two.
+
+**Confirmed by reading before it was built**, which is why the build took twenty minutes: capture has exactly four entry points in the shell and not one carries a subject, and `CaptureFormState` already had `togglePerson`. The missing piece was an action and a parameter, not a mechanism.
+
+**Three decisions inside a small change.** Recording sits above correcting, because it is the errand somebody actually arrives with and correcting a spelling is the rare one. **The kind does not travel**, because what happened is the person's to say and choosing it for them would be the app filing on their behalf. And the person's screen closes first, so back from the form lands on the care team rather than on a screen about somebody the entry is already attached to.
+
+**The test asserts the draft rather than the navigation.** A control that opens the sheet and forgets who it was about looks identical on the screen and leaves the person doing the same picking as before. **That is the defect wearing the fix's clothes**, and a test that only checks the sheet opened would be green for it.
