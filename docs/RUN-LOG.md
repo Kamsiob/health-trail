@@ -1790,3 +1790,17 @@ So the state is held where it can be held, as a composed error string in `Screen
 **Money had the same shape as medications.** The row rendered its amount raw while the fold's summary directly above it went through `Bidi.join`, so **one amount wore two treatments on one screen.** A number beside a currency beside a right to left heading is three runs, and the app should say which is which rather than leave it to the algorithm.
 
 **Both were invisible to the check for the same reason and a different one.** The medication dose is a string property in a slot the check did not read; the money amount is not a string property at all, it is a number the app formats, so the model-property rule can never see it. **The rule finds the person's words. The treatment being consistent is a different question**, and the only instrument for it is somebody switching between two screens in a language that reorders.
+
+## 26. The alignment pass, 2026-08-11
+
+**Not a rebuild and not a cleanup.** Decisions made in conversation that never reached the repository, documents describing an app that no longer exists, and one pointer misrouting every fresh session.
+
+**Two decisions recorded.** D141 ships version one in English, superseding D58 by name, on a safety argument rather than a scheduling one: 1,500 strings of regulatory content where a confident wrong translation is somebody acting on false information about their rights. D142 finds the built screens drifting from the grid files, and names the mechanical cause rather than blaming execution.
+
+**What the pass found already correct, which was most of it.** Every one of the six design decisions in item 4 of the instruction was already recorded and built: the stone hue at D79, the grid's three stale statements at D77, the deuteranopia spread at D89, the end of the gold outlined button at D93, ink-3 as non-text, and **the chart card's rules enforced in the type rather than in documentation**, which its own KDoc says in as many words. The three grid files are present and their precedence is stated in the first table of `DESIGN.md`. The voice rule is global at D109 and `check_copy.py` enforces it with word boundaries, and #216, the substring defect that would have weakened it, is closed. Nothing anywhere conflates a Today card with the home screen widget.
+
+**Two things the instruction assumed were wrong and were not.** The README did not describe a one-screen app; it carried a full feature inventory and a gallery of real device captures. And the board link was right: `tools/board.py` maintains project 2 and the README points at project 2.
+
+**The strongest single finding was structural rather than textual.** Three audits ask whether a screen is internally coherent and none asked whether it matches the drawing it was approved from, so a screen could pass all three and still not look like the design. **An audit that never compares against the source of truth is a self-consistency check wearing a fidelity check's name.**
+
+**And one correction refused on principle.** `check_cross_references.py` found ten more stale pointers in `DECISIONS.md` and this file. They stay. An entry records what was decided against what existed then, and editing its references would make the record say something that was not true when it was written. Both files say so at the top instead, and the check skips them by name.
