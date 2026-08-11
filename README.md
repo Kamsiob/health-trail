@@ -44,6 +44,8 @@ Real captures from the running app on a Pixel 10 Pro XL. **Nothing here is a moc
 | **A call, logged.** Every field optional. "Roughly is fine" for the date, and the button says **Save what you have**. | **Nothing gets filed for you.** Anything saved without a home waits here, with a suggestion you confirm. | **Arabic, on the device.** Mirrored right to left, real glyphs. Right to left was built in from the first screen rather than added at the end. |
 | **Dark, on a phone set to light.** The theme is the app's own setting, not an inherited one. | **Chinese**, in the system CJK face. Nothing is bundled for it, because Android already ships a good one. | **What backs a request up.** Every standing instruction says whether a federal rule requires it or whether it is something nobody has to agree to. |
 
+**Two of those captures are Arabic and Chinese, and version one ships English.** They are here because right to left and script coverage are built into the app rather than planned for it, which is the part that is expensive to add later. The content for those languages is written and waiting on a native speaker, per D141.
+
 **Three grid files are the binding visual reference**, and between them they are the authority on measurement: `reference/screen-grid.html` holds the 25 approved screens and governs generally, `reference/projects-grid.html` governs the Projects surface, and `reference/today-grid.html` governs Today. `DESIGN.md` holds the tokens, type scale, motion, and copy rules, and points at the grids for spacing, elevation, and composition rather than restating them.
 
 Every color pair in both themes is measured against the WCAG AA floors by `check_contrast.py` on every push.

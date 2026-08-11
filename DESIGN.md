@@ -287,6 +287,8 @@ Before any screen work begins: screenshot a screen containing all three faces, c
 
 ### 5.3 Script coverage, which is a real problem rather than a detail
 
+**Version one ships English, per D141, and none of this section is deferred by that.** The bundled Arabic face and the CJK reasoning both stay: they are what makes a returning language a content job rather than a typography job, and font fallback defects are exactly the kind that are invisible until somebody's name renders as a box. Removing coverage now to add it back later is the retrofit this section exists to prevent.
+
 Bricolage Grotesque and Atkinson Hyperlegible cover Latin. **Arabic needs Noto Sans Arabic, bundled.** In Arabic, display text uses the Noto face at bold weight rather than forcing a Latin display face that has no coverage. Never ship a screen where one language renders in a different face than the rest of that language's screen.
 
 **Chinese uses the system face and is not bundled. This is a rule, not a compromise.** Android ships Noto Sans CJK and renders it well, and it is the face a Chinese-reading person already sees in every other app on their phone. Bundling would add roughly ten megabytes per weight to reproduce something already present and correct. Arabic is bundled because coverage there is genuinely inconsistent across devices, so the same reasoning gives the opposite answer.
