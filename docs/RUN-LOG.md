@@ -1725,7 +1725,7 @@ The check has a second rule now, and **it was proved by reverting one isolate an
 
 ### What the night added up to
 
-**Eight issues closed** and four filed. **603 instrumented tests** where the night began at 534, **218 unit tests**, lint, and **23 repository checks** where there were 20. Three of the checks are new and each holds something that was invisible by looking: that nothing clips without a mark, that every screen is walked by the reader, and that the person's own words are either isolated or say in a comment why they are not.
+**Seven issues closed** and three filed, with #203's substantive half done and the issue left open for its content question. **605 instrumented tests** where the night began at 534, **218 unit tests**, lint, and **23 repository checks** where there were 20. Three of the checks are new and each holds something that was invisible by looking: that nothing clips without a mark, that every screen is walked by the reader, and that the person's own words are either isolated or say in a comment why they are not.
 
 **The through line, said once rather than in every section above.** Every defect that mattered was found by opening something for a different reason than the one that found it. #57's five minute confirmation produced a rule 17 defect. #205's two screens produced a sweep across fifteen. An annotation written to explain why a line was correct produced the project search defect. Reading a screen for a stray separator produced three raw renders and a blind spot in the check meant to catch them. **Writing down why something is correct means reading it, and reading it is where the question gets asked.**
 
