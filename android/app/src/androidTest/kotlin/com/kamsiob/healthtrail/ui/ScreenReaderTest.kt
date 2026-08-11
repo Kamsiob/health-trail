@@ -269,6 +269,31 @@ class ScreenReaderTest {
         assertEverythingIsLabeled("one person, with an entry")
     }
 
+    /**
+     * **The same person with nothing filled in but a name.**
+     *
+     * Rule 13: partial is a finished state, and every fixture in this file is
+     * a full record, so the sparse one is the state nothing here was walking.
+     * It is also where a reader is likeliest to meet an unlabeled node, because
+     * an absent value renders as a fallback in one place and as nothing at all
+     * in another, and only one of those announces itself.
+     */
+    @Test
+    fun aPersonWithOnlyANameLabelsEverything() {
+        compose.show {
+            PersonScreen(
+                person = Repository.Person("p1", "Dee", null, null, null, null),
+                entries = emptyList(),
+                onCall = {},
+                onEdit = {},
+                onRemove = {},
+                onOpenEntry = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one person, nothing but a name")
+    }
+
     @Test
     fun oneMedicationLabelsEverything() {
         compose.show {
@@ -295,6 +320,31 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("one medication, with history and a question")
+    }
+
+    /**
+     * **A medication with a name and nothing else**, which is what somebody
+     * writes down standing in a hallway holding a bottle. Rule 13 again: no
+     * field is required, so this is not a degraded record, it is the ordinary
+     * one on the day it is created.
+     */
+    @Test
+    fun aMedicationWithOnlyANameLabelsEverything() {
+        compose.show {
+            MedicationScreen(
+                medication = Repository.Medication(
+                    "m1", "Donepezil", null, null, null, false, null,
+                ),
+                history = emptyList(),
+                questions = emptyList(),
+                onOpenQuestion = {},
+                onEdit = {},
+                onRemove = {},
+                onRecordChange = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("one medication, nothing but a name")
     }
 
     @Test
