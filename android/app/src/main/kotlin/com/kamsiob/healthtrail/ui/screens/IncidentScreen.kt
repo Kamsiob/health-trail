@@ -48,6 +48,14 @@ object IncidentTags {
     const val ADD = "incident_add"
     const val SHARE = "incident_share"
     fun node(id: String) = "incident_node_$id"
+    /**
+     * The card, which is the control. [node] tags the spine row around it, and
+     * a merged card inside a tagged wrapper means the wrapper's node carries no
+     * click at all: the test that asserted the label failed for that reason and
+     * the one that asserted the behavior passed, which is a good demonstration
+     * of why both are worth writing.
+     */
+    fun entry(id: String) = "incident_entry_$id"
     fun person(id: String) = "incident_person_$id"
     fun document(id: String) = "incident_document_$id"
 }
@@ -404,6 +412,7 @@ fun IncidentScreen(
                                     onTap = { onOpenEntry(entry) },
                                     resting = colors.card,
                                 )
+                                .testTag(IncidentTags.entry(entry.id))
                                 .padding(Space.cardPadding),
                         ) {
                             val date = entry.occurredEdtf?.takeIf { it.isNotBlank() }

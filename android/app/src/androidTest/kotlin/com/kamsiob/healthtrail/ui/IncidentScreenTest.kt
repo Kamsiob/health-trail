@@ -102,7 +102,7 @@ class IncidentScreenTest {
     @Test
     fun anEntryOnTheThreadOpens() {
         show()
-        compose.onNodeWithTag(IncidentTags.node("e2")).performScrollTo().performClick()
+        compose.onNodeWithTag(IncidentTags.entry("e2")).performScrollTo().performClick()
         assertEquals("e2", opened)
     }
 
@@ -114,7 +114,7 @@ class IncidentScreenTest {
     @Test
     fun theCardSaysTheTapOpensTheEntry() {
         show()
-        val node = compose.onNodeWithTag(IncidentTags.node("e1")).fetchSemanticsNode()
+        val node = compose.onNodeWithTag(IncidentTags.entry("e1")).fetchSemanticsNode()
         val label = node.config.getOrNull(SemanticsActions.OnClick)?.label
         assertNotNull("the entry card declares no click action at all", label)
         assertEquals(strings["prep.change.open"], label)
