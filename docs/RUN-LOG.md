@@ -1670,3 +1670,13 @@ It now installs every time, `install -r` so the data survives, and it **refuses 
 **Why it survived: nothing can reach it.** `RootState` and the screen are both private, so no test composes it, and seeing it on a phone means a factory reset or real damage. **A state nobody can reach is a state nobody reviews.** That is the general shape of what #207 keeps finding, and it is now the first piece of work on #343 rather than an afterthought to it.
 
 The copy is fixed in four languages. **Offering restore from that screen is #343 and is not done**: telling somebody to install the app again is honest and it is not finished, and rule 20 says an app that asks the person to go and do something it could do itself is declining to absorb its own complexity.
+
+### The one-item state, which nobody has
+
+**Every fixture has several of everything**, which is exactly why the one-item state is the one nobody looks at. The catalog carries 52 ICU plural strings and had five flat ones, and two of those stood a number beside a noun: the trail's search hint said **"Search 1 entries"**, and the progress chart described **"1 readings"** to a screen reader, which is the one place nobody catches it by looking at all. Two more said "1 steps" and "1 stages", the second of those also only to a reader.
+
+**And two counts reach zero and were never asked what they say there.** A project somebody started without a template has no steps, and its places for paper start empty, so the setup screen read "0 steps" and "0 places for paper". Rule 13: an unfilled slot reads as not yet, never as a deficiency. Both now have a zero branch.
+
+**The Arabic catalog already had a zero branch for both**, which is a fair sign of which locale was written most carefully, and a reminder that the source language is not automatically the most correct one.
+
+Six strings, four languages, six plural forms each in Arabic. **When you add a string with a count in it, ask what it says at one, and at zero.** That sentence is in TRAPS section 3 now.
