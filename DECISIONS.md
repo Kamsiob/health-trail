@@ -2622,6 +2622,8 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 2. **`CLAUDE.md`'s pointers into `DESIGN.md` were all stale**, #344, so a session following rule 22 to the component library landed on Voice. That is fixed and it was compounding this.
 3. **Compose Material 3 supplies its own defaults wherever a token is not explicitly applied.** A component that looks finished can be wearing Material's shape, elevation, or typography rather than this app's, and nothing about it looks wrong on its own.
 
+**Cause 3 was checked on 2026-08-11 and is not happening**, which is recorded here rather than left as a suspicion somebody re-investigates. **All 114 `Text` calls carry an explicit style**, all 26 `Surface` calls set their color, and all 17 `ModalBottomSheet` calls set both container color and shape. `Theme.kt` also hands Material a `Typography` mapped from this app's own scale and a full color scheme, **so a stray component picked up along the way lands in the right place rather than in Material's defaults**, which its own comment says it is for. The remaining causes are 1 and 2, and 2 is fixed.
+
 **The decision.**
 
 - **The grids are authoritative on measurement.** Spacing, radius, elevation, type scale, and composition are read off the grid for the screen being built.
