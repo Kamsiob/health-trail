@@ -78,13 +78,13 @@
 
 **The account of how it got here is `docs/RUN-LOG.md`, and it is history rather than orientation.** Section 6 of that file is 2026-08-09, the day milestone 1 finished: twenty-two issues, ten defects that were invisible in the code and obvious on a screen, four fixture modes that did not exist, and two decisions taken rather than escalated.
 
-### Four things that are true and are not ticked anywhere
+### Three things that are true and are not ticked anywhere
 
 Each is said out loud on its own issue rather than counted as done.
 
 - **The care team card's sparse rung** and **the trail spine's gap markers** are not reachable from any seed. Held in `TodayFieldScreenTest` instead.
 - **The digest's corrected and removed counts** render, and no seed produces them: the generator's updates land on rows it inserted in the same window.
-- **The document card's empty rung** needs a cleared install, which the destructive command guard refuses, correctly.
+- **The document card's empty rung** needs an install with no data behind it. **That is reachable, and this line used to say it was not**: `connectedDebugAndroidTest` uninstalls the app when it finishes, so installing afterward and not seeding is a genuine first run. It is how the empty notebook was walked on 2026-08-11. The route the guard refuses is a different one, and it is right to refuse it.
 - **#273's two template hands are provisional** and the owner has not looked at them.
 
 ### The tools the fixture grew, because five screens were unreachable without them
