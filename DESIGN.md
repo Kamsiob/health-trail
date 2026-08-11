@@ -396,6 +396,8 @@ This is checked mechanically by the overflow audit in section 16, at both font s
 
 **Depth is tab bar, then section, then detail, and stops.** Adding and editing are **sheets over where you stand, never a fourth level.**
 
+**A sheet holds one question, which is what decides sheet or screen.** Section 7 already says it of the component: one question per sheet, per law 3. So recording how somebody answered, moving a project along its road, writing down a date, logging a call and editing one step are sheets, and **a form with several fields is a screen at the same depth**, not a fourth level and not a sheet somebody cannot reach the bottom of. Adding a person, a medication, an appointment, a bill, a document, a standing instruction or a milestone are screens for that reason: at font scale 2.0 a sheet holding eight fields is one the person is stuck in, which is the failure section 7 names when it says a sheet scrolls.
+
 **Folds open in place** rather than on a new screen, unless what they hold exceeds a screenful.
 
 **Every list ends in an add affordance in context**, prefilled with the context it was opened from, and the global gold capture exists everywhere besides it.
