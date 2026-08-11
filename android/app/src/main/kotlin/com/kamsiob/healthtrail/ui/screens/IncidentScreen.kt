@@ -33,6 +33,7 @@ import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -241,6 +242,17 @@ fun IncidentScreen(
     people: List<Repository.Person>,
     documents: List<Repository.Document>,
     onOpenPerson: (Repository.Person) -> Unit,
+    /**
+     * Opens one of the entries on the thread.
+     *
+     * **The other end of a link that only went one way**, #46 and rule 18. An
+     * entry opens the incident it belongs to, and the incident could show its
+     * entries and not open them, so somebody reading the thread and wanting the
+     * whole of one had to leave and find it in the trail. Every other screen
+     * that draws entry cards, a person's, a thread's, a chapter's and a prep
+     * sheet's, already opens them.
+     */
+    onOpenEntry: (Repository.TrailEntry) -> Unit,
     onAdd: () -> Unit,
     /**
      * Hands this thread to the system share sheet as a readable document.
@@ -383,7 +395,15 @@ fun IncidentScreen(
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
                                 .clip(Radius.card)
-                                .background(colors.card)
+                                // **`openableByTap`, which paints the surface
+                                // as well as taking the tap**, so the card
+                                // answers a finger the way every other entry
+                                // card in the app does. 5.14 and #46.
+                                .openableByTap(
+                                    label = strings["prep.change.open"],
+                                    onTap = { onOpenEntry(entry) },
+                                    resting = colors.card,
+                                )
                                 .padding(Space.cardPadding),
                         ) {
                             val date = entry.occurredEdtf?.takeIf { it.isNotBlank() }

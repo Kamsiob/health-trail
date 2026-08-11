@@ -2736,6 +2736,11 @@ fun NotebookShell(
                         incidentsOpen = false
                         openPerson = person
                     },
+                    // **The incident stays open underneath**, so somebody who
+                    // reads one entry and comes back is where they were rather
+                    // than two taps away from it. Rule 18 and #46, and it is
+                    // the same choice the prep sheet already makes.
+                    onOpenEntry = { entry -> openEntry = entry.id },
                     onAdd = {
                         // **Carries the incident forward rather than asking
                         // again.** Part Two: a prefill is a default the person
