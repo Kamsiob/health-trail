@@ -2608,6 +2608,32 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D142. The grid files are the authority on measurement, and the built screens do not match them
+
+**Date:** 2026-08-11. **Raised by:** the owner, from looking at the app on the phone against the drawings.
+
+**The finding.** Built screens drift from the grid files on spacing, elevation, type scale, and composition. **A screen can pass the costume audit, the overflow audit, and the judgment check and still not look like the drawing it was approved from**, because those three ask whether a screen is internally coherent and none of them asks whether it matches what was approved.
+
+**The mechanical cause, which is why this is a system problem rather than a series of mistakes.**
+
+1. **`DESIGN.md` carries the direction in prose and the grid files carry the measurements.** A screen built by reading this document alone inherits the direction and never sees the numbers. Nothing in the process forced the builder to open the grid.
+2. **`CLAUDE.md`'s pointers into `DESIGN.md` were all stale**, #344, so a session following rule 22 to the component library landed on Voice. That is fixed and it was compounding this.
+3. **Compose Material 3 supplies its own defaults wherever a token is not explicitly applied.** A component that looks finished can be wearing Material's shape, elevation, or typography rather than this app's, and nothing about it looks wrong on its own.
+
+**The decision.**
+
+- **The grids are authoritative on measurement.** Spacing, radius, elevation, type scale, and composition are read off the grid for the screen being built.
+- **`DESIGN.md` names tokens and stops restating their values screen by screen.** A value written in two places drifts in one of them and nobody can tell which is current.
+- **Where prose and a grid disagree on a number, the grid wins** and the prose is corrected.
+- **A fidelity check joins the closing conditions of every screen issue**, section 16.6: the device screenshot beside the grid's drawing of that screen, compared on spacing, type scale, radius and elevation, and composition.
+- **The theme is audited for hardcoded values and inherited Material defaults** that should come from a token.
+
+**What this is not.** It is not a redesign and it authorizes none. **Everything it asks for was approved already**; it asks the built screens to match it.
+
+**Retroactive, per rule 14**, and that is the expensive half. The bar did not change, the enforcement did, and every screen already built is in scope.
+
+---
+
 ---
 
 ### B1. Commit signing. Resolved 2026-07-31

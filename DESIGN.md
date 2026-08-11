@@ -10,6 +10,10 @@ This document is the binding source of truth for every visual, motion, and copy 
 | `reference/projects-grid.html` | **The Projects tab**, and every screen, sheet, and component belonging to it | Eighteen screens |
 | `reference/today-grid.html` | **The Today tab**, and every screen, sheet, and component belonging to it | Ten screens, plus the card catalog |
 
+**The grid files are the authority on measurement, and this document is the authority on direction.** Spacing, radius, elevation, type scale, and composition are read off the grid for the screen being built. **This document names the tokens and does not restate their values screen by screen**, because a value written in two places drifts in one of them and nobody can tell which is current. Where prose here and a grid disagree on a number, the grid wins and the prose is corrected. D142.
+
+**That division is what the fidelity check in 16.6 exists to hold.** A screen built from the prose alone inherits the direction and loses the execution, and it can pass the costume audit, the overflow audit, and the judgment check while not looking like the drawing.
+
 **The two surface grids extend v4; they do not replace it.** The identity, the five laws, the six costumes, the tokens, the interaction grammar, and everything else in this document stand in full and govern both surfaces. **Where the v4 grid drew Today or Projects, those specific drawings are superseded**; every other screen in it is untouched. Adopted 2026-08-04 on the owner's instruction, recorded as D106.
 
 **Sections 20 and 21 encode those two grids in this document's own words**, in full, because a document that points at a file is a document that goes stale beside it. A cold session builds both surfaces from this repository alone.
@@ -734,7 +738,8 @@ Checked rather than remembered, in this order.
 8. **Every state in 13.3 exists**, including the empty one.
 9. **Accessibility, section 12, verified with the settings actually on.**
 10. **Both themes.**
-11. **A device screenshot is committed**, checked first for real names and real contact details, and the screen is logged per 13.4.
+11. **It matches its grid**, 16.6. Side by side against the grid's drawing of that screen: spacing, radius, elevation, type scale, and composition.
+12. **A device screenshot is committed**, checked first for real names and real contact details, and the screen is logged per 13.4.
 
 **A screenshot that looks fine is not proof of any of this**, because it does not tell you what the screen does at another font size, in the other direction, with the year five fixture loaded, or with the keyboard up.
 
@@ -745,6 +750,23 @@ Checked rather than remembered, in this order.
 **Step 1 covers both themes, and no screen conversion begins before it completes.** D87. Every token, light and dark, including all six tab hues with their washes and ink variants, exists and is verified on the device at both themes first. **Converting screens against a light-only token set gives every converted screen a deferred second review**, which is the half-converted state step 1 exists to prevent. It does not save the work, it multiplies it by the number of screens.
 
 ---
+
+### 16.6 The fidelity check, against the grid rather than against the prose
+
+**Added 2026-08-11, D142.** A screen can pass every audit in this section and still not look like the drawing it was approved from. Three of the four checks above ask whether a screen is internally coherent; **none of them asks whether it matches what was approved.**
+
+**How to run it.** Open the grid file's drawing of that screen beside a device screenshot of it, at the same width, and compare in this order:
+
+1. **Spacing.** The gaps between blocks and the screen's own margins, against section 6 and the drawing.
+2. **Type scale.** Which step each line is on. **The jump from 21sp to 13sp is meant to be felt at arm's length**, per 5.1, and closing it to make a screen look balanced is the most common way to lose the hierarchy.
+3. **Radius and elevation.** Cards, pills, sheets, and whether anything is carrying a shadow the drawing does not give it.
+4. **Composition.** What sits where, what is grouped with what, and what the eye lands on first.
+
+**Where they differ, the grid is right unless a departure is recorded in 15.1 with its reason.** That is the existing rule and this check is what makes it enforceable rather than aspirational.
+
+**The mechanical cause, so this is fixed rather than repeated.** Direction lives in prose here and measurement lives in the grids, so a screen built by reading this document alone never sees the numbers. Compounding it, **Compose Material 3 supplies its own defaults wherever a token is not explicitly applied**, so a component that looks finished may be wearing Material's shape, elevation, or typography rather than this app's. A theme audit for inherited defaults is part of this work.
+
+**This does not redesign anything.** Everything it asks for was approved already. It asks the built screens to match it.
 
 ## 17. Banned, because they are current AI-design tells
 
