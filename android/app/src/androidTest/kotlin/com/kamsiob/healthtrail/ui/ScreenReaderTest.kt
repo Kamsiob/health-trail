@@ -83,7 +83,12 @@ import com.kamsiob.healthtrail.ui.screens.AppearanceScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
 import com.kamsiob.healthtrail.ui.screens.AddMilestoneScreen
 import com.kamsiob.healthtrail.ui.screens.ConflictsScreen
+import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
+import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
+import com.kamsiob.healthtrail.ui.screens.StageSheet
+import com.kamsiob.healthtrail.ui.screens.StandingSheet
+import com.kamsiob.healthtrail.ui.screens.StepEditSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectSetupScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectPaperworkScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectPeopleScreen
@@ -667,6 +672,82 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("a project's setup")
+    }
+
+
+    // **The project sheets, which are their own windows**, and the reason this
+    // test walks every root rather than the root: a sheet asked for as "the"
+    // root is a screen the test cannot see, and a screen it cannot see is one
+    // it passes for free.
+
+    @Test
+    fun oneStepOpenedLabelsEverything() {
+        compose.show {
+            StepEditSheet(
+                step = Repository.ProjectStep(
+                    "x1", "Gather the statements", null, "Three months of them", null, "Me",
+                ),
+                canMoveEarlier = true,
+                canMoveLater = true,
+                onSave = { _, _ -> },
+                onMove = {},
+                onRemove = {},
+                onDismiss = {},
+            )
+        }
+        assertEverythingIsLabeled("one step, opened")
+    }
+
+    @Test
+    fun movingAlongTheRoadLabelsEverything() {
+        compose.show {
+            StageSheet(
+                stages = listOf(
+                    Repository.ProjectStage("s1", "Applied", 0, "2026-03-05", 1L),
+                    Repository.ProjectStage("s2", "In review", 1, null, null),
+                ),
+                currentStageId = "s1",
+                onPick = { _, _ -> },
+                onDismiss = {},
+            )
+        }
+        assertEverythingIsLabeled("moving a project along the road")
+    }
+
+    @Test
+    fun recordingWhereItStandsLabelsEverything() {
+        compose.show {
+            StandingSheet(
+                people = listOf("The county", "Denise Alvarado"),
+                onSave = { _, _, _ -> },
+                onDismiss = {},
+            )
+        }
+        assertEverythingIsLabeled("recording where a project stands")
+    }
+
+    @Test
+    fun writingDownADateLabelsEverything() {
+        compose.show {
+            ProjectDateSheet(
+                kinds = listOf("Decision expected", "Hearing"),
+                onSave = { _, _, _ -> },
+                onDismiss = {},
+            )
+        }
+        assertEverythingIsLabeled("writing down a project date")
+    }
+
+    @Test
+    fun loggingACallLabelsEverything() {
+        compose.show {
+            LogCallSheet(
+                projectName = "The waiver application",
+                onSave = { _, _ -> },
+                onDismiss = {},
+            )
+        }
+        assertEverythingIsLabeled("logging a call on a project")
     }
 
     @Test
