@@ -1706,3 +1706,11 @@ Six strings, four languages, six plural forms each in Arabic. **When you add a s
 The other ten catalog claims hold, checked by following each to its source: the emergency card's field labels are all `strings[...]`, More's destinations are, a standing instruction's tag is, the medication facts are, and the instruction starters and progress presets are catalog content the app ships. Every `ChipPicker` and `ChoiceRow` caller isolates before handing a value down, so the "one level up" claims hold too.
 
 **A decision written next to the code can still be wrong. What it cannot be is invisible**, which is the whole of D139: it took ten minutes to audit forty of them because they were all in the diff.
+
+### The partially filled state, which every fixture in the repository hides
+
+**Every fixture in `ScreenReaderTest` is a full record**, and the file says why in its own comment: an empty screen has few nodes to label and would pass for free. That reasoning is right and it left the middle out. A person with a name and nothing else, a medication somebody wrote down standing in a hallway holding a bottle: **rule 13 says that is not a degraded record, it is the ordinary one on the day it is created.**
+
+**It is also where a reader is likeliest to meet a node that announces nothing**, because an absent value renders as a fallback in one place and as nothing at all in another, and only one of those speaks. Two cases now walk it.
+
+**And the export that fails had no case at all.** Ready, working and both finished faces were covered; the failure was not. Export is the only recovery path this app has for its own encryption, per D24, so that is the state on that screen that matters most.
