@@ -688,6 +688,47 @@ class Repository private constructor(
     )
 
     /**
+     * Starts tracking something the catalog never heard of.
+     *
+     * **Sixteen presets is a good starting set and it is not the world**, and
+     * until now they were the only way in, which made the sixteen read as the
+     * only sixteen things that count. A family weighing a wound, counting good
+     * days, or writing down how far she walked to the door had no way to say
+     * so. #203, and it is the same argument `createProject` already makes about
+     * sixteen catalog processes.
+     *
+     * **`preset_id` stays null**, which is what the schema already means by
+     * something the person set up themselves, and it is what the measurement
+     * screen reads to know there is no preset behind it.
+     *
+     * **`advice_risk` is low and `style` is the default**, because those two
+     * exist to let the rendering layer hold the content rules, and a thing the
+     * person named is not one the catalog has made any claim about. Nothing
+     * here is ever shown, ranged, or turned into a warning: rule 2.
+     */
+    suspend fun createOwnMeasure(
+        subjectId: String,
+        name: String,
+        unit: String?,
+        /** Words rather than a number, which is a different column, not a flag. */
+        isText: Boolean,
+        sortIndex: Int = 0,
+    ): String = insert(
+        "measure",
+        mapOf(
+            "subject_id" to subjectId,
+            "name" to name.trim(),
+            "preset_id" to null,
+            "unit" to unit?.trim()?.ifBlank { null },
+            "style" to if (isText) "observational" else "continuous",
+            "gap_tolerance" to "moderate",
+            "advice_risk" to "low",
+            "show_medication_markers" to 0,
+            "sort_index" to sortIndex,
+        ),
+    )
+
+    /**
      * Records one measurement.
      *
      * **A number and words are different columns, not one column that holds

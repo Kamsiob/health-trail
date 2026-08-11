@@ -3808,12 +3808,28 @@ fun NotebookShell(
                     // A measure is created the first time the person records
                     // one, never at setup. A notebook that arrives with sixteen
                     // empty charts is a list of things somebody has not done.
-                    val measureId = measurement.measureId ?: repository.createMeasure(
-                        subjectId = subject.id,
-                        preset = measurement.preset!!,
-                        unit = measurement.unit,
-                        sortIndex = measures.size,
-                    )
+                    // **Three ways in, and the third is the person's own.**
+                    // Sixteen presets was the whole catalog and it is not the
+                    // world, #203, which is the same argument createProject
+                    // already makes about sixteen catalog processes.
+                    val own = measurement.own
+                    val measureId = measurement.measureId
+                        ?: if (own != null) {
+                            repository.createOwnMeasure(
+                                subjectId = subject.id,
+                                name = own.name,
+                                unit = own.unit,
+                                isText = own.isText,
+                                sortIndex = measures.size,
+                            )
+                        } else {
+                            repository.createMeasure(
+                                subjectId = subject.id,
+                                preset = measurement.preset!!,
+                                unit = measurement.unit,
+                                sortIndex = measures.size,
+                            )
+                        }
                     repository.recordMeasurement(
                         measureId = measureId,
                         number = measurement.number,

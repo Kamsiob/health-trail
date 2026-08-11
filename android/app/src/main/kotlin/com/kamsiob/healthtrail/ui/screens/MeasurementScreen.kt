@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +39,7 @@ import java.time.LocalDate
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -59,14 +61,31 @@ object MeasurementTags {
     const val RECORD_ONLY = "measurement_record_only"
     fun preset(id: String) = "measurement_preset_$id"
     fun measure(id: String) = "measurement_measure_$id"
+    const val OWN = "measurement_own"
+    const val OWN_NAME = "measurement_own_name"
+    const val OWN_UNIT = "measurement_own_unit"
+    const val OWN_NUMBER = "measurement_own_number"
+    const val OWN_TEXT = "measurement_own_text"
+    const val OWN_START = "measurement_own_start"
 }
 
 /** What a recorded measurement carries. Every part of it except the measure can be empty. */
+/** Something the person named, which no preset covers. #203. */
+data class OwnMeasure(val name: String, val unit: String?, val isText: Boolean)
+
 data class MeasurementDraft(
     /** Set when the person picked something this notebook already tracks. */
     val measureId: String?,
-    /** Set when they started tracking something new. */
+    /** Set when they started tracking something new from the catalog. */
     val preset: TemplateCatalog.Preset?,
+    /**
+     * Set when they named it themselves.
+     *
+     * **Sixteen presets is a good starting set and it is not the world.** Until
+     * #203 they were the only way in, which made the sixteen read as the only
+     * sixteen things worth writing down.
+     */
+    val own: OwnMeasure? = null,
     val unit: String?,
     val number: Double?,
     val text: String,
@@ -111,31 +130,47 @@ fun MeasurementScreen(
 ) {
     var chosenMeasure by remember { mutableStateOf<Repository.Measure?>(null) }
     var chosenPreset by remember { mutableStateOf<TemplateCatalog.Preset?>(null) }
+    // **Naming it yourself is a third answer to the first question**, not a
+    // second screen: law 3 asks one question at a time and "what are you
+    // tracking" is still the question. #203.
+    var naming by remember { mutableStateOf(false) }
+    var chosenOwn by remember { mutableStateOf<OwnMeasure?>(null) }
 
     val measure = chosenMeasure
     val preset = chosenPreset
+    val own = chosenOwn
 
-    if (measure == null && preset == null) {
+    if (naming) {
+        NameSomethingElse(
+            onStart = { chosenOwn = it; naming = false },
+            // Back to the question rather than out of the flow, which is the
+            // same choice the value stage already makes.
+            onCancel = { naming = false },
+        )
+    } else if (measure == null && preset == null && own == null) {
         PickWhatToTrack(
             measures = measures,
             presets = presets,
             onPickMeasure = { chosenMeasure = it },
             onPickPreset = { chosenPreset = it },
+            onNameYourOwn = { naming = true },
             onCancel = onCancel,
         )
     } else {
         RecordValue(
-            name = measure?.name ?: preset!!.name,
+            name = measure?.name ?: preset?.name ?: own!!.name,
             units = when {
                 measure != null -> listOfNotNull(measure.unit)
-                else -> preset!!.unitOptions
+                preset != null -> preset.unitOptions
+                else -> listOfNotNull(own!!.unit)
             },
-            isText = measure?.isText ?: preset!!.isText,
+            isText = measure?.isText ?: preset?.isText ?: own!!.isText,
             onSave = { unit, number, text, occurred, note ->
                 onSave(
                     MeasurementDraft(
                         measureId = measure?.id,
                         preset = preset,
+                        own = own,
                         unit = unit,
                         number = number,
                         text = text,
@@ -147,7 +182,7 @@ fun MeasurementScreen(
             // Back to the question rather than out of the flow, since getting
             // here means the person already decided to record something. The
             // question's own cancel is the way out, one tap further.
-            onCancel = { chosenMeasure = null; chosenPreset = null },
+            onCancel = { chosenMeasure = null; chosenPreset = null; chosenOwn = null },
         )
     }
 }
@@ -165,6 +200,7 @@ private fun PickWhatToTrack(
     presets: List<TemplateCatalog.Preset>,
     onPickMeasure: (Repository.Measure) -> Unit,
     onPickPreset: (TemplateCatalog.Preset) -> Unit,
+    onNameYourOwn: () -> Unit,
     onCancel: () -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -228,6 +264,22 @@ private fun PickWhatToTrack(
                     }
                 }
 
+                // **Under the catalog rather than beside it**, because after
+                // the first week the answer is usually one of the chips above
+                // and this is the rarer errand. It is not hidden: 13.5 calls a
+                // capability only its author can find unfinished, and sixteen
+                // presets with no way past them was exactly that.
+                item {
+                    Spacer(Modifier.height(Space.sectionGap))
+                    GroupHeader("measurement.own")
+                    Spacer(Modifier.height(Space.headerGap))
+                    QuietButton(
+                        label = strings["measurement.own.action"],
+                        onClick = onNameYourOwn,
+                        modifier = Modifier.testTag(MeasurementTags.OWN),
+                    )
+                }
+
                 item { Spacer(Modifier.height(Space.s)) }
             }
 
@@ -240,6 +292,145 @@ private fun PickWhatToTrack(
                     .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
                     .testTag(MeasurementTags.CANCEL),
+            )
+
+            Spacer(Modifier.height(Space.l))
+        }
+    }
+}
+
+/**
+ * Naming something the catalog never heard of. #203.
+ *
+ * **One question at a time**, per law 3: what it is called, whether it is a
+ * number or words, and a unit only when a number could have one. Nothing here
+ * is required except the name, because without a name there is nothing to put
+ * the value against.
+ *
+ * **A number and words are different things and both are kept.** That is the
+ * schema's own distinction, not a flag on one column, and this is where the
+ * person decides which they are writing down. "Ate about half her lunch" is
+ * not a number and storing it as one would either lose it or invent a figure
+ * nobody gave.
+ *
+ * **The app makes no claim about anything named here.** `advice_risk` is low
+ * and the style is the plain one, which is what lets the rendering layer hold
+ * the content rules: no range, no threshold, no color by value, ever.
+ */
+@Composable
+private fun NameSomethingElse(
+    onStart: (OwnMeasure) -> Unit,
+    onCancel: () -> Unit,
+) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+
+    var name by rememberSaveable { mutableStateOf("") }
+    var unit by rememberSaveable { mutableStateOf("") }
+    var isText by rememberSaveable { mutableStateOf(false) }
+
+    Surface(modifier = Modifier.fillMaxSize(), color = colors.paper) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .imePadding()
+                .testTag(MeasurementTags.OWN),
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Space.screenHorizontal),
+            ) {
+                Spacer(Modifier.height(Space.l))
+                Text(
+                    text = strings["measurement.own.name"],
+                    style = HealthTrail.type.displayL,
+                    color = colors.ink,
+                )
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = strings["measurement.own.lead"],
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
+
+                Spacer(Modifier.height(Space.l))
+                HealthTrailTextField(
+                    label = strings["measurement.own.name"],
+                    value = name,
+                    onValueChange = { name = it },
+                    hint = strings["measurement.own.name.hint"],
+                    fieldTestTag = MeasurementTags.OWN_NAME,
+                )
+
+                Spacer(Modifier.height(Space.m))
+                ChoiceChipGroup(label = strings["measurement.own.kind"]) {
+                    ChoiceChip(
+                        label = strings["measurement.own.kind.number"],
+                        selected = !isText,
+                        onClick = { isText = false },
+                        modifier = Modifier.testTag(MeasurementTags.OWN_NUMBER),
+                    )
+                    ChoiceChip(
+                        label = strings["measurement.own.kind.text"],
+                        selected = isText,
+                        onClick = { isText = true },
+                        modifier = Modifier.testTag(MeasurementTags.OWN_TEXT),
+                    )
+                }
+
+                // **The unit only where a unit could mean anything.** Words
+                // have no units, and a field asking for one under "how the
+                // wound looks" is the app not listening to the answer it just
+                // got.
+                if (!isText) {
+                    Spacer(Modifier.height(Space.m))
+                    HealthTrailTextField(
+                        label = strings["measurement.unit"],
+                        value = unit,
+                        onValueChange = { unit = it },
+                        hint = strings["measurement.own.unit.hint"],
+                        fieldTestTag = MeasurementTags.OWN_UNIT,
+                    )
+                }
+
+                Spacer(Modifier.height(Space.xl))
+            }
+
+            Spacer(Modifier.height(Space.m))
+
+            FilledButton(
+                label = strings["measurement.own.start"],
+                onClick = {
+                    onStart(
+                        OwnMeasure(
+                            name = name.trim(),
+                            unit = unit.trim().takeIf { it.isNotBlank() && !isText },
+                            isText = isText,
+                        ),
+                    )
+                },
+                // **A name is the one thing this cannot do without**, because
+                // there is nothing to put the value against otherwise. Rule 13
+                // holds everywhere else on this screen: the unit is optional
+                // and nothing else is asked at all.
+                enabled = name.isNotBlank(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Space.screenHorizontal)
+                    .testTag(MeasurementTags.OWN_START),
+            )
+
+            Spacer(Modifier.height(Space.sm))
+
+            TextAction(
+                label = strings["common.cancel"],
+                onClick = onCancel,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Space.screenHorizontal),
             )
 
             Spacer(Modifier.height(Space.l))

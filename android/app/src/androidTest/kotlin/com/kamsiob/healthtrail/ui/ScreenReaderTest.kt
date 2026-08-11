@@ -6,6 +6,7 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isRoot
@@ -69,6 +70,7 @@ import com.kamsiob.healthtrail.ui.screens.CaptureSheet
 import com.kamsiob.healthtrail.ui.screens.DisclaimerScreen
 import com.kamsiob.healthtrail.ui.screens.Emphasis
 import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
+import com.kamsiob.healthtrail.ui.screens.MeasurementTags
 import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
@@ -1019,6 +1021,25 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("measurement, what are you tracking")
+    }
+
+    /**
+     * **The third answer to "what are you tracking"**, reached by a tap because
+     * it is a face of the same screen rather than a screen of its own. #203.
+     */
+    @Test
+    fun namingSomethingToTrackLabelsEverything() {
+        val presets = runBlocking { TemplateCatalog.presets(context) }
+        compose.show {
+            MeasurementScreen(
+                measures = emptyList(),
+                presets = presets,
+                onSave = {},
+                onCancel = {},
+            )
+        }
+        compose.onNodeWithTag(MeasurementTags.OWN).performScrollTo().performClick()
+        assertEverythingIsLabeled("naming something to track")
     }
 
     @Test
