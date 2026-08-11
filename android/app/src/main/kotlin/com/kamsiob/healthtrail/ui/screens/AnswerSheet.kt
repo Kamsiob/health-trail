@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -115,7 +116,11 @@ fun AnswerSheet(
             Spacer(Modifier.height(Space.s))
             // The question shown back, so somebody answering three of them in a
             // row is never answering the wrong one.
-            Text(text = question.text, style = HealthTrail.type.bodyL, color = colors.ink2)
+            Text(
+                text = Bidi.isolate(question.text),
+                style = HealthTrail.type.bodyL,
+                color = colors.ink2,
+            )
 
             Spacer(Modifier.height(Space.s))
             Text(

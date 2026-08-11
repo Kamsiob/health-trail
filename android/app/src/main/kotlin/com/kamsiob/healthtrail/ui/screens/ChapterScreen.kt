@@ -274,8 +274,9 @@ fun ChapterScreen(
                                     eyebrow = entry.occurredEdtf?.takeIf { it.isNotBlank() }
                                         ?.let { EventDateText.render(strings, it) },
                                     title = entry.title?.takeIf { it.isNotBlank() }
+                                        ?.let { Bidi.isolate(it) }
                                         ?: strings[kindNameKey(entry.kind)],
-                                    body = entry.body,
+                                    body = entry.body?.let { Bidi.isolate(it) },
                                 )
                                 Spacer(Modifier.height(Space.cardGap))
                             }

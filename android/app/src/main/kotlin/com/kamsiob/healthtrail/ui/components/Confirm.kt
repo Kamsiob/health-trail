@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -104,7 +105,7 @@ fun ConfirmRemoveSheet(
             Spacer(Modifier.height(Space.s))
             // Shown back so somebody who opened the wrong thing sees it before
             // the tap that matters, rather than after.
-            Text(text = what, style = HealthTrail.type.bodyL, color = colors.ink)
+            Text(text = Bidi.isolate(what), style = HealthTrail.type.bodyL, color = colors.ink)
 
             Spacer(Modifier.height(Space.s))
             Text(

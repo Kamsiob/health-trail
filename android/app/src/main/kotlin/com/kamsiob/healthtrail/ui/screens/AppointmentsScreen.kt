@@ -172,7 +172,7 @@ private fun AppointmentRow(
     // list of appointments by, and it is data so it is Mono and tabular. Where
     // it is and any note become the second line.
     DenseRow(
-        title = appointment.title,
+        title = Bidi.isolate(appointment.title),
         subtitle = listOfNotNull(
             appointment.locationNote?.takeIf { it.isNotBlank() },
             appointment.notes?.takeIf { it.isNotBlank() },
