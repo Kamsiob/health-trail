@@ -195,7 +195,9 @@ private fun IncidentSpineRow(
             ) {
                 val date = incident.reportedEdtf?.takeIf { it.isNotBlank() }
                     ?.let { EventDateText.render(strings, it) }
-                val eyebrow = listOfNotNull(date, incident.chapterName).joinToString("  ")
+                // Isolated and joined, because a date in one script beside a
+                // chapter name in another is two runs and reorders without it.
+                val eyebrow = Bidi.join(listOfNotNull(date, incident.chapterName))
                 if (eyebrow.isNotEmpty()) {
                     Text(eyebrow, style = HealthTrail.type.mono, color = colors.ink2)
                     Spacer(Modifier.height(Space.xs))

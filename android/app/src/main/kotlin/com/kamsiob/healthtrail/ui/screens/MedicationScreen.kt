@@ -245,11 +245,15 @@ fun MedicationScreen(
                                 .testTag(MedicationTags.event(event.id))
                                 .padding(Space.cardPadding),
                         ) {
-                            val eyebrow = listOfNotNull(
-                                event.occurredEdtf?.takeIf { it.isNotBlank() }
-                                    ?.let { EventDateText.render(strings, it) },
-                                event.chapterName?.takeIf { it.isNotBlank() },
-                            ).joinToString("  ")
+                            // Same as the incident's, and for the same
+                            // reason: a date and a chapter name are two runs.
+                            val eyebrow = Bidi.join(
+                                listOfNotNull(
+                                    event.occurredEdtf?.takeIf { it.isNotBlank() }
+                                        ?.let { EventDateText.render(strings, it) },
+                                    event.chapterName?.takeIf { it.isNotBlank() },
+                                ),
+                            )
                             if (eyebrow.isNotEmpty()) {
                                 Text(
                                     text = eyebrow,

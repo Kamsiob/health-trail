@@ -104,7 +104,10 @@ fun ProjectRoadScreen(
                     description = strings(
                         "project.road.spoken",
                         "count" to stages.size,
-                        "names" to stages.joinToString(", ") { it.name },
+                        // Spoken, and still isolated: the marks are silent to
+                        // a reader and they are what keeps a family's own stage
+                        // names in their own direction on the screen behind it.
+                        "names" to Bidi.join(stages.map { it.name }, separator = ", "),
                     ),
                     size = RoadSize.FULL,
                     modifier = Modifier.testTag(ProjectRoadTags.STRIP),

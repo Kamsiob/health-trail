@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.TemplateCatalog
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DictatableField
@@ -128,7 +129,7 @@ fun StartProjectPreviewSheet(
                     description = strings(
                         "project.preview.road.spoken",
                         "count" to template.stages.size,
-                        "names" to template.stages.joinToString(", "),
+                        "names" to Bidi.join(template.stages, separator = ", "),
                     ),
                     size = RoadSize.FULL,
                     modifier = Modifier.testTag(StartPreviewTags.ROAD),
