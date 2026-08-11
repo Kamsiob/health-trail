@@ -359,8 +359,11 @@ private fun UnfiledRow(
         // The entry's own words, per the entry screen's rule. An untitled entry
         // is the ordinary case here and it leads with what the person wrote
         // rather than with a stock phrase at the largest size on the card.
+        // **Isolated**, per `DESIGN.md` 15 and #226: this is the entry's own
+        // words, and a Latin sentence inside an Arabic layout lays out against
+        // the surrounding direction rather than within its own box.
         Text(
-            text = heading.text,
+            text = Bidi.isolate(heading.text),
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
@@ -368,7 +371,11 @@ private fun UnfiledRow(
         if (heading.repeatBody) {
             entry.body?.takeIf { it.isNotBlank() }?.let { body ->
                 Spacer(Modifier.height(Space.xs))
-                Text(text = body, style = HealthTrail.type.bodyM, color = colors.ink2)
+                Text(
+                    text = Bidi.isolate(body),
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
             }
         }
 

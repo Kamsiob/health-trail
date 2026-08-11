@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.Distance
@@ -840,7 +841,16 @@ private fun TrailRow(entry: Repository.TrailEntry, onOpen: () -> Unit) {
         // A blank title is normal and always has been: the capture form requires
         // nothing. The kind is what the app knows for certain, so the row never
         // shows an empty line where the subject should be.
-        Text(text = title, style = HealthTrail.type.bodyL, color = colors.ink)
+        // **Isolated, because it is what somebody typed.** `DESIGN.md` 15: the
+        // person's own words are isolated wherever they are rendered, not only
+        // where they are joined. A Latin title in an Arabic layout is a run
+        // going the other way, and without an isolate its final period lands on
+        // the wrong side. This is the most read row in the app. #226.
+        Text(
+            text = Bidi.isolate(title),
+            style = HealthTrail.type.bodyL,
+            color = colors.ink,
+        )
 
         if (entry.threads.isNotEmpty()) {
             Spacer(Modifier.height(Space.xs))
@@ -885,7 +895,11 @@ private fun ThreadTrace(threads: List<Repository.CareThread>) {
                     index = thread.colorIndex,
                 )
                 Spacer(Modifier.width(Space.s))
-                Text(text = thread.label, style = HealthTrail.type.bodyS, color = colors.ink2)
+                Text(
+                    text = Bidi.isolate(thread.label),
+                    style = HealthTrail.type.bodyS,
+                    color = colors.ink2,
+                )
             }
         }
     }
