@@ -3,11 +3,19 @@
 [![CI](https://github.com/Kamsiob/health-trail/actions/workflows/ci.yml/badge.svg)](https://github.com/Kamsiob/health-trail/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-2F6F8F)](LICENSE)
 [![Content license](https://img.shields.io/badge/templates-CC%20BY--SA%204.0-4E8A5C)](templates/LICENSE-CONTENT.md)
-[![Status](https://img.shields.io/badge/status-Phase%201%2C%20not%20yet%20installable-D99D2B)](https://github.com/Kamsiob/health-trail/issues/1)
+[![Status](https://img.shields.io/badge/status-in%20build%2C%20not%20yet%20installable-D99D2B)](https://github.com/Kamsiob/health-trail/issues/321)
 
 **A private care notebook for family caregivers. Everything stays on your phone.**
 
-> **Not installable yet.** This is being built in the open. There is no release, no APK, and no store listing. Phase 0, the foundation and the data contract, is substantially built. Phase 1, the screens people actually use, is where the work is. The [board](https://github.com/users/Kamsiob/projects/2) has the detail and `HANDOFF.md` is the current state in full.
+> **Not installable yet.** This is being built in the open. There is no release, no APK, and no store listing.
+>
+> **What is built:** the notebook and its twelve sections, capture, the trail, chapters and threads, appointments and prep, incidents, standing instructions, money, projects, documents, Today, universal search, and an encrypted export that restores on another phone. 75 screen files, and every one of them has been opened on a real device.
+>
+> **What is not:** scoped search inside a section, the assembled view, the PDF engine, the home screen widget and the share sheet, and the release itself. The document choice inside the capture sheet says plainly that it is not built rather than failing quietly.
+>
+> **Version one ships in English.** Spanish, Chinese, and Arabic are built and waiting on a native speaker who understands the American care system, for the reason in [DECISIONS.md](DECISIONS.md) D141.
+>
+> Issue [#321](https://github.com/Kamsiob/health-trail/issues/321) is the order of work, the [board](https://github.com/users/Kamsiob/projects/2) has the detail, and `HANDOFF.md` is the current state in full.
 
 ---
 
@@ -36,7 +44,7 @@ Real captures from the running app on a Pixel 10 Pro XL. **Nothing here is a moc
 | **A call, logged.** Every field optional. "Roughly is fine" for the date, and the button says **Save what you have**. | **Nothing gets filed for you.** Anything saved without a home waits here, with a suggestion you confirm. | **Arabic, on the device.** Mirrored right to left, real glyphs. Right to left was built in from the first screen rather than added at the end. |
 | **Dark, on a phone set to light.** The theme is the app's own setting, not an inherited one. | **Chinese**, in the system CJK face. Nothing is bundled for it, because Android already ships a good one. | **What backs a request up.** Every standing instruction says whether a federal rule requires it or whether it is something nobody has to agree to. |
 
-`reference/screen-grid.html` holds the 27 approved screens as the binding visual reference, and `DESIGN.md` holds the tokens, type scale, motion, and copy rules the built app is held to.
+**Three grid files are the binding visual reference**, and between them they are the authority on measurement: `reference/screen-grid.html` holds the 25 approved screens and governs generally, `reference/projects-grid.html` governs the Projects surface, and `reference/today-grid.html` governs Today. `DESIGN.md` holds the tokens, type scale, motion, and copy rules, and points at the grids for spacing, elevation, and composition rather than restating them.
 
 Every color pair in both themes is measured against the WCAG AA floors by `check_contrast.py` on every push.
 
@@ -46,7 +54,7 @@ Every color pair in both themes is measured against the WCAG AA floors by `check
 
 - **Capture that forgives, all six ways in.** A call, a visit, an incident, a measurement, a question for next time, and a document. **Every field is optional** and the button says "Save what you have". Rough dates are first-class: today, yesterday, this week, not sure, or a picked date.
 - **Dates that do not lie about their own precision.** Built on EDTF, the extended date format from ISO 8601-2. "August 2026" stays August 2026 and never quietly becomes August 1st. Unknown is a real value rather than a blank, and uncertainty is recorded separately from precision.
-- **All twelve notebook sections open onto real screens**, and all six ways in are built. Care team, medications, appointments, chapters, care threads, the trail, progress, documents, money, standing instructions, ask next time, and the emergency card. Anything saved can be corrected by tapping it or removed by holding it.
+- **All twelve notebook sections open onto real screens**, and all six ways in are built. Care team, medications, appointments, chapters, care threads, the trail, progress, documents, money, standing instructions, ask next time, and the emergency card. Anything saved can be corrected by tapping it, and removed from its own screen by an outlined "Remove this" that asks first. **Removal used to be a long press and is not any more**: a gesture nobody is told about is not a way to do something.
 - **Projects: the long processes**, from a catalog of sixteen. A Medicaid application, an appeal against a discharge, a records request. Each arrives with its ordered steps, because otherwise somebody learns the process one missed requirement at a time.
 - **Standing instructions that say what backs them up.** Every one carries a tag saying whether federal nursing home rules require it or whether it is a request nobody has to agree to, with the scope of those rules stated plainly.
 - **An emergency card designed to be handed to a paramedic.** Who to call, what they take, allergies and conditions, and what the signed paperwork says, quoted rather than interpreted.
@@ -57,7 +65,7 @@ Every color pair in both themes is measured against the WCAG AA floors by `check
 - **Nothing gets filed for you.** Anything saved without a home lands in an Unfiled tray, where the app reads the words you wrote, suggests a care thread, and waits for you to confirm. It never files on its own.
 - **A notebook with twelve sections that never move**, grouped and folded to the kind of care being given. A hospital stay brings appointments and the trail forward and folds money away; a different situation folds differently.
 - **Setup you can skip entirely.** Three questions, all optional. Skipping produces a working notebook. Answering "not sure yet" is a real answer that changes what the app asks you later.
-- **Four locales with right to left working**, English, Spanish, Chinese, and Arabic, verified by running the app in Arabic on a device rather than by reading the code.
+- **Right to left built in from the first screen rather than added at the end**, and verified by running the app on a device rather than by reading the code. **Four locale catalogs exist and one ships**: version one is English, and Spanish, Chinese, and Arabic wait for a native speaker, per D141.
 - **Light or dark, your choice.** Follow the phone, or pin the app to one regardless of what the phone is doing. It applies the moment you pick it.
 - **A summary of what changed since you were last here.** Today leads with it, in one line, and says so plainly when nothing has changed rather than leaving you to work that out from an empty screen.
 - **Universal search** across every section at once, from the top of Today.
@@ -78,7 +86,9 @@ The honest list. This section shrinks as things land.
 - **Everything connects, both ways.** Most of it does now. Three connections need columns the schema does not have yet: an incident knowing its project, a bill knowing the call where it was disputed, and a bill knowing the standing instruction it broke.
 - **Capture from outside the app**, as a widget, a quick settings tile, and a share sheet target.
 - **Automatic local backup** to a folder you choose, with no cloud involved.
-- **Language access for caregivers in the United States** who do not read English well. Ten languages chosen by limited English proficiency population. **This is language access, not international expansion:** the federal, Medicare, and Medicaid content is specific to this country, so translating for a Spanish speaker in Texas is right and presenting the same app to someone in Spain would be wrong.
+- **Language access for caregivers in the United States** who do not read English well. Spanish, Chinese, and Arabic are written and waiting on review; seven more are planned. **This is language access, not international expansion:** the federal, Medicare, and Medicaid content is specific to this country, so translating for a Spanish speaker in Texas is right and presenting the same app to someone in Spain would be wrong.
+- **The document choice in the capture sheet**, which currently says it is not built rather than pretending. Documents can be added from the Documents section today.
+- **Matching the grid files measurement for measurement.** The screens are built and they drift from the approved drawings on spacing, elevation, and type scale. Tracked as its own body of work rather than as polish.
 
 ## What it cannot do, and will not
 
@@ -123,7 +133,8 @@ android/      the Kotlin application.
 web/          a scaffold whose only job is to open the same schema, which is what
               stops the two platforms drifting. It has no features.
 tools/        the fixture generator, the compliance checks, and the build scripts.
-reference/    the 27 approved screens.
+reference/    the three grid files: 25 approved screens, plus the Projects and
+              Today surfaces. Authoritative on measurement.
 docs/         the roadmap's supporting notes, the bundled font licenses, and the
               device screenshots, which are real captures and never mockups.
 ```
