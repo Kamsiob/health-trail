@@ -147,6 +147,7 @@
   "notebook.count.progress": "{count, plural, =0 {Nada todavía} one {1 cosa registrada} other {# cosas registradas}}",
   "notebook.count.documents": "{count, plural, =0 {Nada todavía} one {1 documento} other {# documentos}}",
   "notebook.count.money": "{count, plural, =0 {Nada todavía} one {1 factura} other {# facturas}}",
+  "notebook.count.money.unsettled": "{amount} sin liquidar",
   "notebook.count.standing_instructions": "{count, plural, =0 {Nada todavía} one {1 instrucción} other {# instrucciones}}",
   "notebook.count.ask_next_time": "{count, plural, =0 {Nada todavía} one {1 pregunta} other {# preguntas}}",
   "notebook.group.people_and_care": "Personas y cuidados",

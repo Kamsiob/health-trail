@@ -83,6 +83,15 @@ data class SectionCount(
     val section: Repository.Section,
     val count: Int,
     val emphasis: Emphasis = Emphasis.STANDING,
+    /**
+     * What Money says instead of counting, when there is something unsettled.
+     *
+     * **The grid draws "$15,072.98 not settled"**, which is the number somebody
+     * opens Money to find; "6 bills" is true and is not it. #347. Null when
+     * nothing is unsettled, and the row counts bills as usual, because a zero
+     * on a settled notebook is a number with nothing behind it.
+     */
+    val amount: String? = null,
 )
 
 /**
@@ -345,7 +354,8 @@ private fun SectionRow(
         // 9 people" reads as one fact about one section, where a number pushed to
         // the far edge reads as a column in a table and invites comparing
         // sections against each other, which says nothing.
-        subtitle = strings(countKey, "count" to row.count),
+        subtitle = row.amount?.let { strings("notebook.count.money.unsettled", "amount" to it) }
+            ?: strings(countKey, "count" to row.count),
         subtitleTestTag = NotebookTags.count(row.section),
         leading = {
             IconTile(
@@ -428,7 +438,8 @@ private fun SectionTile(
 
     Tile(
         label = strings[labelKey(row.section)],
-        count = strings(countKey, "count" to row.count),
+        count = row.amount?.let { strings("notebook.count.money.unsettled", "amount" to it) }
+            ?: strings(countKey, "count" to row.count),
         countTestTag = NotebookTags.count(row.section),
         compact = compact,
         onClick = onClick,

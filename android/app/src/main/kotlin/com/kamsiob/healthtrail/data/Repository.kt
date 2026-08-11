@@ -3542,6 +3542,41 @@ class Repository private constructor(
      * found. **A count that disagrees with its own screen is the app being
      * wrong about itself**, which is worse than not counting.
      */
+    /**
+     * What is not settled, in minor units, and the currency it is in.
+     *
+     * **The notebook's Money row says an amount rather than a count**, which is
+     * what the grid draws: "$15,072.98 not settled". "6 bills" is true and is
+     * not the number somebody opens Money to find. #347.
+     *
+     * **Open means the same thing here as on the Money screen**, `isOpen`:
+     * everything except paid and closed. Two places deciding separately what
+     * counts as settled is how a total on one screen stops matching the total
+     * on another.
+     *
+     * **A bill with no amount is left out rather than added as zero**, for the
+     * reason `MoneyScreen` gives: null is not zero, and a bill that arrived
+     * saying "this is not a bill" is still a real bill.
+     *
+     * Returns null when there is nothing unsettled to total, so the row falls
+     * back to counting. **A zero on a settled notebook is a number with nothing
+     * behind it**, which is the rule the Money screen already applies to its
+     * own band.
+     */
+    suspend fun unsettledTotal(subjectId: String): Pair<Long, String>? =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT SUM(amount_minor), MIN(currency) FROM live_bill " +
+                    "WHERE subject_id = ? AND state NOT IN ('paid', 'closed') " +
+                    "AND amount_minor IS NOT NULL",
+                arrayOf(subjectId),
+            ).use {
+                if (!it.moveToFirst() || it.isNull(0)) return@use null
+                val total = it.getLong(0)
+                if (total <= 0L) null else total to (it.getString(1) ?: "USD")
+            }
+        }
+
     suspend fun count(section: Section, subjectId: String): Int = withContext(Dispatchers.IO) {
         db().database.rawQuery(
             "SELECT COUNT(*) FROM ${section.view} WHERE subject_id = ?" +

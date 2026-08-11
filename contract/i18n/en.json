@@ -147,6 +147,7 @@
   "notebook.count.progress": "{count, plural, =0 {Nothing yet} one {1 thing tracked} other {# things tracked}}",
   "notebook.count.documents": "{count, plural, =0 {Nothing yet} one {1 document} other {# documents}}",
   "notebook.count.money": "{count, plural, =0 {Nothing yet} one {1 bill} other {# bills}}",
+  "notebook.count.money.unsettled": "{amount} not settled",
   "notebook.count.standing_instructions": "{count, plural, =0 {Nothing yet} one {1 instruction} other {# instructions}}",
   "notebook.count.ask_next_time": "{count, plural, =0 {Nothing yet} one {1 question} other {# questions}}",
   "notebook.group.people_and_care": "People and care",

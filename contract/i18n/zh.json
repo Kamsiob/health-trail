@@ -147,6 +147,7 @@
   "notebook.count.progress": "{count, plural, =0 {还没有内容} other {记录了 # 项}}",
   "notebook.count.documents": "{count, plural, =0 {还没有内容} other {# 份文件}}",
   "notebook.count.money": "{count, plural, =0 {还没有内容} other {# 张账单}}",
+  "notebook.count.money.unsettled": "{amount} 未结清",
   "notebook.count.standing_instructions": "{count, plural, =0 {还没有内容} other {# 条指示}}",
   "notebook.count.ask_next_time": "{count, plural, =0 {还没有内容} other {# 个问题}}",
   "notebook.group.people_and_care": "人员与照护",

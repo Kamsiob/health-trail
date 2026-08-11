@@ -35,6 +35,7 @@ import java.time.LocalDate
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.i18n.formatMoney
 import com.kamsiob.healthtrail.ui.components.BottomNav
 import com.kamsiob.healthtrail.ui.components.CaptureFab
 import com.kamsiob.healthtrail.ui.components.Destination
@@ -685,11 +686,22 @@ fun NotebookShell(
             // to count, and showing zeros would be inventing a notebook that
             // does not exist yet.
             counts = subject?.let { active ->
+                // **Money says what is not settled rather than how many bills**,
+                // which is what the grid draws and what somebody opens Money to
+                // find. Null when nothing is unsettled, and the row counts. #347.
+                val unsettled = repository.unsettledTotal(active.id)
                 SECTION_ORDER.map {
                     SectionCount(
                         it,
                         repository.count(it, active.id),
                         emphasis[it] ?: Emphasis.STANDING,
+                        amount = if (it == Repository.Section.MONEY) {
+                            unsettled?.let { (minor, currency) ->
+                                formatMoney(strings, minor, currency)
+                            }
+                        } else {
+                            null
+                        },
                     )
                 }
             } ?: SECTION_ORDER.map { SectionCount(it, 0, Emphasis.STANDING) }
