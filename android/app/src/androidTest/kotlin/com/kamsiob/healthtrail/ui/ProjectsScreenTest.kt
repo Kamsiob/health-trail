@@ -60,7 +60,6 @@ class ProjectsScreenTest {
                     ProjectsScreen(
                         projects = projects,
                         onOpen = {},
-                        onRemove = {},
                         onStart = { started++ },
                     )
                 }

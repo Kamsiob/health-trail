@@ -31,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -84,7 +83,6 @@ private val STATE_ORDER = listOf(
 @Composable
 fun MoneyScreen(
     bills: List<Repository.Bill>,
-    onRemove: (Repository.Bill) -> Unit,
     /**
      * Opens the bill itself.
      *
@@ -163,7 +161,6 @@ fun MoneyScreen(
                         inState.forEachIndexed { row, bill ->
                             BillRow(
                                 bill = bill,
-                                onRemove = { onRemove(bill) },
                                 onEdit = { onOpen(bill) },
                                 isLast = row == inState.lastIndex,
                             )
@@ -199,7 +196,6 @@ fun MoneyScreen(
                             inState.forEachIndexed { row, bill ->
                                 BillRow(
                                     bill = bill,
-                                    onRemove = { onRemove(bill) },
                                     onEdit = { onOpen(bill) },
                                     isLast = row == inState.lastIndex,
                                 )
@@ -224,7 +220,6 @@ fun MoneyScreen(
 @Composable
 private fun BillRow(
     bill: Repository.Bill,
-    onRemove: () -> Unit,
     onEdit: () -> Unit,
     isLast: Boolean,
 ) {
@@ -249,9 +244,8 @@ private fun BillRow(
         chevron = true,
         divider = !isLast,
         onClick = onEdit,
-        modifier = Modifier
-            .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
-            .testTag(MoneyTags.row(bill.id)),
+        clickLabel = strings["open.action"],
+        modifier = Modifier.testTag(MoneyTags.row(bill.id)),
     )
 }
 

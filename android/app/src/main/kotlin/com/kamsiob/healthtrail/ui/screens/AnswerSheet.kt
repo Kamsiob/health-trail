@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -35,12 +36,25 @@ object AnswerTags {
     const val FIELD = "answer_field"
     const val SAVE = "answer_save"
     const val CANCEL = "answer_cancel"
+    const val ASKED = "answer_asked"
+    const val REMOVE = "answer_remove"
 }
 
 /**
- * Recording what came back after a question was asked.
+ * A question, opened. What it offers depends on whether it has been asked.
  *
- * **The answer is the other half of the record.** "We asked in March" is worth
+ * **A question that has not been asked yet had nowhere to open to**, and the
+ * only thing that could be done with it from the list was a long press that
+ * removed it. So a person who did not know the gesture could not take a
+ * question off the list at all, and one who pressed by accident removed the
+ * question they were reaching for. #218 and law 2.
+ *
+ * **The two faces are the same sheet because they are the same thing**, at two
+ * points in its life. Splitting them into two sheets would mean a person
+ * learning two places to find one question.
+ *
+ * **The asked face records what came back, which is the other half of the
+ * record.** "We asked in March" is worth
  * something. "We asked in March and were told it would be reviewed at the next
  * care plan meeting" is the thing somebody actually needs six months later, and
  * the app could hold only the first half.
@@ -59,6 +73,10 @@ object AnswerTags {
 fun AnswerSheet(
     question: Repository.Question,
     onSave: (String) -> Unit,
+    /** Marking it asked as of today, which is what the list's own pill does. */
+    onMarkAsked: () -> Unit,
+    /** Taking the question off the list, per #218. Opens the confirmation. */
+    onRemove: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -87,7 +105,9 @@ fun AnswerSheet(
         ) {
             Spacer(Modifier.height(Space.s))
             Text(
-                text = strings["questions.answer.title"],
+                text = strings[
+                    if (question.isOpen) "questions.open.title" else "questions.answer.title"
+                ],
                 style = HealthTrail.type.displayM,
                 color = colors.ink,
             )
@@ -99,30 +119,44 @@ fun AnswerSheet(
 
             Spacer(Modifier.height(Space.s))
             Text(
-                text = strings["questions.answer.lead"],
+                text = strings[
+                    if (question.isOpen) "questions.open.lead" else "questions.answer.lead"
+                ],
                 style = HealthTrail.type.bodyM,
                 color = colors.ink2,
             )
 
             Spacer(Modifier.height(Space.l))
 
-            DictatableField(
-                label = strings["questions.answer.title"],
-                value = answer,
-                onValueChange = { answer = it },
-                hint = strings["questions.answer.hint"],
-                singleLine = false,
-                imeAction = ImeAction.Done,
-                fieldTestTag = AnswerTags.FIELD,
-            )
+            // **The field is only on the asked face.** Asking for what somebody
+            // said about a question that has not been asked yet is the app
+            // inventing a step, and an empty field with nothing to put in it
+            // reads as work owed. Rule 13.
+            if (question.isOpen) {
+                FilledButton(
+                    label = strings["questions.mark_asked"],
+                    onClick = onMarkAsked,
+                    modifier = Modifier.fillMaxWidth().testTag(AnswerTags.ASKED),
+                )
+            } else {
+                DictatableField(
+                    label = strings["questions.answer.title"],
+                    value = answer,
+                    onValueChange = { answer = it },
+                    hint = strings["questions.answer.hint"],
+                    singleLine = false,
+                    imeAction = ImeAction.Done,
+                    fieldTestTag = AnswerTags.FIELD,
+                )
 
-            Spacer(Modifier.height(Space.l))
+                Spacer(Modifier.height(Space.l))
 
-            FilledButton(
-                label = strings["questions.answer.save"],
-                onClick = { onSave(answer) },
-                modifier = Modifier.fillMaxWidth().testTag(AnswerTags.SAVE),
-            )
+                FilledButton(
+                    label = strings["questions.answer.save"],
+                    onClick = { onSave(answer) },
+                    modifier = Modifier.fillMaxWidth().testTag(AnswerTags.SAVE),
+                )
+            }
 
             Spacer(Modifier.height(Space.s))
 
@@ -130,6 +164,16 @@ fun AnswerSheet(
                 label = strings["common.cancel"],
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth().testTag(AnswerTags.CANCEL),
+            )
+
+            // **Full width here, unlike on a screen**, and D118 says why: a
+            // sheet has no way back at its foot for this to be mistaken for.
+            // It sits under Cancel because leaving is the commoner act.
+            Spacer(Modifier.height(Space.s))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.fillMaxWidth().testTag(AnswerTags.REMOVE),
             )
         }
     }

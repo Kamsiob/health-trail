@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -35,6 +36,7 @@ object AcknowledgeTags {
     const val FIELD = "acknowledge_field"
     const val SAVE = "acknowledge_save"
     const val CANCEL = "acknowledge_cancel"
+    const val REMOVE = "acknowledge_remove"
 }
 
 /**
@@ -58,6 +60,14 @@ object AcknowledgeTags {
 fun AcknowledgeSheet(
     instruction: Repository.StandingInstruction,
     onSave: (String) -> Unit,
+    /**
+     * Taking the request off the list, per #218.
+     *
+     * **This is the request's own place**, reached by tapping it, and it is
+     * here because the list row used to carry removal on a long press: the one
+     * path a sighted person cannot find and a thumb can hit by accident.
+     */
+    onRemove: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -133,6 +143,15 @@ fun AcknowledgeSheet(
                 label = strings["common.cancel"],
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth().testTag(AcknowledgeTags.CANCEL),
+            )
+
+            // Full width because a sheet has no way back at its foot for this
+            // to compete with, which is the distinction D118 draws.
+            Spacer(Modifier.height(Space.s))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.fillMaxWidth().testTag(AcknowledgeTags.REMOVE),
             )
         }
     }

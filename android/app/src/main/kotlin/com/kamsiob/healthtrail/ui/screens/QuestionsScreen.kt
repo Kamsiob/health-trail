@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import com.kamsiob.healthtrail.ui.components.TextAction
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -63,8 +62,15 @@ object QuestionTags {
 fun QuestionsScreen(
     questions: List<Repository.Question>,
     onMarkAsked: (Repository.Question) -> Unit,
-    onRemove: (Repository.Question) -> Unit,
-    onAnswer: (Repository.Question) -> Unit,
+    /**
+     * Opens the question.
+     *
+     * **Every question opens, not only an asked one.** A question still waiting
+     * had no tap at all and carried removal on a long press, so the only way to
+     * take one off the list was a gesture nobody could see. #218. What the
+     * sheet offers depends on whether it has been asked yet.
+     */
+    onOpen: (Repository.Question) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -147,8 +153,7 @@ fun QuestionsScreen(
                             QuestionRow(
                                 question = question,
                                 onMarkAsked = { onMarkAsked(question) },
-                                onRemove = { onRemove(question) },
-                                onAnswer = { onAnswer(question) },
+                                onOpen = { onOpen(question) },
                                 isLast = row == inRole.lastIndex,
                                 // **Not repeated under its own heading.** The
                                 // group already says whose question it is, and
@@ -181,8 +186,7 @@ fun QuestionsScreen(
                             QuestionRow(
                                 question = question,
                                 onMarkAsked = null,
-                                onRemove = { onRemove(question) },
-                                onAnswer = { onAnswer(question) },
+                                onOpen = { onOpen(question) },
                                 isLast = index == asked.lastIndex,
                             )
                         }
@@ -205,8 +209,7 @@ fun QuestionsScreen(
 private fun QuestionRow(
     question: Repository.Question,
     onMarkAsked: (() -> Unit)?,
-    onRemove: () -> Unit,
-    onAnswer: () -> Unit,
+    onOpen: () -> Unit,
     isLast: Boolean,
     showRole: Boolean = true,
 ) {
@@ -248,13 +251,11 @@ private fun QuestionRow(
             }
         },
         divider = !isLast,
-        onClick = if (question.isOpen) null else onAnswer,
-        modifier = Modifier
-            .removableByLongPress(
-                if (question.isOpen) strings["remove.hint"] else strings["edit.hint"],
-                onRemove,
-                if (question.isOpen) null else onAnswer,
-            )
-            .testTag(QuestionTags.row(question.id)),
+        // **Both states open**, which is what makes removal reachable without a
+        // gesture. A question waiting to be asked opens onto what it is waiting
+        // for; one already asked opens onto what came back.
+        onClick = onOpen,
+        clickLabel = strings["open.action"],
+        modifier = Modifier.testTag(QuestionTags.row(question.id)),
     )
 }

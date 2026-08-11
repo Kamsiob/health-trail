@@ -19,7 +19,6 @@ import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.Avatar
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -55,7 +54,6 @@ object CareTeamTags {
 fun CareTeamScreen(
     people: List<Repository.Person>,
     onCall: (Repository.Person) -> Unit,
-    onRemove: (Repository.Person) -> Unit,
     onOpen: (Repository.Person) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
@@ -86,7 +84,6 @@ fun CareTeamScreen(
                         PersonRow(
                             person = person,
                             onCall = { onCall(person) },
-                            onRemove = { onRemove(person) },
                             onOpen = { onOpen(person) },
                             isLast = index == people.lastIndex,
                         )
@@ -122,7 +119,6 @@ fun CareTeamScreen(
 private fun PersonRow(
     person: Repository.Person,
     onCall: () -> Unit,
-    onRemove: () -> Unit,
     onOpen: () -> Unit,
     isLast: Boolean,
 ) {
@@ -177,8 +173,7 @@ private fun PersonRow(
         },
         divider = !isLast,
         onClick = onOpen,
-        modifier = Modifier
-            .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
-            .testTag(CareTeamTags.person(person.id)),
+        clickLabel = strings["open.action"],
+        modifier = Modifier.testTag(CareTeamTags.person(person.id)),
     )
 }

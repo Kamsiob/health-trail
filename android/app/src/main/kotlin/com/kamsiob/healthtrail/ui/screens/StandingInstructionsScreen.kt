@@ -1,6 +1,5 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +15,7 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -57,8 +56,15 @@ object InstructionTags {
 fun StandingInstructionsScreen(
     instructions: List<Repository.StandingInstruction>,
     tags: Map<String, TemplateCatalog.InstructionTag>,
-    onRemove: (Repository.StandingInstruction) -> Unit,
-    onAcknowledge: (Repository.StandingInstruction) -> Unit,
+    /**
+     * Opens the request: how they answered is recorded there, and so is taking
+     * it off the list.
+     *
+     * **It was two handlers**, a tap that recorded the answer and a long press
+     * that removed the request, and the long press was the only path to
+     * removal. #218 and law 2.
+     */
+    onOpen: (Repository.StandingInstruction) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -121,8 +127,7 @@ fun StandingInstructionsScreen(
                     instruction = instruction,
                     tag = tags[instruction.tag],
                     lead = explainHere,
-                    onRemove = { onRemove(instruction) },
-                    onAcknowledge = { onAcknowledge(instruction) },
+                    onOpen = { onOpen(instruction) },
                 )
                 Spacer(Modifier.height(Space.cardGap))
             }
@@ -173,8 +178,7 @@ private fun InstructionRow(
     onRecordViolation: () -> Unit,
     instruction: Repository.StandingInstruction,
     tag: TemplateCatalog.InstructionTag?,
-    onRemove: () -> Unit,
-    onAcknowledge: () -> Unit,
+    onOpen: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -183,10 +187,10 @@ private fun InstructionRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(Radius.card)
-            .background(colors.card)
-            // A tap records how they answered, which is the half that gets
-            // pointed back to later.
-            .removableByLongPress(strings["edit.hint"], onRemove, onAcknowledge)
+            // **A tap opens the request**, where how they answered is recorded
+            // and where it can be taken off the list. It used to also carry
+            // removal on a long press, which was the only path to it. #218.
+            .openableByTap(label = strings["open.action"], onTap = onOpen)
             .testTag(InstructionTags.row(instruction.id))
             .padding(Space.cardPadding),
     ) {

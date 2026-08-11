@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -113,6 +114,14 @@ fun Modifier.openableByTap(
     label: String,
     onTap: () -> Unit,
     resting: Color = HealthTrail.colors.card,
+    /**
+     * The focus ring's corners, which must be the caller's own clip.
+     *
+     * **A ring drawn at 17dp around a shape clipped at 13dp is visibly wrong**,
+     * and it is the kind of thing that only shows up with a keyboard attached.
+     * Defaults to the card radius because that is what most callers clip to.
+     */
+    shape: Shape = Radius.card,
 ): Modifier {
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, resting)
@@ -120,7 +129,7 @@ fun Modifier.openableByTap(
 
     return this
         .background(surface)
-        .border(2.dp, HealthTrail.colors.blue.copy(alpha = ring), Radius.card)
+        .border(2.dp, HealthTrail.colors.blue.copy(alpha = ring), shape)
         .clickable(
             interactionSource = interaction,
             indication = null,

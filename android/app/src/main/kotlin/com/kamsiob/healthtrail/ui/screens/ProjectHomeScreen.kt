@@ -55,6 +55,7 @@ object ProjectHomeTags {
     const val STORY = "project-home-story"
     const val REOPEN = "project-home-reopen"
     const val RETURN = "project-home-return"
+    const val REMOVE = "project-home-remove"
 }
 
 /**
@@ -109,6 +110,12 @@ fun ProjectHomeScreen(
     onLogCall: () -> Unit = {},
     /** Opens the project's setup, where everything the template decided lives. */
     onOpenSetup: () -> Unit = {},
+    /**
+     * Taking the whole project out of the notebook, per #218. The projects list
+     * used to do this on a long press, which is the one path a sighted person
+     * cannot find. It opens the confirmation and removes nothing itself.
+     */
+    onRemove: () -> Unit = {},
     /** Opens the sheet that moves the project along its road. 20.5 screen 12. */
     onMoveStage: () -> Unit = {},
     steps: List<Repository.ProjectStep> = emptyList(),
@@ -649,6 +656,19 @@ fun ProjectHomeScreen(
                 expanded = false,
                 onToggle = onOpenSetup,
                 modifier = Modifier.testTag(ProjectHomeTags.SETUP),
+            )
+            Spacer(Modifier.height(Space.sectionGap))
+        }
+
+        // **The project itself, removed from the project's own screen**, per
+        // #218 and law 2. Below the setup fold because it is the last thing
+        // anybody comes here for, and a pill sized to its label rather than a
+        // full width bar, D118.
+        item {
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.testTag(ProjectHomeTags.REMOVE),
             )
             Spacer(Modifier.height(Space.sectionGap))
         }

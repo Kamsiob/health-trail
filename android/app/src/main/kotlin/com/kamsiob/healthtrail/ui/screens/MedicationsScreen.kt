@@ -17,7 +17,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.DenseRow
@@ -59,7 +58,6 @@ object MedsTags {
 @Composable
 fun MedicationsScreen(
     medications: List<Repository.Medication>,
-    onRemove: (Repository.Medication) -> Unit,
     onOpen: (Repository.Medication) -> Unit,
     onAdd: () -> Unit,
     onBack: () -> Unit,
@@ -99,7 +97,6 @@ fun MedicationsScreen(
                     current.forEachIndexed { index, medication ->
                         MedicationRow(
                             medication = medication,
-                            onRemove = { onRemove(medication) },
                             onOpen = { onOpen(medication) },
                             isLast = index == current.lastIndex,
                         )
@@ -126,7 +123,6 @@ fun MedicationsScreen(
                         stopped.forEachIndexed { index, medication ->
                             MedicationRow(
                                 medication = medication,
-                                onRemove = { onRemove(medication) },
                                 onOpen = { onOpen(medication) },
                                 isLast = index == stopped.lastIndex,
                             )
@@ -160,7 +156,6 @@ fun MedicationsScreen(
 @Composable
 private fun MedicationRow(
     medication: Repository.Medication,
-    onRemove: () -> Unit,
     onOpen: () -> Unit,
     isLast: Boolean,
 ) {
@@ -192,8 +187,7 @@ private fun MedicationRow(
         chevron = true,
         divider = !isLast,
         onClick = onOpen,
-        modifier = Modifier
-            .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
-            .testTag(MedsTags.row(medication.id)),
+        clickLabel = strings["open.action"],
+        modifier = Modifier.testTag(MedsTags.row(medication.id)),
     )
 }

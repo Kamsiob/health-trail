@@ -24,13 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.onLongClick
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -48,10 +42,16 @@ object ConfirmTags {
  * Asking before removing something.
  *
  * **Destructive actions live only inside a confirmation flow**, per `DESIGN.md`
- * section 5.4, and never as a resting state on a screen. That rule is also why
- * removal is reached by a long press rather than by a Remove button sitting on
- * every card: a visible destructive affordance on every row in eight sections
- * would be exactly the resting state 5.4 forbids, multiplied.
+ * section 5.4, and never as a resting state on a screen. **That is why removal
+ * is reached from the thing's own screen rather than from a row in a list**: an
+ * outlined pill saying "Remove this" opens this sheet, so nothing is destroyed
+ * by the control itself and there is no destructive affordance sitting on every
+ * row of eight sections.
+ *
+ * **It used to be reached by a long press for the same reason**, which solved
+ * the resting state and created a worse problem: a sighted person who did not
+ * already know to press and hold could not remove anything at all, while a
+ * reader user was handed the action in their list. #218 and law 2.
  *
  * **The wording says what actually happens, not "are you sure".** It stops
  * appearing in the notebook, and nothing else the person wrote is touched.
@@ -102,8 +102,8 @@ fun ConfirmRemoveSheet(
             )
 
             Spacer(Modifier.height(Space.s))
-            // Shown back so somebody who long pressed the wrong card sees it
-            // before the tap that matters, rather than after.
+            // Shown back so somebody who opened the wrong thing sees it before
+            // the tap that matters, rather than after.
             Text(text = what, style = HealthTrail.type.bodyL, color = colors.ink)
 
             Spacer(Modifier.height(Space.s))
@@ -173,76 +173,3 @@ private fun DestructiveButton(
         )
     }
 }
-
-/**
- * Makes a card removable by a long press, and optionally editable by a tap.
- *
- * **A long press rather than a visible Remove button, and the reasoning is
- * section 5.4's.** A destructive control resting on every row of every list is
- * exactly the resting state that section rules out, multiplied across eight
- * sections. The long press is also what Android already means by "more to do
- * with this row".
- *
- * **A tap opens the same form that created the row**, where one is offered. That
- * is what makes the card answer a short press with something real rather than
- * with nothing, which rule 16 requires, and it means correcting a typo uses the
- * screen the person already knows instead of a second near identical one.
- *
- * The gesture and the reader actions are declared separately from
- * `combinedClickable`, because that would give a card with no edit form a short
- * press that does nothing.
- */
-@Composable
-fun Modifier.removableByLongPress(
-    label: String,
-    onLongPress: () -> Unit,
-    onTap: (() -> Unit)? = null,
-    /**
-     * Fed press and release, so the surface under a finger can answer.
-     *
-     * **`detectTapGestures` emits no interactions of its own**, so a card
-     * carrying this and nothing else looked identical whether or not it was
-     * being touched, which rule 16 calls broken. Adding a separate
-     * `Modifier.clickable` beside it does not work either: the gesture detector
-     * consumes the tap first, so the click never arrives. That is exactly how
-     * the trail's rows appeared to ignore being tapped on 2026-08-02.
-     *
-     * Null when the caller has no surface to change, which is the case for a
-     * card that is only removable and not openable.
-     */
-    interactionSource: MutableInteractionSource? = null,
-): Modifier = this
-    .pointerInput(onLongPress, onTap, interactionSource) {
-        detectTapGestures(
-            onPress = { offset ->
-                val press = PressInteraction.Press(offset)
-                interactionSource?.tryEmit(press)
-                // Released either way, so a finger that slid off does not leave
-                // the card looking permanently pressed.
-                val released = tryAwaitRelease()
-                interactionSource?.tryEmit(
-                    if (released) {
-                        PressInteraction.Release(press)
-                    } else {
-                        PressInteraction.Cancel(press)
-                    },
-                )
-            },
-            onLongPress = { onLongPress() },
-            onTap = if (onTap == null) null else { _ -> onTap() },
-        )
-    }
-    .then(
-        if (onTap == null) {
-            Modifier
-        } else {
-            Modifier.semantics { onClick(label = label) { onTap(); true } }
-        },
-    )
-    // **The gesture and the reader action are declared separately on purpose.**
-    // `combinedClickable` would give both at once and would also make the card
-    // respond to a short press with nothing, which rule 16 calls broken. A
-    // gesture detector adds no click semantics, and the explicit long click
-    // action is what puts this in a reader user's list of things they can do
-    // rather than leaving it as a gesture they cannot discover.
-    .semantics { onLongClick(label = label) { onLongPress(); true } }

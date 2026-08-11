@@ -29,6 +29,7 @@ object MedicationTags {
     const val NAME = "medication"
     const val EDIT = "medication_edit"
     const val RECORD = "medication_record"
+    const val REMOVE = "medication_remove"
     fun question(id: String) = "medication_question_$id"
     fun event(id: String) = "medication_event_$id"
 }
@@ -67,6 +68,11 @@ fun MedicationScreen(
     questions: List<Repository.Question>,
     onOpenQuestion: (Repository.Question) -> Unit,
     onEdit: () -> Unit,
+    /**
+     * Taking the medication out of the notebook, per #218. Opens the
+     * confirmation, which is the only thing that removes anything.
+     */
+    onRemove: () -> Unit,
     onRecordChange: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -133,13 +139,13 @@ fun MedicationScreen(
             QuietButton(
                 label = strings["medication.record"],
                 onClick = onRecordChange,
-                modifier = Modifier.fillMaxWidth().testTag(MedicationTags.RECORD),
+                modifier = Modifier.testTag(MedicationTags.RECORD),
             )
             Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["medication.edit"],
                 onClick = onEdit,
-                modifier = Modifier.fillMaxWidth().testTag(MedicationTags.EDIT),
+                modifier = Modifier.testTag(MedicationTags.EDIT),
             )
             Spacer(Modifier.height(Space.sectionGap))
         }
@@ -215,7 +221,6 @@ fun MedicationScreen(
                 )
                 Spacer(Modifier.height(Space.l))
             }
-            return@SectionScaffold
         }
 
         history.forEachIndexed { index, event ->
@@ -270,6 +275,19 @@ fun MedicationScreen(
                     }
                 }
             }
+        }
+
+        // **Taking it out of the notebook, from the medication's own screen**,
+        // per #218. Last, because it is the rarest errand here and because the
+        // history above it is what somebody came to read.
+        item {
+            Spacer(Modifier.height(Space.sectionGap))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.testTag(MedicationTags.REMOVE),
+            )
+            Spacer(Modifier.height(Space.l))
         }
     }
 }

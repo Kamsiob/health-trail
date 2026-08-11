@@ -1,6 +1,5 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,7 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -75,7 +74,6 @@ object ProjectTags {
 fun ProjectsScreen(
     projects: List<Repository.Project>,
     onOpen: (Repository.Project) -> Unit,
-    onRemove: (Repository.Project) -> Unit,
     onStart: () -> Unit,
     modifier: Modifier = Modifier,
     /**
@@ -177,7 +175,6 @@ fun ProjectsScreen(
                         card = cards[project.id],
                         countdown = countdown(project),
                         onOpen = { onOpen(project) },
-                        onRemove = { onRemove(project) },
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
@@ -202,7 +199,6 @@ fun ProjectsScreen(
                                 card = cards[project.id],
                                 countdown = countdown(project),
                                 onOpen = { onOpen(project) },
-                                onRemove = { onRemove(project) },
                             )
                             Spacer(Modifier.height(Space.cardGap))
                         }
@@ -244,19 +240,24 @@ fun ProjectsScreen(
 private fun ProjectRow(
     project: Repository.Project,
     onOpen: () -> Unit,
-    onRemove: () -> Unit,
     card: Repository.ProjectCard? = null,
     countdown: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
+    // **The card opens the project and nothing else**, per #218. Removing it
+    // is on the project's own screen, where the person can see the road, the
+    // papers and the people they are removing along with it.
+    //
+    // **`openableByTap` paints the surface as well as taking the tap**, which
+    // is why the background is no longer set here: one place decides what a
+    // tappable card looks like at rest and under a finger, per 5.14.
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(Radius.card)
-            .background(colors.card)
-            .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
+            .openableByTap(label = strings["open.action"], onTap = onOpen)
             .testTag(ProjectTags.row(project.id))
             .padding(Space.cardPadding),
     ) {

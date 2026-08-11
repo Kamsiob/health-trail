@@ -46,6 +46,7 @@ object PrepTags {
     const val SHARE = "prep_share"
     const val CALENDAR = "prep_calendar"
     const val WRITE_UP = "prep_write_up"
+    const val REMOVE = "prep_remove"
     const val CHANGES_FOLD = "prep_changes_fold"
     fun question(id: String) = "prep_question_$id"
     fun roleFold(role: String) = "prep_role_$role"
@@ -90,6 +91,11 @@ fun PrepScreen(
     onOpenEntry: (Repository.TrailEntry) -> Unit,
     onShare: () -> Unit,
     onWriteUp: () -> Unit,
+    /**
+     * Taking the appointment out of the notebook, per #218. The list row used
+     * to do this on a long press, which a sighted person could not find.
+     */
+    onRemove: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     backLabelKey: String = "section.back.appointments",
@@ -399,7 +405,7 @@ fun PrepScreen(
                         // person saves it there.
                         runCatching { context.startActivity(intent) }
                     },
-                    modifier = Modifier.fillMaxWidth().testTag(PrepTags.CALENDAR),
+                    modifier = Modifier.testTag(PrepTags.CALENDAR),
                 )
             }
 
@@ -407,10 +413,25 @@ fun PrepScreen(
             // **Writing it up afterward is the other half of the journey**, and
             // it opens the ordinary capture form rather than a special one, so
             // what comes out is an ordinary entry on the trail.
+            //
+            // **The two quiet ones are sized to their label**, D118. The share
+            // stays full width because it is filled and is the one act this
+            // screen exists for; a full width outlined pill is the way back's
+            // costume and an in-content action must not wear it.
             QuietButton(
                 label = strings["prep.writeup"],
                 onClick = onWriteUp,
-                modifier = Modifier.fillMaxWidth().testTag(PrepTags.WRITE_UP),
+                modifier = Modifier.testTag(PrepTags.WRITE_UP),
+            )
+
+            // **The appointment itself, removed from the appointment's own
+            // screen**, per #218. It opens the confirmation and removes
+            // nothing on its own.
+            Spacer(Modifier.height(Space.sectionGap))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.testTag(PrepTags.REMOVE),
             )
             Spacer(Modifier.height(Space.l))
         }

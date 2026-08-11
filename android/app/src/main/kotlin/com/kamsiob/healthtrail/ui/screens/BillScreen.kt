@@ -26,6 +26,7 @@ object BillTags {
     const val NAME = "bill"
     const val AMOUNT = "bill_amount"
     const val EDIT = "bill_edit"
+    const val REMOVE = "bill_remove"
     const val CHAPTER = "bill_chapter"
 }
 
@@ -55,6 +56,8 @@ object BillTags {
 fun BillScreen(
     bill: Repository.Bill,
     onEdit: () -> Unit,
+    /** Taking the bill out of the notebook, per #218. Opens the confirmation. */
+    onRemove: () -> Unit,
     onOpenChapter: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -154,12 +157,23 @@ fun BillScreen(
             }
         }
 
+        // **Both sized to their label rather than to the screen**, D118: full
+        // width outlined is the way back's treatment, and two more of them
+        // stacked above it would make three identical bars of which only the
+        // last leaves. Removal sits under changing it because it is the rarer
+        // errand, and it opens the confirmation rather than removing anything.
         item {
             Spacer(Modifier.height(Space.sectionGap))
             QuietButton(
                 label = strings["bill.edit"],
                 onClick = onEdit,
-                modifier = Modifier.fillMaxWidth().testTag(BillTags.EDIT),
+                modifier = Modifier.testTag(BillTags.EDIT),
+            )
+            Spacer(Modifier.height(Space.cardGap))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.testTag(BillTags.REMOVE),
             )
             Spacer(Modifier.height(Space.l))
         }

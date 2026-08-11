@@ -306,7 +306,7 @@ fun EntryScreen(
             )
             Spacer(Modifier.height(Space.cardGap))
             QuietButton(
-                label = strings["entry.remove"],
+                label = strings["remove.action"],
                 onClick = onRemove,
                 modifier = Modifier.testTag(EntryTags.REMOVE),
             )

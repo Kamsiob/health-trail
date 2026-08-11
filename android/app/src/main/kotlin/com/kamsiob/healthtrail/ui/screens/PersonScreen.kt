@@ -33,6 +33,7 @@ object PersonTags {
     const val NAME = "person"
     const val CALL = "person_call"
     const val EDIT = "person_edit"
+    const val REMOVE = "person_remove"
     fun entry(id: String) = "person_entry_$id"
 }
 
@@ -64,6 +65,12 @@ fun PersonScreen(
     entries: List<Repository.TrailEntry>,
     onCall: (String) -> Unit,
     onEdit: () -> Unit,
+    /**
+     * Taking them off the care team, from the one screen that shows who they
+     * are. **The list row used to do this on a long press**, which meant a
+     * sighted person who did not know the gesture could not do it at all. #218.
+     */
+    onRemove: () -> Unit,
     onOpenEntry: (Repository.TrailEntry) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -130,10 +137,14 @@ fun PersonScreen(
                 )
                 Spacer(Modifier.height(Space.cardGap))
             }
+            // **Sized to its label rather than to the screen**, D118. Full
+            // width outlined is what `SectionScaffold` uses at the foot of
+            // every screen to mean the way back, and an in-content action
+            // wearing it competes with the one control that leaves.
             QuietButton(
                 label = strings["person.edit"],
                 onClick = onEdit,
-                modifier = Modifier.fillMaxWidth().testTag(PersonTags.EDIT),
+                modifier = Modifier.testTag(PersonTags.EDIT),
             )
             Spacer(Modifier.height(Space.sectionGap))
         }
@@ -156,7 +167,6 @@ fun PersonScreen(
                 )
                 Spacer(Modifier.height(Space.l))
             }
-            return@SectionScaffold
         }
 
         entries.forEachIndexed { index, entry ->
@@ -218,6 +228,20 @@ fun PersonScreen(
                     }
                 }
             }
+        }
+
+        // **Taking them off the care team, from the screen that shows who they
+        // are**, per #218. It sits last because it is the rarest thing anybody
+        // comes here to do, and it opens the confirmation rather than doing
+        // anything itself, so nothing destructive rests on the screen.
+        item {
+            Spacer(Modifier.height(Space.sectionGap))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.testTag(PersonTags.REMOVE),
+            )
+            Spacer(Modifier.height(Space.l))
         }
     }
 }

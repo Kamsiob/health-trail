@@ -1112,11 +1112,6 @@ fun NotebookShell(
                     Destination.PROJECTS -> ProjectsScreen(
                         projects = projects,
                         onOpen = { openProject = it; setupOpen = false; revision += 1 },
-                        onRemove = { project ->
-                            removing = Removal(
-                                Repository.Section.PROJECTS, project.id, project.name,
-                            )
-                        },
                         onStart = { startingProject = true },
                         cards = projectCards,
                         // **The same sentence the project's own screen uses**,
@@ -2115,6 +2110,17 @@ fun NotebookShell(
                 onAddDate = { addingDateTo = currentProject },
                 onLogCall = { loggingCallOn = currentProject },
                 onOpenSetup = { setupOpen = true },
+                // **The project's own screen removes it**, per #218. The
+                // projects list carried this on a long press, which is the one
+                // path a sighted person cannot find. The screen closes as the
+                // confirmation opens.
+                onRemove = {
+                    removing = Removal(
+                        Repository.Section.PROJECTS, currentProject.id, currentProject.name,
+                    )
+                    openProject = null
+                    setupOpen = false
+                },
                 onMoveStage = { movingStageOn = currentProject },
                 entries = projectEntries,
                 trailCount = projectTrail.size,
@@ -2573,11 +2579,6 @@ fun NotebookShell(
 
                 Repository.Section.DOCUMENTS -> DocumentsScreen(
                     documents = documents,
-                    onRemove = { document ->
-                        removing = Removal(
-                            Repository.Section.DOCUMENTS, document.id, document.title,
-                        )
-                    },
                     onOpen = { document -> openDocument = document },
                     onAdd = {
                         editingDocument = null
@@ -2589,9 +2590,6 @@ fun NotebookShell(
 
                 Repository.Section.MONEY -> MoneyScreen(
                     bills = bills,
-                    onRemove = { bill ->
-                        removing = Removal(Repository.Section.MONEY, bill.id, bill.description)
-                    },
                     onOpen = { bill -> openBill = bill },
                     onAdd = { editingBill = null; addingBill = true },
                     onBack = { openSection = null },
@@ -2600,14 +2598,10 @@ fun NotebookShell(
                 Repository.Section.STANDING_INSTRUCTIONS -> StandingInstructionsScreen(
                     instructions = instructions,
                     tags = instructionCatalog?.tags.orEmpty(),
-                    onRemove = { instruction ->
-                        removing = Removal(
-                            Repository.Section.STANDING_INSTRUCTIONS,
-                            instruction.id,
-                            instruction.name,
-                        )
-                    },
-                    onAcknowledge = { acknowledging = it },
+                    // **One handler where there were two**, per #218: the row
+                    // opens the request and the sheet it opens is where the
+                    // request is taken off the list.
+                    onOpen = { acknowledging = it },
                     onAdd = { addingInstruction = true },
                     onBack = { openSection = null },
                     violations = violationCounts,
@@ -2623,11 +2617,6 @@ fun NotebookShell(
                         .atStartOfDay(java.time.ZoneId.systemDefault())
                         .toInstant()
                         .toEpochMilli(),
-                    onRemove = { appointment ->
-                        removing = Removal(
-                            Repository.Section.APPOINTMENTS, appointment.id, appointment.title,
-                        )
-                    },
                     onOpen = { appointment -> openPrepFor = appointment.id },
                     onAdd = { editingAppointment = null; addingAppointment = true },
                     onBack = { openSection = null },
@@ -2657,24 +2646,16 @@ fun NotebookShell(
 
                 Repository.Section.ASK_NEXT_TIME -> QuestionsScreen(
                     questions = questions,
-                    onRemove = { question ->
-                        removing = Removal(Repository.Section.ASK_NEXT_TIME, question.id, question.text)
-                    },
                     // Marked asked as of today, which is the honest default: the
                     // person is tapping it because it just happened. The date is
                     // editable later like every other date, per rule 17.
                     onMarkAsked = { markingAsked = it },
-                    onAnswer = { answering = it },
+                    onOpen = { answering = it },
                     onBack = { openSection = null },
                 )
 
                 Repository.Section.MEDICATIONS -> MedicationsScreen(
                     medications = medications,
-                    onRemove = { medication ->
-                        removing = Removal(
-                            Repository.Section.MEDICATIONS, medication.id, medication.name,
-                        )
-                    },
                     onOpen = { medication -> openMedication = medication },
                     onAdd = { editingMedication = null; addingMedication = true },
                     onBack = { openSection = null },
@@ -2705,15 +2686,6 @@ fun NotebookShell(
                     // permission it does not need, and placing a call on somebody's
                     // behalf is not a thing it should be able to do silently.
                     onCall = { person -> dial(context, person.phone) },
-                    onRemove = { person ->
-                        removing = Removal(
-                            section = Repository.Section.CARE_TEAM,
-                            rowId = person.id,
-                            what = person.displayName.ifBlank {
-                                person.phone.orEmpty().ifBlank { person.roleLabel.orEmpty() }
-                            },
-                        )
-                    },
                     onOpen = { person -> openPerson = person },
                     onAdd = { editingPerson = null; addingPerson = true },
                     onBack = { openSection = null },
@@ -2843,6 +2815,15 @@ fun NotebookShell(
                     openMedication = null
                 },
                 onRecordChange = { recordingChangeTo = medication },
+                // **The medication's own screen removes it**, per #218. The
+                // screen closes as the confirmation opens, so the sheet is not
+                // asking about a thing the screen behind it still shows.
+                onRemove = {
+                    removing = Removal(
+                        Repository.Section.MEDICATIONS, medication.id, medication.name,
+                    )
+                    openMedication = null
+                },
                 onBack = { openMedication = null },
             )
         }
@@ -2961,6 +2942,15 @@ fun NotebookShell(
                         // kind only this screen knows about.
                         capturing = CaptureKind.VISIT
                     },
+                    // **The appointment's own screen removes it**, per #218.
+                    onRemove = {
+                        removing = Removal(
+                            Repository.Section.APPOINTMENTS,
+                            sheet.appointment.id,
+                            sheet.appointment.title,
+                        )
+                        openPrepFor = null
+                    },
                     onBack = { openPrepFor = null },
                 )
             }
@@ -2975,6 +2965,16 @@ fun NotebookShell(
                 entries = personEntries,
                 onCall = { number -> dial(context, number) },
                 onEdit = { editingPerson = person; addingPerson = true; openPerson = null },
+                onRemove = {
+                    removing = Removal(
+                        section = Repository.Section.CARE_TEAM,
+                        rowId = person.id,
+                        what = person.displayName.ifBlank {
+                            person.phone.orEmpty().ifBlank { person.roleLabel.orEmpty() }
+                        },
+                    )
+                    openPerson = null
+                },
                 onOpenEntry = { openPerson = null; openEntry = it.id },
                 onBack = { openPerson = null },
                 backLabelKey = "section.back.careteam",
@@ -3012,6 +3012,12 @@ fun NotebookShell(
                     documentError = null
                     addingDocument = true
                 },
+                onRemove = {
+                    removing = Removal(
+                        Repository.Section.DOCUMENTS, fresh.id, fresh.title,
+                    )
+                    openDocument = null
+                },
                 onOpenChapter = { chapterId ->
                     openDocument = null
                     openChapter = chapters.firstOrNull { it.id == chapterId }
@@ -3029,6 +3035,12 @@ fun NotebookShell(
             BillScreen(
                 bill = fresh,
                 onEdit = { editingBill = fresh; addingBill = true },
+                onRemove = {
+                    removing = Removal(
+                        Repository.Section.MONEY, fresh.id, fresh.description,
+                    )
+                    openBill = null
+                },
                 onOpenChapter = { chapterId ->
                     openBill = null
                     openChapter = chapters.firstOrNull { it.id == chapterId }
@@ -3199,6 +3211,17 @@ fun NotebookShell(
                     savingAcknowledgment = toAcknowledge.id to how
                     acknowledging = null
                 },
+                // The sheet closes first, so the confirmation is not a sheet
+                // over a sheet, which Material stacks and a person reads as one
+                // screen that has stopped responding.
+                onRemove = {
+                    removing = Removal(
+                        Repository.Section.STANDING_INSTRUCTIONS,
+                        toAcknowledge.id,
+                        toAcknowledge.name,
+                    )
+                    acknowledging = null
+                },
                 onDismiss = { acknowledging = null },
             )
         }
@@ -3222,6 +3245,16 @@ fun NotebookShell(
                 question = toAnswer,
                 onSave = { text ->
                     savingAnswer = toAnswer.id to text
+                    answering = null
+                },
+                onMarkAsked = {
+                    markingAsked = toAnswer
+                    answering = null
+                },
+                onRemove = {
+                    removing = Removal(
+                        Repository.Section.ASK_NEXT_TIME, toAnswer.id, toAnswer.text,
+                    )
                     answering = null
                 },
                 onDismiss = { answering = null },

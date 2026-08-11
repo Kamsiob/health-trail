@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
@@ -40,7 +41,7 @@ import com.kamsiob.healthtrail.ui.components.ViewToggle
 import com.kamsiob.healthtrail.ui.components.rememberViewChoice
 import com.kamsiob.healthtrail.ui.components.Thumbnail
 import com.kamsiob.healthtrail.ui.components.tileColumns
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -72,7 +73,6 @@ object DocTags {
 @Composable
 fun DocumentsScreen(
     documents: List<Repository.Document>,
-    onRemove: (Repository.Document) -> Unit,
     /**
      * Opens the document itself.
      *
@@ -171,7 +171,6 @@ fun DocumentsScreen(
                             document = document,
                             attachments = attachments,
                             stacked = false,
-                            onRemove = { onRemove(document) },
                             onEdit = { onOpen(document) },
                         )
                     }
@@ -186,7 +185,6 @@ fun DocumentsScreen(
                             document = document,
                             attachments = attachments,
                             stacked = true,
-                            onRemove = { onRemove(document) },
                             onEdit = { onOpen(document) },
                             modifier = Modifier.weight(1f),
                         )
@@ -233,7 +231,6 @@ fun DocumentsScreen(
                                 document = document,
                                 attachments = attachments,
                                 divider = index < inFolder.size - 1,
-                                onRemove = { onRemove(document) },
                                 onEdit = { onOpen(document) },
                             )
                         }
@@ -252,7 +249,6 @@ fun DocumentsScreen(
                                     document = document,
                                     attachments = attachments,
                                     stacked = columns > 1,
-                                    onRemove = { onRemove(document) },
                                     onEdit = { onOpen(document) },
                                     modifier = Modifier.weight(1f),
                                 )
@@ -297,7 +293,6 @@ private fun DocumentRow(
     document: Repository.Document,
     attachments: Attachments,
     divider: Boolean,
-    onRemove: () -> Unit,
     onEdit: () -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -316,6 +311,7 @@ private fun DocumentRow(
             ?.let { EventDateText.render(strings, it) },
         divider = divider,
         onClick = onEdit,
+        clickLabel = strings["open.action"],
         modifier = Modifier.testTag(DocTags.row(document.id)),
     )
 }
@@ -348,7 +344,6 @@ private fun DocumentCell(
      * thumbnail leading its words. Found at 2.0 by looking at it.
      */
     stacked: Boolean,
-    onRemove: () -> Unit,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -382,10 +377,22 @@ private fun DocumentCell(
         }
     }
 
+    // **The cell opens the document and does nothing else**, per #218. It used
+    // to carry removal on a long press, which was the only way to remove a
+    // document and could not be found by anybody who did not already know it
+    // was there. Removal is on the document's own screen now.
+    //
+    // **The focus ring follows this clip**, which is the tile radius here
+    // rather than the card's.
     val body = modifier
         .semantics(mergeDescendants = true) { }
         .clip(Radius.tile)
-        .removableByLongPress(strings["edit.hint"], onRemove, onEdit)
+        .openableByTap(
+            label = strings["open.action"],
+            onTap = onEdit,
+            resting = Color.Transparent,
+            shape = Radius.tile,
+        )
         .testTag(DocTags.row(document.id))
 
     if (stacked) {

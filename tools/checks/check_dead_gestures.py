@@ -41,6 +41,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCES = ROOT / "android/app/src/main/kotlin"
+LEDGER = ROOT / "docs/REMOVAL-LEDGER.md"
 
 # `onLongPress = {}` and `onLongPress = { }`, and the same with any handler
 # name, because the next one will not be called onLongPress. A handler assigned
@@ -66,8 +67,54 @@ OPEN_LABELED_REMOVE = re.compile(
 )
 
 
+# **Law 2: no long-press-only actions anywhere.** `DESIGN.md` section 2 and
+# section 12: anything gesture-only also has a visible, non-gesture path.
+#
+# Removal lived on a long press in nine screens until #218. It was not a bare
+# gesture, and that is exactly what made it survive: it declared an explicit
+# long click semantics action, so a **reader** user was handed removal in their
+# action list while a **sighted** person who did not already know the gesture
+# could not remove anything at all. That inversion is `DESIGN.md` 13.5's, and no
+# screenshot shows it.
+#
+# So the gesture is banned by shape rather than by name. `removableByLongPress`
+# is deleted; this is what stops the next one being written.
+LONG_PRESS = re.compile(
+    r"\bcombinedClickable\b|\bonLongClick\b|\bonLongPress\b|"
+    r"\bdetectDragGesturesAfterLongPress\b"
+)
+
+
+def frozen_files() -> set[str]:
+    """The repository-relative paths `docs/REMOVAL-LEDGER.md` calls frozen.
+
+    **Read from the ledger rather than listed here**, per D133: a second copy of
+    a set agrees with the first forever, including about a mistake. A frozen
+    screen is never fixed, so a gesture inside one is history rather than a
+    defect, and the file that declares it frozen is the only honest source for
+    which files those are.
+    """
+    if not LEDGER.is_file():
+        return set()
+    found = set()
+    for line in LEDGER.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) < 4 or "frozen" not in cells[-1].lower():
+            continue
+        for name in re.findall(r"`([^`]+\.kt)`", cells[0]):
+            found.add(name)
+    return found
+
+
 def line_of(text: str, at: int) -> int:
     return text.count("\n", 0, at) + 1
+
+
+def lines_at(text: str, number: int) -> str:
+    lines = text.splitlines()
+    return lines[number - 1] if 0 < number <= len(lines) else ""
 
 
 def inside_preview(lines: list[str], number: int) -> bool:
@@ -127,6 +174,9 @@ def main() -> int:
                 f"write `{ALLOW} <reason>` on the line above."
             )
 
+    frozen = frozen_files()
+    exempt = 0
+
     for path in sorted(SOURCES.rglob("*.kt")):
         text = path.read_text(encoding="utf-8")
         for found in OPEN_LABELED_REMOVE.finditer(text):
@@ -137,15 +187,44 @@ def main() -> int:
                 f"it opens it instead. That inversion is #231 exactly."
             )
 
+        relative = path.relative_to(ROOT)
+        # The ledger names a frozen file by its path under the source root.
+        under_source = str(path.relative_to(SOURCES / "com/kamsiob/healthtrail"))
+        if under_source in frozen:
+            if LONG_PRESS.search(text):
+                exempt += 1
+            continue
+
+        for found in LONG_PRESS.finditer(text):
+            number = line_of(text, found.start())
+            here = lines_at(text, number)
+            # A comment saying the gesture is gone is not the gesture.
+            if here.lstrip().startswith(("//", "*", "/*")):
+                continue
+            problems.append(
+                f"{relative}:{number}: {found.group()} is a long press, and law 2 bans "
+                f"an action reachable only by one. A sighted person who does not already "
+                f"know the gesture cannot do it at all, while a reader user is handed it "
+                f"in their action list. #218. Put the action on the thing's own screen or "
+                f"in the sheet its row opens."
+            )
+
     if problems:
         print(f"Dead gesture check failed. {len(problems)} problem(s).")
         for problem in problems:
             print(f"  {problem}")
         return 1
 
+    frozen_note = (
+        f" {exempt} frozen file(s) still carry one and are exempt, because "
+        f"docs/REMOVAL-LEDGER.md says they are never fixed."
+        if exempt
+        else ""
+    )
     print(
-        f"Dead gesture check passed. {scanned} source files, and no handler is "
-        f"assigned a lambda that does nothing."
+        f"Dead gesture check passed. {scanned} source files: no handler is "
+        f"assigned a lambda that does nothing, and no live screen puts an action "
+        f"behind a long press.{frozen_note}"
     )
     return 0
 

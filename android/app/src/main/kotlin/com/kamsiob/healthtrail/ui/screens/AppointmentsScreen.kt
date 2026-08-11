@@ -24,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.removableByLongPress
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -63,7 +62,6 @@ object ApptTags {
 fun AppointmentsScreen(
     appointments: List<Repository.Appointment>,
     todayMillis: Long,
-    onRemove: (Repository.Appointment) -> Unit,
     /**
      * Opens the appointment's prep sheet.
      *
@@ -112,7 +110,6 @@ fun AppointmentsScreen(
                     upcoming.forEachIndexed { index, appointment ->
                         AppointmentRow(
                             appointment = appointment,
-                            onRemove = { onRemove(appointment) },
                             onOpen = { onOpen(appointment) },
                             isLast = index == upcoming.lastIndex,
                         )
@@ -142,7 +139,6 @@ fun AppointmentsScreen(
                         recent.forEachIndexed { index, appointment ->
                             AppointmentRow(
                                 appointment = appointment,
-                                onRemove = { onRemove(appointment) },
                                 onOpen = { onOpen(appointment) },
                                 isLast = index == recent.lastIndex,
                             )
@@ -167,7 +163,6 @@ fun AppointmentsScreen(
 @Composable
 private fun AppointmentRow(
     appointment: Repository.Appointment,
-    onRemove: () -> Unit,
     onOpen: () -> Unit,
     isLast: Boolean,
 ) {
@@ -186,8 +181,7 @@ private fun AppointmentRow(
         chevron = true,
         divider = !isLast,
         onClick = onOpen,
-        modifier = Modifier
-            .removableByLongPress(strings["edit.hint"], onRemove, onOpen)
-            .testTag(ApptTags.row(appointment.id)),
+        clickLabel = strings["open.action"],
+        modifier = Modifier.testTag(ApptTags.row(appointment.id)),
     )
 }

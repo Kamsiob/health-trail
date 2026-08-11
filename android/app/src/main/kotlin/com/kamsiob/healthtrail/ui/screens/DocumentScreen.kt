@@ -29,6 +29,7 @@ object OneDocTags {
     const val NAME = "document"
     const val IMAGE = "document_image"
     const val EDIT = "document_edit"
+    const val REMOVE = "document_remove"
     const val CHAPTER = "document_chapter"
     const val FOLDER = "document_folder"
     fun project(id: String) = "document_project_$id"
@@ -60,6 +61,8 @@ object OneDocTags {
 fun DocumentScreen(
     document: Repository.Document,
     onEdit: () -> Unit,
+    /** Taking the document out of the notebook, per #218. Opens the confirmation. */
+    onRemove: () -> Unit,
     onOpenChapter: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -207,12 +210,21 @@ fun DocumentScreen(
             }
         }
 
+        // **Both sized to their label**, D118, so neither competes with the way
+        // back. **Removing the document removes the record of it**, and the
+        // confirmation says so in the same words it says everywhere else.
         item {
             Spacer(Modifier.height(Space.sectionGap))
             QuietButton(
                 label = strings["document.edit"],
                 onClick = onEdit,
-                modifier = Modifier.fillMaxWidth().testTag(OneDocTags.EDIT),
+                modifier = Modifier.testTag(OneDocTags.EDIT),
+            )
+            Spacer(Modifier.height(Space.cardGap))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.testTag(OneDocTags.REMOVE),
             )
             Spacer(Modifier.height(Space.l))
         }

@@ -74,6 +74,7 @@ class OpenNotRemoveTest {
                         entries = listOf(entry),
                         onCall = {},
                         onEdit = {},
+                        onRemove = {},
                         onOpenEntry = {},
                         onBack = {},
                     )

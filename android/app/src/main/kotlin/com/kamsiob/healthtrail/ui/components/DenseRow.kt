@@ -117,6 +117,18 @@ fun DenseRow(
      */
     contentPadding: Dp = Space.cardPadding,
     onClick: (() -> Unit)? = null,
+    /**
+     * What a reader says the tap does, as a verb.
+     *
+     * **Without it a reader says "double tap to activate"**, which names no act
+     * at all. It went unnoticed for as long as it did because these rows were
+     * also carrying `removableByLongPress`, whose label was doing this job by
+     * accident while describing a gesture that no longer exists. #218.
+     *
+     * Null where the row is not tappable, and null is also honest for a row
+     * whose own words already are the action, which is why it is not required.
+     */
+    clickLabel: String? = null,
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
@@ -149,6 +161,7 @@ fun DenseRow(
                             // The row's own surface is the press feedback, 5.14.
                             indication = null,
                             role = Role.Button,
+                            onClickLabel = clickLabel,
                             onClick = onClick,
                         )
                     },
