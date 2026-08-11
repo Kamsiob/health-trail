@@ -45,7 +45,15 @@ if [ "${1:-}" != "--seed-only" ]; then
   # does not build one, so a session that compiles, installs and walks is
   # walking the build before its own change. Said out loud rather than left to
   # a timestamp nobody reads.
-  NEWEST="$(find "$ROOT/android/app/src/main" -name '*.kt' -newer "$APK" -print -quit 2>/dev/null || true)"
+  # **The catalogs count as source.** Gradle copies `contract/i18n` into the
+  # assets at assemble time, so a copy change with no rebuild installs the old
+  # words, which is the same silence this guard exists for and is harder to
+  # spot: the screen renders, in the previous wording.
+  NEWEST="$(
+    find "$ROOT/android/app/src/main" -name '*.kt' -newer "$APK" -print -quit 2>/dev/null
+    find "$ROOT/contract/i18n" -name '*.json' -newer "$APK" -print -quit 2>/dev/null
+  )"
+  NEWEST="$(printf '%s' "$NEWEST" | head -1)"
   if [ -n "$NEWEST" ]; then
     echo "The APK is older than the source. Run: (cd android && ./gradlew assembleDebug)" >&2
     echo "  first source file newer than the APK: ${NEWEST#"$ROOT"/}" >&2
