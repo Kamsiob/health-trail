@@ -102,13 +102,22 @@ fun ChapterScreen(
     ) {
         chapter.reason?.takeIf { it.isNotBlank() }?.let {
             item {
-                Text(text = it, style = HealthTrail.type.bodyL, color = colors.ink)
+                // The person's own words about why they moved. #226.
+                Text(
+                    text = Bidi.isolate(it),
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink,
+                )
                 Spacer(Modifier.height(Space.m))
             }
         }
         chapter.notes?.takeIf { it.isNotBlank() }?.let {
             item {
-                Text(text = it, style = HealthTrail.type.bodyM, color = colors.ink2)
+                Text(
+                    text = Bidi.isolate(it),
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
                 Spacer(Modifier.height(Space.sectionGap))
             }
         }
@@ -153,7 +162,7 @@ fun ChapterScreen(
                                 eyebrow = incident.reportedEdtf
                                     ?.takeIf { it.isNotBlank() }
                                     ?.let { EventDateText.render(strings, it) },
-                                title = incident.title,
+                                title = Bidi.isolate(incident.title),
                                 body = if (incident.isOpen) {
                                     strings["readable.state.open"]
                                 } else {
@@ -192,8 +201,8 @@ fun ChapterScreen(
                         testTag = ChapterTags2.milestone(milestone.id),
                         onTap = null,
                         eyebrow = EventDateText.render(strings, milestone.occurredEdtf),
-                        title = milestone.label,
-                        body = milestone.note,
+                        title = Bidi.isolate(milestone.label),
+                        body = milestone.note?.let { Bidi.isolate(it) },
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }
@@ -220,8 +229,8 @@ fun ChapterScreen(
                         onTap = null,
                         eyebrow = document.receivedEdtf?.takeIf { it.isNotBlank() }
                             ?.let { EventDateText.render(strings, it) },
-                        title = document.title,
-                        body = document.originalLocation,
+                        title = Bidi.isolate(document.title),
+                        body = document.originalLocation?.let { Bidi.isolate(it) },
                     )
                     Spacer(Modifier.height(Space.cardGap))
                 }

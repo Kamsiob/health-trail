@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -265,20 +266,23 @@ private fun ChapterRow(chapter: Repository.Chapter, onOpen: () -> Unit) {
             Spacer(Modifier.height(Space.xs))
         }
 
+        // **The place's own name, isolated.** #226: a Latin name inside an
+        // Arabic layout lays out against the surrounding direction rather than
+        // within its own box, and its final punctuation lands on the wrong side.
         Text(
-            text = chapter.name,
+            text = Bidi.isolate(chapter.name),
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
 
         chapter.reason?.takeIf { it.isNotBlank() }?.let { reason ->
             Spacer(Modifier.height(Space.xs))
-            Text(text = reason, style = HealthTrail.type.bodyM, color = colors.ink2)
+            Text(text = Bidi.isolate(reason), style = HealthTrail.type.bodyM, color = colors.ink2)
         }
 
         chapter.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             Spacer(Modifier.height(Space.xs))
-            Text(text = notes, style = HealthTrail.type.bodyS, color = colors.ink2)
+            Text(text = Bidi.isolate(notes), style = HealthTrail.type.bodyS, color = colors.ink2)
         }
     }
 }
