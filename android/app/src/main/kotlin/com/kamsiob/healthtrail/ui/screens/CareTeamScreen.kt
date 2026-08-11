@@ -97,12 +97,17 @@ fun CareTeamScreen(
         // button would be the second thing hovering above the content on a
         // screen that already carries the capture button, and section 5.5 gives
         // that position to capture alone.
+        //
+        // **Sized to its label**, D118 and #340, and every section list is the
+        // same. Drawn full width it sat directly above the scaffold's way back
+        // wearing the identical costume, so the foot of eight section screens
+        // was two identical bars of which only the second leaves.
         item {
             Spacer(Modifier.height(Space.s))
             QuietButton(
                 label = strings["careteam.add"],
                 onClick = onAdd,
-                modifier = Modifier.fillMaxWidth().testTag(CareTeamTags.ADD),
+                modifier = Modifier.testTag(CareTeamTags.ADD),
             )
         }
     }

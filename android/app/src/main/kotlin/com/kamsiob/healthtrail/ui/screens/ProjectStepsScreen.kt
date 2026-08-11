@@ -166,7 +166,7 @@ fun ProjectStepsScreen(
                     onAdd(pending.trim())
                     pending = ""
                 },
-                modifier = Modifier.fillMaxWidth().testTag(ProjectStepsTags.ADD),
+                modifier = Modifier.testTag(ProjectStepsTags.ADD),
             )
             Spacer(Modifier.height(Space.xxl))
         }

@@ -66,6 +66,12 @@ fun ViolationScreen(
         name = ViolationTags.NAME,
         title = strings["violation.title"],
         subtitle = instruction.name,
+        // **The way back is the cancel**, which is why this screen draws no
+        // second one. It used to carry a full width outlined "Cancel" directly
+        // above a full width outlined "Back to what you have asked for", two
+        // identical bars doing the identical thing under two different words.
+        // #340, and the same reasoning 15.1 records for the emergency card's
+        // four Change pills.
         onBack = onCancel,
         backLabelKey = "section.back.instructions",
         modifier = modifier,
@@ -100,12 +106,6 @@ fun ViolationScreen(
                     )
                 },
                 modifier = Modifier.fillMaxWidth().testTag(ViolationTags.SAVE),
-            )
-            Spacer(Modifier.height(Space.cardGap))
-            QuietButton(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(Space.l))
         }

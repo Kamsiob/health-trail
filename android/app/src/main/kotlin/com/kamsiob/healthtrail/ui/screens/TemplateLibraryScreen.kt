@@ -105,7 +105,9 @@ fun TemplateLibraryScreen(
 
     SectionScaffold(
         name = LibraryTags.NAME,
-        title = strings["library.title"],
+        // The chip says where you are, the heading says what you came for.
+        title = strings["nav.more"],
+        headingKey = "library.title",
         subtitle = strings["library.subtitle"],
         onBack = onBack,
         backLabelKey = "section.back.more",

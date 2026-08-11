@@ -211,7 +211,7 @@ fun MoneyScreen(
             QuietButton(
                 label = strings["money.add"],
                 onClick = onAdd,
-                modifier = Modifier.fillMaxWidth().testTag(MoneyTags.ADD),
+                modifier = Modifier.testTag(MoneyTags.ADD),
             )
         }
     }

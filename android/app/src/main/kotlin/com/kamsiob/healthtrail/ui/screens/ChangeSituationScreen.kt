@@ -204,9 +204,7 @@ fun ChangeSituationScreen(
                 QuietButton(
                     label = strings["situation.change.action"],
                     onClick = onOpenPicker,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag(ChangeSituationTags.ACTION),
+                    modifier = Modifier.testTag(ChangeSituationTags.ACTION),
                 )
             } else {
                 FilledButton(
@@ -220,9 +218,7 @@ fun ChangeSituationScreen(
                 QuietButton(
                     label = strings["situation.change.action"],
                     onClick = onOpenPicker,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag(ChangeSituationTags.SKIP),
+                    modifier = Modifier.testTag(ChangeSituationTags.SKIP),
                 )
             }
             Spacer(Modifier.height(Space.l))

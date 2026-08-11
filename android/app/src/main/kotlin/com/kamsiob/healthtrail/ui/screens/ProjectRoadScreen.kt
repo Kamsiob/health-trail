@@ -162,7 +162,7 @@ fun ProjectRoadScreen(
                     onAdd(pending.trim())
                     pending = ""
                 },
-                modifier = Modifier.fillMaxWidth().testTag(ProjectRoadTags.ADD),
+                modifier = Modifier.testTag(ProjectRoadTags.ADD),
             )
             Spacer(Modifier.height(Space.xxl))
         }

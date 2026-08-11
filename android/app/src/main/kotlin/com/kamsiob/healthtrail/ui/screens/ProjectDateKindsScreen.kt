@@ -130,7 +130,7 @@ fun ProjectDateKindsScreen(
                     onAdd(pending.trim())
                     pending = ""
                 },
-                modifier = Modifier.fillMaxWidth().testTag(ProjectKindsTags.ADD),
+                modifier = Modifier.testTag(ProjectKindsTags.ADD),
             )
             Spacer(Modifier.height(Space.xxl))
         }

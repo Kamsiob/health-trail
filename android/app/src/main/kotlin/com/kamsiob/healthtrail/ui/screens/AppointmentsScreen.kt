@@ -154,7 +154,7 @@ fun AppointmentsScreen(
             QuietButton(
                 label = strings["appts.add"],
                 onClick = onAdd,
-                modifier = Modifier.fillMaxWidth().testTag(ApptTags.ADD),
+                modifier = Modifier.testTag(ApptTags.ADD),
             )
         }
     }

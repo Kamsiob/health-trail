@@ -136,7 +136,9 @@ fun ExportScreen(
 
     SectionScaffold(
         name = ExportTags.NAME,
-        title = strings["export.title"],
+        // The chip says where you are, the heading says what you came for.
+        title = strings["nav.more"],
+        headingKey = "export.title",
         subtitle = strings["export.lead"],
         onBack = onBack,
         backLabelKey = "section.back.more",
@@ -204,7 +206,7 @@ fun ExportScreen(
                 QuietButton(
                     label = strings["export.done.again"],
                     onClick = { onAgain() },
-                    modifier = Modifier.fillMaxWidth().testTag(ExportTags.AGAIN_ACTION),
+                    modifier = Modifier.testTag(ExportTags.AGAIN_ACTION),
                 )
                 Spacer(Modifier.height(Space.l))
             }

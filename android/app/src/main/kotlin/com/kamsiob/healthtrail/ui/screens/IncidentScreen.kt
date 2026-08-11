@@ -465,21 +465,21 @@ fun IncidentScreen(
                 QuietButton(
                     label = strings["incident.add"],
                     onClick = onAdd,
-                    modifier = Modifier.fillMaxWidth().testTag(IncidentTags.ADD),
+                    modifier = Modifier.testTag(IncidentTags.ADD),
                 )
             }
             Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["readable.share"],
                 onClick = onShare,
-                modifier = Modifier.fillMaxWidth().testTag(IncidentTags.SHARE),
+                modifier = Modifier.testTag(IncidentTags.SHARE),
             )
             Spacer(Modifier.height(Space.cardGap))
             if (incident.isOpen) {
                 QuietButton(
                     label = strings["incident.resolve"],
                     onClick = onResolve,
-                    modifier = Modifier.fillMaxWidth().testTag(IncidentTags.RESOLVE),
+                    modifier = Modifier.testTag(IncidentTags.RESOLVE),
                 )
             } else {
                 // **Reopening is offered plainly.** Somebody who resolved the
@@ -489,7 +489,7 @@ fun IncidentScreen(
                 QuietButton(
                     label = strings["incident.reopen"],
                     onClick = onReopen,
-                    modifier = Modifier.fillMaxWidth().testTag(IncidentTags.REOPEN),
+                    modifier = Modifier.testTag(IncidentTags.REOPEN),
                 )
             }
             Spacer(Modifier.height(Space.l))

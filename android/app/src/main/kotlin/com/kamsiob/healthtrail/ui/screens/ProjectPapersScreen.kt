@@ -143,7 +143,7 @@ fun ProjectPapersScreen(
                     onAdd(pending.trim())
                     pending = ""
                 },
-                modifier = Modifier.fillMaxWidth().testTag(ProjectPapersTags.ADD),
+                modifier = Modifier.testTag(ProjectPapersTags.ADD),
             )
             Spacer(Modifier.height(Space.xxl))
         }

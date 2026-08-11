@@ -228,7 +228,7 @@ fun EmergencyCardScreen(
             QuietButton(
                 label = strings["emergency.edit"],
                 onClick = onEdit,
-                modifier = Modifier.fillMaxWidth().testTag(EmergencyTags.EDIT),
+                modifier = Modifier.testTag(EmergencyTags.EDIT),
             )
         }
     }

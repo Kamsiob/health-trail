@@ -132,14 +132,22 @@ fun RestoreScreen(
 
     SectionScaffold(
         name = RestoreTags.NAME,
-        title = strings["restore.title"],
+        // The chip says where you are, the heading says what you came for.
+        title = strings["nav.more"],
+        headingKey = "restore.title",
         subtitle = strings["restore.lead"],
         onBack = onBack,
         backLabelKey = "section.back.more",
         modifier = modifier,
     ) {
         item {
-            QuietButton(
+            // **Filled, because it is the one thing this screen is for.**
+            // Everything else here depends on having chosen a file, and law 2
+            // gives the filled costume to the one primary action. It was a
+            // full width outlined pill, which is the treatment the scaffold
+            // uses at the foot to mean the way back, so the screen opened and
+            // closed with the same bar twice. #340 and D118.
+            FilledButton(
                 label = strings["restore.choose"],
                 onClick = onChoose,
                 enabled = !busy,

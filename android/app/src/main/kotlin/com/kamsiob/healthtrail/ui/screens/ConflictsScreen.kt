@@ -70,7 +70,9 @@ fun ConflictsScreen(
 
     SectionScaffold(
         name = ConflictsTags.NAME,
-        title = strings["conflicts.title"],
+        // The chip says where you are, the heading says what you came for.
+        title = strings["nav.more"],
+        headingKey = "conflicts.title",
         subtitle = strings["conflicts.lead"],
         onBack = onBack,
         backLabelKey = "section.back.conflicts",

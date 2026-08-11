@@ -138,7 +138,7 @@ fun MedicationsScreen(
             QuietButton(
                 label = strings["meds.add"],
                 onClick = onAdd,
-                modifier = Modifier.fillMaxWidth().testTag(MedsTags.ADD),
+                modifier = Modifier.testTag(MedsTags.ADD),
             )
         }
     }

@@ -160,7 +160,7 @@ fun StandingInstructionsScreen(
             QuietButton(
                 label = strings["instructions.add"],
                 onClick = onAdd,
-                modifier = Modifier.fillMaxWidth().testTag(InstructionTags.ADD),
+                modifier = Modifier.testTag(InstructionTags.ADD),
             )
         }
     }
