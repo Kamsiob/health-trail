@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
@@ -474,7 +475,8 @@ fun CaptureFormScreen(
                     ) {
                         shownPeople.forEach { person ->
                             ChoiceChip(
-                                label = person.displayName,
+                                // A name is the person's own words. #226.
+                                label = Bidi.isolate(person.displayName),
                                 selected = state.personId == person.id,
                                 onClick = { onStateChange(state.togglePerson(person)) },
                                 modifier = Modifier.testTag(
@@ -517,7 +519,7 @@ fun CaptureFormScreen(
                                 ) {
                                     shownThreads.forEach { thread ->
                                         ChoiceChip(
-                                            label = thread.label,
+                                            label = Bidi.isolate(thread.label),
                                             selected = threadId == thread.id,
                                             onClick = {
                                                 onStateChange(state.copy(threadId = thread.id))
@@ -574,7 +576,7 @@ fun CaptureFormScreen(
                                 ) {
                                     shownMedications.forEach { medication ->
                                         ChoiceChip(
-                                            label = medication.name,
+                                            label = Bidi.isolate(medication.name),
                                             selected = state.medicationId == medication.id,
                                             onClick = {
                                                 onStateChange(state.toggleMedication(medication))
@@ -751,7 +753,13 @@ fun CaptureFormScreen(
     when (openPicker) {
         OpenPicker.PEOPLE -> ChipPickerSheet(
             title = strings["capture.who.known"],
-            options = people.map { PickerOption(id = it.id, label = it.displayName, detail = it.roleLabel) },
+            options = people.map {
+                PickerOption(
+                    id = it.id,
+                    label = Bidi.isolate(it.displayName),
+                    detail = it.roleLabel?.let { role -> Bidi.isolate(role) },
+                )
+            },
             selectedId = state.personId,
             onPick = { option ->
                 openPicker = null
@@ -765,7 +773,7 @@ fun CaptureFormScreen(
             options = threads.map { thread ->
                 PickerOption(
                     id = thread.id,
-                    label = thread.label,
+                    label = Bidi.isolate(thread.label),
                     routeColor = colors.threadRoutes[
                         thread.colorIndex.mod(colors.threadRoutes.size),
                     ],
@@ -781,7 +789,7 @@ fun CaptureFormScreen(
         )
         OpenPicker.MEDICATIONS -> ChipPickerSheet(
             title = strings["capture.about.medication"],
-            options = medications.map { PickerOption(id = it.id, label = it.name) },
+            options = medications.map { PickerOption(id = it.id, label = Bidi.isolate(it.name)) },
             selectedId = state.medicationId,
             onPick = { option ->
                 openPicker = null
