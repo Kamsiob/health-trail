@@ -2577,6 +2577,35 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **And a tool that can quietly do nothing should refuse instead.** `tools/device.sh` now installs every time and stops outright when any source file is newer than the APK, naming the file and the command that fixes it. `compileDebugKotlin` does not build an APK: only `assembleDebug` does, and that sentence is now in the tool rather than in somebody's memory.
 
+### D141. Version one ships English. The other three follow a native speaker
+
+**Date:** 2026-08-11. **Decided by:** the owner. **Supersedes the multilingual v1 commitment in `MASTER_SPEC.md` section 7, and supersedes D58's conclusion by name.**
+
+**The decision.** Version one ships English. Spanish, Chinese, and Arabic move to a post-v1 milestone. They are not canceled and nothing built for them is removed.
+
+**The reasoning, which is a safety argument rather than a scheduling one.** The app carries roughly 1,500 strings of regulatory and rights-related content: what federal nursing home rules require, what a facility must do, what somebody is entitled to ask for. **A confident wrong translation of that is not an inconvenience. It is a person acting on false information about their rights**, in a domain where they are already at a disadvantage and already exhausted. Shipping that content in a language nobody on this project can verify is a safety problem. Rule 2 says this app never concludes; a machine translation of a rule is a conclusion nobody checked.
+
+**This supersedes D58 and the supersession is deliberate.** D58 decided on 2026-08-01 that a translated language ships provided the selection screen carries a friendly disclaimer and the translation has had a good faith check. That decision moved the obligation from a gate into the interface. **This one moves it back to a gate for v1 only**, on the grounds that a disclaimer tells somebody the words might be wrong and does not tell them which words. D58's mechanism is kept in full and is not deleted: the `reviewed_by_native_speaker` flag, its per-catalog reading, and the disclaimer copy all stay, because they are exactly what is needed when the languages return.
+
+**What this is not.** It is a scope decision, not an architecture rollback, and the difference is the whole of it.
+
+**Removed from the shipped product:** three locales from the language list, and nothing else.
+
+**Kept, and not to be weakened by anybody reading this as permission to simplify:**
+
+- **String externalization.** Every user-facing string stays in the catalogs. Nothing moves back into a composable.
+- **The message catalog architecture**, including ICU plurals and the four catalog files. `contract/i18n/` keeps all four; the app ships one.
+- **Locale-aware date and number formatting**, which is not English-specific work.
+- **Full right to left layout support on every screen.** **RTL bugs are structural and cheap to catch while a screen is being built, and expensive to retrofit.** Every screen keeps its RTL verification. It is run against a forced layout direction or a pseudo-locale rather than against Arabic content, so the check survives the content moving out.
+- **Every translated string already in the tree.** They stay exactly where they are.
+- **The archive's readable copy keeps its locale mechanism.** With one shipped locale it renders English.
+
+**What changes in the documents.** Any acceptance criterion reading "verified in all four locales" becomes "verified in English", and any criterion about right to left stays as it is. Public copy, meaning the README and the store listing, promises English at launch and describes the others as planned rather than shipped.
+
+**The one thing to watch.** `check_i18n.py` holds the four catalogs to each other, and that check keeps running. **Letting the other three rot while they wait is how a deferral becomes a cancelation**, and the check is what stops it.
+
+---
+
 ---
 
 ### B1. Commit signing. Resolved 2026-07-31
