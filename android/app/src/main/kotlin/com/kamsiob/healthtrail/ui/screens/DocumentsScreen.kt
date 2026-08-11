@@ -171,7 +171,7 @@ fun DocumentsScreen(
                             document = document,
                             attachments = attachments,
                             stacked = false,
-                            onEdit = { onOpen(document) },
+                            onOpen = { onOpen(document) },
                         )
                     }
                 }
@@ -185,7 +185,7 @@ fun DocumentsScreen(
                             document = document,
                             attachments = attachments,
                             stacked = true,
-                            onEdit = { onOpen(document) },
+                            onOpen = { onOpen(document) },
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -231,7 +231,7 @@ fun DocumentsScreen(
                                 document = document,
                                 attachments = attachments,
                                 divider = index < inFolder.size - 1,
-                                onEdit = { onOpen(document) },
+                                onOpen = { onOpen(document) },
                             )
                         }
                     }
@@ -249,7 +249,7 @@ fun DocumentsScreen(
                                     document = document,
                                     attachments = attachments,
                                     stacked = columns > 1,
-                                    onEdit = { onOpen(document) },
+                                    onOpen = { onOpen(document) },
                                     modifier = Modifier.weight(1f),
                                 )
                             }
@@ -293,7 +293,7 @@ private fun DocumentRow(
     document: Repository.Document,
     attachments: Attachments,
     divider: Boolean,
-    onEdit: () -> Unit,
+    onOpen: () -> Unit,
 ) {
     val strings = LocalStrings.current
     DenseRow(
@@ -310,7 +310,7 @@ private fun DocumentRow(
         trailing = document.receivedEdtf?.takeIf { it.isNotBlank() }
             ?.let { EventDateText.render(strings, it) },
         divider = divider,
-        onClick = onEdit,
+        onClick = onOpen,
         clickLabel = strings["open.action"],
         modifier = Modifier.testTag(DocTags.row(document.id)),
     )
@@ -344,7 +344,7 @@ private fun DocumentCell(
      * thumbnail leading its words. Found at 2.0 by looking at it.
      */
     stacked: Boolean,
-    onEdit: () -> Unit,
+    onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
@@ -389,7 +389,7 @@ private fun DocumentCell(
         .clip(Radius.tile)
         .openableByTap(
             label = strings["open.action"],
-            onTap = onEdit,
+            onTap = onOpen,
             resting = Color.Transparent,
             shape = Radius.tile,
         )

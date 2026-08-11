@@ -161,7 +161,7 @@ fun MoneyScreen(
                         inState.forEachIndexed { row, bill ->
                             BillRow(
                                 bill = bill,
-                                onEdit = { onOpen(bill) },
+                                onOpen = { onOpen(bill) },
                                 isLast = row == inState.lastIndex,
                             )
                         }
@@ -196,7 +196,7 @@ fun MoneyScreen(
                             inState.forEachIndexed { row, bill ->
                                 BillRow(
                                     bill = bill,
-                                    onEdit = { onOpen(bill) },
+                                    onOpen = { onOpen(bill) },
                                     isLast = row == inState.lastIndex,
                                 )
                             }
@@ -220,7 +220,7 @@ fun MoneyScreen(
 @Composable
 private fun BillRow(
     bill: Repository.Bill,
-    onEdit: () -> Unit,
+    onOpen: () -> Unit,
     isLast: Boolean,
 ) {
     val strings = LocalStrings.current
@@ -243,7 +243,7 @@ private fun BillRow(
             ?: strings["money.no_amount"],
         chevron = true,
         divider = !isLast,
-        onClick = onEdit,
+        onClick = onOpen,
         clickLabel = strings["open.action"],
         modifier = Modifier.testTag(MoneyTags.row(bill.id)),
     )

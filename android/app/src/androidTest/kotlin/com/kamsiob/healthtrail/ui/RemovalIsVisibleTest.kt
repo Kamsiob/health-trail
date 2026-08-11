@@ -106,13 +106,27 @@ class RemovalIsVisibleTest {
     /**
      * The visible control is there, it can be reached, and it calls back once.
      *
-     * **`performScrollTo` first**, because on several of these the control is
+     * **`performScrollTo` first**, because on every one of these the control is
      * at the foot of a list, and a test that only asserted it existed would pass
      * on a screen where nobody could reach it at font scale 2.0.
      */
     private fun assertRemovesOnce(tag: String) {
         compose.onNodeWithTag(tag).performScrollTo().performClick()
         assertEquals("the visible removal did not call back exactly once", 1, removals)
+    }
+
+    /**
+     * The same, for a sheet.
+     *
+     * **A sheet is not scrolled to, it is already there**, and asking for a
+     * scrollable ancestor inside one throws rather than failing usefully. The
+     * reachability question a sheet has instead is whether its own content
+     * scrolls at font scale 2.0, which is section 7's rule for sheets and is
+     * checked on the phone rather than here.
+     */
+    private fun assertSheetRemovesOnce(tag: String) {
+        compose.onNodeWithTag(tag).performClick()
+        assertEquals("the sheet's removal did not call back exactly once", 1, removals)
     }
 
     // ---- the fixtures, one of each thing --------------------------------
@@ -125,9 +139,16 @@ class RemovalIsVisibleTest {
         "m1", "Warfarin", "Small blue one", "Blood thinner", null, true, null,
     )
 
+    /**
+     * **`needs_attention`, which is deliberate.** `MoneyScreen` leads with the
+     * first state in its own order and folds every other one, so a bill in any
+     * other state is not composed at all until somebody opens its fold. A
+     * fixture that landed in a fold would fail this test for a reason that has
+     * nothing to do with removal.
+     */
     private val bill = Repository.Bill(
         "b1", "Maplewood General, room and board", 128450, "USD",
-        "waiting_on_insurance", null, "2026-08-02", null,
+        "needs_attention", null, "2026-08-02", null,
     )
 
     private val document = Repository.Document(
@@ -252,6 +273,9 @@ class RemovalIsVisibleTest {
             )
         }
         assertNoLongPress(QuestionTags.row(waiting.id))
+        // Asked questions are folded away, and never hidden: the fold names
+        // them and counts them. Opening it is part of walking this screen.
+        compose.onNodeWithTag(QuestionTags.ASKED_FOLD).performScrollTo().performClick()
         assertNoLongPress(QuestionTags.row(asked.id))
     }
 
@@ -349,7 +373,7 @@ class RemovalIsVisibleTest {
                 onDismiss = {},
             )
         }
-        assertRemovesOnce(AnswerTags.REMOVE)
+        assertSheetRemovesOnce(AnswerTags.REMOVE)
     }
 
     @Test
@@ -363,7 +387,7 @@ class RemovalIsVisibleTest {
                 onDismiss = {},
             )
         }
-        assertRemovesOnce(AnswerTags.REMOVE)
+        assertSheetRemovesOnce(AnswerTags.REMOVE)
     }
 
     /**
@@ -424,6 +448,6 @@ class RemovalIsVisibleTest {
                 onDismiss = {},
             )
         }
-        assertRemovesOnce(AcknowledgeTags.REMOVE)
+        assertSheetRemovesOnce(AcknowledgeTags.REMOVE)
     }
 }
