@@ -404,7 +404,7 @@ This is checked mechanically by the overflow audit in section 16, at both font s
 
 **Removal is reached from the thing itself, never from a row in a list.** An outlined "Remove this" at the foot of the thing's own screen, or in the sheet its row opens where it has no screen, and it opens the confirmation rather than removing anything. **So there is still no destructive control resting on any list**, which is 5.4's requirement, and there is no capability that only somebody who already knew the gesture could find, which is 13.5's. `DECISIONS.md` D135, and it is retroactive.
 
-**In content, an action is a pill sized to its label.** Full width outlined is what the scaffold uses at the foot of every screen to mean the way back, so a second and a third one above it make a column of identical bars of which only the last leaves. A sheet is the exception and has no way back to collide with. D118.
+**In content, an action is a pill sized to its label, and that includes a sheet.** Full width outlined is what the scaffold uses at the foot of every screen to mean the way back, so a second and a third one above it make a column of identical bars of which only the last leaves. **A sheet has the same problem wearing a different name**: drawn full width under Cancel, a removal is the control that leaves and the control that removes in one costume, a thumb's width apart. D118, corrected by looking at the sheet.
 
 **Tapping a row opens it.** Selection states exist only inside sheets. **Any swipe action also has a visible button path.**
 

@@ -166,14 +166,18 @@ fun AnswerSheet(
                 modifier = Modifier.fillMaxWidth().testTag(AnswerTags.CANCEL),
             )
 
-            // **Full width here, unlike on a screen**, and D118 says why: a
-            // sheet has no way back at its foot for this to be mistaken for.
-            // It sits under Cancel because leaving is the commoner act.
-            Spacer(Modifier.height(Space.s))
+            // **Sized to its label and set apart**, which was wrong first and
+            // was caught by looking at the sheet rather than at the code.
+            // Drawn full width it was a third identical bar under Cancel, so
+            // the one control that leaves and the one that removes wore the
+            // same costume a thumb's width apart. Removal is a pill sized to
+            // its label everywhere in the app now, on a screen and in a sheet,
+            // and the gap above it says it does not belong to the pair.
+            Spacer(Modifier.height(Space.l))
             QuietButton(
                 label = strings["remove.action"],
                 onClick = onRemove,
-                modifier = Modifier.fillMaxWidth().testTag(AnswerTags.REMOVE),
+                modifier = Modifier.testTag(AnswerTags.REMOVE),
             )
         }
     }

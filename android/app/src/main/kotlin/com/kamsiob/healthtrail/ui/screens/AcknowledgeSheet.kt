@@ -145,13 +145,18 @@ fun AcknowledgeSheet(
                 modifier = Modifier.fillMaxWidth().testTag(AcknowledgeTags.CANCEL),
             )
 
-            // Full width because a sheet has no way back at its foot for this
-            // to compete with, which is the distinction D118 draws.
-            Spacer(Modifier.height(Space.s))
+            // **Sized to its label and set apart**, which was wrong first and
+            // was caught by looking at the sheet rather than at the code.
+            // Drawn full width it was a third identical bar under Cancel, so
+            // the one control that leaves and the one that removes wore the
+            // same costume a thumb's width apart. Removal is a pill sized to
+            // its label everywhere in the app now, on a screen and in a sheet,
+            // and the gap above it says it does not belong to the pair.
+            Spacer(Modifier.height(Space.l))
             QuietButton(
                 label = strings["remove.action"],
                 onClick = onRemove,
-                modifier = Modifier.fillMaxWidth().testTag(AcknowledgeTags.REMOVE),
+                modifier = Modifier.testTag(AcknowledgeTags.REMOVE),
             )
         }
     }
