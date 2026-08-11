@@ -207,6 +207,7 @@ Every one of these was built from the existing components, logged in all three p
 
 - **Use `zh-Hans` for Chinese, never a bare `zh`.** A bare tag has no script and yields English rather than an error. D52.
 - **The share sheet and the calendar app show real contacts. Do not screenshot either.**
+- **A password field brings the phone's password manager with it.** Typing a passphrase into the restore screen made Bitwarden offer to save it and put its own bar in the screenshot. **Decline it, and do not commit a screenshot of any screen with a password field.** 2026-08-11.
 
 **The three guards, so nobody re-derives them.** Guard 1 was inert from the day it was written until 2026-08-01 because its hook command was unquoted and this path contains spaces; fixed. Guard 2, the pre-compaction state save, **has never fired and is unproven** and cannot be triggered deliberately, so treat it as absent and keep this file current by hand. Guard 3, the retry cap, is a command line tool nothing calls. D29, D49.
 
