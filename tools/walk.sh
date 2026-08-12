@@ -9,6 +9,7 @@
 #   tools/walk.sh see                 every piece of text on screen, in order
 #   tools/walk.sh tap "Medications"   tap the first node whose text matches
 #   tools/walk.sh fields              the editable fields and their bounds
+#   tools/walk.sh goto "X" "Y"        tap X, then prove Y is on the far side
 #
 # **`see` is the honest way to read a Compose screen.** It asks the semantics
 # tree through uiautomator, which is what a screen reader walks. Do not reach
@@ -105,6 +106,57 @@ else:
     print(f'NOT FOUND: {want}. It may be below the fold; scroll and try again.')
     sys.exit(1)
 PY
+        ;;
+
+    goto)
+        # **Tap a thing and prove the screen changed**, rather than tapping and
+        # hoping. Every long walk this project has done ends up doing this by
+        # hand: dump, find, tap, dump again, and check something that only
+        # exists on the far side. #322 asked for exactly this and named why the
+        # first attempt failed: driving `tap` from inside a script lands
+        # sometimes and not others, and nothing said which.
+        #
+        #   tools/walk.sh goto "Medicaid application" "Move it along"
+        #
+        # The marker is matched in the dump rather than typed in English, so it
+        # works in a language the person running the walk cannot read.
+        [ $# -ge 3 ] || usage
+        attempt=1
+        while [ "$attempt" -le 4 ]; do
+            dump
+            python3 - "$2" "$ADB" >/dev/null <<'PY'
+import re
+import subprocess
+import sys
+
+want, adb = sys.argv[1], sys.argv[2]
+xml = open('/tmp/health-trail-walk.xml', encoding='utf-8', errors='replace').read()
+for match in re.finditer(r'<node[^>]*>', xml):
+    node = match.group(0)
+    label = (re.search(r'text="([^"]*)"', node) or [None, ''])[1]
+    desc = (re.search(r'content-desc="([^"]*)"', node) or [None, ''])[1]
+    if want.lower() in label.lower() or (desc and want.lower() in desc.lower()):
+        bounds = re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', node)
+        x = (int(bounds.group(1)) + int(bounds.group(3))) // 2
+        y = (int(bounds.group(2)) + int(bounds.group(4))) // 2
+        subprocess.run([adb, 'shell', 'input', 'tap', str(x), str(y)], check=False)
+        sys.exit(0)
+sys.exit(1)
+PY
+            sleep 2
+            dump
+            if grep -qF "$3" /tmp/health-trail-walk.xml; then
+                echo "reached \"$3\" after tapping \"$2\", attempt $attempt"
+                exit 0
+            fi
+            attempt=$((attempt + 1))
+        done
+        # **Names both halves.** "It did not work" is useless here: what is
+        # wanted is whether the tap missed or the screen behind it never
+        # arrived, and the marker is what tells them apart.
+        echo "tapped \"$2\" four times and never reached \"$3\"." >&2
+        echo "Either the tap is landing somewhere else or that screen does not carry the marker." >&2
+        exit 1
         ;;
 
     fields)

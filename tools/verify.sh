@@ -103,6 +103,22 @@ else
   # through the app first and reimport afterward.
   echo "  note: connectedAndroidTest uninstalls the app. Export first if the phone holds data."
   run_step "instrumented suite runs" gradle_step connectedDebugAndroidTest
+
+  # **The report is copied before anything can overwrite it.** A single class
+  # rerun writes over `androidTest-results/connected/debug/TEST-*.xml`, and both
+  # flakes this project has seen lost their assertion and stack exactly that
+  # way: the next command destroyed the only evidence. #308 and #302.
+  #
+  # Kept in the build directory, which is already ignored, and named by when it
+  # ran so two runs in one afternoon do not become one file.
+  kept="$ROOT/android/app/build/outputs/androidTest-results/history"
+  mkdir -p "$kept"
+  stamp="$(date +%Y%m%d-%H%M%S)"
+  for report in "$ROOT/android/app/build/outputs/androidTest-results/connected/debug/"TEST-*.xml; do
+    [ -f "$report" ] || continue
+    cp "$report" "$kept/$stamp-$(basename "$report")"
+    echo "  report kept: ${kept#"$ROOT"/}/$stamp-$(basename "$report")"
+  done
 fi
 
 echo
