@@ -49,6 +49,7 @@ import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
 import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
@@ -412,9 +413,10 @@ class ScreenReaderTest {
                 onOpenEntry = {},
                 onAdd = {},
                 onShare = {},
+                onRemove = {},
+                onCorrect = {},
                 onResolve = {},
                 onReopen = {},
-                onRemove = {},
                 onBack = {},
             )
         }
@@ -1363,6 +1365,33 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("acknowledging an instruction")
+    }
+
+    /**
+     * Correcting an incident, #358: one screen, three fields and a date that
+     * can be "not sure", so the reader has to announce the chips as well as
+     * the words.
+     */
+    @Test
+    fun correctingAnIncidentLabelsEverything() {
+        compose.show {
+            CorrectIncidentScreen(
+                incident = Repository.Incident(
+                    id = "i1",
+                    title = "Bruise on her arm nobody could explain",
+                    description = "Reported to the charge nurse.",
+                    reportedEdtf = "2026-03",
+                    reportedStart = null,
+                    resolvedAt = null,
+                    resolutionNote = null,
+                    chapterName = "Maplewood Care Center",
+                    entryCount = 3,
+                ),
+                onSave = {},
+                onCancel = {},
+            )
+        }
+        assertEverythingIsLabeled("correcting an incident")
     }
 
     @Test

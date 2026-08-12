@@ -48,6 +48,7 @@ object IncidentTags {
     const val ADD = "incident_add"
     const val SHARE = "incident_share"
     const val REMOVE = "incident_remove"
+    const val CORRECT = "incident_correct"
     fun node(id: String) = "incident_node_$id"
     /**
      * The card, which is the control. [node] tags the spine row around it, and
@@ -294,6 +295,14 @@ fun IncidentScreen(
      * about its links.
      */
     onRemove: () -> Unit,
+    /**
+     * Corrects the words, the date and the note. #358.
+     *
+     * **Above removal and below the rest**, per rule 15's ordering on the
+     * person's screen: correcting is rarer than adding what happened next and
+     * commoner than taking the whole thing off the record.
+     */
+    onCorrect: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -543,6 +552,12 @@ fun IncidentScreen(
                     modifier = Modifier.testTag(IncidentTags.REOPEN),
                 )
             }
+            Spacer(Modifier.height(Space.cardGap))
+            QuietButton(
+                label = strings["incident.correct"],
+                onClick = onCorrect,
+                modifier = Modifier.testTag(IncidentTags.CORRECT),
+            )
             // **Last, and set apart**, per D135 and the person's screen: it is
             // the rarest thing anybody comes here to do, and it opens the
             // confirmation rather than doing anything itself.

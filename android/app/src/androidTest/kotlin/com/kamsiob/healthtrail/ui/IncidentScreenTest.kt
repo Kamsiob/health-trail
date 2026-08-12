@@ -90,9 +90,10 @@ class IncidentScreenTest {
                         onOpenEntry = { opened = it.id },
                         onAdd = {},
                         onShare = {},
+                        onRemove = {},
+                        onCorrect = {},
                         onResolve = {},
                         onReopen = {},
-                        onRemove = {},
                         onBack = {},
                     )
                 }

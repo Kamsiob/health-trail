@@ -100,6 +100,8 @@ import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
 import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
+import com.kamsiob.healthtrail.ui.screens.IncidentCorrection
 import com.kamsiob.healthtrail.ui.screens.MedicationDraft
 import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
 import com.kamsiob.healthtrail.ui.screens.AcknowledgeSheet
@@ -397,6 +399,11 @@ fun NotebookShell(
     var addingStep by remember { mutableStateOf<Pair<String, String>?>(null) }
     var editingStep by remember { mutableStateOf<Triple<String, String, String?>?>(null) }
     var movingStep by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    // The incident being corrected, and the correction in flight. #358.
+    var correctingIncident by remember { mutableStateOf<Repository.Incident?>(null) }
+    var savingCorrection by remember {
+        mutableStateOf<Pair<String, IncidentCorrection>?>(null)
+    }
     var removingStep by remember { mutableStateOf<String?>(null) }
     /** The starting steps being changed, 20.5 screen 18. */
     var stepsOpen by remember { mutableStateOf(false) }
@@ -2779,7 +2786,13 @@ fun NotebookShell(
         // trail has the trail painted over it otherwise, and the tap reads as
         // doing nothing.
         if (incidentsOpen) {
-            val current = openIncident
+            // **The row as the database now has it**, so a correction shows on
+            // the screen behind the form rather than the version that was
+            // opened. `openIncident` is a snapshot taken when it was tapped,
+            // and after #358 that snapshot can be out of date by a title.
+            val current = openIncident?.let { opened ->
+                incidents.firstOrNull { it.id == opened.id } ?: opened
+            }
             if (current == null) {
                 IncidentsScreen(
                     incidents = incidents,
@@ -2829,6 +2842,7 @@ fun NotebookShell(
                         )
                         openIncident = null
                     },
+                    onCorrect = { correctingIncident = current },
                     onResolve = { resolvingIncident = current.id to true },
                     onReopen = { resolvingIncident = current.id to false },
                     onBack = { openIncident = null },
@@ -3633,6 +3647,39 @@ fun NotebookShell(
                 }
                 editingMilestone = null
                 savingMilestone = null
+                revision += 1
+            }
+        }
+
+        val correctingNow = correctingIncident
+        if (correctingNow != null) {
+            CorrectIncidentScreen(
+                incident = correctingNow,
+                onSave = { values ->
+                    correctingIncident = null
+                    savingCorrection = correctingNow.id to values
+                },
+                onCancel = { correctingIncident = null },
+            )
+        }
+
+        val incidentCorrection = savingCorrection
+        if (incidentCorrection != null) {
+            LaunchedEffect(incidentCorrection) {
+                val (incidentId, values) = incidentCorrection
+                if (values.title.isNotBlank()) {
+                    repository.updateIncident(
+                        incidentId = incidentId,
+                        // bidi-ok: a draft on its way to the database. Isolate
+                        // marks here would be stored as part of the words.
+                        title = values.title,
+                        description = values.description,
+                        reported = values.reported,
+                    )
+                }
+                savingCorrection = null
+                // The screen behind resolves the row from the reloaded list,
+                // so bumping the revision is the whole of the refresh.
                 revision += 1
             }
         }
