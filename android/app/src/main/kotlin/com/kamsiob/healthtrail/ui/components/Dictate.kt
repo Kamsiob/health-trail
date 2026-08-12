@@ -7,6 +7,8 @@ import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
@@ -27,10 +29,15 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -43,9 +50,16 @@ import com.kamsiob.healthtrail.ui.theme.Space
  *
  * **A first class control, not a hidden one.** The soft keyboard usually has a
  * microphone key, and relying on it means relying on a key that some keyboards
- * hide, some move, and nobody discovers under stress. This one sits under the
- * field it fills, says "Speak it" in words, and is the same on every field in
- * the app.
+ * hide, some move, and nobody discovers under stress. This one is the app's own
+ * and is the same on every field in it.
+ *
+ * **It lives inside the field, at the end edge**, since 2026-08-12 and #361.
+ * It was an outlined pill reading "Speak it" under every text area, which is a
+ * second row of furniture per field and four of them on a form with four
+ * fields. The owner's words were that a microphone belongs in the text entry
+ * field: it is where every other application on the phone puts it and where
+ * somebody looks without being told. **The words did not go with it**, they
+ * became the control's label for a reader, so nothing was lost but the row.
  *
  * **It appends rather than replaces.** Somebody who typed half a sentence and
  * then decided to say the rest keeps both. What comes back is ordinary text in
@@ -62,6 +76,8 @@ fun DictateAction(
     onText: (String) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    /** True where this is drawn inside a field rather than beside one. */
+    inField: Boolean = false,
     /**
      * True where speaking is the point of the screen rather than an alternative
      * on it.
@@ -124,6 +140,35 @@ fun DictateAction(
             )
     }
 
+    if (inField) {
+        // **A 48dp target on an 18dp glyph**, per `DESIGN.md` 12, which is why
+        // the icon is centered in a box rather than clickable itself. The field
+        // is 48dp tall, so this fills its end edge exactly and nothing grows.
+        Box(
+            modifier = modifier
+                .size(Space.touchTarget)
+                .clip(Radius.tile)
+                .clickable(
+                    enabled = enabled,
+                    role = Role.Button,
+                    onClickLabel = strings["dictate.speak"],
+                    onClick = speak,
+                )
+                // **The label a reader hears**, since the words that used to sit
+                // beside it are gone. It is the control's whole name.
+                .semantics { contentDescription = strings["dictate.speak"] },
+            // **Top, not center**, because the field grows downward as somebody
+            // types. Centered, the glyph drifted to the middle of a two line
+            // note and read as floating beside nothing; on the first line it
+            // sits level with the words, which is where every other application
+            // puts it. The target stays the full 48dp underneath it.
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            MicrophoneGlyph(tint = if (enabled) colors.blue else colors.ink2)
+        }
+        return
+    }
+
     if (prominent) {
         // **A quiet button rather than a filled one, deliberately.** There is
         // already one filled action on the capture screen and it is Save, and
@@ -150,8 +195,10 @@ fun DictateAction(
 /**
  * The microphone, drawn on the same grid as every other icon in the app.
  *
- * Decorative: the words "Speak it" sit beside it and carry the meaning alone,
- * so it is cleared from the semantics tree rather than announced. Section 5.12.
+ * Decorative in every case: where it sits beside the words "Speak it" those
+ * carry the meaning, and where it is alone inside a field the control around it
+ * carries the name. Either way the glyph itself is cleared from the semantics
+ * tree rather than announced twice. Section 5.12.
  */
 @Composable
 private fun MicrophoneGlyph(tint: androidx.compose.ui.graphics.Color) {
@@ -203,6 +250,12 @@ fun DictatableField(
     /** Passed through to [DictateAction]. Law 3, on the note stage of capture. */
     prominentVoice: Boolean = false,
 ) {
+    // Appended, with a space, so half typed and half spoken is a sentence
+    // rather than two words jammed together.
+    val append: (String) -> Unit = { spoken ->
+        onValueChange(if (value.isBlank()) spoken else "${value.trimEnd()} $spoken")
+    }
+
     Column(modifier = modifier) {
         HealthTrailTextField(
             label = label,
@@ -214,16 +267,18 @@ fun DictatableField(
             enabled = enabled,
             singleLine = singleLine,
             imeAction = imeAction,
-        )
-        Spacer(Modifier.height(Space.s))
-        DictateAction(
-            prominent = prominentVoice,
-            enabled = enabled,
-            onText = { spoken ->
-                // Appended, with a space, so half typed and half spoken is a
-                // sentence rather than two words jammed together.
-                onValueChange(if (value.isBlank()) spoken else "${value.trimEnd()} $spoken")
+            // **Inside the field**, unless this is the one screen where
+            // speaking is the point rather than an alternative.
+            trailing = if (prominentVoice) {
+                null
+            } else {
+                { DictateAction(inField = true, enabled = enabled, onText = append) }
             },
         )
+
+        if (prominentVoice) {
+            Spacer(Modifier.height(Space.s))
+            DictateAction(prominent = true, enabled = enabled, onText = append)
+        }
     }
 }

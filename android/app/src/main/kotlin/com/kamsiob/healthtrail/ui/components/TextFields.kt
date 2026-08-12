@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
@@ -77,6 +80,20 @@ fun HealthTrailTextField(
      * Masking is a visual transformation and has to be asked for separately.
      */
     masked: Boolean = false,
+    /**
+     * A control drawn inside the field, at the end edge.
+     *
+     * **This is where the microphone goes**, and until 2026-08-12 it was an
+     * outlined pill reading "Speak it" under the field. The owner's words on
+     * #361 were that a microphone belongs in the text entry field, which is
+     * where every other application on the phone puts it and where somebody
+     * looks for it without being told. A separate control under every text area
+     * is a second row of furniture per field, and on a form with four fields it
+     * is four of them.
+     *
+     * **The field reserves room for it rather than drawing it over the words.**
+     */
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
@@ -105,37 +122,55 @@ fun HealthTrailTextField(
                 )
                 .padding(horizontal = Space.m, vertical = 14.dp),
         ) {
-            BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
-                enabled = enabled,
-                singleLine = singleLine,
-                interactionSource = interaction,
-                textStyle = type.bodyL.copy(color = if (enabled) colors.ink else colors.ink2),
-                cursorBrush = SolidColor(colors.blue),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = keyboardType,
-                    imeAction = imeAction,
-                ),
-                visualTransformation = if (masked) {
-                    PasswordVisualTransformation()
-                } else {
-                    VisualTransformation.None
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    // 48dp minimum touch target including the padding above.
-                    .defaultMinSize(minHeight = 20.dp)
-                    .then(if (fieldTestTag != null) Modifier.testTag(fieldTestTag) else Modifier)
-                    .semantics { contentDescription = label },
-            )
+            Row(verticalAlignment = Alignment.Top) {
+                Box(modifier = Modifier.weight(1f)) {
+                    BasicTextField(
+                        value = value,
+                        onValueChange = onValueChange,
+                        enabled = enabled,
+                        singleLine = singleLine,
+                        interactionSource = interaction,
+                        textStyle = type.bodyL.copy(
+                            color = if (enabled) colors.ink else colors.ink2,
+                        ),
+                        cursorBrush = SolidColor(colors.blue),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = keyboardType,
+                            imeAction = imeAction,
+                        ),
+                        visualTransformation = if (masked) {
+                            PasswordVisualTransformation()
+                        } else {
+                            VisualTransformation.None
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            // 48dp minimum touch target including the padding
+                            // above.
+                            .defaultMinSize(minHeight = 20.dp)
+                            .then(
+                                if (fieldTestTag != null) {
+                                    Modifier.testTag(fieldTestTag)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .semantics { contentDescription = label },
+                    )
 
-            if (value.isEmpty() && hint != null) {
-                Text(
-                    text = hint,
-                    style = type.bodyL,
-                    color = colors.ink2,
-                )
+                    if (value.isEmpty() && hint != null) {
+                        Text(
+                            text = hint,
+                            style = type.bodyL,
+                            color = colors.ink2,
+                        )
+                    }
+                }
+
+                if (trailing != null) {
+                    Spacer(Modifier.width(Space.s))
+                    trailing()
+                }
             }
         }
 
