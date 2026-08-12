@@ -8,7 +8,7 @@
 
 **#361 is the work, and its first item is done.** The owner's words were that the app looks like a data entry app, cluttered and visually complicated, throughout rather than on one screen, and he named the document form, the notebook, the trail and the care team. **Item 1, the five forms that predate law 3, is built and walked on the phone.** Saving a document is three questions with the paper itself as the first one; adding a person, a medication, an appointment and a bill lead with what somebody has in their hand and put the rest behind "Add more". D147, and `DESIGN.md` 14 has a row for each.
 
-**The next thing on #361 is item 2, the trail's shape**, then item 3 the notebook, then item 4 the care team's faces and grouping, which is #353 and is blocked on nothing writing `person.organization_id`. **The forms are waiting on the owner's eye**, six `needs-design-review` issues, because none of the five is drawn in any grid.
+**The next thing on #361 is item 2, the trail's shape**, then item 3 the notebook, then item 4 the care team's faces and grouping, which is #353 and is blocked on nothing writing `person.organization_id`. **The five forms are waiting on the owner's eye**, #362 through #366, because none of them is drawn in any grid and none ever was.
 
 **Last rewritten before that:** 15:35. **Since the swap**: seven sheets that could not reach their own action on a short screen now scroll, the notebook uses the whole screen, all eight workflow defects on #360 are built and walked, the app's language changes without a restart, the fixture shows three links that were built and never seen, and `verify.sh` keeps its report and refuses to start with the notification shade open. **Last rewritten before that:** 13:25, paused mid task with the phone being swapped. **Section 10 opens with the device handover: read it before any device work.** **Nothing is uncommitted and nothing is half written**: the tree is clean, everything is on `origin/main`, and what is left is listed on #360 rather than sitting in the working copy. **Last rewritten before that:** 03:05, mid run. The owed full device run came back **611 green, exactly as #321 predicted**, #349 was ruled by the owner and built, and **the #345 fidelity pass moved from the four daily screens to the section screens under them**, which is where the drift turned out to be.
 
@@ -39,6 +39,7 @@
 - **`verify.sh --device` keeps every report now**, timestamped, under `android/app/build/outputs/androidTest-results/history/`, and **refuses to start with the notification shade open**. Both were flake confounds: #302, #308 and #316.
 - **642 instrumented tests, 1 failure, on the run before this afternoon's work**, and the failure was a test that had not waited for its own callback rather than anything in the app. **A run is in flight as this is written** and its count will be higher again: `SectionsReachableJourneyTest`, `WelcomeSeenTest` and the incident tests all landed after it.
 - **The three failures on the first Pixel 8 run were real and are fixed.** They said "expected the words but was null", which reads like a save that did not fire, and what was true was that a sheet's own Save sat below the fold with no way to reach it. **The old phone was one of the tallest Androids made and hid that for the life of those screens.** `docs/TRAPS.md` section 1 carries the technique for testing a small screen without swapping devices.
+- **651 instrumented tests, 4 failures, 2026-08-12 at 18:20**, `tools/verify.sh --device`, with 218 unit tests and lint. **One failure was real and is fixed**: Today's first coaching step had picked up "need to", which `TodayScreenTest` bans as scolding, when the words changed earlier that day. **The other three did not reproduce**: two `SQLITE_READONLY_DBMOVED`, which is #346, and one Compose timeout in `MedicationQuestionJourneyTest`. All four classes were rerun together and came back 25 of 25. **The next full run should be 651 green.**
 - **637 instrumented tests passed, 0 failures, 2026-08-12 at 16:20 UTC**, after #358, and **five workflow fixes have landed since on #360 and are walked but not yet in a full run**: expect 637 again unless a test is added. **#360 is the live list**: eight defects a focus group pass found in the shell's navigation, three fixed, five open, and **the blocking one is that an appointment can never be corrected after it is saved**, `updateAppointment` being dead code no caller can reach, which also breaks rule 17.
 - **636 instrumented tests passed, 0 failures, 2026-08-12 at 15:30**, with 218 unit tests and lint, through `tools/verify.sh --device`. **Nothing is owed.** The count is read from the root element of `android/app/build/outputs/androidTest-results/connected/debug/TEST-*.xml`, because `verify.sh`'s own summary table lists the unit classes only.
 - **The run before it came back 636 with two failures, and neither was in the file that caused them.** `AppointmentsMonthTest` switched the appointments view to the month, **the choice is remembered on this phone because that is the feature**, and every later test composing that screen got the month: `assertExists` on a row no longer drawn, and the reader sweep on a screen it did not expect. **A test that changes a remembered preference puts it back**, before and after, which is what that class does now. **This is the shape to watch on any screen with a `ViewToggle`**, and documents is the other one.
@@ -181,7 +182,7 @@ Each is said out loud on its own issue rather than counted as done.
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**Twenty-three of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent. **#350 and #359 were added on 2026-08-12**, when starting a care thread and correcting an incident were built.
+**Twenty-eight of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent. **#350 and #359 were added on 2026-08-12**, when starting a care thread and correcting an incident were built, and **#362 through #366 the same day**, when the five add forms were rebuilt on #361. **Those five had been undrawn since they were written and were never listed**, which is the gap this section exists to prevent: they were logged when #361 reached them.
 
 **The Today work of 2026-08-09 added nothing to this list**, and that was checked rather than assumed: every screen and state built that morning is drawn in one of the three grids, so rule 12 never applied. The card's options sheet is grid screen 07, the closed project is 17, the greeting is 16, and the Today work is screens 01 through 10. **The merge work that evening added two**, because the grid draws restore with one outcome and draws nothing at all for reading what a merge decided.
 
@@ -210,6 +211,11 @@ Every one of these was built from the existing components, logged in all three p
 | A question that has not been asked yet, opened | #338 |
 | Starting a care thread | #350 |
 | Correcting an incident | #359 |
+| Saving a document, in three questions | #362 |
+| Adding somebody to the care team | #363 |
+| Adding a medication | #364 |
+| Adding an appointment | #365 |
+| Adding a bill | #366 |
 
 **Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. **Two are from 2026-08-10**, #335 the export's second outcome and #337 the date picker's two new views, and **one from 2026-08-11**, #338, the face a question wears before it has been asked. The other nine have been waiting longer.
 
@@ -252,9 +258,14 @@ Every one of these was built from the existing components, logged in all three p
 3. **`tools/device.sh`**, which installs the APK, seeds the month six fixture and focuses the app, refusing rather than half succeeding. **It will not accept an APK older than the sources**, so build first.
 4. **A full `tools/verify.sh --device`** before anything closes: the last one was **637 green on 2026-08-12 at 16:20 UTC**, and **six commits have landed since with device walks but no full run**.
 
+**The phone is at its baseline as of 2026-08-12 at 18:45**, read back rather than assumed: font scale 1.0, animator 1.0, touch exploration 0, no per app locale, and the app's own theme back on "Follow the phone". **It holds the current build and the month six fixture**, reseeded after the suite uninstalled the app. **It can be unplugged.**
+
+**`tools/screenshot.sh` refuses on this phone until the app's own theme is set.** Its night mode is `auto`, so the script cannot derive a theme from the device and says "Cannot tell what theme the app is in." **Set Appearance to Light or Dark in the app, capture, and set it back to "Follow the phone"**, which is what the old phone never needed. It is not a defect in the script.
+
 **What is owed on the new device**, and none of it is started:
 
 - **A screenshot for #359**, the correcting an incident screen, which rule 12 requires and which the issue says is coming.
+- **A document saved with a real photograph in it**, which is the one part of #362 nobody has seen: the picker opens the owner's own library, so the sheet holding an image and the band carried into the later questions exist only in code. `docs/TRAPS.md` section 1.
 - **The unfiled Today card**, whose branch is the same code as the incidents card and was never seen, because the month six layout does not carry that card.
 - **#360 items 3, 5 and 8**, which are the three workflow defects left. **The next action is item 5**, search opening the result rather than the roster it lives in.
 
