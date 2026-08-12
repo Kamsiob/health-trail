@@ -152,11 +152,18 @@ fun MoneyScreen(
         //
         // **A fold carries its count and its own sum**, so the person can see
         // what is behind it without opening it.
-        STATE_ORDER.forEachIndexed { index, state ->
+        // **The first state that has anything in it leads**, rather than the
+        // first state in the order. Bound to the index, a notebook with three
+        // disputed bills and nothing needing attention opened on a wash band
+        // and a stack of closed folds with no bill visible at all, and disputed
+        // and waiting on insurance are where bills sit for weeks. Law 1, and it
+        // is the many-item state rather than an edge case.
+        val leadState = STATE_ORDER.firstOrNull { state -> bills.any { it.state == state } }
+        STATE_ORDER.forEach { state ->
             val inState = bills.filter { it.state == state }
-            if (inState.isEmpty()) return@forEachIndexed
+            if (inState.isEmpty()) return@forEach
 
-            val leads = index == 0
+            val leads = state == leadState
             if (leads) {
                 item(key = "lead_$state") {
                     // **The eyebrow says why this one is up here**, per grid

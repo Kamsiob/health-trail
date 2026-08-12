@@ -139,7 +139,12 @@ fun ChangeSituationScreen(
                 Spacer(Modifier.height(Space.headerGap))
                 Text(
                     text = Bidi.isolate(next.name),
-                    style = HealthTrail.type.hero,
+                    // **What it is now leads and what it will become supports
+                    // it**, which is what this screen's own prose says it does.
+                    // Both were at hero, so in the ordinary state, immediately
+                    // after the picker closes, the screen showed three lines
+                    // within a point of each other before any body text. Law 1.
+                    style = HealthTrail.type.displayS,
                     color = colors.ink,
                     modifier = Modifier.testTag(ChangeSituationTags.CHOSEN),
                 )

@@ -113,6 +113,13 @@ class CaptureTest {
     private fun toStage(stage: Int) {
         repeat(stage) {
             compose.onNodeWithTag(CaptureFormTags.NEXT).performClick()
+            // **Each stage is waited for rather than assumed.** The forward
+            // control is the same node on every stage, so clicking it twice in
+            // a row can land both taps before the second stage has composed,
+            // and the next `performTextInput` then fails with "Failed to
+            // perform text input" on a field that is on its way in. Seen in a
+            // full suite on 2026-08-12 and never when the class runs alone.
+            compose.waitForIdle()
         }
     }
 
