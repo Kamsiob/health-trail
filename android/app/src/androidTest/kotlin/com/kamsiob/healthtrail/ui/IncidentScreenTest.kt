@@ -76,6 +76,24 @@ class IncidentScreenTest {
     )
 
     private var opened: String? = null
+    private var openedDocument: String? = null
+
+    /**
+     * **The paperwork an incident produced, which no seed can reach.** The
+     * fixture links no document to an incident, so this is the only place the
+     * row is exercised at all, and #360 was that the row did not open while the
+     * people above it and the entries below it did.
+     */
+    private val paperwork = Repository.Document(
+        id = "d1",
+        title = "The grievance letter, as filed",
+        category = null,
+        originalLocation = "The blue folder at home",
+        notes = null,
+        receivedEdtf = "2026-06-14",
+        sha256 = null,
+        byteSize = null,
+    )
 
     private fun show() {
         compose.setContent {
@@ -85,8 +103,9 @@ class IncidentScreenTest {
                         incident = incident,
                         entries = entries,
                         people = emptyList(),
-                        documents = emptyList(),
+                        documents = listOf(paperwork),
                         onOpenPerson = {},
+                        onOpenDocument = { openedDocument = it.id },
                         onOpenEntry = { opened = it.id },
                         onAdd = {},
                         onShare = {},
@@ -120,5 +139,12 @@ class IncidentScreenTest {
         val label = node.config.getOrNull(SemanticsActions.OnClick)?.label
         assertNotNull("the entry card declares no click action at all", label)
         assertEquals(strings["prep.change.open"], label)
+    }
+
+    @Test
+    fun thePaperworkAnIncidentProducedOpens() {
+        show()
+        compose.onNodeWithTag(IncidentTags.document("d1")).performClick()
+        assertEquals("d1", openedDocument)
     }
 }

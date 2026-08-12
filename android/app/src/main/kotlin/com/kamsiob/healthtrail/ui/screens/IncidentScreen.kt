@@ -261,6 +261,15 @@ fun IncidentScreen(
     documents: List<Repository.Document>,
     onOpenPerson: (Repository.Person) -> Unit,
     /**
+     * Opens the paperwork this incident produced. #360, rule 18.
+     *
+     * **The people above these rows opened and the entries below them opened,
+     * and the documents between them did not**, so the grievance letter had to
+     * be found again by scrolling the documents section: five taps for the
+     * thing the incident is holding out.
+     */
+    onOpenDocument: (Repository.Document) -> Unit,
+    /**
      * Opens one of the entries on the thread.
      *
      * **The other end of a link that only went one way**, #46 and rule 18. An
@@ -390,7 +399,13 @@ fun IncidentScreen(
                             .fillMaxWidth()
                             .semantics(mergeDescendants = true) { }
                             .clip(Radius.card)
-                            .background(colors.card)
+                            // A tap opens the paper itself, the same as the
+                            // people above and the entries below. #360.
+                            .openableByTap(
+                                label = strings["open.action"],
+                                onTap = { onOpenDocument(document) },
+                                resting = colors.card,
+                            )
                             .testTag(IncidentTags.document(document.id))
                             .padding(Space.cardPadding),
                     ) {

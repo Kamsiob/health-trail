@@ -410,6 +410,7 @@ class ScreenReaderTest {
                 ),
                 documents = emptyList(),
                 onOpenPerson = {},
+                onOpenDocument = {},
                 onOpenEntry = {},
                 onAdd = {},
                 onShare = {},

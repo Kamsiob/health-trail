@@ -2842,6 +2842,9 @@ fun NotebookShell(
                         )
                         openIncident = null
                     },
+                    // The incident stays open underneath, so coming back from
+                    // the letter lands on the incident it came out of. #360.
+                    onOpenDocument = { openDocument = it },
                     onCorrect = { correctingIncident = current },
                     onResolve = { resolvingIncident = current.id to true },
                     onReopen = { resolvingIncident = current.id to false },

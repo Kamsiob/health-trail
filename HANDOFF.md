@@ -101,6 +101,7 @@
 
 Each is said out loud on its own issue rather than counted as done.
 
+- **The paperwork an incident produced** is not reachable from any seed: the fixture links no document to an incident, so the rows, and the tap that opens them since #360, live only in `IncidentScreenTest`.
 - **The care team card's sparse rung** and **the trail spine's gap markers** are not reachable from any seed. Held in `TodayFieldScreenTest` instead.
 - **The digest's corrected and removed counts** render, and no seed produces them: the generator's updates land on rows it inserted in the same window.
 - **The document card's empty rung** needs an install with no data behind it. **That is reachable, and this line used to say it was not**: `connectedDebugAndroidTest` uninstalls the app when it finishes, so installing afterward and not seeding is a genuine first run. It is how the empty notebook was walked on 2026-08-11. The route the guard refuses is a different one, and it is right to refuse it.
