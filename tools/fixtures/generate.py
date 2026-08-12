@@ -223,8 +223,10 @@ class Generator:
         people = self.care_team(db, subject_id, chapters)
         self.entries(db, subject_id, chapters, threads)
         appointments = self.appointments(db, subject_id, chapters, people)
-        self.questions(db, subject_id, people, appointments)
-        self.medications(db, subject_id, chapters, people)
+        # **Medications come before the questions now**, because a question
+        # can be about one and nothing seeded that link until #229.
+        medications = self.medications(db, subject_id, chapters, people)
+        self.questions(db, subject_id, people, appointments, medications)
         self.emergency_card(db, subject_id, people)
         self.measures(db, subject_id)
         self.milestones(db, subject_id)
@@ -1176,7 +1178,7 @@ class Generator:
             made.append((self.row(db, "appointment", values, day=day), day))
         return made
 
-    def questions(self, db, subject_id, people, appointments):
+    def questions(self, db, subject_id, people, appointments, medications=()):
         """Things to ask, some asked and some still waiting.
 
         **The open ones are what a prep sheet carries.** A fixture where every
@@ -1191,6 +1193,12 @@ class Generator:
             day = self.day_of_activity()
             text, role = QUESTIONS[index % len(QUESTIONS)]
             values = {"subject_id": subject_id, "text": text}
+            # **Every fourth question is about a medication**, #229. The column
+            # had a writer in the capture form and a reader on the medication's
+            # own screen, and no fixture ever produced one, so the row that says
+            # "1 question waiting" was invisible in every walk.
+            if medications and index % 4 == 0:
+                values["medication_id"] = medications[index % len(medications)]
             if role:
                 values["role_label"] = role
                 if people:
@@ -1214,6 +1222,11 @@ class Generator:
             self.row(db, "question", values, day=day)
 
     def medications(self, db, subject_id, chapters, people):
+        # Returned so a question can point at one. **A question about a
+        # medication was a built feature no fixture ever showed**, #229: the
+        # column had a writer in the capture form and a reader on the
+        # medication's own screen, and a walk never met one because nothing
+        # seeded it.
         """What she is taking, what she was taking, and every change in between.
 
         **The history is the point, not the list.** `MASTER_SPEC.md` treats a
@@ -1226,6 +1239,7 @@ class Generator:
         Nothing here says whether any of it was right. Rule 2.
         """
         wanted = roster(self.days, len(MEDICATIONS), 5)
+        written = []
         for index in range(wanted):
             name, dose, purpose = MEDICATIONS[index % len(MEDICATIONS)]
             started = self.rng.randrange(0, max(2, self.days // 2))
@@ -1254,7 +1268,9 @@ class Generator:
                 values["stop_reason"] = self.rng.choice(MED_STOP_REASONS)
 
             medication_id = self.row(db, "medication", values, day=started)
+            written.append(medication_id)
             self.medication_history(db, medication_id, chapters, started, stopped, dose)
+        return written
 
     def medication_history(self, db, medication_id, chapters, started, stopped, dose):
         """The course of one medication, in the order it happened."""
