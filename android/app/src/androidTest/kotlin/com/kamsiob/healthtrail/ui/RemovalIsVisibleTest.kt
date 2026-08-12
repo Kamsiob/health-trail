@@ -410,6 +410,7 @@ class RemovalIsVisibleTest {
                 onOpenEntry = {},
                 onShare = {},
                 onWriteUp = {},
+                onOpenQuestion = {},
                 onCorrect = {},
                 onRemove = { removals += 1 },
                 onBack = {},

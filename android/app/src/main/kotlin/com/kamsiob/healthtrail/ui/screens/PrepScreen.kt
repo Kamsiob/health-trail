@@ -104,6 +104,13 @@ fun PrepScreen(
      * promise that a date is editable forever from the entry itself was not
      * kept here. #360.
      */
+    /**
+     * Opens the question, where it can be marked asked or answered. #360.
+     *
+     * **The sheet stays open underneath**, so somebody who ticks one off is
+     * still standing on the list they came in with.
+     */
+    onOpenQuestion: (Repository.Question) -> Unit,
     onCorrect: () -> Unit,
     onRemove: () -> Unit,
     onBack: () -> Unit,
@@ -267,6 +274,17 @@ fun PrepScreen(
                                     // and is not repeated here, per 17.
                                     title = Bidi.isolate(question.text),
                                     divider = row < inRole.lastIndex,
+                                    // **It opens, because this is the screen
+                                    // somebody is holding in the room.** The
+                                    // rows were the only ones on this sheet
+                                    // that did not: the changes below them
+                                    // opened all along, so half the sheet
+                                    // answered a tap and half of it did not,
+                                    // and ticking off the question just asked
+                                    // meant leaving the prep sheet and finding
+                                    // it again in Ask next time. #360.
+                                    onClick = { onOpenQuestion(question) },
+                                    clickLabel = strings["open.action"],
                                     modifier = Modifier
                                         .testTag(PrepTags.question(question.id)),
                                 )

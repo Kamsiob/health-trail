@@ -2273,6 +2273,7 @@ class ScreenReaderTest {
                 onOpenEntry = {},
                 onShare = {},
                 onWriteUp = {},
+                onOpenQuestion = {},
                 onCorrect = {},
                 onRemove = {},
                 onBack = {},

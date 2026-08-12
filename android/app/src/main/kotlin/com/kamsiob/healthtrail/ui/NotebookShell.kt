@@ -3085,6 +3085,10 @@ fun NotebookShell(
                     },
                     // **The appointment's own screen corrects it**, #360, the
                     // same door every other row type has had all along.
+                    // The prep sheet stays open underneath, so ticking a
+                    // question off leaves the person on the list they walked
+                    // in with. #360.
+                    onOpenQuestion = { answering = it },
                     onCorrect = {
                         editingAppointment = sheet.appointment
                         addingAppointment = true
