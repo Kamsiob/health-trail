@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -106,6 +108,13 @@ fun StandingSheet(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .imePadding()
+                // **The sheet scrolls, or its own Save is unreachable on a
+                // shorter phone.** Found on 2026-08-12, the day a Pixel 8
+                // replaced a Pixel 10 Pro XL: the button sat below the fold
+                // with no way to reach it, so a person on one of the commonest
+                // Android phones could fill this in and never save it. The old
+                // device was tall enough to hide it for the life of the screen.
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = Space.screenHorizontal)
                 .padding(bottom = Space.l),
         ) {

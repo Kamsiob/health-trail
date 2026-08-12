@@ -2,11 +2,14 @@ package com.kamsiob.healthtrail.ui
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -101,6 +104,7 @@ class StandingSheetTest {
     fun theDateOnTheSheetIsTheDateThatIsSaved() {
         show()
         compose.onNodeWithTag(StandingTags.WHO).performTextInput("The review panel")
+        compose.onNodeWithTag(StandingTags.SAVE).performScrollTo()
         compose.onNodeWithTag(StandingTags.SAVE).performClick()
         assertEquals("The review panel", savedHolder)
         assertNotNull("the date never reached the caller", savedSince)
@@ -118,7 +122,17 @@ class StandingSheetTest {
         show()
         compose.onNodeWithTag(StandingTags.SAVE).assertIsNotEnabled()
         compose.onNodeWithTag(StandingTags.WHO).performTextInput("The county")
+        compose.waitForIdle()
+        compose.onNodeWithTag(StandingTags.WHO).assertTextContains("The county", substring = true)
+        // **Scrolled to rather than assumed visible.** On a shorter phone the
+        // sheet's own Save sits below the fold, and a click at a node's centre
+        // outside the viewport does nothing at all: the test read as "save did
+        // not fire" when what was true was "a person could not reach it".
+        // 2026-08-12, the day the test device changed.
+        compose.onNodeWithTag(StandingTags.SAVE).performScrollTo()
+        compose.onNodeWithTag(StandingTags.SAVE).assertIsEnabled()
         compose.onNodeWithTag(StandingTags.SAVE).performClick()
+        compose.waitUntil(timeoutMillis = 5_000) { savedHolder != null }
         assertEquals("The county", savedHolder)
         assertEquals("", savedActivity)
     }
@@ -135,6 +149,7 @@ class StandingSheetTest {
     fun theDateDoesNotInheritTheLastOneEvenThoughTheWordsDo() {
         show(previous = previous)
         compose.onNodeWithTag(StandingTags.SAVE).performClick()
+        compose.waitUntil(timeoutMillis = 5_000) { savedHolder != null }
         assertEquals("The county", savedHolder)
         assertEquals("reviewing it", savedActivity)
         assertEquals(Edtf.day(LocalDate.now()), savedSince)

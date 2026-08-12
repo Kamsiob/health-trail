@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -113,6 +114,9 @@ class StartProjectPreviewSheetTest {
 
         compose.onNodeWithTag(StartPreviewTags.NAME).performTextClearance()
         compose.onNodeWithTag(StartPreviewTags.NAME).performTextInput("Mom's Medicaid")
+        // The sheet scrolls, and on a shorter phone its action starts below the
+        // fold. A click at a node's centre outside the viewport does nothing.
+        compose.onNodeWithTag(StartPreviewTags.CREATE).performScrollTo()
         compose.onNodeWithTag(StartPreviewTags.CREATE).performClick()
 
         assertEquals("Mom's Medicaid", created)

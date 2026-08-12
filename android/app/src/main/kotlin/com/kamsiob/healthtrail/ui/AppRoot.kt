@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.DatabaseKeyLost
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.data.WelcomeSeen
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
@@ -69,9 +70,15 @@ fun AppRoot(
     LaunchedEffect(Unit) {
         state = try {
             val repository = Repository.open(context)
-            val accepted = repository.settingTimestamp(Repository.KEY_DISCLAIMER_ACCEPTED)
+            // **Either the notebook or this phone remembers.** Restore replaces
+            // the notebook and the acceptance goes with it, so somebody putting
+            // their own backup on a new phone met "Before you start" the next
+            // time the process started, which on this app is as ordinary as
+            // changing the font scale. #307, D146.
+            val accepted = repository.settingTimestamp(Repository.KEY_DISCLAIMER_ACCEPTED) != null ||
+                WelcomeSeen(context).seen()
             when {
-                accepted == null -> RootState.Gate(repository)
+                !accepted -> RootState.Gate(repository)
                 repository.activeSubject() == null -> RootState.Setup(repository)
                 else -> RootState.Ready(repository)
             }
@@ -102,6 +109,9 @@ fun AppRoot(
                         Repository.KEY_DISCLAIMER_ACCEPTED,
                         System.currentTimeMillis(),
                     )
+                    // The phone remembers too, so a restore cannot take this
+                    // away from the person who did it. #307, D146.
+                    WelcomeSeen(context).remember()
                     // **Asked again rather than assumed.** This used to go
                     // straight to setup, which is right on a fresh install and
                     // wrong after a restore: restoring replaces everything

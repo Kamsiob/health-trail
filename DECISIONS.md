@@ -2737,3 +2737,17 @@ This was an owner decision, and it dissolves the problem rather than solving it.
 > `connectedAndroidTest` uninstalls the application and takes its data with it. Before running it, if the phone holds anything worth keeping, export through the app's own export feature first and reimport afterward.
 
 **What this changed in the repository:** `tools/verify.sh` no longer refuses to run the instrumented suite on a physical device, `CONTRIBUTING.md` and the `test-runner` agent definition carry the export-first step instead of an emulator requirement, and the test classes say where they run and why.
+
+---
+
+### D146. The welcome is remembered by the phone as well as by the notebook
+
+**Date:** 2026-08-12. **Decided under rule 10 and rule 23**, #307, which was filed rather than fixed because it touches the first screen the app ever shows.
+
+**The defect.** Acceptance of "Before you start" was stored only as `disclaimer_accepted_at` in the notebook. **Restore replaces the notebook, so the acceptance went with it**, and nothing looked wrong until the process next started, which on this app is as ordinary as changing the font scale. Somebody who had just put six months of their own record back on a new phone was handed the first run screen, which reads as "the restore did not work" while every note sits behind it.
+
+**The two readings, and why one wins.** The acceptance is a record with a timestamp, which is why it is in the notebook and why it belongs in the archive. It is also a fact about the person holding this phone, which is what the screen actually asks about. **Rule 23 decides it**: not being sent back through onboarding after restoring your own backup is easier for the person, and it is neither less safe nor less private. **So it is recorded in both places**, answering both questions rather than moving one answer to the other's home.
+
+**What this cannot do.** It cannot make the disclaimer skippable on a phone that has never seen it. The flag is a preferences file, created with the app and cleared with its data, so a fresh install and a cleared install both still gate. **`connectedAndroidTest` uninstalls the app**, which is why the suite still meets the gate on every run.
+
+**What it deliberately does not change.** The notebook still carries the timestamp and the archive still carries it, so the record of when somebody accepted is unchanged. And the gate still shows on a restore onto a phone that has never run the app, which is correct: that person has not read it here.
