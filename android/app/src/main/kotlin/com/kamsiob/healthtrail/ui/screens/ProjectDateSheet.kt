@@ -2,6 +2,8 @@ package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -92,6 +94,12 @@ fun ProjectDateSheet(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .imePadding()
+                // **Every sheet that carries a form scrolls**, or its own
+                // action is unreachable on a short screen. The standing sheet
+                // proved it on 2026-08-12: its Save sat below the fold with no
+                // way to reach it, and the old test device was tall enough to
+                // hide that for the life of the screen. #129.
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = Space.screenHorizontal)
                 .padding(bottom = Space.l),
         ) {
