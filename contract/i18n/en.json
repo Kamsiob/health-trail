@@ -505,6 +505,7 @@
   "chapter.entries.empty": "Nothing filed against this place yet.",
   "section.back.chapters": "Back to chapters",
   "chapters.current": "Where they are now",
+  "chapters.holds": "What is in this chapter",
   "chapters.earlier": "Other places",
   "chapters.since": "Since {date}",
   "appts.subtitle": "What is coming up, and what already happened. Nothing here reminds you.",

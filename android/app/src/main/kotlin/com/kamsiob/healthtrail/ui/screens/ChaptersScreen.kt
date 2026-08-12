@@ -40,6 +40,7 @@ object ChapterTags {
     const val EARLIER_FOLD = "chapters_earlier_fold"
     const val MILESTONES = "chapters_milestones"
     fun row(id: String) = "chapter_$id"
+    fun holds(id: String) = "chapter_holds_$id"
 }
 
 /**
@@ -73,6 +74,15 @@ fun ChaptersScreen(
     onOpenMilestones: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * What each chapter holds, counted, by chapter id. #356.
+     *
+     * **Grid screen 19 makes the current place a card for exactly this line.**
+     * The card carried a name and a date and said nothing about what happened
+     * there, which is what somebody opens it for. Absent for a chapter with
+     * nothing in it, so the row never says four zeroes.
+     */
+    contents: Map<String, Repository.ChapterContents> = emptyMap(),
 ) {
     val strings = LocalStrings.current
     val current = chapters.filter { it.isCurrent }
@@ -105,6 +115,7 @@ fun ChaptersScreen(
                     // none of them would be. `DESIGN.md` section 5.2.1.
                     ChapterSpineRow(
                         chapter = chapter,
+                        holds = contents[chapter.id],
                         onOpen = { onOpen(chapter) },
                         state = Waypoint.MILESTONE,
                         continuesAbove = index > 0,
@@ -148,6 +159,7 @@ fun ChaptersScreen(
                     item(key = chapter.id) {
                         ChapterSpineRow(
                             chapter = chapter,
+                            holds = contents[chapter.id],
                             onOpen = { onOpen(chapter) },
                             state = Waypoint.HAPPENED,
                             continuesAbove = index > 0,
@@ -208,6 +220,7 @@ fun ChaptersScreen(
 @Composable
 private fun ChapterSpineRow(
     chapter: Repository.Chapter,
+    holds: Repository.ChapterContents?,
     onOpen: () -> Unit,
     state: Waypoint,
     continuesAbove: Boolean,
@@ -223,14 +236,18 @@ private fun ChapterSpineRow(
         dash = null,
     ) {
         Column {
-            ChapterRow(chapter, onOpen)
+            ChapterRow(chapter, holds, onOpen)
             Spacer(Modifier.height(Space.cardGap))
         }
     }
 }
 
 @Composable
-private fun ChapterRow(chapter: Repository.Chapter, onOpen: () -> Unit) {
+private fun ChapterRow(
+    chapter: Repository.Chapter,
+    holds: Repository.ChapterContents?,
+    onOpen: () -> Unit,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     Column(
@@ -283,6 +300,39 @@ private fun ChapterRow(chapter: Repository.Chapter, onOpen: () -> Unit) {
         chapter.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             Spacer(Modifier.height(Space.xs))
             Text(text = Bidi.isolate(notes), style = HealthTrail.type.bodyS, color = colors.ink2)
+        }
+
+        // **What the chapter holds, counted**, per grid screen 19. Each part
+        // counts in its own units, the same words the notebook uses since
+        // #347, and **a count of zero is left out entirely** rather than
+        // printed as "no documents": a chapter is a place somebody was, not a
+        // checklist of what they collected there.
+        if (holds != null && !holds.isEmpty) {
+            val parts = listOfNotNull(
+                strings("notebook.count.trail", "count" to holds.entries)
+                    .takeIf { holds.entries > 0 },
+                strings("notebook.count.documents", "count" to holds.documents)
+                    .takeIf { holds.documents > 0 },
+                strings("notebook.count.care_team", "count" to holds.people)
+                    .takeIf { holds.people > 0 },
+                strings("today.open.incidents", "count" to holds.openIncidents)
+                    .takeIf { holds.openIncidents > 0 },
+            )
+            Spacer(Modifier.height(Space.s))
+            // bidi-ok: every part is a catalog phrase around a number, in the
+            // app's own words rather than anything the person typed.
+            Text(
+                text = strings["chapters.holds"],
+                style = HealthTrail.type.mono,
+                color = colors.ink2,
+            )
+            Spacer(Modifier.height(Space.xs))
+            Text(
+                text = Bidi.join(parts),
+                style = HealthTrail.type.bodyM,
+                color = colors.ink,
+                modifier = Modifier.testTag(ChapterTags.holds(chapter.id)),
+            )
         }
     }
 }

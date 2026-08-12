@@ -505,6 +505,7 @@
   "chapter.entries.empty": "还没有归到这个地方的内容。",
   "section.back.chapters": "返回篇章",
   "chapters.current": "目前所在",
+  "chapters.holds": "这一段里有什么",
   "chapters.earlier": "其他地方",
   "chapters.since": "自 {date} 起",
   "appts.subtitle": "即将到来的和已经发生的。这里的任何内容都不会提醒您。",

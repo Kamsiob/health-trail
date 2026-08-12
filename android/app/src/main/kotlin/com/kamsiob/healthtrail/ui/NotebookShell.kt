@@ -618,6 +618,9 @@ fun NotebookShell(
     var savingThread by remember { mutableStateOf<String?>(null) }
     var readings by remember { mutableStateOf<List<Repository.Reading>>(emptyList()) }
     var chapters by remember { mutableStateOf<List<Repository.Chapter>>(emptyList()) }
+    var chapterContents by remember {
+        mutableStateOf<Map<String, Repository.ChapterContents>>(emptyMap())
+    }
     var appointments by remember {
         mutableStateOf<List<Repository.Appointment>>(emptyList())
     }
@@ -740,6 +743,7 @@ fun NotebookShell(
             threadCounts = subject?.let { repository.threadsWithCounts(it.id) }.orEmpty()
             readings = subject?.let { repository.readings(it.id) }.orEmpty()
             chapters = subject?.let { repository.chapters(it.id) }.orEmpty()
+            chapterContents = chapters.associate { it.id to repository.chapterContents(it.id) }
             milestones = subject?.let { repository.milestones(it.id) }.orEmpty()
             appointments = subject?.let { repository.appointments(it.id) }.orEmpty()
             instructions = subject?.let { repository.standingInstructions(it.id) }.orEmpty()
@@ -2669,6 +2673,9 @@ fun NotebookShell(
                 )
 
                 Repository.Section.CHAPTERS -> ChaptersScreen(
+                    // What each chapter holds, so the current place says it on
+                    // its own card rather than only inside. #356.
+                    contents = chapterContents,
                     onOpen = { openChapter = it },
                     chapters = chapters,
                     onOpenMilestones = { milestonesOpen = true },

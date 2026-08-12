@@ -505,6 +505,7 @@
   "chapter.entries.empty": "Nada archivado en este lugar todavía.",
   "section.back.chapters": "Volver a los capítulos",
   "chapters.current": "Dónde está ahora",
+  "chapters.holds": "Lo que hay en este capítulo",
   "chapters.earlier": "Otros lugares",
   "chapters.since": "Desde {date}",
   "appts.subtitle": "Lo que viene y lo que ya ocurrió. Nada de esto le avisa.",

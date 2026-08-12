@@ -1424,6 +1424,16 @@ class ScreenReaderTest {
                 ),
                 onOpen = {},
                 onOpenMilestones = {},
+                // What the current chapter holds, #356: counted on the card
+                // rather than only inside it.
+                contents = mapOf(
+                    "c1" to Repository.ChapterContents(
+                        entries = 23,
+                        documents = 7,
+                        people = 6,
+                        openIncidents = 1,
+                    ),
+                ),
                 onBack = {},
             )
         }

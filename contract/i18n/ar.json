@@ -505,6 +505,7 @@
   "chapter.entries.empty": "لا شيء مُصنّف تحت هذا المكان بعد.",
   "section.back.chapters": "العودة إلى الفصول",
   "chapters.current": "أين هو الآن",
+  "chapters.holds": "ما في هذا الفصل",
   "chapters.earlier": "أماكن أخرى",
   "chapters.since": "منذ {date}",
   "appts.subtitle": "ما هو قادم، وما حدث بالفعل. لا شيء هنا يذكّرك.",

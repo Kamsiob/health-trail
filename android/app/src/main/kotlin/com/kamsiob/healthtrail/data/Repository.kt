@@ -3037,6 +3037,55 @@ class Repository private constructor(
     }
 
     /**
+     * What one chapter holds, counted. #356.
+     *
+     * **Grid screen 19 makes the current place a card for this line**: "23
+     * entries · 7 documents · 6 people · 1 open incident". The card had the
+     * name and the date and said nothing about what happened there, which is
+     * the thing a caregiver opens it for.
+     *
+     * **Four counts, from four places that already carry `chapter_id`**, and
+     * the people come through `person_chapter`, which is the table that exists
+     * because a nurse at the rehab is a different row from the same human at
+     * the nursing home.
+     */
+    data class ChapterContents(
+        val entries: Int,
+        val documents: Int,
+        val people: Int,
+        val openIncidents: Int,
+    ) {
+        val isEmpty: Boolean get() = entries == 0 && documents == 0 &&
+            people == 0 && openIncidents == 0
+    }
+
+    suspend fun chapterContents(chapterId: String): ChapterContents =
+        withContext(Dispatchers.IO) {
+            val database = db().database
+            fun count(sql: String): Int =
+                database.rawQuery(sql, arrayOf(chapterId)).use {
+                    if (it.moveToFirst()) it.getInt(0) else 0
+                }
+            ChapterContents(
+                entries = count(
+                    "SELECT COUNT(*) FROM live_entry WHERE chapter_id = ?",
+                ),
+                documents = count(
+                    "SELECT COUNT(*) FROM live_document WHERE chapter_id = ?",
+                ),
+                people = count(
+                    "SELECT COUNT(DISTINCT pc.person_id) FROM live_person_chapter pc " +
+                        "JOIN live_person p ON p.id = pc.person_id " +
+                        "WHERE pc.chapter_id = ? AND p.archived_at IS NULL",
+                ),
+                openIncidents = count(
+                    "SELECT COUNT(*) FROM live_incident " +
+                        "WHERE chapter_id = ? AND resolved_at IS NULL",
+                ),
+            )
+        }
+
+    /**
      * They moved: the place they were ends today and a new one begins today.
      *
      * **This is what a chapter boundary is, and stating one without making one
