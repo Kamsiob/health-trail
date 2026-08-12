@@ -2857,11 +2857,12 @@ fun NotebookShell(
                     entries = incidentEntries,
                     people = incidentPeople,
                     documents = incidentDocuments,
-                    onOpenPerson = { person ->
-                        openIncident = null
-                        incidentsOpen = false
-                        openPerson = person
-                    },
+                    // **The incident stays open underneath this too.** It
+                    // closed itself to show a person, so checking the charge
+                    // nurse's number mid-read cost three taps to get back and
+                    // the way back named the care team, which is not where the
+                    // person had been. #360.
+                    onOpenPerson = { person -> openPerson = person },
                     // **The incident stays open underneath**, so somebody who
                     // reads one entry and comes back is where they were rather
                     // than two taps away from it. Rule 18 and #46, and it is
@@ -3171,7 +3172,18 @@ fun NotebookShell(
                 // The person stays open underneath, per #360.
                 onOpenEntry = { openEntry = it.id },
                 onBack = { openPerson = null },
-                backLabelKey = "section.back.careteam",
+                // **The way back names where the person actually came from.**
+                // It said "back to the care team" whatever opened it, so
+                // somebody who reached a nurse from an incident, a project or
+                // the trail was told to go somewhere they had not been. The
+                // entry screen has varied this by origin all along. #360.
+                backLabelKey = when {
+                    openIncident != null -> "section.back.incident"
+                    openProject != null -> "section.back.project"
+                    openEntry != null -> "section.back.trail"
+                    openThread != null -> "section.back.threads"
+                    else -> "section.back.careteam"
+                },
             )
         }
 

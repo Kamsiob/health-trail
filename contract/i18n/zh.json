@@ -363,6 +363,7 @@
   "section.back": "返回笔记本",
   "section.back.trail": "返回轨迹",
   "section.back.careteam": "返回照护团队",
+  "section.back.incident": "返回您反映的事",
   "section.back.today": "返回今天",
   "trail.search.hint": "{count, plural, other {在 # 条记录中搜索}}",
   "trail.search.clear": "清除搜索",

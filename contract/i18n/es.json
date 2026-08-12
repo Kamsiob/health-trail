@@ -363,6 +363,7 @@
   "section.back": "Volver al cuaderno",
   "section.back.trail": "Volver al recorrido",
   "section.back.careteam": "Volver al equipo de cuidado",
+  "section.back.incident": "Volver a lo que planteó",
   "section.back.today": "Volver a Hoy",
   "trail.search.hint": "{count, plural, one {Buscar en 1 anotación} other {Buscar en # anotaciones}}",
   "trail.search.clear": "Borrar la búsqueda",

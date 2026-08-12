@@ -363,6 +363,7 @@
   "section.back": "Back to the notebook",
   "section.back.trail": "Back to the trail",
   "section.back.careteam": "Back to the care team",
+  "section.back.incident": "Back to what you raised",
   "section.back.today": "Back to Today",
   "trail.search.hint": "{count, plural, one {Search 1 entry} other {Search # entries}}",
   "trail.search.clear": "Clear the search",

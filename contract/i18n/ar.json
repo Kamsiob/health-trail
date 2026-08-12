@@ -363,6 +363,7 @@
   "section.back": "العودة إلى الدفتر",
   "section.back.trail": "العودة إلى المسار",
   "section.back.careteam": "العودة إلى فريق الرعاية",
+  "section.back.incident": "العودة إلى ما أثرته",
   "section.back.today": "العودة إلى اليوم",
   "trail.search.hint": "{count, plural, zero {ابحث في المدخلات} one {ابحث في مدخل واحد} two {ابحث في مدخلين} few {ابحث في # مدخلات} many {ابحث في # مدخلاً} other {ابحث في # مدخل}}",
   "trail.search.clear": "امسح البحث",
