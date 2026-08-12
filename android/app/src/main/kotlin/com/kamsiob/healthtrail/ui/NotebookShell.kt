@@ -1075,6 +1075,23 @@ fun NotebookShell(
                                     }
 
                                     person != null -> openPerson = person
+
+                                    // **The two cards that count something
+                                    // with a list of its own open that list.**
+                                    // Both used to open the trail, so the card
+                                    // answered a question and then took the
+                                    // person somewhere the answer was not.
+                                    // #360.
+                                    card.type == "incidents" -> {
+                                        destination = Destination.NOTEBOOK
+                                        incidentsOpen = true
+                                    }
+
+                                    card.type == "unfiled" -> {
+                                        destination = Destination.NOTEBOOK
+                                        trayOpen = true
+                                    }
+
                                     // Somebody archived is not in the roster,
                                     // and their card is still a door: it opens
                                     // the section, where they can be found.
