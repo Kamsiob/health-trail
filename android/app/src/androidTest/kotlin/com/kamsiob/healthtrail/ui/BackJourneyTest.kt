@@ -217,12 +217,22 @@ class BackJourneyTest {
         compose.onNodeWithTag(CaptureFormTags.NOTE).performTextInput(words)
         compose.waitForIdle()
 
-        // All the way out to the notebook, which is two presses now that back
-        // from a form returns to the sheet. D65.
-        backWithoutLeavingTheApp("a capture form")
-        backWithoutLeavingTheApp("the capture sheet")
+        // **Out of the form and straight back in through the chooser.** Back
+        // from a form reopens the chooser, D65, so the way back in is the
+        // choice itself rather than closing the chooser and pressing the
+        // button again. **That middle step is what this test used to do and it
+        // is not what it is about**: the assertion is that the words survive
+        // leaving the form, and going out through the chooser and in again
+        // proves exactly that with nothing else in the way.
+        // **The keyboard eats the first back press.** Typing into the note
+        // leaves the IME up, and a back press with the IME up dismisses the
+        // keyboard rather than the form, so the wait below was watching for a
+        // chooser while the form was still on screen. The modal sheet this
+        // replaced was its own window and took the keyboard down with it.
+        Espresso.closeSoftKeyboard()
+        compose.waitForIdle()
 
-        compose.onNodeWithTag(NavTags.CAPTURE).performClick()
+        backWithoutLeavingTheApp("a capture form")
         compose.waitUntil(timeoutMillis = 10_000) { showing(CaptureTags.SHEET) }
         compose.onNodeWithTag(CaptureTags.option(CaptureKind.CALL)).performClick()
         compose.waitForIdle()

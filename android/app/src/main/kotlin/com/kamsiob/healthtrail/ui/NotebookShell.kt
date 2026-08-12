@@ -87,7 +87,7 @@ import com.kamsiob.healthtrail.ui.screens.CaptureDraft
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureFormState
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
-import com.kamsiob.healthtrail.ui.screens.CaptureSheet
+import com.kamsiob.healthtrail.ui.screens.CaptureBloom
 import com.kamsiob.healthtrail.ui.screens.edtf
 import com.kamsiob.healthtrail.ui.screens.entryKind
 import com.kamsiob.healthtrail.ui.screens.usesTheSharedForm
@@ -960,6 +960,9 @@ fun NotebookShell(
     BackHandler(enabled = capturing != null) {
         capturing = null
         documentError = null
+        // **Back from a form reopens the chooser**, which is D65's contract and
+        // is not this change's to alter: the bloom is a different presentation
+        // of the same chooser, not a different flow.
         sheetOpen = true
     }
 
@@ -3989,7 +3992,7 @@ fun NotebookShell(
         }
 
         if (sheetOpen) {
-            CaptureSheet(
+            CaptureBloom(
                 onChoose = { kind ->
                     sheetOpen = false
                     capturing = kind

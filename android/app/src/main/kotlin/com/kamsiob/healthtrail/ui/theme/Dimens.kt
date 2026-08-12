@@ -77,6 +77,16 @@ object Space {
      * right.
      */
     val fabSize: Dp = 48.dp
+
+    /**
+     * The mark on a choice in the capture bloom, and the drawing inside it.
+     *
+     * **A mark rather than words**, so it is sized to itself the way an avatar
+     * is, per section 15: the label beside it carries every real word and
+     * scales with the person's font.
+     */
+    val bloomMark: Dp = 32.dp
+    val bloomDrawing: Dp = 20.dp
     val fabGap: Dp = 12.dp
     val fabScrollClearance: Dp = 48.dp + 12.dp + 16.dp
     /**
