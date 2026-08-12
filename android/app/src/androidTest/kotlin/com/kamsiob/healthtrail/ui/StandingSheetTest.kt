@@ -106,6 +106,11 @@ class StandingSheetTest {
         compose.onNodeWithTag(StandingTags.WHO).performTextInput("The review panel")
         compose.onNodeWithTag(StandingTags.SAVE).performScrollTo()
         compose.onNodeWithTag(StandingTags.SAVE).performClick()
+        // **Waited for rather than assumed.** This passed in its own class and
+        // failed in the full suite, which is the signature of a callback that
+        // has not landed yet rather than one that never fires: the machine is
+        // busier when 642 tests are running.
+        compose.waitUntil(timeoutMillis = 5_000) { savedHolder != null }
         assertEquals("The review panel", savedHolder)
         assertNotNull("the date never reached the caller", savedSince)
         assertEquals(Edtf.day(LocalDate.now()), savedSince)

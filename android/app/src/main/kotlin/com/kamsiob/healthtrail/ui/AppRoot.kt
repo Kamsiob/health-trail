@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.DatabaseKeyLost
@@ -87,7 +88,14 @@ fun AppRoot(
         }
     }
 
-    val strings = remember(context) { Strings.load(context) }
+    // **Keyed on the language rather than on the context**, #326. Compose does
+    // not replace the context object when the configuration changes, it updates
+    // the configuration behind the same object, so `remember(context)` never
+    // invalidated: setting the app's language flipped the layout to right to
+    // left immediately and left every word in English until the process was
+    // restarted. That reads exactly like a missing translation and is not one.
+    val languageTag = LocalConfiguration.current.locales.get(0)?.toLanguageTag().orEmpty()
+    val strings = remember(context, languageTag) { Strings.load(context) }
 
     CompositionLocalProvider(LocalStrings provides strings) {
         when (val current = state) {
