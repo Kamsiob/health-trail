@@ -371,6 +371,7 @@
   "trail.row.eyebrow": "{date} · {kind}",
   "careteam.call.number": "Call {number}",
   "careteam.add": "Add someone",
+  "careteam.everyone": "Everyone else",
   "careteam.add.title": "Add someone to the care team",
   "careteam.add.lead": "Answer what you can. A number with no name is still worth keeping.",
   "careteam.add.name": "Their name",

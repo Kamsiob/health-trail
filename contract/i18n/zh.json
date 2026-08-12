@@ -371,6 +371,7 @@
   "trail.row.eyebrow": "{date} · {kind}",
   "careteam.call.number": "拨打 {number}",
   "careteam.add": "添加成员",
+  "careteam.everyone": "其他所有人",
   "careteam.add.title": "向照护团队添加成员",
   "careteam.add.lead": "能填多少就填多少。只有号码没有名字也值得保存。",
   "careteam.add.name": "姓名",

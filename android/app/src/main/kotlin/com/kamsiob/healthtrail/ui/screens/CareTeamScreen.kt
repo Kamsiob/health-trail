@@ -16,6 +16,11 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.Avatar
@@ -28,8 +33,25 @@ object CareTeamTags {
     const val NAME = "care_team"
     fun person(id: String) = "care_team_person_$id"
     const val ADD = "care_team_add"
+    const val REST_FOLD = "care_team_rest"
     fun call(id: String) = "care_team_call_$id"
 }
+
+/**
+ * How many people lead the screen, per grid screen 11, which draws three.
+ *
+ * Three is what fits above the fold beside a heading and a subtitle, and it is
+ * short enough that the eye takes it as a set rather than as the top of a list.
+ */
+private const val LEAD_COUNT = 3
+
+/**
+ * How many have to be left over before the rest are worth folding at all.
+ *
+ * Folding one person behind a tap is furniture, and a roster of four fits on
+ * the screen without any of this.
+ */
+private const val MIN_FOLDED = 2
 
 /**
  * The care team: everyone involved, and how to reach them.
@@ -58,8 +80,23 @@ fun CareTeamScreen(
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * The same people, most recently used first. #351.
+     *
+     * **The screen had every name at one weight**, where grid screen 11 draws
+     * a short group of the ones somebody actually calls and folds the rest.
+     * Fifteen rows and fifteen identical call pills is the uniform weight rule
+     * 15 names, on the screen a person reaches for when they need a number in
+     * the next ten seconds.
+     *
+     * `Repository.peopleByRecentUse` already answered this and this screen was
+     * the only list not asking it. Empty falls back to the order in [people],
+     * which is what a notebook with no history has to offer and is honest.
+     */
+    byRecentUse: List<Repository.Person> = emptyList(),
 ) {
     val strings = LocalStrings.current
+    var restOpen by rememberSaveable { mutableStateOf(false) }
 
     SectionScaffold(
         name = CareTeamTags.NAME,
@@ -75,21 +112,66 @@ fun CareTeamScreen(
             item { Spacer(Modifier.height(Space.l)) }
         }
 
+        // **The ones you actually call lead, and the rest fold**, per grid
+        // screen 11 and #351. Ordering by when somebody was last called or
+        // written about is the same question the capture form and the unfiled
+        // tray already ask, and this list was the only one not asking it.
+        val ordered = byRecentUse.takeIf { it.isNotEmpty() } ?: people
+        val lead = ordered.take(LEAD_COUNT)
+        // **In the order they were added**, which is what somebody scanning a
+        // roster expects, exactly as the thread list keeps `sort_index` for the
+        // same reason. Two orders, because they answer two questions.
+        val rest = people.filterNot { person -> lead.any { it.id == person.id } }
+
+        // **Only split where splitting says something.** Folding one or two
+        // people behind a tap to make a short list look organized is furniture,
+        // and on a notebook with four names the whole roster fits anyway.
+        val folds = rest.size >= MIN_FOLDED
+
         // **One group, not one card each.** The grid draws the people you call
         // as a single grouped surface with hairlines between them.
         if (people.isNotEmpty()) {
+            val top = if (folds) lead else people
             item {
                 GroupedSurface {
-                    people.forEachIndexed { index, person ->
+                    top.forEachIndexed { index, person ->
                         PersonRow(
                             person = person,
                             onCall = { onCall(person) },
                             onOpen = { onOpen(person) },
-                            isLast = index == people.lastIndex,
+                            isLast = index == top.lastIndex,
                         )
                     }
                 }
                 Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
+        if (folds) {
+            item {
+                FoldRow(
+                    labelKey = "careteam.everyone",
+                    expanded = restOpen,
+                    onToggle = { restOpen = !restOpen },
+                    count = rest.size.toString(),
+                    modifier = Modifier.testTag(CareTeamTags.REST_FOLD),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+            if (restOpen) {
+                item {
+                    GroupedSurface {
+                        rest.forEachIndexed { index, person ->
+                            PersonRow(
+                                person = person,
+                                onCall = { onCall(person) },
+                                onOpen = { onOpen(person) },
+                                isLast = index == rest.lastIndex,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(Space.cardGap))
+                }
             }
         }
 

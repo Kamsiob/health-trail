@@ -371,6 +371,7 @@
   "trail.row.eyebrow": "{date} · {kind}",
   "careteam.call.number": "الاتصال بالرقم {number}",
   "careteam.add": "إضافة شخص",
+  "careteam.everyone": "بقية الأشخاص",
   "careteam.add.title": "إضافة شخص إلى فريق الرعاية",
   "careteam.add.lead": "أجب بما تستطيع. الرقم بلا اسم يستحق الحفظ أيضًا.",
   "careteam.add.name": "الاسم",

@@ -2727,6 +2727,10 @@ fun NotebookShell(
 
                 Repository.Section.CARE_TEAM -> CareTeamScreen(
                     people = people,
+                    // The ones somebody actually calls lead the screen, #351.
+                    // This list is already loaded for the capture form, which
+                    // has been asking the same question all along.
+                    byRecentUse = peopleForCapture,
                     // ACTION_DIAL rather than ACTION_CALL, which would need the
                     // call permission. The dialer opens with the number filled in
                     // and the person presses the green button themselves. That is
