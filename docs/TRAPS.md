@@ -228,6 +228,8 @@ Each section says when it applies. If you are not doing that thing, skip it.
 
 **Continuous integration** triggers on `push` to main, on `pull_request` and on `workflow_dispatch`. If pull request events stop firing: `gh workflow run ci.yml --ref <branch>`, then poll. **Do not read an absence of checks on a pull request as a passing build.**
 
+**The `[t]ools/verify.sh` guard counts its own command line, and the bracket trick does not save it.** `ps -eo cmd | grep -c '[t]ools/verify.sh'` is meant to answer "is a run already going", and run as part of a compound command that also starts the run, the parent shell's own command line contains the string and is counted. It reported 2 on 2026-08-12 with nothing running at all, which reads as two runs on one phone and is the opposite of the truth. **Run the guard as its own call, and print the matching lines rather than a count**: `ps -eo pid,cmd | grep '[v]erify.sh'` names what it found and can be read.
+
 **`pkill -f <pattern>` matches its own command line and kills the shell running it.** A cleanup step that read `pkill -f "connectedDebugAndroidTest" ; bash tools/verify.sh ...` killed itself before the redirect ever created the log, so the failure was a missing file and an exit code of 144 rather than anything about the tests. **Check for the process and act on what you find**, or match on something the killing command cannot contain.
 
 **`gh issue comment` takes no `-q`, and fails quietly when given one.** A comment written to a file and posted with `--body-file -q .html_url` printed nothing and posted nothing, which looks exactly like a comment that posted and printed nothing. **Check the issue, not the exit code.**
