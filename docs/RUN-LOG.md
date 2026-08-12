@@ -1880,3 +1880,29 @@ The fidelity pass had spent its first day on the four screens somebody uses dail
 **Screens 02 and 15 are superseded drawings**, since Today and Projects have their own later grids, and comparing a built screen against a superseded drawing manufactures drift. **Screens 20 and 24 have nothing built to compare**, being #182 and #199, both blocked on the owner.
 
 **Two findings are filed and blocked on missing write paths rather than on judgment.** Nobody can say where a person works, so the care team cannot fold by organization, #353. And **an incident cannot be corrected or removed from its own screen**, #358: the only `UPDATE incident` in the repository sets `resolved_at`, so the most consequential thing a family writes down is the one thing they cannot fix afterward.
+
+---
+
+## 28. The day the device changed and the owner said what the app looks like, 2026-08-12
+
+**A Pixel 8 replaced the Pixel 10 Pro XL**, and the first suite run on it failed three tests that had been green for the life of those screens. **All three said "expected the words but was null"**, which reads like a save that did not fire, and what was true was that a sheet's own Save sat below the fold with no way to reach it. **Seven sheets had no vertical scroll**, so on one of the commonest Android phones somebody could fill one in and never save it. The old device was one of the tallest Androids made and hid all of it.
+
+**`tools/seed.sh` was broken on any fresh device and nobody could have known.** The system file picker opens on Recent, and the old phone had opened it so many times that it always came up in Downloads.
+
+### What the panels found
+
+**A design panel and a caregiver focus group**, both read only, read the built screens and every string against the project's own rules. **The app assumed the person being cared for is a woman** in five rendered strings, two of them directly above copy that says "they", on an app whose setup never asks. **Three law one violations** with precedents already solved elsewhere in the same codebase: Today's counts at 22sp under a 23sp lead, Money with no lead at all when nothing needs attention, and Change of situation with two heroes in the state it exists for.
+
+**A workflow panel found eight defects in one pass**, every one with the data already loaded and most of them one assignment: an appointment that could never be corrected after saving, a month review row that opened nothing while showing a press state, a prep sheet whose questions could not be ticked off in the room, search that opened the roster rather than the result, and a person screen that told you the way back was the care team wherever you had come from.
+
+### The capture button blooms
+
+**Grid screen 04 drew it from the start**: a labeled menu blooming from the button itself, not a wall. The app had a modal sheet of tiles. **The owner asked for the bloom by name**, then for polish: one width so the left edge is a line, and an animation quick enough to notice and not wait for. **Movement only, never opacity**, because a pill fading in is a target somebody can tap and not see, which is also what made a journey test fail four times before the real cause surfaced: the sheet was its own window and took the keyboard with it, a menu in the same tree does not, and a back press with the keyboard up dismisses the keyboard rather than the form.
+
+### What the owner said at the end, which is bigger than any of it
+
+**It looks like a data entry app.** Cluttered, visually complicated, throughout rather than on one screen, and the notebook's fold is not the answer. **#361 carries it**, and the diagnosis worth keeping is that every screen resolves to the same three moves, a grouped surface, dense rows and a fold, so a vocabulary built to create hierarchy produces none.
+
+### Three mistakes of mine, recorded because they cost real time
+
+**I pushed twice with red checks**, both times by chaining the commit on a `grep` that succeeded rather than on `verify.sh`'s exit code, which is the exact mistake D140 exists to prevent. **I edited `verify.sh` while a run of it was in flight**, and bash reads a script incrementally, so the run died with errors that read like a broken tool on a file that passes `bash -n`. **And the notebook's height check compiled, read correctly, and did nothing**, because the window reports pixels and it converted them to dp before comparing against a dp threshold.
