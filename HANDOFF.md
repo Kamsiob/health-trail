@@ -165,7 +165,7 @@ Each is said out loud on its own issue rather than counted as done.
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**Twenty-two of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent. **#350 was added on 2026-08-12** when starting a care thread was built.
+**Twenty-three of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent. **#350 and #359 were added on 2026-08-12**, when starting a care thread and correcting an incident were built.
 
 **The Today work of 2026-08-09 added nothing to this list**, and that was checked rather than assumed: every screen and state built that morning is drawn in one of the three grids, so rule 12 never applied. The card's options sheet is grid screen 07, the closed project is 17, the greeting is 16, and the Today work is screens 01 through 10. **The merge work that evening added two**, because the grid draws restore with one outcome and draws nothing at all for reading what a merge decided.
 
@@ -193,6 +193,7 @@ Every one of these was built from the existing components, logged in all three p
 | The date picker, zoomed to months and to years | #337 |
 | A question that has not been asked yet, opened | #338 |
 | Starting a care thread | #350 |
+| Correcting an incident | #359 |
 
 **Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. **Two are from 2026-08-10**, #335 the export's second outcome and #337 the date picker's two new views, and **one from 2026-08-11**, #338, the face a question wears before it has been asked. The other nine have been waiting longer.
 
