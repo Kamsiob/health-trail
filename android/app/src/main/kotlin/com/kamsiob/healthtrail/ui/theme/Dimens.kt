@@ -44,6 +44,17 @@ object Space {
     /** Between stacked elements. */
     val cardGap: Dp = 10.dp
 
+    /**
+     * The width of a hairline, wherever one is drawn rather than bordered.
+     *
+     * **A token because it was a literal in every screen that drew one**, and a
+     * measurement typed into a screen is invisible to every other check here,
+     * D142. `Modifier.border` and `HorizontalDivider` take their own; this is
+     * for the `drawBehind` cases, where the stroke is in pixels and the
+     * conversion is the caller's.
+     */
+    val hairlineWidth: Dp = 1.dp
+
     /** Gap between a section header and its content. */
     val headerGap: Dp = 10.dp
 

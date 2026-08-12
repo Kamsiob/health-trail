@@ -115,7 +115,7 @@ fun StickySectionHeader(
                     color = colors.hairline,
                     start = Offset(0f, y),
                     end = Offset(size.width, y),
-                    strokeWidth = 1.dp.toPx(),
+                    strokeWidth = Space.hairlineWidth.toPx(),
                 )
             }
             .padding(start = Space.xs, end = Space.xs, top = Space.xs, bottom = Space.s)

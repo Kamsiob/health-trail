@@ -39,9 +39,11 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # 161 at D142. 158 after the first fidelity pass, 155 after the second.
 # 154 once the document form's empty sheet was sized from the thumbnail
 # vocabulary rather than from numbers typed into the screen. #361.
+# 153 once the width of a hairline became a token, which is what the trail's
+# index rail needed and what the sticky header had been typing. #361.
 # Every radius outside the theme is a token now, each naming the grid selector
 # it came from, so a later reader can check it against the drawing.
-BASELINE = 154
+BASELINE = 153
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

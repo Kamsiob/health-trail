@@ -1,6 +1,8 @@
 package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -75,6 +77,8 @@ fun EdgeScrubber(
 
     val colors = HealthTrail.colors
     val type = HealthTrail.type
+    // Read outside the draw scope, which is not a composable.
+    val line = colors.hairline
     val haptics = LocalHapticFeedback.current
     var height by remember { mutableIntStateOf(0) }
     var lastReported by remember { mutableIntStateOf(currentIndex) }
@@ -89,6 +93,26 @@ fun EdgeScrubber(
         modifier = modifier
             .fillMaxHeight()
             .width(railWidth())
+            // **The line is what makes it an index rather than stray digits.**
+            // #361: on a notebook a few months old the rail carries two labels,
+            // and `SpaceBetween` puts one near the top and one in the middle of
+            // an otherwise empty margin, where they read as numbers that have
+            // come loose from something. The hairline they sit on says they
+            // are one control and says how far it runs, which is the half a
+            // person needs before they will touch it.
+            //
+            // **Drawn behind, at the width of a hairline**, so it is the same
+            // mark the rest of the app uses to say "these belong together" and
+            // costs the content nothing.
+            .drawBehind {
+                val x = size.width / 2
+                drawLine(
+                    color = line,
+                    start = Offset(x, 0f),
+                    end = Offset(x, size.height),
+                    strokeWidth = Space.hairlineWidth.toPx(),
+                )
+            }
             .onSizeChanged { height = it.height }
             .pointerInput(labels.size) {
                 detectVerticalDragGestures(
@@ -121,7 +145,10 @@ fun EdgeScrubber(
             Box(
                 modifier = Modifier
                     .clip(Radius.tile)
-                    .background(if (current) colors.blueWash else Color.Transparent)
+                    // **Opaque, so the rail's line runs between the labels
+                    // rather than through them.** `paper` because the scrubber
+                    // rides a reserved margin and never sits over content.
+                    .background(if (current) colors.blueWash else colors.paper)
                     // **Each label is its own tap target**, which is what makes
                     // the non-gesture path real rather than claimed. A person
                     // who cannot hold a precise drag, and anybody using a screen
