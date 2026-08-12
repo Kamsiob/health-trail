@@ -16,6 +16,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
@@ -211,7 +212,27 @@ fun NotebookScreen(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val bySection = sections.associateBy { it.section }
-    var foldOpen by rememberSaveable { mutableStateOf(false) }
+    // **Open where the screen has room for it, closed where it does not.**
+    // The fold exists so twelve rows do not overwhelm a short screen, and on a
+    // tall one it was buying nothing and costing a tap: the notebook ended
+    // above the halfway mark with the rest of the screen empty. **The fold is
+    // still a fold**, so somebody who closes it on a tall phone keeps it
+    // closed, and the order never changes either way. Rule 23.
+    var foldOpen by rememberSaveable { mutableStateOf<Boolean?>(null) }
+
+    // **Measured against the closed notebook rather than the open one.**
+    // Twelve rows do not fit on any phone, so asking whether everything fits
+    // would keep the fold shut forever. The question worth asking is whether
+    // closing it leaves the screen half empty, which it does on anything taller
+    // than the closed content.
+    //
+    // **Asked of the configuration rather than of the layout.** A
+    // `BoxWithConstraints` answers the same question and does it during
+    // measurement, which made a journey test die with "performMeasureAndLayout
+    // called during measure layout" when three classes ran together. The
+    // configuration is known before anything is measured.
+    val roomForAll = LocalConfiguration.current.screenHeightDp.dp >=
+        ROOM_BELOW_THE_CLOSED_NOTEBOOK
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -296,16 +317,17 @@ fun NotebookScreen(
             }
 
             if (rest.isNotEmpty()) {
+                val open = foldOpen ?: roomForAll
                 FoldRow(
                     labelKey = "notebook.fold.more",
-                    expanded = foldOpen,
-                    onToggle = { foldOpen = !foldOpen },
+                    expanded = open,
+                    onToggle = { foldOpen = !open },
                     count = rest.size.toString(),
                     modifier = Modifier.testTag(NotebookTags.FOLD),
                 )
                 // **Opens in place**, per `DESIGN.md` section 9, because what it
                 // holds is eight rows rather than a screenful.
-                AnimatedVisibility(visible = foldOpen) {
+                AnimatedVisibility(visible = open) {
                     GroupedRows(items = rest) { row, isLast ->
                         SectionRow(row = row, isLast = isLast, onOpen = onOpen)
                     }
@@ -316,6 +338,20 @@ fun NotebookScreen(
         }
     }
 }
+
+/**
+ * The height above which a closed notebook leaves the screen half empty.
+ *
+ * **The closed notebook is about this tall**: the header, the card of what
+ * needs somebody, four section rows and the fold. On a screen taller than it,
+ * folding eight rows away buys nothing and costs a tap, and the person is
+ * looking at a page that stops before the middle. On a shorter one the fold is
+ * doing its job and stays shut.
+ *
+ * **Not a device check.** It is the content's own height, so it holds at every
+ * font scale and on whatever the next phone turns out to be.
+ */
+private val ROOM_BELOW_THE_CLOSED_NOTEBOOK = 700.dp
 
 /**
  * One section, as a row in a grouped surface.
