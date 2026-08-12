@@ -89,6 +89,62 @@ object EventDateText {
     }
 
     /**
+     * One date, under a heading that has already named its month and year.
+     *
+     * **The trail said "June 2026" once and then said it again on all forty
+     * three rows underneath it.** Every row inside a month band carried the
+     * month and the year the band above it had just given, which is most of the
+     * ink on the most read screen in the app and is what #361 means by a long
+     * list with no shape: when every line starts with the same eleven
+     * characters, nothing on the screen distinguishes anything.
+     *
+     * **The weekday replaces them rather than nothing taking their place.** A
+     * bare "29" is a number in a column, and the question somebody actually
+     * asks of a record is "was that the Monday". `date.format.weekday_day` is
+     * the same shape the day heading already uses, minus the month.
+     *
+     * **Only a day and a moment shorten.** A coarse date keeps [render] whole,
+     * hedge and all, because "sometime in June" is the claim the person made
+     * and turning it into a weekday would be inventing a precision they did not
+     * give. Rule 17.
+     *
+     * **The hedge still wraps whatever comes back.** An uncertain Monday reads
+     * as an uncertain Monday.
+     */
+    fun withinMonth(strings: Strings, canonical: String?): String {
+        if (canonical.isNullOrEmpty()) return strings["date.unknown"]
+        val date = Edtf.parse(canonical) ?: return canonical
+        val short = shortened(strings, date) ?: return render(strings, date)
+        return when (date.qualifier) {
+            Edtf.Qualifier.NONE -> short
+            Edtf.Qualifier.UNCERTAIN -> strings("date.uncertain", "date" to short)
+            Edtf.Qualifier.APPROXIMATE -> strings("date.approximate", "date" to short)
+            Edtf.Qualifier.BOTH -> strings("date.both", "date" to short)
+        }
+    }
+
+    /** The weekday and the day of the month, or null for anything coarser. */
+    private fun shortened(strings: Strings, date: Edtf.Date): String? {
+        val body = body(date)
+        val pattern = pattern(strings, "date.format.weekday_day_only")
+        return when (date.precision) {
+            Edtf.Precision.DAY ->
+                runCatching { LocalDate.parse(body).format(pattern) }.getOrNull()
+
+            Edtf.Precision.MOMENT -> runCatching {
+                val at = LocalDateTime.parse(body)
+                strings(
+                    "date.moment",
+                    "date" to at.toLocalDate().format(pattern),
+                    "time" to at.format(pattern(strings, "date.format.time")),
+                )
+            }.getOrNull()
+
+            else -> null
+        }
+    }
+
+    /**
      * The month a run of trail entries belongs to, as its group heading.
      *
      * **A heading, so it carries no hedge.** Everywhere else a coarse date is

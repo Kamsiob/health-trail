@@ -384,7 +384,13 @@ fun TrailScreen(
                     PinnedGroupText(label = strings["trail.pinned"]) {
                         Column {
                             for (entry in row.entries) {
-                                TrailRow(entry = entry, onOpen = { onOpen(entry) })
+                                TrailRow(
+                                    entry = entry,
+                                    onOpen = { onOpen(entry) },
+                                    // Pinned entries float above time itself,
+                                    // so each one carries its own whole date.
+                                    withinMonth = false,
+                                )
                             }
                         }
                     }
@@ -449,7 +455,11 @@ fun TrailScreen(
                                 DistanceMarker(strings(gap.key, "count" to gap.count))
                                 Spacer(Modifier.height(Space.s))
                             }
-                            TrailRow(entry = row.entry, onOpen = { onOpen(row.entry) })
+                            TrailRow(
+                                entry = row.entry,
+                                onOpen = { onOpen(row.entry) },
+                                withinMonth = row.withinMonth,
+                            )
                         }
                     }
                 }
@@ -514,6 +524,16 @@ private sealed interface TrailRowSpec {
         val gap: Distance.Gap?,
         val continuesAbove: Boolean,
         val continuesBelow: Boolean,
+        /**
+         * True when a month band directly above this row has already said the
+         * month and the year, so the row says the weekday and the day instead.
+         *
+         * **False for search results and for the pinned run**, which is the
+         * whole reason this is a flag rather than a rule: both of those float
+         * free of the month structure, and "Monday 29" in a list that spans
+         * five years is a date somebody cannot place.
+         */
+        val withinMonth: Boolean = true,
     ) : TrailRowSpec
 }
 
@@ -591,6 +611,9 @@ private fun planTrail(
                     gap = null,
                     continuesAbove = index > 0,
                     continuesBelow = index < found.size - 1,
+                    // A flat list with no month bands, so every row says its
+                    // whole date.
+                    withinMonth = false,
                 ),
                 null,
             )
@@ -792,13 +815,30 @@ internal fun nodeColor(kind: String): Color {
  * that only responds to a gesture nobody was told about.
  */
 @Composable
-private fun TrailRow(entry: Repository.TrailEntry, onOpen: () -> Unit) {
+private fun TrailRow(
+    entry: Repository.TrailEntry,
+    onOpen: () -> Unit,
+    /**
+     * True when the band above this row has already named the month and year.
+     *
+     * **The row then says the weekday and the day.** #361: forty three rows
+     * under a header reading "June 2026" each began by saying June 2026 again,
+     * which is most of the ink on the most read screen in the app and is why a
+     * long list read as a wall. `EventDateText.withinMonth` keeps the hedge and
+     * refuses to shorten anything coarser than a day.
+     */
+    withinMonth: Boolean,
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, Color.Transparent)
-    val date = EventDateText.render(strings, entry.occurredEdtf)
+    val date = if (withinMonth) {
+        EventDateText.withinMonth(strings, entry.occurredEdtf)
+    } else {
+        EventDateText.render(strings, entry.occurredEdtf)
+    }
     val kind = strings[kindNameKey(entry.kind)]
     val title = entry.title?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) } ?: kind
 

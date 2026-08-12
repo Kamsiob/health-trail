@@ -1424,5 +1424,6 @@
   "conflicts.removed": "已删除",
   "conflicts.not_removed": "仍然存在",
   "restore.confirm.unchosen": "请先选择其中一项",
-  "conflicts.kept.line": "{kept}，{reason}"
+  "conflicts.kept.line": "{kept}，{reason}",
+  "date.format.weekday_day_only": "d日 EEEE"
 }

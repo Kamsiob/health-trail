@@ -1424,5 +1424,6 @@
   "conflicts.removed": "Removed",
   "conflicts.not_removed": "Still here",
   "restore.confirm.unchosen": "Choose one of these first",
-  "conflicts.kept.line": "{kept}, {reason}"
+  "conflicts.kept.line": "{kept}, {reason}",
+  "date.format.weekday_day_only": "EEEE d"
 }
