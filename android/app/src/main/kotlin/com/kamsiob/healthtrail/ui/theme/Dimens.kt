@@ -79,6 +79,17 @@ object Space {
     val fabSize: Dp = 48.dp
     val fabGap: Dp = 12.dp
     val fabScrollClearance: Dp = 48.dp + 12.dp + 16.dp
+    /**
+     * The height above which a closed notebook leaves the screen half empty.
+     *
+     * **A breakpoint rather than a spacing step**, and it lives here because
+     * measurements live here: the closed notebook is about this tall, so a
+     * screen taller than it has room for the folded sections and a shorter one
+     * does not. `NotebookScreen` reads it to decide whether its fold starts
+     * open. 2026-08-12.
+     */
+    val roomBelowTheClosedNotebook = 700.dp
+
 }
 
 @Immutable

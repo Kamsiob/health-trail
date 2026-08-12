@@ -16,7 +16,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
@@ -226,13 +227,17 @@ fun NotebookScreen(
     // closing it leaves the screen half empty, which it does on anything taller
     // than the closed content.
     //
-    // **Asked of the configuration rather than of the layout.** A
+    // **Asked of the window rather than of the layout.** A
     // `BoxWithConstraints` answers the same question and does it during
     // measurement, which made a journey test die with "performMeasureAndLayout
     // called during measure layout" when three classes ran together. The
-    // configuration is known before anything is measured.
-    val roomForAll = LocalConfiguration.current.screenHeightDp.dp >=
-        ROOM_BELOW_THE_CLOSED_NOTEBOOK
+    // window's size is known before anything is measured, and it is what lint
+    // asks for in place of the configuration's own height.
+    val density = LocalDensity.current
+    val windowHeight = with(density) {
+        LocalWindowInfo.current.containerSize.height.toDp()
+    }
+    val roomForAll = windowHeight >= Space.roomBelowTheClosedNotebook
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -339,19 +344,7 @@ fun NotebookScreen(
     }
 }
 
-/**
- * The height above which a closed notebook leaves the screen half empty.
- *
- * **The closed notebook is about this tall**: the header, the card of what
- * needs somebody, four section rows and the fold. On a screen taller than it,
- * folding eight rows away buys nothing and costs a tap, and the person is
- * looking at a page that stops before the middle. On a shorter one the fold is
- * doing its job and stays shut.
- *
- * **Not a device check.** It is the content's own height, so it holds at every
- * font scale and on whatever the next phone turns out to be.
- */
-private val ROOM_BELOW_THE_CLOSED_NOTEBOOK = 700.dp
+
 
 /**
  * One section, as a row in a grouped surface.
