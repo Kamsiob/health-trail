@@ -273,6 +273,24 @@ class BackJourneyTest {
         reachTheNotebook()
         openTheNotebook()
 
+        // **Everything above the destination is closed first, deliberately.**
+        // This test reads whatever state the classes before it left in the one
+        // shared database, and `reachTheNotebook` clicks through the gate,
+        // setup and the picker only if each is showing, so the number of
+        // screens on the stack differed with what ran first. **That is why it
+        // failed twice in a full suite and never alone**: it was asserting
+        // about a back stack it had not established. #302.
+        //
+        // Pressing back until the notebook is the only thing left makes the
+        // premise true rather than hoping it is, and the loop is bounded so a
+        // screen that refuses to close fails here rather than hanging.
+        repeat(6) {
+            if (!showing(SectionTags.BACK)) return@repeat
+            Espresso.pressBack()
+            compose.waitForIdle()
+        }
+        compose.onNodeWithTag(NotebookTags.ROOT).assertIsDisplayed()
+
         // Unconditionally, because the ordinary `pressBack` raises when the app
         // exits and here the exit is the expected result.
         Espresso.pressBackUnconditionally()
