@@ -11,12 +11,16 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.ui.components.ViewPreference
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
+import com.kamsiob.healthtrail.ui.screens.VIEW_AGENDA
 import com.kamsiob.healthtrail.ui.screens.ApptTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,6 +46,27 @@ class AppointmentsMonthTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private val strings by lazy { Strings.load(context, Locale.ENGLISH) }
+
+    /**
+     * **The view choice is remembered on this phone**, which is the feature,
+     * and it means a test that switches to the month leaves every later test
+     * composing the month. Two of them failed that way on the run of
+     * 2026-08-12, both on appointments and neither anywhere near this file:
+     * `assertExists` on a row that was no longer drawn, and the reader sweep on
+     * a screen it did not expect.
+     *
+     * **So this class puts it back**, before and after, rather than leaving the
+     * next test to discover it.
+     */
+    @Before
+    fun startFromTheList() {
+        ViewPreference(context).write(ApptTags.NAME, VIEW_AGENDA)
+    }
+
+    @After
+    fun leaveItOnTheList() {
+        ViewPreference(context).write(ApptTags.NAME, VIEW_AGENDA)
+    }
 
     private val zone: ZoneId = ZoneId.systemDefault()
 
