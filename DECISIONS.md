@@ -2690,6 +2690,22 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D147. A form asks one question at a time; correcting a record shows all of it at once
+
+**Date:** 2026-08-12. **Decided under rule 10**, working #361, which is the owner's own words about the built app. **Supersedes nothing** and changes no schema, no copy, and no saved value.
+
+**The decision.** The five add forms that predate law 3 being enforced now ask their questions the way capture does rather than stacking every field down one scroll. Saving a document is three questions with progress dots; adding a person, a medication, an appointment and a bill lead with what somebody has in their hand and put the rest behind the "Add more" in `Disclosure.kt`. **Save stays live from the first question on all five.**
+
+**Correcting a saved record is not staged, and that is the half worth writing down.** The same composable does both jobs on four of the five. **Somebody who opens a document to change it already knows which line is wrong**, and walking them through three questions to reach it would be the form starting a conversation they came to end. A new record is the conversation; a correction is one field in a record that is already there. So `existing != null` shows every group at once, and the disclosure that hides a folder and a note on the way in starts open on the way back.
+
+**That is `startOpen`, and it is the general rule rather than a special case.** A disclosure labeled "Add more" that is hiding a note somebody typed last week is the app hiding their own words from them. Every form here passes it when the fields behind the control already say something.
+
+**Rule 23 settles it among the defensible answers.** Staging the correction path would be more consistent and less easy; showing the whole record when somebody came to change one line is easier, and it is neither less safe, less private, nor incompatible with anything decided. **Law 3 is about being asked, not about being shown what you already wrote.**
+
+**What this leaves open, and it is the owner's call.** None of the five forms is drawn in `reference/screen-grid.html`, so D142 has nothing to hold them to and the fidelity pass has nothing to compare. They are logged as composed rather than drawn, per rule 12, at the moment this landed.
+
+---
+
 ### B1. Commit signing. Resolved 2026-07-31
 
 **Outcome.** The owner registered the SSH signing key. Verified rather than assumed: the account now lists one signing key titled "kamsiob commit signing", and `repos/Kamsiob/health-trail/commits/main` reports `verified=true, reason=valid`.

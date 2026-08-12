@@ -208,7 +208,7 @@ fun AddDocumentScreen(
      * who opens a saved document to change it arrives knowing which line is
      * wrong, and walking them through three questions to reach it would be the
      * form asking them to start a conversation they came to end. A new document
-     * is the conversation; a correction is one field. D146, and rule 23: among
+     * is the conversation; a correction is one field. D147, and rule 23: among
      * the defensible answers, the one that is easiest for the person.
      */
     var stage by rememberSaveable(existing?.id) { mutableIntStateOf(0) }

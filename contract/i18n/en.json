@@ -37,7 +37,7 @@
   "today.open.questions": "{count, plural, =0 {No questions waiting} one {1 question waiting} other {# questions waiting}}",
   "today.open.waiting": "{count, plural, =0 {Nothing waiting on anyone} one {1 thing waiting on someone else} other {# things waiting on someone else}}",
   "today.empty.title": "Nothing written down yet",
-  "today.empty.step.1": "Fill in the emergency card. It is the one thing somebody else may need to read.",
+  "today.empty.step.1": "Fill in the emergency card. It is the one somebody else reads in a hurry.",
   "today.empty.step.2": "Add the people you deal with as you meet them.",
   "today.empty.step.3": "Log the next call while it is fresh.",
   "capture.title": "What happened",

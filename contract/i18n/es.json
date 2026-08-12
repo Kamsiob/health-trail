@@ -37,7 +37,7 @@
   "today.open.questions": "{count, plural, =0 {Ninguna pregunta pendiente} one {1 pregunta pendiente} other {# preguntas pendientes}}",
   "today.open.waiting": "{count, plural, =0 {Nada pendiente de otras personas} one {1 cosa pendiente de otra persona} other {# cosas pendientes de otras personas}}",
   "today.empty.title": "Todavía no hay nada anotado",
-  "today.empty.step.1": "Complete la tarjeta de emergencia. Es lo único que otra persona podría necesitar leer.",
+  "today.empty.step.1": "Complete la tarjeta de emergencia. Es la que otra persona lee con prisa.",
   "today.empty.step.2": "Añada a las personas con las que trate según las vaya conociendo.",
   "today.empty.step.3": "Anote la próxima llamada mientras la tenga fresca.",
   "capture.title": "¿Qué ha pasado?",

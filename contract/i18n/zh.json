@@ -37,7 +37,7 @@
   "today.open.questions": "{count, plural, =0 {没有待问的问题} other {# 个待问的问题}}",
   "today.open.waiting": "{count, plural, =0 {没有在等别人的事} other {# 件在等别人的事}}",
   "today.empty.title": "还没有记下任何内容",
-  "today.empty.step.1": "填好应急卡。这是别人可能唯一需要读到的东西。",
+  "today.empty.step.1": "填好应急卡。别人赶时间时读的就是它。",
   "today.empty.step.2": "遇到打交道的人就随手记下来。",
   "today.empty.step.3": "趁记忆还清楚，记下下一通电话。",
   "capture.title": "发生了什么",
