@@ -1687,12 +1687,42 @@ fun NotebookShell(
                     // that has nothing on it.** Rule 11, and the reason the
                     // routing below now lists every case rather than falling
                     // through an else.
-                    when {
-                        hit.section == Repository.Section.TRAIL -> openEntry = hit.id
-                        hit.section == Repository.Section.PROJECTS -> {
+                    // **A result opens the thing itself wherever the thing has
+                    // a screen.** Opening the roster it lives in and leaving
+                    // somebody to find the row again is the shape rule 18
+                    // names, and every one of these detail screens is opened by
+                    // id elsewhere in this same file. #360.
+                    when (hit.section) {
+                        Repository.Section.TRAIL -> openEntry = hit.id
+
+                        Repository.Section.PROJECTS -> {
                             destination = Destination.PROJECTS
                             openProject = projects.firstOrNull { it.id == hit.id }
                         }
+
+                        Repository.Section.CARE_TEAM ->
+                            people.firstOrNull { it.id == hit.id }
+                                ?.let { openPerson = it }
+                                ?: run { openSection = hit.section }
+
+                        Repository.Section.MEDICATIONS ->
+                            medications.firstOrNull { it.id == hit.id }
+                                ?.let { openMedication = it }
+                                ?: run { openSection = hit.section }
+
+                        Repository.Section.DOCUMENTS ->
+                            documents.firstOrNull { it.id == hit.id }
+                                ?.let { openDocument = it }
+                                ?: run { openSection = hit.section }
+
+                        Repository.Section.MONEY ->
+                            bills.firstOrNull { it.id == hit.id }
+                                ?.let { openBill = it }
+                                ?: run { openSection = hit.section }
+
+                        // **The roster where the row is not in memory.** An
+                        // archived person is not in `people`, and a section is
+                        // an honest answer for them rather than nothing at all.
                         else -> openSection = hit.section
                     }
                 },
