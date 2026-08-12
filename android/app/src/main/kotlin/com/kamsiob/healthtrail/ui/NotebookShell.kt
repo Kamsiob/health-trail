@@ -750,7 +750,7 @@ fun NotebookShell(
             threadCounts = subject?.let { repository.threadsWithCounts(it.id) }.orEmpty()
             readings = subject?.let { repository.readings(it.id) }.orEmpty()
             chapters = subject?.let { repository.chapters(it.id) }.orEmpty()
-            chapterContents = chapters.associate { it.id to repository.chapterContents(it.id) }
+            chapterContents = subject?.let { repository.chapterContents(it.id) }.orEmpty()
             milestones = subject?.let { repository.milestones(it.id) }.orEmpty()
             appointments = subject?.let { repository.appointments(it.id) }.orEmpty()
             instructions = subject?.let { repository.standingInstructions(it.id) }.orEmpty()
@@ -2958,7 +2958,8 @@ fun NotebookShell(
             chapterDetail?.takeIf { it.chapter.id == chapter.id }?.let { detail ->
                 ChapterScreen(
                     detail = detail,
-                    onOpenEntry = { openChapter = null; openEntry = it.id },
+                    // The chapter stays open underneath, per #360.
+                    onOpenEntry = { openEntry = it.id },
                     onOpenIncident = {
                         openChapter = null
                         openIncident = it
@@ -2976,7 +2977,10 @@ fun NotebookShell(
             ThreadScreen(
                 thread = thread,
                 entries = threadEntries,
-                onOpenEntry = { openThread = null; openEntry = it.id },
+                // **The thread stays open underneath**, the way the incident
+                // and the prep sheet already do, so reading three entries off
+                // one thread is three taps rather than nine. #360.
+                onOpenEntry = { openEntry = it.id },
                 onBack = { openThread = null },
             )
         }
@@ -3002,7 +3006,20 @@ fun NotebookShell(
                     onOpenMilestones = { milestonesOpen = true },
                     onOpenChapter = { openChapter = it },
                     onOpenAppointment = { openPrepFor = it.id },
-                    onOpenIncident = { openIncident = it },
+                    // **The review closes and the incident opens.** Setting
+                    // the row alone did nothing at all: the incident screen
+                    // renders inside `incidentsOpen` and earlier in this file,
+                    // so the review painted over it, leaving a control with a
+                    // press state and no result and a back press that went to
+                    // the swallowed handler instead. The review is one tap from
+                    // the trail's own month heading, which is where the person
+                    // came from. #360.
+                    onOpenIncident = {
+                        reviewMonth = null
+                        review = null
+                        incidentsOpen = true
+                        openIncident = it
+                    },
                     onOpenDocument = { openDocument = it },
                     onShare = { sharingReview = gathered },
                     onBack = { reviewMonth = null; review = null },
@@ -3091,7 +3108,8 @@ fun NotebookShell(
                     )
                     openPerson = null
                 },
-                onOpenEntry = { openPerson = null; openEntry = it.id },
+                // The person stays open underneath, per #360.
+                onOpenEntry = { openEntry = it.id },
                 onBack = { openPerson = null },
                 backLabelKey = "section.back.careteam",
             )

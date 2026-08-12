@@ -3059,30 +3059,70 @@ class Repository private constructor(
             people == 0 && openIncidents == 0
     }
 
-    suspend fun chapterContents(chapterId: String): ChapterContents =
+    /**
+     * What every chapter holds, counted, by chapter id.
+     *
+     * **Four queries for the whole notebook rather than four per chapter.** The
+     * first version asked per chapter and the shell called it in a loop, so a
+     * five year record with eleven chapters ran forty four queries on every
+     * reload for one line of text. Grouped, it is four, whatever the record
+     * holds.
+     *
+     * **A chapter with nothing in it is absent from the map** rather than
+     * present with four zeroes, so a caller cannot render "no documents" on the
+     * place somebody is living now.
+     */
+    suspend fun chapterContents(subjectId: String): Map<String, ChapterContents> =
         withContext(Dispatchers.IO) {
             val database = db().database
-            fun count(sql: String): Int =
-                database.rawQuery(sql, arrayOf(chapterId)).use {
-                    if (it.moveToFirst()) it.getInt(0) else 0
+            val entries = mutableMapOf<String, Int>()
+            val documents = mutableMapOf<String, Int>()
+            val people = mutableMapOf<String, Int>()
+            val incidents = mutableMapOf<String, Int>()
+
+            fun fill(into: MutableMap<String, Int>, sql: String) {
+                database.rawQuery(sql, arrayOf(subjectId)).use { cursor ->
+                    while (cursor.moveToNext()) {
+                        if (!cursor.isNull(0)) into[cursor.getString(0)] = cursor.getInt(1)
+                    }
                 }
-            ChapterContents(
-                entries = count(
-                    "SELECT COUNT(*) FROM live_entry WHERE chapter_id = ?",
-                ),
-                documents = count(
-                    "SELECT COUNT(*) FROM live_document WHERE chapter_id = ?",
-                ),
-                people = count(
-                    "SELECT COUNT(DISTINCT pc.person_id) FROM live_person_chapter pc " +
-                        "JOIN live_person p ON p.id = pc.person_id " +
-                        "WHERE pc.chapter_id = ? AND p.archived_at IS NULL",
-                ),
-                openIncidents = count(
-                    "SELECT COUNT(*) FROM live_incident " +
-                        "WHERE chapter_id = ? AND resolved_at IS NULL",
-                ),
+            }
+
+            fill(
+                entries,
+                "SELECT chapter_id, COUNT(*) FROM live_entry " +
+                    "WHERE subject_id = ? AND chapter_id IS NOT NULL GROUP BY chapter_id",
             )
+            fill(
+                documents,
+                "SELECT chapter_id, COUNT(*) FROM live_document " +
+                    "WHERE subject_id = ? AND chapter_id IS NOT NULL GROUP BY chapter_id",
+            )
+            fill(
+                people,
+                "SELECT pc.chapter_id, COUNT(DISTINCT pc.person_id) " +
+                    "FROM live_person_chapter pc " +
+                    "JOIN live_person p ON p.id = pc.person_id " +
+                    "WHERE p.subject_id = ? AND p.archived_at IS NULL " +
+                    "GROUP BY pc.chapter_id",
+            )
+            fill(
+                incidents,
+                "SELECT chapter_id, COUNT(*) FROM live_incident " +
+                    "WHERE subject_id = ? AND chapter_id IS NOT NULL " +
+                    "AND resolved_at IS NULL GROUP BY chapter_id",
+            )
+
+            (entries.keys + documents.keys + people.keys + incidents.keys)
+                .associateWith { id ->
+                    ChapterContents(
+                        entries = entries[id] ?: 0,
+                        documents = documents[id] ?: 0,
+                        people = people[id] ?: 0,
+                        openIncidents = incidents[id] ?: 0,
+                    )
+                }
+                .filterValues { !it.isEmpty }
         }
 
     /**
