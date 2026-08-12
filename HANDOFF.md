@@ -4,7 +4,7 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-12 at 03:05, mid run. The owed full device run came back **611 green, exactly as #321 predicted**, #349 was ruled by the owner and built, and **the #345 fidelity pass moved from the four daily screens to the section screens under them**, which is where the drift turned out to be.
+**Last rewritten:** 2026-08-12 at 13:25, paused mid task with the phone being swapped. **Section 10 opens with the device handover: read it before any device work.** **Nothing is uncommitted and nothing is half written**: the tree is clean, everything is on `origin/main`, and what is left is listed on #360 rather than sitting in the working copy. **Last rewritten before that:** 03:05, mid run. The owed full device run came back **611 green, exactly as #321 predicted**, #349 was ruled by the owner and built, and **the #345 fidelity pass moved from the four daily screens to the section screens under them**, which is where the drift turned out to be.
 
 ---
 
@@ -35,7 +35,7 @@
 - **The 00:31 run that night was 611 green**, exactly what #321 predicted, so nothing had landed unchecked before the fidelity work started.
 - **The phone is not on a dark schedule any more**, checked 2026-08-11 at 22:00 and again at 00:03: `ui_night_mode` reads 1 and `cmd uimode night` reads "no" at both. **The old note here said it flipped to dark at 17:00 and back at 06:30**, and a session trusting that would misread its own baseline in the other direction. **Leave night mode alone either way**: rule 19's exception covers font scale, animation and the reader, and nothing else on the phone. It also means **the disclaimer gate cannot be seen in dark from here**, because it shows before the app has a theme choice of its own. #204.
 - **Continuous integration is green on `main` at the tip.** Check after every push: `gh run list --branch main --limit 3`.
-- **The phone is in use as of 2026-08-12 at 02:05 and is not free to be unplugged**, because the fidelity pass is walking screens on it. **Its accessibility settings are at their baseline** between walks and were read back rather than assumed after each one: font scale 1.0, animator null, no per app locale. **The app's own theme setting is back on "Follow the phone"** after being switched to Dark for a walk. **A tap landed on the owner's launcher once tonight**, because `connectedDebugAndroidTest` had uninstalled the app and a walk started without checking: nothing was read or kept, the stray capture was deleted, and `docs/TRAPS.md` section 1 already says to check `pm list packages` first. **That check is the one to actually run**, not remember.
+- **The phone was unplugged at 13:25 on 2026-08-12 and is being replaced.** Section 10 has the handover. **Nothing device dependent runs until the owner says the new one is connected.** What follows is how the old one was left. **Its accessibility settings are at their baseline** between walks and were read back rather than assumed after each one: font scale 1.0, animator null, no per app locale. **The app's own theme setting is back on "Follow the phone"** after being switched to Dark for a walk. **A tap landed on the owner's launcher once tonight**, because `connectedDebugAndroidTest` had uninstalled the app and a walk started without checking: nothing was read or kept, the stray capture was deleted, and `docs/TRAPS.md` section 1 already says to check `pm list packages` first. **That check is the one to actually run**, not remember.
 - **The phone was returned to its starting values earlier on 2026-08-12 and unplugged**, every setting read back rather than assumed: font scale 1.0, animator null, touch exploration 0, no per app locale, and the accessibility services string the KDE Connect one alone. **It holds the current build and the month six fixture** with the disclaimer accepted, and none of it is real. **The 30 MB file pushed for a size limit test was removed.** **Two taps left the app onto the owner's own screens during the last session**, the dialer and a ride app, both backed out of without reading or capturing anything: bounds had been read from one screen and the tap sent after navigating to another. `docs/TRAPS.md` section 1 now says to re-dump immediately before every coordinate tap and to check `mCurrentFocus` afterward.
 - **The owner is testing the build by hand, and a lot landed on 2026-08-11 that he has not seen.** In the order he is likeliest to meet them: **Money says "$13,771.73 not settled"** where it said "6 items"; **every other notebook section now counts in its own units**, 15 people and 182 entries and 6 bills rather than N items for all twelve; **a person's screen can write something down about them**, with their name already attached; **the documents List view now shows a list**, where it used to change the pill and nothing else; **searching for a project by name now opens the project** rather than a screen saying it was not built; **long subtitles wrap instead of stopping mid-word**, which is most visible on the care team at a large font; **removal is now an outlined "Remove this" on each thing's own screen** rather than a long press; **a question that has not been asked opens** onto its own face; **a document is asked when it is from** and no longer stamped with today; **a new notebook gets a first days list** on Today from its setting's checklist; **Progress can track something he names himself**; and the foot of most screens now has its actions sized to their labels with only the way back full width. Before that, from 2026-08-10: the date picker's month and year views, the trail's kind filter, cards having a shadow in light theme, and the document folder field.
 - **The four named failure modes that were open on #212 are down to two**, 2026-08-10. Time, numbers and absence each have their own tests now, `RoundTripTimeTest` and `RoundTripValueTest`, eleven between them. **Unicode is #227 and is a change to every write path rather than a test**, and the four gigabyte half of scale needs a fixture nobody has written.
@@ -220,7 +220,31 @@ Every one of these was built from the existing components, logged in all three p
 
 ## 10. The phone
 
-- **Pixel 10 Pro XL, serial `57241FDCQ0000H`, over USB. The only test device.**
+### The device is changing, 2026-08-12 at 13:25. Read this before any device work.
+
+**The Pixel 10 Pro XL was unplugged and is being replaced by a Pixel 8 with nothing installed on it.** The owner will say when the new one is connected. **Until he does, run nothing device dependent**: no `tools/verify.sh --device`, no `tools/device.sh`, no `tools/walk.sh`, no `adb`.
+
+**What was on the old phone when it went away**, so nothing is mistaken for a fresh state later:
+
+- **The current debug build**, installed from `android/app/build/outputs/apk/debug/app-debug.apk` at commit `8027d2c`, with the disclaimer accepted.
+- **The month six fixture**, seeded by `tools/device.sh`, plus **the things tonight's walks wrote into it, none of which is real**: a question attached to Lisinopril, an appointment renamed to "Doctor, follow up X", an incident renamed to "Bruise on her arm nobody could e Xxplain", and earlier, on a since replaced empty notebook, a care thread called "The lease with her landlord". **Every one of those is a walk artifact and none of it needs recreating.**
+- **A view preference file**, `health-trail-views`, holding the appointments and documents view choices. `AppointmentsMonthTest` writes the list view back around itself, so it should read agenda.
+- **Its accessibility settings at the values they started at**, read back rather than assumed: font scale 1.0, animator null, touch exploration 0, no per app locale. **The app's own theme is back on "Follow the phone".**
+
+**What the new phone needs before verification can resume**, in order:
+
+1. **USB debugging authorized** for this machine, and `adb devices` showing it as `device` rather than `unauthorized`.
+2. **The serial in this file corrected**, since the line below still names the old one and `docs/TRAPS.md` section 1 refers to it. **No tool hardcodes a serial**, checked: `device.sh`, `seed.sh`, `walk.sh` and `verify.sh` all take whatever `adb` finds, so a single connected device is all they need.
+3. **`tools/device.sh`**, which installs the APK, seeds the month six fixture and focuses the app, refusing rather than half succeeding. **It will not accept an APK older than the sources**, so build first.
+4. **A full `tools/verify.sh --device`** before anything closes: the last one was **637 green on 2026-08-12 at 16:20 UTC**, and **six commits have landed since with device walks but no full run**.
+
+**What is owed on the new device**, and none of it is started:
+
+- **A screenshot for #359**, the correcting an incident screen, which rule 12 requires and which the issue says is coming.
+- **The unfiled Today card**, whose branch is the same code as the incidents card and was never seen, because the month six layout does not carry that card.
+- **#360 items 3, 5 and 8**, which are the three workflow defects left. **The next action is item 5**, search opening the result rather than the roster it lives in.
+
+- **Pixel 8, nothing installed, replacing the Pixel 10 Pro XL, serial `57241FDCQ0000H`, over USB. The only test device.**
 - **It is the owner's daily driver.** Everything about how it is handled follows from that.
 - **No emulator.** Dropped from this project. Do not launch one, do not create an AVD, do not treat its absence as a blocker. D21, D23, B4.
 - **Say when it can be unplugged.** The owner waits to be told, and most work needs no device.
