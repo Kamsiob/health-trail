@@ -3063,6 +3063,12 @@ fun NotebookShell(
                         // kind only this screen knows about.
                         capturing = CaptureKind.VISIT
                     },
+                    // **The appointment's own screen corrects it**, #360, the
+                    // same door every other row type has had all along.
+                    onCorrect = {
+                        editingAppointment = sheet.appointment
+                        addingAppointment = true
+                    },
                     // **The appointment's own screen removes it**, per #218.
                     onRemove = {
                         removing = Removal(

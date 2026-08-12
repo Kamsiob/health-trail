@@ -2272,6 +2272,7 @@ class ScreenReaderTest {
                 onOpenEntry = {},
                 onShare = {},
                 onWriteUp = {},
+                onCorrect = {},
                 onRemove = {},
                 onBack = {},
             )

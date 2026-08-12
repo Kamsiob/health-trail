@@ -46,6 +46,7 @@ object PrepTags {
     const val SHARE = "prep_share"
     const val CALENDAR = "prep_calendar"
     const val WRITE_UP = "prep_write_up"
+    const val CORRECT = "prep_correct"
     const val REMOVE = "prep_remove"
     const val CHANGES_FOLD = "prep_changes_fold"
     fun question(id: String) = "prep_question_$id"
@@ -95,6 +96,15 @@ fun PrepScreen(
      * Taking the appointment out of the notebook, per #218. The list row used
      * to do this on a long press, which a sighted person could not find.
      */
+    /**
+     * Corrects the appointment itself: its title, its day, where it is.
+     *
+     * **`updateAppointment` was written and no caller could reach it**, so an
+     * appointment that moved could only be removed and retyped, and rule 17's
+     * promise that a date is editable forever from the entry itself was not
+     * kept here. #360.
+     */
+    onCorrect: () -> Unit,
     onRemove: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -422,6 +432,16 @@ fun PrepScreen(
                 label = strings["prep.writeup"],
                 onClick = onWriteUp,
                 modifier = Modifier.testTag(PrepTags.WRITE_UP),
+            )
+
+            // **Correcting sits above removing**, per rule 15 and the person's
+            // screen: an appointment moves far more often than it is taken off
+            // the record.
+            Spacer(Modifier.height(Space.cardGap))
+            QuietButton(
+                label = strings["appts.correct"],
+                onClick = onCorrect,
+                modifier = Modifier.testTag(PrepTags.CORRECT),
             )
 
             // **The appointment itself, removed from the appointment's own
