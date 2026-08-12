@@ -1324,6 +1324,7 @@ class ScreenReaderTest {
                 ),
                 onMarkAsked = {},
                 onOpen = {},
+                onAdd = {},
                 onBack = {},
             )
         }

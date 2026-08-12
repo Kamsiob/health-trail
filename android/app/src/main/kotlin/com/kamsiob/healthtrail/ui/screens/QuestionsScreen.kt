@@ -34,6 +34,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object QuestionTags {
     const val NAME = "questions"
     const val ASKED_FOLD = "questions_asked_fold"
+    const val ADD = "questions_add"
     fun roleFold(role: String) = "questions_role_$role"
     fun row(id: String) = "question_$id"
     fun markAsked(id: String) = "question_asked_$id"
@@ -71,6 +72,15 @@ fun QuestionsScreen(
      * sheet offers depends on whether it has been asked yet.
      */
     onOpen: (Repository.Question) -> Unit,
+    /**
+     * Writes a new question down, from the screen that holds them. #355.
+     *
+     * **Every other section screen has its own way in and this one had none**,
+     * so the only route to a question was the capture button and remembering
+     * which kind it was. Grid screen 21 draws "Add a question" at the foot,
+     * where every other section list draws its own.
+     */
+    onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -194,6 +204,17 @@ fun QuestionsScreen(
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
+        }
+
+        // **The way in, under the list**, sized to its label per D118, the same
+        // as every other section screen. Grid screen 21 draws it.
+        item {
+            Spacer(Modifier.height(Space.s))
+            QuietButton(
+                label = strings["questions.add"],
+                onClick = onAdd,
+                modifier = Modifier.testTag(QuestionTags.ADD),
+            )
         }
     }
 }

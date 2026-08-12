@@ -468,6 +468,7 @@
   "questions.group.asked": "Preguntadas",
   "questions.group.anyone": "Para cualquiera",
   "questions.mark_asked": "Ya lo pregunté",
+  "questions.add": "Anotar una pregunta",
   "questions.asked_on": "Preguntada el {date}",
   "thread.count": "{count, plural, =0 {Nada en este todavía} one {1 cosa en este} other {# cosas en este}}",
   "thread.empty": "Nada archivado en {label} todavía. Cuando registre algo, elegir este hilo lo archiva aquí.",

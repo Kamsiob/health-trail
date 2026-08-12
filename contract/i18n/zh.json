@@ -468,6 +468,7 @@
   "questions.group.asked": "已询问",
   "questions.group.anyone": "给任何人",
   "questions.mark_asked": "我问过了",
+  "questions.add": "记下一个问题",
   "questions.asked_on": "询问于 {date}",
   "thread.count": "{count, plural, =0 {这条线索上还没有内容} other {这条线索上有 # 条}}",
   "thread.empty": "还没有归到「{label}」下的内容。记录时选这条线索，就会归到这里。",

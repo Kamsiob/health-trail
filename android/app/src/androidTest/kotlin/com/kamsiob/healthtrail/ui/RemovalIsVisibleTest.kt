@@ -269,6 +269,7 @@ class RemovalIsVisibleTest {
                 questions = listOf(waiting, asked),
                 onMarkAsked = {},
                 onOpen = {},
+                onAdd = {},
                 onBack = {},
             )
         }

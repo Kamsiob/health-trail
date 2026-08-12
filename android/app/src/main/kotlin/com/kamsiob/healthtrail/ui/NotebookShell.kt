@@ -2698,6 +2698,10 @@ fun NotebookShell(
                     // editable later like every other date, per rule 17.
                     onMarkAsked = { markingAsked = it },
                     onOpen = { answering = it },
+                    // The capture form's question face, which is where a
+                    // question is written down everywhere else in the app.
+                    // #355.
+                    onAdd = { capturing = CaptureKind.QUESTION },
                     onBack = { openSection = null },
                 )
 
