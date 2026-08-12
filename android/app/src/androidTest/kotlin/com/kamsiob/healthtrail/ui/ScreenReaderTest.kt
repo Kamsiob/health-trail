@@ -48,6 +48,7 @@ import com.kamsiob.healthtrail.ui.screens.AddInstructionScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
 import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
+import com.kamsiob.healthtrail.ui.screens.CaptureBloom
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
@@ -1393,6 +1394,18 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("correcting an incident")
+    }
+
+    /**
+     * The capture bloom, which replaced the sheet of tiles: six choices, each
+     * announcing its own words, over a scrim that carries no label of its own.
+     */
+    @Test
+    fun theCaptureBloomLabelsEveryChoice() {
+        compose.show {
+            CaptureBloom(onChoose = {}, onDismiss = {})
+        }
+        assertEverythingIsLabeled("the capture bloom")
     }
 
     @Test

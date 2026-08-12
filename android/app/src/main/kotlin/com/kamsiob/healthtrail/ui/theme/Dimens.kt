@@ -17,6 +17,9 @@ object Space {
     val xs: Dp = 4.dp
     val s: Dp = 8.dp
     val sm: Dp = 12.dp
+    /** Nothing, named, so a resting animation value is a token like the rest. */
+    val none: Dp = 0.dp
+
     val m: Dp = 16.dp
     val ml: Dp = 20.dp
     val l: Dp = 24.dp

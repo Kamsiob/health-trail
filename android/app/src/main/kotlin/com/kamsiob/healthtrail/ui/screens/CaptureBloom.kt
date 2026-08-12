@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -162,7 +163,7 @@ private fun BloomChoice(
     // Sliding a short distance reads as the same bloom and every choice is
     // touchable from the first frame.
     val rise by animateDpAsState(
-        targetValue = if (shown) 0.dp else Space.m,
+        targetValue = if (shown) Space.none else Space.m,
         // **The app's own spring**, so reduced motion flattens this with
         // everything else rather than needing a special case.
         animationSpec = motion.standard(),
@@ -172,7 +173,11 @@ private fun BloomChoice(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .offset(y = rise)
+            // The lambda overload, so the slide happens in layout rather than
+            // recomposing the whole pill on every frame. Lint asks for this and
+            // it is right: six pills recomposing together is six times the work
+            // for a movement that could be a placement.
+            .offset { IntOffset(0, rise.roundToPx()) }
             .clip(BloomShape)
             .background(surface)
             .clickable(
