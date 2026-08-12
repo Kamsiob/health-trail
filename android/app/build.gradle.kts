@@ -118,9 +118,9 @@ android {
         // trying it. The qualifier stays.
         disable += "ObsoleteSdkInt"
 
-        // **The two version currency checks, because they are not checks on
-        // this repository.** `NewerVersionAvailable` and
-        // `AndroidGradlePluginVersion` fail the build the moment somebody else
+        // **The three version currency checks, because they are not checks on
+        // this repository.** `NewerVersionAvailable`,
+        // `AndroidGradlePluginVersion` and `GradleDependency` fail the build the moment somebody else
         // publishes a release, so a tree nobody has touched goes from green to
         // red overnight and the failure names a file nobody edited. It happened
         // twice in one hour on 2026-08-08: Gradle 9.7.0 on the 6th, then Bouncy
@@ -135,6 +135,13 @@ android {
         // code. D121.
         disable += "NewerVersionAvailable"
         disable += "AndroidGradlePluginVersion"
+        // **`GradleDependency` was the one D121 missed**, and it proved the
+        // entry right on 2026-08-12 by turning `main` red on a documentation
+        // commit: Compose BOM 2026.08.00 published, and lint failed naming
+        // `libs.versions.toml`, a file that had not been touched in weeks. Two
+        // of the family were disabled and the third was left, which is the same
+        // shape as a check that is only partly a check. Same reason, same owner.
+        disable += "GradleDependency"
     }
 }
 

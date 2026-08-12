@@ -2690,6 +2690,20 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D148. The third version currency check, which D121 left enabled
+
+**Date:** 2026-08-12. **Decided under rule 10.** **Extends D121** rather than superseding it, and changes nothing about who owns staying current.
+
+**What happened.** `main` went red on a commit that changed five markdown files and five screenshots. The failure was `lintDebug` naming `android/gradle/libs.versions.toml` line 10, a file nobody had touched in weeks, because Compose BOM 2026.08.00 published while the run was queued.
+
+**Why the guard did not hold.** D121 disabled `NewerVersionAvailable` and `AndroidGradlePluginVersion` for exactly this, and there is a third check in the same family. `GradleDependency` was left enabled, so the rule was written down, agreed, and enforced on two thirds of the cases. **A check that is only partly applied fails at the moment it is needed**, which is the same shape as the blind spots `check_bidi_isolation.py` had on the night it was written.
+
+**The decision.** `GradleDependency` is disabled with its reason beside the other two. Dependabot still owns currency and opens a pull request naming the version, which is reviewable, testable, and does not turn `main` red at three in the morning.
+
+**Worth carrying.** `warningsAsErrors = true` is right and stays. What it cannot do is decide which failures are about this repository, and every check that reads the outside world's release schedule is not. **When a rule like this is written, check whether the tool has a third of the same thing.**
+
+---
+
 ### D147. A form asks one question at a time; correcting a record shows all of it at once
 
 **Date:** 2026-08-12. **Decided under rule 10**, working #361, which is the owner's own words about the built app. **Supersedes nothing** and changes no schema, no copy, and no saved value.
