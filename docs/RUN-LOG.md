@@ -1826,3 +1826,11 @@ So the state is held where it can be held, as a composed error string in `Screen
 **Four documents had gone stale.** The type ladder said Display M was 19 to 20 while the grid and the app both said 22. 15.1 said the trail's filter was not built, and it was built last night. Capture's "Skip this" was a real departure from the grid's "Next", recorded only in a code comment. And D142 itself, as written, would have told this pass to restore two colors that fail contrast.
 
 **That ratio is the finding.** The screens are in better shape than the documents describing them, which inverts what the fidelity work was expected to show, and it means **a session reading the documents to build a new screen is at more risk than the screens already built.**
+
+### The second day, and what the fidelity pass built
+
+**Both drifts found by comparing screens to drawings are now built.** The notebook counts in its own units, twelve sections in four languages, and **Money says "$13,771.73 not settled"** rather than "6 bills", which is the number somebody opens Money to find. An entry says which step of its thread it is, **counted from the oldest while the thread screen lists the newest first**, and a test holds that inversion because it is the thing a later change would quietly get backwards.
+
+**Two questions came out of building them, and both were filed rather than answered.** A care thread can only come from a situation template and a person cannot start one, #349, which is the same shape as the two decisions that gave Progress its own measures and projects their own templates. And Money's total needed a rule about what "settled" means, which was answered by using the one the Money screen already applies, because two screens deciding separately is how their totals drift.
+
+**And the phone was left twice.** A tap sent with bounds read from an earlier screen landed on a Call button and opened the dialer on the owner's real contacts; a later one put a ride app on screen. **Backed out of both without reading or capturing anything**, which is the third time this project has had to make that call, after the password manager and the photo picker. **Re-dump immediately before every coordinate tap** is now in TRAPS, along with checking `mCurrentFocus` afterward.
