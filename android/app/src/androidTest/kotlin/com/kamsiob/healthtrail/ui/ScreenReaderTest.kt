@@ -43,6 +43,7 @@ import com.kamsiob.healthtrail.ui.screens.AddBillScreen
 import com.kamsiob.healthtrail.ui.screens.AddDocumentScreen
 import com.kamsiob.healthtrail.ui.screens.DocumentsScreen
 import com.kamsiob.healthtrail.ui.screens.MoneyScreen
+import com.kamsiob.healthtrail.ui.screens.MoneyTags
 import com.kamsiob.healthtrail.ui.screens.AddInstructionScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
@@ -1746,6 +1747,27 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("standing instructions")
+    }
+
+    /**
+     * **The eyebrow that says why one bill sits above the folds**, per grid
+     * screen 14 and the #345 fidelity pass. Alert ink, and the words carry the
+     * meaning so section 9 holds with the color only agreeing with them.
+     */
+    @Test
+    fun theBillNeedingADecisionIsSaidToBeOne() {
+        compose.show {
+            MoneyScreen(
+                bills = listOf(
+                    Repository.Bill("b1", "Room and board", 334762, "USD", "needs_attention", null, "2026-08-06", null),
+                    Repository.Bill("b2", "Ambulance transfer", 316877, "USD", "disputed", null, null, null),
+                ),
+                onOpen = {},
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        compose.onNodeWithTag(MoneyTags.LEAD_HEADER).assertExists()
     }
 
     @Test

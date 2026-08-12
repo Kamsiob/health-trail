@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -77,6 +78,16 @@ fun GroupHeaderText(
      * says the same thing the screen says.
      */
     countDescription: String? = null,
+    /**
+     * The eyebrow's ink, for the one heading in the app that marks something
+     * asking for an answer rather than naming a group.
+     *
+     * **Null is the quiet register and is what almost every caller wants.**
+     * Grid screen 14 draws "Needs attention" over the bill that wants a
+     * decision in alert ink, and section 9 is satisfied because the words say
+     * it and the color only agrees with them.
+     */
+    tint: Color? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -100,7 +111,7 @@ fun GroupHeaderText(
         Text(
             text = shown,
             style = HealthTrail.type.mono,
-            color = colors.ink2,
+            color = tint ?: colors.ink2,
         )
         Spacer(Modifier.width(Space.sm))
         Canvas(modifier = Modifier.weight(1f).height(1.dp)) {

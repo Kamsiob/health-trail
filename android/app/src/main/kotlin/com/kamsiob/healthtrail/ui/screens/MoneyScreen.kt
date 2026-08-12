@@ -21,6 +21,7 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.i18n.formatMoney
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.WashBand
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
@@ -41,6 +42,7 @@ object MoneyTags {
     const val NAME = "money"
     const val ADD = "money_add"
     const val TOTAL = "money_total"
+    const val LEAD_HEADER = "money_lead_header"
     fun fold(state: String) = "money_fold_$state"
     fun row(id: String) = "bill_$id"
 }
@@ -157,6 +159,17 @@ fun MoneyScreen(
             val leads = index == 0
             if (leads) {
                 item(key = "lead_$state") {
+                    // **The eyebrow says why this one is up here**, per grid
+                    // screen 14, which draws it in alert ink over the bill
+                    // that wants a decision. Without it the lead group reads
+                    // as an arbitrary first row and the hierarchy the screen
+                    // is built on says nothing out loud. #345.
+                    GroupHeaderText(
+                        label = strings["money.state.$state"],
+                        tint = HealthTrail.colors.alertInk,
+                        modifier = Modifier.testTag(MoneyTags.LEAD_HEADER),
+                    )
+                    Spacer(Modifier.height(Space.headerGap))
                     GroupedSurface {
                         inState.forEachIndexed { row, bill ->
                             BillRow(
