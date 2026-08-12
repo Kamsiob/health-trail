@@ -35,10 +35,10 @@ class ThreadPositionTest {
 
 
     /**
-     * **Threads only arrive from a situation**, so a test makes one the same
-     * way the app does. There is no `createThread`: a person cannot start a
-     * care thread by hand anywhere in the app, which is worth knowing and is
-     * not this test's business.
+     * **A thread from a situation**, which is how most of them arrive, so this
+     * makes one the same way the app does. **A person can also start one from
+     * nothing** since #349, and `CreateThreadTest` covers that path: this one
+     * is about where an entry sits in a thread and either origin would do.
      */
     private suspend fun threadFor(subject: String, label: String): String {
         val repository = Repository.open(context)

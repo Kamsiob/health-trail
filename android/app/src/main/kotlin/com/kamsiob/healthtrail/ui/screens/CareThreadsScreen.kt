@@ -22,6 +22,7 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.getValue
@@ -40,6 +41,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 
 object ThreadTags {
     const val NAME = "care_threads"
+    const val ADD = "care_threads_add"
     fun row(id: String) = "care_thread_$id"
 }
 
@@ -66,6 +68,14 @@ fun CareThreadsScreen(
     threads: List<Repository.ThreadWithCount>,
     /** Opens the thread itself, which nothing could do until 2026-08-03. */
     onOpen: (Repository.CareThread) -> Unit,
+    /**
+     * Starts a thread from nothing, which nothing could do until 2026-08-12.
+     *
+     * **A situation template was the only way one had ever been created**, so a
+     * person whose situation the fourteen do not cover was locked out of a
+     * section of their own notebook. #349, D145.
+     */
+    onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -98,6 +108,13 @@ fun CareThreadsScreen(
                     text = strings["threads.empty"],
                     section = Repository.Section.THREADS,
                     modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
+                    // **The empty state is where this is most needed**, because
+                    // a notebook with no situation applied has no threads at
+                    // all and the sentence above now says one can be started.
+                    // A screen that says something is possible and offers no
+                    // way to it is the dead end rule 18 names.
+                    actionLabel = strings["threads.add"],
+                    onAction = onAdd,
                 )
             }
             return@SectionScaffold
@@ -150,6 +167,20 @@ fun CareThreadsScreen(
                     }
                 }
             }
+        }
+
+        // **Under the list rather than in the header**, the same place naming
+        // your own measure sits, because the common errand here is opening one
+        // of the threads already running and this is the rarer one. It is not
+        // hidden: 13.5 calls a capability only its author can find unfinished,
+        // and fourteen situations with no way past them was exactly that.
+        item(key = "add") {
+            Spacer(Modifier.height(Space.s))
+            QuietButton(
+                label = strings["threads.add"],
+                onClick = onAdd,
+                modifier = Modifier.testTag(ThreadTags.ADD),
+            )
         }
     }
 }

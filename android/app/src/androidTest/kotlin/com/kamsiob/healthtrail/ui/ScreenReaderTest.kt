@@ -46,6 +46,7 @@ import com.kamsiob.healthtrail.ui.screens.MoneyScreen
 import com.kamsiob.healthtrail.ui.screens.AddInstructionScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
+import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
@@ -1372,10 +1373,24 @@ class ScreenReaderTest {
                     Repository.ThreadWithCount(Repository.CareThread("t2", "Discharge planning", 1), 0),
                 ),
                 onOpen = {},
+                onAdd = {},
                 onBack = {},
             )
         }
         assertEverythingIsLabeled("care threads")
+    }
+
+    /**
+     * Starting a thread from nothing, #349 and D145. The screen asks one
+     * question, so the reader has one field, one action and the way out to
+     * announce, and the action is disabled until the field has something in it.
+     */
+    @Test
+    fun startingAThreadLabelsEverything() {
+        compose.show {
+            AddThreadScreen(onStart = {}, onCancel = {})
+        }
+        assertEverythingIsLabeled("starting a care thread")
     }
 
     @Test

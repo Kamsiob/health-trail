@@ -99,6 +99,7 @@ import com.kamsiob.healthtrail.ui.screens.NotebookScreen
 import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
 import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
+import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationDraft
 import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
 import com.kamsiob.healthtrail.ui.screens.AcknowledgeSheet
@@ -608,6 +609,10 @@ fun NotebookShell(
     var threadCounts by remember {
         mutableStateOf<List<Repository.ThreadWithCount>>(emptyList())
     }
+    // Starting a thread from nothing, #349 and D145. The name in flight rather
+    // than a draft type, because a name is the only thing the screen asks for.
+    var addingThread by remember { mutableStateOf(false) }
+    var savingThread by remember { mutableStateOf<String?>(null) }
     var readings by remember { mutableStateOf<List<Repository.Reading>>(emptyList()) }
     var chapters by remember { mutableStateOf<List<Repository.Chapter>>(emptyList()) }
     var appointments by remember {
@@ -911,6 +916,7 @@ fun NotebookShell(
         addingMedication = false
         editingMedication = null
     }
+    BackHandler(enabled = addingThread) { addingThread = false }
     BackHandler(enabled = addingAppointment) {
         addingAppointment = false
         editingAppointment = null
@@ -2675,6 +2681,7 @@ fun NotebookShell(
 
                 Repository.Section.THREADS -> CareThreadsScreen(
                     onOpen = { openThread = it },
+                    onAdd = { addingThread = true },
                     threads = threadCounts,
                     onBack = { openSection = null },
                 )
@@ -3588,6 +3595,40 @@ fun NotebookShell(
                 }
                 editingMilestone = null
                 savingMilestone = null
+                revision += 1
+            }
+        }
+
+        if (addingThread) {
+            AddThreadScreen(
+                onStart = { name ->
+                    addingThread = false
+                    savingThread = name
+                },
+                onCancel = { addingThread = false },
+            )
+        }
+
+        val threadName = savingThread
+        if (threadName != null) {
+            LaunchedEffect(threadName) {
+                val subject = repository.activeSubject()
+                if (subject != null && threadName.isNotBlank()) {
+                    val id = repository.createThread(
+                        subjectId = subject.id,
+                        label = threadName,
+                        // The end of the list and the next route color, so a
+                        // new thread does not land on the first one's color.
+                        sortIndex = threadCounts.size,
+                    )
+                    // **Opened straight away**, the same as a project started
+                    // from nothing: somebody who has just named a thread is
+                    // standing in front of it, and rule 18 counts the taps.
+                    // Read back rather than assembled here, so the screen shows
+                    // what the database holds.
+                    openThread = repository.threads(subject.id).firstOrNull { it.id == id }
+                }
+                savingThread = null
                 revision += 1
             }
         }

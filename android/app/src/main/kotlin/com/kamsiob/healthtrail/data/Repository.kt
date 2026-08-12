@@ -1092,6 +1092,39 @@ class Repository private constructor(
     }
 
     /**
+     * A care thread with no situation template behind it. #349, D145.
+     *
+     * **Applying a situation was the only way a thread had ever been created**,
+     * so a person dealing with a landlord, a school, or an employer's leave
+     * department had a real recurring thread that none of the fourteen
+     * situations ever heard of, and the answer was that it lived in the trail
+     * with no spine of its own. **The same argument [createProject] and
+     * [createOwnMeasure] both already make**: a starting set is not the world.
+     *
+     * `template_id` stays null, which is what the schema's own comment already
+     * means by a thread that did not come from a template.
+     *
+     * **The label is the only thing asked for.** Everything else takes the
+     * default the schema carries, and `sortIndex` is the count of what is
+     * already there so a new thread joins the end of the list and takes the
+     * next route color rather than colliding with the first.
+     */
+    suspend fun createThread(subjectId: String, label: String, sortIndex: Int = 0): String =
+        insert(
+            "care_thread",
+            mapOf(
+                "subject_id" to subjectId,
+                "label" to label.trim(),
+                "template_id" to null,
+                "color_index" to sortIndex,
+                "sort_index" to sortIndex,
+                // A thread somebody starts today started today, and a day is
+                // exactly as much as anyone knows about it. The same line
+                // `applySituation` writes.
+            ) + dateColumns("started", Edtf.day(LocalDate.now())),
+        )
+
+    /**
      * The care threads, most recently filed into first.
      *
      * **What this answers is "which three would you like offered", not "what

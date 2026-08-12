@@ -2674,6 +2674,20 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D145. A care thread can be started from scratch, because fourteen situations is a starting set
+
+**Date:** 2026-08-12. **Decided by:** the owner, ruling on #349. **Supersedes nothing.** Threads created by applying a situation keep working exactly as they do now, and no template behavior changes.
+
+**The decision.** A person can start a care thread from nothing, anywhere threads are listed, with no template involved. **A name is the only required field** and everything after it is optional, which is the same shape the other two from-scratch paths already have.
+
+**The reasoning, which the owner gave as already written.** D138 and `createProject` decided this twice: sixteen presets is a starting set and it is not the world, and sixteen catalog processes had the same answer months earlier. **A person whose situation the templates do not cover must not be locked out of a section of their own notebook.** Somebody dealing with a landlord, a school, or an employer's leave department has a real recurring thread that none of the fourteen situations ever heard of, and before this the answer was that it lives in the trail with no spine of its own.
+
+**The counter-argument on the issue is answered rather than ignored.** #349 argued that a thread is not a folder and that offering "new thread" invites somebody to invent an organizing scheme at the moment they are least able to, which is the shape rule 20 warns about. **That is an argument for not asking, not for refusing.** The situations still set threads up, the unfiled tray still exists, an entry with no thread is still a first-class state, and nothing about capture changes. The new path is one quiet action at the foot of a list somebody had to go looking for, which is where the rarer errand belongs, and 13.5 calls a capability only its author can find unfinished. **Fourteen situations with no way past them was exactly that.**
+
+**Nothing created this way carries a claim.** `template_id` stays null, which is what the schema's own comment already means by a thread that did not come from a template, and every other column takes its default. The insert is the same one `applySituation` makes, minus the template.
+
+**Rule 23 is what settles it among the defensible answers**: the easier option for the person is the one that does not lock them out, and it is safe, private, and compatible with everything already decided.
+
 ---
 
 ### B1. Commit signing. Resolved 2026-07-31
