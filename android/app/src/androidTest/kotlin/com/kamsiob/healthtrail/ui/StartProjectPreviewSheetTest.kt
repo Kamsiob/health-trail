@@ -115,7 +115,7 @@ class StartProjectPreviewSheetTest {
         compose.onNodeWithTag(StartPreviewTags.NAME).performTextClearance()
         compose.onNodeWithTag(StartPreviewTags.NAME).performTextInput("Mom's Medicaid")
         // The sheet scrolls, and on a shorter phone its action starts below the
-        // fold. A click at a node's centre outside the viewport does nothing.
+        // fold. A click at a node's center outside the viewport does nothing.
         compose.onNodeWithTag(StartPreviewTags.CREATE).performScrollTo()
         compose.onNodeWithTag(StartPreviewTags.CREATE).performClick()
 

@@ -125,7 +125,7 @@ class StandingSheetTest {
         compose.waitForIdle()
         compose.onNodeWithTag(StandingTags.WHO).assertTextContains("The county", substring = true)
         // **Scrolled to rather than assumed visible.** On a shorter phone the
-        // sheet's own Save sits below the fold, and a click at a node's centre
+        // sheet's own Save sits below the fold, and a click at a node's center
         // outside the viewport does nothing at all: the test read as "save did
         // not fire" when what was true was "a person could not reach it".
         // 2026-08-12, the day the test device changed.
