@@ -97,28 +97,47 @@ elif [ ! -x "$ADB" ]; then
 elif ! "$ADB" devices | grep -qE "device$"; then
   skip_step "instrumented suite runs" "no device attached"
 else
-  # One operational step before this, and it is a checklist item rather than a
-  # reason to avoid running: connectedAndroidTest uninstalls the application,
-  # taking its data with it. If the phone holds anything worth keeping, export
-  # through the app first and reimport afterward.
-  echo "  note: connectedAndroidTest uninstalls the app. Export first if the phone holds data."
-  run_step "instrumented suite runs" gradle_step connectedDebugAndroidTest
-
-  # **The report is copied before anything can overwrite it.** A single class
-  # rerun writes over `androidTest-results/connected/debug/TEST-*.xml`, and both
-  # flakes this project has seen lost their assertion and stack exactly that
-  # way: the next command destroyed the only evidence. #308 and #302.
+  # **The shade is collapsed and the focus is checked before anything runs.**
+  # A notification pulled down when the suite starts fails every Espresso test
+  # that needs a focused root: six named back-journey tests, all red, in a
+  # suite that was green an hour earlier, and the message blames the product.
+  # It cost eight minutes on 2026-08-06 and muddied two real flakes. #316.
   #
-  # Kept in the build directory, which is already ignored, and named by when it
-  # ran so two runs in one afternoon do not become one file.
-  kept="$ROOT/android/app/build/outputs/androidTest-results/history"
-  mkdir -p "$kept"
-  stamp="$(date +%Y%m%d-%H%M%S)"
-  for report in "$ROOT/android/app/build/outputs/androidTest-results/connected/debug/"TEST-*.xml; do
-    [ -f "$report" ] || continue
-    cp "$report" "$kept/$stamp-$(basename "$report")"
-    echo "  report kept: ${kept#"$ROOT"/}/$stamp-$(basename "$report")"
-  done
+  # **Refusing beats warning.** A warning in a seven minute log is a warning
+  # nobody reads.
+  "$ADB" shell cmd statusbar collapse >/dev/null 2>&1 || true
+  "$ADB" shell input keyevent KEYCODE_HOME >/dev/null 2>&1 || true
+  sleep 1
+  focus="$("$ADB" shell dumpsys window 2>/dev/null | grep -m1 'mCurrentFocus' || true)"
+  case "$focus" in
+    *Sys2040*|*NotificationShade*)
+      skip_step "instrumented suite runs" "the notification shade is open: $focus"
+      ;;
+    *)
+    # One operational step before this, and it is a checklist item rather than a
+    # reason to avoid running: connectedAndroidTest uninstalls the application,
+    # taking its data with it. If the phone holds anything worth keeping, export
+    # through the app first and reimport afterward.
+    echo "  note: connectedAndroidTest uninstalls the app. Export first if the phone holds data."
+    run_step "instrumented suite runs" gradle_step connectedDebugAndroidTest
+
+    # **The report is copied before anything can overwrite it.** A single class
+    # rerun writes over `androidTest-results/connected/debug/TEST-*.xml`, and both
+    # flakes this project has seen lost their assertion and stack exactly that
+    # way: the next command destroyed the only evidence. #308 and #302.
+    #
+    # Kept in the build directory, which is already ignored, and named by when it
+    # ran so two runs in one afternoon do not become one file.
+    kept="$ROOT/android/app/build/outputs/androidTest-results/history"
+    mkdir -p "$kept"
+    stamp="$(date +%Y%m%d-%H%M%S)"
+    for report in "$ROOT/android/app/build/outputs/androidTest-results/connected/debug/"TEST-*.xml; do
+      [ -f "$report" ] || continue
+      cp "$report" "$kept/$stamp-$(basename "$report")"
+      echo "  report kept: ${kept#"$ROOT"/}/$stamp-$(basename "$report")"
+    done
+      ;;
+  esac
 fi
 
 echo
