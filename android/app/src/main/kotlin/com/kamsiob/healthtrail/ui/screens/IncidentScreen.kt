@@ -47,6 +47,7 @@ object IncidentTags {
     const val REOPEN = "incident_reopen"
     const val ADD = "incident_add"
     const val SHARE = "incident_share"
+    const val REMOVE = "incident_remove"
     fun node(id: String) = "incident_node_$id"
     /**
      * The card, which is the control. [node] tags the spine row around it, and
@@ -280,6 +281,19 @@ fun IncidentScreen(
     onShare: () -> Unit,
     onResolve: () -> Unit,
     onReopen: () -> Unit,
+    /**
+     * Takes the incident off the record, as a tombstone. #358, D135.
+     *
+     * **Removal is reached by looking, from the thing's own screen**, which is
+     * where the other six put it. An incident is typed in a hurry and somebody
+     * who wrote the same one twice had no way to say so: the list offered
+     * nothing and this screen offered nothing.
+     *
+     * **What happened next survives it.** Those are entries and they are the
+     * record of what happened, which is the same call a thread's removal makes
+     * about its links.
+     */
+    onRemove: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -529,6 +543,15 @@ fun IncidentScreen(
                     modifier = Modifier.testTag(IncidentTags.REOPEN),
                 )
             }
+            // **Last, and set apart**, per D135 and the person's screen: it is
+            // the rarest thing anybody comes here to do, and it opens the
+            // confirmation rather than doing anything itself.
+            Spacer(Modifier.height(Space.sectionGap))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.testTag(IncidentTags.REMOVE),
+            )
             Spacer(Modifier.height(Space.l))
         }
     }

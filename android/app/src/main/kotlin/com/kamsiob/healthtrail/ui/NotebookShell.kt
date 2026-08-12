@@ -2817,6 +2817,18 @@ fun NotebookShell(
                         capturing = CaptureKind.CALL
                     },
                     onShare = { sharingIncident = current },
+                    // **The screen closes as the confirmation opens**, the same
+                    // as a medication's, so the sheet is not asking about a
+                    // thing the screen behind it still shows. #358.
+                    onRemove = {
+                        removing = Removal(
+                            section = null,
+                            rowId = current.id,
+                            what = current.title,
+                            remove = { repository.removeIncident(it) },
+                        )
+                        openIncident = null
+                    },
                     onResolve = { resolvingIncident = current.id to true },
                     onReopen = { resolvingIncident = current.id to false },
                     onBack = { openIncident = null },
@@ -3249,7 +3261,12 @@ fun NotebookShell(
             LaunchedEffect(confirmed) {
                 // A tombstone, per the data contract, which the repository
                 // handles. Nothing here knows or needs to know that.
-                repository.delete(confirmed.section, confirmed.rowId)
+                val remover = confirmed.remove
+                if (remover != null) {
+                    remover(confirmed.rowId)
+                } else {
+                    repository.delete(confirmed.section!!, confirmed.rowId)
+                }
                 confirmedRemoval = null
                 revision += 1
             }
@@ -4202,9 +4219,19 @@ private suspend fun storePicked(
  * words for the thing, shown back to them before the tap that matters.
  */
 private data class Removal(
-    val section: Repository.Section,
+    /**
+     * The section the row lives in, for everything the notebook lists.
+     *
+     * **Null where the thing has no section of its own**, which today means an
+     * incident: the notebook's table of contents draws twelve rows and adding a
+     * thirteenth to the enum to reach a removal would put one on the screen.
+     * Those carry [remove] instead. #358.
+     */
+    val section: Repository.Section?,
     val rowId: String,
     val what: String,
+    /** How to remove it, where [section] cannot say. Null means use the section. */
+    val remove: (suspend (String) -> Unit)? = null,
 )
 
 /**

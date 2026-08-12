@@ -414,6 +414,7 @@ class ScreenReaderTest {
                 onShare = {},
                 onResolve = {},
                 onReopen = {},
+                onRemove = {},
                 onBack = {},
             )
         }

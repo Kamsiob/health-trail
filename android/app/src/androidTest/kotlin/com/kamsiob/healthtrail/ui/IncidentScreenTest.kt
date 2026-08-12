@@ -92,6 +92,7 @@ class IncidentScreenTest {
                         onShare = {},
                         onResolve = {},
                         onReopen = {},
+                        onRemove = {},
                         onBack = {},
                     )
                 }
