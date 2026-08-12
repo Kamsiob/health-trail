@@ -1834,3 +1834,49 @@ So the state is held where it can be held, as a composed error string in `Screen
 **Two questions came out of building them, and both were filed rather than answered.** A care thread can only come from a situation template and a person cannot start one, #349, which is the same shape as the two decisions that gave Progress its own measures and projects their own templates. And Money's total needed a rule about what "settled" means, which was answered by using the one the Money screen already applies, because two screens deciding separately is how their totals drift.
 
 **And the phone was left twice.** A tap sent with bounds read from an earlier screen landed on a Call button and opened the dialer on the owner's real contacts; a later one put a ride app on screen. **Backed out of both without reading or capturing anything**, which is the third time this project has had to make that call, after the password manager and the photo picker. **Re-dump immediately before every coordinate tap** is now in TRAPS, along with checking `mCurrentFocus` afterward.
+
+---
+
+## 27. The night the section screens were compared, 2026-08-12
+
+**The owed run came back exactly as predicted.** `tools/verify.sh --device` reported 611 instrumented tests green, which is the number #321 said to expect, so nothing had landed unchecked in the gap. **The count is not in `verify.sh`'s own summary table**, which lists the unit classes only, and had to be read from the root element of the connected report. That is worth knowing before somebody concludes the runner has stopped counting.
+
+### The owner ruled on the thread question, and it took an evening
+
+**#349 was filed the night before rather than decided**, because a person being unable to start a care thread changes what the app is. The ruling was that D138 and the projects decision apply word for word: **a person whose situation the templates do not cover must not be locked out of a section of their own notebook.** D145, superseding nothing, because template-created threads are untouched.
+
+**The build was the smallest one the ruling allows.** One insert with `template_id` null, one screen asking a name and nothing else, and two ways in: the foot of the thread list, where naming your own measure already sits, and the empty state's own action, since a notebook with no situation applied has no threads at all. **The new thread opens straight away**, as a project started from nothing does.
+
+### Ten screens compared, and the pattern reversed
+
+The fidelity pass had spent its first day on the four screens somebody uses daily and found four stale documents to two drifted screens. **The second night went to the section screens underneath them, and the ratio inverted completely.**
+
+**The care team was fifteen rows at one weight**, each with an identical call pill, where the grid draws three you actually call and folds the rest. `peopleByRecentUse` already answered which three and **this was the only list in the app not asking it**: the capture form and the unfiled tray both had been all along. #351.
+
+**A medication with a question waiting said nothing about it.** The link was built in both directions everywhere else, and only the row somebody scans was silent, so finding out anything was waiting meant opening every medication in turn. #352.
+
+**Money had the hierarchy and never said why**, so the bill on top read as an arbitrary first row until the grid's "Needs attention" eyebrow went back on it.
+
+**The emergency card was seven stacked wash cards** where the drawing is rows, with the blood type below the fold on the one screen in this app that is not for the person who wrote it. #354.
+
+**Ask next time was the only section screen with no way to add anything.** #355.
+
+**The current chapter said a name and a date and nothing about what happened there**, which is the line the grid makes it a card for. #356.
+
+**And `MonthGrid` had been finished, documented, and composed by nothing.** #357. It was deferred behind the view-preference work, that work turned out to be blocked on `app_meta`, and **it had never needed it**: the documents screen has carried a view toggle through this phone's own preferences file for weeks.
+
+### Three lessons that cost real time, and one claim withdrawn
+
+**A count pill is a quantity.** Putting "from Medications" in one crushed a fold's label into a three character column that broke mid-word at font scale 2.0, and giving both sides weight then clipped the phrase inside the pill's own ellipse. Two device screenshots, then `DESIGN.md` 15.1.
+
+**A merged node is not in the tree a finder walks.** A `DenseRow`'s test tag, and a chapter card's, cannot be asserted on: the assertion passes when the line is absent and fails when it is there, which is a test that proves the opposite of what it says. Assert on the words.
+
+**And a walk started without checking taps the launcher.** `connectedDebugAndroidTest` had uninstalled the app; `pm list packages` was in TRAPS and was not run. Nothing was read or kept and the stray capture was deleted, but it is the fourth time this project has had to back out of the owner's own screens.
+
+**One claim was withdrawn on its own issue.** "The road is a fold where the grid draws a spine" was wrong: the past chapters are already spine rows inside the fold, and the code carried a reason for the naming that the grid does not answer. **Reading the code before filing would have caught it**, and the withdrawal is on #356 so the claim is not repeated.
+
+### What the pass could not reach
+
+**Screens 02 and 15 are superseded drawings**, since Today and Projects have their own later grids, and comparing a built screen against a superseded drawing manufactures drift. **Screens 20 and 24 have nothing built to compare**, being #182 and #199, both blocked on the owner.
+
+**Two findings are filed and blocked on missing write paths rather than on judgment.** Nobody can say where a person works, so the care team cannot fold by organization, #353. And **an incident cannot be corrected or removed from its own screen**, #358: the only `UPDATE incident` in the repository sets `resolved_at`, so the most consequential thing a family writes down is the one thing they cannot fix afterward.
