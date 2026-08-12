@@ -5,7 +5,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,14 +33,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
@@ -52,11 +56,15 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.Disclosure
-import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.CARD_SIZE
+import com.kamsiob.healthtrail.ui.components.IconTile
+import com.kamsiob.healthtrail.ui.components.ROW_SIZE
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.StageDots
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.theme.raisedSlightly
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object AddDocTags {
@@ -75,6 +83,27 @@ object AddDocTags {
 
 /** How many questions the form asks before it runs out of them. */
 private const val DOC_STAGES = 3
+
+/**
+ * The empty sheet's shape, which is a sheet of paper rather than a photograph.
+ *
+ * Portrait, because what somebody photographs is a letter, a bill, or a
+ * discharge summary, and a landscape frame would read as a picture of a view.
+ * **Squarer than a real sheet of paper on purpose**: at A4's ratio the size
+ * limit underneath it fell off the bottom of a Pixel 8, and a limit stated
+ * below the fold is a limit somebody meets by being refused.
+ */
+private const val PaperAspect = 0.84f
+
+/**
+ * The chosen photograph's shape when it is carried into a later question.
+ *
+ * A band rather than the sheet: on those screens it is context for what is
+ * being typed, and a full sheet would push the question it belongs to below the
+ * fold. **A ratio rather than a height**, so it stays a band on any width and
+ * so this screen adds no measurement of its own. D142.
+ */
+private const val CarriedAspect = 2.6f
 
 /** What the person chose and typed about a document. */
 data class DocumentDraft(
@@ -237,42 +266,118 @@ fun AddDocumentScreen(
 
                 Spacer(Modifier.height(Space.l))
 
-                if (showing(0)) {
-
                 val preview = rememberPickedPreview(draft.picked)
-                if (preview != null) {
-                    Image(
-                        bitmap = preview,
-                        // The person just chose this image and the fields below
-                        // name it, so describing the picture itself would make
-                        // a reader hear the same thing twice.
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(220.dp)
-                            .clip(Radius.thumbnail),
-                    )
-                    Spacer(Modifier.height(Space.sm))
+
+                // **The paper stays in front of the person while they describe
+                // it**, on every question after the one that chose it. Rule 18:
+                // carry the context forward rather than asking somebody to
+                // remember which letter they photographed thirty seconds ago.
+                // It is also what fills these two screens, which without it are
+                // two short questions and a great deal of nothing.
+                if (staged && stage > 0) {
+                    preview?.let { image ->
+                        Image(
+                            bitmap = image,
+                            // Decorative: the questions beside it are what name
+                            // this paper, and a reader hearing "image" before
+                            // every question would be told nothing twice.
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(CarriedAspect)
+                                .raisedSlightly(Radius.thumbnail)
+                                .clip(Radius.thumbnail),
+                        )
+                        Spacer(Modifier.height(Space.l))
+                    }
                 }
 
-                QuietButton(
-                    label = if (draft.picked == null) {
-                        strings["docs.pick"]
-                    } else {
-                        strings["docs.replace"]
-                    },
-                    onClick = {
-                        picker.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly,
-                            ),
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth().testTag(AddDocTags.PICK),
-                )
+                if (showing(0)) {
 
-                Spacer(Modifier.height(Space.xs))
+                // **The paper is the screen, and it used to be a button on an
+                // empty field.** #361, 2026-08-12, found by looking rather than
+                // by reading: the first question was a title, one outlined
+                // button, one small line, and then two thirds of the phone
+                // doing nothing, which rule 11 rules out as plainly as it rules
+                // out a placeholder.
+                //
+                // **Rule 22 already named the component**: a thumbnail is where
+                // the app holds the person's own paper. This is that at the
+                // size of the question, an empty sheet waiting for a
+                // photograph, in the same `sand` field and at the same corner
+                // as every other thumbnail in the app.
+                //
+                // **The sheet is the control**, so the obvious tap does the
+                // obvious thing. It is one stop for a reader, named by what the
+                // tap does rather than by what is drawn inside it.
+                val pickLabel = if (draft.picked == null) {
+                    strings["docs.pick"]
+                } else {
+                    strings["docs.replace"]
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(PaperAspect)
+                        .raisedSlightly(Radius.thumbnail)
+                        .clip(Radius.thumbnail)
+                        .openableByTap(
+                            label = pickLabel,
+                            onTap = {
+                                picker.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.ImageOnly,
+                                    ),
+                                )
+                            },
+                            resting = colors.sand,
+                            shape = Radius.thumbnail,
+                        )
+                        .semantics { contentDescription = pickLabel }
+                        .testTag(AddDocTags.PICK),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (preview != null) {
+                        Image(
+                            bitmap = preview,
+                            // The sheet around it already says what the tap
+                            // does, and the fields on the next question name
+                            // the paper, so describing the picture too would
+                            // make a reader hear the same thing twice.
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    } else {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            // The sheet is one stop and says the whole thing.
+                            modifier = Modifier.clearAndSetSemantics { },
+                        ) {
+                            // **Sized from the thumbnail vocabulary rather
+                            // than from two numbers typed here**, per D142: the
+                            // mark on an empty sheet is the same mark the
+                            // documents list draws when it has no picture, one
+                            // step up.
+                            IconTile(
+                                section = Repository.Section.DOCUMENTS,
+                                tint = colors.ink3,
+                                background = Color.Transparent,
+                                tileSize = CARD_SIZE,
+                                iconSize = ROW_SIZE,
+                            )
+                            Spacer(Modifier.height(Space.s))
+                            Text(
+                                text = pickLabel,
+                                style = HealthTrail.type.bodyL,
+                                color = colors.blue,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(Space.s))
                 Text(
                     text = strings["docs.limit_note"],
                     style = HealthTrail.type.bodyS,
