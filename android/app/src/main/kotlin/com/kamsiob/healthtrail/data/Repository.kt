@@ -4194,6 +4194,72 @@ class Repository private constructor(
      * Passing null reopens it, because somebody who resolved the wrong one, or
      * whose answer turned out not to hold, must be able to say so.
      */
+    /**
+     * Corrects what an incident says and when it was reported. #358.
+     *
+     * **An incident is typed in a hurry, at the worst moment, one handed**, and
+     * it was the one thing in this app that could not be fixed afterward: the
+     * only `UPDATE incident` set `resolved_at`. `renameProject` carries the
+     * sentence the rest of the app already lives by, "every name in this app is
+     * a correction away", and this is the row where it matters most.
+     *
+     * **The date keeps whatever precision was given**, per rule 17 and the date
+     * columns the schema carries for it, so correcting a title does not quietly
+     * sharpen "sometime in March" into a day.
+     *
+     * **What happened next is untouched.** Those are entries, and they are
+     * corrected where entries are corrected.
+     */
+    suspend fun updateIncident(
+        incidentId: String,
+        title: String,
+        description: String?,
+        reported: Edtf.Date?,
+    ) = withContext(Dispatchers.IO) {
+        val dates = reported?.let { dateColumns("reported", it) }
+            ?: mapOf(
+                "reported_edtf" to null,
+                "reported_zone" to null,
+                "reported_start" to null,
+                "reported_end" to null,
+            )
+        val columns = linkedMapOf<String, Any?>(
+            "title" to title.trim(),
+            "description" to description?.ifBlank { null },
+        )
+        columns.putAll(dates)
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+        db().database.write(
+            "UPDATE incident SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), incidentId)).toTypedArray(),
+        )
+    }
+
+    /**
+     * Removes an incident, as a tombstone. #358, rule 3.
+     *
+     * **Not through [delete] and its `Section`**, because incidents have no
+     * section of their own in the notebook's table of contents and adding one
+     * to that enum to reach this would put a thirteenth row on a screen the
+     * grid draws with twelve.
+     *
+     * **The entries written under it are not removed with it.** They are the
+     * record of what happened and they survive the grouping being taken away,
+     * which is the same call [delete] makes for a thread: the links stay and
+     * the chips stop offering it.
+     */
+    suspend fun removeIncident(incidentId: String) = withContext(Dispatchers.IO) {
+        db().database.write(
+            "UPDATE incident SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ? AND deleted_at IS NULL",
+            arrayOf<Any?>(
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                incidentId,
+            ),
+        )
+    }
+
     suspend fun resolveIncident(
         incidentId: String,
         resolvedAt: Long?,
