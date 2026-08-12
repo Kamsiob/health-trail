@@ -460,6 +460,7 @@
   "meds.stopped": "متوقف",
   "meds.stopped.fold": "موقوفة، محفوظة دائمًا",
   "emergency.group.meds": "ما يتناوله",
+  "emergency.meds.source": "من قسم الأدوية",
   "meds.on_card.chip": "على البطاقة",
   "questions.subtitle": "أشياء تسألها عندما تسنح الفرصة. تبقى هنا حتى تقول إنك سألتها.",
   "questions.empty": "لا شيء بالانتظار. كل ما تحفظه كسؤال سيظهر هنا.",

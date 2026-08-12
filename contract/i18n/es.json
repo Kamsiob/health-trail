@@ -460,6 +460,7 @@
   "meds.stopped": "Suspendido",
   "meds.stopped.fold": "Suspendidos, se guardan siempre",
   "emergency.group.meds": "Lo que toma",
+  "emergency.meds.source": "de Medicamentos",
   "meds.on_card.chip": "En la tarjeta",
   "questions.subtitle": "Cosas que preguntar cuando tenga ocasión. Se quedan aquí hasta que usted diga que las preguntó.",
   "questions.empty": "Nada pendiente. Lo que guarde como pregunta aparecerá aquí.",

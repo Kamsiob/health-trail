@@ -16,7 +16,17 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.kamsiob.healthtrail.ui.components.Avatar
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.Hairline
+import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -28,6 +38,7 @@ object EmergencyTags {
     const val EDIT = "emergency_card_edit"
     const val SHARE = "emergency_card_share"
     const val CHANGE = "emergency_card_change"
+    const val MEDS_FOLD = "emergency_meds_fold"
     fun field(key: String) = "emergency_field_$key"
     fun contact(id: String) = "emergency_contact_$id"
     fun call(id: String) = "emergency_call_$id"
@@ -76,6 +87,7 @@ fun EmergencyCardScreen(
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
+    var medsOpen by rememberSaveable { mutableStateOf(false) }
 
     SectionScaffold(
         name = EmergencyTags.NAME,
@@ -136,14 +148,22 @@ fun EmergencyCardScreen(
             item {
                 GroupHeader(labelKey = "emergency.group.who")
                 Spacer(Modifier.height(Space.headerGap))
-            }
-            for (contact in contacts) {
-                item(key = contact.id) {
-                    ContactRow(contact = contact, onCall = { onCall(contact) })
-                    Spacer(Modifier.height(Space.cardGap))
+                // **One group of rows, not one card each**, per grid screen 17
+                // and rule 22. Three cards three lines tall pushed the blood
+                // type below the fold on the one screen in this app that is
+                // not for the person who wrote it, and a stranger under
+                // pressure reads it once. #354.
+                GroupedSurface {
+                    contacts.forEachIndexed { index, contact ->
+                        ContactRow(
+                            contact = contact,
+                            onCall = { onCall(contact) },
+                            isLast = index == contacts.lastIndex,
+                        )
+                    }
                 }
+                Spacer(Modifier.height(Space.s))
             }
-            item { Spacer(Modifier.height(Space.s)) }
         }
 
         // **Assembled from the medications that say they belong here**, rather
@@ -151,17 +171,53 @@ fun EmergencyCardScreen(
         // one that gets stopped drops off by itself, which is the behavior
         // somebody would expect and the one that is dangerous to get wrong.
         if (medications.isNotEmpty()) {
+            // **Folded and counted**, per grid screen 17, which draws "What she
+            // takes, 3, from Medications" rather than a card per drug. The
+            // names are one tap away and the numbers stay on the first screen,
+            // which is what this card is for. The fold says where the list
+            // comes from, because a medication puts itself here through its
+            // own flag and somebody correcting it should know where to go.
             item {
-                GroupHeader(labelKey = "emergency.group.meds")
-                Spacer(Modifier.height(Space.headerGap))
+                FoldRow(
+                    labelKey = "emergency.group.meds",
+                    expanded = medsOpen,
+                    onToggle = { medsOpen = !medsOpen },
+                    // **The count is a quantity and nothing else.** The grid
+                    // writes "3 · from Medications" in this slot; in this app
+                    // the pill is mono, tabular and round, and a phrase in it
+                    // wraps to three lines and gets clipped by its own shape
+                    // at font scale 2.0. Seen on the phone rather than
+                    // reasoned about. Where the list comes from is said in the
+                    // group instead. `DESIGN.md` 15.1.
+                    count = medications.size.toString(),
+                    modifier = Modifier.testTag(EmergencyTags.MEDS_FOLD),
+                )
+                Spacer(Modifier.height(Space.cardGap))
             }
-            for (medication in medications) {
-                item(key = "med_${medication.id}") {
-                    MedicationCardRow(medication)
-                    Spacer(Modifier.height(Space.cardGap))
+            if (medsOpen) {
+                item {
+                    // **Where the list comes from, said once, when it is
+                    // open.** A medication puts itself on this card through
+                    // its own flag, so somebody correcting one needs to know
+                    // where to go, and the fold's own label is not the place
+                    // for a sentence.
+                    Text(
+                        text = strings["emergency.meds.source"],
+                        style = HealthTrail.type.bodyS,
+                        color = HealthTrail.colors.ink2,
+                        modifier = Modifier.padding(bottom = Space.xs),
+                    )
+                    GroupedSurface {
+                        medications.forEachIndexed { index, medication ->
+                            MedicationCardRow(
+                                medication = medication,
+                                isLast = index == medications.lastIndex,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(Space.s))
                 }
             }
-            item { Spacer(Modifier.height(Space.s)) }
         }
 
         // **Emptiness is about what the card shows, not about whether a row
@@ -211,12 +267,12 @@ fun EmergencyCardScreen(
                 item {
                     GroupHeader(labelKey = "emergency.group.medical")
                     Spacer(Modifier.height(Space.headerGap))
-                }
-                for (entry in inAHurry) {
-                    item(key = entry.key) {
-                        CardField(entry)
-                        Spacer(Modifier.height(Space.cardGap))
+                    GroupedSurface {
+                        inAHurry.forEachIndexed { index, entry ->
+                            CardField(entry = entry, isLast = index == inAHurry.lastIndex)
+                        }
                     }
+                    Spacer(Modifier.height(Space.s))
                 }
             }
 
@@ -225,11 +281,10 @@ fun EmergencyCardScreen(
                     Spacer(Modifier.height(Space.s))
                     GroupHeader(labelKey = "emergency.group.paperwork")
                     Spacer(Modifier.height(Space.headerGap))
-                }
-                for (entry in paperwork) {
-                    item(key = entry.key) {
-                        CardField(entry)
-                        Spacer(Modifier.height(Space.cardGap))
+                    GroupedSurface {
+                        paperwork.forEachIndexed { index, entry ->
+                            CardField(entry = entry, isLast = index == paperwork.lastIndex)
+                        }
                     }
                 }
             }
@@ -263,53 +318,42 @@ fun EmergencyCardScreen(
 private fun ContactRow(
     contact: Repository.EmergencyContact,
     onCall: () -> Unit,
+    isLast: Boolean,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
     val phone = contact.phone?.takeIf { it.isNotBlank() }
+    val relationship = contact.relationship?.takeIf { it.isNotBlank() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(Radius.card)
-            .background(colors.alertWash)
-            .testTag(EmergencyTags.contact(contact.id))
-            .padding(Space.cardPadding),
-    ) {
-        contact.relationship?.takeIf { it.isNotBlank() }?.let { relationship ->
-            Text(
-                text = Bidi.isolate(relationship),
-                style = HealthTrail.type.mono,
-                color = colors.alertInk,
+    // **A dense row with an avatar, not a card**, the same treatment the care
+    // team gives a person and what grid screen 17 draws: the number trails the
+    // name rather than sitting on a line of its own, so three contacts take
+    // three rows instead of nine lines.
+    DenseRow(
+        title = Bidi.isolate(contact.displayName),
+        subtitle = listOfNotNull(
+            relationship,
+            strings["careteam.no_phone"].takeIf { phone == null },
+        ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
+        leading = {
+            Avatar(
+                name = contact.displayName,
+                hue = hueFor(Repository.Section.EMERGENCY_CARD),
             )
-            Spacer(Modifier.height(Space.xs))
-        }
-
-        Text(
-            text = Bidi.isolate(contact.displayName),
-            style = HealthTrail.type.displayS,
-            color = colors.ink,
-        )
-
-        Spacer(Modifier.height(Space.xs))
-
-        if (phone != null) {
-            TextAction(
-                label = strings("careteam.call.number", "number" to phone),
-                onClick = onCall,
-                modifier = Modifier.testTag(EmergencyTags.call(contact.id)),
-            )
+        },
+        trailingContent = if (phone != null) {
+            {
+                QuietButton(
+                    label = strings("careteam.call.number", "number" to phone),
+                    onClick = onCall,
+                    modifier = Modifier.testTag(EmergencyTags.call(contact.id)),
+                )
+            }
         } else {
-            // Somebody can be on the card without a number, and saying so is
-            // better than leaving a gap where an action should be. It is also
-            // the honest prompt to go and find one.
-            Text(
-                text = strings["careteam.no_phone"],
-                style = HealthTrail.type.bodyS,
-                color = colors.alertInk,
-            )
-        }
-    }
+            null
+        },
+        divider = !isLast,
+        modifier = Modifier.testTag(EmergencyTags.contact(contact.id)),
+    )
 }
 
 /**
@@ -324,27 +368,13 @@ private fun ContactRow(
  * somebody takes long before they can quote the dose.
  */
 @Composable
-private fun MedicationCardRow(medication: Repository.Medication) {
-    val colors = HealthTrail.colors
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(Radius.card)
-            .background(colors.alertWash)
-            .testTag(EmergencyTags.field("med_${medication.id}"))
-            .padding(Space.cardPadding),
-    ) {
-        Text(
-            text = Bidi.isolate(medication.name),
-            style = HealthTrail.type.displayS,
-            color = colors.ink,
-        )
-        medication.doseText?.takeIf { it.isNotBlank() }?.let { dose ->
-            Spacer(Modifier.height(Space.xs))
-            Text(text = Bidi.isolate(dose), style = HealthTrail.type.bodyM, color = colors.ink2)
-        }
-    }
+private fun MedicationCardRow(medication: Repository.Medication, isLast: Boolean) {
+    DenseRow(
+        title = Bidi.isolate(medication.name),
+        trailing = medication.doseText?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
+        divider = !isLast,
+        modifier = Modifier.testTag(EmergencyTags.field("med_${medication.id}")),
+    )
 }
 
 /** One line of the card, present only because it has something in it. */
@@ -363,14 +393,12 @@ private fun field(key: String, label: String, value: String?): CardEntry? =
  * headings.
  */
 @Composable
-private fun CardField(entry: CardEntry) {
+private fun CardField(entry: CardEntry, isLast: Boolean) {
     val colors = HealthTrail.colors
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.card)
-            .background(colors.alertWash)
             .testTag(EmergencyTags.field(entry.key))
             .padding(Space.cardPadding),
     ) {
@@ -386,5 +414,8 @@ private fun CardField(entry: CardEntry) {
             style = HealthTrail.type.displayS,
             color = colors.ink,
         )
+    }
+    if (!isLast) {
+        Hairline(inset = Space.cardPadding, end = Space.cardPadding)
     }
 }

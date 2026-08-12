@@ -460,6 +460,7 @@
   "meds.stopped": "Stopped",
   "meds.stopped.fold": "Stopped, kept forever",
   "emergency.group.meds": "What they take",
+  "emergency.meds.source": "from Medications",
   "meds.on_card.chip": "On the card",
   "questions.subtitle": "Things to ask when you get the chance. They stay here until you say they were asked.",
   "questions.empty": "Nothing waiting. Anything you save as a question turns up here.",

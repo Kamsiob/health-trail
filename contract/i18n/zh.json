@@ -460,6 +460,7 @@
   "meds.stopped": "已停用",
   "meds.stopped.fold": "已停用，永久保留",
   "emergency.group.meds": "正在服用",
+  "emergency.meds.source": "来自“药物”",
   "meds.on_card.chip": "放入卡片",
   "questions.subtitle": "有机会时要问的问题。在您标记为已问之前，它们会一直留在这里。",
   "questions.empty": "没有待问的问题。您保存为问题的内容都会出现在这里。",
