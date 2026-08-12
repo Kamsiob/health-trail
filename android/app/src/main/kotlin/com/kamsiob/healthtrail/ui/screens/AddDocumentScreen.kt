@@ -354,7 +354,12 @@ fun AddDocumentScreen(
                 // the capture form's third stage already does. A folder and a
                 // note are what somebody adds when they are sitting down, and
                 // this form is used standing up with a letter in one hand.
-                Disclosure(testTag = AddDocTags.MORE) {
+                Disclosure(
+                    testTag = AddDocTags.MORE,
+                    // A correction shows what is already written rather than
+                    // folding the person's own note behind "Add more".
+                    startOpen = existing != null,
+                ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
 
                 // **The folder, which the screen has always folded by and no

@@ -31,6 +31,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
+import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -42,6 +43,7 @@ object AddApptTags {
     const val SAVE = "add_appt_save"
     const val CANCEL = "add_appt_cancel"
     const val PICK_DATE = "add_appt_pick_date"
+    const val MORE = "add_appt_more"
     fun field(key: String) = "add_appt_$key"
 }
 
@@ -65,6 +67,11 @@ data class AppointmentDraft(
  * **Only the title is needed.** A date with no name is not an appointment, but
  * a name with no date is: "the care plan meeting, they have not scheduled it
  * yet" is exactly the kind of thing worth writing down before it slips.
+ *
+ * **What it is and roughly when lead; where and the note are behind "Add
+ * more".** #361, 2026-08-12. Four fields down one scroll asked for an address
+ * in the same breath as the appointment, and the address usually arrives on a
+ * letter days later.
  */
 @Composable
 fun AddAppointmentScreen(
@@ -160,26 +167,41 @@ fun AddAppointmentScreen(
                     )
                 }
 
-                Spacer(Modifier.height(Space.m))
+                Spacer(Modifier.height(Space.sectionGap))
 
-                HealthTrailTextField(
-                    label = strings["appts.where"],
-                    value = draft.where,
-                    onValueChange = { draft = draft.copy(where = it) },
-                    hint = strings["appts.where.hint"],
-                    fieldTestTag = AddApptTags.field("where"),
-                )
-                Spacer(Modifier.height(Space.m))
+                // **Where it is and anything else, behind "Add more"**, per law
+                // 3 and 10.8. #361. What somebody knows when they hang up is
+                // what the appointment is and roughly when; the address usually
+                // arrives on a letter later, and asking for it in the same
+                // breath is what made this read as a data entry form.
+                //
+                // **Open already when either says something**, so correcting an
+                // appointment never hides the note somebody wrote last week.
+                Disclosure(
+                    testTag = AddApptTags.MORE,
+                    startOpen = draft.where.isNotBlank() || draft.notes.isNotBlank(),
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        HealthTrailTextField(
+                            label = strings["appts.where"],
+                            value = draft.where,
+                            onValueChange = { draft = draft.copy(where = it) },
+                            hint = strings["appts.where.hint"],
+                            fieldTestTag = AddApptTags.field("where"),
+                        )
+                        Spacer(Modifier.height(Space.m))
 
-                DictatableField(
-                    label = strings["appts.notes"],
-                    value = draft.notes,
-                    onValueChange = { draft = draft.copy(notes = it) },
-                    hint = strings["appts.notes.hint"],
-                    singleLine = false,
-                    imeAction = ImeAction.Done,
-                    fieldTestTag = AddApptTags.field("notes"),
-                )
+                        DictatableField(
+                            label = strings["appts.notes"],
+                            value = draft.notes,
+                            onValueChange = { draft = draft.copy(notes = it) },
+                            hint = strings["appts.notes.hint"],
+                            singleLine = false,
+                            imeAction = ImeAction.Done,
+                            fieldTestTag = AddApptTags.field("notes"),
+                        )
+                    }
+                }
 
                 Spacer(Modifier.height(Space.xl))
             }

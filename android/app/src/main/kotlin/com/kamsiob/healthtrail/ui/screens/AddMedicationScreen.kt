@@ -26,6 +26,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -38,6 +39,7 @@ object AddMedTags {
     const val SAVE = "add_med_save"
     const val CANCEL = "add_med_cancel"
     const val ON_CARD = "add_med_on_card"
+    const val MORE = "add_med_more"
     fun field(key: String) = "add_med_$key"
 }
 
@@ -69,6 +71,12 @@ data class MedicationDraft(
  * whether it matters in an emergency. It carries a line saying why the card
  * holds what matters most rather than everything, so leaving it off does not
  * read as an omission.
+ *
+ * **The name, the dose and the card question lead, and the rest is behind "Add
+ * more".** #361, 2026-08-12. It was four multi line fields down one scroll, each
+ * with its label above it, which is the shape the owner called a data entry app.
+ * What it is for and any other note open by themselves when either already says
+ * something, so a correction never folds away what is written.
  */
 @Composable
 fun AddMedicationScreen(
@@ -143,33 +151,16 @@ fun AddMedicationScreen(
                     singleLine = false,
                     fieldTestTag = AddMedTags.field("dose"),
                 )
-                Spacer(Modifier.height(Space.m))
-
-                DictatableField(
-                    label = strings["meds.purpose"],
-                    value = draft.purpose,
-                    onValueChange = { draft = draft.copy(purpose = it) },
-                    hint = strings["meds.purpose.hint"],
-                    singleLine = false,
-                    fieldTestTag = AddMedTags.field("purpose"),
-                )
-                Spacer(Modifier.height(Space.m))
-
-                DictatableField(
-                    label = strings["meds.notes"],
-                    value = draft.notes,
-                    onValueChange = { draft = draft.copy(notes = it) },
-                    hint = strings["meds.notes.hint"],
-                    singleLine = false,
-                    imeAction = ImeAction.Done,
-                    fieldTestTag = AddMedTags.field("notes"),
-                )
-
                 Spacer(Modifier.height(Space.l))
 
                 // The group asks the question and the chip is the answer. They
                 // carried the same words at first, which read as the label
                 // repeating itself and made the control look like a heading.
+                //
+                // **It stays above the disclosure**, unlike the two fields
+                // below it: the moment somebody writes a medication down is the
+                // moment they know whether it matters in an emergency, and a
+                // question folded away is a question nobody answers.
                 ChoiceChipGroup(label = strings["meds.on_card"]) {
                     ChoiceChip(
                         label = strings["meds.on_card.chip"],
@@ -187,6 +178,41 @@ fun AddMedicationScreen(
                     style = HealthTrail.type.bodyS,
                     color = colors.ink2,
                 )
+
+                Spacer(Modifier.height(Space.sectionGap))
+
+                // **What it is for and anything else, behind "Add more"**, per
+                // law 3 and 10.8. #361: this form put four multi line fields
+                // down one scroll, each with a label above it, and the two that
+                // matter are the name and what she actually takes. Neither of
+                // these is ever required, and the disclosure opens by itself
+                // when one of them already says something.
+                Disclosure(
+                    testTag = AddMedTags.MORE,
+                    startOpen = draft.purpose.isNotBlank() || draft.notes.isNotBlank(),
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        DictatableField(
+                            label = strings["meds.purpose"],
+                            value = draft.purpose,
+                            onValueChange = { draft = draft.copy(purpose = it) },
+                            hint = strings["meds.purpose.hint"],
+                            singleLine = false,
+                            fieldTestTag = AddMedTags.field("purpose"),
+                        )
+                        Spacer(Modifier.height(Space.m))
+
+                        DictatableField(
+                            label = strings["meds.notes"],
+                            value = draft.notes,
+                            onValueChange = { draft = draft.copy(notes = it) },
+                            hint = strings["meds.notes.hint"],
+                            singleLine = false,
+                            imeAction = ImeAction.Done,
+                            fieldTestTag = AddMedTags.field("notes"),
+                        )
+                    }
+                }
 
                 Spacer(Modifier.height(Space.xl))
             }

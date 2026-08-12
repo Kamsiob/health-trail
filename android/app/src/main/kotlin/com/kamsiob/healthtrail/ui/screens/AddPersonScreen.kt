@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -41,6 +42,7 @@ object AddPersonTags {
     const val ROLE = "add_person_role"
     fun suggestion(role: String) = "add_person_role_" + role.lowercase().replace(' ', '_')
     const val PHONE = "add_person_phone"
+    const val MORE = "add_person_more"
     const val SAVE = "add_person_save"
     const val CANCEL = "add_person_cancel"
 }
@@ -66,6 +68,12 @@ data class PersonDraft(
  * number and no name is more useful than a number that was never written down.
  * The save action says "Save what you have", the same words the capture form
  * uses, because it is the same promise.
+ *
+ * **The name and the number lead, and the role is behind "Add more".** #361,
+ * 2026-08-12. The role sat between them with up to six chips above it, so the
+ * number, which is the reason anybody adds a person at all, was the field
+ * furthest down the screen. It opens by itself when a role is already written
+ * down, so correcting somebody never hides what is known about them.
  *
  * **The phone field takes a phone keyboard but never validates.** Numbers in a
  * care setting arrive as extensions, as "ask for the charge nurse", and as
@@ -149,6 +157,38 @@ fun AddPersonScreen(
                 )
                 Spacer(Modifier.height(Space.m))
 
+                // **The two things somebody writes down in a corridor are the
+                // name and the number**, and until 2026-08-12 the role sat
+                // between them with up to six chips above it, so reaching the
+                // number meant scrolling past a question about job titles.
+                // #361: the field order is the hierarchy, and the role is
+                // refinement rather than the reason anybody opened this.
+                HealthTrailTextField(
+                    label = strings["careteam.add.phone"],
+                    value = phone,
+                    onValueChange = { phone = it },
+                    hint = strings["careteam.add.phone.hint"],
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Phone,
+                    fieldTestTag = AddPersonTags.PHONE,
+                )
+
+                Spacer(Modifier.height(Space.sectionGap))
+
+                // **The rest behind one control nobody has to touch**, per 10.8
+                // and law 3. Three fields is not a wall, so this form gets the
+                // disclosure rather than stages: `StageDots` is for a
+                // conversation walked in order, and adding a number is not one.
+                //
+                // **It starts open when there is already a role written down**,
+                // so correcting somebody never hides what the app knows about
+                // them behind a control offering to add more.
+                Disclosure(
+                    testTag = AddPersonTags.MORE,
+                    startOpen = role.isNotBlank(),
+                ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+
                 // **The roles this situation actually has, offered as chips.**
                 //
                 // The situation templates have carried a `roles` list since the
@@ -209,20 +249,12 @@ fun AddPersonScreen(
                     value = role,
                     onValueChange = { role = it },
                     hint = strings["careteam.add.role.hint"],
-                    imeAction = ImeAction.Next,
+                    imeAction = ImeAction.Done,
                     fieldTestTag = AddPersonTags.ROLE,
                 )
-                Spacer(Modifier.height(Space.m))
 
-                HealthTrailTextField(
-                    label = strings["careteam.add.phone"],
-                    value = phone,
-                    onValueChange = { phone = it },
-                    hint = strings["careteam.add.phone.hint"],
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Phone,
-                    fieldTestTag = AddPersonTags.PHONE,
-                )
+                }
+                }
 
                 Spacer(Modifier.height(Space.xl))
             }

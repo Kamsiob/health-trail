@@ -29,6 +29,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
+import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -38,6 +39,7 @@ object AddBillTags {
     const val ROOT = "add_bill_root"
     const val SAVE = "add_bill_save"
     const val CANCEL = "add_bill_cancel"
+    const val MORE = "add_bill_more"
     fun field(key: String) = "add_bill_$key"
     fun state(key: String) = "add_bill_state_$key"
 }
@@ -62,6 +64,10 @@ data class BillDraft(
  * **Nothing is calculated and nothing is advised.** No due date arithmetic, no
  * suggestion to dispute, no flag on a large amount. The person says where it
  * stands and the app writes that down.
+ *
+ * **What it is, how much, and where it stands are the bill; the note is behind
+ * "Add more".** #361, 2026-08-12. It opens by itself when there is already a
+ * note, so correcting a bill never hides what somebody wrote about it.
  */
 @Composable
 fun AddBillScreen(
@@ -149,17 +155,27 @@ fun AddBillScreen(
                     }
                 }
 
-                Spacer(Modifier.height(Space.m))
+                Spacer(Modifier.height(Space.sectionGap))
 
-                DictatableField(
-                    label = strings["appts.notes"],
-                    value = draft.notes,
-                    onValueChange = { draft = draft.copy(notes = it) },
-                    hint = strings["appts.notes.hint"],
-                    singleLine = false,
-                    imeAction = ImeAction.Done,
-                    fieldTestTag = AddBillTags.field("notes"),
-                )
+                // **The note is behind "Add more"**, per law 3 and 10.8. #361.
+                // Three questions and an open box was one box too many for a
+                // screen somebody opens holding an envelope: what it is, how
+                // much, and where it stands are the bill, and the rest is what
+                // gets added later when somebody rings about it.
+                Disclosure(
+                    testTag = AddBillTags.MORE,
+                    startOpen = draft.notes.isNotBlank(),
+                ) {
+                    DictatableField(
+                        label = strings["appts.notes"],
+                        value = draft.notes,
+                        onValueChange = { draft = draft.copy(notes = it) },
+                        hint = strings["appts.notes.hint"],
+                        singleLine = false,
+                        imeAction = ImeAction.Done,
+                        fieldTestTag = AddBillTags.field("notes"),
+                    )
+                }
 
                 Spacer(Modifier.height(Space.xl))
             }

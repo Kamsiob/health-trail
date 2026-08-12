@@ -43,6 +43,11 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * **Nothing inside it is ever required**, and the aside says so once. A
  * disclosure that hides something the person has to fill in is not disclosure,
  * it is a trap.
+ *
+ * **It never hides something already written down**, which is what [startOpen]
+ * is for. A form correcting a saved record passes true: folding away a note
+ * somebody typed last week would be the app hiding their own words behind a
+ * control that says "Add more", which is the opposite of what it means.
  */
 @Composable
 fun Disclosure(
@@ -51,6 +56,8 @@ fun Disclosure(
     labelKey: String = "capture.more",
     asideKey: String? = "capture.more.aside",
     testTag: String? = null,
+    /** True when what is inside is already filled in and must not be hidden. */
+    startOpen: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -58,7 +65,7 @@ fun Disclosure(
     val motion = LocalMotion.current
     // Saveable, so a rotation or a theme change does not fold the form back up
     // under somebody part way through filling it in.
-    var open by rememberSaveable { mutableStateOf(false) }
+    var open by rememberSaveable(startOpen) { mutableStateOf(startOpen) }
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (!open) {
