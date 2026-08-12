@@ -220,9 +220,9 @@ Every one of these was built from the existing components, logged in all three p
 
 ## 10. The phone
 
-### The device is changing, 2026-08-12 at 13:25. Read this before any device work.
+### The device changed on 2026-08-12. Read this before any device work.
 
-**The Pixel 10 Pro XL was unplugged and is being replaced by a Pixel 8 with nothing installed on it.** The owner will say when the new one is connected. **Until he does, run nothing device dependent**: no `tools/verify.sh --device`, no `tools/device.sh`, no `tools/walk.sh`, no `adb`.
+**The Pixel 10 Pro XL is gone and the Pixel 8 arrived at 13:30**, with nothing installed on it. **It came up authorized, unlocked and empty**, and `adb` sees it as `39151FDJH00506`.
 
 **What was on the old phone when it went away**, so nothing is mistaken for a fresh state later:
 
@@ -244,7 +244,8 @@ Every one of these was built from the existing components, logged in all three p
 - **The unfiled Today card**, whose branch is the same code as the incidents card and was never seen, because the month six layout does not carry that card.
 - **#360 items 3, 5 and 8**, which are the three workflow defects left. **The next action is item 5**, search opening the result rather than the roster it lives in.
 
-- **Pixel 8, nothing installed, replacing the Pixel 10 Pro XL, serial `57241FDCQ0000H`, over USB. The only test device.**
+- **Pixel 8, serial `39151FDJH00506`, over USB. The only test device**, connected 2026-08-12 at 13:30 and replacing the Pixel 10 Pro XL, `57241FDCQ0000H`, which is gone. **Android 17, the same platform level the old one ran**, so nothing about `compileSdk 37` or `targetSdk 36` changes.
+- **Its baseline is not the old phone's baseline**, and rule 19 says restore what was actually there: **font scale 1.0, animator duration 1.0, touch exploration 0**, all read on arrival. **The animator is 1.0 here where the old phone reported null**, so restoring this one to null would be leaving it changed rather than putting it back.
 - **It is the owner's daily driver.** Everything about how it is handled follows from that.
 - **No emulator.** Dropped from this project. Do not launch one, do not create an AVD, do not treat its absence as a blocker. D21, D23, B4.
 - **Say when it can be unplugged.** The owner waits to be told, and most work needs no device.

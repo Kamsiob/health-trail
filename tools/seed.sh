@@ -74,23 +74,61 @@ python3 - "$ADB" <<'PY'
 import re
 import subprocess
 import sys
+import time
 
 adb = sys.argv[1]
-xml = open('/tmp/health-trail-walk.xml', encoding='utf-8', errors='replace').read()
-for match in re.finditer(r'<node[^>]*>', xml):
-    node = match.group(0)
-    if (re.search(r'text="([^"]*)"', node) or [None, ''])[1] == 'seed.htx':
-        b = re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', node)
-        subprocess.run([
-            adb, 'shell', 'input', 'tap',
-            str((int(b.group(1)) + int(b.group(3))) // 2),
-            str((int(b.group(2)) + int(b.group(4))) // 2),
-        ], check=False)
-        print('selected seed.htx')
-        break
-else:
-    print('seed.htx is not in the picker. Open Downloads in the picker and retry.')
+
+
+def dump():
+    subprocess.run([adb, 'shell', 'uiautomator', 'dump', '/sdcard/walk.xml'],
+                   check=False, capture_output=True)
+    out = subprocess.run([adb, 'shell', 'cat', '/sdcard/walk.xml'],
+                         check=False, capture_output=True)
+    return out.stdout.decode('utf-8', 'replace')
+
+
+def find(xml, attr, value):
+    """The middle of the first node whose attr equals value, or None."""
+    for match in re.finditer(r'<node[^>]*>', xml):
+        node = match.group(0)
+        found = re.search(attr + r'="([^"]*)"', node)
+        if found and found.group(1) == value:
+            b = re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', node)
+            if b:
+                return ((int(b.group(1)) + int(b.group(3))) // 2,
+                        (int(b.group(2)) + int(b.group(4))) // 2)
+    return None
+
+
+def tap(point):
+    subprocess.run([adb, 'shell', 'input', 'tap', str(point[0]), str(point[1])],
+                   check=False)
+    time.sleep(2)
+
+
+xml = dump()
+spot = find(xml, 'text', 'seed.htx')
+
+# **A phone that has never opened the picker lands on Recent, not Downloads.**
+# The old device had opened it dozens of times and came up where the file was,
+# so this navigation was never needed until a fresh Pixel 8 arrived on
+# 2026-08-12 and the seed failed with "not in the picker" on a device that
+# plainly had it. The drawer, then Downloads, then look again.
+if spot is None:
+    roots = find(xml, 'content-desc', 'Show roots')
+    if roots is not None:
+        tap(roots)
+        downloads = find(dump(), 'text', 'Downloads')
+        if downloads is not None:
+            tap(downloads)
+            spot = find(dump(), 'text', 'seed.htx')
+
+if spot is None:
+    print('seed.htx is not in the picker, and Downloads could not be reached.')
     sys.exit(1)
+
+tap(spot)
+print('selected seed.htx')
 PY
 
 sleep 5
