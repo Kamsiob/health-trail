@@ -124,7 +124,11 @@ PY
         attempt=1
         while [ "$attempt" -le 4 ]; do
             dump
-            python3 - "$2" "$ADB" >/dev/null <<'PY'
+            # **`|| true` because this script runs under `set -e`.** Without
+            # it a label that is not on screen yet kills the whole helper with
+            # no output at all, which is worse than the problem it was written
+            # to solve: the first run of `goto` exited 1 and said nothing.
+            python3 - "$2" "$ADB" >/dev/null <<'PY' || true
 import re
 import subprocess
 import sys

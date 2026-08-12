@@ -233,11 +233,13 @@ fun NotebookScreen(
     // called during measure layout" when three classes ran together. The
     // window's size is known before anything is measured, and it is what lint
     // asks for in place of the configuration's own height.
+    // **Compared in pixels, because that is what the window reports.** The
+    // first version converted the window's height to dp and the fold stayed
+    // shut on a screen with room: the conversion was going the wrong way, and
+    // the only way to tell was to look at the phone rather than at the code.
     val density = LocalDensity.current
-    val windowHeight = with(density) {
-        LocalWindowInfo.current.containerSize.height.toDp()
-    }
-    val roomForAll = windowHeight >= Space.roomBelowTheClosedNotebook
+    val roomForAll = LocalWindowInfo.current.containerSize.height >=
+        with(density) { Space.roomBelowTheClosedNotebook.toPx() }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
