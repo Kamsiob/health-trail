@@ -665,11 +665,27 @@ fun CaptureFormScreen(
                         Spacer(Modifier.width(Space.m))
                     }
                     if (stage < STAGES - 1) {
+                        // **"Skip this" while the stage is empty, "Next" once
+                        // it has something.** Nothing in capture is required
+                        // and a control that says Next implies the question
+                        // behind it must be answered first, which is why the
+                        // default is Skip. **But once somebody has typed a
+                        // line, "Skip this" describes something they are not
+                        // doing**, which is the oddness `DESIGN.md` 15.1
+                        // raised on #345 and which the catalogs were already
+                        // carrying `capture.next` for, unused, in all four
+                        // languages. Rule 10: decided here rather than
+                        // escalated.
+                        val filled = when (stage) {
+                            0 -> state.note.isNotBlank()
+                            1 -> state.pickedEdtf != null || state.rough != null
+                            else -> state.who.isNotBlank() ||
+                                state.threadId != null ||
+                                state.personId != null ||
+                                state.medicationId != null
+                        }
                         TextAction(
-                            // **"Skip this", not "Next".** Nothing here is
-                            // required, and a button that says next implies the
-                            // question behind it has to be answered first.
-                            label = strings["capture.skip"],
+                            label = strings[if (filled) "capture.next" else "capture.skip"],
                             onClick = { stage += 1 },
                             modifier = Modifier.testTag(CaptureFormTags.NEXT),
                         )
