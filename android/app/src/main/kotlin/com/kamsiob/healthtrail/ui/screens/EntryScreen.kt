@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -457,6 +458,11 @@ private fun EditableRow(label: String, testTag: String, onClick: () -> Unit) {
                 onClick = onClick,
             )
             .testTag(testTag)
+            // **The 48dp floor, per `DESIGN.md` 12.** Mono is 11sp, so the
+            // padding alone left this at about 39dp: the first control on the
+            // screen, and the one rule 17's "editable forever" depends on, was
+            // the smallest target in the app. #361.
+            .sizeIn(minHeight = Space.touchTarget)
             .padding(horizontal = Space.m, vertical = Space.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {

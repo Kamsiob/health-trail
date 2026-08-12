@@ -296,6 +296,13 @@ class Repository private constructor(
         displayName: String,
         phone: String? = null,
         roleLabel: String? = null,
+        /**
+         * Anything else about them, which the column has held since Phase 0 and
+         * nothing ever wrote. #361: the owner asked for it by name, and where
+         * somebody parks or which extension actually reaches them is the
+         * knowledge that makes a care team worth keeping.
+         */
+        notes: String? = null,
     ): String = insert(
         "person",
         mapOf(
@@ -303,6 +310,7 @@ class Repository private constructor(
             "display_name" to displayName,
             "phone" to phone?.ifBlank { null },
             "role_label" to roleLabel,
+            "notes" to notes?.ifBlank { null },
         ),
     )
 
@@ -320,14 +328,16 @@ class Repository private constructor(
         displayName: String,
         phone: String?,
         roleLabel: String?,
+        notes: String? = null,
     ) = withContext(Dispatchers.IO) {
         db().database.write(
-            "UPDATE person SET display_name = ?, phone = ?, role_label = ?, " +
+            "UPDATE person SET display_name = ?, phone = ?, role_label = ?, notes = ?, " +
                 "updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
                 displayName,
                 phone?.ifBlank { null },
                 roleLabel?.ifBlank { null },
+                notes?.ifBlank { null },
                 System.currentTimeMillis(),
                 personId,
             ),

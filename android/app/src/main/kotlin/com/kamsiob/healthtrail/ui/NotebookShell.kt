@@ -3932,7 +3932,7 @@ fun NotebookShell(
                 // any one of these alone writes a real row. All three empty is a
                 // different thing: there is nothing to keep, so nothing is
                 // written and nothing is said about it either.
-                val anything = listOf(person.name, person.role, person.phone)
+                val anything = listOf(person.name, person.role, person.phone, person.notes)
                     .any { it.isNotBlank() }
                 val correcting = editingPerson
                 if (correcting != null) {
@@ -3944,6 +3944,7 @@ fun NotebookShell(
                         displayName = person.name.trim(),
                         phone = person.phone.trim(),
                         roleLabel = person.role.trim(),
+                        notes = person.notes.trim(),
                     )
                 } else if (subject != null && anything) {
                     repository.createPerson(
@@ -3951,6 +3952,7 @@ fun NotebookShell(
                         displayName = person.name.trim(),
                         phone = person.phone.trim(),
                         roleLabel = person.role.trim().ifBlank { null },
+                        notes = person.notes.trim().ifBlank { null },
                     )
                 }
                 editingPerson = null

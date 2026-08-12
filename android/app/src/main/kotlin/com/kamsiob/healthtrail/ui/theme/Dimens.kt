@@ -55,6 +55,15 @@ object Space {
      */
     val hairlineWidth: Dp = 1.dp
 
+    /**
+     * The rule a focused field row draws in place of its hairline.
+     *
+     * Two, so it reads as a state change rather than as the divider having
+     * shifted color: `DESIGN.md` section 9 says a focus treatment survives
+     * grayscale, and a line that only changed color would not.
+     */
+    val focusRule: Dp = 2.dp
+
     /** Gap between a section header and its content. */
     val headerGap: Dp = 10.dp
 

@@ -186,12 +186,18 @@ fun ThreadScreen(
             }
         }
 
-        if (earlier.isNotEmpty() && !earlierOpen) {
+        // **The fold stays and toggles.** It used to render only while closed
+        // and to set open rather than toggle, so opening a 174 entry thread
+        // made the control disappear and there was no way back to the twelve
+        // entry view except leaving the screen. A sand row with a chevron is
+        // the app's promise that something opens in place, and every other fold
+        // in the app keeps it. #361.
+        if (earlier.isNotEmpty()) {
             item(key = "earlier") {
                 FoldRow(
                     labelKey = "thread.earlier",
-                    expanded = false,
-                    onToggle = { earlierOpen = true },
+                    expanded = earlierOpen,
+                    onToggle = { earlierOpen = !earlierOpen },
                     count = earlier.size.toString(),
                 )
             }

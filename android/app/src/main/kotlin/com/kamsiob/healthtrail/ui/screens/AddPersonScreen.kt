@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
@@ -28,12 +29,16 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import com.kamsiob.healthtrail.ui.components.Avatar
+import com.kamsiob.healthtrail.ui.components.AvatarSize
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
-import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
-import com.kamsiob.healthtrail.ui.components.Disclosure
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.DictateAction
+import com.kamsiob.healthtrail.ui.components.FieldRow
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object AddPersonTags {
@@ -42,7 +47,7 @@ object AddPersonTags {
     const val ROLE = "add_person_role"
     fun suggestion(role: String) = "add_person_role_" + role.lowercase().replace(' ', '_')
     const val PHONE = "add_person_phone"
-    const val MORE = "add_person_more"
+    const val NOTES = "add_person_notes"
     const val SAVE = "add_person_save"
     const val CANCEL = "add_person_cancel"
 }
@@ -52,36 +57,46 @@ data class PersonDraft(
     val name: String,
     val role: String,
     val phone: String,
+    /**
+     * Anything else about them.
+     *
+     * **`person.notes` has been in the schema since Phase 0 and no form ever
+     * wrote it.** The owner asked for it by name on #361: name, title, number,
+     * notes. Where somebody parks, which extension actually reaches them, and
+     * that they are only in on Tuesdays is the knowledge that makes a care team
+     * useful, and it was being kept in people's heads.
+     */
+    val notes: String = "",
 )
 
 /**
- * Adding somebody to the care team.
+ * Adding somebody to the care team, and correcting them afterward.
  *
- * **The care team could be read and never written to**, which made it a section
- * that could only ever hold whatever setup happened to capture. Setup asks for
- * one number, at the bottom of a screen that can be skipped, so in practice the
- * section was empty and stayed empty.
+ * **The card is the screen, not a stack of boxes.** #361, rebuilt 2026-08-12
+ * after the owner said the first attempt still looked like a data entry app and
+ * that even a phone's Contacts app looks better. It is one raised group of
+ * rows, each with its label above its value and a hairline between, which is
+ * the shape the rest of the app already uses to *show* a person. A form that
+ * matches the screen it feeds is one thing seen twice rather than two things.
+ *
+ * **All four are here and nothing is folded away.** The owner named them: the
+ * name, the title, the number, the notes. An earlier build put the role behind
+ * "Add more", which hid the field that tells you who somebody is behind a
+ * control that says it holds extras.
  *
  * **Every field is optional, including the name**, per rule 13 and for the same
  * reason the capture form requires nothing: somebody standing in a corridor
  * with a number on a scrap of paper should be able to keep it. A row with a
  * number and no name is more useful than a number that was never written down.
- * The save action says "Save what you have", the same words the capture form
- * uses, because it is the same promise.
- *
- * **The name and the number lead, and the role is behind "Add more".** #361,
- * 2026-08-12. The role sat between them with up to six chips above it, so the
- * number, which is the reason anybody adds a person at all, was the field
- * furthest down the screen. It opens by itself when a role is already written
- * down, so correcting somebody never hides what is known about them.
  *
  * **The phone field takes a phone keyboard but never validates.** Numbers in a
  * care setting arrive as extensions, as "ask for the charge nurse", and as
  * partial strings somebody read out too fast. Rejecting any of those would lose
  * the thing the person was trying to keep.
  *
- * Composed from Display L, Body M, the text field of 5.9, one filled button,
- * and one text action. Nothing new was introduced.
+ * **The face at the top is the person taking shape as you type.** The initials
+ * fill in from the name, which is the same avatar their row will wear, so the
+ * form shows what it is making rather than only asking for it.
  */
 @Composable
 fun AddPersonScreen(
@@ -111,6 +126,7 @@ fun AddPersonScreen(
     var name by remember(existing?.id) { mutableStateOf(existing?.displayName.orEmpty()) }
     var role by remember(existing?.id) { mutableStateOf(existing?.roleLabel.orEmpty()) }
     var phone by remember(existing?.id) { mutableStateOf(existing?.phone.orEmpty()) }
+    var notes by remember(existing?.id) { mutableStateOf(existing?.notes.orEmpty()) }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -145,49 +161,77 @@ fun AddPersonScreen(
                     style = HealthTrail.type.bodyM,
                     color = colors.ink2,
                 )
+
                 Spacer(Modifier.height(Space.l))
 
-                HealthTrailTextField(
-                    label = strings["careteam.add.name"],
-                    value = name,
-                    onValueChange = { name = it },
-                    hint = strings["careteam.add.name.hint"],
-                    imeAction = ImeAction.Next,
-                    fieldTestTag = AddPersonTags.NAME,
-                )
-                Spacer(Modifier.height(Space.m))
-
-                // **The two things somebody writes down in a corridor are the
-                // name and the number**, and until 2026-08-12 the role sat
-                // between them with up to six chips above it, so reaching the
-                // number meant scrolling past a question about job titles.
-                // #361: the field order is the hierarchy, and the role is
-                // refinement rather than the reason anybody opened this.
-                HealthTrailTextField(
-                    label = strings["careteam.add.phone"],
-                    value = phone,
-                    onValueChange = { phone = it },
-                    hint = strings["careteam.add.phone.hint"],
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Phone,
-                    fieldTestTag = AddPersonTags.PHONE,
+                // **The face the row will wear, filling in as they type.** It
+                // is the same avatar the care team draws, so somebody sees what
+                // they are making rather than only being asked for it, and an
+                // empty one is the honest state before a name.
+                Avatar(
+                    name = name,
+                    hue = hueFor(Repository.Section.CARE_TEAM),
+                    size = AvatarSize.header,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
 
-                Spacer(Modifier.height(Space.sectionGap))
+                Spacer(Modifier.height(Space.l))
 
-                // **The rest behind one control nobody has to touch**, per 10.8
-                // and law 3. Three fields is not a wall, so this form gets the
-                // disclosure rather than stages: `StageDots` is for a
-                // conversation walked in order, and adding a number is not one.
-                //
-                // **It starts open when there is already a role written down**,
-                // so correcting somebody never hides what the app knows about
-                // them behind a control offering to add more.
-                Disclosure(
-                    testTag = AddPersonTags.MORE,
-                    startOpen = role.isNotBlank(),
-                ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
+                GroupedSurface {
+                    FieldRow(
+                        label = strings["careteam.add.name"],
+                        value = name,
+                        onValueChange = { name = it },
+                        hint = strings["careteam.add.name.hint"],
+                        imeAction = ImeAction.Next,
+                        fieldTestTag = AddPersonTags.NAME,
+                    )
+
+                    FieldRow(
+                        label = strings["careteam.add.role"],
+                        value = role,
+                        onValueChange = { role = it },
+                        hint = strings["careteam.add.role.hint"],
+                        imeAction = ImeAction.Next,
+                        fieldTestTag = AddPersonTags.ROLE,
+                    )
+
+                    FieldRow(
+                        label = strings["careteam.add.phone"],
+                        value = phone,
+                        onValueChange = { phone = it },
+                        hint = strings["careteam.add.phone.hint"],
+                        imeAction = ImeAction.Next,
+                        keyboardType = KeyboardType.Phone,
+                        fieldTestTag = AddPersonTags.PHONE,
+                    )
+
+                    FieldRow(
+                        label = strings["careteam.add.notes"],
+                        value = notes,
+                        onValueChange = { notes = it },
+                        hint = strings["careteam.add.notes.hint"],
+                        singleLine = false,
+                        imeAction = ImeAction.Done,
+                        fieldTestTag = AddPersonTags.NOTES,
+                        // The microphone, in the field, per #361. The note is
+                        // the one thing here somebody would rather say than
+                        // type: "parks round the back, only in on Tuesdays".
+                        trailing = {
+                            DictateAction(
+                                inField = true,
+                                onText = { spoken ->
+                                    notes = if (notes.isBlank()) {
+                                        spoken
+                                    } else {
+                                        "${notes.trimEnd()} $spoken"
+                                    }
+                                },
+                            )
+                        },
+                        divider = false,
+                    )
+                }
 
                 // **The roles this situation actually has, offered as chips.**
                 //
@@ -199,61 +243,52 @@ fun AddPersonScreen(
                 // administrator, and a billing office, and it was asking the
                 // person to type all six from memory.
                 //
-                // Part Two: anywhere the set of possible answers is knowable,
-                // offer chips rather than a text field. P2 asks for exactly
-                // this, in exactly these words: offered as suggestions without
-                // forcing them.
+                // **Under the card rather than inside it**, because they are an
+                // offer about one row rather than a row of their own, and a
+                // wrapping strip of chips inside a group of aligned rows is the
+                // thing that breaks the alignment the group exists for.
                 //
                 // **The field stays.** A role that is not on the list is the
                 // common case in home care and in a hospital, tapping a chip
                 // only fills the field, and what it filled can be edited or
-                // cleared. Nothing here is a fixed vocabulary.
+                // cleared.
                 if (roleSuggestions.isNotEmpty()) {
-                    ChoiceChipGroup(
-                        label = strings["careteam.add.role.suggestions"],
-                        aside = strings["careteam.add.role.suggestions.aside"],
+                    Spacer(Modifier.height(Space.sectionGap))
+                    GroupHeaderText(label = strings["careteam.add.role.suggestions"])
+                    Spacer(Modifier.height(Space.s))
+                    Text(
+                        text = strings["careteam.add.role.suggestions.aside"],
+                        style = HealthTrail.type.bodyS,
+                        color = colors.ink2,
+                    )
+                    Spacer(Modifier.height(Space.headerGap))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(Space.s),
+                        verticalArrangement = Arrangement.spacedBy(Space.s),
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(Space.s),
-                            verticalArrangement = Arrangement.spacedBy(Space.s),
-                        ) {
-                            roleSuggestions.forEach { suggestion ->
-                                ChoiceChip(
-                                    label = suggestion,
-                                    // Selected when the field already says it,
-                                    // so a chip tapped by mistake can be seen
-                                    // and a second tap clears it.
-                                    selected = role.trim()
-                                        .equals(suggestion, ignoreCase = true),
-                                    onClick = {
-                                        role = if (
-                                            role.trim().equals(suggestion, ignoreCase = true)
-                                        ) {
-                                            ""
-                                        } else {
-                                            suggestion
-                                        }
-                                    },
-                                    modifier = Modifier.testTag(
-                                        AddPersonTags.suggestion(suggestion),
-                                    ),
-                                )
-                            }
+                        roleSuggestions.forEach { suggestion ->
+                            ChoiceChip(
+                                label = suggestion,
+                                // Selected when the field already says it, so a
+                                // chip tapped by mistake can be seen and a
+                                // second tap clears it.
+                                selected = role.trim().equals(suggestion, ignoreCase = true),
+                                onClick = {
+                                    role = if (
+                                        role.trim().equals(suggestion, ignoreCase = true)
+                                    ) {
+                                        ""
+                                    } else {
+                                        suggestion
+                                    }
+                                },
+                                modifier = Modifier.testTag(
+                                    AddPersonTags.suggestion(suggestion),
+                                ),
+                            )
                         }
                     }
-                    Spacer(Modifier.height(Space.m))
-                }
-
-                HealthTrailTextField(
-                    label = strings["careteam.add.role"],
-                    value = role,
-                    onValueChange = { role = it },
-                    hint = strings["careteam.add.role.hint"],
-                    imeAction = ImeAction.Done,
-                    fieldTestTag = AddPersonTags.ROLE,
-                )
-
-                }
                 }
 
                 Spacer(Modifier.height(Space.xl))
@@ -267,7 +302,11 @@ fun AddPersonScreen(
 
             FilledButton(
                 label = strings["capture.save"],
-                onClick = { onSave(PersonDraft(name = name, role = role, phone = phone)) },
+                onClick = {
+                    onSave(
+                        PersonDraft(name = name, role = role, phone = phone, notes = notes),
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)

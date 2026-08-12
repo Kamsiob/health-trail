@@ -1,6 +1,8 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -180,6 +182,14 @@ fun DateKindEditSheet(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .imePadding()
+                // **It scrolls, like every other sheet carrying a form.** #129
+                // gave seven sheets this and these three were missed: each
+                // stacks a title, a note, a field and three full width actions,
+                // and on a Pixel 8 at font scale 2.0 Save, Remove and Cancel
+                // are all below the sheet's own bottom edge with no way to
+                // reach them. A click at a node outside the viewport does
+                // nothing at all, which reads as a save that did not fire.
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = Space.screenHorizontal)
                 .padding(bottom = Space.l),
         ) {

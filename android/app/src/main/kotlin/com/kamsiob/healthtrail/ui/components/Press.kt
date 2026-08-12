@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.theme.raisedCard
 
 /**
  * The press state, per `DESIGN.md` section 5.14. One treatment, used by
@@ -128,6 +129,14 @@ fun Modifier.openableByTap(
     val ring by focusRingAlpha(interaction)
 
     return this
+        // **Raised, like every other surface in the app.** #324 lifted the
+        // cards and reached `GroupedSurface`, `Tile`, `TodayCard` and the rest,
+        // and missed this one, so every card built through the tappable path
+        // stayed flat: a person moved from the notebook, where surfaces sit
+        // above the paper, to projects and care threads, where they dissolve
+        // into it. Twenty two call sites, one line. Dark theme is flat by
+        // `Raise.kt` either way, which is correct there. #361.
+        .raisedCard(shape)
         .background(surface)
         .border(2.dp, HealthTrail.colors.blue.copy(alpha = ring), shape)
         .clickable(

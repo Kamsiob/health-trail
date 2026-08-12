@@ -498,7 +498,7 @@ fun TodayFieldScreen(
             }
 
             item(span = { fullWidth }, key = "today-fab-clearance") {
-                Spacer(Modifier.height(Space.xxl))
+                Spacer(Modifier.height(Space.fabScrollClearance))
             }
         }
 

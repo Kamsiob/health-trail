@@ -239,7 +239,14 @@ fun DenseRow(
             }
             if (trailingContent != null) {
                 Spacer(Modifier.width(Space.sm))
-                trailingContent()
+                // **Weighted, exactly as the trailing text above it is.** The
+                // branch above carries the comment about a long value squeezing
+                // a title "into a column one character wide, reading vertically
+                // down the screen", and this sibling never got the same fix. Its
+                // callers put a "Call 555 0142" button here, so on the care team
+                // at font scale 2.0 the pill took the row and the person's name
+                // collapsed to one letter per line. #361.
+                Box(modifier = Modifier.weight(1f, fill = false)) { trailingContent() }
             }
             if (chevron) {
                 Spacer(Modifier.width(Space.s))

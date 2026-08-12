@@ -83,8 +83,23 @@ fun ChartCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
-            Text(text = name, style = type.displayS, color = colors.ink)
-            Text(text = latest, style = type.mono, color = colors.ink2)
+            // **Both weighted**, because a measure is named by the person and
+            // "Blood pressure, sitting, left arm" measured first against the
+            // whole row and left the reading beside it a column one character
+            // wide. `DenseRow` documents finding this exact shape on this exact
+            // screen and was fixed; the chart above it was not. #361.
+            Text(
+                text = name,
+                style = type.displayS,
+                color = colors.ink,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = latest,
+                style = type.mono,
+                color = colors.ink2,
+                modifier = Modifier.weight(1f, fill = false),
+            )
         }
 
         Plot(
@@ -98,8 +113,18 @@ fun ChartCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(text = footerStart.orEmpty(), style = type.mono, color = colors.ink2)
-                Text(text = footerEnd.orEmpty(), style = type.mono, color = colors.ink2)
+                Text(
+                    text = footerStart.orEmpty(),
+                    style = type.mono,
+                    color = colors.ink2,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = footerEnd.orEmpty(),
+                    style = type.mono,
+                    color = colors.ink2,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
             }
         }
     }

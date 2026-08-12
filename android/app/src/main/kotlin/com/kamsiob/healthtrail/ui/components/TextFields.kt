@@ -184,3 +184,136 @@ fun HealthTrailTextField(
         }
     }
 }
+
+/**
+ * A field as a row in a group, rather than a labeled slab of its own.
+ *
+ * **This is the answer to "it still looks like a data entry app".** The owner's
+ * words on #361, twice, and the second time with the rest of the app named
+ * alongside the forms. A screen built from [HealthTrailTextField] is a stack of
+ * gray labels over filled boxes with gaps between them, which is what every
+ * form on every platform looked like in 2010 and what a person recognizes
+ * instantly as data entry. Four of them down one screen is four slabs.
+ *
+ * **One card, rows, hairlines, no boxes.** The same [GroupedSurface] the rest of
+ * the app is made of, so a form reads as a card of facts rather than as a queue
+ * of inputs, and it matches the screens that display those same facts. Rule 22:
+ * the component comes from the shape of the content, and a name, a role and a
+ * number are rows.
+ *
+ * **The label stays visible while somebody types**, above the value in the same
+ * row. A floating label that leaves when the field fills is the pattern that
+ * fails exactly when an interrupted person looks back at what they were doing,
+ * which 5.9 already ruled out.
+ *
+ * **Focus is the row's own rule turning blue**, rather than a 2dp box drawn
+ * around a slab. It is the same idea as the field's focus ring, at the weight a
+ * row can carry, and it survives grayscale because the line also thickens.
+ *
+ * **The row never grows a border, never turns red, and never blocks.** Nothing
+ * in this app is required, so a field cannot be wrong.
+ */
+@Composable
+fun FieldRow(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    hint: String? = null,
+    fieldTestTag: String? = null,
+    enabled: Boolean = true,
+    singleLine: Boolean = true,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    imeAction: ImeAction = ImeAction.Next,
+    /** Drawn at the end edge of the row. The microphone, where there is one. */
+    trailing: (@Composable () -> Unit)? = null,
+    /** False on the last row of a group, where the group's own edge ends it. */
+    divider: Boolean = true,
+) {
+    val colors = HealthTrail.colors
+    val type = HealthTrail.type
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Space.cardPadding, vertical = Space.sm),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = type.bodyS,
+                    color = if (focused) colors.blueDeep else colors.ink2,
+                )
+
+                Spacer(Modifier.height(Space.xs))
+
+                Box {
+                    BasicTextField(
+                        value = value,
+                        onValueChange = onValueChange,
+                        enabled = enabled,
+                        singleLine = singleLine,
+                        interactionSource = interaction,
+                        textStyle = type.bodyL.copy(
+                            color = if (enabled) colors.ink else colors.ink2,
+                        ),
+                        cursorBrush = SolidColor(colors.blue),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = keyboardType,
+                            imeAction = imeAction,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = Space.l)
+                            .then(
+                                if (fieldTestTag != null) {
+                                    Modifier.testTag(fieldTestTag)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .semantics { contentDescription = label },
+                    )
+
+                    if (value.isEmpty() && hint != null) {
+                        // **`ink2`, never `ink3`.** D92: this app has two text
+                        // levels and `ink3` is non-text only, at 2.37:1 on
+                        // paper. A hint is text somebody has to read to know
+                        // what the row wants. `check_ink3_is_not_text.py`
+                        // caught this one the same minute it was written.
+                        Text(
+                            text = hint,
+                            style = type.bodyL,
+                            color = colors.ink2,
+                        )
+                    }
+                }
+            }
+
+            if (trailing != null) {
+                Spacer(Modifier.width(Space.s))
+                trailing()
+            }
+        }
+
+        // **The rule under the row is the focus state as well as the divider**,
+        // so a focused row is marked without anything moving and without the
+        // group gaining a second treatment. The last row has no rule of its own
+        // and takes the group's edge, so it grows one only while it is focused.
+        if (focused) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Space.cardPadding)
+                    .height(Space.focusRule)
+                    .background(colors.blue),
+            )
+        } else if (divider) {
+            Hairline(inset = Space.cardPadding, end = Space.cardPadding)
+        }
+    }
+}

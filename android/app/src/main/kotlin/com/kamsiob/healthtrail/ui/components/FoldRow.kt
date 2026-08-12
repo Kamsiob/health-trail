@@ -144,6 +144,17 @@ fun FoldRowText(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.s),
     ) {
+        // **The label and its count share one weighted row.** They were two
+        // `weight(1f)` children with a filler `Box` between them, which splits
+        // the free space in half whatever is in it: the label could never use
+        // more than half the row, so "Everything written down" wrapped to two
+        // lines with the other half of the pill visibly empty. Twenty four
+        // folds wear this. #361.
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(Space.s),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
         Text(
             text = label,
             style = type.bodyS,
@@ -165,7 +176,7 @@ fun FoldRowText(
             }
         }
 
-        Box(modifier = Modifier.weight(1f))
+        }
 
         // The chevron mirrors in Arabic on its own, per Chevron, and the
         // rotation composes with that: closed it points along the reading

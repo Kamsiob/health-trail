@@ -419,7 +419,7 @@ fun TodayScreen(
 
             // Clearance for the capture button, which overlaps the navigation
             // bar and would otherwise sit on the last line.
-            Spacer(Modifier.height(Space.xxl + Space.l))
+            Spacer(Modifier.height(Space.fabScrollClearance))
         }
     }
 }

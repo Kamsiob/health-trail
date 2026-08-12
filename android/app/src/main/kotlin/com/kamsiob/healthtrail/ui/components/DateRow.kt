@@ -107,6 +107,12 @@ fun DateRow(
             // **No cap.** "In 3 days" is short in English and is a phrase in
             // every other language this ships in, and a countdown that ends
             // mid-word tells somebody a date they do not have.
+            //
+            // **Weighted, so it cannot take the whole row.** Uncapped and
+            // unweighted it measured first: "passed 6 days ago" at `monoL` and
+            // font scale 2.0 left the column beside it, which is what the row
+            // is about, at zero width along with the chevron. #361.
+            modifier = Modifier.weight(1f, fill = false),
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
