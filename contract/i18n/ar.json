@@ -455,6 +455,7 @@
   "meds.on_card": "إضافة هذا إلى بطاقة الطوارئ",
   "meds.on_card.note": "البطاقة هي ما يقرأه أحدهم على عجل، لذا تحمل الأهم لا كل شيء.",
   "meds.on_card.badge": "على بطاقة الطوارئ",
+  "meds.questions.waiting": "{count, plural, zero {لا أسئلة معلّقة} one {سؤال واحد معلّق} two {سؤالان معلّقان} few {# أسئلة معلّقة} many {# سؤالًا معلّقًا} other {# سؤال معلّق}}",
   "meds.stopped": "متوقف",
   "meds.stopped.fold": "موقوفة، محفوظة دائمًا",
   "emergency.group.meds": "ما يتناوله",

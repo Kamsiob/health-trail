@@ -3450,6 +3450,39 @@ class Repository private constructor(
         }
 
     /**
+     * How many questions are still waiting on each medication, by medication id.
+     *
+     * **The list row was the one place this link did not go both ways**, #352.
+     * The capture form can attach a question to a medication and the
+     * medication's own screen lists them, so the only way to find out that
+     * something is waiting was to open each medication in turn. Grid screen 12
+     * draws it on the row, and the caption says why: a question already
+     * attached shows as a door rather than a mystery.
+     *
+     * **Open ones only**, the same rule [openQuestionsAbout] uses, because a
+     * question that has been asked has its answer on the question itself.
+     *
+     * **A medication with none is absent from the map** rather than present
+     * with a zero, so a caller cannot render "0 questions" by accident.
+     */
+    suspend fun openQuestionCountsByMedication(subjectId: String): Map<String, Int> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT medication_id, COUNT(*) FROM live_question " +
+                    "WHERE subject_id = ? AND medication_id IS NOT NULL " +
+                    "AND (asked_edtf IS NULL OR asked_edtf = '') " +
+                    "GROUP BY medication_id",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                buildMap {
+                    while (cursor.moveToNext()) {
+                        put(cursor.getString(0), cursor.getInt(1))
+                    }
+                }
+            }
+        }
+
+    /**
      * Records a question and the trail entry that carries it, in one transaction.
      *
      * **Both or neither.** Capturing "ask next time" was writing only the entry,

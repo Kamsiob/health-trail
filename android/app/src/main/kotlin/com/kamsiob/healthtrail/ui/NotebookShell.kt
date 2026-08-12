@@ -603,6 +603,9 @@ fun NotebookShell(
     // Somebody being put on or taken off the card. Null means nothing in flight.
     var togglingContact by remember { mutableStateOf<Repository.Person?>(null) }
     var medications by remember { mutableStateOf<List<Repository.Medication>>(emptyList()) }
+    // How many questions wait on each medication, so the list row can say so
+    // rather than making somebody open every medication in turn. #352.
+    var medicationQuestionCounts by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var addingMedication by remember { mutableStateOf(false) }
     var savingMedication by remember { mutableStateOf<MedicationDraft?>(null) }
     var questions by remember { mutableStateOf<List<Repository.Question>>(emptyList()) }
@@ -731,6 +734,8 @@ fun NotebookShell(
                 subject?.let { repository.threadsByRecentUse(it.id) }.orEmpty()
             emergencyCard = subject?.let { repository.emergencyCard(it.id) }
             medications = subject?.let { repository.medications(it.id) }.orEmpty()
+            medicationQuestionCounts =
+                subject?.let { repository.openQuestionCountsByMedication(it.id) }.orEmpty()
             questions = subject?.let { repository.questions(it.id) }.orEmpty()
             threadCounts = subject?.let { repository.threadsWithCounts(it.id) }.orEmpty()
             readings = subject?.let { repository.readings(it.id) }.orEmpty()
@@ -2698,6 +2703,7 @@ fun NotebookShell(
 
                 Repository.Section.MEDICATIONS -> MedicationsScreen(
                     medications = medications,
+                    openQuestions = medicationQuestionCounts,
                     onOpen = { medication -> openMedication = medication },
                     onAdd = { editingMedication = null; addingMedication = true },
                     onBack = { openSection = null },

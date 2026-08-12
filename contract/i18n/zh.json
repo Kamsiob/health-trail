@@ -455,6 +455,7 @@
   "meds.on_card": "加入紧急信息卡",
   "meds.on_card.note": "卡片是别人匆忙中要看的，所以只放最重要的，而不是全部。",
   "meds.on_card.badge": "已在紧急信息卡上",
+  "meds.questions.waiting": "{count, plural, other {还有 # 个问题要问}}",
   "meds.stopped": "已停用",
   "meds.stopped.fold": "已停用，永久保留",
   "emergency.group.meds": "正在服用",

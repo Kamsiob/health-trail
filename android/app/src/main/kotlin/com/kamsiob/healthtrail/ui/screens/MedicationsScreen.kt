@@ -62,6 +62,13 @@ fun MedicationsScreen(
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * How many questions are still waiting on each medication, by id. #352.
+     *
+     * **A medication with none is absent from the map** rather than present
+     * with a zero, so a row cannot say "0 questions" by accident.
+     */
+    openQuestions: Map<String, Int> = emptyMap(),
 ) {
     val strings = LocalStrings.current
     var stoppedOpen by rememberSaveable { mutableStateOf(false) }
@@ -97,6 +104,7 @@ fun MedicationsScreen(
                     current.forEachIndexed { index, medication ->
                         MedicationRow(
                             medication = medication,
+                            waiting = openQuestions[medication.id] ?: 0,
                             onOpen = { onOpen(medication) },
                             isLast = index == current.lastIndex,
                         )
@@ -123,6 +131,7 @@ fun MedicationsScreen(
                         stopped.forEachIndexed { index, medication ->
                             MedicationRow(
                                 medication = medication,
+                                waiting = openQuestions[medication.id] ?: 0,
                                 onOpen = { onOpen(medication) },
                                 isLast = index == stopped.lastIndex,
                             )
@@ -156,6 +165,8 @@ fun MedicationsScreen(
 @Composable
 private fun MedicationRow(
     medication: Repository.Medication,
+    /** Questions attached to it and not asked yet. Zero says nothing at all. */
+    waiting: Int,
     onOpen: () -> Unit,
     isLast: Boolean,
 ) {
@@ -171,6 +182,12 @@ private fun MedicationRow(
     // scans, not a card somebody reads.
     val detail = listOfNotNull(
         strings["meds.stopped"].takeIf { medication.isStopped },
+        // **A question waiting leads the second line**, after the stopped
+        // marker, which is state. The grid draws it in place of the purpose
+        // entirely, #352 and screen 12; keeping the purpose loses nothing and
+        // putting the waiting question last buried it at the end of a line
+        // that wraps. Rule 15: the thing somebody can act on gets the position.
+        strings("meds.questions.waiting", "count" to waiting).takeIf { waiting > 0 },
         medication.purposeText?.takeIf { it.isNotBlank() },
         medication.notes?.takeIf { it.isNotBlank() },
         // **Only while it is true.** The row used to render the stored flag

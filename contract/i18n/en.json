@@ -455,6 +455,7 @@
   "meds.on_card": "Put this on the emergency card",
   "meds.on_card.note": "The card is the one somebody reads in a hurry, so it holds what matters most rather than everything.",
   "meds.on_card.badge": "On the emergency card",
+  "meds.questions.waiting": "{count, plural, one {1 question waiting} other {# questions waiting}}",
   "meds.stopped": "Stopped",
   "meds.stopped.fold": "Stopped, kept forever",
   "emergency.group.meds": "What they take",
