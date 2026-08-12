@@ -6,6 +6,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
@@ -20,9 +22,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -46,7 +51,9 @@ import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
+import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.StageDots
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -59,8 +66,15 @@ object AddDocTags {
     const val CANCEL = "add_doc_cancel"
     const val FOLDERS = "add_doc_folders"
     const val PICK_DATE = "add_doc_pick_date"
+    const val STAGE_DOTS = "add_doc_stage_dots"
+    const val NEXT = "add_doc_next"
+    const val BACK = "add_doc_back"
+    const val MORE = "add_doc_more"
     fun field(key: String) = "add_doc_$key"
 }
+
+/** How many questions the form asks before it runs out of them. */
+private const val DOC_STAGES = 3
 
 /** What the person chose and typed about a document. */
 data class DocumentDraft(
@@ -90,6 +104,18 @@ data class DocumentDraft(
 
 /**
  * Saving a document.
+ *
+ * **One question at a time, per law 3, and it was a stack of five fields until
+ * 2026-08-12.** The owner's words on #361 were that the app looks like a data
+ * entry app, and he named this form first. Every field had a label above it down
+ * one scroll, which predates law 3 being enforced and is the shape the capture
+ * form was rebuilt away from. It now asks three questions: the photograph, what
+ * it is and when it is from, then where the paper original went, with the folder
+ * and the note behind the same "Add more" the capture form uses.
+ *
+ * **Save is live from the first question**, so photographing a letter and
+ * tapping save is still the whole interaction. Rule 13: partial is a finished
+ * state, and none of the three stages has to be reached.
  *
  * **The photo picker asks for no permission**, which is the whole reason it is
  * this and not the camera or a storage read. `PickVisualMedia` hands back one
@@ -146,6 +172,22 @@ fun AddDocumentScreen(
 
     var picking by remember { mutableStateOf(false) }
 
+    /**
+     * Which of the three questions is on screen.
+     *
+     * **Correcting a document is not staged, and that is deliberate.** Somebody
+     * who opens a saved document to change it arrives knowing which line is
+     * wrong, and walking them through three questions to reach it would be the
+     * form asking them to start a conversation they came to end. A new document
+     * is the conversation; a correction is one field. D146, and rule 23: among
+     * the defensible answers, the one that is easiest for the person.
+     */
+    var stage by rememberSaveable(existing?.id) { mutableIntStateOf(0) }
+    val staged = existing == null
+
+    /** True when this group is on screen, which on a correction is all of them. */
+    fun showing(which: Int) = !staged || stage == which
+
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri -> if (uri != null) draft = draft.copy(picked = uri) }
@@ -178,7 +220,24 @@ fun AddDocumentScreen(
                     color = colors.ink2,
                 )
 
+                // Said only when it happened, and it says plainly that nothing
+                // was saved, because the worst version of this is somebody
+                // believing a document went in when it did not. **Above the
+                // stages rather than inside one**: save is live from the first
+                // question, so the refusal has to be visible from wherever the
+                // person was standing when they tapped it.
+                if (error != null) {
+                    Spacer(Modifier.height(Space.sm))
+                    Text(
+                        text = error,
+                        style = HealthTrail.type.bodyM,
+                        color = colors.alertInk,
+                    )
+                }
+
                 Spacer(Modifier.height(Space.l))
+
+                if (showing(0)) {
 
                 val preview = rememberPickedPreview(draft.picked)
                 if (preview != null) {
@@ -220,19 +279,11 @@ fun AddDocumentScreen(
                     color = colors.ink2,
                 )
 
-                // Said only when it happened, and it says plainly that nothing
-                // was saved, because the worst version of this is somebody
-                // believing a document went in when it did not.
-                if (error != null) {
-                    Spacer(Modifier.height(Space.sm))
-                    Text(
-                        text = error,
-                        style = HealthTrail.type.bodyM,
-                        color = colors.alertInk,
-                    )
                 }
 
-                Spacer(Modifier.height(Space.l))
+                if (showing(1)) {
+
+                if (!staged) Spacer(Modifier.height(Space.sectionGap))
 
                 HealthTrailTextField(
                     label = strings["docs.title"],
@@ -240,15 +291,6 @@ fun AddDocumentScreen(
                     onValueChange = { draft = draft.copy(title = it) },
                     hint = strings["docs.title.hint"],
                     fieldTestTag = AddDocTags.field("title"),
-                )
-                Spacer(Modifier.height(Space.m))
-
-                HealthTrailTextField(
-                    label = strings["docs.original"],
-                    value = draft.originalLocation,
-                    onValueChange = { draft = draft.copy(originalLocation = it) },
-                    hint = strings["docs.original.hint"],
-                    fieldTestTag = AddDocTags.field("original"),
                 )
                 Spacer(Modifier.height(Space.m))
 
@@ -287,7 +329,33 @@ fun AddDocumentScreen(
                     )
                 }
 
-                Spacer(Modifier.height(Space.m))
+                }
+
+                if (showing(2)) {
+
+                if (!staged) Spacer(Modifier.height(Space.sectionGap))
+
+                // **The field this screen exists for**, per the schema's own
+                // comment: the digital copy is rarely the one a clerk will
+                // accept. It leads its stage rather than sitting behind the
+                // disclosure with the folder and the notes.
+                HealthTrailTextField(
+                    label = strings["docs.original"],
+                    value = draft.originalLocation,
+                    onValueChange = { draft = draft.copy(originalLocation = it) },
+                    hint = strings["docs.original.hint"],
+                    fieldTestTag = AddDocTags.field("original"),
+                )
+
+                Spacer(Modifier.height(Space.sectionGap))
+
+                // **The last two are behind one control nobody has to touch**,
+                // per 10.8 and the disclosure in `Disclosure.kt`, which is what
+                // the capture form's third stage already does. A folder and a
+                // note are what somebody adds when they are sitting down, and
+                // this form is used standing up with a letter in one hand.
+                Disclosure(testTag = AddDocTags.MORE) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
 
                 // **The folder, which the screen has always folded by and no
                 // form ever wrote.** Every document a person saved landed in
@@ -341,11 +409,72 @@ fun AddDocumentScreen(
                     fieldTestTag = AddDocTags.field("notes"),
                 )
 
+                    }
+                }
+
+                }
+
                 Spacer(Modifier.height(Space.xl))
             }
 
+            // The gap the pinned action footer requires, per DESIGN.md 5.15.
             Spacer(Modifier.height(Space.m))
 
+            // **Where you are, and the way on, on one line**, exactly as the
+            // capture form draws it. The dots say where somebody is and never
+            // how much is left, per rule 13, and the way on is worded as
+            // skipping while the question is untouched because none of these
+            // is required.
+            if (staged) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Space.screenHorizontal),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    StageDots(
+                        count = DOC_STAGES,
+                        current = stage,
+                        description = strings(
+                            "capture.stage",
+                            "current" to stage + 1,
+                            "total" to DOC_STAGES,
+                        ),
+                        modifier = Modifier.testTag(AddDocTags.STAGE_DOTS),
+                    )
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (stage > 0) {
+                            TextAction(
+                                label = strings["capture.back"],
+                                onClick = { stage -= 1 },
+                                modifier = Modifier.testTag(AddDocTags.BACK),
+                            )
+                            Spacer(Modifier.width(Space.m))
+                        }
+                        if (stage < DOC_STAGES - 1) {
+                            val filled = when (stage) {
+                                0 -> draft.picked != null
+                                else -> draft.title.isNotBlank() || draft.received != null
+                            }
+                            TextAction(
+                                label = strings[
+                                    if (filled) "capture.next" else "capture.skip",
+                                ],
+                                onClick = { stage += 1 },
+                                modifier = Modifier.testTag(AddDocTags.NEXT),
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(Space.s))
+            }
+
+            // **Live from the first question.** Somebody who photographs a
+            // letter and taps save never sees the other two, and what they
+            // have is saved from wherever they are standing.
             FilledButton(
                 label = strings["capture.save"],
                 onClick = { onSave(draft) },
