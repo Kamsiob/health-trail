@@ -64,6 +64,7 @@ class CarryTheNameForwardTest {
                         entries = emptyList(),
                         onCall = {},
                 onSetPinned = {},
+                onSetArchived = {},
                         onEdit = {},
                         onCapture = { draft = CaptureFormState().togglePerson(person) },
                         onRemove = {},

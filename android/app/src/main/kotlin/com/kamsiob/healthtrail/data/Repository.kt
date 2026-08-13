@@ -1430,6 +1430,31 @@ class Repository private constructor(
      * **It travels in the archive and survives a restore**, which is the whole
      * argument for it being a column rather than a device preference.
      */
+    /**
+     * Says somebody is no longer involved, without erasing them. #371.
+     *
+     * **`archived_at` was read in five places and written by nothing but the
+     * fixture.** So the only thing the app offered was Remove, which tombstones:
+     * `live_person` stops returning them, every entry where they were the person
+     * spoken to loses its person, and the care team of the place she left goes
+     * blank. Somebody who moved facilities had eleven people to retire and the
+     * only available action destroyed six months of their own record.
+     *
+     * **Archiving and removing are different sentences.** Archiving is the
+     * person saying somebody is no longer involved; removing is them saying the
+     * row should not exist. The queries already tell them apart, which is what
+     * made this a missing writer rather than a missing feature.
+     */
+    suspend fun setPersonArchived(personId: String, archived: Boolean) =
+        withContext(Dispatchers.IO) {
+            val now = System.currentTimeMillis()
+            db().database.write(
+                "UPDATE person SET archived_at = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(if (archived) now else null, now, personId),
+            )
+        }
+
     suspend fun setPersonPinned(personId: String, pinned: Boolean) =
         withContext(Dispatchers.IO) {
             val now = System.currentTimeMillis()
@@ -1622,6 +1647,15 @@ class Repository private constructor(
          * ruling, #361.
          */
         val pinnedAt: Long? = null,
+        /**
+         * When the person said they are no longer involved, or null. #371.
+         *
+         * **Not the same as removed.** An archived person stays on everything
+         * already written and stops being offered when something new is being
+         * written. Removing tombstones the row and takes them off six months of
+         * entries with it.
+         */
+        val archivedAt: Long? = null,
     )
 
     /**
@@ -1634,8 +1668,8 @@ class Repository private constructor(
      */
     suspend fun people(subjectId: String): List<Person> = withContext(Dispatchers.IO) {
         db().database.rawQuery(
-            "SELECT id, display_name, role_label, phone, email, notes, pinned_at " +
-                "FROM live_person WHERE subject_id = ? AND archived_at IS NULL " +
+            "SELECT id, display_name, role_label, phone, email, notes, pinned_at, " +
+                "archived_at FROM live_person WHERE subject_id = ? AND archived_at IS NULL " +
                 // **Pinned first, most recently pinned at the top**, which is
                 // the ordering the trail's pinned run already uses, and the
                 // order somebody added people in for the rest.
@@ -1653,6 +1687,7 @@ class Repository private constructor(
                             email = cursor.getString(4),
                             notes = cursor.getString(5),
                             pinnedAt = if (cursor.isNull(6)) null else cursor.getLong(6),
+                            archivedAt = if (cursor.isNull(7)) null else cursor.getLong(7),
                         ),
                     )
                 }

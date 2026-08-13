@@ -305,6 +305,7 @@ class RemovalIsVisibleTest {
                 entries = emptyList(),
                 onCall = {},
                 onSetPinned = {},
+                onSetArchived = {},
                 onEdit = {},
                 onCapture = {},
                 onRemove = { removals += 1 },

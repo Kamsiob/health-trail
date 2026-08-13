@@ -293,6 +293,9 @@ fun NotebookShell(
     /** Somebody being put at the top of the care team, or taken back out. #361. */
     var pinningPerson by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
+    /** Somebody being retired from the care team without being erased. #371. */
+    var archivingPerson by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+
     /** The entry whose words are being corrected, and what to write. #368. */
     var correctingEntry by remember { mutableStateOf<Repository.TrailEntry?>(null) }
     var savingEntryCorrection by remember {
@@ -3172,6 +3175,7 @@ fun NotebookShell(
                 entries = personEntries,
                 onCall = { number -> dial(context, number) },
                 onSetPinned = { pinned -> pinningPerson = person.id to pinned },
+                onSetArchived = { archived -> archivingPerson = person.id to archived },
                 onEdit = { editingPerson = person; addingPerson = true; openPerson = null },
                 // **The name travels, the kind does not.** What happened is
                 // the person's to say, so this opens the same sheet the gold
@@ -3538,6 +3542,16 @@ fun NotebookShell(
                 },
                 onCancel = { correctingEntry = null },
             )
+        }
+
+        val personArchive = archivingPerson
+        if (personArchive != null) {
+            LaunchedEffect(personArchive) {
+                repository.setPersonArchived(personArchive.first, personArchive.second)
+                archivingPerson = null
+                openPerson = null
+                revision += 1
+            }
         }
 
         val personPin = pinningPerson

@@ -34,6 +34,7 @@ object PersonTags {
     const val CALL = "person_call"
     const val EDIT = "person_edit"
     const val PIN = "person_pin"
+    const val ARCHIVE = "person_archive"
     const val CAPTURE = "person_capture"
     const val REMOVE = "person_remove"
     fun entry(id: String) = "person_entry_$id"
@@ -97,6 +98,15 @@ fun PersonScreen(
      * rather than offering the choice.
      */
     onSetPinned: (Boolean) -> Unit,
+    /**
+     * Says they are no longer involved, without erasing them. #371.
+     *
+     * **The only thing this screen offered was Remove**, which tombstones and
+     * takes them off every entry they were named on. Somebody who moved
+     * facilities had eleven people to retire and the one available action
+     * destroyed six months of their own record.
+     */
+    onSetArchived: (Boolean) -> Unit,
     onRemove: () -> Unit,
     onOpenEntry: (Repository.TrailEntry) -> Unit,
     onBack: () -> Unit,
@@ -281,6 +291,23 @@ fun PersonScreen(
                 ],
                 onClick = { onSetPinned(person.pinnedAt == null) },
                 modifier = Modifier.testTag(PersonTags.PIN),
+            )
+            Spacer(Modifier.height(Space.cardGap))
+            // **Above Remove, and the note says the difference.** Somebody
+            // looking for a way to say "she left" will otherwise take the only
+            // control there is, which is the one that erases the record.
+            QuietButton(
+                label = strings[
+                    if (person.archivedAt != null) "careteam.unarchive" else "careteam.archive",
+                ],
+                onClick = { onSetArchived(person.archivedAt == null) },
+                modifier = Modifier.testTag(PersonTags.ARCHIVE),
+            )
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = strings["careteam.archive.note"],
+                style = HealthTrail.type.bodyS,
+                color = colors.ink2,
             )
             Spacer(Modifier.height(Space.cardGap))
             QuietButton(
