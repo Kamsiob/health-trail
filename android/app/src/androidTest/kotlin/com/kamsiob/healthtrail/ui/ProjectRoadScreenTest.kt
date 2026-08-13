@@ -7,8 +7,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
@@ -93,7 +95,14 @@ class ProjectRoadScreenTest {
         showList()
         compose.onNodeWithTag(ProjectRoadTags.ADD).assertIsNotEnabled()
         compose.onNodeWithTag(ProjectRoadTags.ADD_FIELD).performTextInput("Renewal due")
-        compose.onNodeWithTag(ProjectRoadTags.ADD).performClick()
+        // **The keyboard is put away before the button is tapped**, and that
+        // is the screen being right rather than the test being helped. Since
+        // #371 item 6 a section screen makes room for the keyboard, so with it
+        // up the list is short and a control below the field is genuinely off
+        // screen. Tapping where it used to be is a tap on the keyboard.
+        Espresso.closeSoftKeyboard()
+        compose.waitForIdle()
+        compose.onNodeWithTag(ProjectRoadTags.ADD).performScrollTo().performClick()
         assertEquals("Renewal due", added)
     }
 

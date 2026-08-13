@@ -5,12 +5,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -223,17 +227,27 @@ fun SectionScaffold(
         // Its own system bar padding, because a section screen renders over the
         // shell rather than inside it and does not inherit what the four
         // destinations get. The Unfiled tray learned this the same way.
-        // **No `imePadding` here, and that is a correction rather than an
-        // omission.** It was added on 2026-08-13 to fix the keyboard covering
-        // the field on Export, on Restore and on the change of situation, and
-        // it broke three tests in the shape `docs/TRAPS.md` names: with the
-        // keyboard up the content area shrinks, the scaffold's pinned footer
-        // goes outside the viewport, and a click at a node's center outside the
-        // viewport does nothing at all, which reads as a save that did not
-        // fire. **The keyboard defect is real and still open**, and the fix
-        // belongs on the three screens that own their fields rather than on the
-        // container all fifty five sit in. #371.
-        Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
+        // **The bars and the keyboard are one inset here, not two.** Twelve
+        // section screens carry a text field, and with `enableEdgeToEdge` the
+        // window does not resize for the keyboard, so without this the keyboard
+        // covers the field on Export, on Restore and on the change of
+        // situation. #371 item 6.
+        //
+        // **A plain `.imePadding()` after `.systemBarsPadding()` was tried
+        // first and is wrong**, which cost three test failures on 2026-08-13
+        // in the shape `docs/TRAPS.md` names: the keyboard inset already
+        // contains the navigation bar, so applying both adds that bar twice and
+        // pushes the pinned footer off the bottom by its height. A click at a
+        // node's center outside the viewport does nothing at all, and the
+        // assertions read "expected the words but was null", which looks
+        // exactly like a save that did not fire. **The union takes the larger
+        // of the two rather than the sum**, so with no keyboard this is the
+        // bars alone and nothing else changes.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.ime)),
+        ) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn(
                 state = listState,

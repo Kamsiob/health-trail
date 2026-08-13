@@ -10,7 +10,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.test.espresso.Espresso
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
@@ -69,7 +71,14 @@ class PassphraseMaskingTest {
 
         // And it can be revealed, because typing a passphrase blind, twice,
         // with no way to look is its own trap.
-        compose.onNodeWithTag(ExportTags.REVEAL).performClick()
+        // **The keyboard is put away before the button is tapped**, and that
+        // is the screen being right rather than the test being helped. Since
+        // #371 item 6 a section screen makes room for the keyboard, so with it
+        // up the list is short and a control below the field is genuinely off
+        // screen. Tapping where it used to be is a tap on the keyboard.
+        Espresso.closeSoftKeyboard()
+        compose.waitForIdle()
+        compose.onNodeWithTag(ExportTags.REVEAL).performScrollTo().performClick()
         compose.waitForIdle()
 
         assertTrue(
