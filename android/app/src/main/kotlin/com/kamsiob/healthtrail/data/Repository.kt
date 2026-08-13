@@ -5406,48 +5406,49 @@ class Repository private constructor(
         val billDescription: String?,
     )
 
-    suspend fun violations(instructionId: String): List<Violation> =
+    /**
+     * Every time an instruction was not followed, by instruction id.
+     *
+     * **This replaced a count and a reader nobody called**, which is the shape
+     * #371 named: `violations(instructionId)` returned the person's own words
+     * with both joins already written and had no call site anywhere, while the
+     * screen was handed a separate `COUNT(*)`. So somebody typed "the night
+     * nurse gave it at 9 instead of 6" and the app showed them a 3. **One
+     * query, and the count is the list's own size**, because two readers of the
+     * same rows is how a screen comes to know a number and not the sentence
+     * behind it.
+     *
+     * **An instruction with none is absent from this map** rather than present
+     * holding an empty list, the same way `openQuestionCountsByMedication`
+     * decides it. Absent means nothing was written down; a zero would be a
+     * finding.
+     */
+    suspend fun violationsBySubject(subjectId: String): Map<String, List<Violation>> =
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
-                "SELECT v.id, v.occurred_edtf, v.note, " +
+                "SELECT v.id, v.instruction_id, v.occurred_edtf, v.note, " +
                     "v.incident_id, i.title, v.bill_id, b.description " +
                     "FROM live_instruction_violation v " +
+                    "JOIN live_standing_instruction s ON s.id = v.instruction_id " +
                     "LEFT JOIN live_incident i ON i.id = v.incident_id " +
                     "LEFT JOIN live_bill b ON b.id = v.bill_id " +
-                    "WHERE v.instruction_id = ? " +
+                    "WHERE s.subject_id = ? " +
                     "ORDER BY coalesce(v.occurred_start, v.created_at) DESC",
-                arrayOf(instructionId),
-            ).use { cursor ->
-                buildList {
-                    while (cursor.moveToNext()) {
-                        add(
-                            Violation(
-                                id = cursor.getString(0),
-                                occurredEdtf = cursor.getString(1),
-                                note = cursor.getString(2),
-                                incidentId = cursor.getString(3),
-                                incidentTitle = cursor.getString(4),
-                                billId = cursor.getString(5),
-                                billDescription = cursor.getString(6),
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-
-    /** How many times each instruction was not followed, by instruction id. */
-    suspend fun violationCounts(subjectId: String): Map<String, Int> =
-        withContext(Dispatchers.IO) {
-            db().database.rawQuery(
-                "SELECT v.instruction_id, COUNT(*) FROM live_instruction_violation v " +
-                    "JOIN live_standing_instruction s ON s.id = v.instruction_id " +
-                    "WHERE s.subject_id = ? GROUP BY v.instruction_id",
                 arrayOf(subjectId),
             ).use { cursor ->
-                buildMap {
+                buildMap<String, MutableList<Violation>> {
                     while (cursor.moveToNext()) {
-                        put(cursor.getString(0), cursor.getInt(1))
+                        getOrPut(cursor.getString(1)) { mutableListOf() }.add(
+                            Violation(
+                                id = cursor.getString(0),
+                                occurredEdtf = cursor.getString(2),
+                                note = cursor.getString(3),
+                                incidentId = cursor.getString(4),
+                                incidentTitle = cursor.getString(5),
+                                billId = cursor.getString(6),
+                                billDescription = cursor.getString(7),
+                            ),
+                        )
                     }
                 }
             }
@@ -5460,6 +5461,12 @@ class Repository private constructor(
      * Somebody writing this down in a corridor knows it happened; working out
      * which bill or which incident it belongs to is a later, calmer job, and
      * requiring it now would mean the thing never gets written down at all.
+     *
+     * **The form asks for it from behind the disclosure**, which is how both
+     * things stay true at once: one field for the corridor, and the link for
+     * the person who already knows. It went unasked for the life of the screen,
+     * which is why `Violation.incidentTitle` and `billDescription` were read by
+     * a screen that could never receive one. #371.
      */
     suspend fun recordViolation(
         instructionId: String,

@@ -115,6 +115,7 @@ import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectTrailScreen
 import com.kamsiob.healthtrail.ui.screens.ThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ViolationScreen
+import com.kamsiob.healthtrail.ui.screens.ViolationTags
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 import com.kamsiob.healthtrail.ui.screens.PrepTags
 import com.kamsiob.healthtrail.ui.screens.SearchScreen
@@ -537,6 +538,12 @@ class ScreenReaderTest {
         assertEverythingIsLabeled("one chapter, with everything hanging off it")
     }
 
+    /**
+     * **The disclosure is opened here rather than left folded**, because what is
+     * inside it is the part that was added: the chips saying which incident or
+     * which bill this broke against. A reader sweep of a form with its optional
+     * half closed is a sweep of half the form. #371.
+     */
     @Test
     fun writingDownAViolationLabelsEverything() {
         compose.show {
@@ -547,8 +554,21 @@ class ScreenReaderTest {
                 ),
                 onSave = {},
                 onCancel = {},
+                incidents = listOf(
+                    Repository.Incident(
+                        "i1", "Bruise on her arm nobody could explain", null,
+                        "2026-08-03", null, null, null, null, 1,
+                    ),
+                ),
+                bills = listOf(
+                    Repository.Bill(
+                        "b1", "Ambulance transfer", 316877, "USD", "disputed",
+                        null, "2026-08-04", null,
+                    ),
+                ),
             )
         }
+        compose.onNodeWithTag(ViolationTags.ABOUT).performScrollTo().performClick()
         assertEverythingIsLabeled("writing down a time it was not followed")
     }
 
@@ -1806,6 +1826,19 @@ class ScreenReaderTest {
                 onOpen = {},
                 onAdd = {},
                 onBack = {},
+                // **The times it was not followed, in the person's own words**,
+                // which the row showed only as a count until #371. One of them
+                // says what it broke against, so the swept screen carries both
+                // shapes the row can draw.
+                violations = mapOf(
+                    "s1" to listOf(
+                        Repository.Violation(
+                            "v1", "2026-08-05", "The night nurse gave it at 9 instead of 6",
+                            "i1", "Bruise on her arm nobody could explain", null, null,
+                        ),
+                        Repository.Violation("v2", "2026-08-06", null, null, null, null, null),
+                    ),
+                ),
             )
         }
         assertEverythingIsLabeled("standing instructions")

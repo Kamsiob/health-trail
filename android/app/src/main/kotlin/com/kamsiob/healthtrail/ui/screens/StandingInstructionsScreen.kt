@@ -70,14 +70,19 @@ fun StandingInstructionsScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     /**
-     * How many times each instruction was not followed.
+     * Every time each instruction was not followed, most recent first.
      *
      * **A count and never a judgment**, per rule 2 and `MASTER_SPEC.md` 4.11.
      * Nothing here says a facility is bad, nothing is colored by how many, and
      * no threshold turns a number into an opinion. What it means is the
      * person's to judge, and the row says so in those words.
+     *
+     * **It used to be the count alone**, which is what #371 found: somebody
+     * typed "the night nurse gave it at 9 instead of 6" and the app showed them
+     * a 3. The words are the record. The count is only how many of them there
+     * are, and it is now the list's own size rather than a second query.
      */
-    violations: Map<String, Int> = emptyMap(),
+    violations: Map<String, List<Repository.Violation>> = emptyMap(),
     onRecordViolation: (Repository.StandingInstruction) -> Unit = {},
 ) {
     val strings = LocalStrings.current
@@ -105,7 +110,7 @@ fun StandingInstructionsScreen(
         // and where everything is settled the most recent does.
         val lead = instructions.maxWithOrNull(
             compareBy(
-                { violations[it.id] ?: 0 },
+                { violations[it.id]?.size ?: 0 },
                 { if (it.isAcknowledged) 0 else 1 },
             ),
         )
@@ -123,7 +128,7 @@ fun StandingInstructionsScreen(
             val explainHere = explained.add(instruction.tag)
             item(key = instruction.id) {
                 InstructionRow(
-                    violationCount = violations[instruction.id] ?: 0,
+                    violations = violations[instruction.id].orEmpty(),
                     onRecordViolation = { onRecordViolation(instruction) },
                     instruction = instruction,
                     tag = tags[instruction.tag],
@@ -169,7 +174,7 @@ fun StandingInstructionsScreen(
 
 @Composable
 private fun InstructionRow(
-    violationCount: Int,
+    violations: List<Repository.Violation>,
     /**
      * True on the first instruction carrying this tag, which is the one that
      * spells the tag out. Every other instruction with the same tag shows the
@@ -295,10 +300,10 @@ private fun InstructionRow(
         // Zero says nothing at all rather than "0 times", because a count of
         // nothing is not a finding and printing it would turn every instruction
         // into a scoreboard with most of the scores at zero.
-        if (violationCount > 0) {
+        if (violations.isNotEmpty()) {
             Spacer(Modifier.height(Space.sm))
             Text(
-                text = strings("instruction.violations.count", "count" to violationCount),
+                text = strings("instruction.violations.count", "count" to violations.size),
                 style = HealthTrail.type.mono,
                 color = colors.ink2,
             )
@@ -306,6 +311,69 @@ private fun InstructionRow(
             // It said the same thing under every instruction. It is said once
             // for the screen instead, which is where a person reads it once
             // rather than skipping it three times.
+
+            // **And under the count, the times themselves, in the person's own
+            // words.** The count was all this row had ever shown, which is what
+            // #371 called the app answering a sentence with a number: "we asked
+            // in writing in March and it happened again in May and again in
+            // June" is the conversation this record exists for, and a 3 is not
+            // it.
+            //
+            // **Nothing is folded away and nothing is capped.** These are the
+            // person's own sentences about their own notebook, they are what
+            // the count is counting, and a "3 more" here would hide the only
+            // part of this that can be read aloud in a room.
+            // **No test tag on these**, deliberately. The card merges its
+            // descendants, so a tag inside it is not in the tree a finder
+            // walks: an assertion on one passes when the line is absent and
+            // fails when it is there, which is a test proving the opposite of
+            // what it says. `HANDOFF.md` carries this as a lesson that cost two
+            // runs. **Assert on the words**, which is what a person reads
+            // anyway.
+            violations.forEach { violation ->
+                Spacer(Modifier.height(Space.sm))
+                Column {
+                    Text(
+                        text = EventDateText.render(strings, violation.occurredEdtf),
+                        style = HealthTrail.type.bodyS,
+                        color = colors.ink2,
+                    )
+                    violation.note?.takeIf { it.isNotBlank() }?.let { note ->
+                        Spacer(Modifier.height(Space.xs))
+                        Text(
+                            text = Bidi.isolate(note),
+                            style = HealthTrail.type.bodyM,
+                            color = colors.ink,
+                        )
+                    }
+                    // **What it broke against, where the person said so.** Both
+                    // of these were columns the schema carried, the reader
+                    // joined, and no form ever wrote, so this line could not
+                    // appear at all until the form began to ask. #371.
+                    violation.incidentTitle?.takeIf { it.isNotBlank() }?.let { title ->
+                        Spacer(Modifier.height(Space.xs))
+                        Text(
+                            text = strings(
+                                "instruction.violations.about.incident",
+                                "what" to Bidi.isolate(title),
+                            ),
+                            style = HealthTrail.type.bodyS,
+                            color = colors.ink2,
+                        )
+                    }
+                    violation.billDescription?.takeIf { it.isNotBlank() }?.let { description ->
+                        Spacer(Modifier.height(Space.xs))
+                        Text(
+                            text = strings(
+                                "instruction.violations.about.bill",
+                                "what" to Bidi.isolate(description),
+                            ),
+                            style = HealthTrail.type.bodyS,
+                            color = colors.ink2,
+                        )
+                    }
+                }
+            }
         }
 
         Spacer(Modifier.height(Space.sm))

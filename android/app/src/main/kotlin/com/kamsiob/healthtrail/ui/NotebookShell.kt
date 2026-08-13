@@ -567,8 +567,10 @@ fun NotebookShell(
     var openMedication by remember { mutableStateOf<Repository.Medication?>(null) }
     /** The medication a change is being written down for. */
     var recordingChangeTo by remember { mutableStateOf<Repository.Medication?>(null) }
-    /** How many times each standing instruction was not followed, and the one being written down. */
-    var violationCounts by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
+    /** Every time each standing instruction was not followed, and the one being written down. */
+    var violationsByInstruction by remember {
+        mutableStateOf<Map<String, List<Repository.Violation>>>(emptyMap())
+    }
     var recordingViolationFor by remember {
         mutableStateOf<Repository.StandingInstruction?>(null)
     }
@@ -780,7 +782,8 @@ fun NotebookShell(
             milestones = subject?.let { repository.milestones(it.id) }.orEmpty()
             appointments = subject?.let { repository.appointments(it.id) }.orEmpty()
             instructions = subject?.let { repository.standingInstructions(it.id) }.orEmpty()
-            violationCounts = subject?.let { repository.violationCounts(it.id) }.orEmpty()
+            violationsByInstruction =
+                subject?.let { repository.violationsBySubject(it.id) }.orEmpty()
             bills = subject?.let { repository.bills(it.id) }.orEmpty()
             documents = subject?.let { repository.documents(it.id) }.orEmpty()
             documentFolders = subject?.let { repository.documentFolders(it.id) }.orEmpty()
@@ -2751,7 +2754,7 @@ fun NotebookShell(
                     onOpen = { acknowledging = it },
                     onAdd = { addingInstruction = true },
                     onBack = { openSection = null },
-                    violations = violationCounts,
+                    violations = violationsByInstruction,
                     onRecordViolation = { recordingViolationFor = it },
                 )
 
@@ -2974,6 +2977,12 @@ fun NotebookShell(
                     instructionId = draft.instructionId,
                     occurred = draft.occurred,
                     note = draft.note,
+                    // **The two arguments nothing had ever passed.** #371, and
+                    // both readers on the instruction's own row were dead until
+                    // this line: the form now asks, from behind the disclosure,
+                    // and never requires it.
+                    incidentId = draft.incidentId,
+                    billId = draft.billId,
                 )
                 savingViolation = null
                 revision += 1
@@ -2985,6 +2994,11 @@ fun NotebookShell(
                 instruction = instruction,
                 onSave = { draft -> savingViolation = draft; recordingViolationFor = null },
                 onCancel = { recordingViolationFor = null },
+                // What it could have broken against, offered and never
+                // required. Both lists are already loaded for their own
+                // sections, so this costs no query.
+                incidents = incidents,
+                bills = bills,
             )
         }
 
