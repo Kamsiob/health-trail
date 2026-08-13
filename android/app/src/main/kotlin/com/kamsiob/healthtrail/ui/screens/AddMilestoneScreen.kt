@@ -229,7 +229,6 @@ fun AddMilestoneScreen(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
                     .testTag(AddMilestoneTags.CANCEL),
             )

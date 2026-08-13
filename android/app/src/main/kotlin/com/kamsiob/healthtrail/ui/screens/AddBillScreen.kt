@@ -197,7 +197,6 @@ fun AddBillScreen(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
                     .testTag(AddBillTags.CANCEL),
             )

@@ -206,7 +206,6 @@ fun CorrectIncidentScreen(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
                     .testTag(CorrectIncidentTags.CANCEL),
             )

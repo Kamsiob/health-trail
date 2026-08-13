@@ -293,7 +293,6 @@ private fun PickWhatToTrack(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
                     .testTag(MeasurementTags.CANCEL),
             )
@@ -438,7 +437,6 @@ private fun NameSomethingElse(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal),
             )
 

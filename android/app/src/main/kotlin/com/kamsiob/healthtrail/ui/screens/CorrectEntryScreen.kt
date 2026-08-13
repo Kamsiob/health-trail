@@ -176,7 +176,6 @@ fun CorrectEntryScreen(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
                     .testTag(CorrectEntryTags.CANCEL),
             )
