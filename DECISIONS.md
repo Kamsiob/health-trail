@@ -2674,6 +2674,22 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D149. Mono never touches a date, and the type ladder's own row said otherwise
+
+**Decided 2026-08-13**, working #371 item 1, and it is a correction to a document rather than a new rule.
+
+**`DESIGN.md` 5 states the rule as a law**: "Mono never touches a date, a location, a role, or anything with a verb. A date is something a person reads, so it is Atkinson." **The scale ladder eleven lines below it listed the Mono style's uses as "eyebrows, counts, dates as data, amounts."** Both have been there since the type work.
+
+**Two design panels tripped over it on the same day.** Both read the same screenshot of a violation rendered with its date in Body S, both cited the ladder row, and both filed it as a defect with the fix "change it to Mono". Neither had done anything wrong: they read the authoritative document and it told them two things.
+
+**The law wins and the row is corrected**, for three reasons that agree. The law states its reasoning and the row states none. **#371 item 3 is already the work of moving 21 date sites off Mono**, so the row describes a state the project has decided to leave. And a rendered EDTF is prose however short: "Sometime in November 2024" is a sentence, and the same renderer produces it and "August 13, 2026".
+
+**What stays Mono is a distance marker.** "Day 14" and "3 weeks later" are counts of elapsed time, which is data. That is the distinction the row was probably reaching for and did not make.
+
+**The entry worth keeping is the shape rather than the ruling.** A document that contradicts itself does not produce confusion, it produces confident wrong findings, and it costs the same review twice. **When a panel or a session cites a rule to call something a defect, check whether the document says it twice.**
+
+---
+
 ### D145. A care thread can be started from scratch, because fourteen situations is a starting set
 
 **Date:** 2026-08-12. **Decided by:** the owner, ruling on #349. **Supersedes nothing.** Threads created by applying a situation keep working exactly as they do now, and no template behavior changes.
@@ -2745,6 +2761,14 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **What this needs, and it is not a late-night change.** `NotebookShell.kt` is about 4,000 lines and one composable. The overlays want to be extracted in groups, each taking its own state, so the shell becomes a router rather than the whole app in one function. **It should be done deliberately, with the suite green before and after each group**, because every extraction moves navigation state that the back handlers depend on.
 
 **Until it is done, no new overlay can be added to the shell**, which blocks the chapter rename, the question and standing-instruction corrections, and anything else on #371 that needs a new full-screen surface. **Everything that changes an existing screen is unaffected.**
+
+**2026-08-13, later the same day: a third attempt, and it is the useful one.** Adding the other half of rule 18 to `IncidentScreen`, which is an existing screen, failed the build too. **One parameter was enough**, so the shell has no headroom rather than a little, and "everything that changes an existing screen is unaffected" is only true while that screen's signature does not grow.
+
+**Extracting the whole incidents overlay into a file-scope composable made it worse.** Sixty-seven lines of body came out and a fifty-line call site with eighteen arguments and twelve lambdas went in, and the build failed at a larger method than before. **That is the third failure of extraction and it is not bad luck: the bytecode that counts is at the call site.** Every parameter, every lambda, and every default is code emitted inside the shell's own method, so moving a block out and passing it its dependencies moves nothing.
+
+**What worked is the opposite of extraction: fewer parameters.** `IncidentScreen` took `entries`, `people` and `documents` as three lists; they became one `Repository.IncidentDetail`, which is the shape `EntryDetail` had all along. Three parameters off the call site paid for the fourth list and the handler, and the build passed with room to spare.
+
+**So the remedy for B6 is a state holder, not a file split.** The shell's cost is roughly the number of arguments crossing it, and the way down is to make each screen take one object it can read rather than eight lists the shell assembles. **Anyone starting the extraction pass should read this before moving a single block**, because the obvious approach has now failed three times and the cheap approach has worked once.
 
 ---
 

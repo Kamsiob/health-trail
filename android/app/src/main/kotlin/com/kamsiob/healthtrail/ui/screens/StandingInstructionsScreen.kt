@@ -251,10 +251,11 @@ fun StandingInstructionsScreen(
  * and where it can be taken off the record. Until then this was the one thing a
  * family typed that they had to live with exactly as typed.
  *
- * **What it broke against is said plainly and is not yet a door.** Rule 18 wants
- * it opening the incident or the bill, and the reverse line on those two screens
- * with it. That is the next commit rather than this one, and a line that looks
- * tappable and is not would be worse than a line that does not.
+ * **What it broke against is said plainly and is not itself a door**, because
+ * the row's own tap is the correction and a second target inside it would leave
+ * a person unable to tell which half of the row they were pressing. **The link
+ * goes both ways all the same**, rule 18: the incident and the bill each carry
+ * a group naming the request that was not followed there.
  */
 @Composable
 private fun ViolationRow(
@@ -291,12 +292,13 @@ private fun ViolationRow(
                     .testTag(InstructionTags.violationRow(violation.id))
                     .padding(Space.cardPadding),
             ) {
-                // **Not mono.** `DESIGN.md` 5.1: "Mono never touches a date, a
+                // **Not mono.** `DESIGN.md` 5: "Mono never touches a date, a
                 // location, a role, or anything with a verb. A date is
-                // something a person reads, so it is Atkinson." The table row
-                // two lines below that saying "dates as data" contradicts it,
-                // and #371 item 3 is the work of moving 21 date sites off mono.
-                // D149.
+                // something a person reads, so it is Atkinson." Its own scale
+                // ladder said "dates as data" until two panels cited that row
+                // to call this line a defect; the row is corrected and the law
+                // stands. D149, and #371 item 3 is the 21 sites still crossing
+                // it.
                 Text(
                     text = EventDateText.render(strings, violation.occurredEdtf),
                     style = HealthTrail.type.bodyS,

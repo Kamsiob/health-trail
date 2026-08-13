@@ -264,14 +264,6 @@ fun IncidentScreen(
      * and adding the violations as a fifth list failed the build.
      */
     detail: Repository.IncidentDetail,
-    /**
-     * Opens the list of what this family has asked for.
-     *
-     * **A request has no screen of its own**: the one `DESIGN.md` 14 draws
-     * cannot be built while `NotebookShell` is at the JVM method limit, B6, so
-     * the door leads to the list that holds it rather than nowhere.
-     */
-    onOpenViolations: () -> Unit = {},
     onOpenPerson: (Repository.Person) -> Unit,
     /**
      * Opens the paperwork this incident produced. #360, rule 18.
@@ -335,6 +327,14 @@ fun IncidentScreen(
     onCorrect: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Opens the list of what this family has asked for.
+     *
+     * **A request has no screen of its own**: the one `DESIGN.md` 14 draws
+     * cannot be built while `NotebookShell` is at the JVM method limit, B6, so
+     * the door leads to the list that holds it rather than nowhere.
+     */
+    onOpenViolations: () -> Unit = {},
 ) {
     val entries = detail.entries
     val people = detail.people

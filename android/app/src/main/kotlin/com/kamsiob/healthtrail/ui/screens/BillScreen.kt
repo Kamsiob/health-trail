@@ -56,6 +56,12 @@ object BillTags {
 @Composable
 fun BillScreen(
     bill: Repository.Bill,
+    onEdit: () -> Unit,
+    /** Taking the bill out of the notebook, per #218. Opens the confirmation. */
+    onRemove: () -> Unit,
+    onOpenChapter: (String) -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
     /**
      * Every time a request was not followed that names this bill.
      *
@@ -65,12 +71,7 @@ fun BillScreen(
      */
     violations: List<Repository.Violation> = emptyList(),
     onOpenViolations: () -> Unit = {},
-    onEdit: () -> Unit,
-    /** Taking the bill out of the notebook, per #218. Opens the confirmation. */
-    onRemove: () -> Unit,
-    onOpenChapter: (String) -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
+
     backLabelKey: String = "section.back.money",
 ) {
     val strings = LocalStrings.current

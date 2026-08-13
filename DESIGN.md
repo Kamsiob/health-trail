@@ -259,6 +259,8 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 
 **Mono never touches a date, a location, a role, or anything with a verb.** A date is something a person reads, so it is Atkinson. A count is data, so it is Mono. That line is the one most often crossed and it is what makes a screen read as a dashboard instead of a notebook.
 
+**The ladder below said "dates as data" in the Mono row until 2026-08-13, and it contradicted the paragraph above it.** Two design panels reading the same screen on the same day both cited that row to call a correctly rendered date a defect, which is what a document contradicting itself costs. The row is corrected and the paragraph is the rule. **A rendered EDTF is prose**, however short: "Sometime in November 2024" and "August 13, 2026" are both read rather than scanned. **What stays Mono is a distance marker**, "Day 14" or "3 weeks later", which is a count of elapsed time rather than a date. D149, and #371 item 3 is the work of moving the 21 sites that still cross the line.
+
 ### 5.1 The scale ladder
 
 | Role | Face | Size / line | Weight | Use |
@@ -270,7 +272,7 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 | Body S | Atkinson | 12sp / 1.4 | 400 | Folded rows on sand, row subtitles |
 | Label | Atkinson | 13sp / 1.4 | 700 | Buttons and chips |
 | Nav label | Atkinson | 11sp / 1.3 | 700 | Bottom navigation only. Exempt from the floor |
-| Mono | JetBrains Mono | 11sp / 1.5 | 700, tracking 0.12em, uppercase | Eyebrows, counts, dates as data, amounts. Exempt from the floor |
+| Mono | JetBrains Mono | 11sp / 1.5 | 700, tracking 0.12em, uppercase | Eyebrows, counts, amounts. **Never a date**, see below. Exempt from the floor |
 | Mono L | JetBrains Mono | 22 to 30sp | 700, tracking 0, tabular | A number at display size, in the big-number component and nowhere else |
 | Display L | Bricolage | 28sp / 1.2 | 800 | **Implemented and not in the grid's `.h1` vocabulary.** The heading of a thing's own screen, above a section title. Checked against a drawing on #345 |
 | Display S | Bricolage | 18sp / 1.33 | 800 | **Implemented and not in the grid's `.h1` vocabulary.** A card's own title where a row title is too quiet. Checked against a drawing on #345 |
@@ -613,6 +615,7 @@ Every screen the app needs that the grid does not draw, and the drawn screen it 
 | Keeping a project as a template, and who it is waiting on | 18 The project's setup | Two blocks on a drawn screen that the drawing does not carry. Both came off the superseded detail screen and the grid does not say where they go. **Built 2026-08-06**, #314, review at #317, decided in D118 |
 | Standing instructions, the list | 12 Medications | A record of what was asked, folded by state, with `stone`. **Built 2026-08-04**, #185, review at #225 |
 | One standing instruction | 10 One incident | What was asked, then every violation on a spine |
+| Writing down a time it was not followed, and correcting one | 05 Capture that forgives | **Undrawn since it was written and never listed here**, which is the gap this section exists to prevent: it was built with `instruction_violation` in #185 and rule 12 was never applied to it. **Rebuilt 2026-08-13** on #371. **One field, the date, and a Save**, so the corridor path is unchanged, with which incident or which bill it broke against behind "Add more"'s own disclosure, per 10.8. **The date is asked rather than stamped**, rule 17: it was `LocalDate.now()` with no control at all, so a time written down a month later was dated today at full day precision and could never be changed. **The same screen corrects one and carries the way to take it off**, D147 and D135. Review at #372 |
 | One person | 09 One entry | Identity, then their own facts, then everything connected |
 | One medication, and how it changed | 10 One incident | A history in order is a spine |
 | One chapter | 19 Chapters | The current place opened, holding what it holds |

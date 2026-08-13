@@ -4,11 +4,11 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-13, after a long run, for a cold start.
+**Last rewritten:** 2026-08-13, after item 1 of #371 and the five panels that were run on it.
 
 **Start with `gh issue view 321`, then section "WHERE THE WORK IS" below.** Those two and nothing else.
 
-**The work is #371**, which is what five design panels found reading every screen in the app, ordered and partly done. It came out of the owner's own verdict on 2026-08-12: the app is functional and ugly, it looks like a data entry app throughout rather than on one screen, and the interface is littered with overlaps and things that are not clear. **He asked for standing consultant panels during the work, and `AGENTS.md` section 5.1 is now that team**: interface, experience, focus group, designer, product manager, run in parallel on every design change.
+**The work is #371**, which is what five design panels found reading every screen in the app, ordered and partly done. **Item 1 is finished as of 2026-08-13** and it is worth reading what it turned into, in "WHERE THE WORK IS" below: the item was two dead arguments, and the panels run on the fix found a record that could never be corrected, a date that was stamped rather than asked, a link with one end, and a wall of prose where the design map had already specified a spine. It came out of the owner's own verdict on 2026-08-12: the app is functional and ugly, it looks like a data entry app throughout rather than on one screen, and the interface is littered with overlaps and things that are not clear. **He asked for standing consultant panels during the work, and `AGENTS.md` section 5.1 is now that team**: interface, experience, focus group, designer, product manager, run in parallel on every design change.
 
 **The root cause three panels reached independently is worth carrying into every session**: the schema was built for this app and **the interface calls the writers without the arguments**. Eleven columns exist, most are read by a screen that renders them, several are already parameters with a null default, and nothing passes one. **The fixture fills them in, which is exactly why those screens look joined up in a screenshot and are empty on a real notebook.**
 
@@ -60,6 +60,8 @@
 | **#370** | The business card photograph | Schema is in, the screen half is left |
 
 ### Done on #371, and it is all on `origin/main`
+- **A time an instruction was not followed is a record now rather than a number.** It is the whole of item 1 and it took four commits: the words are read back where a `3` used to be, each time is a spine row under the request, it can be corrected and taken off, **its date is asked rather than stamped**, and the incident and the bill each say which request was not followed there. **The fixture writes the links**, so it is reachable from a seed rather than only by typing one by hand.
+- **D149**: `DESIGN.md` said "Mono never touches a date" and its own scale ladder said Mono is for "dates as data". **Two panels cited the ladder to call a correct rendering a defect**, which is what a document contradicting itself costs. The row is corrected.
 - **The safety one**: a medication recorded as stopped stayed on the emergency card, because the event was written and the parent's state never was. **The rule it establishes is the pattern for the rest**: an event writer updates its parent in the same transaction.
 - **The chapter axis has a writer** at last: entries, documents and incidents stamp `currentChapterId`.
 - **A reading reaches the trail**, so it appears in a month review, the prep sheet and the digest.
@@ -70,7 +72,10 @@
 - **The `rowTitle` token**, which is why lists now read as names over notes. **Three missing back handlers.** **Twelve form footers.** **Sticky headers and Today's edit mode at font scale 2.0.** **The person capture no longer destroys a draft.**
 
 ### Next, in order
-1. **`recordViolation`** takes `incidentId` and `billId` and its only caller passes neither, so `Violation.incidentTitle` and `billDescription` are dead readers.
+
+**Item 1 is done and it is four commits on `origin/main`**, and what it turned into is the thing to read before starting item 2, because the same shape is underneath every remaining item.
+
+1. ~~`recordViolation`~~ **Done.** The two arguments are passed, the words are read back, each time is a spine row that can be corrected or taken off, its date is asked rather than stamped, and the incident and the bill say which request was not followed there. **The five panels were run on the change and found more than the item did**: four named the one-way link, three the uncorrectable record, three the missing spine. The rest of what they found is on #371.
 2. **`question.person_id` and `asked_at_appointment_id` are never written**, so the prep sheet shows every open question in the notebook. **`createAppointment` never writes `person_id` either**, so there is nothing to filter against: do the appointment first.
 3. **Mono is doing prose duty at 21 date sites**, plus a dozen roles and sentences. #371 lists them. `bodyS`/`bodyM` where the string is a rendered EDTF, a role, or a sentence. **Pure UI, unblocked, and the designer called it the reason the app reads a half step colder than it should.**
 4. **Twenty standalone form headers** build their own bare `displayL` with no tab chip, so the app changes identity at the moment somebody writes in it.
@@ -79,7 +84,11 @@
 7. **Still uncorrectable**, and these need B6 cleared first: a reading, a measure, a chapter, a question's own words, an instruction's own words.
 
 ### BLOCKED. Read this before planning
-**`NotebookShell` has hit the JVM's 64KB method limit**, `DECISIONS.md` B6. One more overlay fails the build with `MethodTooLargeException`, so **no new full-screen surface can be added** until the shell's overlays are extracted in groups. It is about 4,000 lines in one composable. **Changing an existing screen is unaffected**, so items 1 through 6 above are all workable.
+**`NotebookShell` has hit the JVM's 64KB method limit**, `DECISIONS.md` B6. One more overlay fails the build with `MethodTooLargeException`, so **no new full-screen surface can be added** until the shell's overlays are extracted in groups. It is about 4,000 lines in one composable.
+
+**"Changing an existing screen is unaffected" is only true while that screen's signature does not grow**, learned on 2026-08-13: **one added parameter on `IncidentScreen` failed the build.** There is no headroom, not a little.
+
+**And extraction is the wrong remedy, proved three times now.** Lifting the whole incidents overlay into its own composable made it worse: sixty-seven lines of body came out and a fifty-line call site with eighteen arguments went in. **The bytecode that counts is at the call site**, so moving a block out and passing it its dependencies moves nothing. **What worked is fewer parameters**: `IncidentScreen`'s three lists became one `Repository.IncidentDetail`, the shape `EntryDetail` already had, which took three parameters off the call site and paid for the fourth list and a handler. **The remedy is a state holder, not a file split**, and B6 now says so.
 
 ### A fix of mine that was wrong, corrected the same night
 **`imePadding` on `SectionScaffold` was a regression and is reverted.** It fixed the keyboard covering the field on Export, Restore and the change of situation, and broke three tests in the shape `docs/TRAPS.md` names: with the keyboard up the content shrinks, the pinned footer leaves the viewport, and **a click at a node's center outside the viewport does nothing at all**. The assertions read "expected the words but was null", which looks like a save that did not fire. **The keyboard defect is real and still open on #371**; the fix belongs on the three screens that own their fields, not on the container all fifty five sit in.
@@ -112,6 +121,13 @@
 | "Why is it like this" | `DECISIONS.md`, search for the D number, do not read it through |
 | Delegating | `AGENTS.md`. Subagents never write anything |
 | **Never, to orient** | `docs/RUN-LOG.md`. It is history and a thousand lines of it |
+
+### Verified rather than asserted, 2026-08-13
+
+- **678 instrumented tests, 1 failure, 2026-08-13 at 11:31**, `tools/verify.sh --device`, with 218 unit tests and lint. **The failure is #308 and it is not a flake**, which is the finding: `MedicationQuestionJourneyTest.thequestionOpensItsEntryAndTheEntryLeadsBackToTheMedication` failed in **all three full runs on record**, 2026-08-12 at 21:55, 2026-08-13 at 08:51, and this one. **The advice to rerun it and move on is what has kept it open**, because the rerun does pass and the run then reads as clean.
+- **Three reruns of that class alone today alternated which of its two tests failed.** One fails every time and which one changes, which is state carried between them rather than a race: the class runs against one installed app, and the second test's capture form meets a `Disclosure` the first test left open, so the "Add more" it scrolls to is absent by design. **The lesson `AppointmentsMonthTest` already taught**: a test that changes remembered state puts it back. Written up on #308 with the table.
+- **Lint caught a real ordering error twice in one run**: `violations` and `onOpenViolations` were added before `modifier` on two screens, and `ModifierParameter` wants the modifier to be the first optional parameter. **Every new parameter goes after `modifier`**, which is what the rest of this codebase does.
+- **The phone is at its baseline**, read back rather than assumed at 12:05: font scale 1.0, animator 1.0, touch exploration 0, no per app locale, and the app's own theme back on "Follow the phone". **It holds the current build and the month six fixture**, reseeded after the suite uninstalled the app. **It can be unplugged.**
 
 ### Verified rather than asserted, 2026-08-11
 
@@ -268,7 +284,7 @@ Each is said out loud on its own issue rather than counted as done.
 
 Every one of these was built from the existing components, logged in all three places at the moment it was built, and is waiting on the owner's eye. **None of them is a defect**; the list exists so that no composed screen is mistaken for a designed one.
 
-**Twenty-eight of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent. **#350 and #359 were added on 2026-08-12**, when starting a care thread and correcting an incident were built, and **#362 through #366 the same day**, when the five add forms were rebuilt on #361. **Those five had been undrawn since they were written and were never listed**, which is the gap this section exists to prevent: they were logged when #361 reached them.
+**Twenty-nine of them, oldest first.** Rechecked against the board on 2026-08-10 with `gh issue list --label needs-design-review` rather than remembered, because a list that is only partly a list is the defect this section exists to prevent. **#350 and #359 were added on 2026-08-12**, when starting a care thread and correcting an incident were built, and **#362 through #366 the same day**, when the five add forms were rebuilt on #361. **#372 on 2026-08-13**, when the violation form was rebuilt: **it had been undrawn and unlisted since the day it was written**, which is the same gap the five add forms were in. **Those five had been undrawn since they were written and were never listed**, which is the gap this section exists to prevent: they were logged when #361 reached them.
 
 **The Today work of 2026-08-09 added nothing to this list**, and that was checked rather than assumed: every screen and state built that morning is drawn in one of the three grids, so rule 12 never applied. The card's options sheet is grid screen 07, the closed project is 17, the greeting is 16, and the Today work is screens 01 through 10. **The merge work that evening added two**, because the grid draws restore with one outcome and draws nothing at all for reading what a merge decided.
 
@@ -302,6 +318,7 @@ Every one of these was built from the existing components, logged in all three p
 | Adding a medication | #364 |
 | Adding an appointment | #365 |
 | Adding a bill | #366 |
+| Writing down a time an instruction was not followed, and correcting one | #372 |
 
 **Seven of these are the Projects surface**, #304, #309 through #313, and #317, and they are the ones that arrived in a single run. **Two are the merge**, #333 and #334. **Two are from 2026-08-10**, #335 the export's second outcome and #337 the date picker's two new views, and **one from 2026-08-11**, #338, the face a question wears before it has been asked. The other nine have been waiting longer.
 
