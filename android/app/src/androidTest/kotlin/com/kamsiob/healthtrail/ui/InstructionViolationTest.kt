@@ -4,6 +4,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -170,7 +171,10 @@ class InstructionViolationTest {
         compose.onNodeWithText("Nobody called until the next morning", substring = true)
             .performScrollTo()
             .assertIsDisplayed()
-        compose.onNodeWithText("Not followed 2 times", substring = true)
+        // **The count is the group's own header now**, which reads
+        // "TIMES IT WAS NOT FOLLOWED 2" and announces the whole sentence,
+        // because "Times it was not followed 2" is not what the count means.
+        compose.onNodeWithContentDescription("Not followed 2 times", substring = true)
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -213,7 +217,7 @@ class InstructionViolationTest {
         compose.onNodeWithText(EventDateText.render(strings, "2026-08-05"), substring = true)
             .performScrollTo()
             .assertIsDisplayed()
-        compose.onNodeWithText("Not followed once", substring = true)
+        compose.onNodeWithContentDescription("Not followed once", substring = true)
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -227,6 +231,8 @@ class InstructionViolationTest {
     fun nothingWrittenDownSaysNothingAtAll() {
         showList(emptyList())
         compose.onNodeWithText("Not followed", substring = true).assertDoesNotExist()
+        compose.onNodeWithText("TIMES IT WAS NOT FOLLOWED", substring = true)
+            .assertDoesNotExist()
         // The instruction itself is untouched by any of this.
         compose.onNodeWithText("Call me about any fall", substring = true).assertIsDisplayed()
     }

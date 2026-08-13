@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,17 +11,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
 
 object InstructionTags {
     fun violation(id: String) = "instruction_violation_$id"
@@ -124,18 +129,64 @@ fun StandingInstructionsScreen(
         val explained = mutableSetOf<String>()
         val ordered = instructions.sortedByDescending { it.id == lead?.id }
 
-        ordered.forEachIndexed { index, instruction ->
+        ordered.forEach { instruction ->
             val explainHere = explained.add(instruction.tag)
+            val times = violations[instruction.id].orEmpty()
+
             item(key = instruction.id) {
                 InstructionRow(
-                    violations = violations[instruction.id].orEmpty(),
                     onRecordViolation = { onRecordViolation(instruction) },
                     instruction = instruction,
                     tag = tags[instruction.tag],
                     lead = explainHere,
                     onOpen = { onOpen(instruction) },
                 )
-                Spacer(Modifier.height(Space.cardGap))
+                Spacer(
+                    Modifier.height(if (times.isEmpty()) Space.cardGap else Space.sectionGap),
+                )
+            }
+
+            // **What was asked, then every time it was not followed, on a
+            // spine.** `DESIGN.md` section 14 wrote that line for the
+            // instruction's own screen, which cannot be built while
+            // `NotebookShell` sits at the JVM's method limit, and the shape it
+            // asks for is right here either way: these are dated events in
+            // order, which is what the inventory reserves a spine for.
+            //
+            // **Outside the card rather than inside it**, and that is the
+            // structural half. The card is one `openableByTap`, which merges
+            // its descendants, so five times written inside it became one
+            // uninterrupted reader announcement labeled "Open" with no way to
+            // land on a single one, and a person tapping their own sentence got
+            // the acknowledgment sheet. Out here each time is its own node.
+            if (times.isNotEmpty()) {
+                item(key = "${instruction.id}_times") {
+                    GroupHeaderText(
+                        label = strings["instruction.violations.group"],
+                        count = times.size.toString(),
+                        // **The reader hears the sentence, not the digit.**
+                        // "Times it was not followed 5" is not what the count
+                        // means, and section 9 says what is read aloud says
+                        // the same thing the screen says.
+                        countDescription = strings(
+                            "instruction.violations.count",
+                            "count" to times.size,
+                        ),
+                    )
+                    Spacer(Modifier.height(Space.headerGap))
+                }
+                times.forEachIndexed { index, violation ->
+                    item(key = violation.id) {
+                        ViolationRow(
+                            violation = violation,
+                            continuesAbove = index > 0,
+                            continuesBelow = index < times.lastIndex,
+                        )
+                    }
+                }
+                item(key = "${instruction.id}_times_end") {
+                    Spacer(Modifier.height(Space.sectionGap))
+                }
             }
         }
 
@@ -172,9 +223,106 @@ fun StandingInstructionsScreen(
     }
 }
 
+/**
+ * One time an instruction was not followed, in the person's own words.
+ *
+ * **A spine, because these are dated events in order**, which is what rule 22
+ * gives a spine to and what `DESIGN.md` section 14 already specifies for this
+ * content. Drawn flat they were five paragraphs indistinguishable from the
+ * instruction's own copy above them, with a four month gap between two of them
+ * looking exactly like a same day one.
+ *
+ * **The line is continuous rather than dashed**, per the component's own rule:
+ * a dash means a filter over somebody's entries, and these are not a view of
+ * anything. They are the times themselves.
+ *
+ * **What it broke against is said plainly and is not yet a door.** Rule 18 wants
+ * it opening the incident or the bill, and the reverse line on those two screens
+ * with it. That is the next commit rather than this one, and a line that looks
+ * tappable and is not would be worse than a line that does not.
+ */
+@Composable
+private fun ViolationRow(
+    violation: Repository.Violation,
+    continuesAbove: Boolean,
+    continuesBelow: Boolean,
+) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+    val hue = hueFor(Repository.Section.STANDING_INSTRUCTIONS)
+
+    SpineRow(
+        continuesAbove = continuesAbove,
+        continuesBelow = continuesBelow,
+        node = hue.ink,
+        routeColor = hue.ink,
+        dash = null,
+    ) {
+        Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // One announcement per time, so a reader can move through
+                    // them one at a time. Inside the card they were part of a
+                    // single utterance that began with the instruction's name.
+                    .semantics(mergeDescendants = true) { }
+                    .clip(Radius.card)
+                    .background(colors.card)
+                    .padding(Space.cardPadding),
+            ) {
+                // **Not mono.** `DESIGN.md` 5.1: "Mono never touches a date, a
+                // location, a role, or anything with a verb. A date is
+                // something a person reads, so it is Atkinson." The table row
+                // two lines below that saying "dates as data" contradicts it,
+                // and #371 item 3 is the work of moving 21 date sites off mono.
+                // D149.
+                Text(
+                    text = EventDateText.render(strings, violation.occurredEdtf),
+                    style = HealthTrail.type.bodyS,
+                    color = colors.ink2,
+                )
+                violation.note?.takeIf { it.isNotBlank() }?.let { note ->
+                    Spacer(Modifier.height(Space.xs))
+                    Text(
+                        text = Bidi.isolate(note),
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink,
+                    )
+                }
+                // **What it broke against, where the person said so.** Both of
+                // these were columns the schema carried, the reader joined, and
+                // no form ever wrote, so this line could not appear at all
+                // until the form began to ask. #371.
+                violation.incidentTitle?.takeIf { it.isNotBlank() }?.let { title ->
+                    Spacer(Modifier.height(Space.xs))
+                    Text(
+                        text = strings(
+                            "instruction.violations.about.incident",
+                            "what" to Bidi.isolate(title),
+                        ),
+                        style = HealthTrail.type.bodyS,
+                        color = colors.ink2,
+                    )
+                }
+                violation.billDescription?.takeIf { it.isNotBlank() }?.let { description ->
+                    Spacer(Modifier.height(Space.xs))
+                    Text(
+                        text = strings(
+                            "instruction.violations.about.bill",
+                            "what" to Bidi.isolate(description),
+                        ),
+                        style = HealthTrail.type.bodyS,
+                        color = colors.ink2,
+                    )
+                }
+            }
+            Spacer(Modifier.height(Space.cardGap))
+        }
+    }
+}
+
 @Composable
 private fun InstructionRow(
-    violations: List<Repository.Violation>,
     /**
      * True on the first instruction carrying this tag, which is the one that
      * spells the tag out. Every other instruction with the same tag shows the
@@ -218,11 +366,17 @@ private fun InstructionRow(
             color = colors.ink,
         )
 
+        // **The card's subject, so it carries the card's ink.** It was `ink2`
+        // while the times underneath it were `ink`, so the heaviest body text
+        // on a request was three repetitions of "Happened again" and the thing
+        // actually asked for receded behind them. Rule 15, with the polarity
+        // reversed: the inversion was found by two panels reading the same
+        // screenshot.
         Spacer(Modifier.height(Space.xs))
         Text(
             text = Bidi.isolate(instruction.wording),
             style = HealthTrail.type.bodyM,
-            color = colors.ink2,
+            color = colors.ink,
         )
 
         // **Always present.** A federal tag is `leaf` toned because it is
@@ -280,10 +434,15 @@ private fun InstructionRow(
                 ?.let { Bidi.isolate(it) }
                 ?: strings["instructions.ack.none"],
             style = HealthTrail.type.bodyM,
+            // **A recorded answer is ink and the absence of one is ink2**, and
+            // until now both branches of this returned `ink2`, so a conditional
+            // that had been written to make exactly that distinction rendered
+            // nothing at all. Found by a panel reading the file rather than the
+            // screen, which is the only way a dead branch is ever found.
             color = if (instruction.acknowledgedHow.isNullOrBlank()) {
                 colors.ink2
             } else {
-                colors.ink2
+                colors.ink
             },
         )
 
@@ -292,91 +451,11 @@ private fun InstructionRow(
             Text(text = Bidi.isolate(notes), style = HealthTrail.type.bodyM, color = colors.ink2)
         }
 
-        // **The count, and immediately after it the sentence that says what it
-        // is not.** `MASTER_SPEC.md` 4.11 requires that line every time a count
-        // like this is shown, and the two are one thought: a bare number here
-        // would be the app implying a conclusion it is not entitled to.
-        //
-        // Zero says nothing at all rather than "0 times", because a count of
-        // nothing is not a finding and printing it would turn every instruction
-        // into a scoreboard with most of the scores at zero.
-        if (violations.isNotEmpty()) {
-            Spacer(Modifier.height(Space.sm))
-            Text(
-                text = strings("instruction.violations.count", "count" to violations.size),
-                style = HealthTrail.type.mono,
-                color = colors.ink2,
-            )
-            // **The sentence about what a count means is not here any more.**
-            // It said the same thing under every instruction. It is said once
-            // for the screen instead, which is where a person reads it once
-            // rather than skipping it three times.
-
-            // **And under the count, the times themselves, in the person's own
-            // words.** The count was all this row had ever shown, which is what
-            // #371 called the app answering a sentence with a number: "we asked
-            // in writing in March and it happened again in May and again in
-            // June" is the conversation this record exists for, and a 3 is not
-            // it.
-            //
-            // **Nothing is folded away and nothing is capped.** These are the
-            // person's own sentences about their own notebook, they are what
-            // the count is counting, and a "3 more" here would hide the only
-            // part of this that can be read aloud in a room.
-            // **No test tag on these**, deliberately. The card merges its
-            // descendants, so a tag inside it is not in the tree a finder
-            // walks: an assertion on one passes when the line is absent and
-            // fails when it is there, which is a test proving the opposite of
-            // what it says. `HANDOFF.md` carries this as a lesson that cost two
-            // runs. **Assert on the words**, which is what a person reads
-            // anyway.
-            violations.forEach { violation ->
-                Spacer(Modifier.height(Space.sm))
-                Column {
-                    Text(
-                        text = EventDateText.render(strings, violation.occurredEdtf),
-                        style = HealthTrail.type.bodyS,
-                        color = colors.ink2,
-                    )
-                    violation.note?.takeIf { it.isNotBlank() }?.let { note ->
-                        Spacer(Modifier.height(Space.xs))
-                        Text(
-                            text = Bidi.isolate(note),
-                            style = HealthTrail.type.bodyM,
-                            color = colors.ink,
-                        )
-                    }
-                    // **What it broke against, where the person said so.** Both
-                    // of these were columns the schema carried, the reader
-                    // joined, and no form ever wrote, so this line could not
-                    // appear at all until the form began to ask. #371.
-                    violation.incidentTitle?.takeIf { it.isNotBlank() }?.let { title ->
-                        Spacer(Modifier.height(Space.xs))
-                        Text(
-                            text = strings(
-                                "instruction.violations.about.incident",
-                                "what" to Bidi.isolate(title),
-                            ),
-                            style = HealthTrail.type.bodyS,
-                            color = colors.ink2,
-                        )
-                    }
-                    violation.billDescription?.takeIf { it.isNotBlank() }?.let { description ->
-                        Spacer(Modifier.height(Space.xs))
-                        Text(
-                            text = strings(
-                                "instruction.violations.about.bill",
-                                "what" to Bidi.isolate(description),
-                            ),
-                            style = HealthTrail.type.bodyS,
-                            color = colors.ink2,
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(Space.sm))
+        // **The way to add to the record stays with the request**, and the
+        // record itself is below the card. A person with a dozen times written
+        // down should not scroll past all of them to reach the control that
+        // writes the next one.
+        Spacer(Modifier.height(Space.sectionGap))
         TextAction(
             label = strings["instruction.violations.add"],
             onClick = onRecordViolation,

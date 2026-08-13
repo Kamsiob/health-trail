@@ -652,6 +652,7 @@
   "instruction.violations.about.incident": "关于事件：{what}",
   "instruction.violations.add": "记下一次没有照做",
   "instruction.violations.count": "{count, plural, other {你记下了 # 次没有照做}}",
+  "instruction.violations.group": "没有照做的次数",
   "instruction.violations.meaning": "这只是你记下来的次数，仅此而已。它意味着什么，由你自己判断。",
   "instructions.ack.hint": "已告知护士长、已写入照护计划，等等",
   "instructions.ack.lead": "您告诉了谁、他们怎么说、是否有书面记录。日后就是靠这些说话。",
