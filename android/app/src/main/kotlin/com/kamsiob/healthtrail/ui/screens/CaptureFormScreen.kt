@@ -35,6 +35,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
@@ -354,23 +355,14 @@ fun CaptureFormScreen(
             Column(
                 modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
             ) {
-                Text(
-                    text = strings[key(kind, "title")],
-                    style = HealthTrail.type.displayL,
-                    color = colors.ink,
-                    modifier = Modifier.semantics { heading() },
-                )
-
-                Spacer(Modifier.height(Space.s))
-
                 // Says once, in a full sentence, what the old screen said with
                 // the word Optional in a mono eyebrow. Section 5.9 asks for it
                 // once per screen rather than beside every field, and a sentence
                 // does more of the work than a label does.
-                Text(
-                    text = strings["capture.sub"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
+                FormHeader(
+                    title = strings[key(kind, "title")],
+                    lead = strings["capture.sub"],
+                    section = Repository.Section.TRAIL,
                 )
 
                 Spacer(Modifier.height(Space.l))

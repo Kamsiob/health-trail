@@ -30,6 +30,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -105,18 +106,10 @@ fun AddBillScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = Space.screenHorizontal),
             ) {
-                Spacer(Modifier.height(Space.l))
-                Text(
-                    text = if (existing == null) strings["money.add"] else strings["money.edit.title"],
-                    style = HealthTrail.type.displayL,
-                    color = colors.ink,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["money.add.lead"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
+                FormHeader(
+                    title = if (existing == null) strings["money.add"] else strings["money.edit.title"],
+                    lead = strings["money.add.lead"],
+                    section = Repository.Section.MONEY,
                 )
                 Spacer(Modifier.height(Space.l))
 

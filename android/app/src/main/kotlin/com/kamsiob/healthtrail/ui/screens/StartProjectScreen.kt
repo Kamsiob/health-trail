@@ -28,6 +28,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRowText
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
@@ -160,26 +161,24 @@ fun StartProjectScreen(
             ) {
                 item(key = "head") {
                     Spacer(Modifier.height(Space.l))
+                    FormHeader(
+                        title = strings["projects.start.title"],
+                        lead = strings["projects.start.lead"],
+                        section = Repository.Section.PROJECTS,
+                    )
+                    Spacer(Modifier.height(Space.xs))
                     // **Where they are in the flow**, 20.5 screens 03 and 04.
                     // The preview said "2 of 2" while this said nothing, so
                     // the second stage announced a first one nobody had been
                     // shown. Law 3: staged, and the stages say so.
+                    //
+                    // **Under the lead rather than above the title**, since
+                    // #371 item 5: the eyebrow slot above now holds the tab
+                    // chip, and a mono line stacked over a chip is two
+                    // eyebrows arguing about which one says where you are.
                     Text(
                         text = strings["projects.start.stage"],
                         style = HealthTrail.type.mono,
-                        color = colors.ink2,
-                    )
-                    Spacer(Modifier.height(Space.xs))
-                    Text(
-                        text = strings["projects.start.title"],
-                        style = HealthTrail.type.displayL,
-                        color = colors.ink,
-                        modifier = Modifier.semantics { heading() },
-                    )
-                    Spacer(Modifier.height(Space.s))
-                    Text(
-                        text = strings["projects.start.lead"],
-                        style = HealthTrail.type.bodyM,
                         color = colors.ink2,
                     )
                     Spacer(Modifier.height(Space.l))

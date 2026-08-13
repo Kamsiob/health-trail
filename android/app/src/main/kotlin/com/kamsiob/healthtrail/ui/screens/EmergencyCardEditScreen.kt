@@ -28,6 +28,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -121,18 +122,10 @@ fun EmergencyCardEditScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = Space.screenHorizontal),
             ) {
-                Spacer(Modifier.height(Space.l))
-                Text(
-                    text = strings["emergency.edit.title"],
-                    style = HealthTrail.type.displayL,
-                    color = colors.ink,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["emergency.edit.lead"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
+                FormHeader(
+                    title = strings["emergency.edit.title"],
+                    lead = strings["emergency.edit.lead"],
+                    section = Repository.Section.EMERGENCY_CARD,
                 )
 
                 // **Who to call is chosen, never typed again.** Everybody on

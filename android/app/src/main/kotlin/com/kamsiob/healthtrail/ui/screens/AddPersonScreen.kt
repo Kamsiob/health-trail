@@ -35,6 +35,7 @@ import com.kamsiob.healthtrail.ui.components.AvatarSize
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.components.FieldRow
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -167,22 +168,14 @@ fun AddPersonScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = Space.screenHorizontal),
             ) {
-                Spacer(Modifier.height(Space.l))
-                Text(
-                    text = if (existing == null) {
+                FormHeader(
+                    title = if (existing == null) {
                         strings["careteam.add.title"]
                     } else {
                         strings["careteam.edit.title"]
                     },
-                    style = HealthTrail.type.displayL,
-                    color = colors.ink,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["careteam.add.lead"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
+                    lead = strings["careteam.add.lead"],
+                    section = Repository.Section.CARE_TEAM,
                 )
 
                 Spacer(Modifier.height(Space.l))

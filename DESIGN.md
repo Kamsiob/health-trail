@@ -173,6 +173,8 @@ Muted binder hues for section identity, each with a wash and a text-safe ink. **
 
 **Every section screen opens with its tab chip. Its notebook row carries its icon in its wash.**
 
+**And so does every screen where somebody writes something down**, since 2026-08-13 and D151. Adding a medication is a thing you do inside Medications rather than a departure from it, and until then nineteen screens, every one of them a place where you make something, built a bare heavier title with no chip and no hue, so the app changed identity at the moment somebody wrote in it. `FormHeader` is the one way in. **The chip is location and the title is the errand**, which is the same division the section screens have always made, so a title that repeats the chip is a title carrying nothing.
+
 **Whole-app surfaces that belong to no section use gold and the base ladder**, never a tab hue: Today, the trail, filing, projects, search, and onboarding.
 
 ### 4.4 Color discipline, non negotiable

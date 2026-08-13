@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -104,19 +105,12 @@ fun AddThreadScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = Space.screenHorizontal),
             ) {
-                Spacer(Modifier.height(Space.l))
-                Text(
-                    text = strings[
+                FormHeader(
+                    title = strings[
                         titleKey ?: if (existing == null) "threads.new" else "threads.rename",
                     ],
-                    style = HealthTrail.type.displayL,
-                    color = colors.ink,
-                )
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["threads.new.lead"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
+                    lead = strings["threads.new.lead"],
+                    section = Repository.Section.THREADS,
                 )
 
                 Spacer(Modifier.height(Space.l))

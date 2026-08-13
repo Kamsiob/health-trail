@@ -2674,6 +2674,24 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D151. A screen where you write something down is inside the section, and wears its tab
+
+**Decided 2026-08-13**, working #371 item 5, which found that the app had two header systems and that they split along exactly the wrong line.
+
+**What was true.** Fifty five screens wore `SectionScaffold`'s tab chip over a 22sp title in the section's own hue. Nineteen built a bare 28sp title with no chip and no hue, and those nineteen were **every screen where somebody makes something**: adding a person, a medication, an appointment, a bill, a document, an instruction, a thread, a milestone, a project, correcting an entry or an incident, editing the emergency card, the capture form, and the unfiled tray. So the app changed identity at the moment somebody wrote in it, which is the moment it should feel most like the same place.
+
+**The rule.** A writing screen is a thing you do **inside** a section, not a departure from it, so it carries that section's chip and hue through `FormHeader`. The chip is location and the title is the errand, which is the same division `SectionScaffold` has always made.
+
+**The title comes down to `displayM` rather than the chip being added under a heavier one.** Two headers at two sizes is the same split wearing a smaller difference, and law 1 gives each screen one dominant thing: on a form that is the first question, not the name of the form.
+
+**Four screens keep a bare title on purpose.** The disclaimer and setup come before a notebook exists, so there is no section to be inside and a chip would name a place the person has not reached. The situation picker is choosing what the notebook is about. Correcting the cared-for person's name belongs to the whole app rather than to one section. **Each is a screen with no section, not a screen that opted out**, which is why the parameter is required rather than nullable: a screen cannot forget to say which section it is in.
+
+**Two headings had to change, because the chip made them say the same thing twice.** "Add someone to the care team" under a chip reading "Care team", and "The emergency card" under a chip reading "Emergency card", which is the exact redundancy `SectionScaffold`'s own documentation bans by name. They are "Add someone" and "What somebody would need". **All four catalogs moved together**, per D141: the three deferred languages stay complete rather than being allowed to rot.
+
+**The stage line on Start a project moved under the lead**, because the slot above the title now holds the chip and a mono eyebrow stacked over a tab chip is two eyebrows arguing about which one says where you are.
+
+---
+
 ### D150. A restored notebook is on a new phone, and the phone says so
 
 **Decided 2026-08-13**, working #320, which is release blocking and had been open since 2026-08-07 with the fix written down and not taken.

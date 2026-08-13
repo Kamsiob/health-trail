@@ -22,8 +22,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -87,18 +89,10 @@ fun AddInstructionScreen(
                     .padding(horizontal = Space.screenHorizontal),
             ) {
                 item {
-                    Spacer(Modifier.height(Space.l))
-                    Text(
-                        text = strings["instructions.add"],
-                        style = HealthTrail.type.displayL,
-                        color = colors.ink,
-                        modifier = Modifier.semantics { heading() },
-                    )
-                    Spacer(Modifier.height(Space.s))
-                    Text(
-                        text = strings["instructions.add.lead"],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.ink2,
+                    FormHeader(
+                        title = strings["instructions.add"],
+                        lead = strings["instructions.add.lead"],
+                        section = Repository.Section.STANDING_INSTRUCTIONS,
                     )
                     Spacer(Modifier.height(Space.l))
                 }

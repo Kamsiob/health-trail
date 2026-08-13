@@ -49,6 +49,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
@@ -274,18 +275,10 @@ fun AddDocumentScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = Space.screenHorizontal),
             ) {
-                Spacer(Modifier.height(Space.l))
-                Text(
-                    text = if (existing == null) strings["docs.add"] else strings["docs.edit.title"],
-                    style = HealthTrail.type.displayL,
-                    color = colors.ink,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["docs.add.lead"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
+                FormHeader(
+                    title = if (existing == null) strings["docs.add"] else strings["docs.edit.title"],
+                    lead = strings["docs.add.lead"],
+                    section = Repository.Section.DOCUMENTS,
                 )
 
                 // Said only when it happened, and it says plainly that nothing

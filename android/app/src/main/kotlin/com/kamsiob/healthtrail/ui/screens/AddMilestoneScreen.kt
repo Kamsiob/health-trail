@@ -32,6 +32,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -122,20 +123,10 @@ fun AddMilestoneScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = Space.screenHorizontal),
             ) {
-                Spacer(Modifier.height(Space.l))
-                Text(
-                    text = strings[
-                        if (existing == null) "milestones.add" else "milestones.edit.title"
-                    ],
-                    style = HealthTrail.type.displayL,
-                    color = colors.ink,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["milestones.add.lead"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
+                FormHeader(
+                    title = strings[ if (existing == null) "milestones.add" else "milestones.edit.title" ],
+                    lead = strings["milestones.add.lead"],
+                    section = Repository.Section.CHAPTERS,
                 )
                 Spacer(Modifier.height(Space.l))
 

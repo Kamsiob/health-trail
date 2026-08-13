@@ -34,6 +34,7 @@ import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.MoreChip
 import com.kamsiob.healthtrail.ui.components.PickerOption
@@ -139,18 +140,10 @@ fun AddAppointmentScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = Space.screenHorizontal),
             ) {
-                Spacer(Modifier.height(Space.l))
-                Text(
-                    text = if (existing == null) strings["appts.add"] else strings["appts.edit.title"],
-                    style = HealthTrail.type.displayL,
-                    color = colors.ink,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["appts.add.lead"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
+                FormHeader(
+                    title = if (existing == null) strings["appts.add"] else strings["appts.edit.title"],
+                    lead = strings["appts.add.lead"],
+                    section = Repository.Section.APPOINTMENTS,
                 )
                 Spacer(Modifier.height(Space.l))
 

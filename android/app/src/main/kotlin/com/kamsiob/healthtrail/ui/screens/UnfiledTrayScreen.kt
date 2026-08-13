@@ -45,6 +45,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -128,19 +129,12 @@ fun UnfiledTrayScreen(
                     .padding(horizontal = Space.screenHorizontal),
             ) {
                 item {
-                    Spacer(Modifier.height(Space.l))
-                    Text(
-                        text = strings["unfiled.title"],
-                        style = HealthTrail.type.displayL,
-                        color = colors.ink,
-                    )
-                    Spacer(Modifier.height(Space.s))
-                    Text(
-                        // Says plainly that nothing was filed for them, which
-                        // is the promise underneath this whole screen.
-                        text = strings["unfiled.subtitle"],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.ink2,
+                    // The lead says plainly that nothing was filed for them,
+                    // which is the promise underneath this whole screen.
+                    FormHeader(
+                        title = strings["unfiled.title"],
+                        lead = strings["unfiled.subtitle"],
+                        section = Repository.Section.TRAIL,
                     )
                     Spacer(Modifier.height(Space.l))
                 }
