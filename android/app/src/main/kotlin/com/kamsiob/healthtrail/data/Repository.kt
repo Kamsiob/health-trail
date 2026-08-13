@@ -784,6 +784,25 @@ class Repository private constructor(
      * and a value a clinician stated are different things and the record must
      * not blur them. Nothing here is judged, ranged, or compared.
      */
+    /**
+     * Writes a reading, **and its trail entry, in the same transaction.** #371.
+     *
+     * **A reading was not on the trail.** `entryId` has been a parameter since
+     * this was written and the only caller passed null, so a measurement was
+     * not in `trail()`, not in a month review, not in the prep sheet's changes,
+     * and not in the digest. `MASTER_SPEC.md` 4.10b says anything created is
+     * written to the trail, and this was one of the writers that was not.
+     *
+     * **The entry carries what the person wrote, and nothing the app inferred.**
+     * The measure's name is the title and their note is the body. The value
+     * itself stays on the measurement row, where the chart reads it: rendering
+     * a number into the trail's own words would be the app deciding the reading
+     * was the interesting part, and rule 2 keeps this to recording.
+     *
+     * **`entryId` is still honored when a caller has one**, which is how a
+     * reading captured as part of something else stays attached to it rather
+     * than growing a second entry.
+     */
     suspend fun recordMeasurement(
         measureId: String,
         number: Double? = null,
@@ -793,18 +812,56 @@ class Repository private constructor(
         note: String? = null,
         entryId: String? = null,
         source: String = "family",
-    ): String = insert(
-        "measurement",
-        mapOf(
-            "measure_id" to measureId,
-            "entry_id" to entryId,
-            "value_number" to number,
-            "value_text" to text?.ifBlank { null },
-            "unit" to unit,
-            "note" to note?.ifBlank { null },
-            "source" to source,
-        ) + dateColumns("occurred", occurred),
-    )
+        /**
+         * The notebook this belongs to, so the entry can be written.
+         *
+         * **Null keeps the old behavior**, which is a measurement with no trail
+         * entry, and is what the fixture generator wants: it writes its own
+         * entries and would otherwise get two.
+         */
+        subjectId: String? = null,
+        chapterId: String? = null,
+    ): String = withContext(Dispatchers.IO) {
+        val database = db().database
+        database.beginTransaction()
+        try {
+            val ownEntry = entryId ?: subjectId?.let { subject ->
+                insertRow(
+                    "entry",
+                    mapOf(
+                        "subject_id" to subject,
+                        "kind" to "measurement",
+                        "title" to measureName(measureId),
+                        "body" to note?.ifBlank { null },
+                        "chapter_id" to chapterId,
+                    ) + dateColumns("occurred", occurred),
+                )
+            }
+            val id = insertRow(
+                "measurement",
+                mapOf(
+                    "measure_id" to measureId,
+                    "entry_id" to ownEntry,
+                    "value_number" to number,
+                    "value_text" to text?.ifBlank { null },
+                    "unit" to unit,
+                    "note" to note?.ifBlank { null },
+                    "source" to source,
+                ) + dateColumns("occurred", occurred),
+            )
+            database.setTransactionSuccessful()
+            id
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    /** What this measure is called, for the trail entry that names it. */
+    private suspend fun measureName(measureId: String): String? =
+        db().database.rawQuery(
+            "SELECT name FROM live_measure WHERE id = ?",
+            arrayOf(measureId),
+        ).use { cursor -> if (cursor.moveToNext()) cursor.getString(0) else null }
 
     /** Styles whose value is words rather than a number, per the preset catalog. */
     private val TEXT_STYLES = setOf("categorical", "observational", "event_log", "photo_log")

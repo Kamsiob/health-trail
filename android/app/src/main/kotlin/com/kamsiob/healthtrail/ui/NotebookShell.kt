@@ -4190,6 +4190,12 @@ fun NotebookShell(
                         unit = measurement.unit,
                         occurred = measurement.occurred,
                         note = measurement.note,
+                        // **So the reading lands on the trail.** #371: this
+                        // writer took an entry id from the beginning and the
+                        // only caller passed none, so a measurement was in no
+                        // month review, no prep sheet and no digest.
+                        subjectId = subject.id,
+                        chapterId = repository.currentChapterId(subject.id),
                     )
                 }
                 recording = null
