@@ -2672,6 +2672,8 @@ class Repository private constructor(
         byteSize: Long = 0,
         mimeType: String? = null,
         originalFilename: String? = null,
+        /** Where she was when this arrived, stamped by the caller. #371. */
+        chapterId: String? = null,
         /**
          * The person's own word for the pile this belongs in, or null.
          *
@@ -2695,6 +2697,10 @@ class Repository private constructor(
                     "original_location" to originalLocation?.ifBlank { null },
                     "notes" to notes?.ifBlank { null },
                     "category" to category?.trim()?.ifBlank { null },
+                    // **Where she was when this paper arrived.** #371: the
+                    // chapter axis had readers everywhere and no writer, so a
+                    // chapter's documents group could never be non-empty.
+                    "chapter_id" to chapterId,
                 ) + dateColumns("received", received),
             )
             if (sha256 != null) {
@@ -4087,6 +4093,16 @@ class Repository private constructor(
         occurred: Edtf.Date,
         threadId: String?,
         isUnfiled: Boolean,
+        /**
+         * Where she was when it happened. #371.
+         *
+         * **The chapter axis had readers everywhere and no writer.** A chapter
+         * could never hold an incident, so `ChapterScreen`'s incidents group
+         * could never be non-empty and "has this happened at this place
+         * before" was unanswerable. Stamped on the incident and on its own
+         * entry, because both are read by chapter.
+         */
+        chapterId: String? = null,
     ): Pair<String, String> = withContext(Dispatchers.IO) {
         val database = db().database
         database.beginTransaction()
@@ -4101,6 +4117,7 @@ class Repository private constructor(
                     // refused at the moment they are least able to argue.
                     "title" to title.ifBlank { description?.take(80) ?: "" },
                     "description" to description?.ifBlank { null },
+                    "chapter_id" to chapterId,
                 ) + dateColumns("reported", occurred),
             )
             val entryId = insertRow(
@@ -4111,6 +4128,7 @@ class Repository private constructor(
                     "title" to title.ifBlank { null },
                     "body" to description?.ifBlank { null },
                     "incident_id" to incidentId,
+                    "chapter_id" to chapterId,
                     "is_unfiled" to if (isUnfiled) 1 else 0,
                 ) + dateColumns("occurred", occurred),
             )

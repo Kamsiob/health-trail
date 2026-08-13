@@ -1834,6 +1834,10 @@ fun NotebookShell(
                         kind = "call",
                         title = who.ifBlank { null },
                         body = words,
+                        // **Where she was when this happened.** #371: the
+                        // chapter axis had readers everywhere and no writer, so
+                        // a chapter could never hold anything.
+                        chapterId = repository.currentChapterId(subject.id),
                     )
                     repository.linkEntryToProject(entryId, projectId)
                 }
@@ -3634,6 +3638,7 @@ fun NotebookShell(
                             byteSize = file?.byteSize ?: 0,
                             mimeType = picked?.let { context.contentResolver.getType(it) },
                             category = documentDraft.category,
+                            chapterId = repository.currentChapterId(subject.id),
                         )
                         addingDocument = false
                         capturing = null
@@ -4238,6 +4243,7 @@ fun NotebookShell(
                         occurred = draft.occurred,
                         threadId = draft.threadId,
                         isUnfiled = threads.isNotEmpty() && draft.threadId == null,
+                        chapterId = repository.currentChapterId(subject.id),
                     )
                 } else if (subject != null) {
                     val entryId = repository.createEntry(
@@ -4247,6 +4253,15 @@ fun NotebookShell(
                         // bidi-ok: a draft on its way to the database.
                         body = draft.note,
                         occurred = draft.occurred,
+                        // **Where she was when this happened**, stamped at
+                        // write time from the chapter with no end date. #371:
+                        // `createEntry` has accepted this since it was written
+                        // and neither caller passed it, so `ChapterScreen`'s
+                        // entries group could never be non-empty, the chapters
+                        // list could never show a count, and the index on
+                        // `entry.chapter_id` had nothing in it. The medication
+                        // event path already did this and is the shape copied.
+                        chapterId = repository.currentChapterId(subject.id),
                         // An entry nobody could place goes to the Unfiled tray
                         // rather than being filed by the app. Only marked when
                         // there were threads to choose from: with none offered,
