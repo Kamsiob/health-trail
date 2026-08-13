@@ -38,6 +38,38 @@
 
 **The rule that batch establishes is worth more than the batch**: an event writer updates its parent's state in the same transaction, so no screen derives a state a second way. **The medication event path is the shape to copy** for the ten writers that are still called without their arguments, which is item 1 on #371 and the root cause three panels agreed on.
 
+---
+
+## THE OVERNIGHT WORKLIST, 2026-08-12 22:15 to 2026-08-13 06:30
+
+**The owner is asleep and asked for continuous work until 06:30 EST.** He checked the phone at 22:10 and said not enough is fixed. **Keep `tools/device.sh` current after each batch so what he sees is the latest build.** Work top to bottom. Each line is one increment: build, `tools/verify.sh`, commit, push. **Do not skip the verify.**
+
+**Read this list rather than re-deriving it.** Every item names its file and its function, per `RUN-SAFETY.md` section 2: late in a run, work from explicit paths.
+
+### Done already tonight
+- `medication.stopped_edtf` and `dose_text` written by `recordMedicationEvent`. The emergency card safety defect.
+- `SectionScaffold` gained `imePadding`; sticky headers weighted; Today's edit row is a `FlowRow`; the person capture no longer destroys a draft.
+- The `rowTitle` token; three missing `BackHandler`s.
+- **The chapter axis has a writer**: `createEntry` (both call sites), `createDocument`, `reportIncident`.
+
+### Next, in order
+1. **`recordMeasurement` writes no entry.** `Repository.kt` `recordMeasurement` takes `entryId` and `NotebookShell.kt` passes none, so a reading is not in the trail, not in a month review, not in `prep.changes`. Create the entry in the same transaction, the way `createQuestionWithEntry` does.
+2. **`recordViolation`** takes `incidentId` and `billId` and its only caller passes neither, so `Repository.Violation.incidentTitle` and `billDescription` are dead readers.
+3. **`question.person_id` and `asked_at_appointment_id` are never written.** The prep sheet shows every open question in the notebook because it has nothing to filter by. `createAppointment` never writes `person_id` either, so there is nothing to filter against: do the appointment first.
+4. **Nothing can be corrected**: a reading, a measure, a care thread, a chapter, a question's own words, an instruction's own words, the subject's name. `updateEntry` and `CorrectEntryScreen` are the pattern to copy.
+5. **`archivePerson`.** `archived_at` is read in five places and written only by the fixture, so retiring somebody means erasing them from six months of calls.
+6. **21 full-width outlined actions** still wear the way-back's costume. Drop `.fillMaxWidth()`. `#371` lists every file and line.
+7. **Twenty standalone form headers** build their own bare `displayL` with no tab chip. Give them the scaffold's head.
+8. **Mono is doing prose duty at 21 date sites.** `#371` lists them. Use `bodyS`/`bodyM` where the string is a rendered EDTF, a role, or a sentence.
+9. **Motion**: `expressive()` and `deliberateStandard()` have zero call sites and every navigation is a hard cut.
+10. **The dead list**, and a `docs/REMOVAL-LEDGER.md` row for `CaptureSheet`.
+
+**#369, the projects revamp, is the largest piece and is deliberately last**, because it is a redesign rather than a defect list and the owner should see the smaller fixes first.
+
+**If the same thing fails three times, stop and write it to `DECISIONS.md` BLOCKED**, per rule 9, and take the next item.
+
+---
+
 **Item 2, the trail, is started.** Two changes landed: a row under a month band says "Monday 29" rather than repeating the band's own month and year, and the year rail's labels sit on a hairline so the index reads as a control rather than as two digits at the edge of the page. **The rail was built all along and invisible**, which is why "no way through time but a thumb" was true and the tool existed.
 
 **The next decision on #361 belongs to the owner and is on the issue.** Screen 08 draws filter and search one tap away in the header; what is built is a search field and four chips inline, taking a third of the fold before any entry. **#220 chose the visible chips deliberately under law 2, and D142 made the grid authoritative afterward**, so the two need reconciling by a ruling rather than by a commit. **The other finding is that the endless scroll is inside the open month rather than between months**: between them there are folds and the rail, and inside June there are forty three entries with nothing but gap markers. **A chart of how much was written per month is ruled out** by rule 13, since that is a progress meter on the person's own diligence; an index of presence is not.
