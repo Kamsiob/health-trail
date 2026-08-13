@@ -29,6 +29,7 @@ import com.kamsiob.healthtrail.ui.screens.SetupTags
 import com.kamsiob.healthtrail.ui.screens.SituationPickerTags
 import org.junit.Assert.assertTrue
 import org.junit.Rule
+import org.junit.rules.TestName
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -59,7 +60,25 @@ class MedicationQuestionJourneyTest {
     @get:Rule
     val compose = createAndroidComposeRule<MainActivity>()
 
-    private val drug = "Lisinopril"
+    /** Which test is running, so the two of them cannot write over each other. */
+    @get:Rule
+    val testName = TestName()
+
+    /**
+     * **Named per test, and that is the whole of #308.**
+     *
+     * The two tests in this class share one notebook: the app's data survives
+     * between them, because only `connectedAndroidTest` finishing uninstalls
+     * it. Both added a medication called "Lisinopril", and [medicationId] takes
+     * `first { it.name == drug }`, so the second test to run walked the first
+     * test's medication and asked its question about it.
+     *
+     * **Which one broke depended on the order the two ran in**, which is why it
+     * read as a flake for four full runs and passed whenever it was rerun
+     * alone: a class run on its own has no second Lisinopril in it.
+     */
+    private val drug: String get() = "Lisinopril ${testName.methodName.take(12)}"
+
     private val question = "Who changed the morning dose"
 
     private fun showing(tag: String): Boolean =
@@ -157,7 +176,17 @@ class MedicationQuestionJourneyTest {
         // staged conversation on 2026-08-04, per law 3, and what the app can
         // work out or live without stayed behind one control on the last one.
         // Walked to by tapping the same skip a person taps.
-        repeat(2) { compose.onNodeWithTag(CaptureFormTags.NEXT).performClick() }
+        // **Walked to rather than counted to.** Two taps is the number of
+        // stages today, and a test that hard codes it fails on the stage after
+        // a redesign with a message about a missing disclosure rather than
+        // about a changed form. Stopping when the control is there says what it
+        // means, and the bound keeps it from looping if it never arrives.
+        repeat(3) {
+            if (!showing(CaptureFormTags.MORE) && showing(CaptureFormTags.NEXT)) {
+                compose.onNodeWithTag(CaptureFormTags.NEXT).performClick()
+                compose.waitForIdle()
+            }
+        }
         compose.onNodeWithTag(CaptureFormTags.MORE).performScrollTo().performClick()
 
         // **And the full set when the chip is not among the five**, which is

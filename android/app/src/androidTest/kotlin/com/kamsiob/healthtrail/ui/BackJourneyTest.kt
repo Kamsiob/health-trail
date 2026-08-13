@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui
 
+import android.os.SystemClock
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -304,6 +305,23 @@ class BackJourneyTest {
         // Unconditionally, because the ordinary `pressBack` raises when the app
         // exits and here the exit is the expected result.
         Espresso.pressBackUnconditionally()
+
+        // **Waited for rather than read once, and that is the rest of #302.**
+        // `pressBackUnconditionally` returns as soon as the event is sent, and
+        // the activity reaches `DESTROYED` on the main thread some frames
+        // later. Reading the state on the very next line is a race, and it is
+        // one a busy phone loses: the assertion then says the app trapped the
+        // person, which is the most alarming sentence this suite can print and
+        // was not true either time it printed it.
+        //
+        // Bounded, so an app that genuinely does not leave fails here with the
+        // same message rather than hanging.
+        val deadline = SystemClock.uptimeMillis() + 5_000
+        while (compose.activityRule.scenario.state != Lifecycle.State.DESTROYED &&
+            SystemClock.uptimeMillis() < deadline
+        ) {
+            SystemClock.sleep(50)
+        }
 
         // Asked of the scenario rather than of the activity. `compose.activity`
         // reaches into a destroyed activity and throws a null pointer, which
