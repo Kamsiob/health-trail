@@ -178,6 +178,54 @@ class HealthTrailDatabase private constructor(
          * would be attributed to `unknown-device` and a future sync could not
          * tell this device's writes from a peer's.
          */
+        /**
+         * Gives this phone a new identity, keeping the arriving one as a peer.
+         *
+         * **Called after a restore, and nowhere else.** #320. `app_meta` travels
+         * in the archive and `device_id` lives in it, so a restored notebook
+         * arrives carrying the source phone's identity, and this phone then
+         * stamps every row and every change log entry it writes with a device
+         * that is not it. `contract/DATA-CONTRACT.md` defines `origin_device` as
+         * "the id of the device that created the row", so that was false for
+         * every row created after any restore, silently, and would have stayed
+         * false until a sync that does not exist yet had to sort it out.
+         *
+         * **The old identity is demoted rather than deleted.** The notebook
+         * genuinely did come from another device: the `device` table exists to
+         * record exactly that, and the rows already written there were written
+         * by it. What changes is only which row is `is_self`.
+         *
+         * **The change log is not rewritten.** Those entries describe writes
+         * that happened on the other phone and they are still true. Only what
+         * this phone writes from now on gets the new id.
+         */
+        suspend fun reidentify(context: Context) {
+            val database = open(context).database
+            val generated = Ids.newDeviceId()
+            val now = System.currentTimeMillis()
+            database.beginTransaction()
+            try {
+                database.execSQL("UPDATE device SET is_self = 0 WHERE is_self = 1")
+                database.execSQL(
+                    "INSERT OR REPLACE INTO app_meta (key, value, updated_at) VALUES (?, ?, ?)",
+                    arrayOf<Any>("device_id", generated, now),
+                )
+                database.execSQL(
+                    "INSERT OR REPLACE INTO device (id, label, is_self, created_at, last_seq_in) " +
+                        "VALUES (?, ?, 1, ?, 0)",
+                    arrayOf<Any>(generated, android.os.Build.MODEL, now),
+                )
+                database.setTransactionSuccessful()
+            } finally {
+                database.endTransaction()
+            }
+            // **Closed so the next open reads the new id.** The identity is
+            // read once when the database is opened and carried on the handle,
+            // so a caller holding the old one would go on stamping the old
+            // device until the process restarted.
+            closeForTest()
+        }
+
         private fun ensureDeviceId(database: SQLiteDatabase): String {
             database.rawQuery(
                 "SELECT value FROM app_meta WHERE key = 'device_id'", null,

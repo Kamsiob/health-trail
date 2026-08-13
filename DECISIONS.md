@@ -2674,6 +2674,26 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D150. A restored notebook is on a new phone, and the phone says so
+
+**Decided 2026-08-13**, working #320, which is release blocking and had been open since 2026-08-07 with the fix written down and not taken.
+
+**The defect.** `app_meta` travels in the archive, restore replaces the whole database file, and `device_id` lives in `app_meta`. So a restored notebook arrives carrying the source phone's identity, and this phone then stamps every row and every change log entry it writes with a device that is not it. Nothing looks wrong: the notebook is complete and every screen is right.
+
+**Why it is not a matter of taste.** `contract/DATA-CONTRACT.md` defines `origin_device` as "the id of the device that created the row", and says it exists so a future merge can tell two devices' writes apart. After a restore that sentence was false for every row created afterward. **Restore is precisely the moment a notebook moves between devices**, which is the one moment provenance is for, and it was silently wrong exactly there.
+
+**So this is implementing the contract rather than choosing between readings**, which is why it was decided here rather than escalated: rule 3 guards the schema, and no column, table or format changed. What changed is that the app stops writing a value the contract says must mean something else.
+
+**The arriving identity is demoted rather than deleted.** The notebook genuinely did come from another device, the `device` table exists to record exactly that, and the rows already in it were written by that phone. Only which row is `is_self` changes.
+
+**The change log is not rewritten.** Those entries describe writes that happened on the other phone and they are still true. Only what this phone writes from now on carries the new id.
+
+**A restore of this phone's own archive re-identifies it too**, and that is deliberate. Nothing in the file says which phone wrote it, so the alternative is to compare identities and keep the old one when they match, which would leave the interesting case, a file from another phone, resting on a comparison that cannot be made.
+
+**Proved by breaking it.** `RestoreIdentityTest` fails on the assertion "the phone kept the identity that arrived in the file" when the re-identify call is disabled, and passes with it. A test for a silent defect that has never been observed is worth nothing until it has been watched failing.
+
+---
+
 ### D149. Mono never touches a date, and the type ladder's own row said otherwise
 
 **Decided 2026-08-13**, working #371 item 1, and it is a correction to a document rather than a new rule.

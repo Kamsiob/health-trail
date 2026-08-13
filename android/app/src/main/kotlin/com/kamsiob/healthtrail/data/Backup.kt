@@ -522,8 +522,23 @@ object Backup {
                 file.inputStream().use { attachments.put(it) }
             }
 
-            // Reopened through the app's own path, so the restored file goes
-            // through migrations and key handling exactly as any other open.
+            // **This phone takes its own identity back.** #320.
+            //
+            // `app_meta` travels in the archive, restore replaces the whole
+            // file, and `device_id` is in `app_meta`, so a restored notebook
+            // arrives carrying the source phone's identity and this phone then
+            // stamps every row and every change log entry it writes with it.
+            // The data contract calls `origin_device` "the id of the device
+            // that created the row", and after a restore that was false for
+            // every row created afterward, silently, until a sync that does not
+            // exist yet would have had to sort it out.
+            //
+            // **The old identity stays as a peer rather than being erased.**
+            // The notebook genuinely did come from another device, and the
+            // `device` table exists to say so: what changes is only which row
+            // is `is_self`.
+            HealthTrailDatabase.reidentify(context)
+
             val database = HealthTrailDatabase.open(context)
             val recomputed = database.database.let { handle ->
                 handle.beginTransaction()
