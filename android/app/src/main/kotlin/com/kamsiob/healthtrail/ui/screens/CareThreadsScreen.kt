@@ -303,7 +303,7 @@ private fun ThreadRow(
                         else -> strings["threads.quiet"]
                     },
                 ),
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
         }

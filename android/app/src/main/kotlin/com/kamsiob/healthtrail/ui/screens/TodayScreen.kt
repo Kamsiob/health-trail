@@ -672,7 +672,7 @@ private fun NextAppointment(
     ) {
         Text(
             text = EventDateText.render(strings, appointment.scheduledEdtf),
-            style = HealthTrail.type.mono,
+            style = HealthTrail.type.bodyS,
             color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))

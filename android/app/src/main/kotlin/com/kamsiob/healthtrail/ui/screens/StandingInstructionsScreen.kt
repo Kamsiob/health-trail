@@ -377,7 +377,7 @@ private fun InstructionRow(
                     "instructions.asked_on",
                     "date" to EventDateText.render(strings, given),
                 ),
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
@@ -447,7 +447,7 @@ private fun InstructionRow(
                     "instructions.ack.on",
                     "date" to EventDateText.render(strings, instruction.acknowledgedEdtf),
                 ),
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.leafInk,
             )
             Spacer(Modifier.height(Space.xs))

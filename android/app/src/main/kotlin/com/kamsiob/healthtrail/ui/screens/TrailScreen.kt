@@ -873,7 +873,7 @@ private fun TrailRow(
             }
             Text(
                 text = strings("trail.row.eyebrow", "date" to date, "kind" to kind),
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
         }

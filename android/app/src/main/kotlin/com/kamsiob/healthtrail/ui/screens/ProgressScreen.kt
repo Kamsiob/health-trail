@@ -317,7 +317,7 @@ private fun TextMeasureHero(
             Spacer(Modifier.height(Space.xs))
             Text(
                 text = EventDateText.render(strings, it.occurredEdtf),
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
         }
@@ -352,7 +352,7 @@ private fun ReadingRow(reading: Repository.Reading, measure: Repository.Measure)
     ) {
         Text(
             text = EventDateText.render(strings, reading.occurredEdtf),
-            style = HealthTrail.type.mono,
+            style = HealthTrail.type.bodyS,
             color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))

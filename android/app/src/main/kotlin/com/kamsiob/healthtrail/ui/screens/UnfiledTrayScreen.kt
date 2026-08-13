@@ -352,7 +352,7 @@ private fun UnfiledRow(
     ) {
         Text(
             text = EventDateText.render(strings, entry.occurredEdtf),
-            style = HealthTrail.type.mono,
+            style = HealthTrail.type.bodyS,
             color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))

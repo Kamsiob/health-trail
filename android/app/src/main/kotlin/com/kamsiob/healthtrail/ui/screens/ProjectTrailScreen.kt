@@ -280,7 +280,7 @@ private fun TrailItemRow(
     ) {
         Text(
             text = strings("trail.row.eyebrow", "date" to date, "kind" to kind),
-            style = type.mono,
+            style = type.bodyS,
             color = colors.ink2,
         )
         Text(

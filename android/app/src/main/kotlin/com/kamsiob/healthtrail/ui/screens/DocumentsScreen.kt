@@ -385,7 +385,7 @@ private fun DocumentCell(
         document.receivedEdtf?.takeIf { it.isNotBlank() }?.let { received ->
             Text(
                 text = EventDateText.render(strings, received),
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
         }

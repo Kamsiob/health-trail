@@ -1318,7 +1318,7 @@ private fun MiniSpine(items: List<Repository.TodayItem>, hue: TabHue) {
                     if (eyebrow.isNotBlank()) {
                         Text(
                             text = eyebrow,
-                            style = type.mono,
+                            style = type.bodyS,
                             color = colors.ink2,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

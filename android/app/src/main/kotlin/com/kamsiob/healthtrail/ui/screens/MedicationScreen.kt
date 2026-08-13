@@ -257,7 +257,7 @@ fun MedicationScreen(
                             if (eyebrow.isNotEmpty()) {
                                 Text(
                                     text = eyebrow,
-                                    style = HealthTrail.type.mono,
+                                    style = HealthTrail.type.bodyS,
                                     color = colors.ink2,
                                 )
                                 Spacer(Modifier.height(Space.xs))

@@ -277,7 +277,7 @@ private fun ChapterRow(
                 } else {
                     rendered
                 },
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))

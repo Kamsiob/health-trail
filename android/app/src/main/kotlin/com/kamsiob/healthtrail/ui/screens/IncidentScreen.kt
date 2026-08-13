@@ -202,7 +202,7 @@ private fun IncidentSpineRow(
                 // chapter name in another is two runs and reorders without it.
                 val eyebrow = Bidi.join(listOfNotNull(date, incident.chapterName))
                 if (eyebrow.isNotEmpty()) {
-                    Text(eyebrow, style = HealthTrail.type.mono, color = colors.ink2)
+                    Text(eyebrow, style = HealthTrail.type.bodyS, color = colors.ink2)
                     Spacer(Modifier.height(Space.xs))
                 }
 
@@ -522,7 +522,7 @@ fun IncidentScreen(
                             val date = entry.occurredEdtf?.takeIf { it.isNotBlank() }
                                 ?.let { EventDateText.render(strings, it) }
                             if (date != null) {
-                                Text(date, style = HealthTrail.type.mono, color = colors.ink2)
+                                Text(date, style = HealthTrail.type.bodyS, color = colors.ink2)
                                 Spacer(Modifier.height(Space.xs))
                             }
                             entry.title?.takeIf { it.isNotBlank() }?.let {

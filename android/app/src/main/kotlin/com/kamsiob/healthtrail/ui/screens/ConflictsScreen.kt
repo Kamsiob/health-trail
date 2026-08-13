@@ -161,7 +161,7 @@ fun ConflictsScreen(
                                 .toLocalDate()
                                 .toString(),
                         ),
-                        style = HealthTrail.type.mono,
+                        style = HealthTrail.type.bodyS,
                         color = colors.ink2,
                     )
 

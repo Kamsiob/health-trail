@@ -2768,6 +2768,10 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **What worked is the opposite of extraction: fewer parameters.** `IncidentScreen` took `entries`, `people` and `documents` as three lists; they became one `Repository.IncidentDetail`, which is the shape `EntryDetail` had all along. Three parameters off the call site paid for the fourth list and the handler, and the build passed with room to spare.
 
+**A fourth data point the same day, and it is the one that says how tight this is.** Item 2 of #371 spent the room that `IncidentDetail` bought: `AddAppointmentScreen` gained the care team, `BillScreen` gained the violations and their handler. Then the other end of "who it is with", which is a person's screen listing the appointments they are on, failed **three ways in a row**: two parameters, one parameter with the filtering done at the call site, and one parameter with `entries` and `appointments` collapsed into a `PersonDetail` and no handler at all. **A net change of zero parameters still failed**, because constructing the object at the call site costs what the two parameters cost.
+
+**It was reverted by hand rather than kept**, per rule 16: a screen that cannot be reached is not shipped half built. The work is small and it is written up on #371, waiting on the extraction pass rather than on judgment.
+
 **So the remedy for B6 is a state holder, not a file split.** The shell's cost is roughly the number of arguments crossing it, and the way down is to make each screen take one object it can read rather than eight lists the shell assembles. **Anyone starting the extraction pass should read this before moving a single block**, because the obvious approach has now failed three times and the cheap approach has worked once.
 
 ---

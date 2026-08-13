@@ -167,7 +167,7 @@ fun ThreadScreen(
                             entry.occurredEdtf?.takeIf { it.isNotBlank() }?.let {
                                 Text(
                                     text = EventDateText.render(strings, it),
-                                    style = HealthTrail.type.mono,
+                                    style = HealthTrail.type.bodyS,
                                     color = colors.ink2,
                                 )
                                 Spacer(Modifier.height(Space.xs))

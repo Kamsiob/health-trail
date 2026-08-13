@@ -331,7 +331,7 @@ private fun ResultRow(
         val eyebrow = Bidi.join(listOfNotNull(date, where))
         if (eyebrow.isNotEmpty()) {
             // bidi-ok: joined by Bidi.join two lines above, which isolates every part.
-            Text(text = eyebrow, style = HealthTrail.type.mono, color = colors.ink2)
+            Text(text = eyebrow, style = HealthTrail.type.bodyS, color = colors.ink2)
             Spacer(Modifier.height(Space.xs))
         }
 
