@@ -52,8 +52,12 @@
 - The `rowTitle` token; three missing `BackHandler`s.
 - **The chapter axis has a writer**: `createEntry` (both call sites), `createDocument`, `reportIncident`.
 
+### Done since the list was written
+- **`recordMeasurement` writes its trail entry**, in the same transaction, so a reading reaches the trail, the month review, the prep sheet and the digest.
+- **Twelve form cancels** stopped wearing the way back's full width costume.
+
 ### Next, in order
-1. **`recordMeasurement` writes no entry.** `Repository.kt` `recordMeasurement` takes `entryId` and `NotebookShell.kt` passes none, so a reading is not in the trail, not in a month review, not in `prep.changes`. Create the entry in the same transaction, the way `createQuestionWithEntry` does.
+1. ~~**`recordMeasurement` writes no entry.**~~ **Done.** `Repository.kt` `recordMeasurement` takes `entryId` and `NotebookShell.kt` passes none, so a reading is not in the trail, not in a month review, not in `prep.changes`. Create the entry in the same transaction, the way `createQuestionWithEntry` does.
 2. **`recordViolation`** takes `incidentId` and `billId` and its only caller passes neither, so `Repository.Violation.incidentTitle` and `billDescription` are dead readers.
 3. **`question.person_id` and `asked_at_appointment_id` are never written.** The prep sheet shows every open question in the notebook because it has nothing to filter by. `createAppointment` never writes `person_id` either, so there is nothing to filter against: do the appointment first.
 4. **Nothing can be corrected**: a reading, a measure, a care thread, a chapter, a question's own words, an instruction's own words, the subject's name. `updateEntry` and `CorrectEntryScreen` are the pattern to copy.
