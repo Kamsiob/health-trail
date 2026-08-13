@@ -27,8 +27,20 @@ import sys
 LOG_PATH = os.path.expanduser("~/.claude/health-trail-guard.log")
 
 # Each rule is a compiled pattern plus the plain reason returned to the session.
-# Patterns are matched against the whole command string, which may contain
-# several statements joined by ; && || or newlines.
+#
+# **Matched at a command position rather than anywhere in the text**, since
+# 2026-08-13 and #323. The guard used to search the whole string, so it fired on
+# prose that merely names a blocked command: a sentence going into `HANDOFF.md`
+# about the uninstall on the blocklist was refused, and the workaround was to
+# write that file another way. **A guard that fires on documentation teaches the
+# next session to avoid writing the word**, which is exactly the knowledge these
+# files exist to carry. It refused the edit that introduced this comment, too.
+#
+# **It is not weakened.** The command it correctly refused earlier that same
+# day, a real uninstall of the app package, sits at the start of its own
+# statement and is still refused, as is one behind sudo, xargs, -exec, a
+# subshell, or an &&. What is no longer refused is the same words inside a
+# sentence, which no shell would ever run.
 RULES = [
     (
         r"\brm\s+(-[a-zA-Z]*\s+)*-[a-zA-Z]*[rR][a-zA-Z]*f|\brm\s+(-[a-zA-Z]*\s+)*-[a-zA-Z]*f[a-zA-Z]*[rR]",
@@ -106,7 +118,10 @@ RULES = [
         "which is the instrumentation APK rather than the app, may be removed.",
     ),
     (
-        r"\badb\s+shell\s+pm\s+clear\b",
+        # **`pm clear` rather than `adb shell pm clear`**, because the matcher
+        # strips `adb shell` to find the command it is actually running. Typed
+        # either way, on the host or in a device shell, it is the same wipe.
+        r"\bpm\s+clear\b",
         "pm clear wipes app data. Destructive data tests run on an emulator "
         "against a fixture, never against a real installation.",
     ),
@@ -122,6 +137,82 @@ RULES = [
 ]
 
 COMPILED = [(re.compile(p, re.IGNORECASE), reason) for p, reason in RULES]
+
+# A statement ends at a newline or at one of the shell's own separators, and a
+# find's -exec begins one in the middle of another command. Nothing here has to
+# be a full parse: it only has to find where a command could begin.
+#
+# **Both of these were found by the check rather than by thinking**: the first
+# version of this missed `find . -exec rm -rf {} +` and `adb shell pm uninstall`,
+# which are a real removal and a real uninstall.
+SEPARATORS = re.compile(
+    r"\n|;|&&|\|\||(?<![>|])\|(?!\|)|&(?!&)|\s-execdir\s|\s-exec\s",
+)
+
+# What may sit in front of a command and leave it a command. sudo, xargs, a
+# subshell, the then, do and else of a conditional, and anything that hands a
+# command to another shell: `sh -c`, `su -c`, and `adb shell`, which is how
+# every destructive thing on the phone is actually spelled.
+PREFIXES = re.compile(
+    r"^(?:\s*(?:sudo|doas|xargs|env|nohup|time|command|builtin|exec|then|do|else)\s+"
+    r"|\s*adb(?:\s+-s\s+\S+)?\s+shell\s+"
+    r"|\s*(?:sh|bash|zsh|su)\s+-c\s+"
+    r"|\s*[(!{]\s*|\s*\$\(\s*|\s*`\s*|\s*[\"']\s*)*",
+    re.IGNORECASE,
+)
+
+# The rules that are about a redirection or an argument rather than about the
+# command word, so they are searched anywhere in the text rather than anchored
+# to the start of a statement.
+UNANCHORED = ("of=/dev/", "/dev/(sd")
+
+
+# A heredoc, and the word that opens the statement carrying it.
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)(\w+)\1")
+SHELLS = ("bash", "sh", "zsh", "dash", "ksh", "source", "eval")
+
+
+def without_heredoc_bodies(command: str) -> str:
+    """The command with the contents of its heredocs removed.
+
+    **A heredoc body is data, not a command**, and this is the other half of
+    #323: a commit message, a documentation file or an issue comment written
+    this way names blocked commands on purpose, and the guard used to refuse the
+    lot. Removing the body is what lets those sentences be written.
+
+    **Unless the heredoc feeds a shell.** `bash <<EOF` runs every line of it, so
+    that body is exactly as dangerous as the same lines typed out and it stays
+    in the text the rules see. What is dropped is what a heredoc is nearly
+    always used for here: prose on its way to a file, a commit, or an issue.
+
+    A body fed to something that is not a shell but can still run one, `python3`
+    and its `os.system`, is dropped with the rest. That is a deliberate limit
+    rather than an oversight: this guard reads shell, and a language that can
+    shell out is past what a regular expression should pretend to police.
+    """
+    lines = command.split("\n")
+    kept: list[str] = []
+    skipping_until: str | None = None
+    for line in lines:
+        if skipping_until is not None:
+            if line.strip() == skipping_until:
+                skipping_until = None
+            continue
+        kept.append(line)
+        found = HEREDOC.search(line)
+        if found:
+            opener = PREFIXES.sub("", line).lstrip().split(" ")[0].lower()
+            if opener not in SHELLS:
+                skipping_until = found.group(2)
+    return "\n".join(kept)
+
+
+def statements(command: str):
+    """Every place a command could begin, with its leading noise removed."""
+    for piece in SEPARATORS.split(without_heredoc_bodies(command)):
+        if piece is None:
+            continue
+        yield PREFIXES.sub("", piece).lstrip()
 
 
 def log(decision: str, command: str, cwd: str) -> None:
@@ -152,7 +243,13 @@ def main() -> int:
         return 0
 
     for pattern, reason in COMPILED:
-        if pattern.search(command):
+        anchored = not any(mark in pattern.pattern for mark in UNANCHORED)
+        hit = (
+            any(pattern.match(piece) for piece in statements(command))
+            if anchored
+            else pattern.search(without_heredoc_bodies(command))
+        )
+        if hit:
             log("BLOCKED", command, cwd)
             sys.stderr.write(
                 "Blocked by the Health Trail destructive command guard "
