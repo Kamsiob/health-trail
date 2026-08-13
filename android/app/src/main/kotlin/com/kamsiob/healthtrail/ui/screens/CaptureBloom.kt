@@ -164,9 +164,17 @@ private fun BloomChoice(
     // touchable from the first frame.
     val rise by animateDpAsState(
         targetValue = if (shown) Space.none else Space.m,
-        // **The app's own spring**, so reduced motion flattens this with
-        // everything else rather than needing a special case.
-        animationSpec = motion.standard(),
+        // **The expressive spring, and this is one of the only three places
+        // allowed to overshoot.** `DESIGN.md` 10 names them: the capture menu
+        // blooming, a milestone landing on the arc, and an incident marked
+        // resolved, "because each is a small piece of relief in an app used
+        // during hard times". **It had zero call sites**, so the one moment the
+        // design reserved a spring for was rising on the same curve as
+        // everything else. #371 item 5.
+        //
+        // Still the app's own token, so reduced motion flattens it to a snap
+        // with everything else rather than needing a special case here.
+        animationSpec = motion.expressive(),
         label = "bloom",
     )
 

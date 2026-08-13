@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -27,6 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
@@ -164,7 +173,53 @@ fun SectionScaffold(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
+    // **The screen arrives rather than cutting.** `DESIGN.md` 10 gives screen
+    // transitions the standard spring and 240ms, and #371 found that every
+    // navigation in the app was a hard cut: the tokens existed and nothing
+    // reached them. This is the one place fifty five screens can gain it
+    // together, which is the same argument that put the tab chip here.
+    //
+    // **A layer rather than an `AnimatedVisibility`.** The content is in the
+    // tree and hittable from the first frame either way, which the bloom
+    // learned the hard way: something present and not yet visible is a target
+    // somebody can tap and not see, and a node a test can find and not click.
+    // Here it only moves and fades, so nothing is ever absent.
+    //
+    // **Reduced motion needs no special case**: `standard()` is a snap, so the
+    // value arrives at 1 on the first frame and the screen simply appears.
+    // **The movement takes the spring and the opacity is done in 120ms**, which
+    // is `Disclosure`'s own pairing and is not a detail. A screen at half
+    // opacity is readable through, so for as long as the fade lasts the person
+    // sees two screens at once and can tap the top one while still reading the
+    // bottom: the same defect the bloom fixed by moving rather than fading.
+    // Caught by photographing a frame mid transition rather than by reading it.
+    // With `quick()` the double exposure is over before the eye settles, and
+    // with reduced motion this pair becomes exactly what `DESIGN.md` 10 asks
+    // for, an instant position and a 100ms fade.
+    val motion = LocalMotion.current
+    val rise = with(LocalDensity.current) { Space.m.toPx() }
+    var entered by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { entered = true }
+    val arrival by animateFloatAsState(
+        targetValue = if (entered) 1f else 0f,
+        animationSpec = motion.standard(),
+        label = "section arrival",
+    )
+    val opacity by animateFloatAsState(
+        targetValue = if (entered) 1f else 0f,
+        animationSpec = motion.quick(),
+        label = "section opacity",
+    )
+
+    Surface(
+        modifier = modifier
+            .fillMaxSize()
+            .graphicsLayer {
+                alpha = opacity
+                translationY = (1f - arrival) * rise
+            },
+        color = colors.paper,
+    ) {
         // Its own system bar padding, because a section screen renders over the
         // shell rather than inside it and does not inherit what the four
         // destinations get. The Unfiled tray learned this the same way.
