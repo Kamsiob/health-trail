@@ -304,6 +304,7 @@ class RemovalIsVisibleTest {
                 person = person,
                 entries = emptyList(),
                 onCall = {},
+                onSetPinned = {},
                 onEdit = {},
                 onCapture = {},
                 onRemove = { removals += 1 },

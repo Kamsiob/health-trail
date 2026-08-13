@@ -119,7 +119,18 @@ fun CareTeamScreen(
         // written about is the same question the capture form and the unfiled
         // tray already ask, and this list was the only one not asking it.
         val ordered = byRecentUse.takeIf { it.isNotEmpty() } ?: people
-        val lead = ordered.take(LEAD_COUNT)
+        // **Anybody pinned leads, and recent use fills the rest.** #361, on the
+        // owner's ruling: recent use is a good default and it was the only
+        // answer, so somebody who wanted the night charge nurse at the top
+        // could not say so. A pin is the person overriding the guess, so it
+        // wins outright, and the count only grows if they pin more than three.
+        // Most recently pinned first, the same ordering the trail's pinned run
+        // uses.
+        val pinned = people.filter { it.pinnedAt != null }
+            .sortedByDescending { it.pinnedAt }
+        val lead = pinned + ordered
+            .filterNot { person -> pinned.any { it.id == person.id } }
+            .take((LEAD_COUNT - pinned.size).coerceAtLeast(0))
         // **In the order they were added**, which is what somebody scanning a
         // roster expects, exactly as the thread list keeps `sort_index` for the
         // same reason. Two orders, because they answer two questions.

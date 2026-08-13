@@ -73,6 +73,7 @@ class OpenNotRemoveTest {
                         person = person,
                         entries = listOf(entry),
                         onCall = {},
+                onSetPinned = {},
                         onEdit = {},
                         onCapture = {},
                         onRemove = {},

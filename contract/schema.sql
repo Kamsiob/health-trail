@@ -328,7 +328,16 @@ CREATE TABLE IF NOT EXISTS person (
   email         TEXT,
   shift_note    TEXT,
   notes         TEXT,
-  archived_at   INTEGER
+  archived_at   INTEGER,
+
+  -- Set when the person put somebody at the top of the care team, cleared when
+  -- they took them back out. The same column, the same name and the same
+  -- meaning as entry.pinned_at, because it is the same decision: "I keep
+  -- needing this one." Owner ruling, 2026-08-12, #361.
+  --
+  -- The timestamp rather than a flag, so the pinned run can be ordered most
+  -- recently pinned first, which is what the trail already does.
+  pinned_at     INTEGER
 );
 
 CREATE INDEX IF NOT EXISTS ix_person_subject ON person (subject_id);
@@ -801,12 +810,23 @@ CREATE TABLE IF NOT EXISTS attachment (
   bill_id       TEXT REFERENCES bill (id),
   project_id    TEXT REFERENCES project (id),
   measurement_id TEXT REFERENCES measurement (id),
+  -- A photograph of somebody, which in practice is the business card they
+  -- handed you in a corridor. Owner ruling, 2026-08-12, #370. It is an
+  -- attachment like every other piece of paper this app holds, so it travels
+  -- in the archive, survives a restore and merges by the same rules.
+  --
+  -- **The app never reads it.** Recognizing the text on a card would be the
+  -- app guessing at somebody's name and title, and a confidently wrong name on
+  -- a care team is worse than a photograph and four empty fields. The person
+  -- types what they want kept, with the picture beside them while they do it.
+  person_id     TEXT REFERENCES person (id),
   caption       TEXT
 );
 
 CREATE INDEX IF NOT EXISTS ix_attachment_sha      ON attachment (sha256);
 CREATE INDEX IF NOT EXISTS ix_attachment_document ON attachment (document_id);
 CREATE INDEX IF NOT EXISTS ix_attachment_entry    ON attachment (entry_id);
+CREATE INDEX IF NOT EXISTS ix_attachment_person  ON attachment (person_id);
 
 CREATE TABLE IF NOT EXISTS bill (
   id            TEXT    NOT NULL PRIMARY KEY,

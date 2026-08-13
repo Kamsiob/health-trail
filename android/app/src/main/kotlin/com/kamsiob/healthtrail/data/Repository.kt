@@ -1362,6 +1362,26 @@ class Repository private constructor(
      * `pinned_at` has existed in the schema since the contract was written and
      * nothing wrote to it until the trail earned law 4's fourth tool.
      */
+    /**
+     * Puts somebody at the top of the care team, or takes them back out. #361.
+     *
+     * **The same shape as `setEntryPinned`**, deliberately: one nullable
+     * timestamp, set to now or cleared, and no second table. The owner ruled
+     * for this over a sort order because pinning a few is what people actually
+     * do, and because a manual order over forty people is work nobody finishes.
+     *
+     * **It travels in the archive and survives a restore**, which is the whole
+     * argument for it being a column rather than a device preference.
+     */
+    suspend fun setPersonPinned(personId: String, pinned: Boolean) =
+        withContext(Dispatchers.IO) {
+            val now = System.currentTimeMillis()
+            db().database.write(
+                "UPDATE person SET pinned_at = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(if (pinned) now else null, now, personId),
+            )
+        }
+
     suspend fun setEntryPinned(entryId: String, pinned: Boolean) = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
         db().database.write(
@@ -1534,6 +1554,17 @@ class Repository private constructor(
         val phone: String?,
         val email: String?,
         val notes: String?,
+        /**
+         * When the person put them at the top of the care team, or null.
+         *
+         * **The same column and the same meaning as an entry's pin**, because
+         * it is the same decision: "I keep needing this one." Until this
+         * existed the top of the care team was decided by `peopleByRecentUse`,
+         * which is a good default and was the only answer, so somebody who
+         * wanted the night charge nurse up there could not say so. Owner
+         * ruling, #361.
+         */
+        val pinnedAt: Long? = null,
     )
 
     /**
@@ -1546,9 +1577,12 @@ class Repository private constructor(
      */
     suspend fun people(subjectId: String): List<Person> = withContext(Dispatchers.IO) {
         db().database.rawQuery(
-            "SELECT id, display_name, role_label, phone, email, notes " +
+            "SELECT id, display_name, role_label, phone, email, notes, pinned_at " +
                 "FROM live_person WHERE subject_id = ? AND archived_at IS NULL " +
-                "ORDER BY created_at",
+                // **Pinned first, most recently pinned at the top**, which is
+                // the ordering the trail's pinned run already uses, and the
+                // order somebody added people in for the rest.
+                "ORDER BY pinned_at IS NULL, pinned_at DESC, created_at",
             arrayOf(subjectId),
         ).use { cursor ->
             buildList {
@@ -1561,6 +1595,7 @@ class Repository private constructor(
                             phone = cursor.getString(3),
                             email = cursor.getString(4),
                             notes = cursor.getString(5),
+                            pinnedAt = if (cursor.isNull(6)) null else cursor.getLong(6),
                         ),
                     )
                 }

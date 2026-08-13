@@ -33,6 +33,7 @@ object PersonTags {
     const val NAME = "person"
     const val CALL = "person_call"
     const val EDIT = "person_edit"
+    const val PIN = "person_pin"
     const val CAPTURE = "person_capture"
     const val REMOVE = "person_remove"
     fun entry(id: String) = "person_entry_$id"
@@ -87,6 +88,15 @@ fun PersonScreen(
      * are. **The list row used to do this on a long press**, which meant a
      * sighted person who did not know the gesture could not do it at all. #218.
      */
+    /**
+     * Puts them at the top of the care team, or takes them back out. #361.
+     *
+     * **Here rather than on every row**, which is the same reasoning the trail's
+     * pin already carries: a decision somebody makes a handful of times does not
+     * earn a second control on fifteen rows, and the list shows the result
+     * rather than offering the choice.
+     */
+    onSetPinned: (Boolean) -> Unit,
     onRemove: () -> Unit,
     onOpenEntry: (Repository.TrailEntry) -> Unit,
     onBack: () -> Unit,
@@ -265,6 +275,14 @@ fun PersonScreen(
         // anything itself, so nothing destructive rests on the screen.
         item {
             Spacer(Modifier.height(Space.sectionGap))
+            QuietButton(
+                label = strings[
+                    if (person.pinnedAt != null) "careteam.unpin" else "careteam.pin",
+                ],
+                onClick = { onSetPinned(person.pinnedAt == null) },
+                modifier = Modifier.testTag(PersonTags.PIN),
+            )
+            Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["remove.action"],
                 onClick = onRemove,

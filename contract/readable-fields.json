@@ -120,6 +120,7 @@
       "bill_id",
       "project_id",
       "measurement_id",
+      "person_id",
       "caption"
     ],
     "columns": {
@@ -177,6 +178,10 @@
       },
       "caption": {
         "render": "value"
+      },
+      "person_id": {
+        "render": "link",
+        "note": "Rendered as the name of the person it points at, with a relative link to their page, exactly as the other four owners are. A business card is an attachment like any other piece of paper this app holds. #370."
       }
     }
   },
@@ -1829,7 +1834,8 @@
       "email",
       "shift_note",
       "notes",
-      "archived_at"
+      "archived_at",
+      "pinned_at"
     ],
     "columns": {
       "id": {
@@ -1884,6 +1890,10 @@
       "archived_at": {
         "render": "timestamp",
         "note": "Epoch milliseconds. contract/DATA-CONTRACT.md 8.2 is explicit that a date never renders as a bare epoch number, and this column printed one. Rendered in UTC with the offset shown, because unlike an event date it carries no zone of its own. #328."
+      },
+      "pinned_at": {
+        "render": "timestamp",
+        "note": "Epoch milliseconds, rendered in UTC with the offset shown, the same as entry.pinned_at and for the same reason: a date never renders as a bare epoch number and this one carries no zone of its own. Set when somebody was put at the top of the care team. #361."
       }
     }
   },

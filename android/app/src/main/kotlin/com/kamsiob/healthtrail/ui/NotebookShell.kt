@@ -290,6 +290,9 @@ fun NotebookShell(
     var suggestedCards by remember { mutableStateOf<Set<String>>(emptySet()) }
     var savingPerson by remember { mutableStateOf<PersonDraft?>(null) }
 
+    /** Somebody being put at the top of the care team, or taken back out. #361. */
+    var pinningPerson by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+
     /** The entry whose words are being corrected, and what to write. #368. */
     var correctingEntry by remember { mutableStateOf<Repository.TrailEntry?>(null) }
     var savingEntryCorrection by remember {
@@ -3157,6 +3160,7 @@ fun NotebookShell(
                 person = person,
                 entries = personEntries,
                 onCall = { number -> dial(context, number) },
+                onSetPinned = { pinned -> pinningPerson = person.id to pinned },
                 onEdit = { editingPerson = person; addingPerson = true; openPerson = null },
                 // **The name travels, the kind does not.** What happened is
                 // the person's to say, so this opens the same sheet the gold
@@ -3513,6 +3517,15 @@ fun NotebookShell(
                 },
                 onCancel = { correctingEntry = null },
             )
+        }
+
+        val personPin = pinningPerson
+        if (personPin != null) {
+            LaunchedEffect(personPin) {
+                repository.setPersonPinned(personPin.first, personPin.second)
+                pinningPerson = null
+                revision += 1
+            }
         }
 
         val entryCorrection = savingEntryCorrection
