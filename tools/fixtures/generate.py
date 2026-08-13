@@ -244,6 +244,7 @@ class Generator:
         # ordered wrong.
         self.involve(db, people)
         self.call_details(db)
+        self.own_template(db, subject_id)
         # After documents, because a paper placeholder points at one, and after
         # projects, because it points at those. Same reason `involve` is last.
         self.fill_project_papers(db)
@@ -1159,6 +1160,75 @@ class Generator:
                 )
 
         return people
+
+    def own_template(self, db, subject_id):
+        """A project the person kept as their own template. #143.
+
+        **`custom_template` had no writer here**, so the template library's
+        "yours" group was empty on every seeded notebook and the one screen
+        that distinguishes what the app shipped from what the family built
+        could only ever be seen with data typed in by hand.
+
+        **Derived from a real project rather than invented**, and only once a
+        notebook is old enough to have finished one: somebody keeps a template
+        because a process worked, and a fixture where a six week old notebook
+        already has one gets the order of that backwards.
+
+        **The body is the shape the app writes**, which is the whole point of
+        one loader reading both: name, steps, lead, stages, date kinds, papers.
+        """
+        if self.days < POINTS["year2"]:
+            return
+        row = db.execute(
+            "SELECT id, name FROM project WHERE subject_id = ? ORDER BY created_at LIMIT 1",
+            (subject_id,),
+        ).fetchone()
+        if not row:
+            return
+        project_id, name = row
+        steps = [
+            step[0]
+            for step in db.execute(
+                "SELECT text FROM project_step WHERE project_id = ? ORDER BY sort_index",
+                (project_id,),
+            )
+        ]
+        stages = [
+            stage[0]
+            for stage in db.execute(
+                "SELECT name FROM project_stage WHERE project_id = ? ORDER BY sort_index",
+                (project_id,),
+            )
+        ]
+        papers = [
+            paper[0]
+            for paper in db.execute(
+                "SELECT name FROM project_paper WHERE project_id = ? ORDER BY sort_index",
+                (project_id,),
+            )
+        ]
+        body = json.dumps(
+            {
+                "name": "How we did it last time",
+                "steps": steps,
+                "lead": "standing",
+                "stages": stages,
+                "date_kinds": [],
+                "papers": papers,
+            },
+            ensure_ascii=False,
+        )
+        self.row(
+            db,
+            "custom_template",
+            {
+                "kind": "project",
+                "derived_from_id": None,
+                "name": "How we did it last time",
+                "body_json": body,
+            },
+            day=max(0, self.days - 1),
+        )
 
     def call_details(self, db):
         """Whether anybody picked up, on the calls that say.
