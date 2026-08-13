@@ -513,6 +513,25 @@ object Backup {
                 // how a restore that reported success opens corrupt afterward.
                 File(live.path + "-wal").delete()
                 File(live.path + "-shm").delete()
+
+                // **Closed again after the swap, not only before it.** #346.
+                //
+                // Everything is closed above before the file is touched, and
+                // that leaves a window: anything that calls `db()` between the
+                // close and the copy opens a fresh connection onto the file
+                // that is about to be replaced. SQLite then raises 1032,
+                // `SQLITE_READONLY_DBMOVED`, on that connection's next write,
+                // whose message is "attempt to write a readonly database" and
+                // reads like a permissions problem rather than a moved file.
+                // It aborted two full runs, at `putSetting` and inside
+                // `recomputeRanges`, which are both the first write after a
+                // restore.
+                //
+                // **A second close costs nothing and discards whatever opened
+                // in that window**, so the next caller opens the file that is
+                // actually there now.
+                HealthTrailDatabase.closeForTest()
+                Repository.closeForTest()
             } finally {
                 rebuilt.delete()
             }
