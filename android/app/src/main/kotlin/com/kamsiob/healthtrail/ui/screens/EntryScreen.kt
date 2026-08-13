@@ -43,6 +43,7 @@ import com.kamsiob.healthtrail.ui.theme.Trail
 object EntryTags {
     const val NAME = "entry"
     const val DATE = "entry_date"
+    const val CORRECT = "entry_correct"
     const val PIN = "entry_pin"
     const val REMOVE = "entry_remove"
     fun thread(id: String) = "entry_thread_$id"
@@ -84,6 +85,15 @@ fun EntryScreen(
     onOpenProject: (Repository.EntryProject) -> Unit,
     onOpenMedication: () -> Unit,
     onOpenIncident: () -> Unit,
+    /**
+     * Changes what this entry says. #368.
+     *
+     * **The words were the one thing on this screen that could not be fixed.**
+     * The date has had its own control since rule 17, and everything else the
+     * app records has a correction path. A note dictated in a corridor with a
+     * drug name heard wrong could only be removed and typed again from memory.
+     */
+    onCorrect: () -> Unit,
     onRemove: () -> Unit,
     /**
      * Pin this to the top of the trail, or take the pin out.
@@ -318,6 +328,15 @@ fun EntryScreen(
             // last was the way out and the middle one removed the thing being
             // read. The sheets keep their full width remove: they have no way
             // back to collide with, only Cancel.
+            // **First of the three, because it is the one somebody came for.**
+            // Pinning and removing are decisions made a handful of times; a
+            // typo is found the moment the entry is read.
+            QuietButton(
+                label = strings["entry.correct"],
+                onClick = onCorrect,
+                modifier = Modifier.testTag(EntryTags.CORRECT),
+            )
+            Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings[if (entry.pinnedAt != null) "trail.unpin" else "trail.pin"],
                 onClick = { onSetPinned(entry.pinnedAt == null) },

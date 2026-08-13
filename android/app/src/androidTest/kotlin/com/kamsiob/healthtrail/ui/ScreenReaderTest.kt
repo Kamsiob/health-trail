@@ -50,6 +50,7 @@ import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
 import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureBloom
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectEntryScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
@@ -1869,6 +1870,30 @@ class ScreenReaderTest {
         assertEverythingIsLabeled("documents")
     }
 
+    /** The last of the app's records to get a correction path. #368. */
+    @Test
+    fun correctingAnEntryLabelsEverything() {
+        compose.show {
+            CorrectEntryScreen(
+                entry = Repository.TrailEntry(
+                    id = "e1",
+                    kind = "call",
+                    title = "Spoke to the ward about the warfain dose",
+                    body = "She said she would check with the pharmacy and ring back.",
+                    occurredEdtf = "2026-06-29",
+                    occurredStart = 1_782_691_200_000,
+                    createdAt = 1_782_691_200_000,
+                    isUnfiled = false,
+                    threads = emptyList(),
+                    pinnedAt = null,
+                ),
+                onSave = {},
+                onCancel = {},
+            )
+        }
+        assertEverythingIsLabeled("correcting an entry")
+    }
+
     @Test
     fun savingADocumentLabelsEverything() {
         compose.show { AddDocumentScreen(onSave = {}, onCancel = {}) }
@@ -2146,6 +2171,7 @@ class ScreenReaderTest {
                     medicationName = "Lisinopril",
                 ),
                 onEditDate = {},
+                onCorrect = {},
                 onOpenPerson = {},
                 onOpenThread = {},
                 onOpenChapter = {},
@@ -2187,6 +2213,7 @@ class ScreenReaderTest {
                     medicationName = null,
                 ),
                 onEditDate = {},
+                onCorrect = {},
                 onOpenPerson = {},
                 onOpenThread = {},
                 onOpenChapter = {},

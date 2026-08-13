@@ -568,6 +568,8 @@
   "emergency_card.title": "Tarjeta de emergencia",
   "entry.belongs": "Dónde encaja esto",
   "entry.chapter": "Capítulo",
+  "entry.correct": "Cambiar lo que dice",
+  "entry.correct.lead": "Corrija una palabra, un nombre o algo que la aplicación entendió mal.",
   "entry.date.change": "Cambiar",
   "entry.date.month": "En algún momento de este mes",
   "entry.date.unknown": "No estoy seguro de cuándo",

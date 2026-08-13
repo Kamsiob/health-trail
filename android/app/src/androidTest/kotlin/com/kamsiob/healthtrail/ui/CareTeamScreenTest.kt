@@ -4,6 +4,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -46,7 +47,7 @@ class CareTeamScreenTest {
         id = id,
         displayName = name,
         roleLabel = "Nurse",
-        phone = "555 0100",
+        phone = "(555) 555-0100",
         email = null,
         notes = null,
     )
@@ -124,5 +125,26 @@ class CareTeamScreenTest {
 
         compose.onNodeWithTag(CareTeamTags.person("p1")).assertIsDisplayed()
         compose.onNodeWithTag(CareTeamTags.person("p8")).assertDoesNotExist()
+    }
+
+    /**
+     * **A real United States number is fourteen characters and it must not cost
+     * the person their name.** The owner's words on #361: it needs to fit. The
+     * fixture used "555 0142", seven characters, which hid for the life of this
+     * screen that the trailing control was unweighted and that the number was
+     * inside the button. Both are fixed; this is what stops them coming back.
+     */
+    @Test
+    fun aFullUnitedStatesNumberDoesNotCostThePersonTheirName() {
+        show(listOf(person("p1", "Marguerite Boateng")))
+
+        compose.onNodeWithText("Marguerite Boateng").assertIsDisplayed()
+        // The number is on the row's own line now, not inside the action.
+        compose.onNodeWithText("(555) 555-0100", substring = true).assertIsDisplayed()
+        compose.onNodeWithText(strings["careteam.call"]).assertIsDisplayed()
+        // And a reader still hears whose number it is.
+        compose.onNodeWithContentDescription(
+            strings("careteam.call.number", "number" to "(555) 555-0100"),
+        ).assertExists()
     }
 }

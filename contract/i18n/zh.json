@@ -568,6 +568,8 @@
   "emergency_card.title": "急救卡",
   "entry.belongs": "这条属于哪里",
   "entry.chapter": "篇章",
+  "entry.correct": "修改内容",
+  "entry.correct.lead": "改一个词、一个名字，或者应用听错的任何内容。",
   "entry.date.change": "修改",
   "entry.date.month": "这个月的某个时候",
   "entry.date.unknown": "不确定是什么时候",

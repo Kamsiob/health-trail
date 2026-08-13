@@ -147,6 +147,8 @@ import com.kamsiob.healthtrail.ui.screens.parseAmountToMinor
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyDraft
+import com.kamsiob.healthtrail.ui.screens.CorrectEntryScreen
+import com.kamsiob.healthtrail.ui.screens.EntryCorrection
 import com.kamsiob.healthtrail.ui.screens.PersonDraft
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.TrailScreen
@@ -287,6 +289,12 @@ fun NotebookShell(
      */
     var suggestedCards by remember { mutableStateOf<Set<String>>(emptySet()) }
     var savingPerson by remember { mutableStateOf<PersonDraft?>(null) }
+
+    /** The entry whose words are being corrected, and what to write. #368. */
+    var correctingEntry by remember { mutableStateOf<Repository.TrailEntry?>(null) }
+    var savingEntryCorrection by remember {
+        mutableStateOf<Pair<String, EntryCorrection>?>(null)
+    }
     // The person or medication being corrected. Null means the form, when
     // open, is adding rather than editing.
     var editingPerson by remember { mutableStateOf<Repository.Person?>(null) }
@@ -3281,6 +3289,7 @@ fun NotebookShell(
                         else -> "section.back"
                     },
                     onEditDate = { editingDate = detail.entry },
+                    onCorrect = { correctingEntry = detail.entry },
                     onSetPinned = { pinned -> pinningEntry = detail.entry.id to pinned },
                     onOpenPerson = { openEntry = null; openPerson = it },
                     onOpenThread = { thread ->
@@ -3489,6 +3498,38 @@ fun NotebookShell(
             LaunchedEffect(asked) {
                 repository.markQuestionAsked(asked.id, Edtf.day(LocalDate.now()))
                 markingAsked = null
+                revision += 1
+            }
+        }
+
+        // **Correcting an entry, over whatever it was opened from.** #368, and
+        // it is the last of the app's records to get a correction path.
+        correctingEntry?.let { entry ->
+            CorrectEntryScreen(
+                entry = entry,
+                onSave = { correction ->
+                    savingEntryCorrection = entry.id to correction
+                    correctingEntry = null
+                },
+                onCancel = { correctingEntry = null },
+            )
+        }
+
+        val entryCorrection = savingEntryCorrection
+        if (entryCorrection != null) {
+            LaunchedEffect(entryCorrection) {
+                val (entryId, correction) = entryCorrection
+                // bidi-ok: on its way to the database. Isolate marks here would
+                // be stored as part of what the person typed.
+                repository.updateEntry(
+                    entryId = entryId,
+                    // bidi-ok: a correction on its way to the database. Isolate
+                    // marks here would be stored as part of what the person typed.
+                    title = correction.title.trim(),
+                    // bidi-ok: the same, and it is the note itself.
+                    body = correction.body.trim(),
+                )
+                savingEntryCorrection = null
                 revision += 1
             }
         }

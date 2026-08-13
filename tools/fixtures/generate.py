@@ -1370,8 +1370,8 @@ class Generator:
         # **Family first, then the facility.** The order is the order somebody
         # would work down it, and `sort_index` is what holds it.
         contacts = [
-            ("Me", "555 0121", "Daughter, has the power of attorney"),
-            ("Danny", "555 0134", "Son, lives out of state"),
+            ("Me", "(555) 555-0121", "Daughter, has the power of attorney"),
+            ("Danny", "(555) 555-0134", "Son, lives out of state"),
         ]
         for index, (name, phone, relationship) in enumerate(contacts):
             self.row(
@@ -2265,14 +2265,14 @@ ORIGINALS = [
 ]
 
 PEOPLE = [
-    ("Angela Reyes", "Charge nurse, day shift", "555 0142", "Days, 7 to 3. Ask for her by name."),
-    ("Marcus Bell", "Social worker", "555 0187", None),
-    ("Dr. Priya Raman", "Attending physician", "555 0110", "Rounds Tuesdays."),
+    ("Angela Reyes", "Charge nurse, day shift", "(555) 555-0142", "Days, 7 to 3. Ask for her by name."),
+    ("Marcus Bell", "Social worker", "(555) 555-0187", None),
+    ("Dr. Priya Raman", "Attending physician", "(555) 555-0110", "Rounds Tuesdays."),
     ("Tonya K.", "Aide, evenings", None, "The one who actually calls back."),
-    ("Wesley Obi", "Director of nursing", "555 0100", None),
-    ("Sharon Delacroix", "Billing office", "555 0166", None),
-    ("Ruth Ann Pierce", "Physical therapy", "555 0173", None),
-    ("Jerome Whitfield", "Ombudsman", "555 0199", "County office. Not facility staff."),
+    ("Wesley Obi", "Director of nursing", "(555) 555-0100", None),
+    ("Sharon Delacroix", "Billing office", "(555) 555-0166", None),
+    ("Ruth Ann Pierce", "Physical therapy", "(555) 555-0173", None),
+    ("Jerome Whitfield", "Ombudsman", "(555) 555-0199", "County office. Not facility staff."),
 ]
 
 # The people on the other end of a long process, who are not the care team.
@@ -2295,13 +2295,13 @@ PEOPLE = [
 PROCESSES_APART = 9
 
 PROJECT_CONTACTS = [
-    ("Denise Alvarado", "Intake caseworker", "555 0114"),
-    ("R. Boyd", "Intake supervisor", "555 0117"),
-    ("Colleen Marsh", "Records office", "555 0128"),
-    ("Hector Salas", "Housing coordinator", "555 0133"),
-    ("Priya Nandakumar", "Benefits adviser", "555 0139"),
+    ("Denise Alvarado", "Intake caseworker", "(555) 555-0114"),
+    ("R. Boyd", "Intake supervisor", "(555) 555-0117"),
+    ("Colleen Marsh", "Records office", "(555) 555-0128"),
+    ("Hector Salas", "Housing coordinator", "(555) 555-0133"),
+    ("Priya Nandakumar", "Benefits adviser", "(555) 555-0139"),
     # The shared one, and the last on purpose: see below.
-    ("Marisol Vega", "Appeals clerk", "555 0121"),
+    ("Marisol Vega", "Appeals clerk", "(555) 555-0121"),
 ]
 
 # Which projects the shared contact turns up in. Two, and only two: she is the
@@ -2312,7 +2312,7 @@ SHARED_CONTACT_PROJECTS = (0, 1)
 # Somebody who left. A care team that only ever grows is not a care team that
 # has been used for five years.
 ARCHIVED_PEOPLE = [
-    ("Nadine Cross", "Charge nurse, day shift", "555 0142", "Left in the spring."),
+    ("Nadine Cross", "Charge nurse, day shift", "(555) 555-0142", "Left in the spring."),
 ]
 
 APPOINTMENTS = [

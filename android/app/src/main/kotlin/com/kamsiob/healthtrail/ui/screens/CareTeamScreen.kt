@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -234,8 +236,16 @@ private fun PersonRow(
     // worth taking about a person from a list, and it saves opening them first.
     DenseRow(
         title = heading.orEmpty(),
+        // **The number is on the row's own line, not inside the button.** A
+        // real United States number is "(555) 123-4567", fourteen characters
+        // before the word Call, and a button carrying it took the row from the
+        // name beside it however it was weighted. The fixture's "555 0121" is
+        // seven and hid that for the life of this screen. #361, owner's words:
+        // it needs to fit. On the line it wraps like any other detail, and the
+        // button says the verb, which is what law 2 gives an action.
         subtitle = listOfNotNull(
             role.takeIf { it != heading },
+            phone?.takeIf { it != heading },
             person.notes?.takeIf { it.isNotBlank() },
         ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
         leading = {
@@ -246,13 +256,17 @@ private fun PersonRow(
         trailingContent = if (phone != null) {
             {
                 QuietButton(
-                    label = if (heading == phone) {
-                        strings["careteam.call"]
-                    } else {
-                        strings("careteam.call.number", "number" to phone)
-                    },
+                    label = strings["careteam.call"],
                     onClick = onCall,
-                    modifier = Modifier.testTag(CareTeamTags.call(person.id)),
+                    // **A reader still hears whose number it is.** The word
+                    // alone on fifteen rows would be fifteen controls called
+                    // "Call", which is the ambiguity 5.12 exists to prevent.
+                    modifier = Modifier
+                        .semantics {
+                            contentDescription =
+                                strings("careteam.call.number", "number" to phone)
+                        }
+                        .testTag(CareTeamTags.call(person.id)),
                 )
             }
         } else {

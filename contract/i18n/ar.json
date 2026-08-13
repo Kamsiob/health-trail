@@ -568,6 +568,8 @@
   "emergency_card.title": "بطاقة الطوارئ",
   "entry.belongs": "أين يقع هذا",
   "entry.chapter": "فصل",
+  "entry.correct": "تغيير ما يقوله",
+  "entry.correct.lead": "صحح كلمة أو اسمًا أو أي شيء سمعه التطبيق خطأ.",
   "entry.date.change": "تغيير",
   "entry.date.month": "في وقت ما هذا الشهر",
   "entry.date.unknown": "لست متأكدًا من الوقت",

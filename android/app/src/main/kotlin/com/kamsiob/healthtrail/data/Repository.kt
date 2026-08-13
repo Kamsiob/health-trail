@@ -632,6 +632,40 @@ class Repository private constructor(
             )
         }
 
+    /**
+     * Corrects what an entry says. #368.
+     *
+     * **The most created thing in the app was the only one that could not be
+     * corrected.** Person, medication, bill, appointment, document, milestone,
+     * incident and project step all had an update; an entry had
+     * `updateEntryOccurred` and nothing else, so a note typed one handed in a
+     * corridor kept its typo forever and the only remedy was removing the
+     * record of the call and retyping it from memory, losing its threads, its
+     * chapter, its incident link and the moment it was written.
+     *
+     * **Four mock users found this independently**, and the owner's own words
+     * were that things should be editable after the fact. `Repository`'s own
+     * comment on an incident's follow-ups already claimed it: "Those are
+     * entries, and they are corrected where entries are corrected."
+     *
+     * **Only the words.** The date has its own path, per rule 17, and the
+     * links this entry has are changed where they were made. Blank is a real
+     * answer for both columns: a title somebody wants gone should go.
+     */
+    suspend fun updateEntry(entryId: String, title: String?, body: String?) =
+        withContext(Dispatchers.IO) {
+            db().database.write(
+                "UPDATE entry SET title = ?, body = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(
+                    title?.ifBlank { null },
+                    body?.ifBlank { null },
+                    System.currentTimeMillis(),
+                    entryId,
+                ),
+            )
+        }
+
     // -- measures and measurements -----------------------------------------
 
     /** A thing this notebook tracks over time. */

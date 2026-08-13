@@ -568,6 +568,8 @@
   "emergency_card.title": "Emergency card",
   "entry.belongs": "Where this sits",
   "entry.chapter": "Chapter",
+  "entry.correct": "Change what this says",
+  "entry.correct.lead": "Fix a word, a name, or anything the app heard wrong.",
   "entry.date.change": "Change",
   "entry.date.month": "Sometime this month",
   "entry.date.unknown": "Not sure when",

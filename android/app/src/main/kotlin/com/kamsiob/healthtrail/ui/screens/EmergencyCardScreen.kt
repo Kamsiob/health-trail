@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -330,8 +332,15 @@ private fun ContactRow(
     // three rows instead of nine lines.
     DenseRow(
         title = Bidi.isolate(contact.displayName),
+        // **The number is on the line, where a stranger can read it out.** It
+        // was inside the Call button, and a real United States number is
+        // "(555) 123-4567": fourteen characters plus the word Call, on the one
+        // screen somebody else reads under pressure and possibly cannot tap,
+        // because the phone may be locked or theirs. On the line it wraps and
+        // it can be read aloud. #361.
         subtitle = listOfNotNull(
             relationship,
+            phone,
             strings["careteam.no_phone"].takeIf { phone == null },
         ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
         leading = {
@@ -343,9 +352,14 @@ private fun ContactRow(
         trailingContent = if (phone != null) {
             {
                 QuietButton(
-                    label = strings("careteam.call.number", "number" to phone),
+                    label = strings["careteam.call"],
                     onClick = onCall,
-                    modifier = Modifier.testTag(EmergencyTags.call(contact.id)),
+                    modifier = Modifier
+                        .semantics {
+                            contentDescription =
+                                strings("careteam.call.number", "number" to phone)
+                        }
+                        .testTag(EmergencyTags.call(contact.id)),
                 )
             }
         } else {
