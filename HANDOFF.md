@@ -58,6 +58,11 @@
 - **`setPersonArchived`**, so retiring somebody stops meaning erasing them. `archived_at` had five readers and no writer.
 - **`updateSubject` and `CorrectSubjectScreen`**, reached from a new More door. The name printed on everything shared could never be corrected.
 
+### A fix of mine that was wrong, corrected the same night
+**`imePadding` on `SectionScaffold` was a regression and is reverted.** It fixed the keyboard covering the field on Export, Restore and the change of situation, and it broke three tests in the shape `docs/TRAPS.md` names: with the keyboard up the content area shrinks, the scaffold's pinned footer leaves the viewport, and **a click at a node's center outside the viewport does nothing at all**, which reads as a save that did not fire. `ProjectStepsScreenTest`, `ProjectRoadScreenTest` and `PassphraseMaskingTest` all failed with "expected the words but was null".
+
+**The keyboard defect is real and still open on #371.** The fix belongs on the three screens that own their fields, not on the container all fifty five sit in. **This is why the full suite is run before believing a layout change**: all three of those screens looked correct in isolation.
+
 ### BLOCKED, and it stops several items below
 **`NotebookShell` has hit the JVM's 64KB method limit.** `DECISIONS.md` B6. One more overlay tips the build over with `MethodTooLargeException`, so **no new full-screen surface can be added to the shell** until its overlays are extracted in groups. That blocks the chapter rename, the question and instruction corrections, and anything else needing a new screen. **Changing an existing screen is unaffected**, so the list below is still workable apart from the items that need a new surface.
 
