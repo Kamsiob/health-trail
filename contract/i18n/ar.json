@@ -335,6 +335,8 @@
   "bill.where": "من أين جاءت",
   "capture.about.medication": "عمّ يدور هذا",
   "capture.about.medication.aside": "فقط إذا كان يتعلق بأحد هذه.",
+  "capture.about.project": "جزء من أي ملف",
+  "capture.about.project.aside": "لكي يظهر في ذلك الملف كآخر ما استجد.",
   "capture.back": "رجوع",
   "capture.button.description": "أضف شيئًا إلى الدفتر",
   "capture.call": "تدوين مكالمة",

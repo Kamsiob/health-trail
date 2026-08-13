@@ -4263,6 +4263,11 @@ fun NotebookShell(
                 threads = threadsForFiling,
                 people = peopleForCapture,
                 medications = medications,
+                // **So an entry captured anywhere can reach a project.** The
+                // link table has held it since Phase 1 and the only writer was
+                // the sheet inside a project, so a call taken in a corridor
+                // about the appeal never reached the appeal. #303.
+                projects = projects,
                 state = captureDraft,
                 onStateChange = { captureDraft = it },
                 onSave = { draft ->
@@ -4413,13 +4418,17 @@ fun NotebookShell(
                     // the five other kinds wrote `entry_person`, which made this
                     // one an exception nobody had decided on.
                     draft.personId?.let { repository.linkEntryToPerson(questionEntryId, it) }
+                    // **And the project, when the entry belongs to one.** #303.
+                    draft.projectId?.let {
+                        repository.linkEntryToProject(questionEntryId, it)
+                    }
                 } else if (subject != null && draft.kind == CaptureKind.INCIDENT) {
                     // **An incident is two rows for the same reason a question
                     // is.** `MASTER_SPEC.md` 4.7 makes it a thread from first
                     // report to resolution, and one written only as an entry
                     // can never be escalated, resolved, or exported as a
                     // thread. It was an entry with a scary kind until now.
-                    repository.reportIncident(
+                    val (_, incidentEntryId) = repository.reportIncident(
                         subjectId = subject.id,
                         title = draft.who,
                         description = draft.note,
@@ -4428,6 +4437,14 @@ fun NotebookShell(
                         isUnfiled = threads.isNotEmpty() && draft.threadId == null,
                         chapterId = repository.currentChapterId(subject.id),
                     )
+                    // **The chip is on this kind too, so this path honors it.**
+                    // A control that appears and does nothing reads as broken,
+                    // rule 16, and something going wrong during a piece of work
+                    // is exactly the entry somebody wants on that project's own
+                    // card afterward. #303.
+                    draft.projectId?.let {
+                        repository.linkEntryToProject(incidentEntryId, it)
+                    }
                 } else if (subject != null) {
                     val entryId = repository.createEntry(
                         subjectId = subject.id,
@@ -4457,6 +4474,12 @@ fun NotebookShell(
                     // involving them" true rather than a promise, and
                     // `entry_person` had no writer at all until now.
                     draft.personId?.let { repository.linkEntryToPerson(entryId, it) }
+                    // **The piece of work it belongs to.** `latestWordFor` has
+                    // read this link since Phase 1 and the only thing that ever
+                    // wrote one was the sheet inside a project, so a call taken
+                    // in a corridor about the appeal reached the trail and
+                    // never reached the appeal. #303.
+                    draft.projectId?.let { repository.linkEntryToProject(entryId, it) }
                     // **The incident it was opened from, carried forward.** The
                     // person is looking at the thread; asking which one would
                     // be the app not paying attention. Part Two.

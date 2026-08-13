@@ -335,6 +335,8 @@
   "bill.where": "Where this came from",
   "capture.about.medication": "What it is about",
   "capture.about.medication.aside": "Only if it is about one of these.",
+  "capture.about.project": "Part of which project",
+  "capture.about.project.aside": "So it turns up on that project as the latest word.",
   "capture.back": "Back",
   "capture.button.description": "Add something to the notebook",
   "capture.call": "Log a call",

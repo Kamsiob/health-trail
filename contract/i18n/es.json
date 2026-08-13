@@ -335,6 +335,8 @@
   "bill.where": "De dónde viene",
   "capture.about.medication": "Sobre qué es",
   "capture.about.medication.aside": "Solo si se trata de uno de estos.",
+  "capture.about.project": "Parte de qué gestión",
+  "capture.about.project.aside": "Así aparece en esa gestión como lo último.",
   "capture.back": "Atrás",
   "capture.button.description": "Añadir algo al cuaderno",
   "capture.call": "Anotar una llamada",

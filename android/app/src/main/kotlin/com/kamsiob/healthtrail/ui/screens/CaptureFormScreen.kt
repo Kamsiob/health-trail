@@ -56,6 +56,8 @@ object CaptureFormTags {
     const val WHO = "capture_form_who"
     fun person(id: String) = "capture_form_person_$id"
     fun medication(id: String) = "capture_form_medication_$id"
+    fun project(id: String) = "capture_form_project_$id"
+    const val MORE_PROJECTS = "capture_form_more_projects"
     const val NOTE = "capture_form_note"
     const val SAVE = "capture_form_save"
     const val CANCEL = "capture_form_cancel"
@@ -121,6 +123,13 @@ data class CaptureFormState(
      * ways of pointing at a medication and none of them is a chip on this form.
      */
     val medicationId: String? = null,
+    /**
+     * The piece of work this belongs to, when it belongs to one.
+     *
+     * **Any kind but a measurement**, which is a reading about the person
+     * rather than a step in a piece of work. #303.
+     */
+    val projectId: String? = null,
 ) {
     /**
      * Choosing a person, or clearing the one already chosen.
@@ -139,6 +148,10 @@ data class CaptureFormState(
     /** The same, for the medication a question is about. */
     fun toggleMedication(medication: Repository.Medication): CaptureFormState =
         copy(medicationId = if (medicationId == medication.id) null else medication.id)
+
+    /** And for the piece of work it belongs to. #303. */
+    fun toggleProject(project: Repository.Project): CaptureFormState =
+        copy(projectId = if (projectId == project.id) null else project.id)
 
     /** True when there is something in here worth keeping. */
     val isEmpty: Boolean
@@ -165,6 +178,7 @@ data class CaptureFormState(
                         it.threadId ?: "",
                         it.personId ?: "",
                         it.medicationId ?: "",
+                        it.projectId ?: "",
                     )
                 },
                 restore = {
@@ -177,6 +191,7 @@ data class CaptureFormState(
                         threadId = (it[4] as String).takeIf { text -> text.isNotEmpty() },
                         personId = (it[5] as String).takeIf { text -> text.isNotEmpty() },
                         medicationId = (it[6] as String).takeIf { text -> text.isNotEmpty() },
+                        projectId = (it[7] as String).takeIf { text -> text.isNotEmpty() },
                     )
                 },
             )
@@ -199,6 +214,8 @@ data class CaptureDraft(
     val personId: String? = null,
     /** Set when a question was marked as being about a medication. */
     val medicationId: String? = null,
+    /** Set when the entry was marked as belonging to a project. #303. */
+    val projectId: String? = null,
 )
 
 /**
@@ -252,6 +269,17 @@ fun CaptureFormScreen(
      * questions are about something she came off.
      */
     medications: List<Repository.Medication> = emptyList(),
+    /**
+     * The projects underway, so an entry captured anywhere can say which one it
+     * is about.
+     *
+     * **The read path has been built since Phase 1 and nothing outside a
+     * project wrote it.** `latestWordFor` reads the link and `LatestWordCard`
+     * renders it, and the only writer was the log-call sheet inside a project,
+     * so a call taken in a corridor about the appeal could never reach the
+     * appeal. #303, and rule 18 wants it from both ends.
+     */
+    projects: List<Repository.Project> = emptyList(),
     onSave: (CaptureDraft) -> Unit,
     onCancel: () -> Unit,
     /**
@@ -506,8 +534,17 @@ fun CaptureFormScreen(
                 val hasThreads = threads.isNotEmpty()
                 val hasMedications =
                     kind == CaptureKind.QUESTION && medications.isNotEmpty()
+                // **Every kind this form handles, unlike the medication
+                // chips.** A call, a visit, something that went wrong and a
+                // question can all belong to a piece of work. This form is the
+                // four of them, per its own heading: a measurement and a
+                // document are captured elsewhere, so there is no kind to
+                // exclude here. A guard against `MEASUREMENT` was written first
+                // and is a condition that can never be false, which a test
+                // trying to prove it found immediately.
+                val hasProjects = projects.isNotEmpty()
 
-                if (hasThreads || hasMedications) {
+                if (hasThreads || hasMedications || hasProjects) {
                     Disclosure(testTag = CaptureFormTags.MORE) {
                         Column {
                             if (hasThreads) {
@@ -595,6 +632,54 @@ fun CaptureFormScreen(
                                             onClick = { openPicker = OpenPicker.MEDICATIONS },
                                             modifier = Modifier
                                                 .testTag(CaptureFormTags.MORE_MEDICATIONS),
+                                        )
+                                    }
+                                }
+                            }
+
+                            // **Which piece of work this belongs to.** The
+                            // link table has held it since Phase 1, the
+                            // project's own card reads it as the latest word,
+                            // and the only thing that ever wrote one was the
+                            // sheet inside a project: so a call taken in a
+                            // corridor about the appeal reached the trail and
+                            // never reached the appeal. #303.
+                            //
+                            // **Optional like everything else here**, and off
+                            // by default: most of what a person writes down
+                            // belongs to no project at all.
+                            if (hasProjects) {
+                                if (hasThreads || hasMedications) {
+                                    Spacer(Modifier.height(Space.sectionGap))
+                                }
+                                val chosenProject =
+                                    projects.firstOrNull { it.id == state.projectId }
+                                val shownProjects = cappedChips(projects, chosenProject)
+                                ChoiceChipGroup(
+                                    label = strings["capture.about.project"],
+                                    aside = strings["capture.about.project.aside"],
+                                ) {
+                                    shownProjects.forEach { project ->
+                                        ChoiceChip(
+                                            label = Bidi.isolate(project.name),
+                                            selected = state.projectId == project.id,
+                                            onClick = {
+                                                onStateChange(state.toggleProject(project))
+                                            },
+                                            modifier = Modifier.testTag(
+                                                CaptureFormTags.project(project.id),
+                                            ),
+                                        )
+                                    }
+                                    if (projects.size > shownProjects.size) {
+                                        MoreChip(
+                                            label = strings(
+                                                "chips.all",
+                                                "count" to projects.size,
+                                            ),
+                                            onClick = { openPicker = OpenPicker.PROJECTS },
+                                            modifier = Modifier
+                                                .testTag(CaptureFormTags.MORE_PROJECTS),
                                         )
                                     }
                                 }
@@ -727,6 +812,7 @@ fun CaptureFormScreen(
                             // set this and nothing else on the form can
                             // contradict it.
                             medicationId = state.medicationId,
+                            projectId = state.projectId,
                         ),
                     )
                 },
@@ -814,6 +900,17 @@ fun CaptureFormScreen(
             },
             onDismiss = { openPicker = null },
         )
+        OpenPicker.PROJECTS -> ChipPickerSheet(
+            title = strings["capture.about.project"],
+            options = projects.map { PickerOption(id = it.id, label = Bidi.isolate(it.name)) },
+            selectedId = state.projectId,
+            onPick = { option ->
+                openPicker = null
+                projects.firstOrNull { it.id == option.id }
+                    ?.let { onStateChange(state.toggleProject(it)) }
+            },
+            onDismiss = { openPicker = null },
+        )
         null -> Unit
     }
 }
@@ -821,11 +918,11 @@ fun CaptureFormScreen(
 /**
  * Which full set the person opened, if any.
  *
- * Three named cases rather than a boolean per group, so a fourth capped group
- * cannot be added without deciding what happens when two are open at once. The
- * answer is that they never are.
+ * Named cases rather than a boolean per group, so another capped group cannot
+ * be added without deciding what happens when two are open at once. The answer
+ * is that they never are.
  */
-private enum class OpenPicker { PEOPLE, THREADS, MEDICATIONS }
+private enum class OpenPicker { PEOPLE, THREADS, MEDICATIONS, PROJECTS }
 
 /** The catalog key for a rough date answer. */
 /**
