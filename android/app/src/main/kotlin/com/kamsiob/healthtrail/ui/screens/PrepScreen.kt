@@ -116,6 +116,10 @@ fun PrepScreen(
      * still standing on the list they came in with.
      */
     onOpenQuestion: (Repository.Question) -> Unit,
+    onCorrect: () -> Unit,
+    onRemove: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
     /**
      * Writing down something else to ask, from the sheet itself.
      *
@@ -127,10 +131,7 @@ fun PrepScreen(
      * can change rather than a decision made for them.
      */
     onAsk: () -> Unit = {},
-    onCorrect: () -> Unit,
-    onRemove: () -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
+
     backLabelKey: String = "section.back.appointments",
 ) {
     val strings = LocalStrings.current
