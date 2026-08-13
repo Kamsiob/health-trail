@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -69,8 +70,10 @@ fun LogCallSheet(
     val colors = HealthTrail.colors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var who by remember { mutableStateOf("") }
-    var words by remember { mutableStateOf("") }
+    // **A call logged into a sheet that dies with the process is a call
+    // nobody wrote down.** #371 item 7.
+    var who by rememberSaveable { mutableStateOf("") }
+    var words by rememberSaveable { mutableStateOf("") }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,

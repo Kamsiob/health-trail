@@ -145,6 +145,19 @@ data class CaptureFormState(
             copy(personId = person.id, who = person.displayName)
         }
 
+    /**
+     * Who it is about, carried in from a screen that already knew, without
+     * touching a word of what is already here. #371 item 7.
+     *
+     * **Distinct from [togglePerson] on purpose.** Toggling is the person
+     * choosing a chip, so choosing the same one twice means taking it back.
+     * This is context arriving from where they came from, and arriving twice
+     * is not a retraction. Null leaves the draft exactly as it was, because a
+     * screen that does not know who is not saying "nobody".
+     */
+    fun withPerson(person: Repository.Person?): CaptureFormState =
+        if (person == null) this else copy(personId = person.id, who = person.displayName)
+
     /** The same, for the medication a question is about. */
     fun toggleMedication(medication: Repository.Medication): CaptureFormState =
         copy(medicationId = if (medicationId == medication.id) null else medication.id)

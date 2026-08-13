@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +31,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
+import com.kamsiob.healthtrail.ui.components.EdtfSaver
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -75,9 +77,10 @@ fun ProjectDateSheet(
     val colors = HealthTrail.colors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var kind by remember { mutableStateOf("") }
-    var source by remember { mutableStateOf("") }
-    var due by remember { mutableStateOf<Edtf.Date?>(null) }
+    // Survives process death, #371 item 7.
+    var kind by rememberSaveable { mutableStateOf("") }
+    var source by rememberSaveable { mutableStateOf("") }
+    var due by rememberSaveable(stateSaver = EdtfSaver) { mutableStateOf<Edtf.Date?>(null) }
     var picking by remember { mutableStateOf(false) }
 
     ModalBottomSheet(

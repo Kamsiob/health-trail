@@ -129,7 +129,46 @@ data class DocumentDraft(
      * paper exist in somebody's life. Rule 20. #221.
      */
     val category: String = "",
-)
+) {
+    companion object {
+        /**
+         * Saved the same flat way [CaptureFormState] is, and for the same
+         * reason: the bundle is the one place this app's data leaves the
+         * encrypted database, so what goes into it stays short and legible.
+         *
+         * **#371 item 7: the stage survived process death and the draft did
+         * not**, so somebody who was interrupted came back to question three
+         * of an empty form, with two answered questions gone and the form
+         * insisting they were on the last one.
+         *
+         * The picked image is deliberately not carried. It is a content uri
+         * whose permission grant does not outlive the process, so restoring
+         * the string would restore a thumbnail that cannot be read.
+         */
+        val Saver: androidx.compose.runtime.saveable.Saver<DocumentDraft, Any> =
+            androidx.compose.runtime.saveable.listSaver(
+                save = {
+                    listOf(
+                        it.title,
+                        it.originalLocation,
+                        it.received?.canonical ?: "",
+                        it.notes,
+                        it.category,
+                    )
+                },
+                restore = {
+                    DocumentDraft(
+                        title = it[0] as String,
+                        originalLocation = it[1] as String,
+                        received = (it[2] as String).takeIf(String::isNotEmpty)
+                            ?.let(Edtf::parse),
+                        notes = it[3] as String,
+                        category = it[4] as String,
+                    )
+                },
+            )
+    }
+}
 
 /**
  * Saving a document.
@@ -186,7 +225,7 @@ fun AddDocumentScreen(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var draft by remember(existing?.id) {
+    var draft by rememberSaveable(existing?.id, stateSaver = DocumentDraft.Saver) {
         mutableStateOf(
             DocumentDraft(
                 // bidi-ok: the value inside a field being edited. Isolate marks here would become characters the person has to delete.

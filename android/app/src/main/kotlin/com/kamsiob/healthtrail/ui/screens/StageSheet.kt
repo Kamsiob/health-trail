@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +28,7 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
+import com.kamsiob.healthtrail.ui.components.EdtfSaver
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -70,7 +72,12 @@ fun StageSheet(
     val colors = HealthTrail.colors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var on by remember { mutableStateOf(Edtf.day(LocalDate.now())) }
+    // Survives process death, #371 item 7. Held as the date it is rather
+    // than as a nullable, so nothing downstream has to guess a default.
+    var chosen by rememberSaveable(stateSaver = EdtfSaver) {
+        mutableStateOf<Edtf.Date?>(Edtf.day(LocalDate.now()))
+    }
+    val on = chosen ?: Edtf.day(LocalDate.now())
     var picking by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
@@ -159,7 +166,7 @@ fun StageSheet(
     if (picking) {
         DatePickerSheet(
             initial = on,
-            onPick = { on = it; picking = false },
+            onPick = { chosen = it; picking = false },
             onDismiss = { picking = false },
             // A stage is reached in the past or today, never ahead: the road
             // records where the project got to, not where it is going.

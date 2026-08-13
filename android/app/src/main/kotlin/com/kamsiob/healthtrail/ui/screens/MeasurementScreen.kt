@@ -35,6 +35,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.EdtfSaver
 import java.time.LocalDate
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -498,12 +499,18 @@ private fun RecordValue(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var raw by remember { mutableStateOf("") }
-    var unit by remember { mutableStateOf(units.firstOrNull()) }
-    var rough by remember { mutableStateOf<RoughWhen?>(RoughWhen.TODAY) }
-    var picked by remember { mutableStateOf<Edtf.Date?>(null) }
+    // **A reading taken at a bedside survives the process.** #371 item 7: a
+    // number read off a cuff, a unit, a rough when and a note all lived in a
+    // plain remember, so an interruption emptied the form and the reading was
+    // gone with it.
+    var raw by rememberSaveable { mutableStateOf("") }
+    var unit by rememberSaveable { mutableStateOf(units.firstOrNull()) }
+    var rough by rememberSaveable { mutableStateOf<RoughWhen?>(RoughWhen.TODAY) }
+    var picked by rememberSaveable(stateSaver = EdtfSaver) {
+        mutableStateOf<Edtf.Date?>(null)
+    }
     var pickerOpen by remember { mutableStateOf(false) }
-    var note by remember { mutableStateOf("") }
+    var note by rememberSaveable { mutableStateOf("") }
 
     Surface(modifier = Modifier.fillMaxSize(), color = colors.paper) {
         Column(modifier = Modifier.fillMaxSize().systemBarsPadding().imePadding()) {

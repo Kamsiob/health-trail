@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -98,11 +99,14 @@ fun SetupScreen(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var name by remember { mutableStateOf("") }
-    var relationship by remember { mutableStateOf("") }
-    var where by remember { mutableStateOf("") }
-    var phoneName by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
+    // **Setup is the one form somebody fills in while doing something
+    // else**, and losing it means the app greeting them as a stranger for
+    // the second time. #371 item 7.
+    var name by rememberSaveable { mutableStateOf("") }
+    var relationship by rememberSaveable { mutableStateOf("") }
+    var where by rememberSaveable { mutableStateOf("") }
+    var phoneName by rememberSaveable { mutableStateOf("") }
+    var phoneNumber by rememberSaveable { mutableStateOf("") }
 
     Surface(
         modifier = Modifier

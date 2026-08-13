@@ -3096,11 +3096,12 @@ fun NotebookShell(
                     // #46, so a question written in the room lands on this
                     // sheet rather than on every sheet. A prefill the person
                     // can change, never a decision made for them.
+                    // **And it carries the name in without destroying a half
+                    // written note**, which is what replacing the whole state
+                    // would have done. #371 item 7.
                     onAsk = {
-                        val with = people.firstOrNull { it.id == sheet.appointment.personId }
-                        captureDraft = CaptureFormState(
-                            personId = with?.id,
-                            who = with?.displayName.orEmpty(),
+                        captureDraft = captureDraft.withPerson(
+                            people.firstOrNull { it.id == sheet.appointment.personId },
                         )
                         capturing = CaptureKind.QUESTION
                     },
@@ -4274,7 +4275,8 @@ fun NotebookShell(
                 }
                 recording = null
                 revision += 1
-                destination = Destination.NOTEBOOK
+                // Recording a reading leaves the person where they were too,
+                // for the same reason. #371 item 7.
             }
         }
 
@@ -4392,11 +4394,14 @@ fun NotebookShell(
                 saving = null
                 addingToIncident = null
                 revision += 1
-                // **Stays where they were when the capture belonged to an
-                // incident.** Being thrown back to the notebook after adding a
-                // call to a thread is losing the person's place in the one
-                // screen they were reading.
-                if (!incidentsOpen) destination = Destination.NOTEBOOK
+                // **Stays where they were, always.** #371 item 7: this used to
+                // move the person to the Notebook after every save except one,
+                // so writing a note from Today, from Projects, or from More
+                // ended somewhere they had not asked to be, and the screen they
+                // were reading was gone. Saving is the end of the writing, not
+                // a reason to go anywhere. The incident case was already
+                // carved out by hand, which was the same rule discovered once
+                // and applied to one caller.
             }
         }
     }
