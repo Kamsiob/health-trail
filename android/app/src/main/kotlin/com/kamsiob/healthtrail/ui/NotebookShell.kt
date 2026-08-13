@@ -3117,6 +3117,10 @@ fun NotebookShell(
             PersonScreen(
                 person = person,
                 entries = personEntries,
+                // **The other end of "who it is with", rule 18**, and it costs
+                // no query: every appointment is loaded for its own section.
+                appointments = appointments.filter { it.personId == person.id },
+                onOpenAppointment = { openPerson = null; openPrepFor = it.id },
                 onCall = { number -> dial(context, number) },
                 onSetPinned = { pinned -> pinningPerson = person.id to pinned },
                 onSetArchived = { archived -> archivingPerson = person.id to archived },
@@ -3384,6 +3388,12 @@ fun NotebookShell(
         if (addingPerson) {
             AddPersonScreen(
                 roleSuggestions = roleSuggestions,
+                // **Derived rather than queried.** Every person is loaded and
+                // each carries where they work, so a reader and a state
+                // variable would answer a question the list in hand already
+                // answers, and both would be bytecode inside this composable.
+                // B6, and it fits now that the restore flow has moved out.
+                organizations = people.mapNotNull { it.organizationName }.distinct(),
                 existing = editingPerson,
                 onSave = { draft ->
                     addingPerson = false

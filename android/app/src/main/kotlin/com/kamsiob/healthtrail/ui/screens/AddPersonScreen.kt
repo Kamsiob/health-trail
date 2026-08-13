@@ -48,6 +48,7 @@ object AddPersonTags {
     const val ROLE = "add_person_role"
     fun suggestion(role: String) = "add_person_role_" + role.lowercase().replace(' ', '_')
     const val WHERE = "add_person_where"
+    fun place(name: String) = "add_person_place_" + name.lowercase().replace(' ', '_')
     const val PHONE = "add_person_phone"
     const val NOTES = "add_person_notes"
     const val SAVE = "add_person_save"
@@ -131,6 +132,15 @@ fun AddPersonScreen(
      * told they are adding a person.
      */
     existing: Repository.Person? = null,
+    /**
+     * Places somebody on this care team already works, offered as chips.
+     *
+     * **A family deals with the same three or four for months**, and typing
+     * "Maplewood Care Center" for the eleventh person is the app asking
+     * somebody to do its remembering. Empty on a notebook where nobody has one,
+     * and then the field is simply a field. #353.
+     */
+    organizations: List<String> = emptyList(),
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -280,6 +290,31 @@ fun AddPersonScreen(
                 // common case in home care and in a hospital, tapping a chip
                 // only fills the field, and what it filled can be edited or
                 // cleared.
+                // The places already on this care team, offered the same way
+                // the roles are: tapping one fills the field, and what it
+                // filled can be edited or cleared like anything else typed.
+                if (organizations.isNotEmpty()) {
+                    Spacer(Modifier.height(Space.sectionGap))
+                    GroupHeaderText(label = strings["careteam.add.where.known"])
+                    Spacer(Modifier.height(Space.headerGap))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(Space.s),
+                        verticalArrangement = Arrangement.spacedBy(Space.s),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        organizations.forEach { place ->
+                            ChoiceChip(
+                                label = Bidi.isolate(place),
+                                selected = where.equals(place, ignoreCase = true),
+                                onClick = {
+                                    where = if (where.equals(place, ignoreCase = true)) "" else place
+                                },
+                                modifier = Modifier.testTag(AddPersonTags.place(place)),
+                            )
+                        }
+                    }
+                }
+
                 if (roleSuggestions.isNotEmpty()) {
                     Spacer(Modifier.height(Space.sectionGap))
                     GroupHeaderText(label = strings["careteam.add.role.suggestions"])

@@ -20,6 +20,8 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.DenseRow
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -36,6 +38,7 @@ object PersonTags {
     const val PIN = "person_pin"
     const val ARCHIVE = "person_archive"
     const val CAPTURE = "person_capture"
+    fun appointment(id: String) = "person_appointment_$id"
     const val REMOVE = "person_remove"
     fun entry(id: String) = "person_entry_$id"
 }
@@ -111,6 +114,18 @@ fun PersonScreen(
     onOpenEntry: (Repository.TrailEntry) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Every appointment this person is on, soonest first.
+     *
+     * **The other end of "who it is with", per rule 18**, and it could not be
+     * asked until `appointment.person_id` gained a writer on 2026-08-13: an
+     * appointment knew nobody, so this screen had nothing to say back. "When am
+     * I next seeing the charge nurse" is a question this notebook holds the
+     * answer to. #371.
+     */
+    appointments: List<Repository.Appointment> = emptyList(),
+    onOpenAppointment: (Repository.Appointment) -> Unit = {},
+
     backLabelKey: String = "section.back",
 ) {
     val strings = LocalStrings.current
@@ -195,6 +210,34 @@ fun PersonScreen(
                 modifier = Modifier.testTag(PersonTags.EDIT),
             )
             Spacer(Modifier.height(Space.sectionGap))
+        }
+
+        // **When you are seeing them, above what was said**, because it is
+        // ahead rather than behind: somebody opening a person's screen the day
+        // before a review is looking for the review.
+        if (appointments.isNotEmpty()) {
+            item {
+                GroupHeader(labelKey = "person.appointments")
+                Spacer(Modifier.height(Space.headerGap))
+            }
+            item(key = "appointments") {
+                GroupedSurface {
+                    appointments.forEachIndexed { index, appointment ->
+                        DenseRow(
+                            title = Bidi.isolate(appointment.title),
+                            subtitle = appointment.scheduledEdtf
+                                ?.takeIf { it.isNotBlank() }
+                                ?.let { EventDateText.render(strings, it) },
+                            chevron = true,
+                            divider = index < appointments.lastIndex,
+                            onClick = { onOpenAppointment(appointment) },
+                            clickLabel = strings["open.action"],
+                            modifier = Modifier.testTag(PersonTags.appointment(appointment.id)),
+                        )
+                    }
+                }
+                Spacer(Modifier.height(Space.sectionGap))
+            }
         }
 
         item {
