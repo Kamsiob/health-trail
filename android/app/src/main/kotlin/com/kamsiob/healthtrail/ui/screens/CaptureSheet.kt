@@ -28,22 +28,16 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
-object CaptureTags {
-    const val SHEET = "capture_sheet"
-    fun option(kind: CaptureKind) = "capture_option_${kind.name.lowercase()}"
-}
-
-/**
- * The six things a person can write down.
- *
- * The order is the order in `MASTER_SPEC.md` section 4.2 and it does not change,
- * because someone reaching for this while a nurse is still on the phone is
- * reaching by position rather than by reading.
- */
-enum class CaptureKind { CALL, VISIT, INCIDENT, MEASUREMENT, QUESTION, DOCUMENT }
-
 /**
  * The capture sheet, which is the only way data enters this app.
+ *
+ * **FROZEN on 2026-08-13**, `docs/REMOVAL-LEDGER.md`. It is superseded by the
+ * capture bloom, which is what grid screen 04 always drew: six labeled choices
+ * rising from the button itself over a dimmed screen. **Never called, never
+ * extended, never fixed and never translated.** What it says below about the
+ * expressive spring and about the person choosing what happened rather than
+ * where it goes is still true of the live path, which is why it is kept rather
+ * than deleted.
  *
  * **The person chooses what happened, never where it goes.** Each of the six
  * files itself into the right section. Anything that cannot be categorized lands

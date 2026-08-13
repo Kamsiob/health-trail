@@ -74,7 +74,6 @@ import androidx.compose.runtime.setValue
 import com.kamsiob.healthtrail.ui.screens.CaptureFormState
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
-import com.kamsiob.healthtrail.ui.screens.CaptureSheet
 import com.kamsiob.healthtrail.ui.screens.DisclaimerScreen
 import com.kamsiob.healthtrail.ui.screens.Emphasis
 import com.kamsiob.healthtrail.ui.screens.MeasurementScreen
@@ -1070,12 +1069,6 @@ class ScreenReaderTest {
             NotebookScreen(sections = rows, onOpen = {}, waiting = 3, onOpenUnfiled = {})
         }
         assertEverythingIsLabeled("notebook table of contents")
-    }
-
-    @Test
-    fun theCaptureSheetLabelsEverything() {
-        compose.show { CaptureSheet(onChoose = {}, onDismiss = {}) }
-        assertEverythingIsLabeled("capture sheet")
     }
 
     @Test

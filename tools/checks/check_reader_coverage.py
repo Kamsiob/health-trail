@@ -41,6 +41,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCREENS = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui/screens"
+LEDGER = ROOT / "docs/REMOVAL-LEDGER.md"
 TEST = (
     ROOT
     / "android/app/src/androidTest/kotlin/com/kamsiob/healthtrail/ui/ScreenReaderTest.kt"
@@ -60,12 +61,35 @@ EXEMPT = {
 }
 
 
+def frozen_files() -> set[str]:
+    """The repository-relative paths `docs/REMOVAL-LEDGER.md` calls frozen.
+
+    **Read from the ledger rather than listed here**, per D133, and the same
+    parsing `check_dead_gestures.py` already does. A frozen screen is never
+    called, so nothing can reach it to have its labels read, and requiring a
+    walk of one would mean keeping a test for a screen nobody can open.
+    """
+    if not LEDGER.is_file():
+        return set()
+    found = set()
+    for line in LEDGER.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) < 4 or "frozen" not in cells[-1].lower():
+            continue
+        for name in re.findall(r"`([^`]+\.kt)`", cells[0]):
+            found.add(name)
+    return found
+
+
 def main() -> int:
     if not SCREENS.is_dir() or not TEST.is_file():
         print("Reader coverage check skipped: the sources are not here.")
         return 0
 
     test = TEST.read_text(encoding="utf-8")
+    frozen = frozen_files()
     uncovered = []
     scanned = 0
 
@@ -75,6 +99,8 @@ def main() -> int:
             continue
         scanned += 1
         if path.stem in EXEMPT:
+            continue
+        if any(str(path).endswith(name) for name in frozen):
             continue
         if any(re.search(r"\b" + re.escape(name) + r"\(", test) for name in names):
             continue

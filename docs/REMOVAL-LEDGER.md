@@ -24,6 +24,9 @@
 |---|---|---|---|
 | `ui/screens/ProjectDetailScreen.kt` | `ui/screens/ProjectHomeScreen.kt` | 2026-08-05 | Frozen. Not called: `NotebookShell` opens the new screen. |
 | `ProjectDetailTags`, and the tests that use them | The new screen's own tags | 2026-08-05 | Frozen with the screen. |
+| `ui/screens/CaptureSheet.kt` | The capture bloom in `NotebookShell` | 2026-08-13 | Frozen. Not called: the gold button blooms its six choices in place, which is what grid screen 04 always drew. |
+| Its case in `ScreenReaderTest` | The bloom's own walk in `CaptureTest` and `BackJourneyTest` | 2026-08-13 | Removed with the screen, per "its tests go with it". |
+| `ui/components/PinnedGroup.kt` | `PinMark` and each screen's own lead group | 2026-08-13 | Frozen. Not called: pinning shipped drawn per screen rather than as one group. |
 
 **The Projects conversion has begun and its first row is above.** What else it makes obsolete, and what will appear here as each conversion lands:
 
@@ -35,6 +38,20 @@
 **Checked on 2026-08-06, after #280 and #291 closed, rather than assumed.** Four of the six came back: the steps are edited from `ProjectStepsScreen` and `StepEditSheet`, and the status is set from the setup screen's chips.
 
 **Two did not, and this paragraph used to say they had.** Saving the project as a template and setting what it is waiting on both still had their repository call and their shell state with **nothing anywhere that set them**. That was **#314**, and it was written down here because a ledger that quietly overstates what came back is worse than no ledger: the whole value of freezing rather than deleting is that somebody can check.
+
+### What is unreached and is not history, 2026-08-13
+
+**`ui/components/RoundCard.kt` has no caller and does not belong in this ledger.** It is grid screen 20, one round of lab work, and it is waiting on a schema decision rather than on a screen: `contract/schema.sql` has no test, no round and no result, which is #182 and #199 and is the owner's under rule 3. **It is built ahead of its data, not superseded by anything**, and freezing it would tell the next reader the opposite of what is true.
+
+**`QuietAction` in `FoldRow.kt` and `neutralHue` in `TabChip.kt` have no callers either**, and both live inside files the app uses every day. This ledger is file shaped, so neither has a row: a frozen function inside a live file is a state this file cannot express, and inventing one for two functions would be worse than saying so here. They are listed on #371.
+
+### The capture sheet, 2026-08-13
+
+**It was superseded on 2026-08-12 and had no row here until #371 asked for one**, which is the gap this file exists to close: a reader met a 227 line screen with no way to know it was history.
+
+**Its live half moved out rather than the rule being bent.** `CaptureSheet.kt` also held `CaptureKind`, which nine files name, and `CaptureTags`, which the bloom draws and `BackJourneyTest` walks. A frozen file is never called, and that cannot be true of a file the live path imports from, so the enum and the tags are `ui/screens/Capture.kt` now and the frozen file holds only the superseded screen.
+
+**`check_reader_coverage.py` reads this ledger now**, the way `check_dead_gestures.py` already did. Otherwise freezing a screen made that check fail, which would have meant either keeping a walk of a screen nobody can reach or writing the same list of frozen files a second time. D133.
 
 **All six have come back as of 2026-08-06.** #314 built the last two onto the setup screen, where they were placed by looking at that screen rather than by copying the old one: both are pills rather than full width buttons, and the template action is a headed section of its own. D118. Verified on the phone at both themes, at font scale 2.0 and in Arabic, end to end in both directions: a name saved and survived a full app restart, and a saved template turned up under YOURS in the template library with its lineage kept.
 
