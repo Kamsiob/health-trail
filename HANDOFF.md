@@ -4,12 +4,17 @@
 
 **The history moved to `docs/RUN-LOG.md` on 2026-08-04** and this file was cut from sixteen thousand words to something a session can actually read. Do not put narrative back in here. If an account is worth keeping, it goes in the run log, in `DECISIONS.md`, or in the commit message.
 
-**Last rewritten:** 2026-08-12 at 18:20, on the Pixel 8.
+**Last rewritten:** 2026-08-13, after a long run, for a cold start.
 
-**#361 is the work, and its first item is done.** The owner's words were that the app looks like a data entry app, cluttered and visually complicated, throughout rather than on one screen, and he named the document form, the notebook, the trail and the care team. **Item 1, the five forms that predate law 3, is built and walked on the phone.** Saving a document is three questions with the paper itself as the first one; adding a person, a medication, an appointment and a bill lead with what somebody has in their hand and put the rest behind "Add more". D147, and `DESIGN.md` 14 has a row for each.
+**Start with `gh issue view 321`, then section "WHERE THE WORK IS" below.** Those two and nothing else.
 
-**The owner rejected the form work on 2026-08-12 except the document form, and then widened it**: the microphone belongs in the text field rather than in a pill under it, a person needs name, title, number and notes, things must be movable and editable after the fact, and it applies throughout the app rather than to the screens he happened to name. **Then: the interface is littered with overlaps and things that are not clear, and he asked for consultant subagents during the work.**
+**The work is #371**, which is what five design panels found reading every screen in the app, ordered and partly done. It came out of the owner's own verdict on 2026-08-12: the app is functional and ugly, it looks like a data entry app throughout rather than on one screen, and the interface is littered with overlaps and things that are not clear. **He asked for standing consultant panels during the work, and `AGENTS.md` section 5.1 is now that team**: interface, experience, focus group, designer, product manager, run in parallel on every design change.
 
+**The root cause three panels reached independently is worth carrying into every session**: the schema was built for this app and **the interface calls the writers without the arguments**. Eleven columns exist, most are read by a screen that renders them, several are already parameters with a null default, and nothing passes one. **The fixture fills them in, which is exactly why those screens look joined up in a screenshot and are empty on a real notebook.**
+
+**The designer's verdict is the answer to "why is it ugly"**: nothing in the audit is a bug and none of it would fail an audit. The gap between correct and beautiful is almost entirely **weight, motion and whitespace**, and all three are missing because the tokens that carry them were never reached from the screens. **`MoneyScreen` is the standard the rest should meet.**
+
+**One thing is blocked and it shapes planning**: `NotebookShell` has hit the JVM's 64KB method limit, so no new full-screen surface can be added until its overlays are extracted. `DECISIONS.md` B6.
 **Six read-only panels then read every screen in every tab**, and **#367 carries everything they found**, organized, with file and line. **Where three panels named the same defect independently it went in immediately**, and that batch has landed: the care team's call button no longer collapses the name beside it, twenty four folds can use their whole row, twenty two tappable cards are raised like every other surface, three project sheets scroll, a thread's fold can close again, the entry date control clears 48dp, and Today reserves the real FAB clearance. **The rest of #367 is the backlog and it is in priority order.**
 
 **One thing on #367 needs the owner rather than a commit**, and two panels measured it independently: `hero` is 23sp and every screen title is 22sp, so the one thing a screen leads with is one point bigger than the title above it. **It was not changed**, because #361 says the type ladder stays and D142 makes the grid authoritative. If the feeling is still that nothing leads, that is the line.
@@ -40,48 +45,46 @@
 
 ---
 
-## THE OVERNIGHT WORKLIST, 2026-08-12 22:15 to 2026-08-13 06:30
+## WHERE THE WORK IS, as of 2026-08-13
 
-**The owner is asleep and asked for continuous work until 06:30 EST.** He checked the phone at 22:10 and said not enough is fixed. **Keep `tools/device.sh` current after each batch so what he sees is the latest build.** Work top to bottom. Each line is one increment: build, `tools/verify.sh`, commit, push. **Do not skip the verify.**
+**Read `gh issue view 321` first. This section is the same order in short form.**
 
-**Read this list rather than re-deriving it.** Every item names its file and its function, per `RUN-SAFETY.md` section 2: late in a run, work from explicit paths.
+**Four issues carry everything found by the panels and the mock users**, each with file and line:
 
-### Done already tonight
-- `medication.stopped_edtf` and `dose_text` written by `recordMedicationEvent`. The emergency card safety defect.
-- `SectionScaffold` gained `imePadding`; sticky headers weighted; Today's edit row is a `FlowRow`; the person capture no longer destroys a draft.
-- The `rowTitle` token; three missing `BackHandler`s.
-- **The chapter axis has a writer**: `createEntry` (both call sites), `createDocument`, `reportIncident`.
+| Issue | What it is | State |
+|---|---|---|
+| **#371** | What five design panels found reading every screen | **The live list.** Ordered, and partly done |
+| **#368** | What six mock users found walking the whole app | Feeds #371 |
+| **#367** | The first panel pass | Mostly absorbed into #371 |
+| **#369** | The projects revamp, eleven screens to six | **Deliberately last.** A redesign, not a defect list |
+| **#370** | The business card photograph | Schema is in, the screen half is left |
 
-### Done since the list was written
-- **`recordMeasurement` writes its trail entry**, in the same transaction, so a reading reaches the trail, the month review, the prep sheet and the digest.
-- **Twelve form cancels** stopped wearing the way back's full width costume.
-- **`setPersonArchived`**, so retiring somebody stops meaning erasing them. `archived_at` had five readers and no writer.
-- **`updateSubject` and `CorrectSubjectScreen`**, reached from a new More door. The name printed on everything shared could never be corrected.
-
-### A fix of mine that was wrong, corrected the same night
-**`imePadding` on `SectionScaffold` was a regression and is reverted.** It fixed the keyboard covering the field on Export, Restore and the change of situation, and it broke three tests in the shape `docs/TRAPS.md` names: with the keyboard up the content area shrinks, the scaffold's pinned footer leaves the viewport, and **a click at a node's center outside the viewport does nothing at all**, which reads as a save that did not fire. `ProjectStepsScreenTest`, `ProjectRoadScreenTest` and `PassphraseMaskingTest` all failed with "expected the words but was null".
-
-**The keyboard defect is real and still open on #371.** The fix belongs on the three screens that own their fields, not on the container all fifty five sit in. **This is why the full suite is run before believing a layout change**: all three of those screens looked correct in isolation.
-
-### BLOCKED, and it stops several items below
-**`NotebookShell` has hit the JVM's 64KB method limit.** `DECISIONS.md` B6. One more overlay tips the build over with `MethodTooLargeException`, so **no new full-screen surface can be added to the shell** until its overlays are extracted in groups. That blocks the chapter rename, the question and instruction corrections, and anything else needing a new screen. **Changing an existing screen is unaffected**, so the list below is still workable apart from the items that need a new surface.
+### Done on #371, and it is all on `origin/main`
+- **The safety one**: a medication recorded as stopped stayed on the emergency card, because the event was written and the parent's state never was. **The rule it establishes is the pattern for the rest**: an event writer updates its parent in the same transaction.
+- **The chapter axis has a writer** at last: entries, documents and incidents stamp `currentChapterId`.
+- **A reading reaches the trail**, so it appears in a month review, the prep sheet and the digest.
+- **`setPersonArchived`**, so retiring somebody stops meaning erasing them from six months of calls.
+- **`updateSubject`** and a More door: the name printed on everything shared could never be corrected.
+- **`renameThread`**, and the naming screen generalized so one screen asks "what is this called".
+- **`updateEntry` and `CorrectEntryScreen`**: an entry was the only record that could not be corrected.
+- **The `rowTitle` token**, which is why lists now read as names over notes. **Three missing back handlers.** **Twelve form footers.** **Sticky headers and Today's edit mode at font scale 2.0.** **The person capture no longer destroys a draft.**
 
 ### Next, in order
-1. ~~**`recordMeasurement` writes no entry.**~~ **Done.** `Repository.kt` `recordMeasurement` takes `entryId` and `NotebookShell.kt` passes none, so a reading is not in the trail, not in a month review, not in `prep.changes`. Create the entry in the same transaction, the way `createQuestionWithEntry` does.
-2. **`recordViolation`** takes `incidentId` and `billId` and its only caller passes neither, so `Repository.Violation.incidentTitle` and `billDescription` are dead readers.
-3. **`question.person_id` and `asked_at_appointment_id` are never written.** The prep sheet shows every open question in the notebook because it has nothing to filter by. `createAppointment` never writes `person_id` either, so there is nothing to filter against: do the appointment first.
-4. **Nothing can be corrected**: a reading, a measure, a care thread, a chapter, a question's own words, an instruction's own words. ~~the subject's name~~ **done**. `updateEntry` and `CorrectEntryScreen` are the pattern to copy.
-5. ~~**`archivePerson`.**~~ **Done**, as `setPersonArchived`.
-6. **21 full-width outlined actions** still wear the way-back's costume. Drop `.fillMaxWidth()`. `#371` lists every file and line.
-7. **Twenty standalone form headers** build their own bare `displayL` with no tab chip. Give them the scaffold's head.
-8. **Mono is doing prose duty at 21 date sites.** `#371` lists them. Use `bodyS`/`bodyM` where the string is a rendered EDTF, a role, or a sentence.
-9. **Motion**: `expressive()` and `deliberateStandard()` have zero call sites and every navigation is a hard cut.
-10. **The dead list**, and a `docs/REMOVAL-LEDGER.md` row for `CaptureSheet`.
+1. **`recordViolation`** takes `incidentId` and `billId` and its only caller passes neither, so `Violation.incidentTitle` and `billDescription` are dead readers.
+2. **`question.person_id` and `asked_at_appointment_id` are never written**, so the prep sheet shows every open question in the notebook. **`createAppointment` never writes `person_id` either**, so there is nothing to filter against: do the appointment first.
+3. **Mono is doing prose duty at 21 date sites**, plus a dozen roles and sentences. #371 lists them. `bodyS`/`bodyM` where the string is a rendered EDTF, a role, or a sentence. **Pure UI, unblocked, and the designer called it the reason the app reads a half step colder than it should.**
+4. **Twenty standalone form headers** build their own bare `displayL` with no tab chip, so the app changes identity at the moment somebody writes in it.
+5. **Motion**: `expressive()` and `deliberateStandard()` have zero call sites and every navigation is a hard cut.
+6. **The dead list**, and a `docs/REMOVAL-LEDGER.md` row for `CaptureSheet`.
+7. **Still uncorrectable**, and these need B6 cleared first: a reading, a measure, a chapter, a question's own words, an instruction's own words.
 
-**#369, the projects revamp, is the largest piece and is deliberately last**, because it is a redesign rather than a defect list and the owner should see the smaller fixes first.
+### BLOCKED. Read this before planning
+**`NotebookShell` has hit the JVM's 64KB method limit**, `DECISIONS.md` B6. One more overlay fails the build with `MethodTooLargeException`, so **no new full-screen surface can be added** until the shell's overlays are extracted in groups. It is about 4,000 lines in one composable. **Changing an existing screen is unaffected**, so items 1 through 6 above are all workable.
+
+### A fix of mine that was wrong, corrected the same night
+**`imePadding` on `SectionScaffold` was a regression and is reverted.** It fixed the keyboard covering the field on Export, Restore and the change of situation, and broke three tests in the shape `docs/TRAPS.md` names: with the keyboard up the content shrinks, the pinned footer leaves the viewport, and **a click at a node's center outside the viewport does nothing at all**. The assertions read "expected the words but was null", which looks like a save that did not fire. **The keyboard defect is real and still open on #371**; the fix belongs on the three screens that own their fields, not on the container all fifty five sit in.
 
 **If the same thing fails three times, stop and write it to `DECISIONS.md` BLOCKED**, per rule 9, and take the next item.
-
 ---
 
 **Item 2, the trail, is started.** Two changes landed: a row under a month band says "Monday 29" rather than repeating the band's own month and year, and the year rail's labels sit on a hairline so the index reads as a control rather than as two digits at the edge of the page. **The rail was built all along and invisible**, which is why "no way through time but a thumb" was true and the tool existed.

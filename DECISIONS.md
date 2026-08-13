@@ -2704,6 +2704,20 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D148. An event writer updates its parent's state in the same transaction
+
+**Date:** 2026-08-13. **Decided under rule 10**, working #371, and it is the rule the medication safety defect produced rather than the fix itself.
+
+**The defect.** `recordMedicationEvent` wrote a `medication_event` row and nothing wrote `medication.stopped_edtf`, anywhere in the app. `isStopped` was therefore always false, so the stopped fold stayed empty, the Today count was wrong, and **the emergency card kept listing a medication the person had recorded as stopped**, on the one screen whose own filter comment calls this "the one that is dangerous to get wrong". A dose change had the same shape and quieter harm: the list showed the old dose until somebody separately opened the correction form.
+
+**The decision.** **An event and its consequence are one transaction.** A writer that records something happening also updates the state columns on the thing it happened to, in the same breath. Starting or resuming clears a stop, because a medication somebody has gone back on is not stopped.
+
+**Why this rather than deriving the state.** Two surfaces read "is it stopped" and they disagreed, which is the whole failure: one asked the medication and one asked its history. **Deriving it everywhere would mean every future screen has to know to ask the second question**, and the screen that forgets is the emergency card. Rule 20 says the complexity lives in the code, and this is where it lives.
+
+**Where it applies next**, and #371 lists them: the appointment write-up should set `attended_*` and link its entry, and a violation should carry the incident or the bill it broke. Three panels found the same shape in all three places.
+
+---
+
 ### D147. A form asks one question at a time; correcting a record shows all of it at once
 
 **Date:** 2026-08-12. **Decided under rule 10**, working #361, which is the owner's own words about the built app. **Supersedes nothing** and changes no schema, no copy, and no saved value.
