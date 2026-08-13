@@ -1452,6 +1452,7 @@
   "unfiled.waiting": "{count, plural, =0 {Nada a la espera de archivar} one {1 cosa a la espera de archivar} other {# cosas a la espera de archivar}}",
   "unrecoverable.body": "La clave que lo abría ya no está en este teléfono. Un restablecimiento de fábrica la borra, y algunas transferencias a un teléfono nuevo también. Lo que escribió sigue en este teléfono, y sin esa clave nada puede leerlo, ni siquiera esta aplicación.",
   "unrecoverable.next": "Si exportó un archivo, ese archivo se sigue abriendo. Instale la aplicación de nuevo y restaure desde él.",
+  "unrecoverable.restore": "Restaurar desde un archivo",
   "unrecoverable.title": "Este cuaderno no se puede abrir",
   "violation.about": "Diga con qué se relaciona",
   "violation.about.aside": "Solo si ya lo sabe. Puede esperar.",

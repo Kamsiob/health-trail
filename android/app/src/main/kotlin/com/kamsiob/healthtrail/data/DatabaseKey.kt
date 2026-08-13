@@ -65,6 +65,40 @@ class DatabaseKey(private val context: Context) {
     }
 
     /**
+     * Throws away a key that no longer opens anything, and the notebook it
+     * cannot open. #343.
+     *
+     * **Only ever called from the unrecoverable screen, after the person has
+     * been told plainly what it does.** [passphrase] deliberately throws
+     * [DatabaseKeyLost] rather than quietly generating a fresh key, because a
+     * fresh one leaves the old notebook on disk and undecryptable while the app
+     * behaves as though nothing was ever written, which is the worst available
+     * outcome wearing the appearance of the best. **Nothing here weakens
+     * that.** The person is choosing to replace a notebook the app has already
+     * told them it cannot open, which is a different act from the app deciding
+     * to.
+     *
+     * **The database file goes with the key**, because that file is exactly the
+     * unreadable thing: leaving it would mean the next open finds a database
+     * the new key cannot decrypt, which is the same dead end one layer down.
+     */
+    fun discardUnreadable() {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit {
+            remove(PREF_WRAPPED)
+            remove(PREF_IV)
+        }
+        runCatching {
+            java.security.KeyStore.getInstance(KEYSTORE)
+                .apply { load(null) }
+                .deleteEntry(KEY_ALIAS)
+        }
+        val file = context.getDatabasePath(HealthTrailDatabase.FILE_NAME)
+        file.delete()
+        java.io.File(file.path + "-wal").delete()
+        java.io.File(file.path + "-shm").delete()
+    }
+
+    /**
      * The passphrase, generating and wrapping one on first call.
      *
      * Returned as a [ByteArray] rather than a String on purpose: a String

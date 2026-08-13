@@ -20,9 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import com.kamsiob.healthtrail.data.DatabaseKey
 import com.kamsiob.healthtrail.data.DatabaseKeyLost
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.WelcomeSeen
+import androidx.compose.foundation.layout.fillMaxWidth
+import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.screens.RestoreFlow
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
@@ -38,6 +42,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object AppRootTags {
     const val LOADING = "app_loading"
     const val UNRECOVERABLE = "app_unrecoverable"
+    const val UNRECOVERABLE_RESTORE = "app_unrecoverable_restore"
 }
 
 /**
@@ -67,8 +72,12 @@ fun AppRoot(
 ) {
     val context = LocalContext.current
     var state by remember { mutableStateOf<RootState>(RootState.Opening) }
+    // **Bumped after a restore into a phone that had nothing readable**, so the
+    // same decision runs again and finds the notebook that has just arrived.
+    // #343.
+    var attempt by remember { mutableStateOf(0) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(attempt) {
         state = try {
             val repository = Repository.open(context)
             // **Either the notebook or this phone remembers.** Restore replaces
@@ -101,7 +110,33 @@ fun AppRoot(
         when (val current = state) {
             RootState.Opening -> OpeningScreen()
 
-            RootState.Unrecoverable -> UnrecoverableScreen()
+            RootState.Unrecoverable -> UnrecoverableScreen(
+                // **The app does it rather than telling somebody to.** #343 and
+                // rule 20: this screen said "install the app again and restore
+                // from it", which is honest and is the app declining to absorb
+                // its own complexity. The flow it opens is the same one More
+                // uses, which is why that flow is a composable of its own.
+                onRestore = { state = RootState.Replacing },
+            )
+
+            RootState.Replacing -> {
+                RestoreFlow(
+                    onBack = { state = RootState.Unrecoverable },
+                    onApplied = {
+                        // The database the archive was restored into is this
+                        // phone's now, so the decision at the top runs again
+                        // and finds it the way any other launch would.
+                        state = RootState.Opening
+                        attempt += 1
+                    },
+                )
+                // **The unreadable key and the file it cannot open go first.**
+                // `Backup.restore` opens the database, and here that is exactly
+                // what throws. Nothing is lost that was not already lost: the
+                // person has been told this notebook cannot be opened, and
+                // chose to replace it.
+                LaunchedEffect(Unit) { DatabaseKey(context).discardUnreadable() }
+            }
 
             is RootState.Gate -> DisclaimerScreen(
                 onAccept = {
@@ -248,6 +283,17 @@ fun AppRoot(
 internal sealed interface RootState {
     data object Opening : RootState
     data object Unrecoverable : RootState
+
+    /**
+     * The person chose to replace a notebook this phone cannot open. #343.
+     *
+     * **A state rather than a flag on the screen**, because what happens here
+     * is a sequence: the unreadable key and the file it cannot open are thrown
+     * away, then an archive is chosen and restored into a database this phone
+     * can read. `RootStatesTest` walks it, which is the only way this screen
+     * gets looked at: reaching it for real means a factory reset.
+     */
+    data object Replacing : RootState
     data class Gate(val repository: Repository) : RootState
     data class Setup(val repository: Repository) : RootState
     data class Saving(val repository: Repository, val answers: SetupAnswers) : RootState
@@ -325,7 +371,7 @@ internal fun OpeningScreen() {
  * Telling somebody to install the app again is honest and it is not finished.
  */
 @Composable
-internal fun UnrecoverableScreen() {
+internal fun UnrecoverableScreen(onRestore: () -> Unit = {}) {
     val strings = LocalStrings.current
     Surface(
         modifier = Modifier
@@ -359,6 +405,16 @@ internal fun UnrecoverableScreen() {
                 text = strings["unrecoverable.next"],
                 style = HealthTrail.type.bodyM,
                 color = HealthTrail.colors.ink2,
+            )
+            // **The one action, and it is the answer rather than an
+            // instruction.** #343: this screen used to end by telling somebody
+            // to install the app again and restore from their file, which is
+            // work the app can do for them. Rule 20.
+            Spacer(Modifier.height(Space.l))
+            FilledButton(
+                label = strings["unrecoverable.restore"],
+                onClick = onRestore,
+                modifier = Modifier.fillMaxWidth().testTag(AppRootTags.UNRECOVERABLE_RESTORE),
             )
         }
     }

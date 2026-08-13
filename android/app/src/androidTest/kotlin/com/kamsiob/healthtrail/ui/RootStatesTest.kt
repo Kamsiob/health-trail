@@ -12,6 +12,9 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import java.util.Locale
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertFalse
 import org.junit.Rule
 import org.junit.Test
@@ -97,5 +100,24 @@ class RootStatesTest {
 
         compose.onNodeWithTag(AppRootTags.LOADING).assertIsDisplayed()
         compose.onNodeWithText(strings["common.loading"]).assertIsDisplayed()
+    }
+
+    /**
+     * **The screen offers the answer rather than an instruction.** #343: it
+     * ended by telling somebody to install the app again and restore from
+     * their file, which is work the app can do for them. Rule 20.
+     *
+     * **Reaching this state for real means a factory reset**, which is why the
+     * screen is walked here rather than on the phone.
+     */
+    @Test
+    fun theUnrecoverableScreenOffersToRestore() {
+        var asked = false
+        show { UnrecoverableScreen(onRestore = { asked = true }) }
+
+        compose.onNodeWithTag(AppRootTags.UNRECOVERABLE_RESTORE)
+            .assertIsDisplayed()
+            .performClick()
+        assertTrue("the one action on this screen did nothing", asked)
     }
 }

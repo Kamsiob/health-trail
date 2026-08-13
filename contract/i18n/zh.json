@@ -1452,6 +1452,7 @@
   "unfiled.waiting": "{count, plural, =0 {没有待归置的内容} other {# 项待归置}}",
   "unrecoverable.body": "解锁它的密钥已不在这部手机上。恢复出厂设置会删除它，转移到新手机时有时也会。您写下的内容仍在这部手机上，没有这个密钥，任何程序都无法读取，包括本应用。",
   "unrecoverable.next": "如果您导出过文件，那个文件仍然可以打开。重新安装本应用后从中恢复。",
+  "unrecoverable.restore": "从文件恢复",
   "unrecoverable.title": "这个笔记本无法打开",
   "violation.about": "说明这与什么有关",
   "violation.about.aside": "如果您已经知道再填。也可以以后再说。",

@@ -58,6 +58,11 @@ EXEMPT = {
     # Furniture. Every section screen composes it, so it is walked by all of
     # them and has no states of its own to check.
     "SectionScaffold",
+    # **Plumbing rather than a screen.** It owns the file, the passphrase and
+    # the two guards, and everything it draws is `RestoreScreen`, which has its
+    # own case in the sweep. A case here would compose the same nodes through
+    # one more layer and prove them labeled twice. #343.
+    "RestoreFlow",
 }
 
 

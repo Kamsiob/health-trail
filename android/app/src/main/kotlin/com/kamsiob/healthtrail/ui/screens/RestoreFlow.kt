@@ -1,0 +1,190 @@
+package com.kamsiob.healthtrail.ui.screens
+
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import com.kamsiob.healthtrail.data.Backup
+import com.kamsiob.healthtrail.data.ExportContainer
+import com.kamsiob.healthtrail.data.MergeApply
+import com.kamsiob.healthtrail.i18n.LocalStrings
+import java.io.File
+
+/**
+ * Choosing a file, opening it, and putting a notebook back.
+ *
+ * **Lifted out of `NotebookShell` on 2026-08-13**, and it is the shape B6 asks
+ * for rather than a tidy up. Every piece of state this needs is used by nothing
+ * else: the file, the passphrase entered, the two guards, and the choice
+ * between replacing and merging. Held here, the shell loses six state variables
+ * and about a hundred and twenty lines from the one composable that is at the
+ * JVM's method limit, and gains two.
+ *
+ * **And it is the reason the unrecoverable screen can offer a restore at all.**
+ * #343: that screen runs above the shell, at `AppRoot`, where there is no open
+ * repository, so the flow had to be something both can host. Telling somebody
+ * to install the app again and restore from their file is the app declining to
+ * absorb its own complexity, which is rule 20.
+ *
+ * **`tools/seed.sh` drives this screen**, so its tags and its steps are load
+ * bearing outside the app as well as inside it.
+ *
+ * @param onApplied called after a restore or a merge succeeds, so a host that
+ *   has a notebook on screen can reread it. `AppRoot` uses it to leave the
+ *   unrecoverable state.
+ */
+@Composable
+fun RestoreFlow(
+    onBack: () -> Unit,
+    onApplied: (RestoreHow) -> Unit = {},
+) {
+    val context = LocalContext.current
+    val strings = LocalStrings.current
+
+    var state by remember { mutableStateOf<RestoreState>(RestoreState.Empty) }
+    var file by remember { mutableStateOf<File?>(null) }
+    var openWith by remember { mutableStateOf<String?>(null) }
+    var openNow by remember { mutableStateOf(false) }
+    var applyNow by remember { mutableStateOf(false) }
+    var how by remember { mutableStateOf(RestoreHow.REPLACE) }
+
+    val chooseFile = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            val staged = File(context.cacheDir, "restore-source.htx")
+            runCatching {
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    staged.outputStream().use { input.copyTo(it) }
+                } ?: error("no input stream")
+            }.onSuccess {
+                file = staged
+                openWith = null
+                openNow = true
+            }.onFailure {
+                state = RestoreState.Problem(strings["export.failed"])
+            }
+        }
+    }
+
+    RestoreScreen(
+        state = state,
+        onChoose = {
+            state = RestoreState.Empty
+            chooseFile.launch(arrayOf("*/*"))
+        },
+        onUnlock = { entered -> openWith = entered; openNow = true },
+        onRestore = { chosen -> how = chosen; applyNow = true },
+        onBack = {
+            state = RestoreState.Empty
+            file = null
+            onBack()
+        },
+    )
+
+    // **Reading is separate from applying, and this is the reading half.**
+    // Nothing about the notebook changes here, whatever the file turns out to
+    // be.
+    //
+    // **The guard is cleared last, never first.** Setting it false at the top
+    // of the effect removes the effect from composition and cancels the
+    // coroutine before it finishes, which looked exactly like the file being
+    // unreadable: the staging directory filled up and the screen never moved
+    // off its empty state.
+    if (openNow) {
+        val source = file
+        LaunchedEffect(source, openWith) {
+            if (source == null) {
+                openNow = false
+                return@LaunchedEffect
+            }
+            val staging = File(context.cacheDir, "restore-staging")
+            val result = ExportContainer.open(
+                file = source,
+                staging = staging,
+                passphrase = openWith?.takeIf { it.isNotEmpty() }?.toCharArray(),
+                expected = Backup.schema(context),
+            )
+            state = result.fold(
+                onSuccess = { RestoreState.Ready(it.manifest) },
+                onFailure = { failure ->
+                    val problem = failure as? ExportContainer.ExportProblem
+                    when (val p = problem?.problem) {
+                        is ExportContainer.Problem.PassphraseNeeded ->
+                            RestoreState.NeedsPassphrase()
+                        // **A wrong passphrase leaves them here to try again.**
+                        // Retyping is the expected case, and sending somebody
+                        // back to pick the file a second time punishes a typo.
+                        is ExportContainer.Problem.CouldNotDecrypt ->
+                            RestoreState.NeedsPassphrase(p.message)
+                        null -> RestoreState.Problem(
+                            failure.message ?: strings["common.error.generic"],
+                        )
+                        else -> RestoreState.Problem(p.message)
+                    }
+                },
+            )
+            openNow = false
+        }
+    }
+
+    if (applyNow) {
+        val source = file
+        LaunchedEffect(source, how) {
+            if (source == null) {
+                applyNow = false
+                return@LaunchedEffect
+            }
+            state = RestoreState.Working
+            val staging = File(context.cacheDir, "restore-staging")
+            val opened = ExportContainer.open(
+                file = source,
+                staging = staging,
+                passphrase = openWith?.takeIf { it.isNotEmpty() }?.toCharArray(),
+                expected = Backup.schema(context),
+            )
+            state = opened.fold(
+                onSuccess = { container ->
+                    // **Two promises, two functions.** Replace swaps the whole
+                    // file; keeping both merges row by row and writes what it
+                    // resolved. 8.3 requires the choice to be the person's
+                    // rather than the app's, so it is carried here rather than
+                    // decided here.
+                    val applied = when (how) {
+                        RestoreHow.MERGE ->
+                            MergeApply.merge(context, container, System.currentTimeMillis())
+                                .map { 0 }
+                        else -> Backup.restore(context, container)
+                    }
+                    applied.fold(
+                        onSuccess = {
+                            onApplied(how)
+                            if (how == RestoreHow.MERGE) RestoreState.Merged else RestoreState.Done
+                        },
+                        onFailure = { failure ->
+                            RestoreState.Problem(
+                                // A merge that refused says why in its own
+                                // words, and those words are the ones the
+                                // person needs rather than a generic failure.
+                                if (failure is MergeApply.Refused) {
+                                    strings["restore.refused"]
+                                } else {
+                                    failure.message ?: strings["common.error.generic"]
+                                },
+                            )
+                        },
+                    )
+                },
+                onFailure = {
+                    RestoreState.Problem(it.message ?: strings["common.error.generic"])
+                },
+            )
+            applyNow = false
+        }
+    }
+}
