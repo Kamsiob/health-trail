@@ -360,25 +360,35 @@ fun TodayFieldScreen(
                         TabChip(hue = wholeAppHue(), labelKey = "today.tab")
                         Spacer(Modifier.weight(1f))
                         if (editing) {
-                            TextAction(
-                                label = strings["today.add"],
-                                onClick = { onAddCard(draft) },
-                                modifier = Modifier.testTag(TodayFieldTags.ADD),
-                            )
-                            Spacer(Modifier.width(Space.s))
-                            TextAction(
-                                label = strings["today.edit.cancel"],
-                                onClick = { editing = false },
-                            )
-                            Spacer(Modifier.width(Space.s))
-                            TextAction(
-                                label = strings["today.edit.done"],
-                                onClick = {
-                                    onSave(draft)
-                                    editing = false
-                                },
-                                modifier = Modifier.testTag(TodayFieldTags.DONE),
-                            )
+                            // **A flow row, because three pills do not fit.**
+                            // They were unweighted children of a fixed row, so
+                            // at font scale 2.0 the first took what it wanted
+                            // and Done, the only control that saves the
+                            // arrangement, was measured to zero and disappeared.
+                            // There was no way out of edit mode at that size.
+                            // #371.
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(Space.s),
+                                verticalArrangement = Arrangement.spacedBy(Space.s),
+                            ) {
+                                TextAction(
+                                    label = strings["today.add"],
+                                    onClick = { onAddCard(draft) },
+                                    modifier = Modifier.testTag(TodayFieldTags.ADD),
+                                )
+                                TextAction(
+                                    label = strings["today.edit.cancel"],
+                                    onClick = { editing = false },
+                                )
+                                TextAction(
+                                    label = strings["today.edit.done"],
+                                    onClick = {
+                                        onSave(draft)
+                                        editing = false
+                                    },
+                                    modifier = Modifier.testTag(TodayFieldTags.DONE),
+                                )
+                            }
                         } else {
                             TextAction(
                                 label = strings["today.edit"],

@@ -3176,8 +3176,18 @@ fun NotebookShell(
                 // **The person's screen closes first**, so back from the
                 // capture form lands on the care team rather than on a screen
                 // about somebody the entry is now already attached to.
+                // **It carries the name forward without destroying a draft.**
+                // This replaced the whole state with a fresh one, so a half
+                // written note somebody had left in the capture form was gone
+                // the moment they tapped "Write something down" on a person.
+                // The capture form's own comment calls losing a half written
+                // note "the worst thing this app could do short of losing the
+                // notebook", and one button in the app did it. #371.
+                //
+                // **The person is attached to whatever is already there**, and
+                // an empty draft behaves exactly as before.
                 onCapture = {
-                    captureDraft = CaptureFormState().togglePerson(person)
+                    captureDraft = captureDraft.togglePerson(person)
                     openPerson = null
                     sheetOpen = true
                 },

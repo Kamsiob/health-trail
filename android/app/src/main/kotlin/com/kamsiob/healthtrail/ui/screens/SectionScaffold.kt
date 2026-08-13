@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -168,7 +169,13 @@ fun SectionScaffold(
         // Its own system bar padding, because a section screen renders over the
         // shell rather than inside it and does not inherit what the four
         // destinations get. The Unfiled tray learned this the same way.
-        Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
+        // **`imePadding` here rather than on each screen.** The keyboard used
+        // to cover the field being typed into on Export, on the change of
+        // situation, and on Restore, which is the only path back from a lost
+        // phone. Twenty six screens apply it themselves and the scaffold every
+        // one of them sits in did not. D38 is the same defect, found once on
+        // setup and fixed there alone. #371.
+        Column(modifier = Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn(
                 state = listState,

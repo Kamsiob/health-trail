@@ -5110,6 +5110,32 @@ class Repository private constructor(
      * currently is, because that is what makes a medication's journey cross
      * chapters at all. `MASTER_SPEC.md` 4.6.
      */
+    /**
+     * Writes a change to a medication, **and changes the medication.** #371.
+     *
+     * **Recording that something was stopped used to leave it running.** The
+     * event row was written and `medication.stopped_edtf` was written by
+     * nothing anywhere, so `isStopped` was always false. The consequences ran
+     * downhill from there: the stopped fold on the medications list stayed
+     * empty, the Today count was wrong, and **the emergency card kept listing a
+     * medication the person had recorded as stopped in March** on the one
+     * screen whose own filter comment calls this "the one that is dangerous to
+     * get wrong". Three panels found it independently.
+     *
+     * **A dose change used to leave the dose.** Same shape, quieter harm: the
+     * list showed the old dose until somebody separately opened the correction
+     * form, and nothing told them so, so most people did it once and the list
+     * was wrong from then on.
+     *
+     * **The event and its consequence are one transaction**, which is the rule
+     * this establishes: an event writer updates its parent's state columns in
+     * the same breath, so no screen has to derive a state a second way and no
+     * two screens can disagree about it.
+     *
+     * **Resuming and starting clear the stop**, because a medication somebody
+     * has gone back on is not stopped, and leaving the date behind would be the
+     * record contradicting itself.
+     */
     suspend fun recordMedicationEvent(
         medicationId: String,
         kind: String,
@@ -5117,16 +5143,57 @@ class Repository private constructor(
         doseText: String?,
         note: String?,
         chapterId: String?,
-    ): String = insert(
-        "medication_event",
-        mapOf(
-            "medication_id" to medicationId,
-            "kind" to kind,
-            "dose_text" to doseText?.ifBlank { null },
-            "note" to note?.ifBlank { null },
-            "chapter_id" to chapterId,
-        ) + dateColumns("occurred", occurred),
-    )
+    ): String {
+        val id = insert(
+            "medication_event",
+            mapOf(
+                "medication_id" to medicationId,
+                "kind" to kind,
+                "dose_text" to doseText?.ifBlank { null },
+                "note" to note?.ifBlank { null },
+                "chapter_id" to chapterId,
+            ) + dateColumns("occurred", occurred),
+        )
+
+        when (kind) {
+            "stopped" -> withContext(Dispatchers.IO) {
+                val columns = dateColumns("stopped", occurred)
+                val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+                db().database.write(
+                    "UPDATE medication SET $assignments, updated_at = ?, rev = rev + 1 " +
+                        "WHERE id = ?",
+                    (columns.values + listOf(System.currentTimeMillis(), medicationId))
+                        .toTypedArray(),
+                )
+            }
+
+            "started", "resumed" -> withContext(Dispatchers.IO) {
+                val columns = dateColumns("stopped", Edtf.unknown()).keys
+                    .joinToString(", ") { "$it = NULL" }
+                db().database.write(
+                    "UPDATE medication SET $columns, updated_at = ?, rev = rev + 1 " +
+                        "WHERE id = ?",
+                    arrayOf<Any?>(System.currentTimeMillis(), medicationId),
+                )
+            }
+
+            else -> Unit
+        }
+
+        // **The dose follows the change, whatever the kind.** A dose written on
+        // a hold or a resume is still the dose from that day forward.
+        doseText?.takeIf { it.isNotBlank() }?.let { dose ->
+            withContext(Dispatchers.IO) {
+                db().database.write(
+                    "UPDATE medication SET dose_text = ?, updated_at = ?, rev = rev + 1 " +
+                        "WHERE id = ?",
+                    arrayOf<Any?>(dose, System.currentTimeMillis(), medicationId),
+                )
+            }
+        }
+
+        return id
+    }
 
     /**
      * The chapter the person is in now, which is the one with no end date.

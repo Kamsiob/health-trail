@@ -123,7 +123,16 @@ fun StickySectionHeader(
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(text = title, style = type.displayS, color = colors.ink)
+        // **Weighted, so the count and the chevron survive.** Unweighted, a
+        // month name at font scale 2.0 took the whole row and measured both to
+        // zero, and the chevron is the only thing saying the header is a door
+        // to that month's review. Every sticky header in the app. #371.
+        Text(
+            text = title,
+            style = type.displayS,
+            color = colors.ink,
+            modifier = Modifier.weight(1f),
+        )
         Row(verticalAlignment = Alignment.Bottom) {
             if (count != null) {
                 Text(text = count, style = type.mono, color = colors.ink2)
