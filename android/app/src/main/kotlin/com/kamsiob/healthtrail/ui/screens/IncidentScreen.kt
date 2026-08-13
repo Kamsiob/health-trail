@@ -48,6 +48,7 @@ object IncidentTags {
     const val ADD = "incident_add"
     const val SHARE = "incident_share"
     const val REMOVE = "incident_remove"
+    fun violation(id: String) = "incident_violation_$id"
     const val CORRECT = "incident_correct"
     fun node(id: String) = "incident_node_$id"
     /**
@@ -242,9 +243,9 @@ private fun IncidentSpineRow(
 @Composable
 fun IncidentScreen(
     incident: Repository.Incident,
-    entries: List<Repository.TrailEntry>,
     /**
-     * Everybody named on the thread, and the paperwork that came out of it.
+     * The thread, everybody named on it, the paperwork it produced, and every
+     * request that was not followed here.
      *
      * `MASTER_SPEC.md` section 3: "an incident knows its project, its
      * documents, and its people." **Two of the three needed no new column and
@@ -256,9 +257,21 @@ fun IncidentScreen(
      * `project_id`, so that clause cannot be built without a schema change,
      * which is the owner's decision under rule 3 and is written up rather than
      * quietly skipped.
+     *
+     * **Four lists behind one object rather than four parameters**, and that is
+     * B6 rather than taste: every parameter here is a line inside
+     * `NotebookShell`, which is one composable at the JVM's 64KB method limit,
+     * and adding the violations as a fifth list failed the build.
      */
-    people: List<Repository.Person>,
-    documents: List<Repository.Document>,
+    detail: Repository.IncidentDetail,
+    /**
+     * Opens the list of what this family has asked for.
+     *
+     * **A request has no screen of its own**: the one `DESIGN.md` 14 draws
+     * cannot be built while `NotebookShell` is at the JVM method limit, B6, so
+     * the door leads to the list that holds it rather than nowhere.
+     */
+    onOpenViolations: () -> Unit = {},
     onOpenPerson: (Repository.Person) -> Unit,
     /**
      * Opens the paperwork this incident produced. #360, rule 18.
@@ -267,6 +280,14 @@ fun IncidentScreen(
      * and the documents between them did not**, so the grievance letter had to
      * be found again by scrolling the documents section: five taps for the
      * thing the incident is holding out.
+     */
+    /**
+     * Every time a request was not followed that names this incident.
+     *
+     * **The other half of the link, per rule 18.** A violation could name an
+     * incident from the moment the form began to ask, and the incident said
+     * nothing back, which four of the five panels called a dead end wearing a
+     * disguise.
      */
     onOpenDocument: (Repository.Document) -> Unit,
     /**
@@ -315,6 +336,10 @@ fun IncidentScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val entries = detail.entries
+    val people = detail.people
+    val documents = detail.documents
+    val violations = detail.violations
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -421,6 +446,39 @@ fun IncidentScreen(
                     }
                     Spacer(Modifier.height(Space.cardGap))
                 }
+            }
+            item { Spacer(Modifier.height(Space.s)) }
+        }
+
+        if (violations.isNotEmpty()) {
+            item {
+                GroupHeader(labelKey = "instruction.violations.linked")
+                Spacer(Modifier.height(Space.headerGap))
+            }
+            // One surface of dense rows, the same shape the people above use,
+            // because a request and a note is two lines somebody scans rather
+            // than three they read. Rule 22.
+            item(key = "violations") {
+                GroupedSurface {
+                    violations.forEachIndexed { index, violation ->
+                        DenseRow(
+                            title = Bidi.isolate(violation.instructionName.orEmpty()),
+                            subtitle = violation.note?.takeIf { it.isNotBlank() }
+                                ?.let { Bidi.isolate(it) },
+                            // **The way back is the list of what was asked
+                            // for**, because a request has no screen of its
+                            // own: the one `DESIGN.md` 14 draws cannot be built
+                            // while `NotebookShell` sits at the JVM method
+                            // limit, B6.
+                            onClick = onOpenViolations,
+                            clickLabel = strings["open.action"],
+                            chevron = true,
+                            divider = index < violations.size - 1,
+                            modifier = Modifier.testTag(IncidentTags.violation(violation.id)),
+                        )
+                    }
+                }
+                Spacer(Modifier.height(Space.cardGap))
             }
             item { Spacer(Modifier.height(Space.s)) }
         }

@@ -653,6 +653,7 @@
   "instruction.violations.add": "Anotar una vez que no se cumplió",
   "instruction.violations.count": "{count, plural, one {No se cumplió 1 vez que usted anotó} other {No se cumplió # veces que usted anotó}}",
   "instruction.violations.group": "Veces que no se cumplió",
+  "instruction.violations.linked": "Lo que usted había pedido",
   "instruction.violations.meaning": "Esto es un recuento de lo que usted anotó, nada más. Lo que significa lo juzga usted.",
   "instructions.ack.hint": "Se lo dije a la enfermera jefa, se añadió al plan de cuidados, etc.",
   "instructions.ack.lead": "A quién se lo dijo, qué respondieron, y si quedó por escrito. A esto es a lo que se remitirá después.",

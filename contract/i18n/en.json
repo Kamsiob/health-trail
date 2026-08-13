@@ -653,6 +653,7 @@
   "instruction.violations.add": "Write down a time it was not followed",
   "instruction.violations.count": "{count, plural, one {Not followed once that you wrote down} other {Not followed # times that you wrote down}}",
   "instruction.violations.group": "Times it was not followed",
+  "instruction.violations.linked": "What you had asked for",
   "instruction.violations.meaning": "This is a count of what you wrote down, nothing more. What it means is yours to judge.",
   "instructions.ack.hint": "Told the charge nurse, added to the care plan, and so on",
   "instructions.ack.lead": "Who you told, what they said, and whether it went in writing. This is what you point back to later.",

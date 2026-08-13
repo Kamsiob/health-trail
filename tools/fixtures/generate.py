@@ -231,8 +231,8 @@ class Generator:
         self.measures(db, subject_id)
         self.milestones(db, subject_id, chapters)
         incidents = self.incidents(db, subject_id, chapters, people)
-        self.bills(db, subject_id, chapters)
-        self.instructions(db, subject_id, chapters)
+        bills = self.bills(db, subject_id, chapters)
+        self.instructions(db, subject_id, chapters, incidents, bills)
         projects = self.projects(db, subject_id)
         self.documents(db, subject_id, chapters, incidents)
         self.awkward(db, subject_id, chapters, threads)
@@ -1411,9 +1411,10 @@ class Generator:
         can never be missing because a seed happened not to pick it. A screen
         that has never rendered a disputed bill is a screen nobody has tested.
         """
+        made = []
         for index, state in enumerate(BILL_STATES):
             day = self.rng.randrange(0, max(1, self.days))
-            self.row(
+            made.append(self.row(
                 db,
                 "bill",
                 {
@@ -1428,9 +1429,10 @@ class Generator:
                     "received_end": self.ms(day, 23, 59),
                 },
                 day=day,
-            )
+            ))
+        return made
 
-    def instructions(self, db, subject_id, chapters):
+    def instructions(self, db, subject_id, chapters, incidents, bills):
         """Standing instructions with both tags, and violations recorded against them.
 
         Both tags on purpose. DESIGN.md section 5.7 says the federal tag must
@@ -1455,14 +1457,31 @@ class Generator:
                 },
                 day=day,
             )
-            for _ in range(self.rng.randrange(0, 4)):
+            for time in range(self.rng.randrange(0, 4)):
                 broke = min(self.days - 1, day + self.rng.randrange(1, 200))
+                # **Some of them say what they broke against**, because the
+                # columns exist, the screens read them, and a fixture that
+                # never writes one is a fixture that hides the whole link:
+                # every screenshot looks joined up and a real notebook is
+                # empty. That is the shape #371 named as the root cause, and
+                # leaving these null would have been it again in miniature.
+                #
+                # **Not all of them**, because the commoner case is a time
+                # somebody wrote down in a corridor and never went back to
+                # file, and a fixture where every row is filled in is a
+                # fixture that never shows the plain one.
+                links = {}
+                if time == 0 and incidents:
+                    links["incident_id"] = incidents[index % len(incidents)]
+                elif time == 1 and bills:
+                    links["bill_id"] = bills[index % len(bills)]
                 self.row(
                     db,
                     "instruction_violation",
                     {
                         "instruction_id": instruction_id,
                         "note": "Happened again. Nobody had been told.",
+                        **links,
                         **self.edtf_day(broke),
                     },
                     day=broke,

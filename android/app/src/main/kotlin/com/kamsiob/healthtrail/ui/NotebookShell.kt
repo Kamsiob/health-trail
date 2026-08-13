@@ -501,7 +501,6 @@ fun NotebookShell(
     var incidents by remember { mutableStateOf<List<Repository.Incident>>(emptyList()) }
     var incidentsOpen by remember { mutableStateOf(false) }
     var openIncident by remember { mutableStateOf<Repository.Incident?>(null) }
-    var incidentEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
     /** Set while a capture is going to hang off an incident rather than stand alone. */
     var addingToIncident by remember { mutableStateOf<String?>(null) }
     /** The incident to settle or reopen, and which of the two. */
@@ -586,8 +585,8 @@ fun NotebookShell(
     var medicationQuestions by remember {
         mutableStateOf<List<Repository.Question>>(emptyList())
     }
-    var incidentPeople by remember { mutableStateOf<List<Repository.Person>>(emptyList()) }
-    var incidentDocuments by remember { mutableStateOf<List<Repository.Document>>(emptyList()) }
+    var incidentDetail by remember { mutableStateOf(Repository.IncidentDetail()) }
+    var billViolations by remember { mutableStateOf<List<Repository.Violation>>(emptyList()) }
     var chapterDetail by remember { mutableStateOf<Repository.ChapterDetail?>(null) }
     var threadEntries by remember { mutableStateOf<List<Repository.TrailEntry>>(emptyList()) }
     var prep by remember { mutableStateOf<Repository.Prep?>(null) }
@@ -2902,15 +2901,19 @@ fun NotebookShell(
                 )
             } else {
                 LaunchedEffect(current.id, revision) {
-                    incidentEntries = repository.incidentTrail(current.id)
-                    incidentPeople = repository.peopleOnIncident(current.id)
-                    incidentDocuments = repository.documentsOnIncident(current.id)
+                    incidentDetail = repository.incidentDetail(current.id)
                 }
                 IncidentScreen(
                     incident = current,
-                    entries = incidentEntries,
-                    people = incidentPeople,
-                    documents = incidentDocuments,
+                    detail = incidentDetail,
+                    // **The way back from a request that was not followed**,
+                    // which is the list of what was asked for, since a request
+                    // has no screen of its own while B6 stands.
+                    onOpenViolations = {
+                        openIncident = null
+                        incidentsOpen = false
+                        openSection = Repository.Section.STANDING_INSTRUCTIONS
+                    },
                     // **The incident stays open underneath this too.** It
                     // closed itself to show a person, so checking the charge
                     // nurse's number mid-read cost three taps to get back and
@@ -3350,8 +3353,16 @@ fun NotebookShell(
         // sent it had nowhere to appear.
         openBill?.let { current ->
             val fresh = bills.firstOrNull { it.id == current.id } ?: current
+            LaunchedEffect(fresh.id, revision) {
+                billViolations = repository.violationsLinkedTo(fresh.id)
+            }
             BillScreen(
                 bill = fresh,
+                violations = billViolations,
+                onOpenViolations = {
+                    openBill = null
+                    openSection = Repository.Section.STANDING_INSTRUCTIONS
+                },
                 onEdit = { editingBill = fresh; addingBill = true },
                 onRemove = {
                     removing = Removal(
@@ -4815,3 +4826,4 @@ private data class StandingWrite(
     val activity: String,
     val since: com.kamsiob.healthtrail.time.Edtf.Date,
 )
+

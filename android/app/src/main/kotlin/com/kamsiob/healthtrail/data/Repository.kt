@@ -4348,6 +4348,38 @@ class Repository private constructor(
      * the order somebody would recount it: who I reported it to, then who I was
      * escalated to. A name repeated across four calls is one person.
      */
+    /**
+     * Everything hanging off one incident, in one object.
+     *
+     * **Four readers behind one call, the way `EntryDetail` already does it.**
+     * Not for the round trips: for the shell. `NotebookShell` is a single
+     * composable sitting at the JVM's 64KB method limit, B6, and every list
+     * passed to a screen is a parameter at a call site inside it. Adding the
+     * violations as a fifth list failed the build outright, in a message naming
+     * the shell rather than the change. Four names collapsing into one is what
+     * made room for the fifth.
+     */
+    data class IncidentDetail(
+        val entries: List<TrailEntry> = emptyList(),
+        val people: List<Person> = emptyList(),
+        val documents: List<Document> = emptyList(),
+        /**
+         * Every time a request was not followed that names this incident.
+         *
+         * **The other half of rule 18**, which four of the five panels called a
+         * dead end wearing a disguise: a violation could name an incident from
+         * the moment the form began to ask, and the incident said nothing back.
+         */
+        val violations: List<Violation> = emptyList(),
+    )
+
+    suspend fun incidentDetail(incidentId: String) = IncidentDetail(
+        entries = incidentTrail(incidentId),
+        people = peopleOnIncident(incidentId),
+        documents = documentsOnIncident(incidentId),
+        violations = violationsLinkedTo(incidentId),
+    )
+
     suspend fun peopleOnIncident(incidentId: String): List<Person> =
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
@@ -5404,6 +5436,15 @@ class Repository private constructor(
         val incidentTitle: String?,
         val billId: String?,
         val billDescription: String?,
+        /**
+         * Which request this was, for the screens reading from the other end.
+         *
+         * **Rule 18 is why this is here.** An incident that a violation names
+         * has to be able to name it back, and on that screen the instruction is
+         * the one thing the row cannot be read without.
+         */
+        val instructionId: String = "",
+        val instructionName: String? = null,
     )
 
     /**
@@ -5426,33 +5467,52 @@ class Repository private constructor(
     suspend fun violationsBySubject(subjectId: String): Map<String, List<Violation>> =
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
-                "SELECT v.id, v.instruction_id, v.occurred_edtf, v.note, " +
-                    "v.incident_id, i.title, v.bill_id, b.description " +
-                    "FROM live_instruction_violation v " +
-                    "JOIN live_standing_instruction s ON s.id = v.instruction_id " +
-                    "LEFT JOIN live_incident i ON i.id = v.incident_id " +
-                    "LEFT JOIN live_bill b ON b.id = v.bill_id " +
-                    "WHERE s.subject_id = ? " +
-                    "ORDER BY coalesce(v.occurred_start, v.created_at) DESC",
+                VIOLATION_SELECT + "WHERE s.subject_id = ? " + VIOLATION_ORDER,
                 arrayOf(subjectId),
             ).use { cursor ->
                 buildMap<String, MutableList<Violation>> {
                     while (cursor.moveToNext()) {
-                        getOrPut(cursor.getString(1)) { mutableListOf() }.add(
-                            Violation(
-                                id = cursor.getString(0),
-                                occurredEdtf = cursor.getString(2),
-                                note = cursor.getString(3),
-                                incidentId = cursor.getString(4),
-                                incidentTitle = cursor.getString(5),
-                                billId = cursor.getString(6),
-                                billDescription = cursor.getString(7),
-                            ),
-                        )
+                        getOrPut(cursor.getString(1)) { mutableListOf() }.add(cursor.toViolation())
                     }
                 }
             }
         }
+
+    /**
+     * Every time an instruction was not followed that names this row.
+     *
+     * **The other half of rule 18**, and the half that did not exist: an
+     * incident and a bill could be named by a violation and said nothing about
+     * it, which four of the five panels called a dead end wearing a disguise.
+     *
+     * **One reader for both**, matching either column against the same id,
+     * because every id in this notebook is generated locally and unique across
+     * every table: a bill's id is never an incident's. Two functions differing
+     * only in which column they compare would drift the moment either changed.
+     */
+    suspend fun violationsLinkedTo(rowId: String): List<Violation> =
+        withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                VIOLATION_SELECT + "WHERE v.incident_id = ? OR v.bill_id = ? " + VIOLATION_ORDER,
+                arrayOf(rowId, rowId),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) add(cursor.toViolation())
+                }
+            }
+        }
+
+    private fun android.database.Cursor.toViolation() = Violation(
+        id = getString(0),
+        instructionId = getString(1),
+        occurredEdtf = getString(2),
+        note = getString(3),
+        incidentId = getString(4),
+        incidentTitle = getString(5),
+        billId = getString(6),
+        billDescription = getString(7),
+        instructionName = getString(8),
+    )
 
     /**
      * Records that an instruction was not followed.
@@ -8015,3 +8075,23 @@ private const val TODAY_CARD_POINTS = 12
  * everything else: screen 17 is called "closed, and kept".
  */
 internal val FINISHED_STATUSES = setOf("done", "abandoned")
+
+/**
+ * The columns every reader of a violation needs, and the joins behind them.
+ *
+ * **Written once because there are two readers now**, one keyed by the person
+ * and one by whatever the violation was linked to. Two copies of a nine column
+ * select with three joins is two things to keep in step, and the second reader
+ * exists precisely because the first one's columns were being read by nothing.
+ */
+private const val VIOLATION_SELECT =
+    "SELECT v.id, v.instruction_id, v.occurred_edtf, v.note, " +
+        "v.incident_id, i.title, v.bill_id, b.description, s.name " +
+        "FROM live_instruction_violation v " +
+        "JOIN live_standing_instruction s ON s.id = v.instruction_id " +
+        "LEFT JOIN live_incident i ON i.id = v.incident_id " +
+        "LEFT JOIN live_bill b ON b.id = v.bill_id "
+
+/** Most recent first, by when it happened rather than by when it was typed. */
+private const val VIOLATION_ORDER =
+    "ORDER BY coalesce(v.occurred_start, v.created_at) DESC"

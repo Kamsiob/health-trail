@@ -653,6 +653,7 @@
   "instruction.violations.add": "دوّن مرة لم يُلتزم فيها",
   "instruction.violations.count": "{count, plural, zero {لم تدوّن أي مرة لم يُلتزم فيها} one {دوّنت مرة واحدة لم يُلتزم فيها} two {دوّنت مرتين لم يُلتزم فيهما} few {دوّنت # مرات لم يُلتزم فيها} many {دوّنت # مرة لم يُلتزم فيها} other {دوّنت # مرة لم يُلتزم فيها}}",
   "instruction.violations.group": "مرات لم يُلتزم فيها",
+  "instruction.violations.linked": "ما كنت قد طلبته",
   "instruction.violations.meaning": "هذا مجرد عدّ لما دوّنته، لا أكثر. وما يعنيه أمر تقدّره أنت.",
   "instructions.ack.hint": "أبلغت الممرضة المسؤولة، أُضيف إلى خطة الرعاية، وما شابه",
   "instructions.ack.lead": "من أبلغت، وماذا قالوا، وهل دُوّن كتابةً. هذا ما سترجع إليه لاحقًا.",

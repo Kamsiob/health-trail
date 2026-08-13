@@ -27,6 +27,7 @@ object BillTags {
     const val AMOUNT = "bill_amount"
     const val EDIT = "bill_edit"
     const val REMOVE = "bill_remove"
+    fun violation(id: String) = "bill_violation_$id"
     const val CHAPTER = "bill_chapter"
 }
 
@@ -55,6 +56,15 @@ object BillTags {
 @Composable
 fun BillScreen(
     bill: Repository.Bill,
+    /**
+     * Every time a request was not followed that names this bill.
+     *
+     * **The other half of rule 18**, the same as the incident's: a violation
+     * could name a bill from the moment the form began to ask, and the bill
+     * said nothing back. #371.
+     */
+    violations: List<Repository.Violation> = emptyList(),
+    onOpenViolations: () -> Unit = {},
     onEdit: () -> Unit,
     /** Taking the bill out of the notebook, per #218. Opens the confirmation. */
     onRemove: () -> Unit,
@@ -152,6 +162,32 @@ fun BillScreen(
                         onClick = { onOpenChapter(chapterId) },
                         modifier = Modifier.testTag(BillTags.CHAPTER),
                     )
+                }
+                Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
+        // **What was asked for and not done, on the bill that carries it.** The
+        // same group the incident grows, in the same shape, because it is the
+        // same question from the other end. Rule 18.
+        if (violations.isNotEmpty()) {
+            item {
+                Spacer(Modifier.height(Space.s))
+                GroupHeader(labelKey = "instruction.violations.linked")
+                Spacer(Modifier.height(Space.headerGap))
+                GroupedSurface {
+                    violations.forEachIndexed { index, violation ->
+                        DenseRow(
+                            title = Bidi.isolate(violation.instructionName.orEmpty()),
+                            subtitle = violation.note?.takeIf { it.isNotBlank() }
+                                ?.let { Bidi.isolate(it) },
+                            chevron = true,
+                            divider = index < violations.size - 1,
+                            onClick = onOpenViolations,
+                            clickLabel = strings["open.action"],
+                            modifier = Modifier.testTag(BillTags.violation(violation.id)),
+                        )
+                    }
                 }
                 Spacer(Modifier.height(Space.cardGap))
             }

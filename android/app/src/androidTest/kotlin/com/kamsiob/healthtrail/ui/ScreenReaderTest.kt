@@ -405,18 +405,37 @@ class ScreenReaderTest {
                     "Reported to the charge nurse.", "2026-01-24", 1L, null, null,
                     "Maplewood Care Center", 1,
                 ),
-                entries = listOf(
-                    Repository.TrailEntry(
-                        id = "e1", kind = "call", title = "Reported it to the charge nurse",
-                        body = "Asked for it in writing.",
-                        occurredEdtf = "2026-01-24", occurredStart = 1L, createdAt = 1L,
-                        isUnfiled = false, threads = emptyList(), pinnedAt = null,
+                detail = Repository.IncidentDetail(
+                    entries = listOf(
+                        Repository.TrailEntry(
+                            id = "e1", kind = "call", title = "Reported it to the charge nurse",
+                            body = "Asked for it in writing.",
+                            occurredEdtf = "2026-01-24", occurredStart = 1L, createdAt = 1L,
+                            isUnfiled = false, threads = emptyList(), pinnedAt = null,
+                        ),
+                    ),
+                    people = listOf(
+                        Repository.Person(
+                            "p1", "Angela Reyes", "Charge nurse", "5550142", null, null,
+                        ),
+                    ),
+                    // **Swept with the group that says what was not followed
+                    // here**, because a screen swept without it is a screen
+                    // swept without the half that was added. #371.
+                    violations = listOf(
+                        Repository.Violation(
+                            id = "v1",
+                            occurredEdtf = "2026-01-24",
+                            note = "The dressing was not changed for two days",
+                            incidentId = "i1",
+                            incidentTitle = null,
+                            billId = null,
+                            billDescription = null,
+                            instructionId = "s1",
+                            instructionName = "Change the dressing daily",
+                        ),
                     ),
                 ),
-                people = listOf(
-                    Repository.Person("p1", "Angela Reyes", "Charge nurse", "5550142", null, null),
-                ),
-                documents = emptyList(),
                 onOpenPerson = {},
                 onOpenDocument = {},
                 onOpenEntry = {},

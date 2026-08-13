@@ -3,8 +3,10 @@ package com.kamsiob.healthtrail.ui
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -101,9 +103,26 @@ class IncidentScreenTest {
                 HealthTrailTheme {
                     IncidentScreen(
                         incident = incident,
-                        entries = entries,
-                        people = emptyList(),
-                        documents = listOf(paperwork),
+                        detail = Repository.IncidentDetail(
+                            entries = entries,
+                            documents = listOf(paperwork),
+                            // **What the incident says back**, which is the
+                            // other half of rule 18: a violation could name it
+                            // and it said nothing at all in return. #371.
+                            violations = listOf(
+                                Repository.Violation(
+                                    id = "v1",
+                                    occurredEdtf = "2026-06-15",
+                                    note = "The dressing was not changed for two days",
+                                    incidentId = "i1",
+                                    incidentTitle = null,
+                                    billId = null,
+                                    billDescription = null,
+                                    instructionId = "s1",
+                                    instructionName = "Change the dressing daily",
+                                ),
+                            ),
+                        ),
                         onOpenPerson = {},
                         onOpenDocument = { openedDocument = it.id },
                         onOpenEntry = { opened = it.id },
@@ -146,5 +165,21 @@ class IncidentScreenTest {
         show()
         compose.onNodeWithTag(IncidentTags.document("d1")).performClick()
         assertEquals("d1", openedDocument)
+    }
+
+    /**
+     * **The other half of rule 18**, which four of the five panels named: a
+     * violation could point at an incident from the moment the form began to
+     * ask, and the incident said nothing back at all.
+     */
+    @Test
+    fun anIncidentSaysWhatWasNotFollowedHere() {
+        show()
+        compose.onNodeWithText("Change the dressing daily", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText("The dressing was not changed for two days", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 }
