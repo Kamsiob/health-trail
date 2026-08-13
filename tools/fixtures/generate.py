@@ -243,6 +243,7 @@ class Generator:
         # screen that reads it looked broken when it was the fixture that was
         # ordered wrong.
         self.involve(db, people)
+        self.call_details(db)
         # After documents, because a paper placeholder points at one, and after
         # projects, because it points at those. Same reason `involve` is last.
         self.fill_project_papers(db)
@@ -1118,7 +1119,78 @@ class Generator:
                     day=max(0, left - self.days // 3),
                 )
         self.named_people = named
+
+        # **Which places each person was at.** #143: `person_chapter` has a
+        # reader, the chapter card's people count, and no writer here, so that
+        # number was zero on every seeded notebook and the state was
+        # unreachable.
+        #
+        # **Matched on the name rather than spread round robin**, because the
+        # chapters and the places people work are the same names in this
+        # fixture: everybody at Maplewood belongs to the Maplewood chapters,
+        # including the memory unit, which is what the table means and what
+        # makes the count on a chapter card worth reading. One person per
+        # chapter, which is what a round robin produced, is a number nobody
+        # learns anything from.
+        #
+        # **Somebody with no place belongs to no chapter**, deliberately: the
+        # aide's agency and the county ombudsman are not part of where she is
+        # living, and a fixture where everybody belongs somewhere cannot show
+        # a chapter with a small team.
+        places = db.execute(
+            "SELECT id, name FROM chapter WHERE subject_id = ? ORDER BY started_start",
+            (subject_id,),
+        ).fetchall()
+        for index, person_id in enumerate(people):
+            place = PEOPLE[index][4] if index < len(PEOPLE) else None
+            if not place or not places:
+                continue
+            # **No fallback to the first chapter.** A doctor at an outside
+            # practice was never at the facility, and putting him there to
+            # avoid an empty case would be the fixture writing a row the app
+            # could not have written, which is the rule this file lives by.
+            at = [row for row in places if row[1].startswith(place.split(",")[0])]
+            for chapter_id, _ in at:
+                self.row(
+                    db,
+                    "person_chapter",
+                    {"person_id": person_id, "chapter_id": chapter_id},
+                    day=0,
+                )
+
         return people
+
+    def call_details(self, db):
+        """Whether anybody picked up, on the calls that say.
+
+        **`call_detail` has a writer in the app and none here**, #143, so a
+        seeded notebook had no call that said whether it was answered and the
+        entry screen's own line for it had never met generated data.
+
+        **Two in three, and only calls.** A call somebody never got round to
+        recording the outcome of is ordinary, and a fixture where every call
+        has one hides how the screen reads when most do not.
+        """
+        rows = db.execute(
+            "SELECT id, created_at FROM entry WHERE kind = 'call'"
+        ).fetchall()
+        for entry_id, at in rows:
+            if self.rng.random() > 0.66:
+                continue
+            reached = 1 if self.rng.random() < 0.7 else 0
+            db.execute(
+                "INSERT INTO call_detail (id, created_at, updated_at, origin_device, rev,"
+                " entry_id, reached, outcome) VALUES (?, ?, ?, ?, 1, ?, ?, ?)",
+                (
+                    self.new_id(),
+                    at,
+                    at,
+                    self.device,
+                    entry_id,
+                    reached,
+                    self.rng.choice(CALL_OUTCOMES) if reached else None,
+                ),
+            )
 
     def involve(self, db, people):
         """Who was on the other end of a call or a visit.
@@ -2367,6 +2439,14 @@ SHARED_CONTACT_PROJECTS = (0, 1)
 
 # Somebody who left. A care team that only ever grows is not a care team that
 # has been used for five years.
+# What came of a call, in the words somebody would write down afterward.
+CALL_OUTCOMES = [
+    "She said she would look into it.",
+    "Left a message.",
+    "They are checking with the doctor.",
+    "Nothing decided, calling back Monday.",
+]
+
 ARCHIVED_PEOPLE = [
     ("Nadine Cross", "Charge nurse, day shift", "(555) 555-0142", "Left in the spring.", "Maplewood Care Center"),
 ]
