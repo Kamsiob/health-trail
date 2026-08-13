@@ -780,6 +780,7 @@
   "money.heading": "账单的状况",
   "money.no_amount": "暂无金额",
   "money.open_total": "尚未结清",
+  "money.open_total.said": "还没有结清，{amount}",
   "money.state": "目前状态",
   "money.state.closed": "已结清",
   "money.state.disputed": "有异议",

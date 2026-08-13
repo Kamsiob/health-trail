@@ -780,6 +780,7 @@
   "money.heading": "Where bills stand",
   "money.no_amount": "No amount yet",
   "money.open_total": "Not settled yet",
+  "money.open_total.said": "Not settled yet, {amount}",
   "money.state": "Where it stands",
   "money.state.closed": "Closed",
   "money.state.disputed": "Disputed",

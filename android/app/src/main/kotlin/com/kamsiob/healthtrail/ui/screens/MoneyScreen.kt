@@ -137,8 +137,16 @@ fun MoneyScreen(
                     label = strings["money.open_total"],
                     value = formatMoney(strings, openTotal, currency),
                     hue = hueFor(Repository.Section.MONEY),
-                    description = strings["money.open_total"] + ", " +
-                        formatMoney(strings, openTotal, currency),
+                    // **One catalog sentence rather than two pieces glued
+                    // together.** A label, a comma and a number is an English
+                    // sentence built in Kotlin: the order, the separator and
+                    // the spacing all differ by language, and in Arabic the
+                    // pieces would also have run in the wrong direction. #13,
+                    // and `check_concatenation.py` refuses the shape now.
+                    description = strings(
+                        "money.open_total.said",
+                        "amount" to formatMoney(strings, openTotal, currency),
+                    ),
                     modifier = Modifier.testTag(MoneyTags.TOTAL),
                 )
                 Spacer(Modifier.height(Space.cardGap))

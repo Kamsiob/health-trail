@@ -780,6 +780,7 @@
   "money.heading": "Cómo van las facturas",
   "money.no_amount": "Sin importe todavía",
   "money.open_total": "Sin resolver todavía",
+  "money.open_total.said": "Todavía sin saldar, {amount}",
   "money.state": "En qué punto está",
   "money.state.closed": "Cerrada",
   "money.state.disputed": "En disputa",

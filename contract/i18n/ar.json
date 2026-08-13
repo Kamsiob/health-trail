@@ -780,6 +780,7 @@
   "money.heading": "وضع الفواتير",
   "money.no_amount": "لا يوجد مبلغ بعد",
   "money.open_total": "لم تُسوَّ بعد",
+  "money.open_total.said": "لم تُسوَّ بعد، {amount}",
   "money.state": "أين وصلت",
   "money.state.closed": "مغلقة",
   "money.state.disputed": "معترض عليها",
