@@ -1445,7 +1445,9 @@
   "violation.about.aside": "فقط إذا كنت تعرف الآن. يمكن أن ينتظر.",
   "violation.about.bill": "فاتورة",
   "violation.about.incident": "حادثة",
+  "violation.correct.title": "تصحيح ما دوّنته",
   "violation.title": "مرة لم يُلتزم فيها",
   "violation.what": "ما الذي حدث",
-  "violation.what.hint": "ما الذي جرى بدلًا من ذلك، ومن أخبرت"
+  "violation.what.hint": "ما الذي جرى بدلًا من ذلك، ومن أخبرت",
+  "violation.when": "متى حدث"
 }

@@ -18,11 +18,13 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.screens.InstructionTags
 import com.kamsiob.healthtrail.ui.screens.StandingInstructionsScreen
 import com.kamsiob.healthtrail.ui.screens.ViolationDraft
 import com.kamsiob.healthtrail.ui.screens.ViolationScreen
 import com.kamsiob.healthtrail.ui.screens.ViolationTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
+import java.time.LocalDate
 import java.util.Locale
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -104,7 +106,10 @@ class InstructionViolationTest {
         billDescription = billDescription,
     )
 
-    private fun showList(violations: List<Repository.Violation>) {
+    private fun showList(
+        violations: List<Repository.Violation>,
+        onOpenViolation: (Repository.Violation) -> Unit = {},
+    ) {
         val catalog = runBlocking { TemplateCatalog.instructions(context) }
         compose.setContent {
             CompositionLocalProvider(LocalStrings provides strings) {
@@ -120,6 +125,7 @@ class InstructionViolationTest {
                         } else {
                             mapOf(instruction.id to violations)
                         },
+                        onOpenViolation = { _, violation -> onOpenViolation(violation) },
                     )
                 }
             }
@@ -130,6 +136,8 @@ class InstructionViolationTest {
         incidents: List<Repository.Incident> = listOf(fall),
         bills: List<Repository.Bill> = listOf(ambulance),
         direction: LayoutDirection = LayoutDirection.Ltr,
+        existing: Repository.Violation? = null,
+        onRemove: (() -> Unit)? = null,
         onSave: (ViolationDraft) -> Unit = {},
     ) {
         compose.setContent {
@@ -144,6 +152,11 @@ class InstructionViolationTest {
                         onCancel = {},
                         incidents = incidents,
                         bills = bills,
+                        existing = existing,
+                        onRemove = onRemove,
+                        // Fixed, so the rendered date is the same string on
+                        // every run and at every hour of the night.
+                        today = LocalDate.of(2026, 8, 13),
                     )
                 }
             }
@@ -327,5 +340,100 @@ class InstructionViolationTest {
         showForm(onSave = { saved = it })
         compose.onNodeWithTag(ViolationTags.SAVE).performScrollTo().performClick()
         assertEquals(Edtf.Precision.DAY, saved?.occurred?.precision)
+    }
+
+    // ---- correcting one, which nothing could do -----------------------------
+
+    /**
+     * **Each time is its own door now.** Inside the card it was part of one
+     * merged announcement whose only action opened the acknowledgment sheet, so
+     * a person tapping their own sentence got somebody else's screen.
+     */
+    @Test
+    fun aRecordedTimeOpensForCorrection() {
+        var opened: Repository.Violation? = null
+        showList(
+            listOf(violation("v1", "They took her without telling me")),
+            onOpenViolation = { opened = it },
+        )
+        compose.onNodeWithTag(InstructionTags.violationRow("v1"))
+            .performScrollTo()
+            .performClick()
+        assertEquals("v1", opened?.id)
+    }
+
+    /**
+     * **A correction opens on what is already written down**, D147, including
+     * the link, which the disclosure must not fold away behind a control that
+     * says "Say what this was about".
+     */
+    @Test
+    fun aCorrectionOpensOnWhatIsAlreadyThere() {
+        showForm(
+            existing = violation(
+                "v1",
+                "They took her without telling me",
+                incidentTitle = fall.title,
+            ),
+        )
+        compose.onNodeWithText("They took her without telling me", substring = true)
+            .assertIsDisplayed()
+        // The disclosure is open rather than closed, so the chosen incident is
+        // visible without anybody hunting for it.
+        compose.onNodeWithTag(ViolationTags.incident(fall.id))
+            .performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithTag(ViolationTags.ABOUT).assertDoesNotExist()
+    }
+
+    @Test
+    fun aCorrectionCarriesTheTimeItIsCorrecting() {
+        var saved: ViolationDraft? = null
+        showForm(existing = violation("v1", "Half a sen"), onSave = { saved = it })
+        compose.onNodeWithTag(ViolationTags.SAVE).performScrollTo().performClick()
+        assertEquals("v1", saved?.violationId)
+        assertEquals("Half a sen", saved?.note)
+    }
+
+    /**
+     * Rule 17. The form stamped `LocalDate.now()` and drew no control at all,
+     * so a time written down a month later was dated today at full day
+     * precision and could never be changed.
+     */
+    @Test
+    fun whenItHappenedCanBeSaidToBeUnknown() {
+        var saved: ViolationDraft? = null
+        showForm(onSave = { saved = it })
+        compose.onNodeWithTag(ViolationTags.UNKNOWN_DATE).performScrollTo().performClick()
+        compose.onNodeWithTag(ViolationTags.SAVE).performScrollTo().performClick()
+        assertEquals(Edtf.Precision.UNKNOWN, saved?.occurred?.precision)
+    }
+
+    /** A time already written down keeps its own date rather than gaining today's. */
+    @Test
+    fun aCorrectionKeepsTheDateItWasGiven() {
+        var saved: ViolationDraft? = null
+        showForm(existing = violation("v1", "Nobody called"), onSave = { saved = it })
+        compose.onNodeWithTag(ViolationTags.SAVE).performScrollTo().performClick()
+        assertEquals("2026-08-05", saved?.occurred?.canonical)
+    }
+
+    /** **Removal belongs to a record that exists**, and nowhere else. D135. */
+    @Test
+    fun writingOneDownOffersNoWayToRemoveIt() {
+        showForm()
+        compose.onNodeWithTag(ViolationTags.REMOVE).assertDoesNotExist()
+    }
+
+    /**
+     * **It opens the confirmation rather than removing anything itself**, which
+     * is why the screen only reports the tap. The sheet is the shell's.
+     */
+    @Test
+    fun aCorrectionCanTakeTheTimeOffTheRecord() {
+        var asked = false
+        showForm(existing = violation("v1", "Nobody called"), onRemove = { asked = true })
+        compose.onNodeWithTag(ViolationTags.REMOVE).performScrollTo().performClick()
+        assertEquals(true, asked)
     }
 }

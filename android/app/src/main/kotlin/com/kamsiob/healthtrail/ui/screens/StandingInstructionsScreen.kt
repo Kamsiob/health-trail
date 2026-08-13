@@ -1,6 +1,5 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +28,7 @@ import com.kamsiob.healthtrail.ui.theme.hueFor
 
 object InstructionTags {
     fun violation(id: String) = "instruction_violation_$id"
+    fun violationRow(id: String) = "instruction_violation_row_$id"
     const val NAME = "standing_instructions"
     const val ADD = "standing_instructions_add"
     const val MEANING = "standing_instructions_meaning"
@@ -89,6 +89,16 @@ fun StandingInstructionsScreen(
      */
     violations: Map<String, List<Repository.Violation>> = emptyMap(),
     onRecordViolation: (Repository.StandingInstruction) -> Unit = {},
+    /**
+     * Opens one recorded time, where it can be corrected or taken off.
+     *
+     * **It was the only record in the app that could never be fixed**, and
+     * three of the five panels named that first: somebody interrupted mid
+     * sentence taps Save, and the half typed word is permanent and permanently
+     * counted.
+     */
+    onOpenViolation: (Repository.StandingInstruction, Repository.Violation) -> Unit =
+        { _, _ -> },
 ) {
     val strings = LocalStrings.current
 
@@ -181,6 +191,7 @@ fun StandingInstructionsScreen(
                             violation = violation,
                             continuesAbove = index > 0,
                             continuesBelow = index < times.lastIndex,
+                            onOpen = { onOpenViolation(instruction, violation) },
                         )
                     }
                 }
@@ -236,6 +247,10 @@ fun StandingInstructionsScreen(
  * a dash means a filter over somebody's entries, and these are not a view of
  * anything. They are the times themselves.
  *
+ * **A tap opens it**, where the words, the date and the link can be corrected
+ * and where it can be taken off the record. Until then this was the one thing a
+ * family typed that they had to live with exactly as typed.
+ *
  * **What it broke against is said plainly and is not yet a door.** Rule 18 wants
  * it opening the incident or the bill, and the reverse line on those two screens
  * with it. That is the next commit rather than this one, and a line that looks
@@ -246,6 +261,7 @@ private fun ViolationRow(
     violation: Repository.Violation,
     continuesAbove: Boolean,
     continuesBelow: Boolean,
+    onOpen: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -267,7 +283,12 @@ private fun ViolationRow(
                     // single utterance that began with the instruction's name.
                     .semantics(mergeDescendants = true) { }
                     .clip(Radius.card)
-                    .background(colors.card)
+                    .openableByTap(
+                        label = strings["open.action"],
+                        onTap = onOpen,
+                        resting = colors.card,
+                    )
+                    .testTag(InstructionTags.violationRow(violation.id))
                     .padding(Space.cardPadding),
             ) {
                 // **Not mono.** `DESIGN.md` 5.1: "Mono never touches a date, a

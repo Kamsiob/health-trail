@@ -1445,7 +1445,9 @@
   "violation.about.aside": "如果您已经知道再填。也可以以后再说。",
   "violation.about.bill": "一张账单",
   "violation.about.incident": "一个事件",
+  "violation.correct.title": "修改您记下的内容",
   "violation.title": "一次没有照做的记录",
   "violation.what": "发生了什么",
-  "violation.what.hint": "实际上做了什么，你跟谁说了"
+  "violation.what.hint": "实际上做了什么，你跟谁说了",
+  "violation.when": "什么时候发生的"
 }

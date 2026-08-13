@@ -575,6 +575,10 @@ fun NotebookShell(
         mutableStateOf<Repository.StandingInstruction?>(null)
     }
     var savingViolation by remember { mutableStateOf<ViolationDraft?>(null) }
+    /** The recorded time being corrected, with the request it belongs to. */
+    var correctingViolation by remember {
+        mutableStateOf<Pair<Repository.StandingInstruction, Repository.Violation>?>(null)
+    }
     var savingMedicationEvent by remember { mutableStateOf<MedicationEventDraft?>(null) }
     var medicationHistory by remember {
         mutableStateOf<List<Repository.MedicationEvent>>(emptyList())
@@ -952,6 +956,7 @@ fun NotebookShell(
     BackHandler(enabled = openMedication != null) { openMedication = null }
     BackHandler(enabled = recordingChangeTo != null) { recordingChangeTo = null }
     BackHandler(enabled = recordingViolationFor != null) { recordingViolationFor = null }
+    BackHandler(enabled = correctingViolation != null) { correctingViolation = null }
     BackHandler(enabled = exportOpen) { exportOpen = false; exportState = ExportState.READY }
     BackHandler(enabled = restoreOpen) {
         restoreOpen = false
@@ -2756,6 +2761,9 @@ fun NotebookShell(
                     onBack = { openSection = null },
                     violations = violationsByInstruction,
                     onRecordViolation = { recordingViolationFor = it },
+                    onOpenViolation = { instruction, violation ->
+                        correctingViolation = instruction to violation
+                    },
                 )
 
                 Repository.Section.APPOINTMENTS -> AppointmentsScreen(
@@ -2973,34 +2981,68 @@ fun NotebookShell(
 
         savingViolation?.let { draft ->
             LaunchedEffect(draft) {
-                repository.recordViolation(
-                    instructionId = draft.instructionId,
-                    occurred = draft.occurred,
-                    note = draft.note,
-                    // **The two arguments nothing had ever passed.** #371, and
-                    // both readers on the instruction's own row were dead until
-                    // this line: the form now asks, from behind the disclosure,
-                    // and never requires it.
-                    incidentId = draft.incidentId,
-                    billId = draft.billId,
-                )
+                if (draft.violationId == null) {
+                    repository.recordViolation(
+                        instructionId = draft.instructionId,
+                        occurred = draft.occurred,
+                        note = draft.note,
+                        // **The two arguments nothing had ever passed.** #371,
+                        // and both readers on the instruction's own row were
+                        // dead until this line: the form now asks, from behind
+                        // the disclosure, and never requires it.
+                        incidentId = draft.incidentId,
+                        billId = draft.billId,
+                    )
+                } else {
+                    repository.updateViolation(
+                        violationId = draft.violationId,
+                        occurred = draft.occurred,
+                        note = draft.note,
+                        incidentId = draft.incidentId,
+                        billId = draft.billId,
+                    )
+                }
                 savingViolation = null
                 revision += 1
             }
         }
 
-        recordingViolationFor?.let { instruction ->
-            ViolationScreen(
-                instruction = instruction,
-                onSave = { draft -> savingViolation = draft; recordingViolationFor = null },
-                onCancel = { recordingViolationFor = null },
-                // What it could have broken against, offered and never
-                // required. Both lists are already loaded for their own
-                // sections, so this costs no query.
-                incidents = incidents,
-                bills = bills,
-            )
-        }
+        // **One form, whether the time is being written down or corrected**,
+        // the same way the add screens take an `existing`. A second screen
+        // would be a second answer to "what happened, when, and against what".
+        (recordingViolationFor?.let { it to null } ?: correctingViolation)
+            ?.let { (instruction, existing) ->
+                ViolationScreen(
+                    instruction = instruction,
+                    existing = existing,
+                    onSave = { draft ->
+                        savingViolation = draft
+                        recordingViolationFor = null
+                        correctingViolation = null
+                    },
+                    onCancel = { recordingViolationFor = null; correctingViolation = null },
+                    // What it could have broken against, offered and never
+                    // required. Both lists are already loaded for their own
+                    // sections, so this costs no query.
+                    incidents = incidents,
+                    bills = bills,
+                    // **The screen closes as the confirmation opens**, the same
+                    // as an incident's, so the sheet is not asking about a
+                    // thing the screen behind it still shows.
+                    onRemove = existing?.let { time ->
+                        {
+                            removing = Removal(
+                                section = null,
+                                rowId = time.id,
+                                what = time.note?.takeIf { it.isNotBlank() }
+                                    ?: EventDateText.render(strings, time.occurredEdtf),
+                                remove = { repository.removeViolation(it) },
+                            )
+                            correctingViolation = null
+                        }
+                    },
+                )
+            }
 
         openMedication?.let { medication ->
             LaunchedEffect(medication.id, revision) {

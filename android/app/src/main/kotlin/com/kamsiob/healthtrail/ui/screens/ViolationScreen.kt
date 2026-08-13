@@ -20,11 +20,13 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.MoreChip
 import com.kamsiob.healthtrail.ui.components.PickerOption
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -35,6 +37,9 @@ object ViolationTags {
     const val NOTE = "violation_note"
     const val SAVE = "violation_save"
     const val ABOUT = "violation_about"
+    const val PICK_DATE = "violation_date"
+    const val UNKNOWN_DATE = "violation_date_unknown"
+    const val REMOVE = "violation_remove"
     const val MORE_INCIDENTS = "violation_more_incidents"
     const val MORE_BILLS = "violation_more_bills"
     fun incident(id: String) = "violation_incident_$id"
@@ -43,6 +48,8 @@ object ViolationTags {
 
 /** What the person wrote down about a time an instruction was not followed. */
 data class ViolationDraft(
+    /** The time being corrected, or null when one is being written down. */
+    val violationId: String? = null,
     val instructionId: String,
     val occurred: Edtf.Date,
     val note: String?,
@@ -82,6 +89,18 @@ private enum class AboutPicker { INCIDENTS, BILLS }
  * violation could never say what it broke against. The corridor path is still
  * one field and a Save.
  *
+ * **When it happened is asked rather than stamped.** It used to be
+ * `LocalDate.now()` with no control on the form at all, so somebody writing
+ * down last month's nine o'clock dose got today's date at full day precision
+ * and could never change it: false precision on a record read aloud in a room,
+ * which is exactly what rule 17 forbids. Today is still the default, so the
+ * corridor path is unchanged, and "I am not sure" saves and appears.
+ *
+ * **The same screen corrects one.** D147: a correction is never staged, it
+ * opens the disclosure, and it carries the way to take the record off. Somebody
+ * interrupted mid sentence who tapped Save had a half typed word on their
+ * record permanently, and it permanently counted.
+ *
  * **Nothing here is a complaint form.** The screen records what happened and
  * says nothing about what should be done, because the app never concludes.
  */
@@ -100,15 +119,28 @@ fun ViolationScreen(
      */
     incidents: List<Repository.Incident> = emptyList(),
     bills: List<Repository.Bill> = emptyList(),
+    /** The time being corrected, or null when one is being written down. */
+    existing: Repository.Violation? = null,
+    onRemove: (() -> Unit)? = null,
+    today: LocalDate = LocalDate.now(),
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    var note by rememberSaveable { mutableStateOf("") }
+    var note by rememberSaveable(existing?.id) { mutableStateOf(existing?.note.orEmpty()) }
     // Saveable, because a rotation part way through writing this down must not
     // quietly drop the link the person already chose.
-    var incidentId by rememberSaveable { mutableStateOf<String?>(null) }
-    var billId by rememberSaveable { mutableStateOf<String?>(null) }
+    var incidentId by rememberSaveable(existing?.id) { mutableStateOf(existing?.incidentId) }
+    var billId by rememberSaveable(existing?.id) { mutableStateOf(existing?.billId) }
     var openPicker by remember { mutableStateOf<AboutPicker?>(null) }
+    var picking by remember { mutableStateOf(false) }
+    // **The canonical string rather than the parsed date**, because that is
+    // what a bundle can carry and what the row actually holds.
+    var occurredEdtf by rememberSaveable(existing?.id) {
+        mutableStateOf(
+            existing?.occurredEdtf ?: Edtf.day(today).canonical,
+        )
+    }
+    val occurred = Edtf.parse(occurredEdtf) ?: Edtf.day(today)
 
     SectionScaffold(
         name = ViolationTags.NAME,
@@ -118,7 +150,7 @@ fun ViolationScreen(
         // subtitle, so the three lines are now where you are, what you are
         // doing, and which request it is about. #341.
         title = strings["notebook.section.standing_instructions"],
-        headingKey = "violation.title",
+        headingKey = if (existing == null) "violation.title" else "violation.correct.title",
         subtitle = Bidi.isolate(instruction.name),
         // **The way back is the cancel**, which is why this screen draws no
         // second one. It used to carry a full width outlined "Cancel" directly
@@ -147,6 +179,33 @@ fun ViolationScreen(
                 fieldTestTag = ViolationTags.NOTE,
             )
 
+            // **Asked, with today already the answer.** The same two the rest
+            // of the app gives a date: a day from the picker, or "I am not
+            // sure", which saves and appears rather than being refused. Rule 17,
+            // and `contract/DATA-CONTRACT.md` names this row's `occurred_edtf`
+            // as one that may be entirely unknown.
+            Spacer(Modifier.height(Space.sectionGap))
+            ChoiceChipGroup(label = strings["violation.when"]) {
+                ChoiceChip(
+                    label = strings["capture.when.exact"],
+                    selected = occurred.precision != Edtf.Precision.UNKNOWN,
+                    onClick = { picking = true },
+                    modifier = Modifier.testTag(ViolationTags.PICK_DATE),
+                )
+                ChoiceChip(
+                    label = strings["date.pick.clear"],
+                    selected = occurred.precision == Edtf.Precision.UNKNOWN,
+                    onClick = { occurredEdtf = Edtf.unknown().canonical },
+                    modifier = Modifier.testTag(ViolationTags.UNKNOWN_DATE),
+                )
+            }
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = EventDateText.render(strings, occurred),
+                style = HealthTrail.type.bodyL,
+                color = colors.ink,
+            )
+
             // **Behind one control nobody has to touch**, and absent entirely
             // where there is nothing to point at. The five chip cap and its way
             // to the rest are 5.11.1, the same set the capture form offers.
@@ -156,6 +215,11 @@ fun ViolationScreen(
                     labelKey = "violation.about",
                     asideKey = "violation.about.aside",
                     testTag = ViolationTags.ABOUT,
+                    // **A correction never hides what is already written down**,
+                    // D147 and the disclosure's own rule: folding away a link
+                    // somebody chose last week behind a control that says "Say
+                    // what this was about" is the app hiding their own answer.
+                    startOpen = existing?.incidentId != null || existing?.billId != null,
                 ) {
                     if (incidents.isNotEmpty()) {
                         val chosenIncident = incidents.firstOrNull { it.id == incidentId }
@@ -223,8 +287,9 @@ fun ViolationScreen(
                 onClick = {
                     onSave(
                         ViolationDraft(
+                            violationId = existing?.id,
                             instructionId = instruction.id,
-                            occurred = Edtf.day(LocalDate.now()),
+                            occurred = occurred,
                             note = note.trim(),
                             incidentId = incidentId,
                             billId = billId,
@@ -233,8 +298,35 @@ fun ViolationScreen(
                 },
                 modifier = Modifier.fillMaxWidth().testTag(ViolationTags.SAVE),
             )
+
+            // **Last, and set apart**, per D135 and every other thing in the
+            // app that can be taken off: it is the rarest thing anybody comes
+            // here to do, and it opens the confirmation rather than doing
+            // anything itself.
+            if (onRemove != null) {
+                Spacer(Modifier.height(Space.sectionGap))
+                QuietButton(
+                    label = strings["remove.action"],
+                    onClick = onRemove,
+                    modifier = Modifier.testTag(ViolationTags.REMOVE),
+                )
+            }
             Spacer(Modifier.height(Space.l))
         }
+    }
+
+    if (picking) {
+        DatePickerSheet(
+            // Opens on whatever is already chosen, so confirming without
+            // touching anything changes nothing.
+            initial = occurred,
+            onPick = {
+                occurredEdtf = it.canonical
+                picking = false
+            },
+            onDismiss = { picking = false },
+            today = today,
+        )
     }
 
     // **One sheet for whichever set was asked for**, per 5.11.1, because it is

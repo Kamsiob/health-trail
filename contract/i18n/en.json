@@ -1445,7 +1445,9 @@
   "violation.about.aside": "Only if you already know. It can wait.",
   "violation.about.bill": "A bill",
   "violation.about.incident": "An incident",
+  "violation.correct.title": "Correcting what you wrote down",
   "violation.title": "A time it was not followed",
   "violation.what": "What happened",
-  "violation.what.hint": "What was done instead, and who you told"
+  "violation.what.hint": "What was done instead, and who you told",
+  "violation.when": "When it happened"
 }

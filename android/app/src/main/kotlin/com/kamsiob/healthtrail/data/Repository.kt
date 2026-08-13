@@ -5484,6 +5484,60 @@ class Repository private constructor(
         ) + dateColumns("occurred", occurred),
     )
 
+    /**
+     * Corrects a time that was written down.
+     *
+     * **The record a family reads aloud in a room could not be corrected**, and
+     * three of the five panels named that as the thing to fix first. Somebody
+     * writing this down in a corridor is interrupted mid sentence and taps
+     * Save; without this the half typed word is permanent and it permanently
+     * increments a count. Rule 17 for the date, and #371 section 4 for the rest.
+     *
+     * **The instruction it belongs to is not a parameter**, deliberately. A time
+     * written against the wrong request is a different record, not a correction
+     * of this one, and moving it would silently change two counts at once.
+     */
+    suspend fun updateViolation(
+        violationId: String,
+        occurred: Edtf.Date,
+        note: String?,
+        incidentId: String? = null,
+        billId: String? = null,
+    ) = withContext(Dispatchers.IO) {
+        val columns = linkedMapOf<String, Any?>(
+            "note" to note?.ifBlank { null },
+            "incident_id" to incidentId,
+            "bill_id" to billId,
+        )
+        columns.putAll(dateColumns("occurred", occurred))
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+        db().database.write(
+            "UPDATE instruction_violation SET $assignments, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), violationId)).toTypedArray(),
+        )
+    }
+
+    /**
+     * Takes a time back off the record, as a tombstone. Rule 3.
+     *
+     * **Not through [delete] and its `Section`**, for the reason
+     * [removeIncident] records: this is not a section of the notebook and
+     * adding one to that enum to reach a row would put a thirteenth row on a
+     * screen the grid draws with twelve.
+     */
+    suspend fun removeViolation(violationId: String) = withContext(Dispatchers.IO) {
+        db().database.write(
+            "UPDATE instruction_violation SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ? AND deleted_at IS NULL",
+            arrayOf<Any?>(
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                violationId,
+            ),
+        )
+    }
+
     // -- the shape a person gave a project ----------------------------------
     //
     // contract/DATA-CONTRACT.md 8.7 and DESIGN.md 20. **Every project screen
