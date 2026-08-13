@@ -290,4 +290,27 @@ class PrepTest {
         assertNull(asked.askedAtAppointmentId)
         assertNull(asked.askedAtAppointmentTitle)
     }
+
+    /**
+     * **A question written for the person you are seeing lands on their sheet.**
+     * #46: until the prep sheet could write one, the only way was to leave it,
+     * open Ask next time, and write it with nobody attached, which is how a
+     * question for the charge nurse ends up on the billing meeting's sheet.
+     *
+     * The screen half is a prefill; this is the half that proves the prefill is
+     * worth anything, which is that the sheet filters on exactly that link.
+     */
+    @Test
+    fun aquestionWrittenForThatPersonComesToTheirSheet() = runBlocking {
+        val nurse = person("Angela Reyes", "Charge nurse")
+        val id = appointmentWith("Care plan meeting", "2026-03-01", nurse)
+        assertTrue("nothing waiting yet", prepFor(id).questions.isEmpty())
+
+        question("Why was the dressing not changed", nurse)
+
+        assertEquals(
+            listOf("Why was the dressing not changed"),
+            prepFor(id).questions.map { it.text },
+        )
+    }
 }

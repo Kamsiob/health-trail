@@ -3092,6 +3092,18 @@ fun NotebookShell(
                     // question off leaves the person on the list they walked
                     // in with. #360.
                     onOpenQuestion = { answering = it },
+                    // **The form opens knowing who this appointment is with**,
+                    // #46, so a question written in the room lands on this
+                    // sheet rather than on every sheet. A prefill the person
+                    // can change, never a decision made for them.
+                    onAsk = {
+                        val with = people.firstOrNull { it.id == sheet.appointment.personId }
+                        captureDraft = CaptureFormState(
+                            personId = with?.id,
+                            who = with?.displayName.orEmpty(),
+                        )
+                        capturing = CaptureKind.QUESTION
+                    },
                     onCorrect = {
                         editingAppointment = sheet.appointment
                         addingAppointment = true

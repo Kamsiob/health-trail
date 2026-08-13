@@ -23,6 +23,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.CalendarHandoff
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
@@ -51,6 +52,7 @@ object PrepTags {
     const val REMOVE = "prep_remove"
     const val CHANGES_FOLD = "prep_changes_fold"
     const val ASKED_FOLD = "prep_asked_fold"
+    const val ASK = "prep_ask"
     fun asked(id: String) = "prep_asked_$id"
     fun question(id: String) = "prep_question_$id"
     fun roleFold(role: String) = "prep_role_$role"
@@ -114,6 +116,17 @@ fun PrepScreen(
      * still standing on the list they came in with.
      */
     onOpenQuestion: (Repository.Question) -> Unit,
+    /**
+     * Writing down something else to ask, from the sheet itself.
+     *
+     * **#46: a question written during an appointment belongs to it.** Until
+     * now the only way to add one was to leave this sheet, open Ask next time,
+     * and write it there with nobody attached, which is how a question for the
+     * charge nurse ends up on the billing meeting's sheet. The form opens
+     * knowing who this appointment is with, and that is a prefill the person
+     * can change rather than a decision made for them.
+     */
+    onAsk: () -> Unit = {},
     onCorrect: () -> Unit,
     onRemove: () -> Unit,
     onBack: () -> Unit,
@@ -365,6 +378,18 @@ fun PrepScreen(
                     Spacer(Modifier.height(Space.sectionGap))
                 }
             }
+        }
+
+        // **The way to add one sits under the questions**, where somebody who
+        // has just read them is looking, rather than at the foot of a sheet
+        // whose middle is forty entries. #46.
+        item {
+            TextAction(
+                label = strings["questions.add"],
+                onClick = onAsk,
+                modifier = Modifier.testTag(PrepTags.ASK),
+            )
+            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **What has happened folds and is counted.** In year three this is
