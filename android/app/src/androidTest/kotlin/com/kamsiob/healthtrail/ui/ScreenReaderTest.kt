@@ -52,6 +52,7 @@ import com.kamsiob.healthtrail.ui.screens.CaptureBloom
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectEntryScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectSubjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
@@ -1896,6 +1897,24 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("correcting an entry")
+    }
+
+    /** Correcting who the notebook is about. #371. */
+    @Test
+    fun correctingTheSubjectLabelsEverything() {
+        compose.show {
+            CorrectSubjectScreen(
+                subject = Repository.Subject(
+                    id = "s1",
+                    displayName = "Margaret Ellison",
+                    relationship = "Mom",
+                    situationTemplateId = null,
+                ),
+                onSave = {},
+                onCancel = {},
+            )
+        }
+        assertEverythingIsLabeled("correcting the subject")
     }
 
     @Test

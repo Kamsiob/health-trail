@@ -148,6 +148,8 @@ import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyDraft
 import com.kamsiob.healthtrail.ui.screens.CorrectEntryScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectSubjectScreen
+import com.kamsiob.healthtrail.ui.screens.SubjectCorrection
 import com.kamsiob.healthtrail.ui.screens.EntryCorrection
 import com.kamsiob.healthtrail.ui.screens.PersonDraft
 import com.kamsiob.healthtrail.ui.screens.SectionCount
@@ -295,6 +297,12 @@ fun NotebookShell(
 
     /** Somebody being retired from the care team without being erased. #371. */
     var archivingPerson by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+
+    /** Correcting who the notebook is about, and what to write. #371. */
+    var correctingSubject by remember { mutableStateOf(false) }
+    /** The subject row, read when the correction opens rather than held all the time. */
+    var subjectRow by remember { mutableStateOf<Repository.Subject?>(null) }
+    var savingSubject by remember { mutableStateOf<SubjectCorrection?>(null) }
 
     /** The entry whose words are being corrected, and what to write. #368. */
     var correctingEntry by remember { mutableStateOf<Repository.TrailEntry?>(null) }
@@ -929,6 +937,7 @@ fun NotebookShell(
     // by the section handler below: the section closed behind a document that
     // stayed drawn, nothing changed on screen, and the next press left the app
     // from a detail screen. A document, a bill and the conflicts list. #371.
+    BackHandler(enabled = correctingSubject) { correctingSubject = false }
     BackHandler(enabled = openDocument != null) { openDocument = null }
     BackHandler(enabled = openBill != null) { openBill = null }
     BackHandler(enabled = conflictsOpen) { conflictsOpen = false; markConflictsSeen = true }
@@ -1214,6 +1223,7 @@ fun NotebookShell(
                         onSearch = { searchOpen = true },
                         onLibrary = { libraryOpen = true },
                         onSituation = { situationOpen = true },
+                        onSubject = { correctingSubject = true },
                         onExport = { exportState = ExportState.READY; exportOpen = true },
                         onRestore = {
                             restoreState = RestoreState.Empty
@@ -3542,6 +3552,39 @@ fun NotebookShell(
                 },
                 onCancel = { correctingEntry = null },
             )
+        }
+
+        // **Correcting who this is about, over the More tab it is reached from.**
+        LaunchedEffect(correctingSubject) {
+            subjectRow = if (correctingSubject) repository.activeSubject() else null
+        }
+
+        val subjectNow = subjectRow
+        if (correctingSubject && subjectNow != null) {
+            CorrectSubjectScreen(
+                subject = subjectNow,
+                onSave = { correction ->
+                    savingSubject = correction
+                    correctingSubject = false
+                },
+                onCancel = { correctingSubject = false },
+            )
+        }
+
+        val subjectEdit = savingSubject
+        val subjectTarget = subjectRow
+        if (subjectEdit != null && subjectTarget != null) {
+            LaunchedEffect(subjectEdit) {
+                repository.updateSubject(
+                    subjectId = subjectTarget.id,
+                    // bidi-ok: on its way to the database. Isolate marks here
+                    // would be stored as part of what the person typed.
+                    displayName = subjectEdit.displayName.trim(),
+                    relationship = subjectEdit.relationship.trim(),
+                )
+                savingSubject = null
+                revision += 1
+            }
         }
 
         val personArchive = archivingPerson

@@ -196,6 +196,37 @@ class Repository private constructor(
         ),
     )
 
+    /**
+     * Corrects who this notebook is about. #371.
+     *
+     * **The name was typed once at setup and could never be changed.** There
+     * was no updater at all, and the name appears on no screen inside the app:
+     * every read of it is inside a share block, so it reaches the emergency
+     * card, the incident summary, the prep sheet and the month review. **A typo
+     * made at two in the morning on install day was invisible until a clinician
+     * was holding it.**
+     *
+     * **The relationship travels with it**, because the two were asked in one
+     * breath at setup and correcting one without the other would send somebody
+     * back through the same screen twice.
+     */
+    suspend fun updateSubject(
+        subjectId: String,
+        displayName: String,
+        relationship: String?,
+    ) = withContext(Dispatchers.IO) {
+        db().database.write(
+            "UPDATE subject SET display_name = ?, relationship = ?, " +
+                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(
+                displayName,
+                relationship?.ifBlank { null },
+                System.currentTimeMillis(),
+                subjectId,
+            ),
+        )
+    }
+
     /** One subject by id. Used where a caller knows which one it means. */
     suspend fun subject(id: String): Subject? = withContext(Dispatchers.IO) {
         db().database.rawQuery(

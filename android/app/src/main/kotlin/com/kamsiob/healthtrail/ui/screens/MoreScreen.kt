@@ -29,6 +29,7 @@ object MoreTags {
     const val RESTORE = "more_restore"
     const val CONFLICTS = "more_conflicts"
     const val SITUATION = "more_situation"
+    const val SUBJECT = "more_subject"
 }
 
 /**
@@ -60,6 +61,8 @@ fun MoreScreen(
     modifier: Modifier = Modifier,
     onLibrary: () -> Unit = {},
     onSituation: () -> Unit = {},
+    /** Opens the correction for who this notebook is about. #371. */
+    onSubject: () -> Unit = {},
     onConflicts: () -> Unit = {},
     /**
      * How many merge resolutions the person has not looked at.
@@ -94,6 +97,7 @@ fun MoreScreen(
                 onSearch = onSearch,
                 onLibrary = onLibrary,
                 onSituation = onSituation,
+                onSubject = onSubject,
                 onConflicts = onConflicts,
                 conflicts = conflicts,
             )
@@ -118,6 +122,7 @@ private fun MoreDestinations(
     onSearch: () -> Unit,
     onLibrary: () -> Unit,
     onSituation: () -> Unit,
+    onSubject: () -> Unit,
     onConflicts: () -> Unit,
     conflicts: Int,
 ) {
@@ -149,6 +154,12 @@ private fun MoreDestinations(
         // this is "all of it changeable afterward from one screen, without
         // penalty". This is that screen's door.
         Destination(strings["more.situation"], onSituation, MoreTags.SITUATION),
+        // **Who the notebook is about, which had no door either.** #371: the
+        // name was typed once at setup, appears on no screen inside the app,
+        // and is printed on everything shared out of it, so a typo was
+        // invisible until a clinician was holding it. Beside the situation,
+        // because both are "how this notebook was set up".
+        Destination(strings["more.subject"], onSubject, MoreTags.SUBJECT),
         Destination(strings["more.export"], onExport, MoreTags.EXPORT),
         Destination(strings["more.restore"], onRestore, MoreTags.RESTORE),
         Destination(strings["more.about"], onAbout, MoreTags.ABOUT),
