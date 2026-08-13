@@ -1059,6 +1059,18 @@ class Generator:
         screen has to hold.
         """
         wanted = roster(self.days, len(PEOPLE), 3)
+        # **One row per place, written once and shared.** Two people at the same
+        # facility pointing at two organization rows is a row the app itself
+        # could never write: it matches on the name first, per #353.
+        places: dict[str, str] = {}
+
+        def place_id(name):
+            if not name:
+                return None
+            if name not in places:
+                places[name] = self.row(db, "organization", {"name": name}, day=0)
+            return places[name]
+
         # **Paired with the name, because a question has to be able to name who
         # it is waiting on the way the app does.** Choosing somebody from the
         # capture form's chips writes their display name into `question.role_label`
@@ -1068,7 +1080,7 @@ class Generator:
         # phone: a prep sheet headed "With Dr. Priya Raman" whose questions were
         # grouped under "Charge nurse".
         people = []
-        for name, role, phone, note in PEOPLE[:wanted]:
+        for name, role, phone, note, place in PEOPLE[:wanted]:
             day = self.rng.randrange(0, max(1, self.days))
             people.append(
                 self.row(
@@ -1080,6 +1092,7 @@ class Generator:
                         "role_label": role,
                         "phone": phone,
                         "notes": note,
+                        "organization_id": place_id(place),
                     },
                     day=day,
                 )
@@ -1088,7 +1101,7 @@ class Generator:
 
         # Only once there is enough history for somebody to have left.
         if self.days >= POINTS["month6"]:
-            for name, role, phone, note in ARCHIVED_PEOPLE:
+            for name, role, phone, note, place in ARCHIVED_PEOPLE:
                 left = self.rng.randrange(self.days // 3, max(2, self.days - 1))
                 self.row(
                     db,
@@ -1099,6 +1112,7 @@ class Generator:
                         "role_label": role,
                         "phone": phone,
                         "notes": note,
+                        "organization_id": place_id(place),
                         "archived_at": self.ms(left),
                     },
                     day=max(0, left - self.days // 3),
@@ -2300,15 +2314,21 @@ ORIGINALS = [
     "I do not know where the original is",
 ]
 
+# **The fifth field is where they work**, and it is the reason the care team can
+# fold at all. #353: `person.organization_id` shipped in Phase 0 with an index
+# and nothing wrote it, so the fixture had fifteen people and zero places and
+# the grouped state was unreachable. **Not everybody has one**, deliberately: an
+# ombudsman is a county office and the aide's agency is the kind of thing a
+# family never learns, so the "everyone else" fold has to stay reachable too.
 PEOPLE = [
-    ("Angela Reyes", "Charge nurse, day shift", "(555) 555-0142", "Days, 7 to 3. Ask for her by name."),
-    ("Marcus Bell", "Social worker", "(555) 555-0187", None),
-    ("Dr. Priya Raman", "Attending physician", "(555) 555-0110", "Rounds Tuesdays."),
-    ("Tonya K.", "Aide, evenings", None, "The one who actually calls back."),
-    ("Wesley Obi", "Director of nursing", "(555) 555-0100", None),
-    ("Sharon Delacroix", "Billing office", "(555) 555-0166", None),
-    ("Ruth Ann Pierce", "Physical therapy", "(555) 555-0173", None),
-    ("Jerome Whitfield", "Ombudsman", "(555) 555-0199", "County office. Not facility staff."),
+    ("Angela Reyes", "Charge nurse, day shift", "(555) 555-0142", "Days, 7 to 3. Ask for her by name.", "Maplewood Care Center"),
+    ("Marcus Bell", "Social worker", "(555) 555-0187", None, "Maplewood Care Center"),
+    ("Dr. Priya Raman", "Attending physician", "(555) 555-0110", "Rounds Tuesdays.", "Northside Medical Group"),
+    ("Tonya K.", "Aide, evenings", None, "The one who actually calls back.", None),
+    ("Wesley Obi", "Director of nursing", "(555) 555-0100", None, "Maplewood Care Center"),
+    ("Sharon Delacroix", "Billing office", "(555) 555-0166", None, "Maplewood Care Center"),
+    ("Ruth Ann Pierce", "Physical therapy", "(555) 555-0173", None, "Northside Medical Group"),
+    ("Jerome Whitfield", "Ombudsman", "(555) 555-0199", "County office. Not facility staff.", None),
 ]
 
 # The people on the other end of a long process, who are not the care team.
@@ -2348,7 +2368,7 @@ SHARED_CONTACT_PROJECTS = (0, 1)
 # Somebody who left. A care team that only ever grows is not a care team that
 # has been used for five years.
 ARCHIVED_PEOPLE = [
-    ("Nadine Cross", "Charge nurse, day shift", "(555) 555-0142", "Left in the spring."),
+    ("Nadine Cross", "Charge nurse, day shift", "(555) 555-0142", "Left in the spring.", "Maplewood Care Center"),
 ]
 
 APPOINTMENTS = [

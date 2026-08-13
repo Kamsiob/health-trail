@@ -4178,9 +4178,15 @@ fun NotebookShell(
                 // any one of these alone writes a real row. All three empty is a
                 // different thing: there is nothing to keep, so nothing is
                 // written and nothing is said about it either.
-                val anything = listOf(person.name, person.role, person.phone, person.notes)
-                    .any { it.isNotBlank() }
+                val anything =
+                    listOf(person.name, person.role, person.phone, person.notes, person.where)
+                        .any { it.isNotBlank() }
                 val correcting = editingPerson
+                // **The place they typed, matched against the ones already on
+                // this care team or written down as a new one.** #353. Cleared
+                // when they emptied the field, which is how somebody says a
+                // person no longer works there.
+                val place = repository.organizationNamed(person.where)
                 if (correcting != null) {
                     // A correction may legitimately empty every field except
                     // the name, so the all-blank guard below does not apply:
@@ -4191,6 +4197,7 @@ fun NotebookShell(
                         phone = person.phone.trim(),
                         roleLabel = person.role.trim(),
                         notes = person.notes.trim(),
+                        organizationId = place,
                     )
                 } else if (subject != null && anything) {
                     repository.createPerson(
@@ -4199,6 +4206,7 @@ fun NotebookShell(
                         phone = person.phone.trim(),
                         roleLabel = person.role.trim().ifBlank { null },
                         notes = person.notes.trim().ifBlank { null },
+                        organizationId = place,
                     )
                 }
                 editingPerson = null

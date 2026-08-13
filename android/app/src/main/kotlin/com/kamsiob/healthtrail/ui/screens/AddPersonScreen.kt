@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ object AddPersonTags {
     const val NAME = "add_person_name"
     const val ROLE = "add_person_role"
     fun suggestion(role: String) = "add_person_role_" + role.lowercase().replace(' ', '_')
+    const val WHERE = "add_person_where"
     const val PHONE = "add_person_phone"
     const val NOTES = "add_person_notes"
     const val SAVE = "add_person_save"
@@ -67,6 +69,16 @@ data class PersonDraft(
      * useful, and it was being kept in people's heads.
      */
     val notes: String = "",
+    /**
+     * Where they work, in the person's own words.
+     *
+     * **A name rather than a chosen row**, because there is no catalog of
+     * facilities and there must not be: which places a family deals with is
+     * theirs, the same way a care thread and a measure are. The repository
+     * matches what they typed against what they have typed before, so
+     * "Maplewood" twice is one place. #353.
+     */
+    val where: String = "",
 )
 
 /**
@@ -127,6 +139,7 @@ fun AddPersonScreen(
     var role by remember(existing?.id) { mutableStateOf(existing?.roleLabel.orEmpty()) }
     var phone by remember(existing?.id) { mutableStateOf(existing?.phone.orEmpty()) }
     var notes by remember(existing?.id) { mutableStateOf(existing?.notes.orEmpty()) }
+    var where by remember(existing?.id) { mutableStateOf(existing?.organizationName.orEmpty()) }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -194,6 +207,21 @@ fun AddPersonScreen(
                         hint = strings["careteam.add.role.hint"],
                         imeAction = ImeAction.Next,
                         fieldTestTag = AddPersonTags.ROLE,
+                    )
+
+                    // **Where they work, which the care team folds by.** Grid
+                    // screen 11 groups the people who are not in the lead by
+                    // exactly this, and the column and its index shipped in
+                    // Phase 0 with nothing writing either, so the fold could
+                    // not be built: grouping by a column nothing writes gives
+                    // one fold holding everybody. #353.
+                    FieldRow(
+                        label = strings["careteam.add.where"],
+                        value = where,
+                        onValueChange = { where = it },
+                        hint = strings["careteam.add.where.hint"],
+                        imeAction = ImeAction.Next,
+                        fieldTestTag = AddPersonTags.WHERE,
                     )
 
                     FieldRow(
@@ -304,7 +332,13 @@ fun AddPersonScreen(
                 label = strings["capture.save"],
                 onClick = {
                     onSave(
-                        PersonDraft(name = name, role = role, phone = phone, notes = notes),
+                        PersonDraft(
+                            name = name,
+                            role = role,
+                            phone = phone,
+                            notes = notes,
+                            where = where,
+                        ),
                     )
                 },
                 modifier = Modifier

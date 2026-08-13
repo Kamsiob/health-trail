@@ -350,6 +350,8 @@ class Repository private constructor(
          * knowledge that makes a care team worth keeping.
          */
         notes: String? = null,
+        /** Where they work, and it is never required. Rule 13, #353. */
+        organizationId: String? = null,
     ): String = insert(
         "person",
         mapOf(
@@ -358,6 +360,7 @@ class Repository private constructor(
             "phone" to phone?.ifBlank { null },
             "role_label" to roleLabel,
             "notes" to notes?.ifBlank { null },
+            "organization_id" to organizationId,
         ),
     )
 
@@ -376,15 +379,17 @@ class Repository private constructor(
         phone: String?,
         roleLabel: String?,
         notes: String? = null,
+        organizationId: String? = null,
     ) = withContext(Dispatchers.IO) {
         db().database.write(
             "UPDATE person SET display_name = ?, phone = ?, role_label = ?, notes = ?, " +
-                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+                "organization_id = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
                 displayName,
                 phone?.ifBlank { null },
                 roleLabel?.ifBlank { null },
                 notes?.ifBlank { null },
+                organizationId,
                 System.currentTimeMillis(),
                 personId,
             ),
@@ -1719,7 +1724,40 @@ class Repository private constructor(
          * entries with it.
          */
         val archivedAt: Long? = null,
+        /**
+         * Where they work, when the person said so. #353.
+         *
+         * **The column and its index shipped in Phase 0 and nothing wrote
+         * either.** Grid screen 11 folds the care team by where people work,
+         * "At Maplewood, 4 more" and "Outside, billing, ombudsman, 2", and
+         * that half could not be built: grouping by a column nothing writes
+         * produces one fold holding everybody, labeled with nothing.
+         */
+        val organizationId: String? = null,
+        /** Its name, carried so a row can say where somebody works. */
+        val organizationName: String? = null,
     )
+
+    /**
+     * Finds a place by the name somebody typed, or writes it down.
+     *
+     * **Matched on the name the person gave, ignoring case and surrounding
+     * space**, because "Maplewood" typed twice is one place and asking somebody
+     * to notice they have two would be the app making its own storage their
+     * problem, which is rule 20.
+     */
+    suspend fun organizationNamed(name: String): String? {
+        val wanted = name.trim()
+        if (wanted.isEmpty()) return null
+        val existing = withContext(Dispatchers.IO) {
+            db().database.rawQuery(
+                "SELECT id FROM live_organization WHERE lower(name) = lower(?) " +
+                    "ORDER BY created_at LIMIT 1",
+                arrayOf(wanted),
+            ).use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
+        }
+        return existing ?: insert("organization", mapOf("name" to wanted))
+    }
 
     /**
      * The care team, in the order they were added.
@@ -1731,12 +1769,15 @@ class Repository private constructor(
      */
     suspend fun people(subjectId: String): List<Person> = withContext(Dispatchers.IO) {
         db().database.rawQuery(
-            "SELECT id, display_name, role_label, phone, email, notes, pinned_at, " +
-                "archived_at FROM live_person WHERE subject_id = ? AND archived_at IS NULL " +
+            "SELECT p.id, p.display_name, p.role_label, p.phone, p.email, p.notes, " +
+                "p.pinned_at, p.archived_at, p.organization_id, o.name " +
+                "FROM live_person p " +
+                "LEFT JOIN live_organization o ON o.id = p.organization_id " +
+                "WHERE p.subject_id = ? AND p.archived_at IS NULL " +
                 // **Pinned first, most recently pinned at the top**, which is
                 // the ordering the trail's pinned run already uses, and the
                 // order somebody added people in for the rest.
-                "ORDER BY pinned_at IS NULL, pinned_at DESC, created_at",
+                "ORDER BY p.pinned_at IS NULL, p.pinned_at DESC, p.created_at",
             arrayOf(subjectId),
         ).use { cursor ->
             buildList {
@@ -1751,6 +1792,8 @@ class Repository private constructor(
                             notes = cursor.getString(5),
                             pinnedAt = if (cursor.isNull(6)) null else cursor.getLong(6),
                             archivedAt = if (cursor.isNull(7)) null else cursor.getLong(7),
+                            organizationId = cursor.getString(8),
+                            organizationName = cursor.getString(9),
                         ),
                     )
                 }

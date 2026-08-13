@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.Avatar
@@ -36,6 +37,7 @@ object CareTeamTags {
     fun person(id: String) = "care_team_person_$id"
     const val ADD = "care_team_add"
     const val REST_FOLD = "care_team_rest"
+    fun placeFold(name: String) = "care_team_place_" + name.lowercase().replace(' ', '_')
     fun call(id: String) = "care_team_call_$id"
 }
 
@@ -98,7 +100,9 @@ fun CareTeamScreen(
     byRecentUse: List<Repository.Person> = emptyList(),
 ) {
     val strings = LocalStrings.current
-    var restOpen by rememberSaveable { mutableStateOf(false) }
+    // **One open set rather than one flag**, because there is a fold per place
+    // now and a boolean can only describe one of them. #353.
+    var openPlaces by rememberSaveable { mutableStateOf(emptySet<String>()) }
 
     SectionScaffold(
         name = CareTeamTags.NAME,
@@ -160,30 +164,70 @@ fun CareTeamScreen(
             }
         }
 
+        // **Folded by where they work, which is what grid screen 11 draws**:
+        // "At Maplewood, 4 more" and "Outside, billing, ombudsman, 2". #353.
+        //
+        // **It could not be built until 2026-08-13**, because
+        // `person.organization_id` shipped in Phase 0 with its own index and
+        // nothing ever wrote it, so grouping by it produced one fold holding
+        // everybody labeled with nothing. The person form asks now.
+        //
+        // **A notebook where nobody has a place looks exactly as it did**: one
+        // group, one fold, the same words. That is the ordinary case and it
+        // must not change shape because a feature exists.
+        //
+        // **People with no place are their own fold and it goes last**, because
+        // "everyone else" is what it has always been and it is not a place.
         if (folds) {
-            item {
-                FoldRow(
-                    labelKey = "careteam.everyone",
-                    expanded = restOpen,
-                    onToggle = { restOpen = !restOpen },
-                    count = rest.size.toString(),
-                    modifier = Modifier.testTag(CareTeamTags.REST_FOLD),
+            val byPlace = rest
+                .groupBy { it.organizationName?.takeIf { name -> name.isNotBlank() } }
+                .toList()
+                .sortedWith(
+                    compareBy(
+                        { it.first == null },
+                        { -it.second.size },
+                        { it.first.orEmpty() },
+                    ),
                 )
-                Spacer(Modifier.height(Space.cardGap))
-            }
-            if (restOpen) {
-                item {
-                    GroupedSurface {
-                        rest.forEachIndexed { index, person ->
-                            PersonRow(
-                                person = person,
-                                onCall = { onCall(person) },
-                                onOpen = { onOpen(person) },
-                                isLast = index == rest.lastIndex,
-                            )
-                        }
+
+            byPlace.forEach { (place, group) ->
+                val key = place ?: NO_PLACE
+                item(key = "fold_$key") {
+                    if (place == null) {
+                        FoldRow(
+                            labelKey = "careteam.everyone",
+                            expanded = openPlaces.contains(key),
+                            onToggle = { openPlaces = openPlaces.toggle(key) },
+                            count = group.size.toString(),
+                            modifier = Modifier.testTag(CareTeamTags.REST_FOLD),
+                        )
+                    } else {
+                        FoldRowText(
+                            // A place is a name somebody typed, so it is
+                            // isolated exactly as every other one is.
+                            label = Bidi.isolate(place),
+                            expanded = openPlaces.contains(key),
+                            onToggle = { openPlaces = openPlaces.toggle(key) },
+                            count = group.size.toString(),
+                            modifier = Modifier.testTag(CareTeamTags.placeFold(place)),
+                        )
                     }
                     Spacer(Modifier.height(Space.cardGap))
+                }
+                if (openPlaces.contains(key)) {
+                    item(key = "group_$key") {
+                        GroupedSurface {
+                            group.forEachIndexed { index, person ->
+                                PersonRow(
+                                    person = person,
+                                    onCall = { onCall(person) },
+                                    onOpen = { onOpen(person) },
+                                    isLast = index == group.lastIndex,
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(Space.cardGap))
+                    }
                 }
             }
         }
@@ -289,3 +333,11 @@ private fun PersonRow(
         modifier = Modifier.testTag(CareTeamTags.person(person.id)),
     )
 }
+
+
+/** The name a fold with no place goes by, which is never a real place name. */
+private const val NO_PLACE = "care_team_no_place"
+
+/** Open it if it is closed, close it if it is open. */
+private fun Set<String>.toggle(key: String): Set<String> =
+    if (contains(key)) this - key else this + key
