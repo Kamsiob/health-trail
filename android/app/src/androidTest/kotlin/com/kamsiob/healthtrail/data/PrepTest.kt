@@ -177,4 +177,117 @@ class PrepTest {
     fun anAppointmentThatIsGoneProducesNothingRatherThanThrowing() = runBlocking {
         assertNull(repository.prep(subjectId, "not-an-appointment-id"))
     }
+
+    // ---- whose questions come with you --------------------------------------
+
+    private fun person(name: String, role: String?) = runBlocking {
+        repository.createPerson(subjectId = subjectId, displayName = name, roleLabel = role)
+    }
+
+    private fun question(text: String, forPerson: String?) = runBlocking {
+        repository.createQuestionWithEntry(
+            subjectId = subjectId,
+            text = text,
+            roleLabel = null,
+            occurred = day("2026-02-01"),
+            threadId = null,
+            isUnfiled = false,
+            personId = forPerson,
+        ).second
+    }
+
+    private fun appointmentWith(title: String, on: String, personId: String?) = runBlocking {
+        repository.createAppointment(
+            subjectId = subjectId,
+            title = title,
+            scheduled = day(on),
+            locationNote = null,
+            notes = null,
+            personId = personId,
+        )
+    }
+
+    /**
+     * **The whole of #371 item 2.** The sheet used to carry every open question
+     * in the notebook, so a question written for the wound nurse arrived at the
+     * billing meeting, and on a year five notebook that is a wall of things
+     * nobody in the room can answer.
+     */
+    @Test
+    fun onlyTheQuestionsForThePersonYouAreSeeingComeWithYou() = runBlocking {
+        val nurse = person("Angela Reyes", "Charge nurse")
+        val billing = person("Wesley Obi", "Billing office")
+        question("Why was the dressing not changed", nurse)
+        question("What is this charge for", billing)
+
+        val sheet = prepFor(appointmentWith("Care plan meeting", "2026-03-01", nurse))
+        val texts = sheet.questions.map { it.text }
+        assertTrue("the nurse's question comes", texts.any { it.startsWith("Why was the dressing") })
+        assertTrue("the billing question stays behind", texts.none { it.startsWith("What is this charge") })
+    }
+
+    /**
+     * **A question waiting on nobody comes to everything.** It is the commonest
+     * kind, it is what somebody asks whoever is in the room, and filtering it
+     * out would hide most of the sheet. Rule 13.
+     */
+    @Test
+    fun aquestionWaitingOnNobodyComesToEveryAppointment() = runBlocking {
+        val nurse = person("Angela Reyes", "Charge nurse")
+        question("Does she need new shoes", null)
+
+        val sheet = prepFor(appointmentWith("Care plan meeting", "2026-03-01", nurse))
+        assertEquals(listOf("Does she need new shoes"), sheet.questions.map { it.text })
+    }
+
+    /**
+     * **An appointment with nobody on it shows everything.** There is nothing
+     * to compare against, and hiding questions on the strength of a link
+     * nobody made would be the app deciding for them.
+     */
+    @Test
+    fun anAppointmentWithNobodyOnItShowsEveryOpenQuestion() = runBlocking {
+        val nurse = person("Angela Reyes", "Charge nurse")
+        question("Why was the dressing not changed", nurse)
+        question("Does she need new shoes", null)
+
+        val sheet = prepFor(appointmentWith("Somebody will call", "2026-03-01", null))
+        assertEquals(2, sheet.questions.size)
+    }
+
+    /**
+     * **Both ends of `asked_at_appointment_id`.** It shipped in Phase 0, the
+     * archive renders it, all four catalogs name it, and the only thing that
+     * had ever written it was the fixture generator, so half the link shipped:
+     * a question claiming an appointment that said nothing back. Rule 18.
+     */
+    @Test
+    fun aquestionAskedAtAnAppointmentIsCarriedByBothOfThem() = runBlocking {
+        val nurse = person("Angela Reyes", "Charge nurse")
+        val id = appointmentWith("Care plan meeting", "2026-03-01", nurse)
+        val questionId = question("Why was the dressing not changed", nurse)
+
+        repository.markQuestionAsked(questionId, day("2026-03-01"), appointmentId = id)
+
+        val sheet = prepFor(id)
+        assertTrue("it is no longer waiting", sheet.questions.isEmpty())
+        assertEquals(
+            "and the appointment says it was asked here",
+            listOf("Why was the dressing not changed"),
+            sheet.asked.map { it.text },
+        )
+        val asked = repository.questions(subjectId).first { it.id == questionId }
+        assertEquals("Care plan meeting", asked.askedAtAppointmentTitle)
+    }
+
+    /** A question ticked off the list rather than off a sheet claims no appointment. */
+    @Test
+    fun aquestionAskedAwayFromAnAppointmentClaimsNone() = runBlocking {
+        val questionId = question("Does she need new shoes", null)
+        repository.markQuestionAsked(questionId, day("2026-03-02"))
+
+        val asked = repository.questions(subjectId).first { it.id == questionId }
+        assertNull(asked.askedAtAppointmentId)
+        assertNull(asked.askedAtAppointmentTitle)
+    }
 }

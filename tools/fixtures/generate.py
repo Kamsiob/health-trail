@@ -1059,6 +1059,14 @@ class Generator:
         screen has to hold.
         """
         wanted = roster(self.days, len(PEOPLE), 3)
+        # **Paired with the name, because a question has to be able to name who
+        # it is waiting on the way the app does.** Choosing somebody from the
+        # capture form's chips writes their display name into `question.role_label`
+        # and their id into `question.person_id`, so a fixture that writes a job
+        # title beside a random id produces a row the app itself could never
+        # write, which is the rule `check_fixtures.py` exists for. Seen on the
+        # phone: a prep sheet headed "With Dr. Priya Raman" whose questions were
+        # grouped under "Charge nurse".
         people = []
         for name, role, phone, note in PEOPLE[:wanted]:
             day = self.rng.randrange(0, max(1, self.days))
@@ -1076,6 +1084,7 @@ class Generator:
                     day=day,
                 )
             )
+        named = list(zip(people, [entry[0] for entry in PEOPLE[:wanted]]))
 
         # Only once there is enough history for somebody to have left.
         if self.days >= POINTS["month6"]:
@@ -1094,6 +1103,7 @@ class Generator:
                     },
                     day=max(0, left - self.days // 3),
                 )
+        self.named_people = named
         return people
 
     def involve(self, db, people):
@@ -1213,9 +1223,16 @@ class Generator:
             if medications and index % 4 == 0:
                 values["medication_id"] = medications[index % len(medications)]
             if role:
-                values["role_label"] = role
-                if people:
-                    values["person_id"] = self.rng.choice(people)
+                if people and getattr(self, "named_people", None):
+                    # The app writes both together or neither: the chip sets the
+                    # id and puts that person's own name in the words. A role
+                    # title beside a different person's id is a row no screen
+                    # could have produced.
+                    person_id, person_name = self.rng.choice(self.named_people)
+                    values["person_id"] = person_id
+                    values["role_label"] = person_name
+                else:
+                    values["role_label"] = role
             # Two in three were asked. The rest are still waiting, which is what
             # the next prep sheet picks up.
             if self.rng.random() < 0.66 and asked_at:

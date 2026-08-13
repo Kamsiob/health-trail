@@ -40,6 +40,7 @@ object AnswerTags {
     const val SAVE = "answer_save"
     const val CANCEL = "answer_cancel"
     const val ASKED = "answer_asked"
+    const val ASKED_AT = "answer_asked_at"
     const val REMOVE = "answer_remove"
 }
 
@@ -138,6 +139,22 @@ fun AnswerSheet(
                 style = HealthTrail.type.bodyM,
                 color = colors.ink2,
             )
+
+            // **Where it was asked, when it was ticked off a prep sheet.**
+            // `asked_at_appointment_id` shipped in Phase 0 and only the fixture
+            // had ever written it, so a question could claim an appointment
+            // that said nothing back. Both ends say it now, rule 18. **Absent
+            // rather than empty** when it was asked somewhere the app was not
+            // told about, which is most of them.
+            question.askedAtAppointmentTitle?.takeIf { it.isNotBlank() }?.let { title ->
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = strings("questions.asked.at", "what" to Bidi.isolate(title)),
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                    modifier = Modifier.testTag(AnswerTags.ASKED_AT),
+                )
+            }
 
             Spacer(Modifier.height(Space.l))
 

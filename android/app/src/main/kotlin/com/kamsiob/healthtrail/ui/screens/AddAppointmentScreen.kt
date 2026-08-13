@@ -23,9 +23,11 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
@@ -33,6 +35,9 @@ import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.MoreChip
+import com.kamsiob.healthtrail.ui.components.PickerOption
+import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -44,7 +49,9 @@ object AddApptTags {
     const val CANCEL = "add_appt_cancel"
     const val PICK_DATE = "add_appt_pick_date"
     const val MORE = "add_appt_more"
+    const val MORE_PEOPLE = "add_appt_more_people"
     fun field(key: String) = "add_appt_$key"
+    fun person(id: String) = "add_appt_person_$id"
 }
 
 /** What the person typed about an appointment. */
@@ -53,6 +60,16 @@ data class AppointmentDraft(
     val where: String = "",
     val notes: String = "",
     val scheduled: Edtf.Date? = null,
+    /**
+     * Who it is with.
+     *
+     * **`appointment.person_id` has been in the schema since Phase 0 with
+     * nothing writing it**, and it is the half that makes the prep sheet
+     * possible: `question.person_id` says who a question is waiting for, and
+     * without this there was nothing to compare it against, so the sheet
+     * showed every open question in the notebook. #371 item 2.
+     */
+    val personId: String? = null,
 )
 
 /**
@@ -72,6 +89,12 @@ data class AppointmentDraft(
  * more".** #361, 2026-08-12. Four fields down one scroll asked for an address
  * in the same breath as the appointment, and the address usually arrives on a
  * letter days later.
+ *
+ * **Who it is with leads too, and it is a row of taps rather than a field.**
+ * It is what makes the prep sheet answer: without it every open question in the
+ * notebook came to every appointment, including the ones waiting on somebody
+ * who will not be in the room. **The aside says why**, because a control that
+ * asks for something without saying what it buys is one people skip.
  */
 @Composable
 fun AddAppointmentScreen(
@@ -80,6 +103,8 @@ fun AddAppointmentScreen(
     modifier: Modifier = Modifier,
     /** The record being corrected, or null when this one is new. */
     existing: Repository.Appointment? = null,
+    /** The care team, most recently used first. Empty on a new notebook. */
+    people: List<Repository.Person> = emptyList(),
     today: LocalDate = LocalDate.now(),
 ) {
     val strings = LocalStrings.current
@@ -93,10 +118,12 @@ fun AddAppointmentScreen(
                 where = existing?.locationNote.orEmpty(),
                 notes = existing?.notes.orEmpty(),
                 scheduled = existing?.scheduledEdtf?.let { Edtf.parse(it) },
+                personId = existing?.personId,
             ),
         )
     }
     var picking by remember { mutableStateOf(false) }
+    var pickingPerson by remember { mutableStateOf(false) }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -165,6 +192,45 @@ fun AddAppointmentScreen(
                         style = HealthTrail.type.bodyL,
                         color = colors.ink,
                     )
+                }
+
+                // **Who it is with**, five chips and a way to the rest, per
+                // 5.11.1 and the same set the capture form offers. Tapping the
+                // chosen one clears it, because a link somebody cannot take off
+                // again is one they hesitate to put on.
+                if (people.isNotEmpty()) {
+                    val chosen = people.firstOrNull { it.id == draft.personId }
+                    val shown = cappedChips(people, chosen)
+                    Spacer(Modifier.height(Space.sectionGap))
+                    ChoiceChipGroup(
+                        label = strings["appts.who"],
+                        aside = strings["appts.who.aside"],
+                    ) {
+                        shown.forEach { person ->
+                            ChoiceChip(
+                                // A name is the person's own words. #226.
+                                label = Bidi.isolate(person.displayName),
+                                selected = draft.personId == person.id,
+                                onClick = {
+                                    draft = draft.copy(
+                                        personId = if (draft.personId == person.id) {
+                                            null
+                                        } else {
+                                            person.id
+                                        },
+                                    )
+                                },
+                                modifier = Modifier.testTag(AddApptTags.person(person.id)),
+                            )
+                        }
+                        if (people.size > shown.size) {
+                            MoreChip(
+                                label = strings("chips.all", "count" to people.size),
+                                onClick = { pickingPerson = true },
+                                modifier = Modifier.testTag(AddApptTags.MORE_PEOPLE),
+                            )
+                        }
+                    }
                 }
 
                 Spacer(Modifier.height(Space.sectionGap))
@@ -242,6 +308,28 @@ fun AddAppointmentScreen(
             today = today,
             // An appointment is ahead, so the picker asks in the future tense.
             titleKey = "date.pick.title.future",
+        )
+    }
+
+    if (pickingPerson) {
+        ChipPickerSheet(
+            title = strings["appts.who"],
+            options = people.map {
+                PickerOption(
+                    id = it.id,
+                    label = Bidi.isolate(it.displayName),
+                    detail = it.roleLabel?.takeIf { role -> role.isNotBlank() }
+                        ?.let { role -> Bidi.isolate(role) },
+                )
+            },
+            selectedId = draft.personId,
+            onPick = { option ->
+                pickingPerson = false
+                draft = draft.copy(
+                    personId = if (draft.personId == option.id) null else option.id,
+                )
+            },
+            onDismiss = { pickingPerson = false },
         )
     }
 }

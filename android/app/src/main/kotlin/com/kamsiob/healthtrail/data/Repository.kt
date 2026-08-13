@@ -2997,11 +2997,13 @@ class Repository private constructor(
         scheduled: Edtf.Date,
         locationNote: String?,
         notes: String?,
+        personId: String? = null,
     ) = withContext(Dispatchers.IO) {
         val columns = dateColumns("scheduled", scheduled) + mapOf(
             "title" to title,
             "location_note" to locationNote?.ifBlank { null },
             "notes" to notes?.ifBlank { null },
+            "person_id" to personId,
         )
         val assignments = columns.keys.joinToString(", ") { "$it = ?" }
         db().database.write(
@@ -3210,15 +3212,31 @@ class Repository private constructor(
         val scheduledStart: Long?,
         val locationNote: String?,
         val notes: String?,
+        /**
+         * Who it is with, when the person said so.
+         *
+         * **The column has been in the schema since Phase 0 and nothing wrote
+         * it**, which is why the prep sheet could not filter: `question` has a
+         * `person_id` whose own schema comment says "a question waiting for the
+         * wound nurse should not appear on the prep sheet for a billing
+         * meeting", and there was nothing on the other side to compare against.
+         * #371 item 2.
+         */
+        val personId: String? = null,
+        /** Their name, carried so the screen says who without a second query. */
+        val personName: String? = null,
     )
 
     /** Every appointment, soonest first. */
     suspend fun appointments(subjectId: String): List<Appointment> =
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
-                "SELECT id, title, scheduled_edtf, scheduled_start, location_note, notes " +
-                    "FROM live_appointment WHERE subject_id = ? " +
-                    "ORDER BY scheduled_start IS NULL, scheduled_start",
+                "SELECT a.id, a.title, a.scheduled_edtf, a.scheduled_start, " +
+                    "a.location_note, a.notes, a.person_id, p.display_name " +
+                    "FROM live_appointment a " +
+                    "LEFT JOIN live_person p ON p.id = a.person_id " +
+                    "WHERE a.subject_id = ? " +
+                    "ORDER BY a.scheduled_start IS NULL, a.scheduled_start",
                 arrayOf(subjectId),
             ).use { cursor ->
                 buildList {
@@ -3232,6 +3250,8 @@ class Repository private constructor(
                                     if (cursor.isNull(3)) null else cursor.getLong(3),
                                 locationNote = cursor.getString(4),
                                 notes = cursor.getString(5),
+                                personId = cursor.getString(6),
+                                personName = cursor.getString(7),
                             ),
                         )
                     }
@@ -3246,6 +3266,11 @@ class Repository private constructor(
         scheduled: Edtf.Date,
         locationNote: String? = null,
         notes: String? = null,
+        /**
+         * Who it is with, and it is never required. Rule 13: somebody who was
+         * told "come in Tuesday" and nothing else has an appointment.
+         */
+        personId: String? = null,
     ): String = insert(
         "appointment",
         mapOf(
@@ -3253,6 +3278,7 @@ class Repository private constructor(
             "title" to title,
             "location_note" to locationNote?.ifBlank { null },
             "notes" to notes?.ifBlank { null },
+            "person_id" to personId,
         ) + dateColumns("scheduled", scheduled),
     )
 
@@ -3726,14 +3752,38 @@ class Repository private constructor(
          * own rather than disappearing with it.
          */
         val medicationName: String? = null,
+        /**
+         * Who it is waiting on, which is what the prep sheet filters by.
+         *
+         * **Null is a real answer and it is the commonest one**: a question
+         * nobody in particular owns is a question for whoever is in the room,
+         * so it comes to every appointment rather than to none.
+         */
+        val personId: String? = null,
+        /** Their name, so a question can say who it is for without a second query. */
+        val personName: String? = null,
+        /**
+         * The appointment it was asked at, when it was asked at one.
+         *
+         * **`asked_at_appointment_id` shipped in Phase 0, is rendered by the
+         * archive, is named in all four catalogs, and the only thing that had
+         * ever written it was the fixture generator.** So half of the link
+         * shipped: a question claiming an appointment it does not appear on.
+         * #371 item 2, and the same shape as #330.
+         */
+        val askedAtAppointmentId: String? = null,
+        val askedAtAppointmentTitle: String? = null,
     ) {
         val isOpen: Boolean get() = askedEdtf.isNullOrBlank()
     }
 
     private val questionColumns =
         "SELECT q.id, q.text, q.role_label, q.entry_id, q.asked_edtf, q.answer_text, " +
-            "q.medication_id, m.name FROM live_question q " +
-            "LEFT JOIN live_medication m ON m.id = q.medication_id "
+            "q.medication_id, m.name, q.person_id, p.display_name, " +
+            "q.asked_at_appointment_id, a.title FROM live_question q " +
+            "LEFT JOIN live_medication m ON m.id = q.medication_id " +
+            "LEFT JOIN live_person p ON p.id = q.person_id " +
+            "LEFT JOIN live_appointment a ON a.id = q.asked_at_appointment_id "
 
     private fun android.database.Cursor.toQuestion() = Question(
         id = getString(0),
@@ -3744,6 +3794,10 @@ class Repository private constructor(
         answerText = getString(5),
         medicationId = getString(6),
         medicationName = getString(7),
+        personId = getString(8),
+        personName = getString(9),
+        askedAtAppointmentId = getString(10),
+        askedAtAppointmentTitle = getString(11),
     )
 
     /** Everything to ask, still waiting first, oldest first within each group. */
@@ -3849,6 +3903,18 @@ class Repository private constructor(
          * hoping to find it again by searching.
          */
         medicationId: String? = null,
+        /**
+         * Who it is waiting on, as a link rather than as words.
+         *
+         * **The capture form has always collected this and this writer never
+         * received it.** Choosing the charge nurse from the chips wrote her
+         * name into `role_label` and linked the entry to her, and the question
+         * itself pointed at nobody, so `question.person_id` sat in the schema
+         * with the comment "a question waiting for the wound nurse should not
+         * appear on the prep sheet for a billing meeting" and no writer at all.
+         * That is the whole of #371's root cause in one argument.
+         */
+        personId: String? = null,
     ): Pair<String, String> = withContext(Dispatchers.IO) {
         val database = db().database
         database.beginTransaction()
@@ -3882,6 +3948,7 @@ class Repository private constructor(
                     "role_label" to roleLabel?.ifBlank { null },
                     "entry_id" to entryId,
                     "medication_id" to medicationId,
+                    "person_id" to personId,
                 ),
             )
             database.setTransactionSuccessful()
@@ -3902,9 +3969,21 @@ class Repository private constructor(
         questionId: String,
         asked: Edtf.Date,
         answerText: String? = null,
+        /**
+         * Which appointment it was asked at, when it was ticked off a prep
+         * sheet rather than off the list.
+         *
+         * **Null is right when it was not.** A question asked on the phone on a
+         * Tuesday belongs to no appointment, and stamping the nearest one would
+         * be the app inventing a fact about where somebody was.
+         */
+        appointmentId: String? = null,
     ) = withContext(Dispatchers.IO) {
         val columns = dateColumns("asked", asked) +
-            mapOf("answer_text" to answerText?.ifBlank { null })
+            mapOf(
+                "answer_text" to answerText?.ifBlank { null },
+                "asked_at_appointment_id" to appointmentId,
+            )
         val assignments = columns.keys.joinToString(", ") { "$it = ?" }
         db().database.write(
             "UPDATE question SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
@@ -4917,6 +4996,19 @@ class Repository private constructor(
         /** Questions nobody has asked yet, most recently written first. */
         val questions: List<Question>,
         /**
+         * What was asked at this appointment, so it does not simply vanish.
+         *
+         * **The other half of the link, per rule 18.** A question stamped with
+         * this appointment said so on its own face and the appointment said
+         * nothing back, and a ticked question disappearing off the sheet is
+         * also the shape somebody reads as data loss.
+         *
+         * **Carried inside `Prep` rather than as a second parameter**, which is
+         * the B6 lesson: every parameter crossing into a screen is bytecode
+         * inside `NotebookShell`, and this object was already going there.
+         */
+        val asked: List<Question> = emptyList(),
+        /**
          * Everything written down since the last appointment.
          *
          * **Since the last one, not since some window.** A person walking into
@@ -4952,7 +5044,34 @@ class Repository private constructor(
                 .maxByOrNull { it.scheduledStart!! }
             val since = previous?.scheduledStart
 
-            val open = questions(subjectId).filter { it.isOpen }
+            // **The questions for the person you are about to see, plus the
+            // ones waiting on nobody in particular.**
+            //
+            // **It used to be every open question in the notebook**, which is
+            // what #371 item 2 named: a question written for the wound nurse
+            // came to the billing meeting, and on a year five notebook the
+            // sheet was a wall of things nobody in that room could answer. The
+            // schema's own comment on `question.person_id` has said so since
+            // Phase 0; what was missing was anything writing either side.
+            //
+            // **A question with nobody on it comes to every appointment.**
+            // That is a real answer rather than a gap: most questions are for
+            // whoever is in the room, and filtering them out would hide the
+            // commonest kind. Rule 13, and it is why this is a filter on a link
+            // rather than a requirement to choose one.
+            //
+            // **An appointment with nobody on it shows everything**, because
+            // there is nothing to compare against and a sheet that hid
+            // questions on the strength of a link nobody made would be the app
+            // deciding for them.
+            val everything = questions(subjectId)
+            val open = everything
+                .filter { it.isOpen }
+                .filter { question ->
+                    appointment.personId == null ||
+                        question.personId == null ||
+                        question.personId == appointment.personId
+                }
 
             val changes = trail(subjectId).filter { entry ->
                 val at = entry.occurredStart ?: entry.createdAt
@@ -4966,6 +5085,7 @@ class Repository private constructor(
                 questions = open,
                 changes = changes,
                 sinceEdtf = previous?.scheduledEdtf,
+                asked = everything.filter { it.askedAtAppointmentId == appointmentId },
             )
         }
 

@@ -43,12 +43,15 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object PrepTags {
     const val NAME = "prep"
     const val WHEN = "prep_when"
+    const val WITH = "prep_with"
     const val SHARE = "prep_share"
     const val CALENDAR = "prep_calendar"
     const val WRITE_UP = "prep_write_up"
     const val CORRECT = "prep_correct"
     const val REMOVE = "prep_remove"
     const val CHANGES_FOLD = "prep_changes_fold"
+    const val ASKED_FOLD = "prep_asked_fold"
+    fun asked(id: String) = "prep_asked_$id"
     fun question(id: String) = "prep_question_$id"
     fun roleFold(role: String) = "prep_role_$role"
     fun change(id: String) = "prep_change_$id"
@@ -126,6 +129,7 @@ fun PrepScreen(
     // Which folded roles are open, kept by label so it survives rotation and
     // the list being scrolled away and back.
     var openRoles by rememberSaveable { mutableStateOf(emptySet<String>()) }
+    var askedOpen by rememberSaveable { mutableStateOf(false) }
 
     // **Resolved once and used to decide whether the action exists at all.**
     // A phone with no calendar app would otherwise get a button that throws,
@@ -169,6 +173,22 @@ fun PrepScreen(
                 color = colors.ink,
                 modifier = Modifier.testTag(PrepTags.WHEN),
             )
+
+            // **Who it is with, and it is not decoration here.** The questions
+            // below are filtered to this person plus the ones waiting on nobody
+            // in particular, so a sheet that filtered silently would be the app
+            // deciding what to show and not saying on what basis. Rule 20: the
+            // complexity lives in the code, and what the person sees is a
+            // name they chose.
+            appointment.personName?.takeIf { it.isNotBlank() }?.let {
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = strings("appts.with", "what" to Bidi.isolate(it)),
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink,
+                    modifier = Modifier.testTag(PrepTags.WITH),
+                )
+            }
 
             // Where it is, at reading size, because it is the second thing
             // somebody checks and the one they will be reading off the phone in
@@ -299,6 +319,52 @@ fun PrepScreen(
             // run of four equivalent things. Three of them are people to ask
             // and the fourth is what has already happened.
             item { Spacer(Modifier.height(Space.sectionGap)) }
+        }
+
+        // **What was asked here, folded and counted.** The other half of the
+        // link, per rule 18: `asked_at_appointment_id` shipped in Phase 0, the
+        // archive renders it, all four catalogs name it, and until #371 the
+        // only thing that had ever written it was the fixture. So a question
+        // could claim an appointment that said nothing about it.
+        //
+        // **Folded rather than led with**, because somebody opening this in a
+        // car park is here for what to ask rather than for what they asked last
+        // time, and **it is not empty state**: a sheet with nothing asked yet
+        // draws nothing at all rather than a heading over a sentence saying so.
+        if (prep.asked.isNotEmpty()) {
+            item(key = "asked_here") {
+                FoldRow(
+                    labelKey = "prep.asked.here",
+                    expanded = askedOpen,
+                    onToggle = { askedOpen = !askedOpen },
+                    count = prep.asked.size.toString(),
+                    modifier = Modifier.testTag(PrepTags.ASKED_FOLD),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+            if (askedOpen) {
+                item(key = "asked_here_rows") {
+                    GroupedSurface {
+                        prep.asked.forEachIndexed { row, question ->
+                            DenseRow(
+                                title = Bidi.isolate(question.text),
+                                // What came back, where somebody wrote it down.
+                                // Absent rather than empty when they did not:
+                                // being told nothing and not having written it
+                                // down are different things.
+                                subtitle = question.answerText
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?.let { Bidi.isolate(it) },
+                                divider = row < prep.asked.lastIndex,
+                                onClick = { onOpenQuestion(question) },
+                                clickLabel = strings["open.action"],
+                                modifier = Modifier.testTag(PrepTags.asked(question.id)),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(Space.sectionGap))
+                }
+            }
         }
 
         // **What has happened folds and is counted.** In year three this is

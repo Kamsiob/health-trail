@@ -3608,7 +3608,17 @@ fun NotebookShell(
         val asked = markingAsked
         if (asked != null) {
             LaunchedEffect(asked) {
-                repository.markQuestionAsked(asked.id, Edtf.day(LocalDate.now()))
+                repository.markQuestionAsked(
+                    asked.id,
+                    Edtf.day(LocalDate.now()),
+                    // **Where it was asked, when the app knows.** The prep
+                    // sheet stays open underneath the answer sheet, so this is
+                    // the appointment the person is standing in. Ticking a
+                    // question off the Ask next time list stamps nothing, which
+                    // is correct: that question was asked somewhere the app was
+                    // not told about. #371 item 2.
+                    appointmentId = openPrepFor,
+                )
                 markingAsked = null
                 revision += 1
             }
@@ -3884,6 +3894,10 @@ fun NotebookShell(
         if (addingAppointment) {
             AddAppointmentScreen(
                 existing = editingAppointment,
+                // **Most recently used first**, which is the ordering the care
+                // team itself uses, so the five chips are the five people this
+                // family actually deals with rather than the first five added.
+                people = peopleForCapture,
                 onSave = { draft ->
                     addingAppointment = false
                     savingAppointment = draft
@@ -3908,6 +3922,7 @@ fun NotebookShell(
                         scheduled = appointmentDraft.scheduled ?: Edtf.unknown(),
                         locationNote = appointmentDraft.where,
                         notes = appointmentDraft.notes,
+                        personId = appointmentDraft.personId,
                     )
                 } else if (subject != null && appointmentDraft.title.isNotBlank()) {
                     repository.createAppointment(
@@ -3917,6 +3932,10 @@ fun NotebookShell(
                         scheduled = appointmentDraft.scheduled ?: Edtf.unknown(),
                         locationNote = appointmentDraft.where,
                         notes = appointmentDraft.notes,
+                        // **The argument the schema waited for.** Nothing wrote
+                        // `appointment.person_id`, so the prep sheet had
+                        // nothing to filter its questions against. #371.
+                        personId = appointmentDraft.personId,
                     )
                 }
                 editingAppointment = null
@@ -4378,6 +4397,13 @@ fun NotebookShell(
                         threadId = draft.threadId,
                         isUnfiled = threads.isNotEmpty() && draft.threadId == null,
                         medicationId = draft.medicationId,
+                        // **The form already knew this and the writer was never
+                        // told.** Choosing somebody from the chips wrote their
+                        // name into `role_label` and linked the entry to them,
+                        // and the question itself pointed at nobody, so the
+                        // prep sheet could not tell whose question it was.
+                        // #371 item 2.
+                        personId = draft.personId,
                     )
                     // **The same link every other kind writes.** Choosing the
                     // charge nurse from the chips on a question recorded her
