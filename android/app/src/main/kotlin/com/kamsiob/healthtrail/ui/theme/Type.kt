@@ -43,6 +43,22 @@ data class HealthTrailTypography(
     val displayM: TextStyle,
     /** Card titles, section names in the table of contents. */
     val displayS: TextStyle,
+    /**
+     * The title line of a group row. `DESIGN.md` 5.1, and it was specified in
+     * the ladder from the beginning and never implemented.
+     *
+     * **This is why a list in this app reads flatter than a phone's own
+     * Contacts.** With no token for it, `DenseRow` reached for `bodyL` and its
+     * subtitle for `bodyM`: two sizes of the same unbolded face, twelve percent
+     * apart. Both grids draw the row title bold over a detail line a quarter
+     * smaller, which is a weight jump and a size drop. The app had the size
+     * drop and no weight at all, on every list in it, which is most of it.
+     *
+     * **The display face, because a row title is a name rather than prose.**
+     * Bricolage at 700 is the hand-lettered tab in a binder, and the body face
+     * underneath it is the note written in it. #361.
+     */
+    val rowTitle: TextStyle,
     /** Note bodies, anything read at length. */
     val bodyL: TextStyle,
     /** Subtitles, supporting text, list rows. */
@@ -144,6 +160,20 @@ val HealthTrailType = HealthTrailTypography(
         fontSize = 18.sp,
         lineHeight = 24.sp,
         fontWeight = FontWeight.Bold,
+    ),
+    rowTitle = TextStyle(
+        fontFamily = DisplayFamily,
+        // **16sp rather than the ladder's 13**, and this is the one departure
+        // worth writing down. The ladder's figure is the grid's `.row .t` in
+        // CSS pixels against a 10.5px detail line; read as sp it would shrink
+        // every row title in the app by three points at the same moment it
+        // gained weight, which is two changes at once and the wrong one is
+        // invisible. The ratio the grid actually draws, a title a quarter
+        // larger than its detail and bold, is what is kept: 16 over 13.
+        fontSize = 16.sp,
+        lineHeight = 22.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = (-0.01).em,
     ),
     bodyL = TextStyle(
         fontFamily = BodyFamily,

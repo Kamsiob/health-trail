@@ -199,11 +199,22 @@ fun DenseRow(
             }
 
             Column(modifier = Modifier.weight(1f)) {
+                // **The row title token, at last.** `DESIGN.md` 5.1 has
+                // specified a row title in the display face at 700 since the
+                // ladder was written, and with no token for it this reached for
+                // `bodyL`: the same unbolded face as the subtitle under it,
+                // twelve percent apart. A list where the name and the detail
+                // carry one weight is the flatness the owner kept naming, and
+                // it is on every list in the app. #361.
+                //
+                // **`selected` no longer changes the weight**, because the
+                // title is already bold. It was the only weight difference this
+                // row had; selection is carried by the surface, as it is
+                // everywhere else.
                 Text(
                     text = title,
-                    style = type.bodyL,
+                    style = type.rowTitle,
                     color = colors.ink,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                 )
                 if (subtitle != null) {
                     Text(

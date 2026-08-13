@@ -922,6 +922,13 @@ fun NotebookShell(
     // entry on screen. Every screen that can open an entry belongs above this
     // line.
     BackHandler(enabled = openEntry != null) { openEntry = null }
+    // **Three full screens had no handler at all**, so system back was swallowed
+    // by the section handler below: the section closed behind a document that
+    // stayed drawn, nothing changed on screen, and the next press left the app
+    // from a detail screen. A document, a bill and the conflicts list. #371.
+    BackHandler(enabled = openDocument != null) { openDocument = null }
+    BackHandler(enabled = openBill != null) { openBill = null }
+    BackHandler(enabled = conflictsOpen) { conflictsOpen = false; markConflictsSeen = true }
     BackHandler(enabled = openMedication != null) { openMedication = null }
     BackHandler(enabled = recordingChangeTo != null) { recordingChangeTo = null }
     BackHandler(enabled = recordingViolationFor != null) { recordingViolationFor = null }
