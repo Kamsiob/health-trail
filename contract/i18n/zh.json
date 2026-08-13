@@ -1273,6 +1273,8 @@
   "threads.new.start": "开始",
   "threads.open": "打开这条照护线索",
   "threads.quiet": "还没有记下任何内容",
+  "threads.rename": "修改名称",
+  "threads.rename.save": "保存名称",
   "threads.running": "仍在进行",
   "threads.subtitle": "贯穿这本笔记的并行脉络。您记下的每件事都可以归入其中之一。",
   "today.add": "添加卡片",

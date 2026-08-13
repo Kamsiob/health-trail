@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
@@ -30,6 +31,7 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object OneThreadTags {
+    const val RENAME = "thread_rename"
     const val NAME = "one_thread"
     fun entry(id: String) = "one_thread_entry_$id"
 }
@@ -56,6 +58,14 @@ fun ThreadScreen(
     thread: Repository.CareThread,
     entries: List<Repository.TrailEntry>,
     onOpenEntry: (Repository.TrailEntry) -> Unit,
+    /**
+     * Renames the thread. #371.
+     *
+     * **A thread could be started and never corrected**, and its label titles
+     * this screen, appears as a capture chip, is a filing target in the unfiled
+     * tray, and shows on every entry in the trail that belongs to it.
+     */
+    onRename: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     backLabelKey: String = "section.back.threads",
@@ -201,6 +211,18 @@ fun ThreadScreen(
                     count = earlier.size.toString(),
                 )
             }
+        }
+
+        // **A pill sized to its label**, D118, above the scaffold's own way
+        // back. Renaming is the one thing this screen could not do.
+        item(key = "rename") {
+            Spacer(Modifier.height(Space.sectionGap))
+            QuietButton(
+                label = strings["threads.rename"],
+                onClick = onRename,
+                modifier = Modifier.testTag(OneThreadTags.RENAME),
+            )
+            Spacer(Modifier.height(Space.l))
         }
     }
 }

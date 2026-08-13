@@ -1273,6 +1273,8 @@
   "threads.new.start": "ابدأه",
   "threads.open": "افتح مسار الرعاية هذا",
   "threads.quiet": "لم يُدوَّن فيه شيء بعد",
+  "threads.rename": "تغيير الاسم",
+  "threads.rename.save": "حفظ الاسم",
   "threads.running": "ما زالت جارية",
   "threads.subtitle": "المسارات المتوازية التي تمر عبر هذا الدفتر. كل ما تدوّنه يمكن أن ينتمي إلى أحدها.",
   "today.add": "أضف بطاقة",

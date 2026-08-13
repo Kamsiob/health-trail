@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -59,11 +60,22 @@ fun AddThreadScreen(
     onStart: (String) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * The thread being renamed, or null when this one is new. #371.
+     *
+     * **A thread could be started and never corrected.** Its label titles its
+     * own screen, is a chip on the capture form, a filing target in the unfiled
+     * tray and a line in the trail, so a thread named wrong was named wrong in
+     * five places forever and the only escape was removing it and losing
+     * everything filed under it. The same screen does both, because it asks the
+     * same one question.
+     */
+    existing: Repository.CareThread? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var name by rememberSaveable { mutableStateOf("") }
+    var name by rememberSaveable(existing?.id) { mutableStateOf(existing?.label.orEmpty()) }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -81,7 +93,7 @@ fun AddThreadScreen(
             ) {
                 Spacer(Modifier.height(Space.l))
                 Text(
-                    text = strings["threads.new"],
+                    text = strings[if (existing == null) "threads.new" else "threads.rename"],
                     style = HealthTrail.type.displayL,
                     color = colors.ink,
                 )
@@ -110,7 +122,9 @@ fun AddThreadScreen(
             Spacer(Modifier.height(Space.m))
 
             FilledButton(
-                label = strings["threads.new.start"],
+                label = strings[
+                    if (existing == null) "threads.new.start" else "threads.rename.save",
+                ],
                 onClick = { onStart(name.trim()) },
                 // **A name is the one thing this cannot do without**, because a
                 // thread with no name is a spine with nothing written on it and

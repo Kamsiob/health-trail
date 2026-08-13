@@ -1273,6 +1273,8 @@
   "threads.new.start": "Empezarlo",
   "threads.open": "Abrir esta línea de cuidado",
   "threads.quiet": "Todavía no hay nada anotado",
+  "threads.rename": "Cambiar cómo se llama",
+  "threads.rename.save": "Guardar el nombre",
   "threads.running": "Todavía en marcha",
   "threads.subtitle": "Los hilos paralelos que recorren este cuaderno. Todo lo que anote puede pertenecer a uno de ellos.",
   "today.add": "Añadir una tarjeta",

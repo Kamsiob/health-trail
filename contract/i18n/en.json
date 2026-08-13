@@ -1273,6 +1273,8 @@
   "threads.new.start": "Start it",
   "threads.open": "Open this care thread",
   "threads.quiet": "Nothing written on it yet",
+  "threads.rename": "Change what this is called",
+  "threads.rename.save": "Save the name",
   "threads.running": "Still running",
   "threads.subtitle": "The parallel streams running through this notebook. Everything you write down can belong to one of them.",
   "today.add": "Add a card",

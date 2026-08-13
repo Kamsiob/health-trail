@@ -486,6 +486,7 @@ class ScreenReaderTest {
                     ),
                 ),
                 onOpenEntry = {},
+                onRename = {},
                 onBack = {},
             )
         }

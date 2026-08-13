@@ -305,6 +305,22 @@ class Repository private constructor(
      * does not know when this ends. A day rather than an instant: the instant
      * would be a claim about when the stay began, and nobody made it.
      */
+    /**
+     * Renames a chapter. #371.
+     *
+     * **A chapter is the app's unit of "where", and its name could never be
+     * fixed.** It titles its own screen, heads a run in the month review, and
+     * is printed on the documents this app hands to other people. Setup asks
+     * for it in one line at two in the morning, which is exactly when it gets
+     * typed wrong.
+     */
+    suspend fun renameChapter(chapterId: String, name: String) = withContext(Dispatchers.IO) {
+        db().database.write(
+            "UPDATE chapter SET name = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(name.trim(), System.currentTimeMillis(), chapterId),
+        )
+    }
+
     suspend fun createChapter(subjectId: String, name: String): String = insert(
         "chapter",
         mapOf(
@@ -1241,6 +1257,22 @@ class Repository private constructor(
      * already there so a new thread joins the end of the list and takes the
      * next route color rather than colliding with the first.
      */
+    /**
+     * Renames a care thread. #371.
+     *
+     * **A thread could be started and never corrected.** Its label is the title
+     * of its own screen, a chip on the capture form, a filing target in the
+     * unfiled tray and a line in the trail, so a thread named wrong was named
+     * wrong in five places forever and the only escape was removing it and
+     * losing everything filed under it.
+     */
+    suspend fun renameThread(threadId: String, label: String) = withContext(Dispatchers.IO) {
+        db().database.write(
+            "UPDATE care_thread SET label = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(label.trim(), System.currentTimeMillis(), threadId),
+        )
+    }
+
     suspend fun createThread(subjectId: String, label: String, sortIndex: Int = 0): String =
         insert(
             "care_thread",

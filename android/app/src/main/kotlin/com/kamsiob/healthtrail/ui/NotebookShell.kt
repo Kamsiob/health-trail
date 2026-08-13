@@ -298,6 +298,10 @@ fun NotebookShell(
     /** Somebody being retired from the care team without being erased. #371. */
     var archivingPerson by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
+    /** The care thread being renamed, and what to write. #371. */
+    var renamingThread by remember { mutableStateOf<Repository.CareThread?>(null) }
+    var savingThreadRename by remember { mutableStateOf<Pair<String, String>?>(null) }
+
     /** Correcting who the notebook is about, and what to write. #371. */
     var correctingSubject by remember { mutableStateOf(false) }
     /** The subject row, read when the correction opens rather than held all the time. */
@@ -938,6 +942,7 @@ fun NotebookShell(
     // stayed drawn, nothing changed on screen, and the next press left the app
     // from a detail screen. A document, a bill and the conflicts list. #371.
     BackHandler(enabled = correctingSubject) { correctingSubject = false }
+    BackHandler(enabled = renamingThread != null) { renamingThread = null }
     BackHandler(enabled = openDocument != null) { openDocument = null }
     BackHandler(enabled = openBill != null) { openBill = null }
     BackHandler(enabled = conflictsOpen) { conflictsOpen = false; markConflictsSeen = true }
@@ -3070,6 +3075,7 @@ fun NotebookShell(
                 // and the prep sheet already do, so reading three entries off
                 // one thread is three taps rather than nine. #360.
                 onOpenEntry = { openEntry = it.id },
+                onRename = { renamingThread = thread },
                 onBack = { openThread = null },
             )
         }
@@ -3583,6 +3589,27 @@ fun NotebookShell(
                     relationship = subjectEdit.relationship.trim(),
                 )
                 savingSubject = null
+                revision += 1
+            }
+        }
+
+        renamingThread?.let { thread ->
+            AddThreadScreen(
+                existing = thread,
+                onStart = { label ->
+                    savingThreadRename = thread.id to label
+                    renamingThread = null
+                },
+                onCancel = { renamingThread = null },
+            )
+        }
+
+        val threadRename = savingThreadRename
+        if (threadRename != null) {
+            LaunchedEffect(threadRename) {
+                // bidi-ok: on its way to the database.
+                repository.renameThread(threadRename.first, threadRename.second)
+                savingThreadRename = null
                 revision += 1
             }
         }
