@@ -71,6 +71,19 @@ fun AddThreadScreen(
      * same one question.
      */
     existing: Repository.CareThread? = null,
+    /**
+     * The words, so one screen can ask "what is this called" for more than one
+     * kind of thing. #371.
+     *
+     * **One screen rather than a second near identical one.** A chapter's
+     * rename asks exactly this question with exactly this shape, and two files
+     * asking one question is how two screens drift apart, which is the argument
+     * `SectionScaffold` and the `Card` inside `ChapterScreen` both already make.
+     */
+    titleKey: String? = null,
+    labelKey: String = "threads.new.name",
+    hintKey: String? = "threads.new.hint",
+    saveKey: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -93,7 +106,9 @@ fun AddThreadScreen(
             ) {
                 Spacer(Modifier.height(Space.l))
                 Text(
-                    text = strings[if (existing == null) "threads.new" else "threads.rename"],
+                    text = strings[
+                        titleKey ?: if (existing == null) "threads.new" else "threads.rename",
+                    ],
                     style = HealthTrail.type.displayL,
                     color = colors.ink,
                 )
@@ -109,10 +124,10 @@ fun AddThreadScreen(
                 // defect #341 took out of four screens. The heading asks what
                 // keeps coming up; the field says what to type.
                 HealthTrailTextField(
-                    label = strings["threads.new.name"],
+                    label = strings[labelKey],
                     value = name,
                     onValueChange = { name = it },
-                    hint = strings["threads.new.hint"],
+                    hint = hintKey?.let { strings[it] },
                     fieldTestTag = AddThreadTags.NAME,
                 )
 
@@ -123,7 +138,8 @@ fun AddThreadScreen(
 
             FilledButton(
                 label = strings[
-                    if (existing == null) "threads.new.start" else "threads.rename.save",
+                    saveKey
+                        ?: if (existing == null) "threads.new.start" else "threads.rename.save",
                 ],
                 onClick = { onStart(name.trim()) },
                 // **A name is the one thing this cannot do without**, because a

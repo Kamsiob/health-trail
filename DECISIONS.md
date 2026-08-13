@@ -2720,6 +2720,20 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### B6. `NotebookShell` has reached the JVM's 64KB method limit. BLOCKED on an extraction pass
+
+**Found 2026-08-13**, adding the chapter rename to #371's item 4. The build fails with `MethodTooLargeException` on `NotebookShell$lambda$721`, the single content lambda that holds every overlay in the app. **One more overlay is what tipped it over**, and the failure is a hard platform ceiling rather than a warning.
+
+**Two attempts were made** and both failed, per rule 9's third-attempt rule being reached one short: extracting the new overlay into its own file-scope composable, and then extracting it with its state hoisted. Neither helped, because the bytecode lives in the enclosing lambda rather than in the extracted function, and that lambda is the thing at the limit.
+
+**What was kept**, because it builds and is verified: `renameThread` and its screen, `renameChapter` in the repository, and the four catalog entries. **What was reverted by hand**, because a control that does nothing is rule 16: the rename action on `ChapterScreen` and its wiring. **No destructive command was used**, per rule 6: the revert was written as edits.
+
+**What this needs, and it is not a late-night change.** `NotebookShell.kt` is about 4,000 lines and one composable. The overlays want to be extracted in groups, each taking its own state, so the shell becomes a router rather than the whole app in one function. **It should be done deliberately, with the suite green before and after each group**, because every extraction moves navigation state that the back handlers depend on.
+
+**Until it is done, no new overlay can be added to the shell**, which blocks the chapter rename, the question and standing-instruction corrections, and anything else on #371 that needs a new full-screen surface. **Everything that changes an existing screen is unaffected.**
+
+---
+
 ### B1. Commit signing. Resolved 2026-07-31
 
 **Outcome.** The owner registered the SSH signing key. Verified rather than assumed: the account now lists one signing key titled "kamsiob commit signing", and `repos/Kamsiob/health-trail/commits/main` reports `verified=true, reason=valid`.

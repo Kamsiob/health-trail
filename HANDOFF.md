@@ -58,6 +58,9 @@
 - **`setPersonArchived`**, so retiring somebody stops meaning erasing them. `archived_at` had five readers and no writer.
 - **`updateSubject` and `CorrectSubjectScreen`**, reached from a new More door. The name printed on everything shared could never be corrected.
 
+### BLOCKED, and it stops several items below
+**`NotebookShell` has hit the JVM's 64KB method limit.** `DECISIONS.md` B6. One more overlay tips the build over with `MethodTooLargeException`, so **no new full-screen surface can be added to the shell** until its overlays are extracted in groups. That blocks the chapter rename, the question and instruction corrections, and anything else needing a new screen. **Changing an existing screen is unaffected**, so the list below is still workable apart from the items that need a new surface.
+
 ### Next, in order
 1. ~~**`recordMeasurement` writes no entry.**~~ **Done.** `Repository.kt` `recordMeasurement` takes `entryId` and `NotebookShell.kt` passes none, so a reading is not in the trail, not in a month review, not in `prep.changes`. Create the entry in the same transaction, the way `createQuestionWithEntry` does.
 2. **`recordViolation`** takes `incidentId` and `billId` and its only caller passes neither, so `Repository.Violation.incidentTitle` and `billDescription` are dead readers.
