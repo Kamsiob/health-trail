@@ -2830,6 +2830,19 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **So the remedy for B6 is a state holder, not a file split.** The shell's cost is roughly the number of arguments crossing it, and the way down is to make each screen take one object it can read rather than eight lists the shell assembles. **Anyone starting the extraction pass should read this before moving a single block**, because the obvious approach has now failed three times and the cheap approach has worked once.
 
+**2026-08-13, late: the shape of the pass, worked out and deliberately not started.** The measurement is on the file rather than in anybody's head: **179 `var x by remember { mutableStateOf(...) }` declarations at the top of one composable**, plus three `rememberSaveable`. Each of those emits a lambda class, a `remember` call, a slot read and a delegate setup **inside the method that is at the ceiling**, and almost every one of them is a plain literal: `null`, `false`, `emptyList()`, an enum constant.
+
+**The pass, in the order it should be done:**
+
+1. **A `ShellState` class holding those 179**, as `var x by mutableStateOf(...)` members, constructed once with `val ui = remember { ShellState() }`. The three `rememberSaveable` stay in the composable, because saving is what they are for.
+2. **`with(ui) { ... }` around the body**, so no reference has to be rewritten. That is the whole reason to prefer `with` over `ui.x`: renaming 179 identifiers across 4,700 lines by pattern is how a session breaks something that compiles.
+3. **Measure before extracting anything**, by putting back the reverted twenty lines on `PersonScreen` from item 2 of #371. If they fit, the headroom is real and the number is known. **If they do not, stop and write that down** rather than continuing to a bigger change on an unproven assumption.
+4. **Only then extract overlays in groups**, each taking `ui` and the repository and little else, which is the one shape that has ever paid: fewer arguments at the call site.
+
+**Two things to know before starting.** `with` is inline, so step 2 buys nothing by itself except removing the `remember` calls; the saving is real but it is the 179, not the wrapping. And the body must be reindented as part of step 2 or the file carries 4,500 lines at the wrong depth, which is a diff nobody can review and a file nobody can read.
+
+**It is written down rather than begun on purpose.** It touches every navigation path in the app and every back handler depends on the state it moves, and it wants a session that can hold the whole file and run the suite between each step, which is what "it is not a late-night change" above already said.
+
 ---
 
 ### B1. Commit signing. Resolved 2026-07-31
