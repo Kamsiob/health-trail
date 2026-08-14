@@ -2990,6 +2990,26 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D158. A door to the wrong room is not better than a wall, so the built fix was backed out
+
+**Date:** 2026-08-14. **Decided under rule 10**, and it decides only what to do tonight. **The question it leaves open is the owner's**, on #377.
+
+**What was found on the phone**, walking a fresh install in dark with the setup place field left blank: Chapters opens to a drawing, one sentence, and nothing to touch. Zero taps lead anywhere. **The sentence says places can be added whenever they move, and the screen offers no way to say they moved.**
+
+**It is not an empty state problem.** A chapter is created in exactly two places in the whole app: `createChapter` from the optional setup field, and `moveToChapter` from the change flow, which is reached from More and gated on a *different care setting* being chosen. So somebody whose mother transfers between two nursing homes, the setting unchanged, cannot record it anywhere.
+
+**An outlined "Say they moved" was built, wired, tested twice and installed.** Then it was walked. It lands on a settings screen titled "How this notebook is set up", eyebrow "More", back button "Back to More", whose chapter field does not appear until "Choose a different setting" is tapped. **The label promised what the destination cannot do.**
+
+**Backed out by hand, every file, rather than left in.** Rule 6 rules out `git checkout .`, and the revert is four files and four catalogs, so it was done as edits and the compile confirmed it.
+
+**Why backing out rather than relabeling.** The honest label for that destination is its own title, and "How this notebook is set up" as the one action on an empty Chapters screen is a button that earns nothing. The alternative, ungating the chapter field, fights reasoning already written down and better than mine: until a different setting is picked there is nothing for the chapter to be a boundary of.
+
+**The real question is whether a place is something the person names, or only something that appears when the care setting changes.** The second is the current model and it is coherent. The first is what somebody standing on that screen expects, and rule 23 leans that way. It changes what `createChapter` is for, so it is not a rule 10 decision. #377.
+
+**The night's pattern held one more time.** Reading the code and running 722 tests said nothing. Opening the app and tapping until there was nothing left to tap found it in under a minute.
+
+---
+
 ### D153. Today has two card sizes, square and full width, and the stored column keeps three
 
 **Date:** 2026-08-13. **Decided under rule 10**, working #376, which is the owner's own words after using the build. **Supersedes 21.3's three sizes.** Changes no schema.

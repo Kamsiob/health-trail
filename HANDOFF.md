@@ -65,7 +65,11 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 
 **Since covered**: the reader walk on four of them in `ScreenReaderTest`, and RTL against a forced layout direction plus font scale 2.0 in `CorrectionsHoldUpTest`. **The kind assertion there was watched failing** against `kindIsFixed` set back to false, because the chip and the sentence carry the same words and asserting the words alone would have passed either way.
 
-**Still owed**: dark theme, and the same look at the other project screens. A test says a screen holds together; it cannot say whether it reads.
+**Dark was walked**, 2026-08-14, on a fresh install: onboarding, setup, the situation picker, the notebook list scrolled to its end, and Chapters. The theme holds, the notebook list clears the capture button at its end, and the mono eyebrows and tinted section icons read as they do in light.
+
+**It found #377, which is not a theme problem.** Chapters opens to a drawing, a sentence and nothing to touch, because a place can only be created from the optional setup field or from a care setting change. **A fix was built and backed out**, D158: it landed on a settings screen that cannot record a move. **The empty state is a dead end and it ships that way** until the owner decides whether a place is something the person names.
+
+**Still owed**: the same look at the other project screens. A test says a screen holds together; it cannot say whether it reads.
 
 **The whole of #374 cost the shell 2,919 bytes.** Before #373 the shell had 1,860 bytes of headroom and one added parameter on an existing screen failed the build. Six full screen surfaces later there are **35,937 bytes** left. That is what B6 was worth, and it is a better number than any taken on the bytecode alone.
 
