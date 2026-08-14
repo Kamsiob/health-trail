@@ -27,6 +27,7 @@ import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.openableByTap
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -36,6 +37,7 @@ object ChapterTags2 {
     fun entry(id: String) = "chapter_entry_$id"
     fun incident(id: String) = "chapter_incident_$id"
     fun document(id: String) = "chapter_document_$id"
+    const val RENAME = "chapter_rename"
     const val MILESTONES_FOLD = "chapter_milestones_fold"
     fun milestone(id: String) = "chapter_milestone_$id"
 }
@@ -62,6 +64,8 @@ fun ChapterScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     backLabelKey: String = "section.back.chapters",
+    /** Opens the screen that corrects this chapter's name. #374. */
+    onRename: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     // What went wrong leads open; the rest are folded until asked for.
@@ -284,6 +288,32 @@ fun ChapterScreen(
                     }
                 }
             }
+
+        }
+        // **Outside the entries fold**, which is where it landed first and is
+        // a real trap: a chapter with nothing written in it yet is exactly the
+        // one somebody has just typed the name of, and the control to fix that
+        // name only existed once the fold was open. Caught by a test whose
+        // chapter had no entries.
+        //
+        // **A pill sized to its label**, D118, above the scaffold's own way
+        // back, and the same shape the care thread's rename already uses.
+        //
+        // **This is the defect four audits and six mock users each found on
+        // their own**: a chapter is the app's unit of "where", it titles this
+        // screen, heads a run in the month review and is printed on documents
+        // the app hands to other people, and setup asks for it in one line at
+        // two in the morning. `renameChapter` has been in the repository since
+        // the day that was noticed, with no caller, because the shell had no
+        // room for another full screen surface. #373 made room. #374.
+        item(key = "rename") {
+            Spacer(Modifier.height(Space.sectionGap))
+            QuietButton(
+                label = strings["chapters.rename"],
+                onClick = onRename,
+                modifier = Modifier.testTag(ChapterTags2.RENAME),
+            )
+            Spacer(Modifier.height(Space.l))
         }
     }
 }

@@ -59,7 +59,11 @@
 
 **On the grip specifically.** It was a 48dp target in the corner of a card that is itself a target, and the owner's note on #376 is why it went: nobody grabs a handle to move an icon on the phone they already own. **Nothing was lost by it going.** The reorder path that has to exist is the worded move up and move down in the card's options sheet, which works one handed, with a reader on, and with switch access, and 23.2 is why that path rather than the drag is the one that must exist. The drag was always the shortcut.
 
-**Two are neither superseded nor covered, and they are not frozen**: `renameChapter` and `renameProject`. Both are the same defect the care thread rename already fixed, a record that cannot be corrected, and both wait on B6 rather than on a decision. Freezing them would say the app decided not to let somebody fix a name they typed wrong, which is the opposite of what is true. They are on #371.
+**Two were neither superseded nor covered and were deliberately not frozen: `renameChapter` and `renameProject`. Both have callers now**, 2026-08-14, #374. They were the app's missing half rather than history, waiting on B6 rather than on a decision, and freezing them would have said the app decided somebody may not fix a name they typed wrong. **The judgment not to freeze them held**, which is the useful part: a ledger row would have made the next reader stop looking.
+
+**What they cost the shell, since that was the whole reason they had no caller**: 220 bytes for both full screen surfaces together, against the 1,860 bytes of headroom the shell had before #373, when one added parameter on an existing screen was enough to fail the build.
+
+**As of 2026-08-13 they were on #371 and waiting**, described here as the same defect the care thread rename already fixed. That sentence is kept because it is what was true then and it is why they were not frozen.
 
 ### What is unreached and is not history, 2026-08-13
 

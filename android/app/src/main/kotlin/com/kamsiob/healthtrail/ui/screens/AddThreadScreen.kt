@@ -85,11 +85,37 @@ fun AddThreadScreen(
     labelKey: String = "threads.new.name",
     hintKey: String? = "threads.new.hint",
     saveKey: String? = null,
+    /**
+     * The lead line under the title, so a screen asking about something other
+     * than a thread does not explain what a care thread is.
+     */
+    leadKey: String = "threads.new.lead",
+    /**
+     * The section whose tab chip this wears, per D151.
+     *
+     * **A rename belongs to the thing being renamed.** A chapter's rename wears
+     * the chapters chip, because that is where somebody came from and where
+     * they are going back to. Defaults to threads, which is what every caller
+     * before #374 wanted.
+     */
+    section: Repository.Section = Repository.Section.THREADS,
+    /**
+     * What the field starts with when there is no [existing] thread to read it
+     * from. #374.
+     *
+     * **Because this screen now renames things that are not threads.**
+     * `renameChapter` and `renameProject` have sat in the repository with no
+     * caller since the day they were written, waiting on a full screen surface
+     * that `NotebookShell` had no room for. It has room now.
+     */
+    initialName: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var name by rememberSaveable(existing?.id) { mutableStateOf(existing?.label.orEmpty()) }
+    var name by rememberSaveable(existing?.id, initialName) {
+        mutableStateOf(existing?.label ?: initialName.orEmpty())
+    }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -109,8 +135,8 @@ fun AddThreadScreen(
                     title = strings[
                         titleKey ?: if (existing == null) "threads.new" else "threads.rename",
                     ],
-                    lead = strings["threads.new.lead"],
-                    section = Repository.Section.THREADS,
+                    lead = strings[leadKey],
+                    section = section,
                 )
 
                 Spacer(Modifier.height(Space.l))

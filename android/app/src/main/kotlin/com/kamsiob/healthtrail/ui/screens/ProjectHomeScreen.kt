@@ -46,6 +46,7 @@ object ProjectHomeTags {
     const val UPDATE_STANDING = "project-home-update-standing"
     const val ADD_DATE = "project-home-add-date"
     const val LOG_CALL = "project-home-log-call"
+    const val RENAME = "project-home-rename"
     const val SETUP = "project-home-setup"
     const val MOVE_STAGE = "project-home-move-stage"
     const val TRAIL = "project-home-trail"
@@ -110,6 +111,8 @@ fun ProjectHomeScreen(
     onLogCall: () -> Unit = {},
     /** Opens the project's setup, where everything the template decided lives. */
     onOpenSetup: () -> Unit = {},
+    /** Opens the screen that corrects this project's name. #374. */
+    onRename: () -> Unit = {},
     /**
      * Taking the whole project out of the notebook, per #218. The projects list
      * used to do this on a long press, which is the one path a sighted person
@@ -645,6 +648,25 @@ fun ProjectHomeScreen(
                 modifier = Modifier.testTag(ProjectHomeTags.PAPERS),
             )
             Spacer(Modifier.height(Space.cardGap))
+        }
+
+        // **Correcting the name.** #374, and the surface #373 made room for.
+        // `renameProject` sat in the repository with no caller from the day the
+        // defect was found, and was deliberately kept out of the removal
+        // ledger, per D152, because a row there would have said the app decided
+        // somebody may not fix a name they typed wrong.
+        //
+        // **Above the setup fold and below everything about the process**,
+        // because correcting a name is rarer than any of the three answers and
+        // more common than taking the project apart. Same pill, sized to its
+        // label, as the care thread's and the chapter's.
+        item {
+            QuietButton(
+                label = strings["projects.rename"],
+                onClick = onRename,
+                modifier = Modifier.testTag(ProjectHomeTags.RENAME),
+            )
+            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **The way to everything the template decided.** 20.5 screen 18 and

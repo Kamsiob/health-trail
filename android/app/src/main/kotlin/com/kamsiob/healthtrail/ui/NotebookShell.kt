@@ -483,6 +483,9 @@ fun NotebookShell(
         // from a detail screen. A document, a bill and the conflicts list. #371.
         BackHandler(enabled = correctingSubject) { correctingSubject = false }
         BackHandler(enabled = renamingThread != null) { renamingThread = null }
+        // #374, and both of these are surfaces #373 made room for.
+        BackHandler(enabled = renamingChapter != null) { renamingChapter = null }
+        BackHandler(enabled = renamingProject != null) { renamingProject = null }
         BackHandler(enabled = openDocument != null) { openDocument = null }
         BackHandler(enabled = openBill != null) { openBill = null }
         BackHandler(enabled = conflictsOpen) { conflictsOpen = false; markConflictsSeen = true }

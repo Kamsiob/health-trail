@@ -148,6 +148,22 @@ internal class ShellState {
     /** Somebody being retired from the care team without being erased. #371. */
     var archivingPerson by mutableStateOf<Pair<String, Boolean>?>(null)
 
+    /**
+     * The chapter being renamed, and what to write. #374.
+     *
+     * **`renameChapter` sat in the repository with no caller** from the day the
+     * defect was noticed until #373 made room in the shell for another full
+     * screen surface. It was deliberately kept out of the removal ledger, per
+     * D152, because a ledger row would have told the next reader the app had
+     * decided somebody may not fix a name they typed wrong.
+     */
+    var renamingChapter by mutableStateOf<Repository.Chapter?>(null)
+    var savingChapterRename by mutableStateOf<Pair<String, String>?>(null)
+
+    /** The project being renamed, and what to write. #374. Same story. */
+    var renamingProject by mutableStateOf<Repository.Project?>(null)
+    var savingProjectRename by mutableStateOf<Pair<String, String>?>(null)
+
     /** The care thread being renamed, and what to write. #371. */
     var renamingThread by mutableStateOf<Repository.CareThread?>(null)
     var savingThreadRename by mutableStateOf<Pair<String, String>?>(null)

@@ -30,6 +30,7 @@ import com.kamsiob.healthtrail.ui.screens.SituationChange
 import com.kamsiob.healthtrail.ui.screens.SituationPickerScreen
 import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.BillScreen
+import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationEventScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationScreen
@@ -648,7 +649,72 @@ internal fun IncidentAndReviewOverlays(
                         incidentsOpen = true
                     },
                     onBack = { openChapter = null },
+                    onRename = { renamingChapter = detail.chapter },
                 )
+            }
+        }
+
+        // **Correcting a project's name**, #374. Same screen, same one
+        // question, wearing gold because Projects belongs to no section: 4.3,
+        // and `Section.PROJECTS` is what `hueFor` maps to the whole app hue.
+        renamingProject?.let { project ->
+            AddThreadScreen(
+                onStart = { name ->
+                    savingProjectRename = project.id to name
+                    renamingProject = null
+                },
+                onCancel = { renamingProject = null },
+                titleKey = "projects.rename.title",
+                labelKey = "projects.rename.name",
+                hintKey = null,
+                saveKey = "projects.rename.save",
+                leadKey = "projects.rename.lead",
+                section = Repository.Section.PROJECTS,
+                initialName = project.name,
+            )
+        }
+
+        savingProjectRename?.let { rename ->
+            LaunchedEffect(rename) {
+                // bidi-ok: on its way to the database.
+                repository.renameProject(rename.first, rename.second)
+                savingProjectRename = null
+                // **Reread rather than patched**, so the heading on the
+                // project's own screen is the row the database now has.
+                openProject = null
+                revision += 1
+            }
+        }
+
+        // **Correcting a chapter's name**, #374, and the surface #373 made room
+        // for. The same screen the care thread rename uses, asking the same one
+        // question in the chapter's own words and wearing the chapters chip.
+        renamingChapter?.let { chapter ->
+            AddThreadScreen(
+                onStart = { name ->
+                    savingChapterRename = chapter.id to name
+                    renamingChapter = null
+                },
+                onCancel = { renamingChapter = null },
+                titleKey = "chapters.rename.title",
+                labelKey = "chapters.rename.name",
+                hintKey = null,
+                saveKey = "chapters.rename.save",
+                leadKey = "chapters.rename.lead",
+                section = Repository.Section.CHAPTERS,
+                initialName = chapter.name,
+            )
+        }
+
+        savingChapterRename?.let { rename ->
+            LaunchedEffect(rename) {
+                // bidi-ok: on its way to the database.
+                repository.renameChapter(rename.first, rename.second)
+                savingChapterRename = null
+                // **The open chapter is reread rather than patched**, so the
+                // title above the list is the row the database now has.
+                chapterDetail = null
+                revision += 1
             }
         }
 
@@ -1554,6 +1620,7 @@ internal fun ProjectOverlays(
                 // **Rule 18 both ways.** The entry already knows the project;
                 // this is the project opening the entry.
                 onOpenEntryById = { openEntry = it },
+                onRename = { renamingProject = currentProject },
                 onBack = {
                     openProject = null
                     setupOpen = false
