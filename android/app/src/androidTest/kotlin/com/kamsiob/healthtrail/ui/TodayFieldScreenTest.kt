@@ -1102,13 +1102,24 @@ class TodayFieldScreenTest {
             }
         }
 
-        assertEquals("the screen said it was arranging before it was", listOf(false), reported)
+        // **Waited for rather than asserted straight after the tap.** The
+        // report comes out of a `LaunchedEffect`, which is a coroutine, and a
+        // click returning is not the same as that coroutine having run. This
+        // failed exactly there the first time, reporting `[false]` where
+        // `[false, true]` was expected, which reads like the screen never
+        // entered the mode and is really the test being early.
+        fun waitFor(expected: List<Boolean>, what: String) {
+            compose.waitUntil(timeoutMillis = 5_000) { reported == expected }
+            assertEquals(what, expected, reported)
+        }
+
+        waitFor(listOf(false), "the screen said it was arranging before it was")
 
         compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
-        assertEquals("entering was not reported", listOf(false, true), reported)
+        waitFor(listOf(false, true), "entering was not reported")
 
         compose.onNodeWithTag(TodayFieldTags.DONE).performClick()
-        assertEquals("leaving was not reported", listOf(false, true, false), reported)
+        waitFor(listOf(false, true, false), "leaving was not reported")
     }
 
     @Test
@@ -1134,13 +1145,16 @@ class TodayFieldScreenTest {
         // answers, which is the app explaining its own mechanics on the screen.
         // The screen's hint says it once at the top, and a reader hears what the
         // tap does from the card's own open label rather than from a loose noun.
-        val strings = Strings.load(context)
         for (card in layout.field) {
-            val name = spokenByCard(card.id).substringBefore(" · ")
-            compose.onNodeWithContentDescription(
-                strings("today.edit.remove", "name" to name),
-                useUnmergedTree = true,
-            ).assertIsDisplayed()
+            // **Scrolled to first.** The starting hand is four cards and the
+            // field does not fit them on one screen, so the mark on the last of
+            // them exists and is not displayed. Asserting existence instead
+            // would pass on a mark drawn off the edge of the world, which is
+            // not what "every card shows its arranging state" means.
+            compose.onNodeWithTag(TodayFieldTags.ROOT)
+                .performScrollToNode(hasTestTag(TodayFieldTags.card(card.id)))
+            compose.onNodeWithTag(TodayFieldTags.remove(card.id), useUnmergedTree = true)
+                .assertIsDisplayed()
         }
         // **There is deliberately no assertion here that the grip is gone.**
         // The obvious one, that nothing is described as a grip, would have

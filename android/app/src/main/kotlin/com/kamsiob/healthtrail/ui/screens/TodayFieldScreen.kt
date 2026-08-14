@@ -107,6 +107,16 @@ object TodayFieldTags {
     const val SEARCH = "today-field-search"
     fun card(id: String) = "today-card-$id"
 
+    /**
+     * The mark that takes a card off Today, per card.
+     *
+     * **A tag rather than the spoken label**, which is what a test tried first
+     * and is a trap: the label is built from the card's tab, and the tab has
+     * been through `Bidi.join`, so it carries isolate characters a plain string
+     * never matches.
+     */
+    fun remove(id: String) = "today-remove-$id"
+
     /** The outlined dialable number on a care team card pointed at one person. */
     fun dial(id: String) = "today-dial-$id"
 
@@ -908,7 +918,13 @@ private fun CardFor(
         onLongPress = if (editing) null else onArrange,
         longPressLabel = strings["today.arrange.hold"],
         corner = if (editing) {
-            { RemoveDot(spoken = strings("today.edit.remove", "name" to tab), onClick = onRemove) }
+            {
+                RemoveDot(
+                    spoken = strings("today.edit.remove", "name" to tab),
+                    onClick = onRemove,
+                    modifier = Modifier.testTag(TodayFieldTags.remove(card.id)),
+                )
+            }
         } else {
             null
         },
@@ -2311,13 +2327,13 @@ private const val WIDE_TYPE_SCALE = 1.5f
  * fall back to a box and it takes the theme's own ink.
  */
 @Composable
-private fun RemoveDot(spoken: String, onClick: () -> Unit) {
+private fun RemoveDot(spoken: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, colors.sand)
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .padding(Space.xs)
             .size(Space.touchTarget)
             .clickable(
