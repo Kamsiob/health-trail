@@ -124,6 +124,24 @@ fun DenseRow(
     dividerInset: Dp = if (leading != null) LEADING_SIZE + Space.sm else 0.dp,
     divider: Boolean = true,
     /**
+     * Whether the trailing value starts level with the title rather than
+     * centering against the whole block.
+     *
+     * **Opt in, and the default stays centered on purpose.** For the ordinary
+     * row, one line of title over one line of subtitle, centering is right and
+     * top aligning would lift the value off the block. **It stops being right
+     * the moment the title wraps**: on Money a bill called "Monthly room and
+     * board" runs to two lines with its date under it, so the amount and the
+     * chevron sat level with the second line, beside the wrap rather than
+     * beside the name. Seen on the phone.
+     *
+     * **A parameter rather than a change to every list in the app.** `DenseRow`
+     * is the most used row here and the blast radius of flipping its default is
+     * every screen at once; a caller whose title can wrap asks for this and
+     * nothing else moves.
+     */
+    trailingAtTop: Boolean = false,
+    /**
      * Horizontal inset for the row's own content. Defaults to the group row
      * padding in `DESIGN.md` section 6. Pass `0.dp` for a full bleed list whose
      * screen already provides the inset.
@@ -191,7 +209,7 @@ fun DenseRow(
                 // the screen's own padding provides the inset and doubling it
                 // would push a 1,630 row list needlessly inward.
                 .padding(horizontal = contentPadding, vertical = Space.s),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = if (trailingAtTop) Alignment.Top else Alignment.CenterVertically,
         ) {
             if (leading != null) {
                 leading()

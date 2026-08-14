@@ -259,6 +259,10 @@ private fun BillRow(
     // **One ink for every amount.** A large bill is not colored differently
     // from a small one, which would be the app saying something about it.
     DenseRow(
+        // **A bill's own words can be long.** "Monthly room and board" wraps at
+        // this width and the date sits under it, so the amount starts level
+        // with the name rather than floating beside the wrap.
+        trailingAtTop = true,
         title = Bidi.isolate(bill.description),
         subtitle = listOfNotNull(
             bill.receivedEdtf?.takeIf { it.isNotBlank() }
