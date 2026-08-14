@@ -84,6 +84,27 @@ LONG_PRESS = re.compile(
     r"\bdetectDragGesturesAfterLongPress\b"
 )
 
+# **The one legitimate long press, and it has to name its twin.** D155.
+#
+# The rule law 2 states is that no action is reachable *only* by a gesture, and
+# this check enforced something stricter: no gesture at all. That was right for
+# every case it had seen, because every one of them was removal hidden behind a
+# hold with nothing visible doing the same job.
+#
+# **Touch and hold to start arranging Today is not that case.** The owner asked
+# for it by name: the home screen of the phone somebody already owns is the only
+# frame of reference anybody brings to a grid of cards, and holding a widget is
+# how arranging starts there. The visible Arrange control is still in the
+# header, so the gesture is a shortcut to something already reachable, which is
+# what 21.6 screen 5 said it must be from the day the screen was drawn.
+#
+# **The marker has to name the visible control**, not just claim one exists,
+# because "there is another way" with nothing after it is how a guard becomes a
+# formality. A bare marker with no words after the colon fails like an unmarked
+# gesture. What it cannot check is whether the named control is real, which is
+# rule 19's job on the device with a reader on.
+TWIN = "long-press-twin:"
+
 
 def frozen_files() -> set[str]:
     """The repository-relative paths `docs/REMOVAL-LEDGER.md` calls frozen.
@@ -110,6 +131,37 @@ def frozen_files() -> set[str]:
 
 def line_of(text: str, at: int) -> int:
     return text.count("\n", 0, at) + 1
+
+
+def named_twin(text: str, number: int) -> bool:
+    """Whether a [TWIN] marker naming a visible control covers this line.
+
+    **Searched upward through the comment block rather than only one line
+    above**, because a long press is written across several lines: the parameter
+    is in one place, the `combinedClickable` in another, and the call that
+    passes the handler in a third. Requiring the marker to sit immediately above
+    each of them would put the same sentence in a file three times, and three
+    copies is three chances to differ.
+
+    **The marker must have words after the colon.** A bare one is a mute, and a
+    mute is how a guard stops being a guard.
+    """
+    lines = text.splitlines()
+    at = number - 1
+    # Up through the declaration this sits in, and the comment block above it.
+    limit = max(0, at - TWIN_REACH)
+    while at >= limit:
+        line = lines[at] if at < len(lines) else ""
+        if TWIN in line:
+            return bool(line.split(TWIN, 1)[1].strip())
+        at -= 1
+    return False
+
+
+# How far above a gesture the marker may sit. Enough to cover a parameter's own
+# KDoc, which is where the reason belongs, and short enough that a marker cannot
+# quietly cover a second gesture further down the file.
+TWIN_REACH = 30
 
 
 def lines_at(text: str, number: int) -> str:
@@ -176,6 +228,7 @@ def main() -> int:
 
     frozen = frozen_files()
     exempt = 0
+    twins = 0
 
     for path in sorted(SOURCES.rglob("*.kt")):
         text = path.read_text(encoding="utf-8")
@@ -198,15 +251,21 @@ def main() -> int:
         for found in LONG_PRESS.finditer(text):
             number = line_of(text, found.start())
             here = lines_at(text, number)
-            # A comment saying the gesture is gone is not the gesture.
-            if here.lstrip().startswith(("//", "*", "/*")):
+            # A comment saying the gesture is gone is not the gesture. An import
+            # is not the gesture either: it is the file saying which symbol it
+            # will use, and the use itself is caught where it happens.
+            if here.lstrip().startswith(("//", "*", "/*", "import ")):
+                continue
+            if named_twin(text, number):
+                twins += 1
                 continue
             problems.append(
                 f"{relative}:{number}: {found.group()} is a long press, and law 2 bans "
                 f"an action reachable only by one. A sighted person who does not already "
                 f"know the gesture cannot do it at all, while a reader user is handed it "
                 f"in their action list. #218. Put the action on the thing's own screen or "
-                f"in the sheet its row opens."
+                f"in the sheet its row opens, or write `{TWIN} <the visible control that "
+                f"does the same thing>` on the line above."
             )
 
     if problems:
@@ -221,10 +280,16 @@ def main() -> int:
         if exempt
         else ""
     )
+    twin_note = (
+        f" {twins} long press(es) name a visible control that does the same "
+        f"thing, per D155, which is what law 2 actually asks for."
+        if twins
+        else ""
+    )
     print(
         f"Dead gesture check passed. {scanned} source files: no handler is "
         f"assigned a lambda that does nothing, and no live screen puts an action "
-        f"behind a long press.{frozen_note}"
+        f"behind a long press alone.{frozen_note}{twin_note}"
     )
     return 0
 

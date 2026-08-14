@@ -10,6 +10,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -546,10 +547,20 @@ class TodayFieldScreenTest {
     }
 
     @Test
-    fun aMeasureDrawsItsShapeAtTallAndNowhereSmaller() {
+    fun aMeasureDrawsItsShapeAtFullWidthAndNotOnASquare() {
         // 21.7 asks the measure card for the latest value **and its recent
-        // shape**, and 21.3 puts a chart at tall only: a line across half a
-        // screen width is a decoration rather than a shape anybody can read.
+        // shape**, and 21.3 puts a chart at full width only: a line across half
+        // a screen width is a decoration rather than a shape anybody can read.
+        //
+        // **This used to end by asserting the full width card was the taller of
+        // the two, and D153 made that false without making it wrong.** A square
+        // card is now as tall as it is wide, which on this screen is about the
+        // height of a full width card carrying a chart, so the heights are
+        // comparable and the comparison proved nothing either way. What the
+        // test was always about is which card draws a chart, and the two
+        // assertions above say that directly. The third assertion now pins the
+        // square instead, which is the rule that replaced the one it was
+        // standing in for. Watched failing against `aspectRatio` removed.
         val strings = Strings.load(context)
         val series = (0..5).map {
             Repository.Reading(
@@ -596,20 +607,33 @@ class TodayFieldScreenTest {
 
         val readings = strings("progress.readings", "count" to series.size)
         assertTrue(
-            "the tall card does not say how many readings its chart draws",
+            "the full width card does not say how many readings its chart draws",
             readings in spoken("c-tall"),
         )
         assertTrue(
-            "the small card announces a chart it does not draw",
+            "the square card announces a chart it does not draw",
             readings !in spoken("c-small"),
         )
 
-        // The chart itself takes height the small card does not have.
-        val tall = compose.onNodeWithTag(TodayFieldTags.card("c-tall"))
-            .fetchSemanticsNode().size.height
-        val small = compose.onNodeWithTag(TodayFieldTags.card("c-small"))
-            .fetchSemanticsNode().size.height
-        assertTrue("the tall card is not taller than the small one", tall > small)
+        // **A square card is square**, D153, which is the owner's own words:
+        // a widget on the phone somebody already owns is a square or it is the
+        // width of the screen. Within a point, because a cell width that does
+        // not divide evenly leaves a rounding remainder and a test that fails
+        // on one pixel is a test somebody deletes.
+        val square = compose.onNodeWithTag(TodayFieldTags.card("c-small"))
+            .fetchSemanticsNode().size
+        assertTrue(
+            "the small card is ${square.width} by ${square.height}, which is not square",
+            kotlin.math.abs(square.width - square.height) <= 1,
+        )
+
+        // And the full width card is the width of the field rather than half.
+        val full = compose.onNodeWithTag(TodayFieldTags.card("c-tall"))
+            .fetchSemanticsNode().size
+        assertTrue(
+            "the full width card is ${full.width} against a square of ${square.width}",
+            full.width > square.width * 1.5,
+        )
     }
 
     @Test
@@ -943,7 +967,10 @@ class TodayFieldScreenTest {
         val first = compose.onNodeWithTag(TodayFieldTags.card(before.first()))
             .fetchSemanticsNode().size.height.toFloat()
 
-        compose.onNodeWithTag(TodayFieldTags.drag(before.first()), useUnmergedTree = true)
+        // **The gesture starts on the card**, D153, because the card is what a
+        // finger carries now. It used to start on a 48dp grip in the corner,
+        // which is not what holding a widget is on the phone somebody owns.
+        compose.onNodeWithTag(TodayFieldTags.card(before.first()))
             .performTouchInput {
                 down(center)
                 // Past the slop, then far enough to clear the card below it.
@@ -973,11 +1000,60 @@ class TodayFieldScreenTest {
     }
 
     @Test
-    fun everyCardInEditModeCarriesAGripAndOpensItsOptions() {
-        // Grid screen 05: in edit mode a card carries a remove dot and a drag
-        // handle, and everything else is in its options, screen 07. Inline it
-        // was three chips and four actions on every card, which on a twenty
-        // card Today is the wall rule 15 describes.
+    fun touchingAndHoldingACardStartsArrangingAndSoDoesHoldingTheLead() {
+        // **The phone's own gesture**, D153 and the owner's own note on #376:
+        // the home screen somebody already owns is the only frame of reference
+        // anybody brings to a grid of cards, and holding a widget is how
+        // arranging starts there.
+        //
+        // **The lead is checked as well as a card**, and separately, because it
+        // is a different component. It is the largest thing on the screen and
+        // the first place a thumb lands, so a hold that works everywhere except
+        // there teaches somebody the gesture is unreliable, which is worse than
+        // not having it at all. That is exactly what shipped first: `TodayLead`
+        // took no hold, and only the field cards answered.
+        //
+        // **Holding is a shortcut and never the only way in**, per 21.6 screen
+        // 5 and D155. The visible Arrange control is asserted first, because if
+        // it ever goes the gesture becomes the only path and law 2 is broken.
+        val layout = startingHand()
+        show(layout)
+
+        compose.onNodeWithTag(TodayFieldTags.EDIT).assertIsDisplayed()
+        assertTrue(
+            "the screen is already being arranged before anything was held",
+            compose.onAllNodesWithTag(TodayFieldTags.DONE).fetchSemanticsNodes().isEmpty(),
+        )
+
+        compose.onNodeWithTag(TodayFieldTags.card(layout.field.first().id))
+            .performTouchInput { longClick() }
+        compose.onNodeWithTag(TodayFieldTags.DONE).assertIsDisplayed()
+
+        // Out again, so the lead is held from the same resting state rather
+        // than from a screen that is already arranging.
+        compose.onNodeWithTag(TodayFieldTags.DONE).performClick()
+        assertTrue(
+            "the screen did not leave arranging when Done was tapped",
+            compose.onAllNodesWithTag(TodayFieldTags.DONE).fetchSemanticsNodes().isEmpty(),
+        )
+
+        compose.onNodeWithTag(TodayFieldTags.LEAD).performTouchInput { longClick() }
+        compose.onNodeWithTag(TodayFieldTags.DONE).assertIsDisplayed()
+    }
+
+    @Test
+    fun everyCardBeingArrangedSaysSoAndOpensItsOptions() {
+        // Grid screen 05: while Today is being arranged a card carries a remove
+        // dot and says what it now opens, and everything else is in its
+        // options, screen 07. Inline it was three chips and four actions on
+        // every card, which on a twenty card Today is the wall rule 15
+        // describes.
+        //
+        // **The grip this used to assert is gone**, D153: the card itself is
+        // what a finger carries, which is what holding a widget does on the
+        // phone somebody already owns. The tag stayed on the line that names
+        // what the card opens, because what the test is really asking is
+        // whether every card shows its arranging state.
         val layout = startingHand()
         show(layout)
         compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
@@ -986,6 +1062,13 @@ class TodayFieldScreenTest {
             compose.onNodeWithTag(TodayFieldTags.drag(card.id), useUnmergedTree = true)
                 .assertIsDisplayed()
         }
+        // **There is deliberately no assertion here that the grip is gone.**
+        // The obvious one, that nothing is described as a grip, would have
+        // passed before D153 as well: the grip carried `clearAndSetSemantics`,
+        // so it never had a description to find. A test that could not fail is
+        // worse than none, because it is read as coverage. What proves the card
+        // itself is what a finger carries is the drag test below, which now
+        // starts its gesture on the card rather than on a handle.
         // The card is the door to its options, so the size chips are not on it.
         assertTrue(
             "a size chip is still on the card's face",

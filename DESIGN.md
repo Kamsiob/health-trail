@@ -299,25 +299,30 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 
 | Role | Face | Size / line | Weight | Use |
 |---|---|---|---|---|
-| Hero | Bricolage | 21 to 24sp / 1.18 | 800, tracking -0.015em | The one thing, section 2 law 1 |
-| Display M | Bricolage | **22sp** / 1.1, and 19 to 20 where a screen's own title is set smaller | 800, -0.02em | Screen titles, the current chapter, a round's reason |
-| Row title | Bricolage | 13sp / 1.3 | 700 | The title line of a group row |
-| Body | Atkinson | 13sp / 1.5 | 400 | Supporting content. **The floor** |
-| Body S | Atkinson | 12sp / 1.4 | 400 | Folded rows on sand, row subtitles |
-| Label | Atkinson | 13sp / 1.4 | 700 | Buttons and chips |
-| Nav label | Atkinson | 11sp / 1.3 | 700 | Bottom navigation only. Exempt from the floor |
-| Mono | JetBrains Mono | 11sp / 1.5 | 700, tracking 0.12em, uppercase | Eyebrows, counts, amounts. **Never a date**, see below. Exempt from the floor |
-| Mono L | JetBrains Mono | 22 to 30sp | 700, tracking 0, tabular | A number at display size, in the big-number component and nowhere else |
-| Display L | Bricolage | 28sp / 1.2 | 800 | **Implemented and not in the grid's `.h1` vocabulary.** The heading of a thing's own screen, above a section title. Checked against a drawing on #345 |
-| Display S | Bricolage | 18sp / 1.33 | 800 | **Implemented and not in the grid's `.h1` vocabulary.** A card's own title where a row title is too quiet. Checked against a drawing on #345 |
+| Hero | Bricolage | **26sp** / 31 | 800, tracking -0.015em | The one thing, section 2 law 1 |
+| Display L | Bricolage | **31sp** / 37 | 800, -0.02em | The heading of a thing's own screen, above a section title |
+| Display M | Bricolage | **24sp** / 30 | 800, -0.015em | Screen titles, the current chapter, a round's reason |
+| Display S | Bricolage | **20sp** / 26 | 800 | A card's own title, and the title line of a row where a row title is too quiet |
+| Row title | Bricolage | **17sp** / 23 | 700, -0.01em | The title line of a group row |
+| Body L | Atkinson | **17sp** / 26 | 400 | The lead sentence under a screen title |
+| Body | Atkinson | **16sp** / 24 | 400 | Supporting content. **The floor** |
+| Body S | Atkinson | **14sp** / 21 | 400 | Folded rows on sand, row subtitles |
+| Label | Atkinson | **15sp** / 20 | 700 | Buttons and chips |
+| Nav label | Atkinson | **12sp** / 15 | 700 | Bottom navigation only. Exempt from the floor |
+| Mono | JetBrains Mono | **12sp** / 17 | 400, tracking 0.12em, uppercase | Eyebrows, counts, amounts. **Never a date**, see below. Exempt from the floor |
+| Mono L | JetBrains Mono | **24sp** / 28 | 700, tracking 0, tabular | A number at display size, in the big-number component and nowhere else |
 
-**This ladder was corrected on 2026-08-11 and the correction is the point of D142.** It said Display M was 19 to 20sp. **The grid's `.h1` is 22px** with per-screen overrides at 19 and 20, and the app has been 22sp all along, so **the prose was the only one of the three that was wrong** and a session building a new screen from this table would have set its title two steps under both. Display L and Display S were missing from it entirely while being used across the app.
+**This ladder was lifted on 2026-08-13, at the owner's instruction, and it is D142's recorded accessibility exception rather than drift.** The owner used the build and said the text is hard to read. It was: body sat at 14sp and the row under it at 13, against a platform whose own body text is 14 to 16, in an app whose reader is exhausted, often not young, and often reading in a corridor in bad light. Every role moved up one to three points and every line height moved with it. **The jumps between roles were preserved rather than flattened**, because the hierarchy is what law 1 is made of and closing it to make a screen look balanced is the most common way to lose it.
 
-**The jump from 21sp to 13sp is large on purpose and is meant to be felt at arm's length.** It is what law 1 is made of. Closing it to make a screen look balanced is the most common way to lose the hierarchy.
+**What this costs and where it gets checked.** Every screen is now carrying more text in the same width, which is section 16.2's overflow audit and rule 11's longest language, both retroactive per rule 14. A lift verified only in English at scale 1.0 is not verified.
 
-**Mono L carries no tracking.** The 0.12em exists to raise letter distinction at 11sp. At 22sp and above the same tracking pulls the digits of one number apart until it reads as several numbers. Tabular figures do the alignment work instead.
+**The ladder was corrected once before, on 2026-08-11, and that correction is the point of D142.** It said Display M was 19 to 20sp while the app had been 22sp all along, so the prose was the only one of the three that was wrong, and a session building a new screen from that table would have set its title two steps under both. Display L and Display S were missing from it entirely while being used across the app. **Both corrections have the same lesson: this table is read by somebody building a screen, so a stale row here becomes a built screen tomorrow.**
 
-**The two exemptions from the 13sp floor, and why they are the only two.** The nav label and the Mono metadata style sit below it. Neither ever carries information on its own: a nav label is always paired with an icon and a content description, and a Mono eyebrow or count is always directly beside the content it labels. Both are short, and Mono is uppercase and tracked, which raises its letter distinction well above 11sp lowercase body text. Both scale with dynamic type. **Nothing else may be added to this list.** A third candidate is a sign the layout is too dense, and the layout gets fixed rather than the floor lowered.
+**The jump from the hero to the body is large on purpose and is meant to be felt at arm's length.** It is what law 1 is made of. Closing it to make a screen look balanced is the most common way to lose the hierarchy.
+
+**Mono L carries no tracking.** The 0.12em exists to raise letter distinction at small sizes. At 24sp the same tracking pulls the digits of one number apart until it reads as several numbers. Tabular figures do the alignment work instead.
+
+**The two exemptions from the body floor, and why they are the only two.** The nav label and the Mono metadata style sit below it. Neither ever carries information on its own: a nav label is always paired with an icon and a content description, and a Mono eyebrow or count is always directly beside the content it labels. Both are short, and Mono is uppercase and tracked, which raises its letter distinction well above lowercase body text at the same size. Both scale with dynamic type. **Nothing else may be added to this list.** A third candidate is a sign the layout is too dense, and the layout gets fixed rather than the floor lowered.
 
 **The nav label is capped at 1.4, and it is the only capped type in the app.** At font scale 2.0 "Notebook" broke mid-word and collided with the capture button. Four labels and a fixed clearance for the FAB share one row, which is a width budget nothing else has. Above the cap the label holds and the icon, the position, and the content description carry it. Found on the phone with the system font at maximum, which is why section 12 requires that pass rather than a reading of the code.
 
@@ -985,19 +990,26 @@ Every card declares **one query** over the same single database. Queries run whe
 
 **Identity comes from the tab pack, never from decoration.** An appointments card is slate because appointments are slate everywhere in the binder. Cards for whole-app surfaces wear gold.
 
-### 21.3 Three sizes, and how content adapts
+### 21.3 Two sizes, and how content adapts
 
-| Size | Width | Carries | Touch targets |
+| Size | Shape | Carries | Touch targets |
 |---|---|---|---|
-| **Small** | Half | One answer, one line of context | **One.** The whole card |
-| **Wide** | Full | The answer plus two or three lines, or one inline outlined action beside it | **Two** |
-| **Tall** | Full, taller | A chart under the chart card's rules, a mini spine, or a short list. **Never a dense feed** | **Three** |
+| **Square** | Half width, and as tall as it is wide | One answer, one line of context | **One.** The whole card |
+| **Full width** | The width of the screen, as tall as its content | The answer plus its detail, one inline outlined action, and the chart or mini spine the card has. **Never a dense feed** | **Two or three** |
 
-**Every card supports at least two sizes and declares its behavior at each.**
+**Two, and the owner asked for two more than once before it was built.** A widget on the phone somebody already owns is a square or it is the width of the screen, and that phone is the only frame of reference anybody brings to a grid of cards. A third size in between was a choice nobody asked to make, on the most looked at screen in the app.
+
+**Wide absorbed what used to be tall.** They differed only in whether the rich body was drawn, which made the person choose between two full width cards on a difference no label could honestly name. Full width now means the card's whole rendering.
+
+**Square is a floor rather than a cage.** The cell is as tall as it is wide and grows past that when the words need it, which is what happens at a large system font before the field reflows to one column, and in the longest language. A square that clipped its own answer to stay square would be rule 11's truncation wearing a tidy shape. The grid row sizes to its tallest cell, so a pair stays level either way.
+
+**The stored column still allows `tall`, deliberately.** The schema is fixed by `contract/DATA-CONTRACT.md` and changing it needs the owner, per rule 3, so a notebook or an archive written before this keeps every row it had. A `tall` card reads as full width, which is what it always looked like.
+
+**Every card supports both sizes and declares its behavior at each.**
 
 **Growing a card never adds a new kind of content, it reveals more of the same answer.** The medications card at small is a count; at wide it is the list. **Shrinking never hides the existence of something open, only its detail.**
 
-**Inline actions appear only at wide and tall, always outlined, always a verb or a dialable number.**
+**Inline actions appear only at full width, always outlined, always a verb or a dialable number.**
 
 ### 21.4 The states ladder
 

@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -17,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -123,10 +126,29 @@ fun Modifier.openableByTap(
      * Defaults to the card radius because that is what most callers clip to.
      */
     shape: Shape = Radius.card,
+    /**
+     * What touching and holding does, or null where holding does nothing.
+     *
+     * **A shortcut and never the only way in.** Every caller that sets this has
+     * a visible control doing the same thing, because a gesture nobody is told
+     * about is a feature that does not exist for most people, and it is a
+     * feature that does not exist at all for somebody using a screen reader or
+     * switch access. [longPressLabel] is what a reader offers instead, so the
+     * hold is a real action in the accessibility tree rather than a rumor.
+     *
+     * long-press-twin: whatever visible control the caller already has. The one
+     * caller today is Today's card, whose twin is the Arrange action in the
+     * screen header. D155, and the check that reads this marker is
+     * `tools/checks/check_dead_gestures.py`.
+     */
+    onLongPress: (() -> Unit)? = null,
+    /** What a reader calls the hold, as a verb. Required whenever [onLongPress] is set. */
+    longPressLabel: String? = null,
 ): Modifier {
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, resting)
     val ring by focusRingAlpha(interaction)
+    val haptics = LocalHapticFeedback.current
 
     return this
         // **Raised, like every other surface in the app.** #324 lifted the
@@ -139,12 +161,36 @@ fun Modifier.openableByTap(
         .raisedCard(shape)
         .background(surface)
         .border(2.dp, HealthTrail.colors.blue.copy(alpha = ring), shape)
-        .clickable(
-            interactionSource = interaction,
-            indication = null,
-            onClickLabel = label,
-            role = Role.Button,
-            onClick = onTap,
+        // long-press-twin: the caller's own visible control, named on the
+        // onLongPress parameter above. D155.
+        .then(
+            if (onLongPress == null) {
+                Modifier.clickable(
+                    interactionSource = interaction,
+                    indication = null,
+                    onClickLabel = label,
+                    role = Role.Button,
+                    onClick = onTap,
+                )
+            } else {
+                Modifier.combinedClickable(
+                    interactionSource = interaction,
+                    indication = null,
+                    onClickLabel = label,
+                    role = Role.Button,
+                    onLongClickLabel = longPressLabel,
+                    // **The phone's own answer to a hold.** Compose does not
+                    // buzz for a long press by itself, and without it the
+                    // gesture succeeds in silence: the screen changes a moment
+                    // later and nothing connects the two. On the home screen
+                    // every person already has, the buzz is the confirmation.
+                    onLongClick = {
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onLongPress()
+                    },
+                    onClick = onTap,
+                )
+            },
         )
 }
 

@@ -53,8 +53,11 @@
 | `peopleOnEntry` | `data/Repository.kt` | `EntryDetail`, which carries the people it already read | 2026-08-13 |
 | `QuietAction` | `ui/components/FoldRow.kt` | `QuietButton`, and `TextAction` is its second name | 2026-08-13 |
 | `neutralHue` | `ui/components/TabChip.kt` | `wholeAppHue`, for a surface that belongs to no section | 2026-08-13 |
+| `DragHandle`, `GRIP_TARGET`, `GRIP_WIDTH`, `GRIP_GAP`, `GRIP_STROKE` | `ui/screens/TodayFieldScreen.kt` | The card itself, which is what a finger carries once Today is being arranged. D153 | 2026-08-13 |
 
 **The audit counted twenty two and the real number is six**, which is the finding rather than a correction to a tally. **Most of what looked dead is reached by a test and by nothing else**, and that is a different thing entirely: `columnForTest`, `revisionForTest` and their fifteen siblings exist for the tests by name, and `addToIncident`, `threadsForEntry`, `openIncidentCount` and `fillProjectPaper` are covered by tests while the screen that should call them is not built. **A function a test reaches is a promise the app has not kept, not code nobody needs.**
+
+**On the grip specifically.** It was a 48dp target in the corner of a card that is itself a target, and the owner's note on #376 is why it went: nobody grabs a handle to move an icon on the phone they already own. **Nothing was lost by it going.** The reorder path that has to exist is the worded move up and move down in the card's options sheet, which works one handed, with a reader on, and with switch access, and 23.2 is why that path rather than the drag is the one that must exist. The drag was always the shortcut.
 
 **Two are neither superseded nor covered, and they are not frozen**: `renameChapter` and `renameProject`. Both are the same defect the care thread rename already fixed, a record that cannot be corrected, and both wait on B6 rather than on a decision. Freezing them would say the app decided not to let somebody fix a name they typed wrong, which is the opposite of what is true. They are on #371.
 

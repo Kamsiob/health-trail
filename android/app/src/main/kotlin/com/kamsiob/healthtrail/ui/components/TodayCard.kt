@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -44,25 +45,80 @@ private val CHEVRON_ROOM: Dp = 8.dp + 8.dp + 8.dp
  */
 private val CORNER_ROOM: Dp = 48.dp + 8.dp
 
-/** How much room a card takes on the field. `DESIGN.md` 21.3. */
+/**
+ * How much room a card takes on the field. `DESIGN.md` 21.3.
+ *
+ * **Two sizes, and the owner has asked for two more than once.** A card is a
+ * square or it is the full width of the screen, because that is what a widget is
+ * on the phone the person already owns, and the phone is the only frame of
+ * reference anybody brings to this. A third size in between was a choice nobody
+ * asked to make, on the most looked at screen in the app.
+ *
+ * **The stored column still allows `tall`**, and that is deliberate rather than
+ * an oversight. The schema is fixed by `contract/DATA-CONTRACT.md` and changing
+ * it needs the owner, per rule 3, so a notebook or an archive written before
+ * tonight keeps every row it had. A `tall` card reads as wide, which is what it
+ * always looked like: full width, as tall as what it has to say.
+ */
 enum class CardSize {
-    /** Half width. One answer, one line of context. One touch target. */
+    /**
+     * Square. One answer and one line of context, in a cell as tall as it is
+     * wide.
+     *
+     * **Square is a floor rather than a cage.** The cell is as tall as it is
+     * wide and grows past that when the words need it, which is what happens at
+     * a large system font before the field reflows to one column. A square that
+     * clipped its own answer to stay square would be rule 11's truncation with
+     * a tidy excuse.
+     */
     SMALL,
 
-    /** Full width. The answer plus two or three lines. Two targets. */
+    /**
+     * Full width, and the card's whole rendering: the answer, its detail, and
+     * the chart or mini spine where the card has one.
+     *
+     * **This absorbed what used to be a third size.** Wide and tall differed
+     * only in whether the rich body was drawn, which made the person choose
+     * between two full width cards on a difference no label could honestly
+     * name.
+     */
     WIDE,
-
-    /** Full width, taller. A chart, a mini spine, or a short list. Three. */
-    TALL,
     ;
 
     companion object {
         fun of(stored: String): CardSize = when (stored) {
-            "wide" -> WIDE
-            "tall" -> TALL
+            // `tall` is a row written before Today had two sizes. It is a full
+            // width card and it always was.
+            "wide", "tall" -> WIDE
             else -> SMALL
         }
     }
+}
+
+/**
+ * As tall as it is wide, and taller when the words need it.
+ *
+ * **Why this rather than `aspectRatio`.** `aspectRatio` sets the height from the
+ * width and then makes the content fit inside it, so a square card whose answer
+ * ran long would clip its own words, which is rule 11's truncation wearing a
+ * tidy shape. This sets the square as the minimum and lets the card grow, so at
+ * a large system font, or in the longest language, a small card is a tall
+ * rectangle with everything on it rather than a neat box with a sentence cut in
+ * half. The grid row sizes to its tallest cell, so the pair stays level either
+ * way.
+ */
+private fun Modifier.atLeastSquare(): Modifier = layout { measurable, constraints ->
+    // **Only where the width is actually known.** In a parent that scrolls
+    // sideways the incoming width is infinite, and asking for a height to match
+    // it would ask for an infinite card. The grid always gives a real width, so
+    // this never fires today; it is here because the day it does fire is a
+    // crash rather than a wrong shape.
+    val bounded = constraints.hasBoundedWidth
+    val square = if (bounded) constraints.maxWidth.coerceAtMost(constraints.maxHeight) else 0
+    val placeable = measurable.measure(
+        constraints.copy(minHeight = square.coerceAtLeast(constraints.minHeight)),
+    )
+    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
 }
 
 /**
@@ -145,26 +201,40 @@ fun TodayCard(
      * reading.
      */
     corner: (@Composable () -> Unit)? = null,
+    /**
+     * Touch and hold, which on Today starts arranging the screen.
+     *
+     * **Because that is what holding a widget does on the phone they own.**
+     * Nobody has to be taught it and nobody has to find the word for it first.
+     * The visible control that does the same thing stays where it is: this is
+     * the shortcut, per 21.6 screen 5.
+     *
+     * long-press-twin: the Arrange action in Today's own header, which enters
+     * the same mode and is the path a reader and switch access take. D155.
+     */
+    onLongPress: (() -> Unit)? = null,
+    /** What a reader calls the hold. Required whenever [onLongPress] is set. */
+    longPressLabel: String? = null,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
-    // **One floor for all three sizes, and tall earns its height from content.**
-    // Tall reserved 168dp, so a card the person made tall whose record has
-    // nothing more to show, a measure with one reading and no line to draw,
-    // rendered as a hundred points of empty box. Rule 11: no blank area, and a
-    // reserved height is a blank area with a reason.
+    // **Wide earns its height from content.** It reserved 168dp once, so a card
+    // whose record had nothing more to show, a measure with one reading and no
+    // line to draw, rendered as a hundred points of empty box. Rule 11: no
+    // blank area, and a reserved height is a blank area with a reason.
     //
     // **Nothing is hidden by not padding it.** 21.3: shrinking never hides the
-    // existence of something open, only its detail, and there is no detail
-    // here to hide. A chart or a short list makes a tall card tall; an empty
-    // record makes it the size of what it has to say, which is honest.
+    // existence of something open, only its detail, and there is no detail here
+    // to hide. A chart or a short list makes a wide card tall; an empty record
+    // makes it the size of what it has to say, which is honest.
     val minHeight: Dp = 96.dp
 
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .then(if (size == CardSize.SMALL) Modifier.atLeastSquare() else Modifier)
             .defaultMinSize(minHeight = minHeight)
             // #324. The card is a thing on a desk, and the desk is the
             // whole metaphor of the surface.
@@ -174,7 +244,13 @@ fun TodayCard(
             // nothing pointed at it. D142.
             .raisedCard(Radius.card)
             .clip(Radius.card)
-            .openableByTap(label = openLabel, onTap = onOpen)
+            .openableByTap(
+                label = openLabel,
+                onTap = onOpen,
+                // long-press-twin: Today's Arrange action, per the parameter above.
+                onLongPress = onLongPress,
+                longPressLabel = longPressLabel,
+            )
             // **The card's own sentence lives on the card's own node**, beside
             // its tap action, so a reader that stops here is told what the card
             // says and what pressing it does in one stop.

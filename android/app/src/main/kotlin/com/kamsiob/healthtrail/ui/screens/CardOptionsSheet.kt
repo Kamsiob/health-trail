@@ -143,10 +143,19 @@ fun CardOptionsSheet(
 
             OptionGroup(labelKey = "today.options.size") {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
-                    for (option in listOf("small", "wide", "tall")) {
+                    // **Two, and the phone is why.** A widget on the home screen
+                    // somebody already has is a square or it is the width of the
+                    // screen, and that is the only vocabulary anybody brings
+                    // here. A card stored as `tall` was a full width card all
+                    // along, so it lights the same chip rather than none.
+                    for (option in listOf("small", "wide")) {
                         SizeChip(
                             label = strings["today.edit.size.$option"],
-                            selected = size == option,
+                            selected = if (option == "wide") {
+                                size == "wide" || size == "tall"
+                            } else {
+                                size == "small"
+                            },
                             onClick = { onResize(option) },
                             modifier = Modifier.testTag(CardOptionsTags.size(option)),
                         )

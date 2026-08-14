@@ -170,7 +170,10 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D148 | The third version currency check, which D121 left enabled |
 | D148 | An event writer updates its parent's state in the same transaction |
 | D147 | A form asks one question at a time; correcting a record shows all of it at once |
-| B6 | `NotebookShell` has reached the JVM's 64KB method limit. BLOCKED on an extraction pass |
+| D155 | A long press is allowed where it names the visible control that does the same thing |
+| D154 | The type ladder is lifted app wide, because the owner said the text is hard to read |
+| D153 | Today has two card sizes, square and full width, and the stored column keeps three |
+| B6 | `NotebookShell` reached the JVM's 64KB method limit. Resolved 2026-08-13 |
 | B1 | Commit signing. Resolved 2026-07-31 |
 | B2 | Board automations. Resolved by doing it a different way |
 | B3 | Hosted privacy policy. Resolved, then corrected |
@@ -2975,7 +2978,63 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
-### B6. `NotebookShell` has reached the JVM's 64KB method limit. BLOCKED on an extraction pass
+### D153. Today has two card sizes, square and full width, and the stored column keeps three
+
+**Date:** 2026-08-13. **Decided under rule 10**, working #376, which is the owner's own words after using the build. **Supersedes 21.3's three sizes.** Changes no schema.
+
+**The decision.** A card on Today is a square or it is the width of the screen. The third size, `tall`, is gone from the interface. Full width absorbed what it did: the chart, the mini spine, the detail line.
+
+**The owner's words, and this is the part that matters.** "I've told you multiple times before that the widgets on the today screen are either small (square) or wide (full width)." **It was heard and not built, more than once**, which makes it a different kind of defect from one nobody raised. What was built instead was a half width card of whatever height its content came to, plus two full width sizes that differed only in whether the rich body was drawn.
+
+**Why two is right and not just what was asked for.** The only frame of reference anybody brings to a grid of cards is the grid of widgets on the phone they already own, and there a widget is a square or it is the width of the screen. **Wide and tall could not be told apart by their names**, so the person was being asked to choose between two full width cards on a difference no label could honestly state. Rule 23: among defensible answers, take the easiest for the person.
+
+**Square is a floor rather than a fixed height**, and that is the one judgment inside this. `aspectRatio` would set the height from the width and make the content fit inside it, so a square whose answer ran long would clip its own words, which is rule 11's truncation wearing a tidy shape. The card is at least as tall as it is wide and grows when the words need it, which is what happens at a large system font and in the longest language. The grid row sizes to its tallest cell, so a pair stays level either way.
+
+**The schema keeps `tall`, deliberately.** Rule 3 fixes the schema by `contract/DATA-CONTRACT.md` and changing it needs the owner, so the `CHECK` constraint is untouched and every row written before tonight still loads. `CardSize.of` maps it to full width, which is what it always looked like, and the size chips light "Full width" for it rather than none. **A migration would have been the wrong answer twice**: it needs the owner, and it would have rewritten rows in somebody's archive to fix a menu.
+
+**Revisit if.** The owner asks for a third size, or a card appears whose answer genuinely cannot be told at either.
+
+---
+
+### D155. A long press is allowed where it names the visible control that does the same thing
+
+**Date:** 2026-08-13. **Decided under rule 10**, working #376. **Narrows `check_dead_gestures.py`, and it is not a weakening.**
+
+**The decision.** The blanket ban on `combinedClickable`, `onLongClick`, `onLongPress` and `detectDragGesturesAfterLongPress` gains one escape: a `long-press-twin: <the visible control that does the same thing>` marker within thirty lines above the gesture. **A bare marker with nothing after the colon fails exactly like an unmarked gesture**, which was watched failing before this was trusted.
+
+**Why the ban was wider than the rule it enforces.** Law 2 bans an action reachable **only** by a gesture. The check banned the gesture outright, which was right for every case it had ever seen: #218 was removal hidden behind a hold on nine screens with nothing visible doing the same job, and the inversion that made it survive is that a reader user was handed removal in their action list while a sighted person who did not know the gesture could not remove anything at all.
+
+**Touch and hold to start arranging Today is the case the rule always allowed.** The owner asked for it by name: the home screen of the phone somebody already owns is the only frame of reference anybody brings to a grid of cards, and holding a widget is how arranging starts there. `DESIGN.md` 21.6 screen 5 has said since the screen was drawn that the visible button is the way in and touch and hold is a shortcut and never the only path. **The shortcut had simply never been built**, and when it was, the check refused it.
+
+**The marker must name the control rather than assert one exists.** "There is another way" with nothing after it is how a guard becomes a formality, so the reason is required and it is required to be words. **What the check cannot do is confirm the named control is real**, which is rule 19's job on the device with a reader on, and that limit is written into the check's own comment so the next reader does not mistake a green run for a verified path.
+
+**Rejected: exempting `Press.kt` by path.** It would have let any future caller of `openableByTap` add a hold with no twin at all, which is #218 with one more step in front of it.
+
+**Rejected: leaving the ban and building the mode without the gesture.** That is refusing a direct instruction on the strength of a check that is stricter than the law it enforces, and the owner has now said twice that this screen is hard to use.
+
+**Revisit if.** A second marker appears whose named twin turns out not to exist, in which case the marker is not enough and the twin wants a test.
+
+### D154. The type ladder is lifted, app wide, because the owner said the text is hard to read
+
+**Date:** 2026-08-13. **Decided under rule 10**, working #376. **This is D142's recorded accessibility exception**, not drift.
+
+**The decision.** Every role on the ladder moves up one to three points, with its line height. Body, which is the floor and 120 call sites, goes from 14sp to 16. Body S from 13 to 14. Mono from 11 to 12. The display sizes move with them so the jumps between roles are preserved.
+
+**The owner's words.** "The text is hard to read." He had used the build.
+
+**It was measurably small, which is why this is a correction rather than taste.** Body sat at 14sp and the row under it at 13, against a platform whose own body text is 14 to 16sp, in an app whose reader is exhausted, often not young, and often reading in a corridor in bad light at arm's length. **The accessibility floor was clearing** because rule 19 verifies with the reader on and the font at maximum, and legible at 200 percent with a reader running is a different question from legible at the default, which is where almost everybody actually is. **That gap is the whole lesson**: a floor verified only at its extreme says nothing about the setting nobody changes.
+
+**The jumps were preserved rather than flattened.** Raising the body and leaving the hero would have closed the distance that law 1 is made of, and section 5.1 already warns that closing it to make a screen look balanced is the most common way to lose the hierarchy. Every role moved.
+
+**What it costs.** Every screen now carries more text in the same width, so section 16.2's overflow audit and rule 11's longest language apply to the whole app again, retroactive per rule 14. **A lift verified only in English at scale 1.0 is not verified.**
+
+**Rejected: lifting only the body roles.** It is the cheapest change and it would have left the screens' hierarchy visibly compressed, which is a second defect traded for the first.
+
+**Revisit if.** The overflow pass finds a screen that cannot hold the new ladder in the longest language at scale 2.0, in which case the screen gets fixed rather than the ladder lowered, per 5.1's own rule about the floor.
+
+---
+
+### B6. `NotebookShell` reached the JVM's 64KB method limit. Resolved 2026-08-13
 
 **Found 2026-08-13**, adding the chapter rename to #371's item 4. The build fails with `MethodTooLargeException` on `NotebookShell$lambda$721`, the single content lambda that holds every overlay in the app. **One more overlay is what tipped it over**, and the failure is a hard platform ceiling rather than a warning.
 
@@ -3011,6 +3070,30 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **Two things to know before starting.** `with` is inline, so step 2 buys nothing by itself except removing the `remember` calls; the saving is real but it is the 179, not the wrapping. And the body must be reindented as part of step 2 or the file carries 4,500 lines at the wrong depth, which is a diff nobody can review and a file nobody can read.
 
 **It is written down rather than begun on purpose.** It touches every navigation path in the app and every back handler depends on the state it moves, and it wants a session that can hold the whole file and run the suite between each step, which is what "it is not a late-night change" above already said.
+
+---
+
+**2026-08-13, overnight: the pass was done, in the order written above, and it worked.**
+
+**The measurement, which is the part worth keeping**, taken by compiling both versions and reading the method sizes out of the class files rather than by whether the next thing happened to fit:
+
+| | before | after step 1 and 2 | after step 4 | limit |
+|---|---|---|---|---|
+| the content lambda at the ceiling | 63,675 | 57,813 | **26,679** | 65,535 |
+| `NotebookShell` itself | 24,866 | 6,751 | 6,751 | |
+| **headroom** | **1,860** | **7,722** | **38,856** | |
+
+The shell had 2.8 percent of a method left. It has 59 percent.
+
+**It is 214 declarations, not the 179 that was written down.** The 179 counted are the ones on one line. Thirty five more are wrapped across several lines, cost exactly the same, and the pattern that found 179 could not see them. **A count taken by a pattern is a count of what the pattern matches**, which is worth remembering the next time a number in a plan comes from a `grep -c`.
+
+**Step 3's stated proof had already landed and nobody noticed.** `PersonScreen` has taken `appointments` and `onOpenAppointment` since `RestoreFlow` moved out of the shell for #343, which #371 records in the owner's own comment. So "put back the reverted twenty lines and see if they fit" was not a measurement any more: they were not reverted. **Two documents and one issue all still said they were.** The bytecode number above is what step 3 should have asked for from the start, and it does not depend on anybody remembering what landed.
+
+**Step 4 confirmed the diagnosis rather than repeating the failure.** Extraction failed three times before because the call sites cost eighteen arguments and twelve lambdas each. With `ShellState` in place the five groups lifted out cost two or three arguments each, because `strings` and `context` are composition locals an extracted function reads for itself and a composition local costs the call site nothing. **1,465 lines of body left the method for about twelve arguments.** That is the same lesson the `IncidentDetail` collapse taught, applied deliberately instead of stumbled into.
+
+**Three types widened from private to internal**, `Removal`, `Quadruple` and `StandingWrite`, which is what a property of those types on an internal class needs. `dial` and `NotBuiltYet` the same, for the extracted groups.
+
+**Verified** at 703 instrumented tests, 0 failures, before and after, plus 27 checks, 218 unit tests and lint. #373.
 
 ---
 

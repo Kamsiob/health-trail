@@ -93,6 +93,20 @@ fun TodayLead(
      * is not a control.
      */
     action: (@Composable () -> Unit)? = null,
+    /**
+     * Touch and hold, which starts arranging Today.
+     *
+     * **The lead answers the hold too, and that is the point.** It is the
+     * largest thing on the screen and the first thing a thumb lands on, so a
+     * hold that works on every card and not on this one teaches somebody that
+     * the gesture is unreliable, which is worse than not having it.
+     *
+     * long-press-twin: the Arrange action in Today's own header, which enters
+     * the same mode. D155.
+     */
+    onLongPress: (() -> Unit)? = null,
+    /** What a reader calls the hold. Required whenever [onLongPress] is set. */
+    longPressLabel: String? = null,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
@@ -106,7 +120,14 @@ fun TodayLead(
             // surface appearing where there was none. Section 5.14 still
             // reaches it: rule 16 wants everything the person touches to
             // respond, and the lead is the largest tap target on the screen.
-            .openableByTap(label = openLabel, onTap = onOpen, resting = Color.Transparent)
+            .openableByTap(
+                label = openLabel,
+                onTap = onOpen,
+                resting = Color.Transparent,
+                // long-press-twin: Today's Arrange action, per the parameter above.
+                onLongPress = onLongPress,
+                longPressLabel = longPressLabel,
+            )
             // The lead's sentence sits on the lead's own node, beside its tap
             // action, so one stop says both.
             .semantics { contentDescription = description }

@@ -38,6 +38,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -293,6 +301,16 @@ fun TodayFieldScreen(
         dragOffset = Offset.Zero
     }
 
+    // **Back leaves the arrangement, and it keeps it.** That is what back does
+    // to an arranged home screen on the phone, and a mode with no way out but
+    // one named control at the top of a scrolling grid is a mode somebody gets
+    // stuck in. Cancel is still there for changing your mind, and it is the one
+    // that throws the draft away.
+    BackHandler(enabled = editing) {
+        onSave(draft)
+        editing = false
+    }
+
     /**
      * Moves the dragged card to whatever slot the finger is now over.
      *
@@ -430,6 +448,7 @@ fun TodayFieldScreen(
                     onMoveDown = {
                         draft = draft.toMutableList().apply { add(1, removeAt(0)) }
                     },
+                    onArrange = { editing = true },
                 )
             }
 
@@ -474,6 +493,16 @@ fun TodayFieldScreen(
                     onOpen = onOpen,
                     onDial = onDial,
                     modifier = Modifier
+                        // **The others make room, and that is the half of a
+                        // reorder that was missing.** A card moved and every
+                        // other card was simply somewhere else the next frame,
+                        // so nothing on the screen said what had happened. The
+                        // grid animates a placement change for us; the card in
+                        // the hand is excluded because it is already following
+                        // the finger and two things moving it fight.
+                        .then(
+                            if (dragging == card.id) Modifier else Modifier.animateItem(),
+                        )
                         // **Above the field while it is being carried.** Without
                         // this the dragged card slides under its neighbours,
                         // which reads as the card falling through the screen.
@@ -504,6 +533,8 @@ fun TodayFieldScreen(
                     onRemove = {
                         draft = draft.toMutableList().apply { removeAt(position) }
                     },
+                    onArrange = { editing = true },
+                    ordinal = index,
                 )
             }
 
@@ -641,6 +672,7 @@ private fun LeadSlot(
     editing: Boolean,
     canMoveDown: Boolean,
     onMoveDown: () -> Unit,
+    onArrange: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val tab = tabFor(card, answer, strings)
@@ -688,6 +720,13 @@ private fun LeadSlot(
         onOpen = { onOpen(card) },
         modifier = Modifier.testTag(TodayFieldTags.LEAD),
         speaksAsOneNode = !editing,
+        // **The biggest thing on the screen answers the hold too.** A gesture
+        // that works everywhere except on the first thing a thumb lands on
+        // teaches somebody the gesture is unreliable.
+        //
+        // long-press-twin: the Arrange action in this screen's header. D155.
+        onLongPress = if (editing) null else onArrange,
+        longPressLabel = strings["today.arrange.hold"],
         // **A promoted care team card brings its number with it.** The lead is
         // full width, which is what 21.3 ties the inline action to.
         action = shown?.phone
@@ -742,6 +781,10 @@ private fun CardFor(
     onDrag: (Offset) -> Unit = {},
     onDragEnd: () -> Unit = {},
     today: LocalDate = LocalDate.now(),
+    /** Touch and hold to start arranging, which is what a widget does on the phone. */
+    onArrange: () -> Unit = {},
+    /** Where this card sits, so neighbors do not tilt in lockstep. */
+    ordinal: Int = 0,
 ) {
     val strings = LocalStrings.current
 
@@ -764,9 +807,9 @@ private fun CardFor(
                 strings,
                 cardType = card.type,
                 sourced = card.sourceId != null,
-                spine = drewSpine(card.type, shown, tall = size == CardSize.TALL),
+                spine = drewSpine(card.type, shown, tall = size == CardSize.WIDE),
                 showItems = size != CardSize.SMALL,
-                drewChart = size == CardSize.TALL && (shown?.series?.size ?: 0) > 1,
+                drewChart = size == CardSize.WIDE && (shown?.series?.size ?: 0) > 1,
                 countLine = countLineKey(card.type)?.let { strings[it] },
             ),
         ),
@@ -780,7 +823,41 @@ private fun CardFor(
             strings("today.card.open", "name" to tab)
         },
         size = size,
-        modifier = modifier,
+        modifier = modifier
+            .arrangeTilt(arranging = editing, ordinal = ordinal, held = dragging)
+            // **The card itself is what you carry**, which is the whole of the
+            // owner's note about the phone: nobody grabs a handle to move an
+            // icon, they hold the icon. The drag detector sits before the tap,
+            // so a finger that does not travel past touch slop is still a tap
+            // and still opens this card's options.
+            .then(
+                if (editing) {
+                    Modifier.pointerInput(card.id) {
+                        detectDragGestures(
+                            onDragStart = { onDragStart() },
+                            onDragEnd = { onDragEnd() },
+                            onDragCancel = { onDragEnd() },
+                            onDrag = { change, delta ->
+                                // Consumed, so the grid does not scroll under
+                                // the card being carried, which is two things
+                                // answering one finger.
+                                change.consume()
+                                onDrag(delta)
+                            },
+                        )
+                    }
+                } else {
+                    Modifier
+                },
+            ),
+        // **Only outside arrange mode.** Holding a card that is already tilting
+        // would offer to start something that has started.
+        //
+        // long-press-twin: the Arrange action in this screen's own header, a few
+        // lines up, which enters the same mode. The hold is the shortcut and the
+        // header is the path a reader and switch access take. D155.
+        onLongPress = if (editing) null else onArrange,
+        longPressLabel = strings["today.arrange.hold"],
         corner = if (editing) {
             { RemoveDot(spoken = strings("today.edit.remove", "name" to tab), onClick = onRemove) }
         } else {
@@ -797,8 +874,8 @@ private fun CardFor(
             ?.takeIf { dialable(card, shown, size) }
             ?.let { number -> { DialPill(number, card.id, onDial) } },
     ) {
-        // The second line appears at wide and tall only, per 21.3: at small the
-        // card carries one answer and one line of context, and that line is the
+        // The second line appears at wide only, per 21.3: at small the card
+        // carries one answer and one line of context, and that line is the
         // answer's own.
         AnswerBody(
             answer = shown,
@@ -806,7 +883,11 @@ private fun CardFor(
             sourced = card.sourceId != null,
             lead = false,
             showDetail = size != CardSize.SMALL,
-            tall = size == CardSize.TALL,
+            // **Wide is the rich rendering**, which is what absorbing the third
+            // size means: full width draws the chart or the mini spine the card
+            // has, because a person choosing "full width" is asking for the card
+            // rather than a taller version of the small one.
+            tall = size == CardSize.WIDE,
             hue = hueForCard(card.type),
         )
 
@@ -823,35 +904,29 @@ private fun CardFor(
         // two. The remove dot is the one shortcut on the face, in the corner
         // where the chevron sits when the card is a door.
         if (editing) {
-            Row(
-                modifier = Modifier.padding(top = Space.s).fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                // **A label, not a link.** The whole card is the target here,
-                // so putting the action color on one word would say press this
-                // word, which is not where the tap goes. Law 2 bans bare text
-                // links outright for exactly that reason, and this is quiet
-                // type saying what the card now opens.
-                Text(
-                    text = strings["today.edit.options"],
-                    style = HealthTrail.type.mono,
-                    color = HealthTrail.colors.ink2,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(Modifier.weight(1f))
-                // **The shortcut, and 23.2 is why it is only that.** Move up and
-                // Move down in the sheet are the reorder path: they work one
-                // handed, with a reader on, and with switch access, and a drag
-                // works with none of those.
-                DragHandle(
-                    dragging = dragging,
-                    onDragStart = onDragStart,
-                    onDrag = onDrag,
-                    onDragEnd = onDragEnd,
-                    modifier = Modifier.testTag(TodayFieldTags.drag(card.id)),
-                )
-            }
+            // **A label, not a link.** The whole card is the target here, so
+            // putting the action color on one word would say press this word,
+            // which is not where the tap goes. Law 2 bans bare text links
+            // outright for exactly that reason, and this is quiet type saying
+            // what the card now opens.
+            //
+            // **The grip is gone and the card is the grip.** It was a 48dp
+            // target in the corner of a card that is itself a target, which is
+            // the opposite of the phone: nobody grabs a handle to move an icon.
+            // Nothing was lost by it going. Move up and move down in the
+            // options sheet are still the reorder path that works one handed,
+            // with a reader on, and with switch access, and 23.2 is why that
+            // path rather than the drag is the one that must exist.
+            Text(
+                text = strings["today.edit.options"],
+                style = HealthTrail.type.mono,
+                color = HealthTrail.colors.ink2,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .padding(top = Space.s)
+                    .testTag(TodayFieldTags.drag(card.id)),
+            )
         }
     }
 }
@@ -1993,6 +2068,83 @@ private fun SizeChip(label: String, selected: Boolean, onClick: () -> Unit) {
  * beside it in words, on every card, always. Same rule the avatars and the
  * chevron follow: decorative, because the thing it does is named next to it.
  */
+/**
+ * The tilt that says a card can be picked up, and the lift that says one is.
+ *
+ * **Borrowed from the phone on purpose**, per the owner's note that a home
+ * screen is the only frame of reference anybody brings to a grid of cards. A
+ * card being arranged rocks by well under a degree; the card in the hand stops
+ * rocking, grows very slightly, and rides above its neighbours.
+ *
+ * **The rock stops on the held card**, which is the detail that makes it read as
+ * physical rather than as an effect: what you are holding is steady and
+ * everything you are not holding is loose.
+ *
+ * **Neighbours are out of phase with each other.** Cards tilting in perfect
+ * unison read as the whole screen shaking, which is alarming rather than
+ * inviting, and alarming is the wrong note for an app used during hard times.
+ *
+ * **Reduced motion turns the tilt off and nothing else changes.** The degrees
+ * come from `LocalMotion`, which is zero there, so the cards sit still and the
+ * remove marks and the worded move actions carry the whole mode. Section 10:
+ * every spec comes from the tokens, because one built here is one the setting
+ * cannot reach.
+ */
+@Composable
+private fun Modifier.arrangeTilt(arranging: Boolean, ordinal: Int, held: Boolean): Modifier {
+    val motion = LocalMotion.current
+    val degrees = motion.arrangeTiltDegrees
+
+    // **The animation exists only while the mode does.** An infinite transition
+    // composed unconditionally would run a frame loop on the front door forever
+    // and multiply it by every card on the screen, to render a rotation of zero.
+    // It is inside the branch rather than outside with its output multiplied by
+    // nothing, which is the same picture and a very different battery.
+    val tilt = if (arranging && degrees != 0f && !held) {
+        val cycle = rememberInfiniteTransition(label = "arrange")
+        val phase by cycle.animateFloat(
+            initialValue = -1f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(motion.arrangeTiltMillis, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse,
+                // Every third card starts at the far end of the swing, so a grid
+                // reads as loose rather than as one object shaking.
+                initialStartOffset = StartOffset(
+                    (ordinal % TILT_PHASES) * motion.arrangeTiltMillis / TILT_PHASES,
+                ),
+            ),
+            label = "tilt",
+        )
+        phase * degrees
+    } else {
+        // Still. The card in the hand is deliberately in here too: what you are
+        // holding is steady and everything you are not holding is loose, which
+        // is the detail that makes it read as physical rather than as an effect.
+        0f
+    }
+
+    return this.graphicsLayer {
+        rotationZ = tilt
+        // The lift is information rather than decoration, so it survives
+        // reduced motion: it says which card the finger has.
+        scaleX = if (held) HELD_SCALE else 1f
+        scaleY = scaleX
+    }
+}
+
+/**
+ * How much bigger the card in the hand is.
+ *
+ * **Barely.** Enough that the eye can tell which one is being carried without
+ * the card covering what it is being moved past.
+ */
+private const val HELD_SCALE = 1.04f
+
+/** How many cards go by before the tilt repeats its starting point. */
+private const val TILT_PHASES = 3
+
+@Suppress("unused")
 @Composable
 private fun DragHandle(
     dragging: Boolean,

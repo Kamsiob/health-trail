@@ -52,6 +52,28 @@ interface Motion {
     /** Stagger between trail nodes fading in. Zero when motion is reduced. */
     val trailNodeStaggerMillis: Int
 
+    /**
+     * The tilt a card holds while Today is being arranged, in degrees.
+     *
+     * **This is the phone's own idiom and it is here on purpose.** Somebody
+     * rearranging their home screen has seen exactly one thing say "these can be
+     * picked up now", and it is this. The only frame of reference anybody brings
+     * to a grid of cards is the grid of icons they already own, so borrowing it
+     * costs nothing to learn.
+     *
+     * **Small, because this app is used during hard times.** A caregiver at two
+     * in the morning does not need the screen shouting. Enough tilt to read as
+     * unlatched at a glance and not enough to be hard to look at.
+     *
+     * **Zero when motion is reduced**, and the mode still works: the cards sit
+     * still, the remove marks are still there, and the words on every card still
+     * say what will happen. The wobble is the shortcut, never the information.
+     */
+    val arrangeTiltDegrees: Float
+
+    /** How long one half of that tilt takes. Cards are offset so they do not march in step. */
+    val arrangeTiltMillis: Int
+
     val isReduced: Boolean
 }
 
@@ -59,6 +81,18 @@ private const val QUICK_MILLIS = 120
 private const val STANDARD_MILLIS = 240
 private const val DELIBERATE_MILLIS = 400
 private const val REDUCED_FADE_MILLIS = 100
+
+/**
+ * How far a card tilts while Today is being arranged.
+ *
+ * **Under a degree.** The phone's own home screen uses roughly this, and it is
+ * the difference between "you can pick these up" and a screen that is unpleasant
+ * to look at for the minute somebody spends arranging it.
+ */
+private const val ARRANGE_TILT_DEGREES = 0.7f
+
+/** One half of the tilt. Slow enough to read as breathing rather than shaking. */
+private const val ARRANGE_TILT_MILLIS = 130
 
 object FullMotion : Motion {
     override fun <T> standard(): FiniteAnimationSpec<T> =
@@ -75,6 +109,10 @@ object FullMotion : Motion {
 
     override val trailNodeStaggerMillis: Int = 30
 
+    override val arrangeTiltDegrees: Float = ARRANGE_TILT_DEGREES
+
+    override val arrangeTiltMillis: Int = ARRANGE_TILT_MILLIS
+
     override val isReduced: Boolean = false
 }
 
@@ -90,6 +128,12 @@ object ReducedMotion : Motion {
     override fun <T> deliberateStandard(): FiniteAnimationSpec<T> = tween(REDUCED_FADE_MILLIS)
     override fun <T> trailDraw(): FiniteAnimationSpec<T> = snap()
     override val trailNodeStaggerMillis: Int = 0
+
+    // **Still, and the mode is not diminished by it.** Every card still carries
+    // its remove mark and its worded move actions; the tilt was the shortcut.
+    override val arrangeTiltDegrees: Float = 0f
+    override val arrangeTiltMillis: Int = ARRANGE_TILT_MILLIS
+
     override val isReduced: Boolean = true
 }
 

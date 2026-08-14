@@ -35,19 +35,34 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 
 ## 3. The work
 
-**#375** is the live list: the owner's direction of 2026-08-14. The interface is better and still limited. Relevant information available from any point, nothing overly cluttered, smarter layout and organization, bugs found by using it. It carries the method and the do-not-undo list.
+**#376** is the live list: the owner's direction of 2026-08-13, overnight, after using the build. **The acceptance criterion is a shippable app**, not a green run and not a correct screen. It names six failures and quotes him on all of them.
 
-**#373** is B6, the unblocker. **#374** is the six records that cannot be corrected, blocked on #373.
+1. The text is hard to read. **Done**, D154: the whole ladder lifted, body 14sp to 16.
+2. Today is hard to use.
+3. **A card is square or full width, and he had said so more than once.** Done, D153.
+4. Adding, removing and changing cards is not intuitive, animated, or friendly, and **must mimic the phone's own home screen**. Done: hold to arrange, carry the card itself, others move aside, back keeps it.
+5. **The projects overhaul has not happened.** Not started. #345 is the fidelity pass and is not the overhaul.
+6. **No data entry screen is boring or lazily designed.** Not started.
 
-#371, the five-panel audit, is closed: every item done but for what B6 blocks.
+**2, 5 and 6 are open, and 1, 3 and 4 are built but not yet looked at on the phone.** Rule 21, and the type lift especially: more text in the same width is `DESIGN.md` 16.2's overflow audit over the whole app, retroactive per rule 14.
+
+**#375** was the previous direction and #376 supersedes it as the live list. Its four asks are not withdrawn.
+
+**#374** is the six records that cannot be corrected. **No longer blocked**, and it is the natural proof that B6 really moved. **#373** is B6 and is done.
+
+#371, the five-panel audit, is closed.
 
 ## 4. Blocked, read before planning
 
-**B6. `NotebookShell` is at the JVM 64KB method limit.** No new full-screen surface. One added parameter on an existing screen also fails. Extraction has failed 3 times: the bytecode is at the call site, so moving a block out and passing it 18 arguments moves nothing. What worked: **fewer parameters** (3 lists → one `Repository.IncidentDetail`).
+**Nothing is blocked. B6 is resolved**, 2026-08-13, and it was the only entry here.
 
-The worked-out pass is in `DECISIONS.md` B6. Order: (1) `ShellState` class for the 179 `var x by remember { mutableStateOf(...) }`; (2) `with(ui) { }` around the body, reindent, no reference rewritten; (3) **measure by restoring the 20 reverted lines giving `PersonScreen` its appointments**, stop and write it down if they don't fit; (4) only then extract overlays in groups.
+`NotebookShell` had 1,860 bytes under the JVM 64KB method limit and has **38,856**. 2.8 percent of a method, now 59. Measured on the class files rather than inferred from whether the next thing fit. `DECISIONS.md` B6 carries the numbers and the four attempts that failed first.
 
-B6 blocks: correcting a chapter, a project, a reading, a measure, a question's words, an instruction's words. `renameChapter` and `renameProject` exist with no caller and are deliberately **not** in the removal ledger.
+**What it means:** a new full-screen surface is affordable again, and so is a parameter on an existing screen. **#374's six uncorrectable records are unblocked** and are the proof worth taking next. `renameChapter` and `renameProject` exist with no caller and are deliberately **not** in the removal ledger.
+
+**Two documents were wrong about the same thing and both are corrected.** This file and #373 said `PersonScreen`'s appointments were reverted and waiting on B6. They landed the night `RestoreFlow` moved out for #343. **A blocker's write-up goes stale the moment something else unblocks part of it**, which is why B6's proof ended up being a bytecode number rather than "see whether this fits".
+
+**The shape that pays, since it took four attempts to find.** The shell's cost is the number of arguments crossing it. An extracted group takes `ui`, the repository, and nothing else it can read from a composition local: `strings` and `context` are `LocalStrings.current` and `LocalContext.current`, and **a composition local costs the call site nothing**. Extraction with eighteen arguments made it worse three times.
 
 ## 5. Rules that get broken
 
