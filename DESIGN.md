@@ -512,7 +512,7 @@ Two spring personalities and three durations.
 
 **Reduced motion, when the system setting is on**, and this rule stands unchanged from the previous direction: every spring becomes an instant state change, the trail draw becomes an immediate render, and the only remaining transition is a 100ms opacity fade. **Verify by actually enabling the setting, not by reading the code.**
 
-**One continuous motion exists, and it is the only one.** A card being arranged on Today tilts by under a degree, every third card out of phase with its neighbours so a grid reads as loose rather than as one object shaking. **It is the phone's own idiom and it is borrowed on purpose**: the home screen somebody already owns is the only frame of reference anybody brings to a grid of cards, and holding a widget is how arranging starts there. D153.
+**One continuous motion exists, and it is the only one.** A card being arranged on Today tilts by under a degree, every third card out of phase with its neighbors so a grid reads as loose rather than as one object shaking. **It is the phone's own idiom and it is borrowed on purpose**: the home screen somebody already owns is the only frame of reference anybody brings to a grid of cards, and holding a widget is how arranging starts there. D153.
 
 **Its degrees come from the tokens like everything else**, so reduced motion sets them to zero and the cards sit still. **The mode is not diminished by that**: the remove marks and the worded move actions carry it, and the tilt was always the shortcut rather than the information. **The lift on the card in the hand survives reduced motion**, because which card the finger has is information.
 

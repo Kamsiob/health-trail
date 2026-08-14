@@ -87,6 +87,13 @@ BRITISH = {
     r"normalis": "normaliz",
     r"serialis": "serializ",
     r"analys(?:e|ing)": "analyz",
+    # "neighbour" reached two comments before this entry existed, one of them
+    # written the same night the entry was added. The `our` family is bigger
+    # than the four that happened to be here first.
+    r"neighbou r?".replace(" ", ""): "neighbor",
+    r"labelle": "labele",
+    r"cancelle": "cancele",
+    r"travelle": "travele",
     r"artefact": "artifact",
     r"licence": "license",
     r"defence": "defense",

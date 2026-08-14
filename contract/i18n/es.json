@@ -399,7 +399,6 @@
   "careteam.add.role": "Qué función tiene",
   "careteam.add.role.hint": "Enfermera, gestor de casos, el administrativo de la planta",
   "careteam.add.role.suggestions": "Habituales en este tipo de sitio",
-  "careteam.add.role.suggestions.aside": "Toque uno para rellenarlo. Puede cambiarlo, o ignorarlos y escribir el suyo.",
   "careteam.add.title": "Añadir a alguien",
   "careteam.add.where": "Dónde trabaja",
   "careteam.add.where.hint": "El centro, la agencia o la oficina",

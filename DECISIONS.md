@@ -2976,6 +2976,12 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **What this leaves open, and it is the owner's call.** None of the five forms is drawn in `reference/screen-grid.html`, so D142 has nothing to hold them to and the fidelity pass has nothing to compare. They are logged as composed rather than drawn, per rule 12, at the moment this landed.
 
+**2026-08-13: four of the five were converted and this entry said five.** `AddPersonScreen` never got a disclosure. It asked all five of its questions at one weight, in one group, which is the shape this entry says it stopped having. **Found by opening the form on the phone** while working #376, not by any check, and not by reading this.
+
+**The two records that looked like they disagreed do not, and the reconciliation is the useful part.** This entry says the care team form leads with the name and the number. `AddPersonScreen`'s own KDoc says all four fields stay visible and that an earlier build putting the **role** behind "Add more" was reverted, because the role is the field that tells you who somebody is and a control saying "Add more" is the wrong place for it. Both are true at once: **lead with the name, the role and the number; fold where they work and anything to remember.** That is what is built now.
+
+**The lesson is about how a decision entry goes stale.** This one described five conversions in a sentence, and four happening is indistinguishable from five in that sentence forever. **A count in prose is a claim no check can read.** The screens each carry their own reasons in their own KDoc, and that is where the disagreement was visible.
+
 ---
 
 ### D153. Today has two card sizes, square and full width, and the stored column keeps three

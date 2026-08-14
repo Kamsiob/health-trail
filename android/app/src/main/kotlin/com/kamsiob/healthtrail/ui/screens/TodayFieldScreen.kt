@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.Radius
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -229,6 +232,16 @@ fun TodayFieldScreen(
      * hand-off makes for `ACTION_INSERT`, and it holds harder for a phone call.
      */
     onDial: (String) -> Unit = {},
+    /**
+     * Told when this screen enters and leaves arranging.
+     *
+     * **Because the capture button is the shell's and the mode is this
+     * screen's.** The button floats over the field, so while cards are being
+     * moved it sits on top of them, and at a large system font it covered the
+     * words on the card beneath it. Somebody rearranging their front door is
+     * not also writing something down.
+     */
+    onArrangingChanged: (Boolean) -> Unit = {},
 ) {
     val colors = HealthTrail.colors
     val strings = LocalStrings.current
@@ -237,6 +250,17 @@ fun TodayFieldScreen(
     // hold is a shortcut and never the only path, because a gesture nobody is
     // told about is a feature that does not exist for most people.
     var editing by rememberSaveable { mutableStateOf(false) }
+
+    // **Reported rather than pushed at every call site.** `editing` is set from
+    // five places: the Arrange button, Done, Cancel, back, and a hold on any
+    // card or the lead. Telling the shell from each of them is five chances to
+    // miss one, and the one missed would leave the capture button hidden on a
+    // screen nobody is arranging.
+    LaunchedEffect(editing) { onArrangingChanged(editing) }
+
+    // **And put back when this screen goes away.** Leaving Today mid arrangement
+    // by tapping another tab would otherwise take the hidden button with it.
+    DisposableEffect(Unit) { onDispose { onArrangingChanged(false) } }
 
     // **The staged layout.** Held here while editing and written once, so a
     // person can move three cards and change their mind about all of them.
@@ -397,7 +421,20 @@ fun TodayFieldScreen(
                                     label = strings["today.edit.cancel"],
                                     onClick = { editing = false },
                                 )
-                                TextAction(
+                                // **Done carries the weight, and it is the only
+                                // one that does.** Three outlined pills at one
+                                // weight made the person sort them, which is
+                                // exactly what rule 15 says uniform weight
+                                // costs. Keeping the arrangement is what this
+                                // mode is for; adding a card and throwing the
+                                // whole edit away are the other two things you
+                                // might do, and they are not the same size.
+                                //
+                                // **The filled slot is free here**, because the
+                                // capture button stands down while Today is
+                                // being arranged, so this is still one filled
+                                // action on the screen.
+                                FilledButton(
                                     label = strings["today.edit.done"],
                                     onClick = {
                                         onSave(draft)
@@ -516,7 +553,7 @@ fun TodayFieldScreen(
                             },
                         )
                         // **Above the field while it is being carried.** Without
-                        // this the dragged card slides under its neighbours,
+                        // this the dragged card slides under its neighbors,
                         // which reads as the card falling through the screen.
                         .zIndex(if (dragging == card.id) 1f else 0f)
                         .graphicsLayer {
@@ -2081,13 +2118,13 @@ private fun SizeChip(label: String, selected: Boolean, onClick: () -> Unit) {
  * **Borrowed from the phone on purpose**, per the owner's note that a home
  * screen is the only frame of reference anybody brings to a grid of cards. A
  * card being arranged rocks by well under a degree; the card in the hand stops
- * rocking, grows very slightly, and rides above its neighbours.
+ * rocking, grows very slightly, and rides above its neighbors.
  *
  * **The rock stops on the held card**, which is the detail that makes it read as
  * physical rather than as an effect: what you are holding is steady and
  * everything you are not holding is loose.
  *
- * **Neighbours are out of phase with each other.** Cards tilting in perfect
+ * **Neighbors are out of phase with each other.** Cards tilting in perfect
  * unison read as the whole screen shaking, which is alarming rather than
  * inviting, and alarming is the wrong note for an app used during hard times.
  *

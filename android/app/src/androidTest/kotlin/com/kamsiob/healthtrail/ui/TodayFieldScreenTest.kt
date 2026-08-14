@@ -1074,6 +1074,44 @@ class TodayFieldScreenTest {
     }
 
     @Test
+    fun theScreenSaysWhenItIsArrangingSoTheCaptureButtonCanStandDown() {
+        // **The capture button belongs to the shell and the mode belongs to
+        // this screen**, so the screen has to say. While cards are being moved
+        // the button floats on top of them, and at font scale 2.0 it covered
+        // the words on the card beneath it. Somebody rearranging their front
+        // door is not also writing something down.
+        //
+        // **Reported from one place rather than five.** `editing` is set by the
+        // Arrange button, by Done, by Cancel, by back, and by a hold on any
+        // card or the lead. Telling the shell from each of them is five chances
+        // to miss one, and the one missed leaves the button hidden on a screen
+        // nobody is arranging.
+        val reported = mutableListOf<Boolean>()
+        val strings = Strings.load(context)
+        compose.setContent {
+            HealthTrailTheme {
+                CompositionLocalProvider(LocalStrings provides strings) {
+                    TodayFieldScreen(
+                        layout = startingHand(),
+                        answers = emptyMap(),
+                        onOpen = {},
+                        today = today,
+                        onArrangingChanged = { reported += it },
+                    )
+                }
+            }
+        }
+
+        assertEquals("the screen said it was arranging before it was", listOf(false), reported)
+
+        compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
+        assertEquals("entering was not reported", listOf(false, true), reported)
+
+        compose.onNodeWithTag(TodayFieldTags.DONE).performClick()
+        assertEquals("leaving was not reported", listOf(false, true, false), reported)
+    }
+
+    @Test
     fun everyCardBeingArrangedSaysSoAndOpensItsOptions() {
         // Grid screen 05: while Today is being arranged a card carries a remove
         // dot and says what it now opens, and everything else is in its

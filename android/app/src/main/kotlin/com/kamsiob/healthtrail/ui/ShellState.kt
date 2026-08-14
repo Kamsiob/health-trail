@@ -60,6 +60,21 @@ internal class ShellState {
     var destination by mutableStateOf(Destination.NOTEBOOK)
     var counts by mutableStateOf<List<SectionCount>?>(null)
     var sheetOpen by mutableStateOf(false)
+
+    /**
+     * Whether Today is being arranged, which is the one time the capture button
+     * stands down.
+     *
+     * **Held here rather than only inside Today**, because the button is the
+     * shell's and the mode is Today's, and the shell cannot see into a screen.
+     *
+     * **Why it stands down at all.** Somebody moving cards around is not also
+     * writing something down, and the button sat on top of the cards being
+     * moved: at font scale 2.0 it covered the words on the card beneath it. It
+     * is also the screen's one filled action, and while the arrangement is open
+     * the action that matters is the one that keeps it.
+     */
+    var todayArranging by mutableStateOf(false)
     // What changed since the previous launch.
     //
     // **The boundary is read once and held for the whole session**, so a digest

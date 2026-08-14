@@ -1,5 +1,9 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +31,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
@@ -53,6 +58,7 @@ object AddPersonTags {
     const val PHONE = "add_person_phone"
     const val NOTES = "add_person_notes"
     const val SAVE = "add_person_save"
+    const val MORE = "add_person_more"
     const val CANCEL = "add_person_cancel"
 }
 
@@ -93,10 +99,24 @@ data class PersonDraft(
  * the shape the rest of the app already uses to *show* a person. A form that
  * matches the screen it feeds is one thing seen twice rather than two things.
  *
- * **All four are here and nothing is folded away.** The owner named them: the
- * name, the title, the number, the notes. An earlier build put the role behind
- * "Add more", which hid the field that tells you who somebody is behind a
- * control that says it holds extras.
+ * **The name, the role and the number lead; where they work and anything to
+ * remember are behind "Add more".** #361 says the care team "leads with the
+ * name and the number, which is the reason anybody adds a person", and an
+ * earlier build put the **role** behind the disclosure and had it reverted,
+ * because the role is the field that tells you who somebody is and a control
+ * saying "Add more" is the wrong place for it. Both hold at once, and this is
+ * the shape that satisfies them.
+ *
+ * **It asked all five at one weight until 2026-08-13**, while D147 recorded it
+ * as converted along with the medication, appointment, bill and document forms.
+ * Those four had disclosures; this one did not. Found by opening it on the
+ * phone, and the correction is on D147 as well as here. #376.
+ *
+ * **The face appears once there is a name.** It used to be drawn empty, on the
+ * argument that an empty one is the honest state before a name. On the phone it
+ * is a featureless colored circle floating above the first field and it reads
+ * as a picture that failed to load, which is rule 11's placeholder. Looking at
+ * it is what changed the answer.
  *
  * **Every field is optional, including the name**, per rule 13 and for the same
  * reason the capture form requires nothing: somebody standing in a corridor
@@ -108,9 +128,9 @@ data class PersonDraft(
  * partial strings somebody read out too fast. Rejecting any of those would lose
  * the thing the person was trying to keep.
  *
- * **The face at the top is the person taking shape as you type.** The initials
- * fill in from the name, which is the same avatar their row will wear, so the
- * form shows what it is making rather than only asking for it.
+ * **The face is the person taking shape as you type.** The initials fill in
+ * from the name, which is the same avatar their row will wear, so the form
+ * shows what it is making rather than only asking for it.
  */
 @Composable
 fun AddPersonScreen(
@@ -178,21 +198,56 @@ fun AddPersonScreen(
                     section = Repository.Section.CARE_TEAM,
                 )
 
-                Spacer(Modifier.height(Space.l))
-
                 // **The face the row will wear, filling in as they type.** It
                 // is the same avatar the care team draws, so somebody sees what
-                // they are making rather than only being asked for it, and an
-                // empty one is the honest state before a name.
-                Avatar(
-                    name = name,
-                    hue = hueFor(Repository.Section.CARE_TEAM),
-                    size = AvatarSize.header,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                )
+                // they are making rather than only being asked for it.
+                //
+                // **Only once there is a name**, which is the correction. An
+                // avatar with nothing in it is a featureless colored circle
+                // floating above the first field, and on the phone it reads as
+                // a picture that failed to load rather than as a preview
+                // waiting for a name. Rule 11 bans a placeholder, and a shape
+                // that means nothing until a condition is met is one.
+                //
+                // **It appears rather than being uncovered**, so the moment it
+                // starts saying something is the moment it arrives. `AnimatedVisibility`
+                // takes its spec from the motion tokens, per section 10.
+                AnimatedVisibility(
+                    visible = name.isNotBlank(),
+                    enter = fadeIn(LocalMotion.current.standard()),
+                    exit = fadeOut(LocalMotion.current.standard()),
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Spacer(Modifier.height(Space.l))
+                        Avatar(
+                            name = name,
+                            hue = hueFor(Repository.Section.CARE_TEAM),
+                            size = AvatarSize.header,
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                        )
+                    }
+                }
 
                 Spacer(Modifier.height(Space.l))
 
+                // **Who they are and how to reach them, which is the section.**
+                // "Who you call. Everyone involved in the care, and how to
+                // reach them." This screen asked five questions at one weight,
+                // which is law 3 and rule 15 both, and #361 says in the owner's
+                // own terms that the care team "leads with the name and the
+                // number, which is the reason anybody adds a person".
+                //
+                // **The role leads too, and that is not an oversight.** An
+                // earlier build put it behind "Add more" and it was reverted:
+                // the role is the field that tells you who somebody *is*, and a
+                // control labeled "Add more" is the wrong place for it. So the
+                // two records that looked like they disagreed do not. Lead with
+                // the name, the role and the number; fold where they work and
+                // anything to remember.
+                //
+                // **Found by opening the form on the phone**, where it was five
+                // rows of identical weight and D147 said it had been converted.
+                // #376.
                 GroupedSurface {
                     FieldRow(
                         label = strings["careteam.add.name"],
@@ -212,6 +267,76 @@ fun AddPersonScreen(
                         fieldTestTag = AddPersonTags.ROLE,
                     )
 
+                    FieldRow(
+                        label = strings["careteam.add.phone"],
+                        value = phone,
+                        onValueChange = { phone = it },
+                        hint = strings["careteam.add.phone.hint"],
+                        imeAction = ImeAction.Next,
+                        keyboardType = KeyboardType.Phone,
+                        fieldTestTag = AddPersonTags.PHONE,
+                        divider = false,
+                    )
+                }
+
+                // **Directly under the field they fill, and above the fold.**
+                // The role leads on this form, so the chips that offer one
+                // lead with it. They spent a build inside "Add more", which
+                // placed an offer about a visible field behind a control that
+                // says it holds what is hidden.
+                if (roleSuggestions.isNotEmpty()) {
+                    Spacer(Modifier.height(Space.sectionGap))
+                    // **The header and the chips, and no sentence between
+                    // them.** It read "Tap one to fill it in. You can change
+                    // it, or ignore these and write your own", which is two
+                    // lines of the app explaining that a chip fills a field and
+                    // that nothing here is required. Rule 20: the first is what
+                    // a chip visibly does, and the second is what the lead
+                    // sentence at the top of the form already promises. On the
+                    // phone those two lines plus six chips pushed "Add more"
+                    // off the bottom of the screen.
+                    GroupHeaderText(label = strings["careteam.add.role.suggestions"])
+                    Spacer(Modifier.height(Space.headerGap))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(Space.s),
+                        verticalArrangement = Arrangement.spacedBy(Space.s),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        roleSuggestions.forEach { suggestion ->
+                            ChoiceChip(
+                                label = suggestion,
+                                // Selected when the field already says it, so a
+                                // chip tapped by mistake can be seen and a
+                                // second tap clears it.
+                                selected = role.trim().equals(suggestion, ignoreCase = true),
+                                onClick = {
+                                    role = if (
+                                        role.trim().equals(suggestion, ignoreCase = true)
+                                    ) {
+                                        ""
+                                    } else {
+                                        suggestion
+                                    }
+                                },
+                                modifier = Modifier.testTag(
+                                    AddPersonTags.suggestion(suggestion),
+                                ),
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(Space.m))
+
+                // **Open when any of it already says something**, which is the
+                // whole point of `startOpen`: a form correcting a saved record
+                // must not fold away words somebody typed last week behind a
+                // control that reads "Add more".
+                Disclosure(
+                    testTag = AddPersonTags.MORE,
+                    startOpen = where.isNotBlank() || notes.isNotBlank(),
+                ) {
+                GroupedSurface {
                     // **Where they work, which the care team folds by.** Grid
                     // screen 11 groups the people who are not in the lead by
                     // exactly this, and the column and its index shipped in
@@ -225,16 +350,6 @@ fun AddPersonScreen(
                         hint = strings["careteam.add.where.hint"],
                         imeAction = ImeAction.Next,
                         fieldTestTag = AddPersonTags.WHERE,
-                    )
-
-                    FieldRow(
-                        label = strings["careteam.add.phone"],
-                        value = phone,
-                        onValueChange = { phone = it },
-                        hint = strings["careteam.add.phone.hint"],
-                        imeAction = ImeAction.Next,
-                        keyboardType = KeyboardType.Phone,
-                        fieldTestTag = AddPersonTags.PHONE,
                     )
 
                     FieldRow(
@@ -308,43 +423,6 @@ fun AddPersonScreen(
                     }
                 }
 
-                if (roleSuggestions.isNotEmpty()) {
-                    Spacer(Modifier.height(Space.sectionGap))
-                    GroupHeaderText(label = strings["careteam.add.role.suggestions"])
-                    Spacer(Modifier.height(Space.s))
-                    Text(
-                        text = strings["careteam.add.role.suggestions.aside"],
-                        style = HealthTrail.type.bodyS,
-                        color = colors.ink2,
-                    )
-                    Spacer(Modifier.height(Space.headerGap))
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(Space.s),
-                        verticalArrangement = Arrangement.spacedBy(Space.s),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        roleSuggestions.forEach { suggestion ->
-                            ChoiceChip(
-                                label = suggestion,
-                                // Selected when the field already says it, so a
-                                // chip tapped by mistake can be seen and a
-                                // second tap clears it.
-                                selected = role.trim().equals(suggestion, ignoreCase = true),
-                                onClick = {
-                                    role = if (
-                                        role.trim().equals(suggestion, ignoreCase = true)
-                                    ) {
-                                        ""
-                                    } else {
-                                        suggestion
-                                    }
-                                },
-                                modifier = Modifier.testTag(
-                                    AddPersonTags.suggestion(suggestion),
-                                ),
-                            )
-                        }
-                    }
                 }
 
                 Spacer(Modifier.height(Space.xl))

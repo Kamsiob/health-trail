@@ -595,6 +595,10 @@ fun NotebookShell(
                             TodayFieldScreen(
                                 layout = layout,
                                 answers = todayAnswers,
+                                // The capture button belongs to the shell and
+                                // the arranging belongs to Today, so Today says
+                                // when it starts and stops. See `ShellState`.
+                                onArrangingChanged = { todayArranging = it },
                                 // **Every card is a door**, 21.2, and a door
                                 // that does nothing on press reads as broken. Each
                                 // one opens the section its answer lives in, which
@@ -775,14 +779,22 @@ fun NotebookShell(
                         )
                     }
 
-                    CaptureFab(
-                        open = sheetOpen,
-                        onClick = { sheetOpen = true },
-                        description = strings["capture.button.description"],
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(end = Space.sm, bottom = Space.sm),
-                    )
+                    // **Not while Today is being arranged.** The button sits
+                    // over the cards being moved, and at a large system font it
+                    // covered the words on the card beneath it. Somebody
+                    // rearranging their front door is not also writing
+                    // something down, and the one action that matters while the
+                    // arrangement is open is the one that keeps it.
+                    if (!(destination == Destination.TODAY && todayArranging)) {
+                        CaptureFab(
+                            open = sheetOpen,
+                            onClick = { sheetOpen = true },
+                            description = strings["capture.button.description"],
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(end = Space.sm, bottom = Space.sm),
+                        )
+                    }
                 }
 
                 BottomNav(

@@ -399,7 +399,6 @@
   "careteam.add.role": "职务",
   "careteam.add.role.hint": "护士、个案管理员、病区文员",
   "careteam.add.role.suggestions": "这类地方常见的角色",
-  "careteam.add.role.suggestions.aside": "点一个就会填进去。你可以改，也可以不用这些，自己写。",
   "careteam.add.title": "添加成员",
   "careteam.add.where": "在哪里工作",
   "careteam.add.where.hint": "机构、单位或办公室",
