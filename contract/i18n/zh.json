@@ -703,6 +703,7 @@
   "library.unused": "还没有用过",
   "library.used": "使用中",
   "measurement.correct": "更正此读数",
+  "measurement.correct.lead": "改掉不对的地方，其余保持原样。这条读数的其他内容不会变动。",
   "measurement.correct.open": "更正 {value} 这条读数",
   "measurement.correct.save": "保存更正",
   "measurement.note": "值得记下的任何事",

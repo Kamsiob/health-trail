@@ -611,6 +611,7 @@ fun CorrectReadingScreen(
         startOccurred = reading.occurredEdtf?.let { Edtf.parse(it) },
         startNote = reading.note.orEmpty(),
         saveKey = "measurement.correct.save",
+        leadKey = "measurement.correct.lead",
     )
 }
 
@@ -629,6 +630,8 @@ private fun RecordValue(
     startNote: String = "",
     /** The save button's words, so a correction does not say "record". */
     saveKey: String? = null,
+    /** The lead line, so a correction does not invite somebody to skip. */
+    leadKey: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -667,7 +670,12 @@ private fun RecordValue(
                 Text(text = Bidi.isolate(name), style = HealthTrail.type.displayL, color = colors.ink)
                 Spacer(Modifier.height(Space.s))
                 Text(
-                    text = strings["capture.sub"],
+                    // **A correction is not being invited to skip anything.**
+                    // "Answer what you can. Skip the rest" is right for
+                    // somebody recording at a bedside and wrong for somebody
+                    // who opened this to move a decimal point: they are fixing
+                    // one thing, not deciding how much to write.
+                    text = strings[leadKey ?: "capture.sub"],
                     style = HealthTrail.type.bodyM,
                     color = colors.ink2,
                 )

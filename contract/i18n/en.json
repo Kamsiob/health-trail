@@ -703,6 +703,7 @@
   "library.unused": "Not started from yet",
   "library.used": "In use",
   "measurement.correct": "Correct this reading",
+  "measurement.correct.lead": "Change what is wrong and leave the rest. Nothing else about this reading moves.",
   "measurement.correct.open": "Correct the reading of {value}",
   "measurement.correct.save": "Save the correction",
   "measurement.note": "Anything worth remembering",

@@ -703,6 +703,7 @@
   "library.unused": "Todavía sin usar",
   "library.used": "En uso",
   "measurement.correct": "Corregir esta medición",
+  "measurement.correct.lead": "Cambie lo que esté mal y deje el resto. Nada más de esta medición se mueve.",
   "measurement.correct.open": "Corregir la medición de {value}",
   "measurement.correct.save": "Guardar la corrección",
   "measurement.note": "Algo que valga la pena recordar",

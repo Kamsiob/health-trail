@@ -703,6 +703,7 @@
   "library.unused": "لم يُستخدم بعد",
   "library.used": "قيد الاستخدام",
   "measurement.correct": "تصحيح هذه القراءة",
+  "measurement.correct.lead": "غيّر ما هو خطأ واترك الباقي. لا شيء آخر في هذه القراءة يتغير.",
   "measurement.correct.open": "تصحيح القراءة {value}",
   "measurement.correct.save": "حفظ التصحيح",
   "measurement.note": "أي شيء يستحق التذكر",
