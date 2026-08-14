@@ -39,11 +39,30 @@
 
 **Two did not, and this paragraph used to say they had.** Saving the project as a template and setting what it is waiting on both still had their repository call and their shell state with **nothing anywhere that set them**. That was **#314**, and it was written down here because a ledger that quietly overstates what came back is worse than no ledger: the whole value of freezing rather than deleting is that somebody can check.
 
+## The ledger, second table: a frozen symbol inside a live file
+
+**Added 2026-08-13, D152, working #371 item 8.** This file was file shaped, and said so, and that was fine while the only superseded things were whole screens. It stopped being fine when the audit counted repository functions with no caller: a superseded writer sitting in the middle of a 8,000 line file the app uses every day cannot have its own file, and the alternative was a paragraph of prose that no check can read.
+
+**Same rule, smaller unit.** Never called, never extended, never fixed. A row here says the symbol is history rather than an oversight.
+
+| What | Where | Superseded by | When |
+|---|---|---|---|
+| `setBillState` | `data/Repository.kt` | `updateBill`, which writes the state with everything else the correction form asks | 2026-08-13 |
+| `setTodayCardSize` | `data/Repository.kt` | `setTodayLayout`, which writes the whole arrangement in one transaction | 2026-08-13 |
+| `setMedicationOnEmergencyCard` | `data/Repository.kt` | `updateMedication`, which takes `onEmergencyCard` alongside the rest | 2026-08-13 |
+| `peopleOnEntry` | `data/Repository.kt` | `EntryDetail`, which carries the people it already read | 2026-08-13 |
+| `QuietAction` | `ui/components/FoldRow.kt` | `QuietButton`, and `TextAction` is its second name | 2026-08-13 |
+| `neutralHue` | `ui/components/TabChip.kt` | `wholeAppHue`, for a surface that belongs to no section | 2026-08-13 |
+
+**The audit counted twenty two and the real number is six**, which is the finding rather than a correction to a tally. **Most of what looked dead is reached by a test and by nothing else**, and that is a different thing entirely: `columnForTest`, `revisionForTest` and their fifteen siblings exist for the tests by name, and `addToIncident`, `threadsForEntry`, `openIncidentCount` and `fillProjectPaper` are covered by tests while the screen that should call them is not built. **A function a test reaches is a promise the app has not kept, not code nobody needs.**
+
+**Two are neither superseded nor covered, and they are not frozen**: `renameChapter` and `renameProject`. Both are the same defect the care thread rename already fixed, a record that cannot be corrected, and both wait on B6 rather than on a decision. Freezing them would say the app decided not to let somebody fix a name they typed wrong, which is the opposite of what is true. They are on #371.
+
 ### What is unreached and is not history, 2026-08-13
 
 **`ui/components/RoundCard.kt` has no caller and does not belong in this ledger.** It is grid screen 20, one round of lab work, and it is waiting on a schema decision rather than on a screen: `contract/schema.sql` has no test, no round and no result, which is #182 and #199 and is the owner's under rule 3. **It is built ahead of its data, not superseded by anything**, and freezing it would tell the next reader the opposite of what is true.
 
-**`QuietAction` in `FoldRow.kt` and `neutralHue` in `TabChip.kt` have no callers either**, and both live inside files the app uses every day. This ledger is file shaped, so neither has a row: a frozen function inside a live file is a state this file cannot express, and inventing one for two functions would be worse than saying so here. They are listed on #371.
+**`QuietAction` in `FoldRow.kt` and `neutralHue` in `TabChip.kt` have no callers either**, and both live inside files the app uses every day. **This paragraph used to end by saying the ledger could not express that**, and it was right until the audit found four more of the same shape in the repository. Both have rows in the second table now, D152, and the shape has a place rather than a paragraph.
 
 ### The capture sheet, 2026-08-13
 

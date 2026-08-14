@@ -2674,6 +2674,18 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D152. The removal ledger grows a second table, for a frozen symbol inside a live file
+
+**Decided 2026-08-13**, working #371 item 8, which asked for the twenty two repository functions with no caller to be dealt with and which `HANDOFF.md` had recorded as needing a ruling.
+
+**The ruling is that the ledger grows a unit rather than the rule changing.** `docs/REMOVAL-LEDGER.md` was file shaped and said so in its own prose, which was honest and was fine while everything superseded was a whole screen. A superseded writer inside an 8,000 line file the app uses every day cannot have a file of its own, and the alternative on offer was a paragraph of prose that no check can read. Same rule, smaller unit: never called, never extended, never fixed.
+
+**The count was wrong and that is the finding rather than a correction to a tally.** Six symbols are genuinely superseded. **Most of what looked dead is reached by a test and by nothing else**, which is a different thing entirely: seventeen are `...ForTest` helpers that exist for the tests by name, and four more are covered by a test while the screen that should call them is not built. **A function a test reaches is a promise the app has not kept, not code nobody needs**, and freezing those would have written off features rather than dead code. That is the root cause three panels found, wearing a costume that looks like cleanup.
+
+**Two are neither superseded nor covered and are deliberately not frozen**: `renameChapter` and `renameProject`. Both are the defect the care thread rename already fixed, a record somebody cannot correct, and both wait on B6 rather than on a decision. A row for either would tell the next reader the app decided somebody may not fix a name they typed wrong.
+
+---
+
 ### D151. A screen where you write something down is inside the section, and wears its tab
 
 **Decided 2026-08-13**, working #371 item 5, which found that the app had two header systems and that they split along exactly the wrong line.
