@@ -170,6 +170,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D148 | The third version currency check, which D121 left enabled |
 | D148 | An event writer updates its parent's state in the same transaction |
 | D147 | A form asks one question at a time; correcting a record shows all of it at once |
+| D157 | The gallery offers the real card, not a line of type describing it |
 | D156 | A project's road says its stage names, and a card shows the one it is at |
 | D155 | A long press is allowed where it names the visible control that does the same thing |
 | D154 | The type ladder is lifted app wide, because the owner said the text is hard to read |
@@ -3004,6 +3005,24 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **That fix cost two wrong builds in the corner of the card**, and both are worth writing down because neither was visible in the source. A `Box` keeps its minimum constraints to itself, so the card measured square while the column inside it measured to its own text: passing the minimum down is what gives `SpaceBetween` a square to spread across. **But it passes to every child**, so the corner box then filled the card, and `align` says where a box goes rather than how big it is. The chevron landed on the tab in the opposite corner, and after the obvious repair it landed in the middle. The alignment belongs on `wrapContentSize`.
 
 **Revisit if.** The owner asks for a third size, or a card appears whose answer genuinely cannot be told at either.
+
+---
+
+### D157. The gallery offers the real card, not a line of type describing it
+
+**Date:** 2026-08-13, overnight. **Decided under rule 10**, working #376 item 4. **Revises `TodayCard`'s own "when not to use it"**, which said Today and nowhere else.
+
+**The decision.** `AddCardSheet` draws each offer as a `TodayCard` wearing the hue and the shape it will wear once it is on Today, rather than as a `DenseRow` with the card's name and a preview line under it.
+
+**The owner's words are the argument.** "It has to mimick the way it is on smartphones which is the only frame of reference a user knows." **The widget picker on the phone somebody already owns shows the widget.** The gallery was seventeen rows of words, and choosing from it meant reading a description and picturing a card.
+
+**Why this does not weaken the rule it revises.** `TodayCard`'s doc banned the shape everywhere but Today, because a card is something the person chose to have and can remove, and wearing that shape where they cannot would make a promise that is not true. **In the gallery the promise is exactly true**: what is drawn is a card they are about to have and will be able to take off again. It is the same object seen twice rather than a description and a thing.
+
+**The tap adds rather than opens**, and the label says so. A preview labeled "open" would promise a door that is not there, which is #231's inversion in a new place.
+
+**Rule 22 is satisfied rather than bent.** "Card only for three or more lines actually read" is about not making everything a card. Here the card *is* the thing being chosen, and drawing it as itself is the honest representation.
+
+**Revisit if.** The catalog grows past what a person will scroll as cards, in which case the answer is a shorter catalog rather than a return to rows: 21.5 already says the catalog is curated at roughly sixteen.
 
 ---
 

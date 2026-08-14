@@ -16,6 +16,8 @@ import com.kamsiob.healthtrail.ui.sectionForCard
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.ui.components.CardSize
+import com.kamsiob.healthtrail.ui.components.TodayCard
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -140,23 +142,46 @@ fun AddCardSheet(
             }
             items(group.size, key = { group[it].key }) { index ->
                 val offer = group[index]
-                DenseRow(
-                    title = Bidi.isolate(offer.label),
-                    subtitle = offer.preview,
+                // **The card itself, not a line of type describing it.** This
+                // was a list of names with a preview underneath, and choosing
+                // from it meant reading seventeen rows of words to picture
+                // seventeen cards. **The picker on the phone somebody already
+                // owns shows the widget**, which is the whole of the owner's
+                // note on #376: that is the only frame of reference anybody
+                // brings here.
+                //
+                // **It wears the hue and the shape it will wear on Today**, so
+                // what is chosen and what arrives are the same object seen
+                // twice rather than a description and a thing. D157.
+                TodayCard(
+                    tab = Bidi.isolate(offer.label),
+                    hue = hueForCard(offer.type),
+                    // **What a reader hears, composed here**, because the card
+                    // silences its own insides so it is one stop rather than
+                    // three. Same rule as on Today.
+                    description = Bidi.join(listOf(offer.label, offer.preview)),
+                    onOpen = { onAdd(offer) },
+                    // **A verb that says what the tap does**, and here it adds
+                    // rather than opens. A preview labeled "open" would promise
+                    // a door that is not there.
+                    openLabel = strings("today.add.this", "name" to offer.label),
+                    size = CardSize.WIDE,
+                    modifier = Modifier
+                        .padding(bottom = Space.cardGap)
+                        .testTag(AddCardTags.entry(offer.key)),
+                ) {
                     // **The preview wraps, because it is the thing being read
                     // to choose.** D105: a fixed cap is a cap at the smallest
                     // type size and a truncation at the largest, and at font
                     // scale 2.0 every row here ended mid-word with no ellipsis:
                     // "passed 75 days", "4 steps in the". The whole promise of
                     // this screen is that the answer is on it.
-                    subtitleMaxLines = Int.MAX_VALUE,
-                    // **A hairline between rows and none after the last**, which
-                    // is what makes a group read as a group rather than as a run
-                    // of rows that happens to have a word above it.
-                    divider = offer != group.last(),
-                    onClick = { onAdd(offer) },
-                    modifier = Modifier.testTag(AddCardTags.entry(offer.key)),
-                )
+                    Text(
+                        text = offer.preview.orEmpty(),
+                        style = type.displayS,
+                        color = colors.ink,
+                    )
+                }
             }
         }
 

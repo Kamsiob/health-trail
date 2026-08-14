@@ -39,15 +39,15 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 **#376** is the live list: the owner's direction of 2026-08-13, overnight, after using the build. **The acceptance criterion is a shippable app**, not a green run and not a correct screen. It names six failures and quotes him on all of them.
 
 1. The text is hard to read. **Done**, D154: the whole ladder lifted, body 14sp to 16.
-2. Today is hard to use.
-3. **A card is square or full width, and he had said so more than once.** Done, D153.
-4. Adding, removing and changing cards is not intuitive, animated, or friendly, and **must mimic the phone's own home screen**. Done: hold to arrange, carry the card itself, others move aside, back keeps it.
-5. **The projects overhaul has not happened.** Not started. #345 is the fidelity pass and is not the overhaul.
-6. **No data entry screen is boring or lazily designed.** Not started.
+2. Today is hard to use. **Mostly done** through 3 and 4, plus the clutter: the word "Options" off every card, the capture button standing down while arranging, Done given weight.
+3. **A card is square or full width, and he had said so more than once.** Done, D153, and the square fills itself.
+4. Adding, removing and changing cards **must mimic the phone's own home screen**. Done: hold to arrange, carry the card itself, others move aside, back keeps it, and **the gallery offers the real card rather than a line describing it** (D157).
+5. **The projects overhaul.** First pass done, D156: the road says its stage names and the subtitle counts your projects. **Not done: "+ Start" belongs at the top per the grid**, and it wants a decision because D137, D118 and the FAB clearance are behind where it is.
+6. **No data entry screen is boring or lazily designed.** **One of fourteen done**, `AddPersonScreen`. It asked five questions at one weight while D147 recorded it as converted.
 
-**1, 3 and 4 are built and were looked at on the phone**, at scale 1.0 and 2.0. **2 is partly done**: the sizes and the gesture are most of it, and what is left is the clutter inside arrange mode. **5 and 6 are not started and are the next work.**
+**Everything above was looked at on the phone**, not only tested. **5 and 6 are where the work is**: twelve project screens and thirteen forms have not been through this.
 
-**What the phone found and the tests could not.** The square was right and still wrong: the answer sat in the top third and two thirds was empty white, which is rule 11's blank area. The tab holds the top and the answer falls to the bottom now. **The chevron then landed in the middle of the card, and then in the wrong corner**, over two builds, because `align` says where a box goes and not how big it is. Neither was visible in the code.
+**What the phone found and no test would have.** The square was right and still wrong: the answer sat in the top third and two thirds was empty white, rule 11's blank area. **The chevron then landed in the middle of the card, and then in the wrong corner**, over two builds, because `align` says where a box goes and not how big it is. The capture button covered the words on the card beneath it at font scale 2.0. The word "Options" appeared on five cards at once. **A project's road was four dots on a dashed line**, which is a progress bar and is the one thing rule 13 rules out. **The gallery was seventeen rows of words** describing cards instead of showing them. None of that is visible in source and none of it fails a test.
 
 **Still owed on Today, and it is the owner's to weigh.** At font scale 2.0 the capture button covers the words under it: "Levothyroxine · 50 mcg, morn" runs under the FAB. The list has clearance at its end, so this is the button floating over mid content rather than a missing inset, and it predates the type lift. Moving the FAB or insetting every card is a decision rather than a repair.
 

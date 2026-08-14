@@ -1952,7 +1952,10 @@ private fun answerParts(
  * answer says. Cards for whole-app surfaces wear gold.
  */
 @Composable
-private fun hueForCard(type: String): TabHue = when (type) {
+// **Internal rather than private since the gallery draws real cards.** A card
+// being offered wears the hue it will wear once it is on Today, which is the
+// whole point of previewing it as itself. D157.
+internal fun hueForCard(type: String): TabHue = when (type) {
     "next_up" -> hueFor(Repository.Section.APPOINTMENTS)
     "medications" -> hueFor(Repository.Section.MEDICATIONS)
     "ask_next_time" -> hueFor(Repository.Section.ASK_NEXT_TIME)

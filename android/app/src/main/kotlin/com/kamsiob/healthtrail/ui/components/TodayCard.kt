@@ -146,7 +146,14 @@ private fun Modifier.atLeastSquare(): Modifier = layout { measurable, constraint
  * its line and its chevron as four stops would make somebody listen to four
  * things to learn one. The caller composes the sentence.
  *
- * **When to use it.** On Today, and only there. It is the surface's unit.
+ * **When to use it.** On Today, and in the gallery that offers cards for Today.
+ * It is the surface's unit, and the gallery is where somebody picks one.
+ *
+ * **The gallery draws the real card rather than a line describing it**, D157,
+ * because that is what a widget picker does on the phone somebody already owns.
+ * That does not weaken the rule below: what is offered there is exactly a card
+ * they are about to have and will be able to remove, so the promise the shape
+ * makes is the one being kept.
  *
  * **When not to use it.** Anywhere else in the app. A card here is something
  * the person chose to have and can remove, and using the shape on a screen
