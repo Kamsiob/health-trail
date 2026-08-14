@@ -7,6 +7,9 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.performScrollToNode
+import com.kamsiob.healthtrail.ui.screens.SectionTags
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -110,8 +113,19 @@ class RemovalIsVisibleTest {
      * at the foot of a list, and a test that only asserted it existed would pass
      * on a screen where nobody could reach it at font scale 2.0.
      */
-    private fun assertRemovesOnce(tag: String) {
-        compose.onNodeWithTag(tag).performScrollTo().performClick()
+    private fun assertRemovesOnce(tag: String, listTag: String? = null) {
+        // **A `LazyColumn` needs its list scrolled, not its node.** A screen
+        // that renders through `SectionScaffold` has not composed what is below
+        // the fold, so there is no node for `performScrollTo` to scroll to and
+        // the failure reads "Action performScrollTo() failed". `listTag` is the
+        // scaffold's own root, and it is only needed where the removal has been
+        // pushed down by something above it.
+        if (listTag != null) {
+            compose.onNodeWithTag(listTag).performScrollToNode(hasTestTag(tag))
+            compose.onNodeWithTag(tag).performClick()
+        } else {
+            compose.onNodeWithTag(tag).performScrollTo().performClick()
+        }
         assertEquals("the visible removal did not call back exactly once", 1, removals)
     }
 
@@ -441,7 +455,12 @@ class RemovalIsVisibleTest {
                 onBack = {},
             )
         }
-        assertRemovesOnce(ProjectHomeTags.REMOVE)
+        // **Below the fold since #374 put the rename above it**, and this
+        // screen is a `SectionScaffold`, so the list does the scrolling.
+        assertRemovesOnce(
+            ProjectHomeTags.REMOVE,
+            listTag = SectionTags.root(ProjectHomeTags.NAME),
+        )
     }
 
     @Test
