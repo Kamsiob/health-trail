@@ -488,6 +488,53 @@ private fun PresetRow(preset: TemplateCatalog.Preset, onClick: () -> Unit) {
 }
 
 /** The second step: the value, when, and anything worth remembering. */
+/**
+ * Correcting a reading that is already written down. #374.
+ *
+ * **A reading is typed one handed while holding something else**, which is how
+ * 138.8 becomes 1388, and until now it could not be fixed. Rule 17 says a date
+ * is editable forever from the entry itself, and a reading's date is one of
+ * them.
+ *
+ * **The same form that recorded it**, rather than a second one that asks the
+ * same four questions in a slightly different order. Two forms for one record
+ * is how two forms drift apart, which is the argument `SectionScaffold` and
+ * `AddThreadScreen` both already make.
+ */
+@Composable
+fun CorrectReadingScreen(
+    name: String,
+    units: List<String>,
+    isText: Boolean,
+    reading: Repository.Reading,
+    onSave: (unit: String?, number: Double?, text: String, occurred: Edtf.Date, note: String) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    RecordValue(
+        name = name,
+        units = units,
+        isText = isText,
+        onSave = onSave,
+        onCancel = onCancel,
+        modifier = modifier,
+        // **Started from what is there**, per D147: somebody who opened this to
+        // fix a digit should not retype the reading, the unit, the date and the
+        // note.
+        startValue = reading.number?.let { number ->
+            if (number == number.toLong().toDouble()) {
+                number.toLong().toString()
+            } else {
+                number.toString()
+            }
+        } ?: reading.text.orEmpty(),
+        startUnit = reading.unit,
+        startOccurred = reading.occurredEdtf?.let { Edtf.parse(it) },
+        startNote = reading.note.orEmpty(),
+        saveKey = "measurement.correct.save",
+    )
+}
+
 @Composable
 private fun RecordValue(
     name: String,
@@ -495,6 +542,14 @@ private fun RecordValue(
     isText: Boolean,
     onSave: (unit: String?, number: Double?, text: String, occurred: Edtf.Date, note: String) -> Unit,
     onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+    /** What the field starts with, for a correction. Empty when recording. */
+    startValue: String = "",
+    startUnit: String? = null,
+    startOccurred: Edtf.Date? = null,
+    startNote: String = "",
+    /** The save button's words, so a correction does not say "record". */
+    saveKey: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -503,16 +558,24 @@ private fun RecordValue(
     // number read off a cuff, a unit, a rough when and a note all lived in a
     // plain remember, so an interruption emptied the form and the reading was
     // gone with it.
-    var raw by rememberSaveable { mutableStateOf("") }
-    var unit by rememberSaveable { mutableStateOf(units.firstOrNull()) }
-    var rough by rememberSaveable { mutableStateOf<RoughWhen?>(RoughWhen.TODAY) }
-    var picked by rememberSaveable(stateSaver = EdtfSaver) {
-        mutableStateOf<Edtf.Date?>(null)
+    var raw by rememberSaveable(startValue) { mutableStateOf(startValue) }
+    var unit by rememberSaveable(startUnit) {
+        mutableStateOf(startUnit ?: units.firstOrNull())
+    }
+    // **No rough when on a correction.** "Today" is the right default for a
+    // reading being taken now and the wrong one for a reading from March: the
+    // date it already has is the answer, and offering a rough one would invite
+    // somebody to overwrite a fact with an approximation.
+    var rough by rememberSaveable(startOccurred) {
+        mutableStateOf(if (startOccurred == null) RoughWhen.TODAY else null)
+    }
+    var picked by rememberSaveable(startOccurred, stateSaver = EdtfSaver) {
+        mutableStateOf(startOccurred)
     }
     var pickerOpen by remember { mutableStateOf(false) }
-    var note by rememberSaveable { mutableStateOf("") }
+    var note by rememberSaveable(startNote) { mutableStateOf(startNote) }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = colors.paper) {
+    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(modifier = Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
             Column(
                 modifier = Modifier
@@ -627,7 +690,7 @@ private fun RecordValue(
             Spacer(Modifier.height(Space.m))
 
             FilledButton(
-                label = strings["capture.save"],
+                label = strings[saveKey ?: "capture.save"],
                 onClick = {
                     onSave(
                         unit,

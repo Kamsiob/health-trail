@@ -101,6 +101,7 @@ import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
 import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectReadingScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentCorrection
 import com.kamsiob.healthtrail.ui.screens.MedicationDraft
@@ -488,6 +489,7 @@ fun NotebookShell(
         BackHandler(enabled = renamingProject != null) { renamingProject = null }
         BackHandler(enabled = correctingQuestion != null) { correctingQuestion = null }
         BackHandler(enabled = correctingInstruction != null) { correctingInstruction = null }
+        BackHandler(enabled = correctingReading != null) { correctingReading = null }
         BackHandler(enabled = openDocument != null) { openDocument = null }
         BackHandler(enabled = openBill != null) { openBill = null }
         BackHandler(enabled = conflictsOpen) { conflictsOpen = false; markConflictsSeen = true }
@@ -1628,6 +1630,57 @@ fun NotebookShell(
                     initialName = question.text,
                     singleLine = false,
                 )
+            }
+
+            // **Correcting a reading**, #374, and the surface rule 17 asks
+            // for: a date is editable forever from the entry itself. It is the
+            // same form that recorded the reading rather than a second one
+            // asking the same four questions, because two forms for one record
+            // is how two forms drift apart.
+            correctingReading?.let { reading ->
+                val measure = measures.firstOrNull { it.id == reading.measureId }
+                if (measure == null) {
+                    // **The measure was removed while this was open.** There is
+                    // nothing to correct against, and a form with no name and no
+                    // units would be a screen pretending it knows what it is
+                    // asking about.
+                    LaunchedEffect(reading.id) { correctingReading = null }
+                } else {
+                    CorrectReadingScreen(
+                        name = measure.name,
+                        units = listOfNotNull(reading.unit ?: measure.unit),
+                        isText = measure.isText,
+                        reading = reading,
+                        onSave = { unit, number, text, occurred, note ->
+                            savingReadingCorrection = ReadingCorrection(
+                                readingId = reading.id,
+                                unit = unit,
+                                number = number,
+                                text = text,
+                                occurred = occurred,
+                                note = note,
+                            )
+                            correctingReading = null
+                        },
+                        onCancel = { correctingReading = null },
+                    )
+                }
+            }
+
+            savingReadingCorrection?.let { correction ->
+                LaunchedEffect(correction) {
+                    repository.updateReading(
+                        readingId = correction.readingId,
+                        number = correction.number,
+                        // bidi-ok: on its way to the database.
+                        text = correction.text,
+                        unit = correction.unit,
+                        occurred = correction.occurred,
+                        note = correction.note,
+                    )
+                    savingReadingCorrection = null
+                    revision += 1
+                }
             }
 
             // **Correcting a standing instruction's own words**, #374. Its
@@ -2961,6 +3014,23 @@ internal data class Quadruple<A, B, C, D>(
  * free text the person typed and they are adjacent, which is the shape that
  * gets passed the wrong way round with nothing to catch it.
  */
+/**
+ * A reading being corrected, as typed. #374.
+ *
+ * **A named type rather than a five slot tuple.** Two nullable strings, a
+ * nullable number and a date is exactly the shape where the value and the unit
+ * get passed the wrong way round, and neither the compiler nor a screenshot
+ * would say so. Same argument as `StandingWrite` below.
+ */
+internal data class ReadingCorrection(
+    val readingId: String,
+    val unit: String?,
+    val number: Double?,
+    val text: String,
+    val occurred: com.kamsiob.healthtrail.time.Edtf.Date,
+    val note: String,
+)
+
 internal data class StandingWrite(
     val projectId: String,
     val holder: String,

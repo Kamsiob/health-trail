@@ -149,6 +149,14 @@ internal class ShellState {
     var archivingPerson by mutableStateOf<Pair<String, Boolean>?>(null)
 
     /**
+     * The reading being corrected, and the correction in flight. #374, the
+     * fifth of the six, and the one rule 17 is really about: a date is editable
+     * forever from the entry itself.
+     */
+    var correctingReading by mutableStateOf<Repository.Reading?>(null)
+    var savingReadingCorrection by mutableStateOf<ReadingCorrection?>(null)
+
+    /**
      * The standing instruction whose own words are being corrected, and what to
      * write. #374, and the fourth of the six.
      */

@@ -55,11 +55,13 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 
 **#375** was the previous direction and #376 supersedes it as the live list. Its four asks are not withdrawn.
 
-**#374** is the six records that cannot be corrected. **Four of six are done**, 2026-08-14: a chapter's name, a project's name, a question's own words, and a standing instruction's own words. All four reuse the one question screen, which now takes `leadKey`, `section`, `initialName` and `singleLine`.
+**#374** is the six records that cannot be corrected. **Five of six are done**, 2026-08-14: a chapter's name, a project's name, a question's own words, a standing instruction's own words, and **a reading**. The first four reuse the one question screen, which now takes `leadKey`, `section`, `initialName` and `singleLine`. The reading reuses the form that recorded it, because two forms for one record is how two forms drift apart.
 
 **They are also B6's real proof.** Both full screen surfaces together cost the shell **220 bytes**, against the 1,860 bytes of headroom it had before #373, when one added parameter on an existing screen was enough to fail the build. **#373** is B6 and is done.
 
-**The last two are a reading and a measure**, and both have their writer already: `updateReading` and `updateMeasure`. **Neither has a caller**, which is the shape `renameChapter` had, so both are in `docs/REMOVAL-LEDGER.md` under what is unreached and is not history, and **neither is frozen**. They are waiting on a screen rather than a decision: a reading is a value, a unit and a date, and a measure is a name and a unit, so neither fits the one question screen the other four reused.
+**The last one is a measure**, its name and its unit. `updateMeasure` exists and **has no caller**, which is the shape `renameChapter` had, so it is in `docs/REMOVAL-LEDGER.md` under what is unreached and is not history and **is not frozen**. It waits on a screen rather than a decision.
+
+**A reading's correction is reached from the reading itself** on the progress screen, per rule 17: a date is editable forever from the entry itself rather than from a menu somewhere else.
 
 #371, the five-panel audit, is closed.
 

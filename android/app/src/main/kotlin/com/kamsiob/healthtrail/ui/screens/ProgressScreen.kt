@@ -16,6 +16,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import com.kamsiob.healthtrail.ui.components.openableByTap
+import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -85,6 +89,8 @@ fun ProgressScreen(
     onAddReading: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Opens the form that corrects one reading. #374. */
+    onCorrectReading: (Repository.Reading) -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -207,7 +213,11 @@ fun ProgressScreen(
             // left to right in time. They are two different jobs.
             for (reading in heroReadings.reversed()) {
                 item(key = reading.id) {
-                    ReadingRow(reading = reading, measure = hero)
+                    ReadingRow(
+                        reading = reading,
+                        measure = hero,
+                        onCorrect = { onCorrectReading(reading) },
+                    )
                     Spacer(Modifier.height(Space.cardGap))
                 }
             }
@@ -339,14 +349,28 @@ private fun TextMeasureHero(
  * are one thing being said.
  */
 @Composable
-private fun ReadingRow(reading: Repository.Reading, measure: Repository.Measure) {
+private fun ReadingRow(
+    reading: Repository.Reading,
+    measure: Repository.Measure,
+    onCorrect: () -> Unit = {},
+) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val value = valueOf(reading)
 
+    // **The row is the door to correcting it.** #374, and it is the shape rule
+    // 17 asks for: a date editable forever *from the entry itself* rather than
+    // from a menu somewhere else. A reading is typed one handed while holding
+    // something else, which is how 138.8 becomes 1388.
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(Radius.card)
+            .openableByTap(
+                label = strings("measurement.correct.open", "value" to (value ?: "")),
+                onTap = onCorrect,
+                resting = Color.Transparent,
+            )
             .testTag(ProgressTags.reading(reading.id))
             .padding(horizontal = Space.sm),
     ) {

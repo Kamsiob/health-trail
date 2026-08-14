@@ -32,6 +32,7 @@ import com.kamsiob.healthtrail.ui.screens.PrepScreen
 import com.kamsiob.healthtrail.ui.screens.BillScreen
 import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
 import com.kamsiob.healthtrail.ui.screens.ChapterScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectReadingScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationEventScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationScreen
 import com.kamsiob.healthtrail.ui.screens.ViolationScreen
@@ -1095,8 +1096,10 @@ internal fun ProjectStepOverlays(
                     // The measurement form, which is a real destination rather
                     // than a stub: it is the same screen capture opens.
                     onAddReading = { capturing = CaptureKind.MEASUREMENT },
+                    onCorrectReading = { correctingReading = it },
                     onBack = { openSection = null },
                 )
+
 
                 Repository.Section.THREADS -> CareThreadsScreen(
                     onOpen = { openThread = it },
