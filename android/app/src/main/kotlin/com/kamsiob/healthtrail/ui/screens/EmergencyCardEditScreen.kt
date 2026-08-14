@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +30,8 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FormHeader
+import com.kamsiob.healthtrail.ui.components.MoreChip
+import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -40,6 +43,7 @@ object EmergencyEditTags {
     const val ROOT = "emergency_edit_root"
     const val SAVE = "emergency_edit_save"
     const val CANCEL = "emergency_edit_cancel"
+    const val MORE_PEOPLE = "emergency_edit_more_people"
     fun field(key: String) = "emergency_edit_$key"
 }
 
@@ -88,6 +92,7 @@ fun EmergencyCardEditScreen(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var allPeopleShown by rememberSaveable { mutableStateOf(false) }
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
@@ -156,11 +161,27 @@ fun EmergencyCardEditScreen(
                     // under the sentence explaining the tap, so the same four
                     // words appeared twice within three lines. Seen on the
                     // phone. The label stays for a reader.
+                    // **Five, plus everybody already on the card**, per 5.11.1
+                    // and the cap every other chip set in the app uses. This
+                    // one drew the whole care team: fifteen names filling the
+                    // first screen, so allergies and the rest of what this card
+                    // exists for started below the fold. Seen on the phone.
+                    //
+                    // **Nothing chosen ever disappears into the fold**, which
+                    // is what the multi select cap is for: a chip that vanished
+                    // when the list was capped would hide a choice somebody
+                    // made.
+                    val onCard = people.filter { it.id in onTheCard }.toSet()
+                    val shownPeople = if (allPeopleShown) {
+                        people
+                    } else {
+                        cappedChips(people, onCard)
+                    }
                     ChoiceChipGroup(
                         label = strings["emergency.group.who"],
                         showLabel = false,
                     ) {
-                        people.forEach { person ->
+                        shownPeople.forEach { person ->
                             ChoiceChip(
                                 label = Bidi.isolate(
                                     person.displayName.ifBlank {
@@ -171,6 +192,19 @@ fun EmergencyCardEditScreen(
                                 ),
                                 selected = person.id in onTheCard,
                                 onClick = { onToggleContact(person) },
+                            )
+                        }
+                        // **Opens in place rather than into a picker.** The
+                        // appointment form sends this to a sheet because it is
+                        // choosing one person and the sheet can search; here
+                        // several people belong on the card and the choosing is
+                        // the screen's own work, so the rest arrive under the
+                        // ones already there.
+                        if (people.size > shownPeople.size) {
+                            MoreChip(
+                                label = strings("chips.all", "count" to people.size),
+                                onClick = { allPeopleShown = true },
+                                modifier = Modifier.testTag(EmergencyEditTags.MORE_PEOPLE),
                             )
                         }
                     }

@@ -233,6 +233,27 @@ fun <T> cappedChips(all: List<T>, selected: T?, limit: Int = CHIP_CAP): List<T> 
 /** Five, per `DESIGN.md` 5.11.1. */
 const val CHIP_CAP = 5
 
+/**
+ * The same cap where more than one chip can be chosen at once.
+ *
+ * **[cappedChips] takes one selection and cannot serve a set.** The emergency
+ * card asks which of the care team to put on it, and several people belong on
+ * it, so its chip set was drawing the whole team: fifteen names filling the
+ * first screen, with the fields the card exists for below the fold. 5.11.1 caps
+ * a chip set at five and this one had never been through it.
+ *
+ * **Everything chosen stays visible**, however many that is, because a chip that
+ * disappears when the list is capped would hide a choice somebody made. The cap
+ * fills out from the front with whoever is not chosen, so the row is at least
+ * five where there are five to show and grows only with the choosing.
+ */
+fun <T> cappedChips(all: List<T>, selected: Set<T>, limit: Int = CHIP_CAP): List<T> {
+    if (all.size <= limit) return all
+    val chosen = all.filter { it in selected }
+    val rest = all.filterNot { it in selected }
+    return chosen + rest.take((limit - chosen.size).coerceAtLeast(0))
+}
+
 private val ChipHeight = 40.dp
 private val ChipDotSize = 8.dp
 

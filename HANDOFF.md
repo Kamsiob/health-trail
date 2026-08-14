@@ -45,7 +45,7 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 5. **The projects overhaul.** First pass done, D156: the road says its stage names and the subtitle counts your projects. **Not done: "+ Start" belongs at the top per the grid**, and it wants a decision because D137, D118 and the FAB clearance are behind where it is.
 6. **No data entry screen is boring or lazily designed.** **Two of fourteen done.** `AddPersonScreen` asked five questions at one weight while D147 recorded it as converted. `EmergencyCardEditScreen` said "Who to call first" twice within three lines, once as a mono header and once as a body label.
 
-   **Not a sweep for folding**, and the count on #376 is why: four forms were already staged and seven are too short to need it. The two done needed two different things. **What is left on the emergency card**: fifteen care team chips fill the first screen so its own fields start below the fold, and two lines explain that a chip toggles.
+   **Not a sweep for folding**, and the count on #376 is why: four forms were already staged and seven are too short to need it. The two done needed two different things: a fold, and a duplicated heading taken out. The emergency card also **drew its whole care team as chips**, fifteen names filling the first screen while `CHIP_CAP` in `Chips.kt` caps a chip set at five; `cappedChips` could not serve it because it takes one selection and the card takes a set, so there is a multi select cap now and **nobody already on the card is ever folded away**. `EmergencyCardEditScreenTest` is its first test.
 
 **Everything above was looked at on the phone**, not only tested. **5 and 6 are where the work is**: twelve project screens and thirteen forms have not been through this.
 

@@ -2984,6 +2984,10 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **The lesson is about how a decision entry goes stale.** This one described five conversions in a sentence, and four happening is indistinguishable from five in that sentence forever. **A count in prose is a claim no check can read.** The screens each carry their own reasons in their own KDoc, and that is where the disagreement was visible.
 
+**There was a third record, found after the fix, and it changes nothing but is worth the paragraph.** `DESIGN.md` section 14's row for this screen also said the role belongs behind "Add more", **and it gave the reason**: the role and up to six chips sat *between* the name and the number, so the number, which is why anybody adds a person, was the field furthest down. **That is a layout complaint, not an argument for hiding the role**, and putting the three fields in one group with the chips underneath answers it without hiding anything. So two records asked for the role to be folded, one recorded folding it being reverted, and the built screen now satisfies all three. Section 14 is corrected to say so.
+
+**Three records, one screen, and the only way to see it was to read all three.** The check that would have caught it does not exist and probably cannot: they were not contradictory statements, they were one statement, one reason, and one exception, written months apart in three files.
+
 ---
 
 ### D153. Today has two card sizes, square and full width, and the stored column keeps three
