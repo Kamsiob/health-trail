@@ -96,7 +96,13 @@ fun DateRow(
             .padding(horizontal = Space.sm, vertical = Space.s)
             .clearAndSetSemantics { contentDescription = description },
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
-        verticalAlignment = Alignment.CenterVertically,
+        // **Top, not center.** The countdown is one line and the fact beside it
+        // is two or three, so centering floated "63 days" in the middle of
+        // "Renewal · October 17, 2026 / the letter of March 5" with nothing
+        // level with it. The two belong to each other and the way to say so is
+        // to start them on the same line. Seen on a project's own screen after
+        // the type ladder was lifted, which is what made the fact wrap.
+        verticalAlignment = Alignment.Top,
     ) {
         Text(
             // Isolated, so a Latin number inside an Arabic layout keeps its own
