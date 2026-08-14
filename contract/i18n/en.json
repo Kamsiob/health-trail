@@ -682,6 +682,7 @@
   "instructions.correct": "Correct the wording",
   "instructions.correct.field": "The wording",
   "instructions.correct.lead": "In the words it was given in. This is what gets quoted back.",
+  "instructions.correct.save": "Save the wording",
   "instructions.correct.title": "What does the instruction say?",
   "instructions.empty": "Nothing asked for yet. Writing down what you asked, and when, is what makes it possible to point back to it.",
   "instructions.heading": "What you have asked for",

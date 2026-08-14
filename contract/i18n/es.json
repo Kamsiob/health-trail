@@ -682,6 +682,7 @@
   "instructions.correct": "Corregir la redacción",
   "instructions.correct.field": "La redacción",
   "instructions.correct.lead": "Con las palabras en que se dio. Esto es lo que se cita después.",
+  "instructions.correct.save": "Guardar la redacción",
   "instructions.correct.title": "¿Qué dice la indicación?",
   "instructions.empty": "Todavía no ha pedido nada. Anotar lo que pidió, y cuándo, es lo que permite remitirse a ello después.",
   "instructions.heading": "Lo que ha pedido",

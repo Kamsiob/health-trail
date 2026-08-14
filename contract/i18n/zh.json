@@ -682,6 +682,7 @@
   "instructions.correct": "更正措辞",
   "instructions.correct.field": "措辞",
   "instructions.correct.lead": "用当初给出的原话。之后引用的就是这些字。",
+  "instructions.correct.save": "保存措辞",
   "instructions.correct.title": "这条指示怎么说？",
   "instructions.empty": "还没有提出要求。记下您提出了什么、何时提出，日后才有据可循。",
   "instructions.heading": "你提出过的要求",

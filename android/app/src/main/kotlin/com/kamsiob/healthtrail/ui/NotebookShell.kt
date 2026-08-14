@@ -1728,7 +1728,11 @@ fun NotebookShell(
                     titleKey = "instructions.correct.title",
                     labelKey = "instructions.correct.field",
                     hintKey = null,
-                    saveKey = "instructions.correct",
+                    // **The save button says what saving does.** It carried
+                    // "instructions.correct" first, which is the words on the
+                    // control that opened this screen, so the button that
+                    // finishes the job repeated the button that started it.
+                    saveKey = "instructions.correct.save",
                     leadKey = "instructions.correct.lead",
                     section = Repository.Section.STANDING_INSTRUCTIONS,
                     initialName = instruction.wording,

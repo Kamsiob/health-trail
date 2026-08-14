@@ -682,6 +682,7 @@
   "instructions.correct": "تصحيح الصياغة",
   "instructions.correct.field": "الصياغة",
   "instructions.correct.lead": "بالكلمات التي أُعطيت بها. هذا ما يُستشهد به لاحقًا.",
+  "instructions.correct.save": "حفظ الصياغة",
   "instructions.correct.title": "ماذا تنص التعليمة؟",
   "instructions.empty": "لم تطلب شيئًا بعد. تدوين ما طلبته ومتى هو ما يتيح لك الرجوع إليه لاحقًا.",
   "instructions.heading": "ما طلبته",
