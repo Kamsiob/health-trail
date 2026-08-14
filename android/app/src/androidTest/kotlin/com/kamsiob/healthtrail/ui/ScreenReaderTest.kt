@@ -61,6 +61,8 @@ import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.StandingInstructionsScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectMeasureScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectReadingScreen
 import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
 import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
@@ -2426,6 +2428,96 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("projects")
+    }
+
+    // ---- the six corrections, added for #374 -----------------------------
+    //
+    // **They were composed, tested and walked, and none of that is this
+    // check.** Rule 19 is a gate: every touchable node says what it does, or
+    // somebody using a reader meets a button that announces nothing. Six new
+    // full screen surfaces went in overnight and the reader walk is what
+    // `DESIGN.md` 12 asks of each of them before its issue closes.
+
+    @Test
+    fun correctingANameLabelsEverything() {
+        compose.show {
+            AddThreadScreen(
+                onStart = {},
+                onCancel = {},
+                titleKey = "chapters.rename.title",
+                labelKey = "chapters.rename.name",
+                hintKey = null,
+                saveKey = "chapters.rename.save",
+                leadKey = "chapters.rename.lead",
+                section = Repository.Section.CHAPTERS,
+                initialName = "Maplewood Care Center",
+            )
+        }
+        assertEverythingIsLabeled("correcting a chapter's name")
+    }
+
+    @Test
+    fun correctingWordsLabelsEverything() {
+        // **The multiline case**, which is a different composable path inside
+        // the field: a question is a sentence rather than a name.
+        compose.show {
+            AddThreadScreen(
+                onStart = {},
+                onCancel = {},
+                titleKey = "ask.correct.title",
+                labelKey = "ask.correct.field",
+                hintKey = null,
+                saveKey = "ask.correct.save",
+                leadKey = "ask.correct.lead",
+                section = Repository.Section.ASK_NEXT_TIME,
+                initialName = "When was the last time she was weighed?",
+                singleLine = false,
+            )
+        }
+        assertEverythingIsLabeled("correcting a question's words")
+    }
+
+    @Test
+    fun correctingAReadingLabelsEverything() {
+        compose.show {
+            CorrectReadingScreen(
+                name = "Weight",
+                units = listOf("lb"),
+                isText = false,
+                reading = Repository.Reading(
+                    id = "r1",
+                    measureId = "m1",
+                    number = 138.8,
+                    text = null,
+                    unit = "lb",
+                    occurredEdtf = "2026-03-04",
+                    occurredStart = 1772582400000L,
+                    note = "After breakfast",
+                    source = null,
+                ),
+                onSave = { _, _, _, _, _ -> },
+                onCancel = {},
+            )
+        }
+        assertEverythingIsLabeled("correcting a reading")
+    }
+
+    @Test
+    fun correctingAMeasureLabelsEverything() {
+        compose.show {
+            CorrectMeasureScreen(
+                measure = Repository.Measure(
+                    id = "m1",
+                    name = "Weight",
+                    presetId = null,
+                    unit = "lb",
+                    isText = false,
+                ),
+                onSave = {},
+                onCancel = {},
+            )
+        }
+        assertEverythingIsLabeled("correcting a measure")
     }
 
     @Test

@@ -63,7 +63,9 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 
 **Each correction is reached from the thing itself**, per rule 17 and #374's own acceptance: the reading's from its row on the progress screen, the measure's from under its chart, the question's and the instruction's from their sheets, the two names from their own screens. **All six walked on the phone**, light, scale 1.0. **Three had a defect every test passed**: a save button repeating the words of the control that opened it, a correction wearing the recording lead, and a control sitting under the wrong measure. All wrong words or wrong placement, which is the class a test cannot see.
 
-**Still owed on them**: the `DESIGN.md` 16.4 pass, both themes, font scale 2.0, RTL against a forced layout direction.
+**Since covered**: the reader walk on four of them in `ScreenReaderTest`, and RTL against a forced layout direction plus font scale 2.0 in `CorrectionsHoldUpTest`. **The kind assertion there was watched failing** against `kindIsFixed` set back to false, because the chip and the sentence carry the same words and asserting the words alone would have passed either way.
+
+**Still owed**: dark theme, and the same look at the other project screens. A test says a screen holds together; it cannot say whether it reads.
 
 **The whole of #374 cost the shell 2,919 bytes.** Before #373 the shell had 1,860 bytes of headroom and one added parameter on an existing screen failed the build. Six full screen surfaces later there are **35,937 bytes** left. That is what B6 was worth, and it is a better number than any taken on the bytecode alone.
 
