@@ -89,6 +89,9 @@ If a run ends with TalkBack on:
 - **A merged node's testTag assertion passes when the line is absent** and fails when it is there. Assert on words.
 - **`performScrollToNode` gives up early and lies about it.** Use `performScrollToKey`, which asks the list where the item is; needs the test tag on the `LazyColumn` itself, because the scroll action merges upward and looks like it works while `IndexForKey` does not.
 - **`performScrollTo` fails on a pinned footer or a non-scrolling parent.** Drop the scroll.
+- **`performScrollTo` cannot reach anything below a `SectionScaffold`'s fold.** The scaffold renders through a `LazyColumn`, so the node is not off screen, it does not exist, and the failure says "could not find any node that satisfies". Scroll the list: `onNodeWithTag(SectionTags.root(NAME)).performScrollToNode(hasTestTag(TARGET))`.
+- **A composed control whose center is outside the window swallows a tap silently.** `performClick` reports success and nothing happens, so the test fails on the value it was checking rather than on the node, which sends you to the writer instead of the layout. Scroll to it first.
+- **Both of these appear when text gets bigger, not when the test changes.** Seven tests broke the night the type ladder was lifted, five on one screen, and none was a defect in a screen. Confirmed by putting the old ladder back and watching them pass.
 - **Two `setContent` calls in one test** give "already set content". Split the test.
 - **`live_entry` has no `rowid`.** Order by `id`.
 - **A test that changes remembered state puts it back**: view toggles, an open `Disclosure`, the app locale. `AppointmentsMonthTest` taught this; #308 is the class that still has not learned it.

@@ -4,6 +4,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.performScrollToNode
+import com.kamsiob.healthtrail.ui.screens.SectionTags
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -151,7 +155,13 @@ class ProjectSetupScreenTest {
     @Test
     fun theProjectCanBeKeptAsATemplate() {
         show()
-        compose.onNodeWithTag(ProjectSetupTags.SAVE_TEMPLATE).performScrollTo().performClick()
+        // Scrolled by the list rather than by the node, per the note in
+        // `onceKeptTheScreenSaysWhereItWent`: a `LazyColumn` has not composed
+        // what is below the fold, so there is no node for `performScrollTo` to
+        // find.
+        compose.onNodeWithTag(SectionTags.root(ProjectSetupTags.NAME))
+            .performScrollToNode(hasTestTag(ProjectSetupTags.SAVE_TEMPLATE))
+        compose.onNodeWithTag(ProjectSetupTags.SAVE_TEMPLATE).performClick()
         assertEquals(1, templateSaves)
     }
 
@@ -176,7 +186,16 @@ class ProjectSetupScreenTest {
     @Test
     fun onceKeptTheScreenSaysWhereItWent() {
         show(savedAsTemplate = true)
-        compose.onNodeWithTag(ProjectSetupTags.SAVED_TEMPLATE).performScrollTo()
+        // **Scrolled to, because a lazy list has not composed what is below the
+        // fold.** `SectionScaffold` renders through a `LazyColumn`, so a node
+        // past the viewport is not merely off screen, it does not exist in the
+        // semantics tree and `performScrollTo` cannot find it to scroll to.
+        // These passed until the type ladder was lifted on 2026-08-13 and the
+        // content above grew, which is the honest cost of D154 and not a defect
+        // in the screen: a person scrolls and the row composes.
+        compose.onNodeWithTag(SectionTags.root(ProjectSetupTags.NAME))
+            .performScrollToNode(hasTestTag(ProjectSetupTags.SAVED_TEMPLATE))
+        compose.onNodeWithTag(ProjectSetupTags.SAVED_TEMPLATE)
             .assertIsDisplayed()
         compose.onNodeWithTag(ProjectSetupTags.SAVE_TEMPLATE).assertDoesNotExist()
     }
@@ -192,15 +211,25 @@ class ProjectSetupScreenTest {
     @Test
     fun theTemplateBlockIsHeadedWhetherOrNotItHasBeenSaved() {
         show()
-        compose.onNodeWithText(strings["project.setup.template"]).performScrollTo()
-            .assertIsDisplayed()
+        // Scrolled by the list rather than by the node, per the note in
+        // `onceKeptTheScreenSaysWhereItWent`: a `LazyColumn` has not composed
+        // what is below the fold, so there is no node for `performScrollTo` to
+        // find.
+        compose.onNodeWithTag(SectionTags.root(ProjectSetupTags.NAME))
+            .performScrollToNode(hasText(strings["project.setup.template"]))
+        compose.onNodeWithText(strings["project.setup.template"]).assertIsDisplayed()
     }
 
     @Test
     fun theHeadingSurvivesTheSavedState() {
         show(savedAsTemplate = true)
-        compose.onNodeWithText(strings["project.setup.template"]).performScrollTo()
-            .assertIsDisplayed()
+        // Scrolled by the list rather than by the node, per the note in
+        // `onceKeptTheScreenSaysWhereItWent`: a `LazyColumn` has not composed
+        // what is below the fold, so there is no node for `performScrollTo` to
+        // find.
+        compose.onNodeWithTag(SectionTags.root(ProjectSetupTags.NAME))
+            .performScrollToNode(hasText(strings["project.setup.template"]))
+        compose.onNodeWithText(strings["project.setup.template"]).assertIsDisplayed()
     }
 
     /**
@@ -214,8 +243,13 @@ class ProjectSetupScreenTest {
     @Test
     fun theLabelDoesNotPromiseOnlyTheSteps() {
         show()
-        compose.onNodeWithText(strings["projects.save_as_template"]).performScrollTo()
-            .assertIsDisplayed()
+        // Scrolled by the list rather than by the node, per the note in
+        // `onceKeptTheScreenSaysWhereItWent`: a `LazyColumn` has not composed
+        // what is below the fold, so there is no node for `performScrollTo` to
+        // find.
+        compose.onNodeWithTag(SectionTags.root(ProjectSetupTags.NAME))
+            .performScrollToNode(hasText(strings["projects.save_as_template"]))
+        compose.onNodeWithText(strings["projects.save_as_template"]).assertIsDisplayed()
         assertEquals("Save this setup as your own template", strings["projects.save_as_template"])
     }
 }

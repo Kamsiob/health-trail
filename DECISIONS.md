@@ -3030,6 +3030,14 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **Rejected: lifting only the body roles.** It is the cheapest change and it would have left the screens' hierarchy visibly compressed, which is a second defect traded for the first.
 
+**What it cost in practice, measured rather than predicted.** Seven instrumented tests broke, and **none of them was a defect in a screen**. They were all one shape: a control that used to sit inside the first composed window of a `SectionScaffold` now sits below it. `SectionScaffold` renders through a `LazyColumn`, so a node past the viewport is not merely off screen, **it does not exist in the semantics tree**, and `performScrollTo` cannot find a node to scroll to. Two more failed differently for the same reason: the control was composed but its center was outside the window, so `performClick` reported success and the tap landed nowhere, and the test failed on the value rather than on the node.
+
+**The cause was confirmed rather than assumed**, by putting the old ladder back, watching the seven pass, and putting the new one back again. Guessing here would have been cheap and wrong: five of the seven are on one screen and looked like one broken screen.
+
+**The lesson worth keeping is about the tests rather than the type.** A test that reaches a control without scrolling is asserting that the control is above the fold, which is not what any of them meant to assert and is a thing the app is allowed to change. They scroll the list by node now, which is the pattern `MedicationQuestionJourneyTest` already had and wrote down.
+
+**One real defect did come out of it**, on Today rather than in a form. The field animated every card's placement, not only while it was being arranged, so during the reflow to one column at a large system font there is a moment when a card has not arrived at its slot. Anything reading positions then, **including a person's eye**, sees an order the layout does not have. Placement animates only while arranging now, which is the only time it says anything.
+
 **Revisit if.** The overflow pass finds a screen that cannot hold the new ladder in the longest language at scale 2.0, in which case the screen gets fixed rather than the ladder lowered, per 5.1's own rule about the floor.
 
 ---

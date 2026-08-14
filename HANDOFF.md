@@ -82,6 +82,7 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 - **New optional parameters go after `modifier`** or lint `ModifierParameter` fails. Cost 3 build failures in one day.
 - A test that changes a remembered preference puts it back (view toggles, `Disclosure` state).
 - Since 2026-08-13 `SectionScaffold` makes room for the keyboard, so a control below a field is genuinely off screen while it is up. Three tests close it before tapping.
+- **`SectionScaffold` is a `LazyColumn`, so `performScrollTo` cannot reach a control below the fold**: the node does not exist yet, and the failure reads "could not find any node". Scroll the list instead: `onNodeWithTag(SectionTags.root(NAME)).performScrollToNode(hasTestTag(TARGET))`. A composed control whose center is outside the window is worse, because `performClick` succeeds and the tap lands nowhere, so the test fails on the value. **Seven tests hit both on the night the type ladder was lifted.**
 - `connectedDebugAndroidTest` uninstalls the app. `adb shell pm list packages | grep kamsiob` before any walk, else taps land on the owner's launcher.
 - Never put a short `timeout` on a device run; it kills mid-suite and uninstalls.
 - The destructive-command hook matches prose. Writing certain verbs into a file is refused. #323, not a reason to weaken it.

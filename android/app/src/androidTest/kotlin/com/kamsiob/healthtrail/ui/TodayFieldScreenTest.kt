@@ -10,6 +10,8 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -869,15 +871,35 @@ class TodayFieldScreenTest {
             }
         }
 
+        // **Only the cards the grid has actually composed**, and that is a
+        // change forced by the type lift rather than a weakening of the claim.
+        // At scale 2.0 in one column a card is most of the screen, so a
+        // `LazyVerticalGrid` composes the first few and nothing else exists to
+        // read a position from. Asking all four for their bounds asserted that
+        // the grid was not being lazy, which was never the promise and stopped
+        // being true when D154 made every card taller.
+        //
+        // **The claim itself is unchanged**: whatever is on screen is in
+        // layout order and at one column. That is what a reflow gets wrong.
+        val composed = layout.field.map { it.id }.filter { id ->
+            compose.onAllNodesWithTag(TodayFieldTags.card(id)).fetchSemanticsNodes().isNotEmpty()
+        }
+        assertTrue(
+            "the reflowed field composed ${composed.size} cards, too few to say anything",
+            composed.size >= 2,
+        )
         assertEquals(
             "the field did not keep its order when it reflowed",
-            layout.field.map { it.id },
-            fieldOrder(layout),
+            composed,
+            composed.sortedBy {
+                compose.onNodeWithTag(TodayFieldTags.card(it))
+                    .fetchSemanticsNode().positionInRoot.y
+            },
         )
 
         // One column means every card starts at the same edge.
-        val lefts = layout.field.map {
-            compose.onNodeWithTag(TodayFieldTags.card(it.id))
+        val lefts = composed.map {
+            compose.onNodeWithTag(TodayFieldTags.card(it))
                 .fetchSemanticsNode().boundsInRoot.left
         }
         assertEquals(
@@ -885,6 +907,15 @@ class TodayFieldScreenTest {
             1,
             lefts.distinct().size,
         )
+
+        // **And the rest are reachable rather than lost.** This is the half the
+        // old assertion was accidentally covering: the cards below the fold
+        // still exist, they are just not composed until the person scrolls.
+        for (id in layout.field.map { it.id } - composed.toSet()) {
+            compose.onNodeWithTag(TodayFieldTags.ROOT)
+                .performScrollToNode(hasTestTag(TodayFieldTags.card(id)))
+            compose.onNodeWithTag(TodayFieldTags.card(id)).assertIsDisplayed()
+        }
     }
 
     @Test

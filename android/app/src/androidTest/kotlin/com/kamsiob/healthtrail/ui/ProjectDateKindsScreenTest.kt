@@ -8,6 +8,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.performScrollToNode
+import com.kamsiob.healthtrail.ui.screens.SectionTags
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -70,6 +73,14 @@ class ProjectDateKindsScreenTest {
         showList()
         compose.onNodeWithTag(ProjectKindsTags.ADD).assertIsNotEnabled()
         compose.onNodeWithTag(ProjectKindsTags.ADD_FIELD).performTextInput("Response window")
+        // **Scrolled to before it is touched.** `SectionScaffold` renders
+        // through a `LazyColumn`, so a control below the fold is composed but
+        // its center can be outside the window, and a tap there lands nowhere:
+        // the click reports success and nothing happens, which is why this
+        // failed on the value rather than on the node. It began after the type
+        // ladder was lifted on 2026-08-13 and the content above grew. D154.
+        compose.onNodeWithTag(SectionTags.root(ProjectKindsTags.NAME))
+            .performScrollToNode(hasTestTag(ProjectKindsTags.ADD))
         compose.onNodeWithTag(ProjectKindsTags.ADD).performClick()
         assertEquals("Response window", added)
     }

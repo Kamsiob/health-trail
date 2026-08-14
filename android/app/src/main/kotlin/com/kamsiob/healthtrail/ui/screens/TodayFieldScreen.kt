@@ -496,12 +496,25 @@ fun TodayFieldScreen(
                         // **The others make room, and that is the half of a
                         // reorder that was missing.** A card moved and every
                         // other card was simply somewhere else the next frame,
-                        // so nothing on the screen said what had happened. The
-                        // grid animates a placement change for us; the card in
-                        // the hand is excluded because it is already following
-                        // the finger and two things moving it fight.
+                        // so nothing on the screen said what had happened.
+                        //
+                        // **Only while the screen is being arranged**, and the
+                        // card in the hand is excluded because it is already
+                        // following the finger and two things moving it fight.
+                        // Animating placement the rest of the time buys nothing
+                        // and costs correctness: the field reflows to one column
+                        // at a large system font, and with placement animating
+                        // there is a moment where a card has not arrived at its
+                        // slot, so anything reading positions then, including a
+                        // person's eye, sees an order the layout does not have.
+                        // Found by the reflow test, which read the last card as
+                        // the first.
                         .then(
-                            if (dragging == card.id) Modifier else Modifier.animateItem(),
+                            if (editing && dragging != card.id) {
+                                Modifier.animateItem()
+                            } else {
+                                Modifier
+                            },
                         )
                         // **Above the field while it is being carried.** Without
                         // this the dragged card slides under its neighbours,
