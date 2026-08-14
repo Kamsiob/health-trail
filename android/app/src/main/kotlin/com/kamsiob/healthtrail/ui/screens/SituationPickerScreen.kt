@@ -261,12 +261,14 @@ fun SituationPickerScreen(
 
             Spacer(Modifier.height(Space.s))
 
+            // **Sized to its label, not the width of the screen.** D137: a
+            // full width outlined bar is the way back and nothing else, and
+            // under a full width filled action it is a second bar of which
+            // only one leaves. #371 item 5, and it is retroactive per rule 14.
             TextAction(
                 label = strings["situation.skip"],
                 onClick = onSkip,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(SituationPickerTags.SKIP),
+                modifier = Modifier.testTag(SituationPickerTags.SKIP),
             )
         }
     }

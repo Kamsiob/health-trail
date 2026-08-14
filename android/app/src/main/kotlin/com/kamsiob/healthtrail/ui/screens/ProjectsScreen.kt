@@ -219,11 +219,14 @@ fun ProjectsScreen(
                 // top of it is the most basic possible defect**, and it is
                 // invisible in a mockup because nothing overlaps until the FAB
                 // is real. Seen on the phone at 2.0.
+                // **Sized to its label since #371 item 5**, D137. The FAB
+                // clearance stays: the button no longer spans the width, and
+                // the token is what keeps that true at font scale 2.0 rather
+                // than an assumption about how wide the label happens to be.
                 QuietButton(
                     label = strings["projects.start"],
                     onClick = onStart,
                     modifier = Modifier
-                        .fillMaxWidth()
                         .fabSafeActionBar()
                         .testTag(ProjectTags.START),
                 )

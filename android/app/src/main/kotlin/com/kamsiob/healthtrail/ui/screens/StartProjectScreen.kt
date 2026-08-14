@@ -284,11 +284,14 @@ fun StartProjectScreen(
 
             Spacer(Modifier.height(Space.m))
 
+            // **Sized to its label, not the width of the screen.** D137: a
+            // full width outlined bar is the way back and nothing else, and
+            // under a full width filled action it is a second bar of which
+            // only one leaves. #371 item 5, and it is retroactive per rule 14.
             QuietButton(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
                     .testTag(StartProjectTags.CANCEL),
             )

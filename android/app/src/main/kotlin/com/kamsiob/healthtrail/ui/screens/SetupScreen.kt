@@ -247,13 +247,13 @@ fun SetupScreen(
 
             // Skipping is a real path, not a discouraged one. It sits below the
             // primary action at equal reach, with no styling that makes it feel
-            // like giving up.
+            // like giving up. **Sized to its label since #371 item 5**, which
+            // is not a demotion: D137 gives the full width outlined bar to the
+            // way back alone, and every form in the app now reads the same.
             TextAction(
                 label = strings["setup.skip"],
                 onClick = onSkip,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(SetupTags.SKIP),
+                modifier = Modifier.testTag(SetupTags.SKIP),
             )
         }
     }

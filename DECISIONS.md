@@ -2690,6 +2690,12 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **The stage line on Start a project moved under the lead**, because the slot above the title now holds the chip and a mono eyebrow stacked over a tab chip is two eyebrows arguing about which one says where you are.
 
+**And D137's sweep was finished in the same pass**, which is the other half of item 5. Ten full width outlined bars were left on ten screens, all outside the section screens D137 had swept: the capture form's Cancel and Start a project's, a reading's way back, the medication event form's Cancel, setup's and the situation picker's "Skip this", two in the unfiled tray, Today's door into the emergency card, and Projects' "Start a project". **Every one sat under or beside a filled primary action**, which is exactly the pairing D137 calls two bars of which only one leaves. They are sized to their labels.
+
+**Two are worth naming because they were not obviously the same defect.** Setup's "Skip this" carried a comment saying it sits at equal reach with no styling that makes it feel like giving up, **and that is still true**: width is not what makes an action equal, and every other form in the app now reads the same way. Today's emergency card door is still one tap, which is what rule 18 asks of it; what changed is that a bar spanning the foot of Today no longer reads as a way out of Today.
+
+**Two full width outlined bars are correct and stay.** `SectionScaffold`'s way back, and the unfiled tray's "Close", which is that screen's way back and has no scaffold to inherit one from.
+
 ---
 
 ### D150. A restored notebook is on a new phone, and the phone says so

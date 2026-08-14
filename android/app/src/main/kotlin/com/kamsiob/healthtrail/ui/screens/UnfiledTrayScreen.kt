@@ -185,12 +185,13 @@ fun UnfiledTrayScreen(
                         // 13: partial is a finished state. Somebody who does not
                         // know where this belongs should be able to say so and
                         // move on, and the thing stays exactly where it was.
+                        // Sized to its label, D137: this screen already ends
+                        // in a full width outlined bar and that one is the way
+                        // out. #371 item 5.
                         TextAction(
                             label = strings["unfiled.later"],
                             onClick = { passed = passed + current.id },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag(UnfiledTags.LATER),
+                            modifier = Modifier.testTag(UnfiledTags.LATER),
                         )
                         Spacer(Modifier.height(Space.sectionGap))
                     }
@@ -208,7 +209,6 @@ fun UnfiledTrayScreen(
                         QuietButton(
                             label = strings["unfiled.title"],
                             onClick = { passed = emptySet() },
-                            modifier = Modifier.fillMaxWidth(),
                         )
                         Spacer(Modifier.height(Space.sectionGap))
                     }

@@ -410,10 +410,15 @@ fun TodayScreen(
             // screen is the same offer twice.
             if (coaching.none { it.section == Repository.Section.EMERGENCY_CARD }) {
                 Spacer(Modifier.height(Space.xl))
+                // **Sized to its label.** D137 gives the full width outlined
+                // bar to the way back, and a bar that wide across the foot of
+                // Today reads as a way out of Today rather than a door into
+                // the card. Still one tap, which is what rule 18 asks for.
+                // #371 item 5.
                 QuietButton(
                     label = strings["notebook.section.emergency_card"],
                     onClick = onOpenEmergencyCard,
-                    modifier = Modifier.fillMaxWidth().testTag(TodayTags.EMERGENCY),
+                    modifier = Modifier.testTag(TodayTags.EMERGENCY),
                 )
             }
 
