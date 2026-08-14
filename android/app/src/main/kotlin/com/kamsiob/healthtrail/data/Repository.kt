@@ -352,17 +352,43 @@ class Repository private constructor(
         notes: String? = null,
         /** Where they work, and it is never required. Rule 13, #353. */
         organizationId: String? = null,
-    ): String = insert(
-        "person",
-        mapOf(
-            "subject_id" to subjectId,
-            "display_name" to displayName,
-            "phone" to phone?.ifBlank { null },
-            "role_label" to roleLabel,
-            "notes" to notes?.ifBlank { null },
-            "organization_id" to organizationId,
-        ),
-    )
+    ): String {
+        val personId = insert(
+            "person",
+            mapOf(
+                "subject_id" to subjectId,
+                "display_name" to displayName,
+                "phone" to phone?.ifBlank { null },
+                "role_label" to roleLabel,
+                "notes" to notes?.ifBlank { null },
+                "organization_id" to organizationId,
+            ),
+        )
+        // **Which chapter of her life this person belongs to**, stamped at write
+        // time from the chapter with no end date, exactly as an entry, a
+        // document and an incident already are.
+        //
+        // **#143 and #371 together.** `person_chapter` is read by the chapters
+        // screen's count of who was involved, and until now the only thing that
+        // had ever written a row was the fixture generator, so that count could
+        // be non-zero in a screenshot and never in a real notebook. The
+        // generator gained a writer for it earlier today, which made the
+        // asymmetry worse rather than better: a fixture that fills a column the
+        // app cannot write is precisely how a screen comes to look joined up
+        // and be empty.
+        //
+        // **No role is recorded here.** `role_label` on this table would be
+        // what somebody did during that chapter specifically, which nothing
+        // asks and nobody has said, and a copy of the person's own role would
+        // be the app inventing a fact about a period of time.
+        currentChapterId(subjectId)?.let { chapterId ->
+            insert(
+                "person_chapter",
+                mapOf("person_id" to personId, "chapter_id" to chapterId),
+            )
+        }
+        return personId
+    }
 
     /**
      * Changes what is recorded about somebody.
