@@ -75,6 +75,10 @@ CHECKS = [
         "check_token_drift.py",
         "the count of measurements not coming from a token falls and never rises",
     ),
+    (
+        "check_type_ladder.py",
+        "DESIGN.md 5.1 and Type.kt state the same size for every role",
+    ),
 ]
 
 # TESTING-PERSONAS.md section 5 checks that are not implemented yet, each named

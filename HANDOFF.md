@@ -105,7 +105,7 @@ Fixture variants:
 
 ## 8. Commands
 
-    python3 tools/checks/run_all.py     # 27 checks, seconds
+    python3 tools/checks/run_all.py     # 28 checks, seconds
     tools/verify.sh                     # honest runner, includes lintDebug
     cd android && ./gradlew :app:connectedDebugAndroidTest    # ~15 min
     ./gradlew :app:connectedDebugAndroidTest \
