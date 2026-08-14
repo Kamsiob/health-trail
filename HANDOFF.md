@@ -33,7 +33,15 @@ Read on demand, never in bulk.
 
 Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT.md` (data) > `DESIGN.md` (visual) > `RUN-SAFETY.md`/`AGENTS.md` > `PROJECT-DELTAS.md` > `MASTER_SPEC.md` > template.
 
-## 3. Blocked, read before planning
+## 3. The work
+
+**#375** is the live list: the owner's direction of 2026-08-14. The interface is better and still limited. Relevant information available from any point, nothing overly cluttered, smarter layout and organization, bugs found by using it. It carries the method and the do-not-undo list.
+
+**#373** is B6, the unblocker. **#374** is the six records that cannot be corrected, blocked on #373.
+
+#371, the five-panel audit, is closed: every item done but for what B6 blocks.
+
+## 4. Blocked, read before planning
 
 **B6. `NotebookShell` is at the JVM 64KB method limit.** No new full-screen surface. One added parameter on an existing screen also fails. Extraction has failed 3 times: the bytecode is at the call site, so moving a block out and passing it 18 arguments moves nothing. What worked: **fewer parameters** (3 lists → one `Repository.IncidentDetail`).
 
@@ -41,7 +49,7 @@ The worked-out pass is in `DECISIONS.md` B6. Order: (1) `ShellState` class for t
 
 B6 blocks: correcting a chapter, a project, a reading, a measure, a question's words, an instruction's words. `renameChapter` and `renameProject` exist with no caller and are deliberately **not** in the removal ledger.
 
-## 4. Rules that get broken
+## 5. Rules that get broken
 
 1. `tools/verify.sh` is the only honest runner (compiles instrumented sources, runs lint).
 2. An issue closes only on device verification: both themes, font scale 2.0, RTL, every state including empty. `DESIGN.md` 16.4.
@@ -50,7 +58,7 @@ B6 blocks: correcting a chapter, a project, a reading, a measure, a question's w
 5. Look at the screen before closing anything.
 6. `tools/seed.sh` drives the restore screen; changing that screen breaks seeding.
 
-## 5. Traps that cost real time (full set: `docs/TRAPS.md`)
+## 6. Traps that cost real time (full set: `docs/TRAPS.md`)
 
 - **Merged nodes**: a `DenseRow`/card testTag assertion passes when the line is absent. **Assert on words.**
 - `performScrollTo` fails on a pinned footer or non-scrolling parent. Drop the scroll.
@@ -63,7 +71,7 @@ B6 blocks: correcting a chapter, a project, a reading, a measure, a question's w
 - Never put a short `timeout` on a device run; it kills mid-suite and uninstalls.
 - The destructive-command hook matches prose. Writing certain verbs into a file is refused. #323, not a reason to weaken it.
 
-## 6. The phone
+## 7. The phone
 
 - Pixel 8, `39151FDJH00506`, Android 17, USB. **The owner's daily driver.** No emulator (D21, D23, B4).
 - Baseline: font scale 1.0, animator 1.0, touch exploration 0, no per-app locale, app theme "Follow the phone". Rule 19 lets these change **only** if the prior value is recorded first and restored exactly.
@@ -80,7 +88,7 @@ Fixture variants:
     tools/device.sh month6 6 walk-home       --situation home_family
     tools/device.sh month6 6 walk-quiet      --quiet
 
-## 7. Commands
+## 8. Commands
 
     python3 tools/checks/run_all.py     # 27 checks, seconds
     tools/verify.sh                     # honest runner, includes lintDebug
@@ -96,7 +104,7 @@ Reading an archive needs no phone:
 
     echo <passphrase> | python3 tools/decrypt/decrypt.py <archive> <folder>
 
-## 8. What is built
+## 9. What is built
 
 - Foundation, four destinations, all section screens: complete but for #182 (blocked).
 - Detail screens: 13 of 20. Milestone 1 (Today) finished. Milestone 2 fully blocked. Milestone 3 blocked on #16/owner. **Milestone 4 is where the work is.**
@@ -104,7 +112,7 @@ Reading an archive needs no phone:
 - Merge as well as replace, with a conflict screen. `Merge` is pure and unit tested.
 - v4 direction adopted; cards raised (`ui/theme/Raise.kt`), dark stays flat.
 
-## 9. Live lists that must not be lost
+## 10. Live lists that must not be lost
 
 **Screens composed rather than drawn** (rule 12: issue + `DESIGN.md` 14 + this file, at the moment of building). Twenty-nine, tracked by label: `gh issue list --label needs-design-review`. Do not maintain a second copy here.
 
@@ -117,7 +125,7 @@ Reading an archive needs no phone:
 
 **Owed on the device:** a screenshot for #359; a document saved with a real photograph (#362, picker opens the owner's library); the unfiled Today card branch.
 
-## 10. Facts a session re-derives if they are not written down
+## 11. Facts a session re-derives if they are not written down
 
 - 63 remote branches survive, all ancestors of `main`, none safe to delete without a ruling. **Never `git branch --merged`** here: squash-merge gives new shas (D144).
 - Guard 2, the pre-compaction state save, has never fired and is unproven. Keep this file current by hand.
