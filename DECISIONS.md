@@ -170,6 +170,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D148 | The third version currency check, which D121 left enabled |
 | D148 | An event writer updates its parent's state in the same transaction |
 | D147 | A form asks one question at a time; correcting a record shows all of it at once |
+| D156 | A project's road says its stage names, and a card shows the one it is at |
 | D155 | A long press is allowed where it names the visible control that does the same thing |
 | D154 | The type ladder is lifted app wide, because the owner said the text is hard to read |
 | D153 | Today has two card sizes, square and full width, and the stored column keeps three |
@@ -3003,6 +3004,28 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **That fix cost two wrong builds in the corner of the card**, and both are worth writing down because neither was visible in the source. A `Box` keeps its minimum constraints to itself, so the card measured square while the column inside it measured to its own text: passing the minimum down is what gives `SpaceBetween` a square to spread across. **But it passes to every child**, so the corner box then filled the card, and `align` says where a box goes rather than how big it is. The chevron landed on the tab in the opposite corner, and after the obvious repair it landed in the middle. The alignment belongs on `wrapContentSize`.
 
 **Revisit if.** The owner asks for a third size, or a card appears whose answer genuinely cannot be told at either.
+
+---
+
+### D156. A project's road says its stage names, and a card shows the one it is at
+
+**Date:** 2026-08-13, overnight. **Decided under rule 10**, working #376 item 5. **Restores grid screen 02 rather than departing from it**, so D142 rather than a new judgment.
+
+**The decision.** The mini road on a project card draws its stage names, and where they do not fit under their own waypoints it shows **the stage the project is at** rather than a list of all of them.
+
+**Why it mattered more than it sounds.** The card drew four dots on a dashed line and nothing else. **An unnamed road is a progress bar**, which is the one thing rule 13 rules out and the exact opposite of what the component is for: 20.1 says a project leads with where it stands, and "In review" is the word somebody repeats on the phone. The grid draws the names on the card and nothing recorded a departure from it, so this was drift rather than a decision.
+
+**The fallback is the part worth writing down.** `LabelsOrList` already measured whether the widest name fits its column, and listed all the names in one line when it did not. On a four stage road at this width that is two wrapped lines of tracked mono in one tone, **which says every stage and says where the project stands nowhere in it**. A card in a list is scanned. So at `MINI` the fallback is the current stage alone, in `ink`, under the road.
+
+**Nothing is hidden by that**, which is the rule 11 question. The full road with every name is on the project's own screen one tap away, and the reader's sentence for the strip already names every stage in order, so the names are not gone for anybody.
+
+**`FULL` is unchanged.** On the project's own screen the whole road is the subject rather than an answer to "where is this now", and listing every name there is right.
+
+**Also on that screen: the subtitle is a count now.** It read "The long processes: applications, appeals, requests. Each one says where it stands, the next date, and the latest word", which is three lines telling somebody who already has three projects what a project is. Rule 20. Grid screen 02 draws a count, a count of things is not a score on the person per rule 13, and **the finished half is left out entirely when there is none** so a first project does not arrive beside a zero.
+
+**Revisit if.** A stage name is long enough that even the current one wraps past two lines on a card, which would mean the fallback needs a third form rather than the road needing fewer stages.
+
+**Not done, and it is the next thing on this surface.** The grid puts "+ Start" at the top beside the title and the app has "Start one" below the list, so starting a project means scrolling past every project. That placement has recorded reasons behind it, D137 and D118 and the FAB clearance, so it wants a decision rather than a move.
 
 ---
 

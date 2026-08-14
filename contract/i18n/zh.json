@@ -1119,7 +1119,7 @@
   "projects.step.undone": "其实还没做",
   "projects.step.up": "往前挪",
   "projects.step_count": "{count, plural, =0 {还没有步骤} other {# 个步骤}}",
-  "projects.subtitle": "漫长的流程：申请、申诉、请求。每一个都会说明目前进展、下一个日期和最新的说法。",
+  "projects.subtitle.counts": "{live, plural, other {# 项进行中}}{finished, plural, =0 {} other { · # 项已结束}}",
   "projects.tab": "事项",
   "projects.waiting_field": "您在等谁",
   "projects.waiting_field.hint": "姓名、办事处，或别人告诉您的说法",

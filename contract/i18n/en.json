@@ -1119,7 +1119,7 @@
   "projects.step.undone": "Not done after all",
   "projects.step.up": "Move it earlier",
   "projects.step_count": "{count, plural, =0 {No steps yet} one {1 step} other {# steps}}",
-  "projects.subtitle": "The long processes: applications, appeals, requests. Each one says where it stands, the next date, and the latest word.",
+  "projects.subtitle.counts": "{live, plural, one {1 under way} other {# under way}}{finished, plural, =0 {} other { · # finished}}",
   "projects.tab": "Projects",
   "projects.waiting_field": "Who you are waiting on",
   "projects.waiting_field.hint": "A name, an office, or just what you were told",

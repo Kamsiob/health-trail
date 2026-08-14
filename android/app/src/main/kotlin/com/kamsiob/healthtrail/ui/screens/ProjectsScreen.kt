@@ -42,6 +42,7 @@ object ProjectTags {
     const val NAME = "projects"
     const val EMPTY = "section_empty_projects"
     const val EMPTY_START = "section_empty_action_projects"
+    const val COUNTS = "projects_counts"
     const val FINISHED_FOLD = "projects_finished_fold"
     fun row(id: String) = "project_$id"
 }
@@ -110,19 +111,34 @@ fun ProjectsScreen(
                     style = HealthTrail.type.displayM,
                     color = colors.ink,
                 )
-                // **The subtitle describes the rows, so it goes when there
-                // are none.** It says what each project answers, which is
-                // nothing a person can act on before the first one exists, and
-                // it opened with the same four words as the empty state's own
-                // lead. Two headings saying "the long processes" one above the
-                // other is the screen repeating itself at the one moment it has
-                // the reader's whole attention.
+                // **The state of the person's own projects, not a definition
+                // of what a project is.** It read "The long processes:
+                // applications, appeals, requests. Each one says where it
+                // stands, the next date, and the latest word", which is three
+                // lines telling somebody who already has three projects what a
+                // project is. Rule 20: the app explaining its own organizing
+                // scheme on the screen.
+                //
+                // **Grid screen 02 draws a count here** and nothing recorded a
+                // departure, so D142 settles it. A count of things is not a
+                // score on the person, per rule 13, and it is the same shape
+                // the notebook's section counts already use: the finished half
+                // is left out entirely when there is none, so a first project
+                // does not arrive beside a zero.
+                //
+                // **Still nothing before the first one.** The empty state
+                // carries its own invitation and a count of none is furniture.
                 if (projects.isNotEmpty()) {
                     Spacer(Modifier.height(Space.xs))
                     Text(
-                        text = strings["projects.subtitle"],
+                        text = strings(
+                            "projects.subtitle.counts",
+                            "live" to projects.count { !it.isFinished },
+                            "finished" to projects.count { it.isFinished },
+                        ),
                         style = HealthTrail.type.bodyM,
                         color = colors.ink2,
+                        modifier = Modifier.testTag(ProjectTags.COUNTS),
                     )
                 }
                 Spacer(Modifier.height(Space.cardGap))
@@ -286,11 +302,23 @@ private fun ProjectRow(
         val stages = card?.stages.orEmpty()
         if (stages.size >= 2) {
             Spacer(Modifier.height(Space.s))
+            // **Named, because an unnamed road is a progress bar.** Four dots
+            // on a dashed line say only how far along something is, which is
+            // the one thing rule 13 rules out and the one thing this component
+            // is not for: a road says *where it stands*, and "In review" is the
+            // word somebody repeats on the phone. Grid screen 02 draws the
+            // stage names on the card and nothing recorded a departure from it,
+            // so D142 settles it.
+            //
+            // **`LabelsOrList` measures rather than guessing**, laying the
+            // longest name out in the label's own style and asking how wide it
+            // actually came out, so a road whose names do not fit under their
+            // waypoints becomes one line instead of four crushed columns.
             RoadStrip(
                 stages = stages.map { RoadStage(name = it.name, reached = it.isReached) },
                 description = roadSentence(project.name, stages, strings),
                 size = RoadSize.MINI,
-                showLabels = false,
+                showLabels = true,
             )
         }
 

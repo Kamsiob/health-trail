@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -95,16 +96,23 @@ class ProjectsScreenTest {
      * one moment it has the reader's whole attention.
      */
     @Test
-    fun theSubtitleIsGoneWhileThereAreNoProjectsAndBackWhenThereAre() {
+    fun theCountIsGoneWhileThereAreNoProjectsAndBackWhenThereAre() {
         show(emptyList())
-        compose.onNodeWithText(strings["projects.subtitle"]).assertDoesNotExist()
+        compose.onNodeWithTag(ProjectTags.COUNTS).assertDoesNotExist()
     }
 
     @Test
-    fun theSubtitleAndTheStartButtonAreBothThereOnceAProjectExists() {
+    fun theCountSaysTheStateOfTheProjectsRatherThanWhatAProjectIs() {
+        // **A fact about this person's own list**, per grid screen 02, which
+        // draws a count here. It used to be three lines saying what a project
+        // is, to somebody who already has one. Rule 20, and D142 settles which
+        // wins because nothing recorded a departure.
+        //
+        // **The finished half is absent when there is none**, so a first
+        // project does not arrive beside a zero.
         show(listOf(aProject))
-
-        compose.onNodeWithText(strings["projects.subtitle"]).assertIsDisplayed()
+        compose.onNodeWithTag(ProjectTags.COUNTS)
+            .assertTextEquals(strings("projects.subtitle.counts", "live" to 1, "finished" to 0))
         compose.onNodeWithTag(ProjectTags.START).assertIsDisplayed()
         // **One start action at a time.** The empty state carries its own, and
         // the two would otherwise both be on screen saying the same thing.

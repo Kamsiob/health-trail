@@ -177,7 +177,12 @@ fun RoadStrip(
         // most. Section 9, and rule 14: the project home draws the same road
         // and had the same defect.
         if (showLabels) {
-            LabelsOrList(stages = stages, current = current, mirrored = mirrored)
+            LabelsOrList(
+                stages = stages,
+                current = current,
+                mirrored = mirrored,
+                size = size,
+            )
         }
     }
 }
@@ -193,7 +198,12 @@ fun RoadStrip(
  * component does not choose.
  */
 @Composable
-private fun LabelsOrList(stages: List<RoadStage>, current: Int, mirrored: Boolean) {
+private fun LabelsOrList(
+    stages: List<RoadStage>,
+    current: Int,
+    mirrored: Boolean,
+    size: RoadSize,
+) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
     val measurer = rememberTextMeasurer()
@@ -255,6 +265,27 @@ private fun LabelsOrList(stages: List<RoadStage>, current: Int, mirrored: Boolea
                     )
                 }
             }
+        } else if (size == RoadSize.MINI) {
+            // **On a card, the one name that answers the question.** The
+            // fallback below lists every stage in one line, in one tone, which
+            // on a four stage road wraps to two lines of tracked mono and says
+            // where the project stands nowhere in it. A card in a list is
+            // scanned: "where is this now" is the whole of what it is being
+            // asked, and 20.1 says a project leads with where it stands.
+            //
+            // **Nothing is hidden by this.** The full road with every name is
+            // on the project's own screen, one tap away, and the reader's
+            // sentence for this strip already names every stage in order. Rule
+            // 11 is about a person not being able to reach what was cut, and
+            // both halves of that are covered.
+            Text(
+                text = Bidi.isolate(stages.getOrNull(current)?.name ?: stages.first().name),
+                style = type.mono,
+                color = colors.ink,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth().padding(top = Space.xs),
+            )
         } else {
             Text(
                 text = stageNamesLine(stages),

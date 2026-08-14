@@ -925,6 +925,12 @@ What carries families through is a complete record: every call with a name, a da
 
 1. **Projects, before the first one.** The empty state says what this place is for and offers the one action.
 2. **Projects, underway.** Project cards, each carrying its mini road and answering where it stands and the next date at a glance. On hold and closed fold away. **The FAB is the screen's filled action, so Start is outlined.**
+
+   **The subtitle is a count of the person's own projects**, "3 under way · 2 finished", and not a definition of what a project is. D156, and the finished half is absent when there is none.
+
+   **The mini road says its stage names**, which is what makes it a road rather than a progress bar. Where they do not fit under their own waypoints the card shows the stage it is at, alone, because a card in a list is scanned and "where is this now" is the whole of what it is being asked.
+
+   **Not built: the grid puts "+ Start" at the top beside the title** and the app has it below the list, so starting a project means scrolling past every project. The placement has D137, D118 and the FAB clearance behind it, so it wants a decision rather than a move.
 3. **Starting one, 1 of 3.** One question per stage. The kind is chips.
 4. **Starting one, 3 of 3, the setup shown.** The template's five defaults previewed before anything exists. **Nothing is applied until Create.** This screen is the template system made visible.
 5. **The long road**, led by where it stands.
@@ -950,7 +956,7 @@ Approved as inventory additions on 2026-08-04, D107. **Each is composed from exi
 
 | Component | What it is | Costume |
 |---|---|---|
-| **Road strip** | The project's stages as a horizontal stretch of the trail, waypoints and dashed rail. **Full** on the project home, **mini** on its card | **Bare.** It is information and does nothing on touch. Stages are edited from setup. Mirrors fully in RTL |
+| **Road strip** | The project's stages as a horizontal stretch of the trail, waypoints and dashed rail. **Full** on the project home, **mini** on its card. **Both say their stage names**, and where the names do not fit under their waypoints the mini one shows the stage it is at and the full one lists them all. D156: an unnamed road is a progress bar, which is what rule 13 rules out | **Bare.** It is information and does nothing on touch. Stages are edited from setup. Mirrors fully in RTL |
 | **Standing card** | Where it stands: an eyebrow, a plain display sentence, the elapsed fact, and optional outlined actions | A grouped surface. Its actions are outlined pills, verbs or dialable numbers. **The sentence itself is bare** |
 | **Date row** | A tabular countdown beside its fact and its source | **A row ending in a chevron**, opening the date's detail. The number is bare, mono, tabular |
 | **Latest word card** | A gold wash band quoting the most recent entry, with attribution and reference line | A row with a chevron, opening the entry it quotes. Gold because the latest word is a trail entry surfaced |

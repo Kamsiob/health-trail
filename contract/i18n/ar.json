@@ -1119,7 +1119,7 @@
   "projects.step.undone": "لم تتم في الواقع",
   "projects.step.up": "نقلها إلى وقت أبكر",
   "projects.step_count": "{count, plural, =0 {لا خطوات} one {خطوة واحدة} two {خطوتان} few {# خطوات} many {# خطوة} other {# خطوة}}",
-  "projects.subtitle": "العمليات الطويلة: الطلبات والاعتراضات والاستفسارات. كل واحدة تقول أين وصل الأمر، والتاريخ القادم، وآخر ما قيل.",
+  "projects.subtitle.counts": "{live, plural, zero {لا مشاريع قيد التنفيذ} one {مشروع واحد قيد التنفيذ} two {مشروعان قيد التنفيذ} few {# مشاريع قيد التنفيذ} many {# مشروعًا قيد التنفيذ} other {# مشروع قيد التنفيذ}}{finished, plural, zero {} one { · مشروع واحد منتهٍ} two { · مشروعان منتهيان} few { · # مشاريع منتهية} many { · # مشروعًا منتهيًا} other { · # مشروع منتهٍ}}",
   "projects.tab": "المعاملات",
   "projects.waiting_field": "من تنتظره",
   "projects.waiting_field.hint": "اسم، أو جهة، أو ما قيل لك",
