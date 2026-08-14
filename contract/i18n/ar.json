@@ -892,6 +892,7 @@
   "progress.by_clinician": "ذكره أحد الأطباء",
   "progress.chart.description": "{name}. {count, plural, zero {لا قراءات} one {قراءة واحدة} two {قراءتان} few {# قراءات} many {# قراءة} other {# قراءة}} من {first} إلى {last}. خط بسيط بلا مقياس وبلا حكم.",
   "progress.correct.measure": "تصحيح الاسم أو الوحدة",
+  "progress.correct.name": "تصحيح الاسم",
   "progress.empty": "لا توجد تسجيلات بعد. كل ما تتابعه سيظهر هنا، بالتواريخ التي أعطيتها.",
   "progress.every": "كل القراءات",
   "progress.heading": "ما تتابعه",

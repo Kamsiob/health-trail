@@ -892,6 +892,7 @@
   "progress.by_clinician": "Stated by a clinician",
   "progress.chart.description": "{name}. {count, plural, one {1 reading} other {# readings}} from {first} to {last}. A plain line with no scale and no judgment.",
   "progress.correct.measure": "Correct the name or unit",
+  "progress.correct.name": "Correct the name",
   "progress.empty": "Nothing recorded yet. Anything you track turns up here, with the dates you gave it.",
   "progress.every": "Every reading",
   "progress.heading": "What you track",

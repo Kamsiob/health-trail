@@ -172,6 +172,33 @@ fun ProgressScreen(
             }
             Spacer(Modifier.height(Space.cardGap))
         }
+        // **Correcting what the measure on screen is called**, #374 and the
+        // last of its six. A measure's name is on every reading of it, on its
+        // card on Today and on this chart's own heading, so a name typed wrong
+        // at setup is typed wrong in four places forever, and "lb" where the
+        // scale says "kg" makes every number under it mean the wrong thing.
+        //
+        // **Directly under the measure it corrects**, which took a look at the
+        // phone to get right. It sat below the group of other measures first,
+        // so a button reading "Correct the name or unit" appeared under the
+        // Weight row while correcting "How she seemed", which is the hero. A
+        // control that names what it does and sits beside something else is
+        // worse than no control. A pill sized to its label, D118.
+        item(key = "correct-measure") {
+            QuietButton(
+                // **A measure written down in words has no unit and never
+                // will**, so the button does not offer to correct one. "How she
+                // seemed" under a control promising a unit is the app not
+                // listening to the answer it already has.
+                label = strings[
+                    if (hero.isText) "progress.correct.name" else "progress.correct.measure",
+                ],
+                onClick = { onCorrectMeasure(hero) },
+                modifier = Modifier.testTag(ProgressTags.CORRECT_MEASURE),
+            )
+            Spacer(Modifier.height(Space.cardGap))
+        }
+
 
         // The others, as a choice rather than as a wall of charts. One chart is
         // the hero; four charts at once is four things competing, which law 1
@@ -197,24 +224,6 @@ fun ProgressScreen(
                 }
                 Spacer(Modifier.height(Space.cardGap))
             }
-        }
-
-        // **Correcting what the measure on screen is called**, #374 and the
-        // last of its six. A measure's name is on every reading of it, on its
-        // card on Today and on this chart's own heading, so a name typed wrong
-        // at setup is typed wrong in four places forever, and "lb" where the
-        // scale says "kg" makes every number under it mean the wrong thing.
-        //
-        // **Under the chart and above the readings**, because it is about the
-        // thing the chart is of, and a pill sized to its label like every other
-        // correction in the app. D118.
-        item(key = "correct-measure") {
-            QuietButton(
-                label = strings["progress.correct.measure"],
-                onClick = { onCorrectMeasure(hero) },
-                modifier = Modifier.testTag(ProgressTags.CORRECT_MEASURE),
-            )
-            Spacer(Modifier.height(Space.cardGap))
         }
 
         // Every reading for what is on screen, folded and counted, because the

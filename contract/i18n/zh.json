@@ -892,6 +892,7 @@
   "progress.by_clinician": "由医护人员告知",
   "progress.chart.description": "{name}。从 {first} 到 {last} 共 {count, plural, other {# 条读数}}。一条简单的线，没有刻度，也不作判断。",
   "progress.correct.measure": "更正名称或单位",
+  "progress.correct.name": "更正名称",
   "progress.empty": "还没有记录。您追踪的内容会出现在这里，并附上您填写的日期。",
   "progress.every": "全部读数",
   "progress.heading": "你在记录什么",
