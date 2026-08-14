@@ -4,21 +4,22 @@ Health Trail by Kamsiob, a local-first care notebook for the family member who i
 
 ---
 
-## Picking up the work? Read three things and stop
+## Picking up the work
 
-1. **`CLAUDE.md`**, which is loaded automatically anyway. Twenty-four rules, one page.
-2. **`HANDOFF.md`**, which is what is true right now. About two and a half thousand words.
-3. **Issue #321**, pinned on GitHub, which is what to do next: `gh issue view 321`.
+1. `CLAUDE.md` (loads itself). 24 rules, one page.
+2. `HANDOFF.md`. Current state, about 1,300 words.
+3. `gh issue view 321`. What to do next.
 
-**That is enough to start**, and it is about five thousand words in total.
+Nothing else to start.
 
-**Everything else is read on demand and never in bulk.** This folder holds more documentation than a session can hold in its head, and reading it front to back spends the context before any work starts. `HANDOFF.md` section 1 has the ladder that says what to open when.
+**Everything else is read on demand, never in bulk.** `HANDOFF.md` section 2 is the ladder.
 
-**Two files have their own rule about how to read them.** **`docs/TRAPS.md` is read one section at a time**, chosen from the table at the top of it by what you are about to do, and never end to end. **`DECISIONS.md` is searched for a D number**, never read through.
+- `docs/TRAPS.md`: one section, from its own table. Never end to end.
+- `DECISIONS.md`: search a D number. Index at the top. Never read through.
+- `DESIGN.md`: one numbered section. Index at the top.
+- `docs/RUN-LOG.md`: history. **Never to orient.**
 
-**Do not read `docs/RUN-LOG.md` to orient.** It is history, it is long, and nothing in it is the current state.
-
-The reading order further down is for **somebody meeting this project for the first time**, not for a session continuing the work.
+The reading order further down is for a human meeting this project for the first time, not a session continuing the work.
 
 ---
 

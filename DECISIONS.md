@@ -10,6 +10,175 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 
 ---
 
+## Index
+
+**Search this file for a D number. Never read it through.** 160 entries, newest first in the body below.
+
+| # | What it decided |
+|---|---|
+| D1 | The first commit is a faithful snapshot of the handover folder |
+| D2 | SSH commit signing configured locally, repository scoped |
+| D3 | The safety guards are written in Python 3 rather than shell with jq |
+| D4 | Subagent definition format verified against current documentation before writing |
+| D5 | The template's section C4 desktop APK export does not apply |
+| D6 | Android only. Part B of the template is out of scope, and the web scaffold stays |
+| D7 | Type labels stand in for GitHub issue types |
+| D8 | Board field set, and the built-in automation that could not be configured |
+| D9 | There is no canonical hosted privacy policy yet |
+| D10 | The repository README carries no continuous integration badge yet |
+| D11 | Tombstone retention window: 730 days |
+| D12 | The change log travels in the export, and the importer renumbers it |
+| D13 | Attachment limits: 25 MB each, a warning at 4 GB total, and no hard ceiling |
+| D14 | The change log is enforced by database triggers rather than by the repository layer |
+| D15 | SDK levels: compile against 37, target 36, minimum 26 |
+| D16 | No Room, and no ORM. Raw SQLite behind androidx.sqlite |
+| D17 | Two lint checks disabled, each with its reason at the point of disabling |
+| D18 | Android 17 platforms carry minor API levels, and the package id is android-37.0 |
+| D19 | Contrast measured, five tokens corrected, and the capture button glyph is no longer white |
+| D20 | The board is run for transparency, not as a simulated scrum team |
+| D21 | The emulator did not come up, so DatabaseTest is written and unrun |
+| D22 | The protocol for screens that were never drawn, and the template library |
+| D23 | A dedicated emulator, and nothing from any other project |
+| D24 | Where the key write happens, and what happens when the key is gone |
+| D25 | Instrumented tests run on the phone. Corrected, the permission does not expire |
+| D26 | Does not exist |
+| D27 | User facing text is loaded from the contract at runtime, not compiled into resources |
+| D28 | Two bugs found by building the screen and looking at it |
+| D29 | The destructive command hook has not been active this whole run |
+| D30 | Functionally correct is not done |
+| D31 | The screenshot theme label is read from the device |
+| D32 | The disclaimer does not tell the person they are responsible |
+| D33 | Folded means a collapsed row, not a collapsed container |
+| D34 | The standing quality bar, and that it is retroactive |
+| D35 | The burden line appears four times, not fourteen |
+| D36 | The picker's grouping lives in the catalog, not in the Kotlin |
+| D37 | A hint is worth more than a heading |
+| D38 | Two defects found only with the keyboard up |
+| D39 | The pinned action footer, found three times before it was named |
+| D40 | The Unfiled tray is a card that appears, not a section that waits |
+| D41 | The suggestion is allowed to find nothing, and a test made it worse first |
+| D42 | A control that does nothing is removed, not labeled |
+| D43 | The reader check is a test, not a pass |
+| D44 | An unbuilt path says why, in words, rather than going quiet |
+| D45 | The scrim has to actually dim |
+| D46 | The typefaces were never bundled, and every review screenshot was in the wrong face |
+| D47 | Arabic on the device found what no check could |
+| D48 | Nine decisions were lost to an edit that silently did nothing |
+| D49 | The guards were never wired, and D29 diagnosed the wrong cause |
+| D56 | One current build stays on the phone, because the owner tests on it |
+| D57 | Another application on the same phone is out of bounds |
+| D58 | What makes a translated language shippable, which is not what #102 said |
+| D59 | The gate says the app is free, and asks for support in the same breath |
+| D60 | The capture button was crowding two of the four destinations |
+| D50 | I ran a blocklisted command, and the reasoning felt sufficient at the time |
+| D51 | The export keeps Argon2id, and Bouncy Castle provides it |
+| D52 | Chinese uses the system face, and looking for that found that Chinese did not work at all |
+| D53 | The screenshot script guarded the wrong thing, and a private notification reached a capture |
+| D54 | TalkBack ran, and the thing it was going to find had already been fixed by a test |
+| D55 | The test the emulator decision rested on did not exist |
+| D61 | The export was never portable, and every test said it was |
+| D62 | A password keyboard is not a mask |
+| D63 | What the digest is allowed to say, and what it is not |
+| D64 | The guard has never once fired through Claude Code, and the session that could prove it is also the session that cannot fix it |
+| D65 | Back from a capture form returns to the sheet, and the third instance of the shortcut defect was caught before it shipped |
+| D66 | Two bytes made a core file invisible to every search, and it produced a wrong conclusion within minutes |
+| D67 | There is no unencrypted export, because making the file portable changed what a plain one is |
+| D68 | The reader pass, and the fourth tool that reported on something it was not looking at |
+| D69 | D48 said where to start an increment and never said where to finish one, so `main` sat thirty six commits behind |
+| D70 | A screen that has never met generated data is a screen with an undiscovered defect in it |
+| D71 | The app has one component, and that is why every screen looks the same |
+| D72 | The status bar is cropped off every capture, because D53 only fixed the loud half |
+| D73 | Three tests had been failing on `main` for a day and the record said the suite was green |
+| D74 | A journey test that shares the suite's subject accumulates state, and the cap is what exposed it |
+| D75 | A screen that says nothing when nothing changed is ambiguous with a screen that is broken |
+| D76 | Design direction v4 is adopted and supersedes the direction the app was built on |
+| D77 | Three statements in the grid file are stale, and this repository is authoritative on all three |
+| D78 | The v3 grid is retired, one copy only, and the concept PDF is stale in its visuals |
+| D79 | A sixth tab hue, `stone`, was added for standing instructions |
+| D80 | Every tab hue needs a text-safe ink variant, because all six fail the small-text floor as drawn |
+| D81 | A bottom action bar never spans the full width on a screen that has the FAB |
+| D82 | Every component not in the v4 inventory is retired |
+| D83 | `contract/DATA-CONTRACT.md` is amended to carry THE ARCHIVE |
+| D84 | D67 stands: every export is encrypted, and THE ARCHIVE was corrected to match |
+| D85 | The dark theme is not converted until its values are re-derived and measured |
+| D86 | When more than one answer is defensible, take the easiest one for the person |
+| D87 | The dark theme moves into ORDER OF WORK step 1, and the dark tab hues are derived here |
+| D88 | The light tab hues are not distinguishable under simulated deuteranopia, and that is the owner's call rather than mine |
+| D89 | The light tab hues are spread across lightness and saturation, and they hold at 11.1 |
+| D90 | The content rules are enforced in the type wherever they can be, not only in the document |
+| D91 | Platform semantics over app strings, wherever the same choice appears |
+| D92 | Two text levels, plus a non-text `ink-3` |
+| D93 | D59 ends: there is no gold outlined button |
+| D94 | The pin is on the entry, not on the trail row |
+| D95 | `pinned_at` has no default on the model, and that is what caught the defect |
+| D96 | Format version 3 carries no reader for versions 1 and 2 |
+| D97 | The payload is framed, and the frame format is part of the published spec |
+| D98 | The archive is named `.zip`, not `.htx` |
+| D99 | One appointment is its prep sheet, and there is no second screen |
+| D100 | The prep questions are grouped by who answers them, and are rows rather than cards |
+| D101 | The calendar hand-off sends the name, the day, and where, and never the notes |
+| D102 | A project leads with its next step, and the controls that describe it sit underneath |
+| D103 | A month review carries no total, and the door to it is the trail's own month heading |
+| D104 | The sixteen project templates gained a category, and it is what the person is trying to do |
+| D105 | A row that must not clip does not count its lines |
+| D106 | The Projects grid and the Today grid are adopted, extending v4 rather than replacing it |
+| D107 | Eleven components are added to the inventory, and the inventory is closed again behind them |
+| D108 | A handler tag is a label, and the single point person model is untouched |
+| D109 | The battle voice is banned everywhere, in code identifiers as well as copy |
+| D110 | The Today layout and the project shapes are record, which amends the data contract |
+| D111 | The grids' open questions are resolved provisionally to the drawn default |
+| D112 | Superseded Today and Projects code is frozen rather than deleted, and the ledger is new |
+| D113 | The date a project screen leads with is the soonest one that has not passed, and no column marks it |
+| D114 | Two checkers were matching prose rather than code, and both were fixed rather than worked around |
+| D115 | A starting hand never contains a card that points at something, and skipping the picker still gets one |
+| D116 | The area count on a project's steps says how many are there, not how many are done, and the difference is the owner's to settle |
+| D117 | Starting a project is two stages rather than three, and the sixteen templates stay |
+| D118 | Keeping a project as a template is a headed section on setup, not a button under the last field |
+| D119 | Today's lead is the hero costume, and the header keeps its tab chip rather than taking a display title |
+| D120 | Today's search door is a button that looks like a field, and it is fixed |
+| D121 | Lint's two version currency checks are off, and Dependabot owns staying current instead |
+| D122 | The digest's first run says what the card is for, and the wording was decided rather than escalated |
+| D123 | The whole row adds a card in the gallery, rather than an outlined Add beside it |
+| D124 | Saving a project as a template twice keeps both, and the library says when each was saved |
+| D125 | The archive keeps its own words for a stored value, rather than borrowing the screen's |
+| D126 | A merge keeps the later version, breaks a tie on the device, and never deletes |
+| D127 | Merge or replace has no default, and the button says which one it will do |
+| D128 | The golden vector's expected pages are regenerated by hand, and its money strings come off the phone |
+| D129 | An export that could not find a file still saves, and says so under "Saved" |
+| D130 | The archive prints a template's own name, in one language, and stops printing two indexes |
+| D131 | The archive formats money itself, and the screens still ask the platform |
+| D132 | Two contract documents disagreed, and the precedence list settled it rather than the owner |
+| D133 | A vector belongs to the contract, and the mapping it pins is held to the schema |
+| D134 | The trail filters by kind, forgets on the way out, and says how much it is hiding |
+| B5 | RESOLVED 2026-08-07. The guard is installed, live, and has refused a real command |
+| B5 | The destructive command guard needs to be installed from user settings, and only the owner can do it. Opened 2026-08-02 |
+| D135 | Removal is reached from the thing itself, and the long press is deleted |
+| D136 | A setting's first days list is a project, and Today points at it |
+| D137 | An in content action is a pill sized to its label, and the way back is the only full width outlined bar |
+| D138 | Sixteen presets is a starting set, so a person can name their own thing to track |
+| D139 | A decision about the code lives next to the code, not in a list |
+| D140 | A verification step asserts something positive, or it is not a step |
+| D141 | Version one ships English. The other three follow a native speaker |
+| D142 | The grid files are the authority on measurement, and the built screens do not match them |
+| D143 | A dated record keeps its stale pointers, and a later session must not fix them |
+| D144 | Branch cleanup, and why `git branch --merged` is the wrong instrument here |
+| D152 | The removal ledger grows a second table, for a frozen symbol inside a live file |
+| D151 | A screen where you write something down is inside the section, and wears its tab |
+| D150 | A restored notebook is on a new phone, and the phone says so |
+| D149 | Mono never touches a date, and the type ladder's own row said otherwise |
+| D145 | A care thread can be started from scratch, because fourteen situations is a starting set |
+| D148 | The third version currency check, which D121 left enabled |
+| D148 | An event writer updates its parent's state in the same transaction |
+| D147 | A form asks one question at a time; correcting a record shows all of it at once |
+| B6 | `NotebookShell` has reached the JVM's 64KB method limit. BLOCKED on an extraction pass |
+| B1 | Commit signing. Resolved 2026-07-31 |
+| B2 | Board automations. Resolved by doing it a different way |
+| B3 | Hosted privacy policy. Resolved, then corrected |
+| B4 | The emulator. Resolved by dropping it, 2026-07-31 |
+| D146 | The welcome is remembered by the phone as well as by the notebook |
+
+---
+
 ## 2026-07-31
 
 ### D1. The first commit is a faithful snapshot of the handover folder

@@ -30,6 +30,38 @@ Two things this direction does not override and cannot. `contract/DATA-CONTRACT.
 
 ---
 
+## Index
+
+**Read one numbered section. Never read this file through.**
+
+| Section | What it covers |
+|---|---|
+| 1 | The identity |
+| 2 | The five laws |
+| 3 | Three corrections to the grid file |
+| 4 | Color |
+| 5 | Type |
+| 6 | Shape and rhythm |
+| 7 | The component inventory |
+| 8 | The FAB correction |
+| 9 | The interaction grammar |
+| 10 | Motion |
+| 11 | Voice |
+| 12 | Accessibility floor |
+| 13 | How to design a screen the grid does not show |
+| 14 | The undrawn-screen map |
+| 15 | Polish, added as you go |
+| 16 | Verifying against this direction |
+| 17 | Banned, because they are current AI-design tells |
+| 18 | What survived the v4 adoption, and what did not |
+| 19 | Keeping this document true |
+| 20 | Projects |
+| 21 | Today |
+| 22 | The voice rule these two grids make global |
+| 23 | Verifying the two surfaces |
+
+---
+
 ## 1. The identity
 
 **A field notebook.** The binder a family actually keeps, with colored index tabs, a trail running through it, and a pen always in reach. Paper, ink, tabs, waypoints.
