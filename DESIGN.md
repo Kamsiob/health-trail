@@ -512,6 +512,12 @@ Two spring personalities and three durations.
 
 **Reduced motion, when the system setting is on**, and this rule stands unchanged from the previous direction: every spring becomes an instant state change, the trail draw becomes an immediate render, and the only remaining transition is a 100ms opacity fade. **Verify by actually enabling the setting, not by reading the code.**
 
+**One continuous motion exists, and it is the only one.** A card being arranged on Today tilts by under a degree, every third card out of phase with its neighbours so a grid reads as loose rather than as one object shaking. **It is the phone's own idiom and it is borrowed on purpose**: the home screen somebody already owns is the only frame of reference anybody brings to a grid of cards, and holding a widget is how arranging starts there. D153.
+
+**Its degrees come from the tokens like everything else**, so reduced motion sets them to zero and the cards sit still. **The mode is not diminished by that**: the remove marks and the worded move actions carry it, and the tilt was always the shortcut rather than the information. **The lift on the card in the hand survives reduced motion**, because which card the finger has is information.
+
+**The animation exists only while the mode does.** An infinite transition composed unconditionally would run a frame loop on the front door forever, multiplied by every card, to render a rotation of zero.
+
 **Motion carries meaning here or it does not ship.** Identical fade-ins applied to everything read as generated and are banned in section 17. Every spec comes from the tokens through `LocalMotion`, **never built inline**, because a spec built inline is one the reduced motion setting cannot reach.
 
 ---
@@ -1042,7 +1048,13 @@ Every card declares **one query** over the same single database. Queries run whe
 2. **Today, year three, made his own.** A chart promoted to lead, a project's date added, the digest demoted to a wide field card.
 3. **The morning of an appointment.** Same layout as 2, different data. **Data moves; cards never move themselves.**
 4. **Back after four months.** The digest takes the return voice regardless of which card holds the lead.
-5. **Editing Today.** Entered by the **visible Edit button**; touch and hold is a shortcut, never the only path. **A card carries a remove dot and a drag handle and nothing else**, and the card itself opens its options. Inline, all of it was a wall: three chips and four named actions on every card is about a hundred and forty controls on a twenty card Today, at one weight, which is rule 15's uniform weight exactly. **Done saves; nothing saves behind your back.**
+5. **Arranging Today.** Entered by the **visible Arrange button** or by touching and holding any card, including the lead. The gesture is the shortcut and the button is the path a reader and switch access take, which is what law 2 requires and what D155 lets the dead-gesture check allow.
+
+   **It is the phone's own arrangement mode, deliberately.** The cards tilt, **the card itself is what a finger carries** rather than a handle, the others move aside to make room, and back leaves and keeps the arrangement. Nobody grabs a grip to move an icon on the home screen they already own, and that home screen is the only frame of reference anybody brings here.
+
+   **A card carries a remove mark and nothing else.** The word "Options" under each one is gone: five cards carried five copies of it under five different answers, which is the app explaining its own mechanics on the screen rather than absorbing them, and rule 20 says the complexity lives in the code. The screen's hint says it once, at the top. Inline, all of it was a wall: three chips and four named actions on every card is about a hundred and forty controls on a twenty card Today, at one weight, which is rule 15's uniform weight exactly.
+
+   **Done saves, back saves, Cancel discards.** Nothing saves behind your back except leaving the way a phone leaves, which is what back means to somebody who has arranged a home screen.
 6. **Adding a card.** A sheet grouped by section in binder order, each entry previewing its small size **with real current data**. The situation's suggestions first, as a group of their own at the top, and a card is in one group only. **The whole row adds the card**, D123: rule 23 takes the easier target, and a full width row is one a thumb finds in a corridor. **The preview wraps**, per D105, because it is the thing being read to choose.
 7. **One card's options.** Opened from the card in edit mode. Size chips, the source picker where the card takes one, Make this the lead, **Move up and Move down as the accessible reorder path**, and taking it off Today, which says in words that nothing written down is removed. **One sheet holds a card's whole life**, and law 3 is why it is one sheet: it asks one question, which is what this card should be. **Nothing here saves**; its Done closes the sheet and Today's Done is what writes.
 8. **Largest font size.** The field reflows to one column at full width, nothing clipped, **layout order preserved exactly**.

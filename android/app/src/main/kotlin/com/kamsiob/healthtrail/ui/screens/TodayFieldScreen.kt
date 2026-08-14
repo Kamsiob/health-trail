@@ -111,7 +111,6 @@ object TodayFieldTags {
     fun who(id: String) = "today-who-$id"
 
     /** The grip that carries a card, in edit mode. */
-    fun drag(id: String) = "today-drag-$id"
 }
 
 /**
@@ -916,31 +915,26 @@ private fun CardFor(
         // card in edit mode" means and what makes this one target rather than
         // two. The remove dot is the one shortcut on the face, in the corner
         // where the chevron sits when the card is a door.
-        if (editing) {
-            // **A label, not a link.** The whole card is the target here, so
-            // putting the action color on one word would say press this word,
-            // which is not where the tap goes. Law 2 bans bare text links
-            // outright for exactly that reason, and this is quiet type saying
-            // what the card now opens.
-            //
-            // **The grip is gone and the card is the grip.** It was a 48dp
-            // target in the corner of a card that is itself a target, which is
-            // the opposite of the phone: nobody grabs a handle to move an icon.
-            // Nothing was lost by it going. Move up and move down in the
-            // options sheet are still the reorder path that works one handed,
-            // with a reader on, and with switch access, and 23.2 is why that
-            // path rather than the drag is the one that must exist.
-            Text(
-                text = strings["today.edit.options"],
-                style = HealthTrail.type.mono,
-                color = HealthTrail.colors.ink2,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .padding(top = Space.s)
-                    .testTag(TodayFieldTags.drag(card.id)),
-            )
-        }
+        // **The word "Options" used to sit under every card here and it is
+        // gone.** Seen on the phone: five cards being arranged carried five
+        // copies of the same word, in mono, under five different answers, which
+        // is the app explaining its own mechanics on the screen rather than
+        // absorbing them. Rule 20, and the owner's note that arranging is
+        // cluttered.
+        //
+        // **Nothing was lost.** The screen's own hint says "Tap one for its
+        // options" once, at the top, where somebody entering the mode reads it.
+        // A reader is told the same thing on each card by [openLabel], which
+        // says what the tap does and is a better sentence than a loose noun.
+        // The remove mark in the corner is the visible affordance, and it is
+        // the one a phone shows.
+        //
+        // **The grip went with it.** It was a 48dp target in the corner of a
+        // card that is itself a target, which is the opposite of the phone:
+        // nobody grabs a handle to move an icon. Move up and move down in the
+        // options sheet are still the reorder path that works one handed, with
+        // a reader on, and with switch access, and 23.2 is why that path rather
+        // than the drag is the one that must exist.
     }
 }
 

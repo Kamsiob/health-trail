@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -1089,9 +1090,19 @@ class TodayFieldScreenTest {
         show(layout)
         compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
 
+        // **The remove mark, which is the visible affordance a phone shows.**
+        // This used to assert the word "Options" under every card. That word is
+        // gone: five cards carried five copies of it under five different
+        // answers, which is the app explaining its own mechanics on the screen.
+        // The screen's hint says it once at the top, and a reader hears what the
+        // tap does from the card's own open label rather than from a loose noun.
+        val strings = Strings.load(context)
         for (card in layout.field) {
-            compose.onNodeWithTag(TodayFieldTags.drag(card.id), useUnmergedTree = true)
-                .assertIsDisplayed()
+            val name = spokenByCard(card.id).substringBefore(" · ")
+            compose.onNodeWithContentDescription(
+                strings("today.edit.remove", "name" to name),
+                useUnmergedTree = true,
+            ).assertIsDisplayed()
         }
         // **There is deliberately no assertion here that the grip is gone.**
         // The obvious one, that nothing is described as a grip, would have

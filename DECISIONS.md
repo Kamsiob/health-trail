@@ -2992,6 +2992,10 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **The schema keeps `tall`, deliberately.** Rule 3 fixes the schema by `contract/DATA-CONTRACT.md` and changing it needs the owner, so the `CHECK` constraint is untouched and every row written before tonight still loads. `CardSize.of` maps it to full width, which is what it always looked like, and the size chips light "Full width" for it rather than none. **A migration would have been the wrong answer twice**: it needs the owner, and it would have rewritten rows in somebody's archive to fix a menu.
 
+**Square alone was not enough, and only the phone said so.** The first build put the answer in the top third of the square and left two thirds empty white, which is rule 11's blank area on the most looked at surface in the app. **The tab holds the top and the answer falls to the bottom** now, which is what a widget does and what makes a row of squares line its answers up along one baseline. Centering the block instead would put three cards' numbers at three heights, depending on how many lines each label ran to.
+
+**That fix cost two wrong builds in the corner of the card**, and both are worth writing down because neither was visible in the source. A `Box` keeps its minimum constraints to itself, so the card measured square while the column inside it measured to its own text: passing the minimum down is what gives `SpaceBetween` a square to spread across. **But it passes to every child**, so the corner box then filled the card, and `align` says where a box goes rather than how big it is. The chevron landed on the tab in the opposite corner, and after the obvious repair it landed in the middle. The alignment belongs on `wrapContentSize`.
+
 **Revisit if.** The owner asks for a third size, or a card appears whose answer genuinely cannot be told at either.
 
 ---

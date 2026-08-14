@@ -1380,7 +1380,6 @@
   "today.edit.hint": "长按卡片即可移动。点击卡片查看选项。返回会保留当前布局。",
   "today.edit.lead": "把{name}放到最上面",
   "today.edit.lead.short": "置顶",
-  "today.edit.options": "选项",
   "today.edit.remove": "移除{name}",
   "today.edit.remove.short": "移除",
   "today.edit.size.small": "方形",

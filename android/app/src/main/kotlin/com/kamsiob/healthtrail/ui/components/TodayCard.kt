@@ -1,11 +1,14 @@
 package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -232,6 +235,16 @@ fun TodayCard(
     val minHeight: Dp = 96.dp
 
     Box(
+        // **The square has to reach the content or it is just a tall box.**
+        // A `Box` keeps its minimum constraints to itself by default, so the
+        // card measured square and the column inside it measured to its own
+        // text and sat at the top, which is exactly the two thirds of empty
+        // white this was meant to fix. Passing the minimum down is what lets
+        // `SpaceBetween` below have a square to spread across.
+        //
+        // **The corner is unaffected**, because it aligns to the top end rather
+        // than filling anything.
+        propagateMinConstraints = true,
         modifier = modifier
             .fillMaxWidth()
             .then(if (size == CardSize.SMALL) Modifier.atLeastSquare() else Modifier)
@@ -256,51 +269,76 @@ fun TodayCard(
             // says and what pressing it does in one stop.
             .semantics { contentDescription = description },
     ) {
-        Column(modifier = Modifier.padding(Space.sm)) {
-            Column(
-                // **The answer is silenced, not the card.** 21.2: a card that
-                // announced its tab, its number, its line and its chevron as
-                // four stops would make somebody listen to four things to learn
-                // one, and the caller has already composed those four into the
-                // sentence above. Clearing the answer rather than the whole
-                // card is what leaves room for [action] to be reachable.
-                //
-                // **Given up in edit mode**, and that is not a preference: the
-                // Move up, Move down and Remove controls live in [content], and
-                // clearing it would take the accessible reorder path 21.6
-                // exists to provide away.
-                modifier = if (speaksAsOneNode) {
-                    Modifier.clearAndSetSemantics { }
-                } else {
-                    Modifier
-                },
-            ) {
-                Text(
-                    text = tab,
-                    style = type.mono,
-                    color = hue.ink,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        // **The chevron's room, kept clear.** The tab had no
-                        // width limit and the chevron floats in the corner over
-                        // the top of it, so a card naming its source, "Project ·
-                        // Appeal the level of care assessment", ran its own
-                        // words underneath the chevron and ellipsized behind it.
-                        // Seen on the phone and invisible in the code, because
-                        // nothing collides until the text is long enough.
-                        .padding(end = if (corner == null) CHEVRON_ROOM else CORNER_ROOM)
-                        .clip(Radius.sourceTab)
-                        .background(hue.wash)
-                        .padding(horizontal = Space.s, vertical = 2.dp),
-                )
-                Column(modifier = Modifier.padding(top = Space.s)) {
-                    content()
-                }
+        // **Silenced in one place rather than two.** The tab and the answer are
+        // separate children now, so that a square can push them apart, and both
+        // have to be out of the reader's way for the same reason as before: the
+        // caller has already composed them into one sentence on the card's own
+        // node, and a card that announced its tab, its number, its line and its
+        // chevron as four stops would make somebody listen to four things to
+        // learn one. [action] stays outside the silence, because a control
+        // inside it is a control no reader can reach.
+        val silence = if (speaksAsOneNode) Modifier.clearAndSetSemantics { } else Modifier
+
+        Column(
+            modifier = Modifier.padding(Space.sm),
+            // **A square card fills its square**, which is what a widget does
+            // on the phone somebody already owns and what the first build of
+            // this did not do. "6 / on the list now" sat in the top third of a
+            // square and two thirds of the card was empty white, which is rule
+            // 11's blank area on the most looked at surface in the app.
+            //
+            // **The eyebrow stays at the top and the answer falls to the
+            // bottom**, so a row of squares lines its answers up along one
+            // baseline and the eye reads across them. Centering the block
+            // instead would put three cards' numbers at three heights,
+            // depending on how many lines each label ran to.
+            //
+            // **Full width is unchanged**, because there it is the content that
+            // sets the height rather than the other way round, and spreading a
+            // wide card's two lines apart would open a gap in the middle for
+            // no reason.
+            verticalArrangement = if (size == CardSize.SMALL) {
+                Arrangement.SpaceBetween
+            } else {
+                Arrangement.Top
+            },
+        ) {
+            Text(
+                text = tab,
+                style = type.mono,
+                color = hue.ink,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = silence
+                    // **The chevron's room, kept clear.** The tab had no
+                    // width limit and the chevron floats in the corner over
+                    // the top of it, so a card naming its source, "Project ·
+                    // Appeal the level of care assessment", ran its own
+                    // words underneath the chevron and ellipsized behind it.
+                    // Seen on the phone and invisible in the code, because
+                    // nothing collides until the text is long enough.
+                    .padding(end = if (corner == null) CHEVRON_ROOM else CORNER_ROOM)
+                    .clip(Radius.sourceTab)
+                    .background(hue.wash)
+                    .padding(horizontal = Space.s, vertical = 2.dp),
+            )
+            Column(modifier = silence.padding(top = Space.s)) {
+                content()
             }
             action?.invoke()
         }
-        Box(modifier = Modifier.align(Alignment.TopEnd)) {
+        // **`wrapContentSize` because the card now passes its minimum down.**
+        // Without it this box inherits the card's full width, so the chevron
+        // aligns to the start of a full width box and lands on top of the tab
+        // in the opposite corner from where it belongs. Seen on the phone one
+        // screenshot after the square started filling itself, and invisible in
+        // the code: `align` says where the box goes, not how big it is.
+        // The alignment belongs on `wrapContentSize` rather than on `align`:
+        // the card passes its minimum down, so this box is full size whatever
+        // `align` says, and only `wrapContentSize` decides where the drawing
+        // inside it sits. With the default it centered, which put the chevron
+        // in the middle of the card.
+        Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
             corner?.invoke() ?: Chevron(modifier = Modifier.padding(Space.s))
         }
     }

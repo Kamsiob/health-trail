@@ -11,9 +11,10 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 ## 1. State
 
 - Tree clean, everything on `origin/main`. Verify: `git status --porcelain`.
-- **703 instrumented tests, 0 failures**, 2026-08-14. Plus 27 repo checks, 218 unit tests, lint. Nothing owed.
+- **704 instrumented tests, 0 failures**, 2026-08-13 overnight. Plus 28 repo checks, 218 unit tests, lint.
 - CI green at tip. Check after each push: `gh run list --branch main --limit 3`.
-- Phone at baseline, can be unplugged. Holds current build + month6 fixture.
+- Phone at baseline and **can be unplugged**: font scale 1.0, animator 1.0, no reader, night mode auto, all four read back after being changed. Holds the current build and the month6 fixture.
+- **Looked at on the phone**, not only tested: Today at scale 1.0 and 2.0, light. Screenshots in `docs/screenshots/today-*`.
 
 ## 2. Reading ladder
 
@@ -44,7 +45,11 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 5. **The projects overhaul has not happened.** Not started. #345 is the fidelity pass and is not the overhaul.
 6. **No data entry screen is boring or lazily designed.** Not started.
 
-**2, 5 and 6 are open, and 1, 3 and 4 are built but not yet looked at on the phone.** Rule 21, and the type lift especially: more text in the same width is `DESIGN.md` 16.2's overflow audit over the whole app, retroactive per rule 14.
+**1, 3 and 4 are built and were looked at on the phone**, at scale 1.0 and 2.0. **2 is partly done**: the sizes and the gesture are most of it, and what is left is the clutter inside arrange mode. **5 and 6 are not started and are the next work.**
+
+**What the phone found and the tests could not.** The square was right and still wrong: the answer sat in the top third and two thirds was empty white, which is rule 11's blank area. The tab holds the top and the answer falls to the bottom now. **The chevron then landed in the middle of the card, and then in the wrong corner**, over two builds, because `align` says where a box goes and not how big it is. Neither was visible in the code.
+
+**Still owed on Today, and it is the owner's to weigh.** At font scale 2.0 the capture button covers the words under it: "Levothyroxine · 50 mcg, morn" runs under the FAB. The list has clearance at its end, so this is the button floating over mid content rather than a missing inset, and it predates the type lift. Moving the FAB or insetting every card is a decision rather than a repair.
 
 **#375** was the previous direction and #376 supersedes it as the live list. Its four asks are not withdrawn.
 
