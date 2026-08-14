@@ -149,6 +149,20 @@ internal class ShellState {
     var archivingPerson by mutableStateOf<Pair<String, Boolean>?>(null)
 
     /**
+     * The standing instruction whose own words are being corrected, and what to
+     * write. #374, and the fourth of the six.
+     */
+    var correctingInstruction by mutableStateOf<Repository.StandingInstruction?>(null)
+    var savingInstructionWords by mutableStateOf<Triple<String, String, String>?>(null)
+
+    /**
+     * The question whose own words are being corrected, and what to write.
+     * #374, and the third of the six.
+     */
+    var correctingQuestion by mutableStateOf<Repository.Question?>(null)
+    var savingQuestionText by mutableStateOf<Pair<String, String>?>(null)
+
+    /**
      * The chapter being renamed, and what to write. #374.
      *
      * **`renameChapter` sat in the repository with no caller** from the day the

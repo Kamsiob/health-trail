@@ -109,6 +109,14 @@ fun AddThreadScreen(
      * that `NotebookShell` had no room for. It has room now.
      */
     initialName: String? = null,
+    /**
+     * Whether the field is one line.
+     *
+     * **False where the thing being named is a sentence rather than a name.** A
+     * question's own words are what somebody reads out in an appointment, and
+     * they do not fit on one line at any font size worth using. #374.
+     */
+    singleLine: Boolean = true,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -148,6 +156,7 @@ fun AddThreadScreen(
                     value = name,
                     onValueChange = { name = it },
                     hint = hintKey?.let { strings[it] },
+                    singleLine = singleLine,
                     fieldTestTag = AddThreadTags.NAME,
                 )
 

@@ -39,6 +39,7 @@ object AcknowledgeTags {
     const val FIELD = "acknowledge_field"
     const val SAVE = "acknowledge_save"
     const val CANCEL = "acknowledge_cancel"
+    const val CORRECT = "acknowledge_correct"
     const val REMOVE = "acknowledge_remove"
 }
 
@@ -71,6 +72,14 @@ fun AcknowledgeSheet(
      * path a sighted person cannot find and a thumb can hit by accident.
      */
     onRemove: () -> Unit,
+    /**
+     * Opens the screen that corrects the instruction's own words. #374.
+     *
+     * **The wording is the instruction.** It is quoted back to staff and it is
+     * printed on what this app hands to other people, and until now it could be
+     * removed but not fixed.
+     */
+    onCorrect: () -> Unit = {},
     onDismiss: () -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -161,7 +170,17 @@ fun AcknowledgeSheet(
             // same costume a thumb's width apart. Removal is a pill sized to
             // its label everywhere in the app now, on a screen and in a sheet,
             // and the gap above it says it does not belong to the pair.
+            // **Correcting the words above removing them**, per rule 15 and
+            // the order every other correctable record uses: fixing what it
+            // says is the errand somebody arrives with.
             Spacer(Modifier.height(Space.l))
+            QuietButton(
+                label = strings["instructions.correct"],
+                onClick = onCorrect,
+                modifier = Modifier.testTag(AcknowledgeTags.CORRECT),
+            )
+
+            Spacer(Modifier.height(Space.s))
             QuietButton(
                 label = strings["remove.action"],
                 onClick = onRemove,

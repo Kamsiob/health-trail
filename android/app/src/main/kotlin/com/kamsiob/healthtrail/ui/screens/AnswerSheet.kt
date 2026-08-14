@@ -41,6 +41,7 @@ object AnswerTags {
     const val CANCEL = "answer_cancel"
     const val ASKED = "answer_asked"
     const val ASKED_AT = "answer_asked_at"
+    const val CORRECT = "answer_correct"
     const val REMOVE = "answer_remove"
 }
 
@@ -81,6 +82,16 @@ fun AnswerSheet(
     onMarkAsked: () -> Unit,
     /** Taking the question off the list, per #218. Opens the confirmation. */
     onRemove: () -> Unit,
+    /**
+     * Opens the screen that corrects the question's own words. #374.
+     *
+     * **A question is typed in a corridor and read out in an appointment.** The
+     * words matter, and the moment somebody writes them down is the worst
+     * moment to get them right. Until now this was the one record on this sheet
+     * that could be removed but not fixed, which is the shape rule 13 and every
+     * audit of this app have both objected to.
+     */
+    onCorrect: () -> Unit = {},
     onDismiss: () -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -196,6 +207,17 @@ fun AnswerSheet(
                 modifier = Modifier.fillMaxWidth().testTag(AnswerTags.CANCEL),
             )
 
+            // **Correcting the words sits above removing them**, per rule 15
+            // and the same order the person's screen uses: fixing a typo is the
+            // errand somebody actually arrives with, and taking the question
+            // away is the rare one.
+            Spacer(Modifier.height(Space.l))
+            QuietButton(
+                label = strings["ask.correct"],
+                onClick = onCorrect,
+                modifier = Modifier.testTag(AnswerTags.CORRECT),
+            )
+
             // **Sized to its label and set apart**, which was wrong first and
             // was caught by looking at the sheet rather than at the code.
             // Drawn full width it was a third identical bar under Cancel, so
@@ -203,7 +225,7 @@ fun AnswerSheet(
             // same costume a thumb's width apart. Removal is a pill sized to
             // its label everywhere in the app now, on a screen and in a sheet,
             // and the gap above it says it does not belong to the pair.
-            Spacer(Modifier.height(Space.l))
+            Spacer(Modifier.height(Space.s))
             QuietButton(
                 label = strings["remove.action"],
                 onClick = onRemove,

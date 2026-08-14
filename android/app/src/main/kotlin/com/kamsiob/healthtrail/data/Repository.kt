@@ -321,6 +321,119 @@ class Repository private constructor(
         )
     }
 
+    /**
+     * Corrects a question's own words. #374.
+     *
+     * **A question is typed in a corridor and read out in an appointment**, so
+     * the words matter and the moment they are written is the worst moment to
+     * get them right. It could not be corrected at all until now.
+     *
+     * **The change log is the schema's job**, not this function's:
+     * `trg_question_update` writes the row, which is what keeps rule 3's "every
+     * write appends to the change log in the same transaction" true whether or
+     * not a writer remembers.
+     */
+    suspend fun updateQuestionText(questionId: String, text: String) =
+        withContext(Dispatchers.IO) {
+            db().database.write(
+                "UPDATE question SET text = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(text.trim(), System.currentTimeMillis(), questionId),
+            )
+        }
+
+    /**
+     * Corrects a standing instruction's own words. #374.
+     *
+     * **The wording is the instruction**, and it is quoted back to staff and
+     * printed on what this app hands to other people. Its name is what the list
+     * calls it, so both are correctable and both are written together: two
+     * round trips would let one land and the other fail.
+     */
+    suspend fun updateInstructionWords(instructionId: String, name: String, wording: String) =
+        withContext(Dispatchers.IO) {
+            db().database.write(
+                "UPDATE standing_instruction SET name = ?, wording = ?, " +
+                    "updated_at = ?, rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(
+                    name.trim(),
+                    wording.trim(),
+                    System.currentTimeMillis(),
+                    instructionId,
+                ),
+            )
+        }
+
+    /**
+     * Corrects a reading: its value, its unit, when it happened and its note.
+     * #374.
+     *
+     * **A reading is typed on a phone one handed while holding something
+     * else**, which is how 138.8 becomes 1388, and it could not be corrected at
+     * all. Rule 17 says a date is editable forever from the entry itself, and
+     * this is the writer that makes that true for a measurement.
+     *
+     * **Number and text are both passed and both may be null**, because a
+     * measure is continuous or observational and a reading carries whichever
+     * its measure is for. Passing both as null is not an error here: the caller
+     * decides what a reading with nothing in it means, and refusing it in the
+     * writer would be this layer making a screen's decision.
+     *
+     * **Every date column moves together.** `occurred_edtf`, its zone and the
+     * resolved range are one fact, and writing the text without the range is
+     * how a corrected date sorts to where the old one was.
+     */
+    suspend fun updateReading(
+        readingId: String,
+        number: Double?,
+        text: String?,
+        unit: String?,
+        occurred: Edtf.Date,
+        note: String?,
+    ) = withContext(Dispatchers.IO) {
+        val dates = dateColumns("occurred", occurred)
+        db().database.write(
+            "UPDATE measurement SET value_number = ?, value_text = ?, unit = ?, " +
+                "note = ?, occurred_edtf = ?, occurred_zone = ?, occurred_start = ?, " +
+                "occurred_end = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf(
+                number,
+                text?.trim()?.takeIf { it.isNotEmpty() },
+                unit?.trim()?.takeIf { it.isNotEmpty() },
+                note?.trim()?.takeIf { it.isNotEmpty() },
+                dates["occurred_edtf"],
+                dates["occurred_zone"],
+                dates["occurred_start"],
+                dates["occurred_end"],
+                System.currentTimeMillis(),
+                readingId,
+            ),
+        )
+    }
+
+    /**
+     * Corrects what a measure is called and the unit it is kept in. #374.
+     *
+     * **The unit is nullable on purpose**, because a measure can be a text one:
+     * "how she seemed" has no unit and never will, and writing an empty string
+     * there would make the column say something the record does not.
+     *
+     * **`preset_id` and `style` are untouched.** A measure taken from a preset
+     * stays taken from it; renaming is not adopting.
+     */
+    suspend fun updateMeasure(measureId: String, name: String, unit: String?) =
+        withContext(Dispatchers.IO) {
+            db().database.write(
+                "UPDATE measure SET name = ?, unit = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE id = ?",
+                arrayOf<Any?>(
+                    name.trim(),
+                    unit?.trim()?.takeIf { it.isNotEmpty() },
+                    System.currentTimeMillis(),
+                    measureId,
+                ),
+            )
+        }
+
     suspend fun createChapter(subjectId: String, name: String): String = insert(
         "chapter",
         mapOf(

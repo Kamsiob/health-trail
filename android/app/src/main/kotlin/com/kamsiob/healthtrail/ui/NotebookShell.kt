@@ -486,6 +486,8 @@ fun NotebookShell(
         // #374, and both of these are surfaces #373 made room for.
         BackHandler(enabled = renamingChapter != null) { renamingChapter = null }
         BackHandler(enabled = renamingProject != null) { renamingProject = null }
+        BackHandler(enabled = correctingQuestion != null) { correctingQuestion = null }
+        BackHandler(enabled = correctingInstruction != null) { correctingInstruction = null }
         BackHandler(enabled = openDocument != null) { openDocument = null }
         BackHandler(enabled = openBill != null) { openBill = null }
         BackHandler(enabled = conflictsOpen) { conflictsOpen = false; markConflictsSeen = true }
@@ -1559,6 +1561,10 @@ fun NotebookShell(
                         )
                         acknowledging = null
                     },
+                    onCorrect = {
+                        correctingInstruction = toAcknowledge
+                        acknowledging = null
+                    },
                     onDismiss = { acknowledging = null },
                 )
             }
@@ -1594,8 +1600,79 @@ fun NotebookShell(
                         )
                         answering = null
                     },
+                    onCorrect = {
+                        correctingQuestion = toAnswer
+                        answering = null
+                    },
                     onDismiss = { answering = null },
                 )
+            }
+
+            // **Correcting a question's own words**, #374, and a surface #373
+            // made room for. The same one question screen the renames use, with
+            // the field allowed more than one line because a question is a
+            // sentence somebody reads out rather than a name.
+            correctingQuestion?.let { question ->
+                AddThreadScreen(
+                    onStart = { words ->
+                        savingQuestionText = question.id to words
+                        correctingQuestion = null
+                    },
+                    onCancel = { correctingQuestion = null },
+                    titleKey = "ask.correct.title",
+                    labelKey = "ask.correct.field",
+                    hintKey = null,
+                    saveKey = "ask.correct.save",
+                    leadKey = "ask.correct.lead",
+                    section = Repository.Section.ASK_NEXT_TIME,
+                    initialName = question.text,
+                    singleLine = false,
+                )
+            }
+
+            // **Correcting a standing instruction's own words**, #374. Its
+            // name and its wording go together in one write: two round trips
+            // would let one land and the other fail, and a list calling it one
+            // thing while the quote says another is worse than either alone.
+            correctingInstruction?.let { instruction ->
+                AddThreadScreen(
+                    onStart = { words ->
+                        savingInstructionWords =
+                            Triple(instruction.id, instruction.name, words)
+                        correctingInstruction = null
+                    },
+                    onCancel = { correctingInstruction = null },
+                    titleKey = "instructions.correct.title",
+                    labelKey = "instructions.correct.field",
+                    hintKey = null,
+                    saveKey = "instructions.correct",
+                    leadKey = "instructions.correct.lead",
+                    section = Repository.Section.STANDING_INSTRUCTIONS,
+                    initialName = instruction.wording,
+                    singleLine = false,
+                )
+            }
+
+            savingInstructionWords?.let { correction ->
+                LaunchedEffect(correction) {
+                    // bidi-ok: on its way to the database.
+                    repository.updateInstructionWords(
+                        correction.first,
+                        correction.second,
+                        correction.third,
+                    )
+                    savingInstructionWords = null
+                    revision += 1
+                }
+            }
+
+            savingQuestionText?.let { correction ->
+                LaunchedEffect(correction) {
+                    // bidi-ok: on its way to the database.
+                    repository.updateQuestionText(correction.first, correction.second)
+                    savingQuestionText = null
+                    revision += 1
+                }
             }
 
             val answerToSave = savingAnswer

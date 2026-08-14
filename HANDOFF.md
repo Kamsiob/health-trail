@@ -55,11 +55,11 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 
 **#375** was the previous direction and #376 supersedes it as the live list. Its four asks are not withdrawn.
 
-**#374** is the six records that cannot be corrected. **Two of six are done**, 2026-08-14: a chapter's name and a project's name, which are the two that were wiring rather than screens. `renameChapter` and `renameProject` have callers at last.
+**#374** is the six records that cannot be corrected. **Four of six are done**, 2026-08-14: a chapter's name, a project's name, a question's own words, and a standing instruction's own words. All four reuse the one question screen, which now takes `leadKey`, `section`, `initialName` and `singleLine`.
 
 **They are also B6's real proof.** Both full screen surfaces together cost the shell **220 bytes**, against the 1,860 bytes of headroom it had before #373, when one added parameter on an existing screen was enough to fail the build. **#373** is B6 and is done.
 
-**The other four need a repository writer each and none exists**: correcting a reading, a measure, a question's own words, a standing instruction's own words. All four tables carry `AFTER UPDATE` triggers, so the change log is handled and each writer is an `UPDATE` with `updated_at` and `rev + 1`, the shape `renameChapter` uses.
+**The last two are a reading and a measure**, and both have their writer already: `updateReading` and `updateMeasure`. **Neither has a caller**, which is the shape `renameChapter` had, so both are in `docs/REMOVAL-LEDGER.md` under what is unreached and is not history, and **neither is frozen**. They are waiting on a screen rather than a decision: a reading is a value, a unit and a date, and a measure is a name and a unit, so neither fits the one question screen the other four reused.
 
 #371, the five-panel audit, is closed.
 

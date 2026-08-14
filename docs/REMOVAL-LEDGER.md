@@ -69,6 +69,8 @@
 
 **`ui/components/RoundCard.kt` has no caller and does not belong in this ledger.** It is grid screen 20, one round of lab work, and it is waiting on a schema decision rather than on a screen: `contract/schema.sql` has no test, no round and no result, which is #182 and #199 and is the owner's under rule 3. **It is built ahead of its data, not superseded by anything**, and freezing it would tell the next reader the opposite of what is true.
 
+**`updateReading` and `updateMeasure` in `data/Repository.kt` have no callers, 2026-08-14, and they are the same shape as `renameChapter` was.** Both were written with the other four writers of #374 and both are waiting on a screen rather than on a decision: correcting a reading needs a value, a unit and a date, and correcting a measure needs its name and unit, and neither is the one question screen the other four corrections could reuse. **They are not frozen and must not be**, for exactly the reason `renameChapter` was not: a ledger row would tell the next reader the app decided somebody may not fix a reading they typed one handed. They are on #374.
+
 **`QuietAction` in `FoldRow.kt` and `neutralHue` in `TabChip.kt` have no callers either**, and both live inside files the app uses every day. **This paragraph used to end by saying the ledger could not express that**, and it was right until the audit found four more of the same shape in the repository. Both have rows in the second table now, D152, and the shape has a place rather than a paragraph.
 
 ### The capture sheet, 2026-08-13
