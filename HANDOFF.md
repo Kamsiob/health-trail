@@ -43,7 +43,9 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 3. **A card is square or full width, and he had said so more than once.** Done, D153, and the square fills itself.
 4. Adding, removing and changing cards **must mimic the phone's own home screen**. Done: hold to arrange, carry the card itself, others move aside, back keeps it, and **the gallery offers the real card rather than a line describing it** (D157).
 5. **The projects overhaul.** First pass done, D156: the road says its stage names and the subtitle counts your projects. **Not done: "+ Start" belongs at the top per the grid**, and it wants a decision because D137, D118 and the FAB clearance are behind where it is.
-6. **No data entry screen is boring or lazily designed.** **One of fourteen done**, `AddPersonScreen`. It asked five questions at one weight while D147 recorded it as converted.
+6. **No data entry screen is boring or lazily designed.** **Two of fourteen done.** `AddPersonScreen` asked five questions at one weight while D147 recorded it as converted. `EmergencyCardEditScreen` said "Who to call first" twice within three lines, once as a mono header and once as a body label.
+
+   **Not a sweep for folding**, and the count on #376 is why: four forms were already staged and seven are too short to need it. The two done needed two different things. **What is left on the emergency card**: fifteen care team chips fill the first screen so its own fields start below the fold, and two lines explain that a chip toggles.
 
 **Everything above was looked at on the phone**, not only tested. **5 and 6 are where the work is**: twelve project screens and thirteen forms have not been through this.
 

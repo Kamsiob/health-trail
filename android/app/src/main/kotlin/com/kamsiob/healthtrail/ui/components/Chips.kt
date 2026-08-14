@@ -258,13 +258,31 @@ fun ChoiceChipGroup(
     label: String,
     modifier: Modifier = Modifier,
     aside: String? = null,
+    /**
+     * Whether the label is drawn.
+     *
+     * **False where a `GroupHeader` directly above already says the same
+     * words**, which is the redundancy `SectionScaffold`'s own documentation
+     * bans by name and which #371 item 5 took out of two other screens. The
+     * emergency card had "WHO TO CALL FIRST" in mono and "Who to call first" in
+     * body text, one under the other, with an explaining sentence between them.
+     * Seen on the phone.
+     *
+     * **The label is still required and still passed**, because a reader needs
+     * the set named even when the eye does not: the heading above carries it
+     * for somebody moving by headings, and this keeps the words at the call
+     * site so turning it back on is a one word change rather than a rewrite.
+     */
+    showLabel: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(text = label, style = type.bodyM, color = colors.ink2)
+        if (showLabel) {
+            Text(text = label, style = type.bodyM, color = colors.ink2)
+        }
         if (aside != null) {
             Spacer(Modifier.height(Space.xs))
             Text(text = aside, style = type.bodyS, color = colors.ink2)

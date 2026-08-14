@@ -151,7 +151,15 @@ fun EmergencyCardEditScreen(
                         color = colors.ink2,
                     )
                     Spacer(Modifier.height(Space.sm))
-                    ChoiceChipGroup(label = strings["emergency.group.who"]) {
+                    // **Named once.** The `GroupHeader` above says "Who to
+                    // call first" and this said it again in body text directly
+                    // under the sentence explaining the tap, so the same four
+                    // words appeared twice within three lines. Seen on the
+                    // phone. The label stays for a reader.
+                    ChoiceChipGroup(
+                        label = strings["emergency.group.who"],
+                        showLabel = false,
+                    ) {
                         people.forEach { person ->
                             ChoiceChip(
                                 label = Bidi.isolate(
