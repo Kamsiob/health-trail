@@ -321,19 +321,73 @@ private fun PickWhatToTrack(
  * and the style is the plain one, which is what lets the rendering layer hold
  * the content rules: no range, no threshold, no color by value, ever.
  */
+/**
+ * Correcting what a measure is called and the unit it is kept in. #374, the
+ * last of the six.
+ *
+ * **A measure's name is on every reading of it**, on its card on Today, and on
+ * the chart's own heading, so a name typed wrong at setup is typed wrong in
+ * four places forever. Its unit is worse: "lb" where the scale says "kg" makes
+ * every number under it mean the wrong thing.
+ *
+ * **The same form that named it**, for the reason `CorrectReadingScreen` uses
+ * the form that recorded the reading: two forms for one record is how two forms
+ * drift apart.
+ *
+ * **The kind is shown and cannot be changed.** A continuous measure with
+ * readings in it does not become an observational one because somebody tapped
+ * a chip: every number already written down would have nowhere to live. Rule 3
+ * puts that beyond this screen, and offering the choice would be the app
+ * pretending it is reversible.
+ */
+@Composable
+fun CorrectMeasureScreen(
+    measure: Repository.Measure,
+    onSave: (OwnMeasure) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    NameSomethingElse(
+        onStart = onSave,
+        onCancel = onCancel,
+        modifier = modifier,
+        startName = measure.name,
+        startUnit = measure.unit.orEmpty(),
+        startIsText = measure.isText,
+        kindIsFixed = true,
+        titleKey = "measurement.own.correct",
+        saveKey = "measurement.own.correct.save",
+    )
+}
+
 @Composable
 private fun NameSomethingElse(
     onStart: (OwnMeasure) -> Unit,
     onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+    /** What the fields start with, for a correction. Empty when naming. */
+    startName: String = "",
+    startUnit: String = "",
+    startIsText: Boolean = false,
+    /**
+     * Whether the kind is shown as a fact rather than offered as a choice.
+     *
+     * **True when correcting**, because a measure with readings in it cannot
+     * change kind without every number already written down having nowhere to
+     * live.
+     */
+    kindIsFixed: Boolean = false,
+    titleKey: String? = null,
+    saveKey: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    var name by rememberSaveable { mutableStateOf("") }
-    var unit by rememberSaveable { mutableStateOf("") }
-    var isText by rememberSaveable { mutableStateOf(false) }
+    var name by rememberSaveable(startName) { mutableStateOf(startName) }
+    var unit by rememberSaveable(startUnit) { mutableStateOf(startUnit) }
+    var isText by rememberSaveable(startIsText) { mutableStateOf(startIsText) }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = colors.paper) {
+    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -375,19 +429,44 @@ private fun NameSomethingElse(
                 )
 
                 Spacer(Modifier.height(Space.m))
-                ChoiceChipGroup(label = strings["measurement.own.kind"]) {
-                    ChoiceChip(
-                        label = strings["measurement.own.kind.number"],
-                        selected = !isText,
-                        onClick = { isText = false },
-                        modifier = Modifier.testTag(MeasurementTags.OWN_NUMBER),
+                if (kindIsFixed) {
+                    // **Said, not offered.** A measure with readings in it
+                    // cannot change kind: every number already written down
+                    // would have nowhere to live. A chip that looks tappable
+                    // and is not would be worse than a sentence, per rule 16,
+                    // so this is a sentence.
+                    Text(
+                        text = strings["measurement.own.kind"],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink2,
                     )
-                    ChoiceChip(
-                        label = strings["measurement.own.kind.text"],
-                        selected = isText,
-                        onClick = { isText = true },
-                        modifier = Modifier.testTag(MeasurementTags.OWN_TEXT),
+                    Spacer(Modifier.height(Space.xs))
+                    Text(
+                        text = strings[
+                            if (isText) {
+                                "measurement.own.kind.text"
+                            } else {
+                                "measurement.own.kind.number"
+                            },
+                        ],
+                        style = HealthTrail.type.bodyM,
+                        color = colors.ink,
                     )
+                } else {
+                    ChoiceChipGroup(label = strings["measurement.own.kind"]) {
+                        ChoiceChip(
+                            label = strings["measurement.own.kind.number"],
+                            selected = !isText,
+                            onClick = { isText = false },
+                            modifier = Modifier.testTag(MeasurementTags.OWN_NUMBER),
+                        )
+                        ChoiceChip(
+                            label = strings["measurement.own.kind.text"],
+                            selected = isText,
+                            onClick = { isText = true },
+                            modifier = Modifier.testTag(MeasurementTags.OWN_TEXT),
+                        )
+                    }
                 }
 
                 // **The unit only where a unit could mean anything.** Words

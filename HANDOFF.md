@@ -55,13 +55,13 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 
 **#375** was the previous direction and #376 supersedes it as the live list. Its four asks are not withdrawn.
 
-**#374** is the six records that cannot be corrected. **Five of six are done**, 2026-08-14: a chapter's name, a project's name, a question's own words, a standing instruction's own words, and **a reading**. The first four reuse the one question screen, which now takes `leadKey`, `section`, `initialName` and `singleLine`. The reading reuses the form that recorded it, because two forms for one record is how two forms drift apart.
+**#374 is done. All six records can be corrected**, 2026-08-14: a chapter's name, a project's name, a question's own words, a standing instruction's own words, a reading, and a measure's name and unit. The first four reuse the one question screen, which now takes `leadKey`, `section`, `initialName` and `singleLine`. The reading and the measure reuse the forms that created them, because two forms for one record is how two forms drift apart.
 
 **They are also B6's real proof.** Both full screen surfaces together cost the shell **220 bytes**, against the 1,860 bytes of headroom it had before #373, when one added parameter on an existing screen was enough to fail the build. **#373** is B6 and is done.
 
-**The last one is a measure**, its name and its unit. `updateMeasure` exists and **has no caller**, which is the shape `renameChapter` had, so it is in `docs/REMOVAL-LEDGER.md` under what is unreached and is not history and **is not frozen**. It waits on a screen rather than a decision.
+**Each correction is reached from the thing itself**, per rule 17 and #374's own acceptance: the reading's from its row on the progress screen, the measure's from under its chart, the question's and the instruction's from their sheets, the two names from their own screens.
 
-**A reading's correction is reached from the reading itself** on the progress screen, per rule 17: a date is editable forever from the entry itself rather than from a menu somewhere else.
+**The whole of #374 cost the shell 2,919 bytes.** Before #373 the shell had 1,860 bytes of headroom and one added parameter on an existing screen failed the build. Six full screen surfaces later there are **35,937 bytes** left. That is what B6 was worth, and it is a better number than any taken on the bytecode alone.
 
 #371, the five-panel audit, is closed.
 

@@ -101,6 +101,7 @@ import com.kamsiob.healthtrail.ui.screens.AddPersonScreen
 import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.AddMedicationScreen
 import com.kamsiob.healthtrail.ui.screens.AddThreadScreen
+import com.kamsiob.healthtrail.ui.screens.CorrectMeasureScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectReadingScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentCorrection
@@ -490,6 +491,7 @@ fun NotebookShell(
         BackHandler(enabled = correctingQuestion != null) { correctingQuestion = null }
         BackHandler(enabled = correctingInstruction != null) { correctingInstruction = null }
         BackHandler(enabled = correctingReading != null) { correctingReading = null }
+        BackHandler(enabled = correctingMeasure != null) { correctingMeasure = null }
         BackHandler(enabled = openDocument != null) { openDocument = null }
         BackHandler(enabled = openBill != null) { openBill = null }
         BackHandler(enabled = conflictsOpen) { conflictsOpen = false; markConflictsSeen = true }
@@ -1630,6 +1632,34 @@ fun NotebookShell(
                     initialName = question.text,
                     singleLine = false,
                 )
+            }
+
+            // **Correcting a measure's name and unit**, #374, the last of the
+            // six. The same form that named it, for the reason the reading's
+            // correction uses the form that recorded it.
+            correctingMeasure?.let { measure ->
+                CorrectMeasureScreen(
+                    measure = measure,
+                    onSave = { own ->
+                        savingMeasureCorrection =
+                            Triple(measure.id, own.name, own.unit)
+                        correctingMeasure = null
+                    },
+                    onCancel = { correctingMeasure = null },
+                )
+            }
+
+            savingMeasureCorrection?.let { correction ->
+                LaunchedEffect(correction) {
+                    repository.updateMeasure(
+                        measureId = correction.first,
+                        // bidi-ok: on its way to the database.
+                        name = correction.second,
+                        unit = correction.third,
+                    )
+                    savingMeasureCorrection = null
+                    revision += 1
+                }
             }
 
             // **Correcting a reading**, #374, and the surface rule 17 asks

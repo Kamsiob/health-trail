@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.data.Repository
@@ -41,6 +42,7 @@ object ProgressTags {
     const val ADD = "progress_add"
     fun measure(id: String) = "progress_measure_$id"
     fun reading(id: String) = "progress_reading_$id"
+    const val CORRECT_MEASURE = "progress_correct_measure"
 }
 
 /**
@@ -91,6 +93,8 @@ fun ProgressScreen(
     modifier: Modifier = Modifier,
     /** Opens the form that corrects one reading. #374. */
     onCorrectReading: (Repository.Reading) -> Unit = {},
+    /** Opens the form that corrects the measure on screen. #374. */
+    onCorrectMeasure: (Repository.Measure) -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -193,6 +197,24 @@ fun ProgressScreen(
                 }
                 Spacer(Modifier.height(Space.cardGap))
             }
+        }
+
+        // **Correcting what the measure on screen is called**, #374 and the
+        // last of its six. A measure's name is on every reading of it, on its
+        // card on Today and on this chart's own heading, so a name typed wrong
+        // at setup is typed wrong in four places forever, and "lb" where the
+        // scale says "kg" makes every number under it mean the wrong thing.
+        //
+        // **Under the chart and above the readings**, because it is about the
+        // thing the chart is of, and a pill sized to its label like every other
+        // correction in the app. D118.
+        item(key = "correct-measure") {
+            QuietButton(
+                label = strings["progress.correct.measure"],
+                onClick = { onCorrectMeasure(hero) },
+                modifier = Modifier.testTag(ProgressTags.CORRECT_MEASURE),
+            )
+            Spacer(Modifier.height(Space.cardGap))
         }
 
         // Every reading for what is on screen, folded and counted, because the

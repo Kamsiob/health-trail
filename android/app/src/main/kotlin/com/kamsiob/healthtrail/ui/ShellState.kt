@@ -149,6 +149,13 @@ internal class ShellState {
     var archivingPerson by mutableStateOf<Pair<String, Boolean>?>(null)
 
     /**
+     * The measure whose name and unit are being corrected, and the correction
+     * in flight. #374, the last of the six.
+     */
+    var correctingMeasure by mutableStateOf<Repository.Measure?>(null)
+    var savingMeasureCorrection by mutableStateOf<Triple<String, String, String?>?>(null)
+
+    /**
      * The reading being corrected, and the correction in flight. #374, the
      * fifth of the six, and the one rule 17 is really about: a date is editable
      * forever from the entry itself.

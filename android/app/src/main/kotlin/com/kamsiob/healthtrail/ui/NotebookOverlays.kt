@@ -1097,6 +1097,7 @@ internal fun ProjectStepOverlays(
                     // than a stub: it is the same screen capture opens.
                     onAddReading = { capturing = CaptureKind.MEASUREMENT },
                     onCorrectReading = { correctingReading = it },
+                    onCorrectMeasure = { correctingMeasure = it },
                     onBack = { openSection = null },
                 )
 
