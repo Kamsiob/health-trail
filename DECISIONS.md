@@ -2990,6 +2990,20 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D163. The tab is Projects again, and the Notebook's categories are finally drawn
+
+**Date:** 2026-08-16. **Made with the owner live**, which is rarer and better than rule 10: he watched the Paperwork build and said the word is wrong, projects was closer, and the Notebook is "a gigantic wall of options. there's no categories. nothing makes sense."
+
+**D162's rename is reversed in English and only in English.** The four catalogs never agreed: Spanish said "Trámites" and Arabic "المعاملات" and Chinese "事项" before, during, and now after. Only English ever said Projects, and it says Projects again because the owner judged it closer than Paperwork. The de-collision work D162 forced stays and is better regardless: the Documents screen no longer titles itself "The paperwork", the emergency card asks about "the signed papers", and the teaching layer, purpose lines, stepper, picker rows, all survive the reversal untouched.
+
+**The Notebook's group model had existed for months and the render only used it to compute order.** Four groups, keys translated in four catalogs, headers designed, never drawn. The wall the owner described was a rendering omission of the hierarchy the code already knew. The four headers draw now: People and care, The record, Papers and money, Keep at hand, each group its own surface, the order of the twelve unchanged.
+
+**The "More sections" fold is gone, and this departs from grid screen 03.** Recorded here so D142 stays honest: the grid draws four lead sections and a fold, the owner's live direction outranks the grid, and eight rows behind an unnamed count was hiding rather than hierarchy.
+
+**What this leaves open, named rather than lost:** the project home's density, "menus and sub menus and tabs and accordions", is real and is not repaired by a rename. It is the top item on #369 with the owner's words attached. Fonts "maybe" being the problem: the ladder was lifted once, D154, and the wall was density rather than type size; if type is still wrong after the categories, that is its own pass with its own look at the phone.
+
+---
+
 ### D161. The release variant had never been built, and the rules it needs are narrow on purpose
 
 **Date:** 2026-08-15. **Found by trying to build one.** `minifyReleaseWithR8` failed: `Supplied proguard configuration does not exist: android/app/proguard-rules.pro`. **`build.gradle.kts` had referenced that file since the beginning and nothing had ever created it**, so `assembleRelease` had never once succeeded. Nobody noticed because CI and `verify.sh` build and test the debug variant.

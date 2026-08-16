@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
@@ -30,14 +29,11 @@ import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.GroupedRows
-import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.animation.AnimatedVisibility
 import com.kamsiob.healthtrail.ui.components.fabScrollClearance
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.Tile
@@ -217,7 +213,6 @@ fun NotebookScreen(
     // above the halfway mark with the rest of the screen empty. **The fold is
     // still a fold**, so somebody who closes it on a tall phone keeps it
     // closed, and the order never changes either way. Rule 23.
-    var foldOpen by rememberSaveable { mutableStateOf<Boolean?>(null) }
 
     // **Measured against the closed notebook rather than the open one.**
     // Twelve rows do not fit on any phone, so asking whether everything fits
@@ -236,8 +231,6 @@ fun NotebookScreen(
     // shut on a screen with room: the conversion was going the wrong way, and
     // the only way to tell was to look at the phone rather than at the code.
     val density = LocalDensity.current
-    val roomForAll = LocalWindowInfo.current.containerSize.height >=
-        with(density) { Space.roomBelowTheClosedNotebook.toPx() }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -298,45 +291,32 @@ fun NotebookScreen(
                 }
             }
 
-            // **Four sections, not twelve**, per grid screen 03 and law 1. The
-            // situation template decides which four lead; everything else waits
-            // behind one fold, named and counted.
+            // **Four named clusters, not a wall and not a fold.** The owner
+            // watched a stranger face this screen and then faced it himself:
+            // "a gigantic wall of options. there's no categories. nothing
+            // makes sense. I don't know where to look." The group model below
+            // had existed for months and the render only ever used it to
+            // compute order: the headers were designed and never drawn. Now
+            // they are drawn, which is rule 15 doing its actual job, and the
+            // "More sections" fold is gone with the wall it managed: eight
+            // rows behind an unnamed count was hiding, not hierarchy.
             //
-            // **The order never changes and nothing is ever hidden.** A section
-            // the template folds is still in its own place inside the fold, one
-            // tap away, so a person who learned where documents were finds them
-            // in the same place. That is what 10.8 protects and it is untouched.
-            val ordered = NotebookGroup.entries.flatMap { group ->
-                group.sections.mapNotNull { bySection[it] }
-            }
-            val forward = ordered.filter { it.emphasis == Emphasis.FORWARD }
-            // With no template every section stands, and a screen of twelve rows
-            // with a fold holding nothing would be worse than the plain list. So
-            // the lead group falls back to the standing sections and the fold
-            // simply does not appear.
-            val lead = if (forward.isNotEmpty()) forward else ordered
-            val rest = ordered - lead.toSet()
-
-            GroupedRows(items = lead) { row, isLast ->
-                SectionRow(row = row, isLast = isLast, onOpen = onOpen)
-            }
-
-            if (rest.isNotEmpty()) {
-                val open = foldOpen ?: roomForAll
-                FoldRow(
-                    labelKey = "notebook.fold.more",
-                    expanded = open,
-                    onToggle = { foldOpen = !open },
-                    count = rest.size.toString(),
-                    modifier = Modifier.testTag(NotebookTags.FOLD),
-                )
-                // **Opens in place**, per `DESIGN.md` section 9, because what it
-                // holds is eight rows rather than a screenful.
-                AnimatedVisibility(visible = open) {
-                    GroupedRows(items = rest) { row, isLast ->
-                        SectionRow(row = row, isLast = isLast, onOpen = onOpen)
-                    }
+            // **Grid screen 03 draws four lead sections and a fold.** This
+            // departs from it, on the owner's live direction, 2026-08-16, and
+            // D163 records the departure so D142 stays honest.
+            //
+            // **The order inside each group never changes**, so a person who
+            // learned where documents live finds them in the same place, only
+            // now under a name that says why they live there.
+            for (group in NotebookGroup.entries) {
+                val rows = group.sections.mapNotNull { bySection[it] }
+                if (rows.isEmpty()) continue
+                GroupHeader(labelKey = group.labelKey)
+                Spacer(Modifier.height(Space.headerGap))
+                GroupedRows(items = rows) { row, isLast ->
+                    SectionRow(row = row, isLast = isLast, onOpen = onOpen)
                 }
+                Spacer(Modifier.height(Space.sectionGap))
             }
 
             Spacer(Modifier.height(fabScrollClearance))
