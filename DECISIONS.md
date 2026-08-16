@@ -2990,6 +2990,28 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D172. The approved mockup was the baseline, and it was not being read
+
+**Date:** 2026-08-16. **The owner, after the D170 build:** it "still looks really ugly", the fonts "don't mix well together", "it's overly colorful, looks like a rainbow", it lacks "Elegance and polish and simplicity and minimalism" without "going dead", and "we've gone backwards". Then the sentence that mattered: **"I don't want it to look completely sterile either. I don't know why you're guessing you made the mock-ups before that I approved as the baseline."**
+
+**The defect was process, not taste.** Six mockups were built, shown, iterated to round four and approved, and then the implementation proceeded from memory and reasoning rather than from the file. Three rounds of adjustment followed, each one an argument with the screen instead of a comparison against the thing already agreed. **An approved artifact is a specification. It gets read, not recalled.**
+
+**Read back against the mockup, the differences were structural.** The hero is the section base with white type on it, not a pale wash. D170 had argued that a saturated fill would cost the readability the app is built on: that was reasoned rather than looked at, and the approved hero is a solid block precisely because a screen needs one place for the eye to land. White on slate is past 7:1, which is better than the ink on wash it replaced. The worry was real and the answer was contrast, not timidity.
+
+**The eighteen call sites flip by providing a palette, not by taking a parameter.** The answer body, the chart line and the dial pill are all written against `HealthTrail.colors`, which is already a composition local, so the hero provides a recolored copy for its subtree. Components that have never heard of the hero come along correctly and nothing downstream grows an argument.
+
+**One saturated block is what fixes the rainbow.** Six tinted cards of equal weight is rule 15's uniform weight wearing color, and it gave the eye nowhere to land. The tint belongs to whichever card leads; the rest are white with a small dot in their own hue, which keeps identity at the size identity works at. This is also the answer to "not sterile": the restraint everywhere else is what lets the one colored block carry.
+
+**Gold does not survive at that size.** It is correct on a tab chip, an icon and the capture button, and it is a mustard slab across the largest block on the screen. The owner had said the yellow was off-putting once already, about the mockups, before this made it four times larger. A whole-app card promoted to the lead wears slate there. A section's card keeps its own hue, because 21.2 is identity and does not bend for position.
+
+**Small cards were square, and a square is not a tile.** A little over two hundred dp on a phone, so "Nothing scheduled" sat centered in an empty white field with a hand's width of nothing above and below it, four times at once. That reads as unfinished rather than calm, which is rule 11 and rule 13 both. The tile takes the mockup's proportion, and a card with a real answer still grows past it.
+
+**Two typefaces on the screen, not three.** The masthead date was set in mono, putting a typewriter line directly above a display-weight sans name and a body-face sentence. That is what "the fonts don't mix well" was pointing at. Mono keeps the figures it exists for.
+
+**The standing lesson:** when something has been approved, open it before building against it. Reasoning from the approval is not the same as reading it, and the gap between them cost three rounds.
+
+---
+
 ### D170. Today is rebuilt, because tokens cannot make a screen
 
 **Date:** 2026-08-16. **The owner, looking at the build:** "I'm not seeing the premium expressive material 3 design update. I hope you're not still working on the old design."
