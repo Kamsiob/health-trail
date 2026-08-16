@@ -59,6 +59,8 @@ fun ThreadScreen(
     thread: Repository.CareThread,
     entries: List<Repository.TrailEntry>,
     onOpenEntry: (Repository.TrailEntry) -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
     /**
      * Renames the thread. #371.
      *
@@ -73,8 +75,6 @@ fun ThreadScreen(
      * 2026-08-16: a record started by mistake should not be forever.
      */
     onRemove: () -> Unit = {},
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
     backLabelKey: String = "section.back.threads",
 ) {
     val strings = LocalStrings.current

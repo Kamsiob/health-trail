@@ -81,12 +81,12 @@ data class MilestoneDraft(
 fun AddMilestoneScreen(
     onSave: (MilestoneDraft) -> Unit,
     onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
     /**
      * Takes the milestone out. Only offered on one that already exists:
      * anything added can be removed, 2026-08-16.
      */
     onRemove: () -> Unit = {},
-    modifier: Modifier = Modifier,
     /** The one being corrected, or null when this is new. */
     existing: Repository.Milestone? = null,
     /**
