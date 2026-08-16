@@ -32,6 +32,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -40,6 +41,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import java.time.LocalDate
 
 object AddMilestoneTags {
+    const val REMOVE = "milestone_remove"
     const val ROOT = "add_milestone_root"
     const val SAVE = "add_milestone_save"
     const val CANCEL = "add_milestone_cancel"
@@ -79,6 +81,11 @@ data class MilestoneDraft(
 fun AddMilestoneScreen(
     onSave: (MilestoneDraft) -> Unit,
     onCancel: () -> Unit,
+    /**
+     * Takes the milestone out. Only offered on one that already exists:
+     * anything added can be removed, 2026-08-16.
+     */
+    onRemove: () -> Unit = {},
     modifier: Modifier = Modifier,
     /** The one being corrected, or null when this is new. */
     existing: Repository.Milestone? = null,
@@ -223,6 +230,19 @@ fun AddMilestoneScreen(
                     .padding(horizontal = Space.screenHorizontal)
                     .testTag(AddMilestoneTags.CANCEL),
             )
+            // **Only on one that already exists.** Anything added can be
+            // removed, 2026-08-16; a form for a new milestone has nothing to
+            // take out yet.
+            if (existing != null) {
+                Spacer(Modifier.height(Space.cardGap))
+                QuietButton(
+                    label = strings["remove.action"],
+                    onClick = onRemove,
+                    modifier = Modifier
+                        .padding(horizontal = Space.screenHorizontal)
+                        .testTag(AddMilestoneTags.REMOVE),
+                )
+            }
             Spacer(Modifier.height(Space.l))
         }
     }

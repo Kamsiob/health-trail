@@ -654,6 +654,17 @@ internal fun IncidentAndReviewOverlays(
                     },
                     onBack = { openChapter = null },
                     onRename = { renamingChapter = detail.chapter },
+                    // **The screen closes as the confirmation opens**, the
+                    // same as a medication's. Anything added can be removed,
+                    // 2026-08-16; what was filed here stays on the trail.
+                    onRemove = {
+                        openChapter = null
+                        removing = Removal(
+                            Repository.Section.CHAPTERS,
+                            detail.chapter.id,
+                            detail.chapter.name,
+                        )
+                    },
                 )
             }
         }
@@ -772,6 +783,16 @@ internal fun IncidentAndReviewOverlays(
                 onOpenEntry = { openEntry = it.id },
                 onRename = { renamingThread = thread },
                 onBack = { openThread = null },
+                // Anything added can be removed, 2026-08-16. The entries the
+                // thread gathered stay on the trail; the thread itself goes.
+                onRemove = {
+                    openThread = null
+                    removing = Removal(
+                        Repository.Section.THREADS,
+                        thread.id,
+                        thread.label,
+                    )
+                },
             )
         }
 

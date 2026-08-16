@@ -40,6 +40,7 @@ object ChapterTags2 {
     const val RENAME = "chapter_rename"
     const val MILESTONES_FOLD = "chapter_milestones_fold"
     fun milestone(id: String) = "chapter_milestone_$id"
+    const val REMOVE = "chapters_remove"
 }
 
 /**
@@ -66,6 +67,12 @@ fun ChapterScreen(
     backLabelKey: String = "section.back.chapters",
     /** Opens the screen that corrects this chapter's name. #374. */
     onRename: () -> Unit = {},
+    /**
+     * Takes it out of the notebook, with the confirmation the caller owns.
+     * **Anything that can be added can be removed**, the owner's rule,
+     * 2026-08-16: a record started by mistake should not be forever.
+     */
+    onRemove: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     // What went wrong leads open; the rest are folded until asked for.
@@ -312,6 +319,12 @@ fun ChapterScreen(
                 label = strings["chapters.rename"],
                 onClick = onRename,
                 modifier = Modifier.testTag(ChapterTags2.RENAME),
+            )
+            Spacer(Modifier.height(Space.cardGap))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.testTag(ChapterTags2.REMOVE),
             )
             Spacer(Modifier.height(Space.l))
         }

@@ -11,6 +11,7 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 ## 1. State
 
 - Tree clean, everything on `origin/main`. Verify: `git status --porcelain`.
+- **1.0.0 is cut**, 2026-08-16, versionCode 2, on the owner's order that 1.0 mean something. D166 is the definition. **The signed APK and the Play AAB live in `release/` at the repo root**, gitignored, built by `assembleRelease bundleRelease` with the D160 key. The round trip is proven on the minified build, D165.
 - **728 instrumented tests, 0 failures**, 2026-08-16, over the full overhaul. Two earlier runs that night died to foreground theft, `docs/TRAPS.md` has the tell. Plus 28 repo checks, 218 unit tests, lint. Plus 28 repo checks, 218 unit tests, lint. Run alone on a clean device: two runs at once produce `DELETE_FAILED_INTERNAL_ERROR` and failures in unrelated tests.
 - CI green at tip. Check after each push: `gh run list --branch main --limit 3`.
 - Phone at baseline and **can be unplugged**: font scale 1.0, animator 1.0, no reader, night mode auto, all four read back after being changed. Holds the current build and the month6 fixture.

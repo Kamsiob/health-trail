@@ -55,6 +55,7 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object MeasurementTags {
+    const val REMOVE = "measurement_remove"
     const val PICK = "measurement_pick"
     const val FORM = "measurement_form"
     const val VALUE = "measurement_value"
@@ -346,10 +347,13 @@ fun CorrectMeasureScreen(
     onSave: (OwnMeasure) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Anything added can be removed, 2026-08-16. Its readings go with it. */
+    onRemove: (() -> Unit)? = null,
 ) {
     NameSomethingElse(
         onStart = onSave,
         onCancel = onCancel,
+        onRemove = onRemove,
         modifier = modifier,
         startName = measure.name,
         startUnit = measure.unit.orEmpty(),
@@ -379,6 +383,8 @@ private fun NameSomethingElse(
     kindIsFixed: Boolean = false,
     titleKey: String? = null,
     saveKey: String? = null,
+    /** Null on a pure add; a correction passes the way out. 2026-08-16. */
+    onRemove: (() -> Unit)? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -519,6 +525,14 @@ private fun NameSomethingElse(
                 modifier = Modifier
                     .padding(horizontal = Space.screenHorizontal),
             )
+            onRemove?.let { takeOut ->
+                Spacer(Modifier.height(Space.cardGap))
+                QuietButton(
+                    label = strings["remove.action"],
+                    onClick = takeOut,
+                    modifier = Modifier.testTag(MeasurementTags.REMOVE),
+                )
+            }
 
             Spacer(Modifier.height(Space.l))
         }
@@ -589,8 +603,11 @@ fun CorrectReadingScreen(
     onSave: (unit: String?, number: Double?, text: String, occurred: Edtf.Date, note: String) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Anything added can be removed, 2026-08-16: a reading typed twice. */
+    onRemove: (() -> Unit)? = null,
 ) {
     RecordValue(
+        onRemove = onRemove,
         name = name,
         units = units,
         isText = isText,
@@ -632,6 +649,8 @@ private fun RecordValue(
     saveKey: String? = null,
     /** The lead line, so a correction does not invite somebody to skip. */
     leadKey: String? = null,
+    /** Null on a pure add; a correction passes the way out. 2026-08-16. */
+    onRemove: (() -> Unit)? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -804,6 +823,14 @@ private fun RecordValue(
                 onClick = onCancel,
                 modifier = Modifier.padding(horizontal = Space.screenHorizontal),
             )
+            onRemove?.let { takeOut ->
+                Spacer(Modifier.height(Space.cardGap))
+                QuietButton(
+                    label = strings["remove.action"],
+                    onClick = takeOut,
+                    modifier = Modifier.testTag(MeasurementTags.REMOVE),
+                )
+            }
 
             Spacer(Modifier.height(Space.l))
         }

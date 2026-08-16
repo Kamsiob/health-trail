@@ -1077,6 +1077,36 @@ class Repository private constructor(
      * Every read in this class goes through a `live_` view, so from the moment
      * this returns the row is gone from the app's point of view.
      */
+    /**
+     * The three record kinds that live outside the twelve sections and can
+     * still be taken out. **Anything that can be added can be removed**, the
+     * owner's rule, 2026-08-16: a milestone marked by mistake, a reading typed
+     * twice, a measure started and regretted. The same tombstone as every
+     * other removal, so another device learns it was deleted.
+     */
+    suspend fun deleteMilestone(id: String) = deleteRow("milestone", id)
+
+    suspend fun deleteReading(id: String) = deleteRow("reading", id)
+
+    /**
+     * Its readings stay in the table and vanish from every screen with it,
+     * because a reading of a removed measure has nowhere to be shown. Undoing
+     * the mistake is a restore, like every other removal.
+     */
+    suspend fun deleteMeasure(id: String) = deleteRow("measure", id)
+
+    private suspend fun deleteRow(table: String, rowId: String) = withContext(Dispatchers.IO) {
+        db().database.write(
+            "UPDATE $table SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ? AND deleted_at IS NULL",
+            arrayOf<Any?>(
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                rowId,
+            ),
+        )
+    }
+
     suspend fun delete(section: Section, rowId: String) = withContext(Dispatchers.IO) {
         db().database.write(
             "UPDATE ${section.table} SET deleted_at = ?, updated_at = ?, rev = rev + 1 " +

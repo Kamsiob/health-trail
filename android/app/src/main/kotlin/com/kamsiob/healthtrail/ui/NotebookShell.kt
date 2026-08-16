@@ -1663,6 +1663,17 @@ fun NotebookShell(
                         correctingMeasure = null
                     },
                     onCancel = { correctingMeasure = null },
+                    // Anything added can be removed. Its readings vanish from
+                    // every screen with it, and the sheet says whose it was.
+                    onRemove = {
+                        correctingMeasure = null
+                        removing = Removal(
+                            section = null,
+                            rowId = measure.id,
+                            what = measure.name,
+                            remove = { id -> repository.deleteMeasure(id) },
+                        )
+                    },
                 )
             }
 
@@ -1710,6 +1721,18 @@ fun NotebookShell(
                             correctingReading = null
                         },
                         onCancel = { correctingReading = null },
+                        // A reading typed twice is removed from the same
+                        // screen that corrects one. Anything added can be
+                        // removed, 2026-08-16.
+                        onRemove = {
+                            correctingReading = null
+                            removing = Removal(
+                                section = null,
+                                rowId = reading.id,
+                                what = measure.name,
+                                remove = { id -> repository.deleteReading(id) },
+                            )
+                        },
                     )
                 }
             }
@@ -2136,6 +2159,21 @@ fun NotebookShell(
                         savingMilestone = draft
                     },
                     onCancel = { addingMilestone = false; editingMilestone = null },
+                    // Anything added can be removed, 2026-08-16. Sectionless,
+                    // so the removal carries its own writer, like an incident.
+                    onRemove = {
+                        val gone = editingMilestone
+                        addingMilestone = false
+                        editingMilestone = null
+                        if (gone != null) {
+                            removing = Removal(
+                                section = null,
+                                rowId = gone.id,
+                                what = gone.label,
+                                remove = { id -> repository.deleteMilestone(id) },
+                            )
+                        }
+                    },
                 )
             }
 

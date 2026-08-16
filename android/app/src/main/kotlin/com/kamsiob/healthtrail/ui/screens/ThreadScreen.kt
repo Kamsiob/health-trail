@@ -34,6 +34,7 @@ object OneThreadTags {
     const val RENAME = "thread_rename"
     const val NAME = "one_thread"
     fun entry(id: String) = "one_thread_entry_$id"
+    const val REMOVE = "threads_remove"
 }
 
 /**
@@ -66,6 +67,12 @@ fun ThreadScreen(
      * tray, and shows on every entry in the trail that belongs to it.
      */
     onRename: () -> Unit,
+    /**
+     * Takes it out of the notebook, with the confirmation the caller owns.
+     * **Anything that can be added can be removed**, the owner's rule,
+     * 2026-08-16: a record started by mistake should not be forever.
+     */
+    onRemove: () -> Unit = {},
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     backLabelKey: String = "section.back.threads",
@@ -98,6 +105,23 @@ fun ThreadScreen(
                     modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
                     section = Repository.Section.THREADS,
                 )
+            }
+            // **The empty thread keeps its rename and its way out.** The early
+            // return used to take both, and a thread started by mistake is
+            // exactly the one with nothing in it. 2026-08-16.
+            item(key = "rename") {
+                QuietButton(
+                    label = strings["threads.rename"],
+                    onClick = onRename,
+                    modifier = Modifier.testTag(OneThreadTags.RENAME),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+                QuietButton(
+                    label = strings["remove.action"],
+                    onClick = onRemove,
+                    modifier = Modifier.testTag(OneThreadTags.REMOVE),
+                )
+                Spacer(Modifier.height(Space.l))
             }
             return@SectionScaffold
         }
@@ -221,6 +245,12 @@ fun ThreadScreen(
                 label = strings["threads.rename"],
                 onClick = onRename,
                 modifier = Modifier.testTag(OneThreadTags.RENAME),
+            )
+            Spacer(Modifier.height(Space.cardGap))
+            QuietButton(
+                label = strings["remove.action"],
+                onClick = onRemove,
+                modifier = Modifier.testTag(OneThreadTags.REMOVE),
             )
             Spacer(Modifier.height(Space.l))
         }

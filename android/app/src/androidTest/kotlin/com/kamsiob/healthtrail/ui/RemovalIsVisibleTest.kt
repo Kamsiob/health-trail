@@ -49,6 +49,8 @@ import com.kamsiob.healthtrail.ui.screens.ProjectTags
 import com.kamsiob.healthtrail.ui.screens.QuestionTags
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.StandingInstructionsScreen
+import com.kamsiob.healthtrail.ui.screens.ThreadScreen
+import com.kamsiob.healthtrail.ui.screens.OneThreadTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import java.util.Locale
 import kotlinx.coroutines.runBlocking
@@ -474,5 +476,34 @@ class RemovalIsVisibleTest {
             )
         }
         assertSheetRemovesOnce(AcknowledgeTags.REMOVE)
+    }
+
+    /**
+     * A thread can be taken out from its own screen. 2026-08-16, the owner's
+     * rule that anything added can be removed: threads and chapters could be
+     * renamed and were forever.
+     */
+    @Test
+    fun aThreadOffersItsWayOut() {
+        var removed = 0
+        compose.setContent {
+            CompositionLocalProvider(LocalStrings provides strings) {
+                HealthTrailTheme {
+                    ThreadScreen(
+                        thread = Repository.CareThread("t1", "The insurance appeal", 0),
+                        entries = emptyList(),
+                        onOpenEntry = {},
+                        onRename = {},
+                        onBack = {},
+                        onRemove = { removed += 1 },
+                    )
+                }
+            }
+        }
+
+        compose.onNodeWithTag(SectionTags.root(OneThreadTags.NAME))
+            .performScrollToNode(hasTestTag(OneThreadTags.REMOVE))
+        compose.onNodeWithTag(OneThreadTags.REMOVE).performClick()
+        assertEquals("the thread's way out did not fire", 1, removed)
     }
 }
