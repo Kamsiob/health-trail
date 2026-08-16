@@ -190,6 +190,9 @@ internal class ShellState {
     var savingChapterRename by mutableStateOf<Pair<String, String>?>(null)
 
     /** #377: saying they are somewhere new, and the name on its way in. */
+    /** #378: the paper open at reading size, as its hash and its name. */
+    var viewingPaper by mutableStateOf<Pair<String, String>?>(null)
+
     var sayingMoved by mutableStateOf(false)
     var savingMove by mutableStateOf<String?>(null)
 

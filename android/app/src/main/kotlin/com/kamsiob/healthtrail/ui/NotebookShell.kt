@@ -133,6 +133,7 @@ import com.kamsiob.healthtrail.ui.screens.StageEditSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectPreviewSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
+import com.kamsiob.healthtrail.ui.screens.PaperViewerScreen
 import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentDraft
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
@@ -488,6 +489,7 @@ fun NotebookShell(
         // #374, and both of these are surfaces #373 made room for.
         BackHandler(enabled = renamingChapter != null) { renamingChapter = null }
         BackHandler(enabled = sayingMoved) { sayingMoved = false }
+        BackHandler(enabled = viewingPaper != null) { viewingPaper = null }
         BackHandler(enabled = renamingProject != null) { renamingProject = null }
         BackHandler(enabled = correctingQuestion != null) { correctingQuestion = null }
         BackHandler(enabled = correctingInstruction != null) { correctingInstruction = null }
@@ -1469,6 +1471,20 @@ fun NotebookShell(
                 repository,
                 captureDraftState,
             )
+
+            // **The paper at reading size, above every other surface.** #378.
+            // Painted after the overlay groups so a viewer opened from a
+            // document that was itself opened from a project's papers sits on
+            // top of that whole stack, and back peels only the viewer.
+            viewingPaper?.let { (sha, title) ->
+                val paperStore = remember(context) { Attachments.open(context) }
+                PaperViewerScreen(
+                    sha256 = sha,
+                    title = title,
+                    attachments = paperStore,
+                    onBack = { viewingPaper = null },
+                )
+            }
 
 
             // Correcting when something happened, from the entry itself, per rule

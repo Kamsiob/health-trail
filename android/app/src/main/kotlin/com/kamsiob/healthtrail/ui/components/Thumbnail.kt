@@ -60,14 +60,21 @@ fun Thumbnail(
     section: Repository.Section,
     modifier: Modifier = Modifier,
     size: Dp = ROW_SIZE,
+    /**
+     * The decode ceiling in pixels. The default fits grid cells; a screen
+     * presenting the paper itself at full width passes a higher one, because
+     * 512 pixels stretched across the screen is what the owner read as the
+     * app having dropped his photograph's resolution. #378.
+     */
+    targetPixels: Int = TARGET_PIXELS,
 ) {
     val colors = HealthTrail.colors
-    var bitmap by remember(sha256) { mutableStateOf<ImageBitmap?>(null) }
+    var bitmap by remember(sha256, targetPixels) { mutableStateOf<ImageBitmap?>(null) }
     // Null until the read finishes, so the loading state is the `sand` field
     // rather than a flash of the fallback drawing.
     var settled by remember(sha256) { mutableStateOf(sha256 == null) }
 
-    LaunchedEffect(sha256, attachments) {
+    LaunchedEffect(sha256, attachments, targetPixels) {
         if (sha256 == null || attachments == null) {
             settled = true
             return@LaunchedEffect
@@ -81,7 +88,7 @@ fun Thumbnail(
                 // that still covers the cell.
                 val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                 BitmapFactory.decodeFile(file.absolutePath, bounds)
-                val target = TARGET_PIXELS
+                val target = targetPixels
                 var sample = 1
                 while (
                     bounds.outWidth / sample > target || bounds.outHeight / sample > target

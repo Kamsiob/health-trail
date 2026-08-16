@@ -54,6 +54,9 @@ import com.kamsiob.healthtrail.ui.screens.CorrectEntryScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectSubjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
+import androidx.compose.ui.test.onAllNodesWithTag
+import com.kamsiob.healthtrail.ui.screens.PaperViewerTags
+import com.kamsiob.healthtrail.ui.screens.PaperViewerScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailTags
@@ -2568,5 +2571,37 @@ class ScreenReaderTest {
             AddInstructionScreen(catalog = catalog, onChoose = {}, onCancel = {})
         }
         assertEverythingIsLabeled("ask for something")
+    }
+
+    /**
+     * The paper at reading size, #378. Two touchables: the paper itself,
+     * which announces the document's own name rather than "image", and the
+     * way back. The fixture stores a real file through a real Attachments
+     * root, because a viewer walked with a missing file would only ever walk
+     * the failure text.
+     */
+    @Test
+    fun thePaperViewerLabelsEverything() {
+        val root = java.io.File(context.cacheDir, "reader-walk-attachments").apply { mkdirs() }
+        val attachments = com.kamsiob.healthtrail.data.Attachments.openAt(root)
+        val png = android.graphics.Bitmap.createBitmap(64, 64, android.graphics.Bitmap.Config.ARGB_8888)
+        val out = java.io.ByteArrayOutputStream()
+        png.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
+        val sha = kotlinx.coroutines.runBlocking { attachments.put(out.toByteArray()) }
+
+        compose.show {
+            PaperViewerScreen(
+                sha256 = sha,
+                title = "Discharge summary, March",
+                attachments = attachments,
+                onBack = {},
+            )
+        }
+
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag(PaperViewerTags.IMAGE, useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        assertEverythingIsLabeled("the paper viewer")
     }
 }

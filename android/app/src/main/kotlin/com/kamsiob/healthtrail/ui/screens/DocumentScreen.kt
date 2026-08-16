@@ -20,6 +20,7 @@ import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.Thumbnail
+import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -71,6 +72,12 @@ fun DocumentScreen(
     /** Where this document is filed among the projects' papers. */
     filings: List<Repository.DocumentFiling> = emptyList(),
     backLabelKey: String = "section.back.documents",
+    /**
+     * Opens the paper at reading size. #378: the photograph rendered at grid
+     * resolution and answered no tap, which read as the picture having been
+     * thrown away. Null keeps the image inert for a caller with no viewer.
+     */
+    onOpenPaper: ((String) -> Unit)? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -96,7 +103,23 @@ fun DocumentScreen(
                     attachments = attachments,
                     section = Repository.Section.DOCUMENTS,
                     size = FILL,
-                    modifier = Modifier.fillMaxWidth().testTag(OneDocTags.IMAGE),
+                    // **Decoded for the width it is drawn at**, not for a grid
+                    // cell. The photograph is the one thing on this screen
+                    // and it rendered at 512 pixels. #378.
+                    targetPixels = PAPER_PRESENT_PIXELS,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (onOpenPaper != null) {
+                                Modifier.openableByTap(
+                                    label = strings["document.image.open"],
+                                    onTap = { onOpenPaper(document.sha256) },
+                                )
+                            } else {
+                                Modifier
+                            },
+                        )
+                        .testTag(OneDocTags.IMAGE),
                 )
             } else {
                 Text(
@@ -230,3 +253,10 @@ fun DocumentScreen(
         }
     }
 }
+
+/**
+ * The inline rendering's decode ceiling. Full screen width with headroom for
+ * a modest pinch out in the viewer that opens from it; the viewer does its
+ * own, larger decode.
+ */
+private const val PAPER_PRESENT_PIXELS = 1440

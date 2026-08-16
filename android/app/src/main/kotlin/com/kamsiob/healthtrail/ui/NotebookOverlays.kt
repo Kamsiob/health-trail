@@ -255,6 +255,9 @@ internal fun MilestoneOverlays(
                 } else {
                     "section.back.documents"
                 },
+                // **The paper opens at reading size**, #378, carrying the
+                // document's own name for the reader.
+                onOpenPaper = { sha -> viewingPaper = sha to fresh.title },
                 onEdit = {
                     editingDocument = fresh
                     documentError = null
