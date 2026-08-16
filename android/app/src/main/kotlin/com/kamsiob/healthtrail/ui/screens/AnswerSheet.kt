@@ -169,33 +169,42 @@ fun AnswerSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            // **The field is only on the asked face.** Asking for what somebody
-            // said about a question that has not been asked yet is the app
-            // inventing a step, and an empty field with nothing to put in it
-            // reads as work owed. Rule 13.
+            // **The answer can always be typed.** It used to appear only after
+            // the question was marked asked, so writing down what somebody
+            // said took two trips through this sheet: mark it, reopen it,
+            // type. The owner's words, #379: "I want to have the option to
+            // type in the answer that I got not just Mark that I asked."
+            //
+            // **Writing an answer says it was asked**, which is why the
+            // caller stamps the asked date when an open question is answered.
+            // Nobody gets an answer to a question they never put.
+            DictatableField(
+                label = strings["questions.answer.title"],
+                value = answer,
+                onValueChange = { answer = it },
+                hint = strings["questions.answer.hint"],
+                singleLine = false,
+                imeAction = ImeAction.Done,
+                fieldTestTag = AnswerTags.FIELD,
+            )
+
+            Spacer(Modifier.height(Space.l))
+
+            FilledButton(
+                label = strings["questions.answer.save"],
+                onClick = { onSave(answer) },
+                modifier = Modifier.fillMaxWidth().testTag(AnswerTags.SAVE),
+            )
+
+            // **Still offered on an open question**, because a question asked
+            // and not answered is a real state: the meeting happened, nobody
+            // knew, and that is worth recording without inventing an answer.
             if (question.isOpen) {
-                FilledButton(
+                Spacer(Modifier.height(Space.cardGap))
+                QuietButton(
                     label = strings["questions.mark_asked"],
                     onClick = onMarkAsked,
-                    modifier = Modifier.fillMaxWidth().testTag(AnswerTags.ASKED),
-                )
-            } else {
-                DictatableField(
-                    label = strings["questions.answer.title"],
-                    value = answer,
-                    onValueChange = { answer = it },
-                    hint = strings["questions.answer.hint"],
-                    singleLine = false,
-                    imeAction = ImeAction.Done,
-                    fieldTestTag = AnswerTags.FIELD,
-                )
-
-                Spacer(Modifier.height(Space.l))
-
-                FilledButton(
-                    label = strings["questions.answer.save"],
-                    onClick = { onSave(answer) },
-                    modifier = Modifier.fillMaxWidth().testTag(AnswerTags.SAVE),
+                    modifier = Modifier.testTag(AnswerTags.ASKED),
                 )
             }
 

@@ -1609,6 +1609,11 @@ fun NotebookShell(
                     question = toAnswer,
                     onSave = { text ->
                         savingAnswer = toAnswer.id to text
+                        // **An answer says it was asked.** #379: the answer can
+                        // now be typed on an open question, and a question with
+                        // an answer and no asked date would be a record that
+                        // contradicts itself.
+                        if (toAnswer.isOpen && text.isNotBlank()) markingAsked = toAnswer
                         answering = null
                     },
                     onMarkAsked = {

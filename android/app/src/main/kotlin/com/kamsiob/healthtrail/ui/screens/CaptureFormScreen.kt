@@ -423,8 +423,24 @@ fun CaptureFormScreen(
                 // read as a screen that had failed to load its first line.
                 if (stage == 1) {
                 ChoiceChipGroup(
-                    label = strings["capture.when"],
-                    aside = strings["capture.when.hint"],
+                    // **A question has not happened yet.** Asking "when" about
+                    // one, in the same words used for a call that already
+                    // took place, is the app asking the person to date
+                    // something they have not done. It asks when they mean to
+                    // ask it instead, and the answer's own date is stamped
+                    // when the answer arrives. #379, the owner's words: "it
+                    // asked me to put in a date which is weird because I
+                    // haven't asked the question yet."
+                    label = if (kind == CaptureKind.QUESTION) {
+                        strings["capture.when.question"]
+                    } else {
+                        strings["capture.when"]
+                    },
+                    aside = if (kind == CaptureKind.QUESTION) {
+                        strings["capture.when.question.hint"]
+                    } else {
+                        strings["capture.when.hint"]
+                    },
                 ) {
                     RoughWhen.entries.forEach { option ->
                         ChoiceChip(
