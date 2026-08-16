@@ -78,6 +78,8 @@ fun ProjectPaperworkScreen(
     projectName: String,
     papers: List<Repository.ProjectPaperCard>,
     onOpenDocument: (String) -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
     /**
      * Fills an empty place with a paper. #379, the owner: "I can't add a
      * document to one of the existing spots that a project template
@@ -88,8 +90,6 @@ fun ProjectPaperworkScreen(
      * empty slot that answers no tap is the dead end rule 18 names.
      */
     onFillPaper: (Repository.ProjectPaper) -> Unit = {},
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
