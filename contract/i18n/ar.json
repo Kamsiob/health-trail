@@ -1583,5 +1583,10 @@
   "people.add.title": "من غيره ترعى؟",
   "people.add.lead": "سيحصل على دفتره الخاص: فريقه وأدويته وأوراقه ومساره. لا شيء يُشارَك مع الشخص الأول.",
   "people.add.name": "اسمه",
-  "people.add.save": "ابدأ دفتره"
+  "people.add.save": "ابدأ دفتره",
+  "project.papers.fill": "ضع ورقة هنا",
+  "project.papers.fill.title": "أي ورقة توضع هنا؟",
+  "project.papers.fill.lead": "اختر ورقة حفظتها من قبل، أو صوّر واحدة جديدة.",
+  "project.papers.fill.new": "صوّر واحدة جديدة",
+  "project.papers.fill.none": "لا أوراق محفوظة بعد. صوّر واحدة وستظهر هنا."
 }

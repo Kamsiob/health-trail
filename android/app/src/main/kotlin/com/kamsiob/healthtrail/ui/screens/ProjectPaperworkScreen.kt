@@ -78,6 +78,16 @@ fun ProjectPaperworkScreen(
     projectName: String,
     papers: List<Repository.ProjectPaperCard>,
     onOpenDocument: (String) -> Unit,
+    /**
+     * Fills an empty place with a paper. #379, the owner: "I can't add a
+     * document to one of the existing spots that a project template
+     * recommended."
+     *
+     * **`fillProjectPaper` has been in the repository with no caller**, so the
+     * template could suggest a place and nothing could ever be put in it. An
+     * empty slot that answers no tap is the dead end rule 18 names.
+     */
+    onFillPaper: (Repository.ProjectPaper) -> Unit = {},
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -196,7 +206,9 @@ fun ProjectPaperworkScreen(
                         PaperTile(
                             card = card,
                             attachments = attachments,
-                            onOpen = card.documentId?.let { id -> { onOpenDocument(id) } },
+                            onOpen = card.documentId
+                                ?.let { id -> { onOpenDocument(id) } }
+                                ?: { onFillPaper(card.paper) },
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -214,8 +226,12 @@ fun ProjectPaperworkScreen(
                             title = Bidi.isolate(card.paper.name),
                             subtitle = subtitleFor(card),
                             subtitleMaxLines = 2,
-                            chevron = card.documentId != null,
-                            onClick = card.documentId?.let { id -> { onOpenDocument(id) } },
+                            chevron = true,
+                            // **An empty place offers to be filled**, rather
+                            // than sitting inert. #379.
+                            onClick = card.documentId
+                                ?.let { id -> { onOpenDocument(id) } }
+                                ?: { onFillPaper(card.paper) },
                             divider = index < shown.lastIndex,
                             leading = {
                                 Thumbnail(

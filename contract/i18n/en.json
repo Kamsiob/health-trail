@@ -1583,5 +1583,10 @@
   "people.add.title": "Who else are you looking after?",
   "people.add.lead": "They get their own notebook: their own care team, medications, papers and trail. Nothing is shared with the first person.",
   "people.add.name": "Their name",
-  "people.add.save": "Start their notebook"
+  "people.add.save": "Start their notebook",
+  "project.papers.fill": "Put a paper here",
+  "project.papers.fill.title": "Which paper goes here?",
+  "project.papers.fill.lead": "Choose one you have already kept, or photograph a new one.",
+  "project.papers.fill.new": "Photograph a new one",
+  "project.papers.fill.none": "No papers kept yet. Photograph one and it lands here."
 }

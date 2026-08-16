@@ -1583,5 +1583,10 @@
   "people.add.title": "您还在照顾谁？",
   "people.add.lead": "他们会有自己的笔记本：自己的照护团队、用药、文件和记录。与第一个人不共享任何内容。",
   "people.add.name": "他们的名字",
-  "people.add.save": "开始他们的笔记本"
+  "people.add.save": "开始他们的笔记本",
+  "project.papers.fill": "在这里放一份文件",
+  "project.papers.fill.title": "哪份文件放这里？",
+  "project.papers.fill.lead": "选择一份已经保存的，或者拍一份新的。",
+  "project.papers.fill.new": "拍一份新的",
+  "project.papers.fill.none": "还没有保存任何文件。拍一份就会出现在这里。"
 }

@@ -54,6 +54,7 @@ import com.kamsiob.healthtrail.ui.screens.CorrectEntryScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectSubjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
+import com.kamsiob.healthtrail.ui.screens.ChoosePaperScreen
 import com.kamsiob.healthtrail.ui.screens.PeopleScreen
 import androidx.compose.ui.test.onAllNodesWithTag
 import com.kamsiob.healthtrail.ui.screens.PaperViewerTags
@@ -2625,5 +2626,35 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("who this notebook is about")
+    }
+
+    /**
+     * Choosing which paper fills an empty place on a project, #379. Both
+     * doors are walked: the papers already kept, and photographing a new one.
+     */
+    @Test
+    fun choosingAPaperLabelsEverything() {
+        compose.show {
+            ChoosePaperScreen(
+                placeName = "The decision letter",
+                documents = listOf(
+                    Repository.Document(
+                        id = "d1",
+                        title = "Discharge summary",
+                        category = null,
+                        originalLocation = "Blue folder",
+                        notes = null,
+                        receivedEdtf = "2026-08-01",
+                        sha256 = null,
+                        byteSize = null,
+                    ),
+                ),
+                attachments = null,
+                onChoose = {},
+                onPhotograph = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("choosing a paper")
     }
 }

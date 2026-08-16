@@ -277,6 +277,10 @@ internal class ShellState {
     var projectPeople by mutableStateOf<List<Repository.ProjectPerson>>(emptyList())
     var documentFilings by mutableStateOf<List<Repository.DocumentFiling>>(emptyList())
     var projectPaperCards by mutableStateOf<List<Repository.ProjectPaperCard>>(emptyList())
+
+    /** #379: the empty place waiting for a paper, and the filing in flight. */
+    var fillingPaper by mutableStateOf<Repository.ProjectPaper?>(null)
+    var savingPaperFill by mutableStateOf<Pair<String, String>?>(null)
     var projectEntries by mutableStateOf<List<Repository.TrailEntry>>(emptyList())
     // A named type rather than a fourth slot on a Triple. Three anonymous
     // strings and a date is exactly the shape where the holder and the activity

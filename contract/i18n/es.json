@@ -1583,5 +1583,10 @@
   "people.add.title": "¿A quién más está cuidando?",
   "people.add.lead": "Tendrá su propio cuaderno: su equipo, sus medicamentos, sus papeles y su recorrido. No se comparte nada con la primera persona.",
   "people.add.name": "Su nombre",
-  "people.add.save": "Empezar su cuaderno"
+  "people.add.save": "Empezar su cuaderno",
+  "project.papers.fill": "Poner un papel aquí",
+  "project.papers.fill.title": "¿Qué papel va aquí?",
+  "project.papers.fill.lead": "Elija uno que ya haya guardado, o fotografíe uno nuevo.",
+  "project.papers.fill.new": "Fotografiar uno nuevo",
+  "project.papers.fill.none": "Todavía no hay papeles guardados. Fotografíe uno y aparecerá aquí."
 }

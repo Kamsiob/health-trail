@@ -62,6 +62,7 @@ import com.kamsiob.healthtrail.ui.screens.StageEditSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectPreviewSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
+import com.kamsiob.healthtrail.ui.screens.ChoosePaperScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
 import com.kamsiob.healthtrail.ui.screens.StandingInstructionsScreen
 import com.kamsiob.healthtrail.ui.screens.MoneyScreen
@@ -1537,7 +1538,42 @@ internal fun ProjectOverlays(
                     if (openDocument == null) openSection = Repository.Section.DOCUMENTS
                 },
                 onBack = { paperworkOpen = false },
+                onFillPaper = { fillingPaper = it },
             )
+
+            // **Choosing which paper goes in an empty place.** #379: the
+            // template suggests places and nothing could ever be put in one.
+            // The list is the documents already kept, because filing an
+            // existing paper is the common case; photographing a new one is
+            // the other door and it lands here the same way.
+            fillingPaper?.let { paper ->
+                ChoosePaperScreen(
+                    placeName = paper.name,
+                    documents = documents,
+                    attachments = Attachments.open(context),
+                    onChoose = { documentId ->
+                        savingPaperFill = paper.id to documentId
+                        fillingPaper = null
+                    },
+                    onPhotograph = {
+                        fillingPaper = null
+                        capturing = CaptureKind.DOCUMENT
+                    },
+                    onBack = { fillingPaper = null },
+                )
+            }
+
+            savingPaperFill?.let { (paperId, documentId) ->
+                LaunchedEffect(paperId, documentId) {
+                    repository.fillProjectPaper(
+                        paperId = paperId,
+                        documentId = documentId,
+                        direction = null,
+                    )
+                    savingPaperFill = null
+                    revision += 1
+                }
+            }
         } else if (currentProject != null && trailOpen) {
             ProjectTrailScreen(
                 projectName = currentProject.name,
