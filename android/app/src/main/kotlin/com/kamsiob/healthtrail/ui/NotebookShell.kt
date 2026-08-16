@@ -2424,6 +2424,7 @@ fun NotebookShell(
                             roleLabel = person.role.trim(),
                             notes = person.notes.trim(),
                             organizationId = place,
+                            email = person.email.trim(),
                         )
                     } else if (subject != null && anything) {
                         repository.createPerson(
@@ -2433,6 +2434,7 @@ fun NotebookShell(
                             roleLabel = person.role.trim().ifBlank { null },
                             notes = person.notes.trim().ifBlank { null },
                             organizationId = place,
+                            email = person.email.trim().ifBlank { null },
                         )
                     }
                     editingPerson = null

@@ -27,6 +27,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object OneDocTags {
+    const val SAVE = "document_save"
     const val NAME = "document"
     const val IMAGE = "document_image"
     const val EDIT = "document_edit"
@@ -78,6 +79,12 @@ fun DocumentScreen(
      * thrown away. Null keeps the image inert for a caller with no viewer.
      */
     onOpenPaper: ((String) -> Unit)? = null,
+    /**
+     * Hands the paper to the system sheet, which is how Android saves a file
+     * to the phone. #379: "anywhere there's a document I need to be able to
+     * download it to my phone or save it."
+     */
+    onSavePaper: ((String) -> Unit)? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -127,6 +134,14 @@ fun DocumentScreen(
                     style = HealthTrail.type.bodyM,
                     color = colors.ink2,
                     modifier = Modifier.testTag(OneDocTags.IMAGE),
+                )
+            }
+            if (document.sha256 != null && onSavePaper != null) {
+                Spacer(Modifier.height(Space.s))
+                QuietButton(
+                    label = strings["document.save"],
+                    onClick = { onSavePaper(document.sha256) },
+                    modifier = Modifier.testTag(OneDocTags.SAVE),
                 )
             }
             Spacer(Modifier.height(Space.sectionGap))

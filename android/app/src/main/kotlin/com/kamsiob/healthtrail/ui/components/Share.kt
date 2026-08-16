@@ -73,4 +73,62 @@ object Share {
             null
         }
     }
+
+    /**
+     * The intent that offers the person's own paper, as the image it is.
+     *
+     * **#379: "anywhere there's a document I need to be able to download it to
+     * my phone or save it."** The share sheet is the Android way to do both:
+     * every destination the phone offers, including Files and Downloads, comes
+     * from the one control, and it needs no storage permission.
+     *
+     * **Copied into the shared cache rather than exposed from the store.** The
+     * attachment directory is the app's private notebook and a content URI
+     * into it would outlive the share. Old shares are cleared first, for the
+     * same reason the text one clears them: these are somebody's records.
+     */
+    fun paperIntent(
+        context: Context,
+        sourceFile: File,
+        fileName: String,
+        chooserTitle: String,
+    ): Intent? {
+        val directory = File(context.cacheDir, DIRECTORY).apply { mkdirs() }
+        directory.listFiles()?.forEach { it.delete() }
+
+        val file = File(directory, fileName)
+        return try {
+            sourceFile.copyTo(file, overwrite = true)
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.shared",
+                file,
+            )
+            Intent.createChooser(
+                Intent(Intent.ACTION_SEND).apply {
+                    // **Declared as an image**, so the sheet offers the gallery
+                    // and the photo apps rather than only a file manager.
+                    type = "image/*"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                },
+                chooserTitle,
+            )
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    /**
+     * A file name a person recognizes in their Downloads folder.
+     *
+     * The document's own title, stripped to what a file system accepts, so
+     * "Discharge summary, March" arrives as `Discharge summary, March.jpg`
+     * rather than a hash. Falls back to a plain name when the title is all
+     * punctuation or another script the file system may refuse.
+     */
+    fun paperFileName(title: String): String {
+        val cleaned = title.trim().replace(Regex("""[\\/:*?"<>|]"""), " ").take(60).trim()
+        return if (cleaned.isBlank()) "document.jpg" else "$cleaned.jpg"
+    }
 }

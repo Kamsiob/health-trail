@@ -465,6 +465,8 @@ class Repository private constructor(
         notes: String? = null,
         /** Where they work, and it is never required. Rule 13, #353. */
         organizationId: String? = null,
+        /** Their email. The column shipped in Phase 0 unwritten. #379. */
+        email: String? = null,
     ): String {
         val personId = insert(
             "person",
@@ -474,6 +476,7 @@ class Repository private constructor(
                 "phone" to phone?.ifBlank { null },
                 "role_label" to roleLabel,
                 "notes" to notes?.ifBlank { null },
+                "email" to email?.ifBlank { null },
                 "organization_id" to organizationId,
             ),
         )
@@ -519,15 +522,18 @@ class Repository private constructor(
         roleLabel: String?,
         notes: String? = null,
         organizationId: String? = null,
+        /** Their email. Editable like everything else. #379. */
+        email: String? = null,
     ) = withContext(Dispatchers.IO) {
         db().database.write(
             "UPDATE person SET display_name = ?, phone = ?, role_label = ?, notes = ?, " +
-                "organization_id = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
+                "email = ?, organization_id = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
                 displayName,
                 phone?.ifBlank { null },
                 roleLabel?.ifBlank { null },
                 notes?.ifBlank { null },
+                email?.ifBlank { null },
                 organizationId,
                 System.currentTimeMillis(),
                 personId,

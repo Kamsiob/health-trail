@@ -49,6 +49,7 @@ import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object AddPersonTags {
+    const val EMAIL = "add_person_email"
     const val ROOT = "add_person_root"
     const val NAME = "add_person_name"
     const val ROLE = "add_person_role"
@@ -67,6 +68,12 @@ data class PersonDraft(
     val name: String,
     val role: String,
     val phone: String,
+    /**
+     * Their email, which the column has held since Phase 0 with nothing
+     * writing it. #379: some of these people answer email and never the
+     * phone, and the family needs both.
+     */
+    val email: String = "",
     /**
      * Anything else about them.
      *
@@ -169,6 +176,7 @@ fun AddPersonScreen(
     var name by remember(existing?.id) { mutableStateOf(existing?.displayName.orEmpty()) }
     var role by remember(existing?.id) { mutableStateOf(existing?.roleLabel.orEmpty()) }
     var phone by remember(existing?.id) { mutableStateOf(existing?.phone.orEmpty()) }
+    var email by remember(existing?.id) { mutableStateOf(existing?.email.orEmpty()) }
     var notes by remember(existing?.id) { mutableStateOf(existing?.notes.orEmpty()) }
     var where by remember(existing?.id) { mutableStateOf(existing?.organizationName.orEmpty()) }
 
@@ -353,6 +361,15 @@ fun AddPersonScreen(
                     )
 
                     FieldRow(
+                        label = strings["careteam.add.email"],
+                        value = email,
+                        onValueChange = { email = it },
+                        hint = strings["careteam.add.email.hint"],
+                        imeAction = ImeAction.Next,
+                        fieldTestTag = AddPersonTags.EMAIL,
+                    )
+
+                    FieldRow(
                         label = strings["careteam.add.notes"],
                         value = notes,
                         onValueChange = { notes = it },
@@ -442,6 +459,7 @@ fun AddPersonScreen(
                             name = name,
                             role = role,
                             phone = phone,
+                            email = email,
                             notes = notes,
                             where = where,
                         ),

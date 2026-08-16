@@ -13,6 +13,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.ui.components.Share
+import com.kamsiob.healthtrail.data.Attachments
 import java.time.LocalDate
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
@@ -258,6 +260,22 @@ internal fun MilestoneOverlays(
                 // **The paper opens at reading size**, #378, carrying the
                 // document's own name for the reader.
                 onOpenPaper = { sha -> viewingPaper = sha to fresh.title },
+                // **Saving is the system sheet**, which is how a phone puts a
+                // file in Downloads, in the gallery, or into a message. #379.
+                onSavePaper = { sha ->
+                    val store = Attachments.open(context)
+                    val intent = Share.paperIntent(
+                        context = context,
+                        sourceFile = store.fileFor(sha),
+                        fileName = Share.paperFileName(fresh.title),
+                        chooserTitle = strings["document.save.chooser"],
+                    )
+                    if (intent != null) {
+                        context.startActivity(intent)
+                    } else {
+                        documentError = strings["document.save.failed"]
+                    }
+                },
                 onEdit = {
                     editingDocument = fresh
                     documentError = null
@@ -1213,6 +1231,9 @@ internal fun ProjectStepOverlays(
 
                 Repository.Section.CARE_TEAM -> CareTeamScreen(
                     people = people,
+                    // Where they are now, so that facility's staff lead and
+                    // everyone else reads as outside it. #379.
+                    currentPlace = chapters.firstOrNull { it.isCurrent }?.name,
                     // The ones somebody actually calls lead the screen, #351.
                     // This list is already loaded for the capture form, which
                     // has been asking the same question all along.

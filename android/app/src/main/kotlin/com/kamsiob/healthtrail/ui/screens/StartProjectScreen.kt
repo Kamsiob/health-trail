@@ -36,6 +36,10 @@ import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import com.kamsiob.healthtrail.ui.theme.raisedCard
+import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object StartProjectTags {
@@ -219,6 +223,19 @@ fun StartProjectScreen(
                         }
                     }
                 } else {
+                    // **Starting from nothing leads, on the owner's direction,
+                    // #379.** It sat last, on the argument that most people
+                    // want one of the sixteen and should not be asked to write
+                    // from a blank page first. He watched it and disagreed:
+                    // the option was invisible down there, and somebody whose
+                    // process is not in the catalog concluded the app could
+                    // not hold it. It leads now, and it is raised so it reads
+                    // as an offer rather than as a form left open.
+                    item(key = "own_project") {
+                        OwnProject(onStart = onStartOwn)
+                        Spacer(Modifier.height(Space.sectionGap))
+                    }
+
                     // **Theirs first and open.** Somebody who has made one has
                     // learned something the catalog did not know, and putting
                     // the sixteen shipped ones above it would say the opposite.
@@ -266,20 +283,6 @@ fun StartProjectScreen(
                     }
                 }
 
-                // **Something the catalog never heard of**, which
-                // `MASTER_SPEC.md` 4.10 has always required. Sixteen processes
-                // is a good starting set and it is not the world, and offering
-                // only sixteen made them read as the only sixteen that count.
-                //
-                // **Last, not first.** For most people one of the sixteen is
-                // the answer, and putting the blank one at the top would ask
-                // everybody to write from nothing before showing them they did
-                // not have to.
-                item(key = "own_project") {
-                    Spacer(Modifier.height(Space.s))
-                    OwnProject(onStart = onStartOwn)
-                    Spacer(Modifier.height(Space.l))
-                }
             }
 
             Spacer(Modifier.height(Space.m))
@@ -434,7 +437,15 @@ private fun OwnProject(onStart: (String) -> Unit) {
     val colors = HealthTrail.colors
     var name by rememberSaveable { mutableStateOf("") }
 
-    Column(modifier = Modifier.fillMaxWidth().testTag(StartProjectTags.OWN)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .raisedCard(Radius.card)
+            .clip(Radius.card)
+            .background(colors.card)
+            .padding(Space.cardPadding)
+            .testTag(StartProjectTags.OWN),
+    ) {
         GroupHeader(labelKey = "projects.blank")
         Spacer(Modifier.height(Space.headerGap))
         Text(

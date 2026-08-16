@@ -267,15 +267,24 @@ fun DenseRow(
                 )
             }
             if (trailingContent != null) {
+                // **Pushed hard to the end, and capped rather than weighted.**
+                // A weight let the pill float wherever the leftover space put
+                // it, so the care team's Call button sat adrift between the
+                // name and the edge. #379, the owner: "the call button is off
+                // center. it should be on the way right side."
+                //
+                // **The cap is what the weight was protecting.** A long label
+                // used to squeeze the title into a column one character wide,
+                // so the pill may take at most half the row and wraps inside
+                // that, which holds at font scale 2.0 without giving up the
+                // edge alignment.
                 Spacer(Modifier.width(Space.sm))
-                // **Weighted, exactly as the trailing text above it is.** The
-                // branch above carries the comment about a long value squeezing
-                // a title "into a column one character wide, reading vertically
-                // down the screen", and this sibling never got the same fix. Its
-                // callers put a "Call 555 0142" button here, so on the care team
-                // at font scale 2.0 the pill took the row and the person's name
-                // collapsed to one letter per line. #361.
-                Box(modifier = Modifier.weight(1f, fill = false)) { trailingContent() }
+                Box(
+                    modifier = Modifier.fillMaxWidth(TRAILING_MAX_FRACTION),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    trailingContent()
+                }
             }
             if (chevron) {
                 Spacer(Modifier.width(Space.s))
@@ -319,3 +328,11 @@ internal val LEADING_SIZE = 32.dp
 
 /** The same 40% the group header's rule carries, per 5.13. */
 private const val HAIRLINE_ALPHA = 0.4f
+
+/**
+ * How much of a row a trailing pill may take.
+ *
+ * Half: enough for "Call" and its longest translation at the largest type,
+ * and never enough to reduce the title to a vertical column of letters.
+ */
+private const val TRAILING_MAX_FRACTION = 0.5f

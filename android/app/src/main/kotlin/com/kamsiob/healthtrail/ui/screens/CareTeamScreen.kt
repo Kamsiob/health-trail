@@ -98,6 +98,17 @@ fun CareTeamScreen(
      * which is what a notebook with no history has to offer and is honest.
      */
     byRecentUse: List<Repository.Person> = emptyList(),
+    /**
+     * Where the person being cared for actually is, so that facility's staff
+     * lead the list.
+     *
+     * **#379, the owner: the care team at the facility and the medical staff
+     * outside it are two different groups.** The screen already folded by
+     * workplace; what it did not do was know which workplace is *the* one.
+     * Null on a notebook with no current place, and then the folds sort by
+     * size as they always did.
+     */
+    currentPlace: String? = null,
 ) {
     val strings = LocalStrings.current
     // **One open set rather than one flag**, because there is a fold per place
@@ -184,6 +195,8 @@ fun CareTeamScreen(
                 .toList()
                 .sortedWith(
                     compareBy(
+                        // **The facility they are in leads.** #379.
+                        { it.first == null || !it.first.equals(currentPlace, true) },
                         { it.first == null },
                         { -it.second.size },
                         { it.first.orEmpty() },
