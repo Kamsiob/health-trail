@@ -2990,6 +2990,58 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D176. The eyebrow keeps its job and loses the typeface, and mono is figures only
+
+**Date:** 2026-08-16. **Decided under rule 10**, working #384. **Settles a conflict between rule 15 and `docs/V4.md` section 3**, and changes no copy, no schema and no saved value.
+
+**The conflict, stated plainly.** Rule 15 says to group what belongs together under "a quiet mono eyebrow". V4.md section 3 says JetBrains Mono is for figures that line up in a column **only**, and [D173] says the tab chip leaves the mono face because a third typeface on a screen that already carries a display heading and body text is what "the fonts don't mix well together" was pointing at. Thirty five surfaces were caught between the two.
+
+**Both are satisfied at once, because the eyebrow's job was never the face.** What makes a short line read as deliberate rather than as leftover is small size, weight and wide tracking. None of that needs a typewriter. So `eyebrow` is a new type role carrying `mono`'s exact metrics, 12sp on 17, in the reading face at Bold with 0.14em of tracking. **Rule 15's eyebrow survives verbatim; only its typeface changed**, so the rule is not weakened and does not need renumbering.
+
+**Bold rather than mono's Medium**, because Atkinson at 12sp is a quieter letter than JetBrains Mono at 12sp and the line has to hold under a display heading.
+
+**Every one of the thirty five sites was ruled by hand rather than swept.** Twenty two are eyebrows. Nine are sentences, counts or the person's own words and take Body S, because tracked caps on a sentence is worse than the mono was. Two are chips and take Label, per [D173]. **Four are genuinely figures and keep mono**: the wash band's number, the rung count at display size, and an amount of money in a list of amounts, which is the column tabular figures exist to line up.
+
+**The alternative was a blanket substitution to Body S**, which V4.md's own table suggests. It was rejected because it would have deleted the eyebrow as a level in the ladder: every group label would have become indistinguishable from the row subtitles beneath it, which is rule 15's uniform weight arriving by a different door.
+
+**The tracking comes off on connected scripts from the day the token exists.** Positive tracking is worse in Arabic than the negative kind already handled there, because letting the joins out destroys what says two letters are one word. The three styles above it in the ladder were only fixed after somebody found a broken heading on the phone.
+
+**What would reopen it:** the owner looking at an eyebrow on the phone and finding it too quiet or too loud. The metrics are one line, and the role now exists to be tuned.
+
+---
+
+### D175. One interaction grammar, and the app's is a spring rather than a ripple
+
+**Date:** 2026-08-16. **Written up 2026-08-16 from the reasons left in the sources**, because sixteen citations across five source files, two tests and two documents pointed at a D175 that was never written into this file. The decision was made and implemented; only the record was missing. **Reconstructed rather than invented**: every claim below is quoted from a KDoc or comment written at the time.
+
+**The decision.** **No Material ripple anywhere in the app.** A touch is answered by the surface springing under the finger and stepping toward `ink`, which is the treatment `Press.kt` has carried since 5.14. `ViewToggle`'s segment and `FoldRow`'s two surfaces were the last places a spreading circle appeared.
+
+**The owner found it, and his words name the real defect:** "just look at the accordions on the care team page, that's copy and paste from the old design." A ripple is not a small visual difference. It is a second interaction grammar, so the app answers the same gesture two different ways depending on which screen somebody is standing on. Rule 16 asks for one treatment app-wide.
+
+**The fold's corners came with it.** `FoldRow` drew its own 18dp against the 26dp every card and group uses, so a fold sitting directly under a card was visibly a different kind of object drawn by a different hand. There is one container shape.
+
+**A fold is a way in, so it is written like one.** Its label sat at the small size in the secondary ink, which is this app's caption treatment. On the care team screen those three folds are the only route to everyone not pinned at the top, and they read as footnotes under the real content. Body weight in the primary ink now, like every other row that goes somewhere.
+
+---
+
+### D174. Bricolage Grotesque is removed, and the app ships two typefaces
+
+**Date:** 2026-08-16. **Written up 2026-08-16 from the reasons left in the sources**, for the same reason as [D175]: cited in `Type.kt`, `FONTS.md`, `V4.md`, three screens and two tests, and absent from this file. **Reconstructed, not invented.**
+
+**The decision.** The bundled display face is gone. **Atkinson Hyperlegible at Bold is the headline**, and JetBrains Mono keeps the figures that line up in a column. Two faces with two jobs.
+
+**The owner said it three times:** the fonts are unnatural, they do not mix well together, and "that font at the top is just weird". The brief was "clean fonts that are easy to read with a little bit of Elegance but not something weird or something that is artsy".
+
+**Bricolage is a characterful display face whose whole appeal is its quirks**, the flared terminals and the odd `g` and `y`, and it was setting headlines above body text drawn on completely different principles. **Two faces that disagree about what a letter is do not become a pair by being on the same screen.**
+
+**One family cannot clash with itself.** Atkinson was drawn by the Braille Institute specifically so letters stay distinct from one another, which is the opposite of artsy and exactly right for an app read by somebody exhausted. **Nothing is lost at the display end**: what made the hero the loudest thing on the screen was always size, weight and space rather than a second typeface, which is this project's own rule 15.
+
+**A bundled display face is still worth revisiting** when there is network to fetch one. Something in the Inter or Plus Jakarta Sans family would give elegance without the quirk.
+
+**Its license leaves with it**, so the app no longer carries the Bricolage Grotesque copyright among the ones it has to ship.
+
+---
+
 ### D173. One corner grammar, and the v4 baseline replaces the old spec
 
 **Date:** 2026-08-16. **The owner:** the top right of Today "should have an edit icon instead of the word arrange", there is "no light bulb tip button" for that page, and the standing rule: **"if there's anything on one page then the user should know where to find it on a different page."** Also: **"make sure you're not referencing the original design.md spec or outdated instructions."**
