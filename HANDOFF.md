@@ -4,26 +4,17 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Written for a machine: fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-14, at the owner's instruction to compress every document. Prior version archived whole at the foot of `docs/RUN-LOG.md`.
+**Last rewritten:** 2026-08-16, for the v4 overhaul. Prior version is in git history.
 
 ---
 
 ## 1. State
 
-- Tree clean, everything on `origin/main`. Verify: `git status --porcelain`.
-- **The approved round 4 mockups are the design baseline and get opened, not recalled.** D172. Source: `docs/screenshots/m3v4-*.png`. Three rounds were built from memory of the approval and each one drifted; read back against the file, the differences were structural. Any note that contradicts the approved artifact loses, in writing.
-- **Today matches that baseline now**: one saturated block at the lead with white type, every card under it white with a small hue dot, gold back to an accent, two typefaces. The rainbow was six tinted cards of equal weight, which is rule 15 wearing color. **Not sterile is achieved by the restraint around the one colored block**, not by adding color back.
-- **Still on the old structure and not yet compared against the mockups**: Projects home, Care team, the Document screen, the entry forms. `Hero` on other screens is still transparent by design law 11.5, which is deliberate and separate from the Today lead.
-- **`DESIGN.md` is not the authority any more.** D173, the owner's words: do not reference the original design spec or outdated instructions. The v4 mockups plus D170 through D173 are. Where a `DESIGN.md` section disagrees, the mockup wins and the section is marked superseded rather than quietly ignored.
-- **The corner is one grammar on every screen**: lamp then pencil, both slots held open when one is missing, all of it through `HeaderActions`. Adding a header control anywhere else means adding it there. A detail screen gets its pencil from `SectionScaffold(onEdit =, editTag =, editLabel =)`.
-- **Read the last line of `tools/seed.sh` before trusting any screenshot.** It prints "Restored." or "The restore did not finish". A failed seed leaves an empty notebook and every capture after it shows empty states, which cost three screens' assessment on 2026-08-16. `docs/TRAPS.md` 1.
-- **1.0.0 is cut**, 2026-08-16, versionCode 2, on the owner's order that 1.0 mean something. D166 is the definition. **The signed APK and the Play AAB live in `release/` at the repo root**, gitignored, built by `assembleRelease bundleRelease` with the D160 key. The round trip is proven on the minified build, D165.
-- **Anything added can be edited and removed**, the owner's final 1.0 rule: the audit found five gaps (thread, chapter, milestone, reading, measure) and closed them, plus the empty thread that had lost even its rename to an early return. Verified by RemovalIsVisibleTest's new walk. The plain English pass renamed "Standing instructions" to "Instructions" on the shelf and killed "in force".
-- **729 instrumented tests, 1 failure on the last full run, and the failure was fixed and its class verified green in isolation** (the copy guard that bans "followed" on the instructions card, which was right). The owner accepted delivery on that basis, 2026-08-16, rather than burning a third full run.
-- 728/728 was the last fully green suite, same night, before the removals landed. Two earlier runs that night died to foreground theft, `docs/TRAPS.md` has the tell. Plus 28 repo checks, 218 unit tests, lint. Plus 28 repo checks, 218 unit tests, lint. Run alone on a clean device: two runs at once produce `DELETE_FAILED_INTERNAL_ERROR` and failures in unrelated tests.
-- CI green at tip. Check after each push: `gh run list --branch main --limit 3`.
-- Phone at baseline and **can be unplugged**: font scale 1.0, animator 1.0, no reader, night mode auto, all four read back after being changed. Holds the current build and the month6 fixture.
-- **Looked at on the phone**, not only tested: Today at scale 1.0 and 2.0, Projects, a project's own screen, the trail, the card gallery, two forms. Screenshots in `docs/screenshots/`: `today-*`, `projects-list-*`, `sweep-*`, `form-*`, `add-card-gallery-*`.
+- **735 instrumented tests green**, 218 unit, 29 repo checks, lint. 2026-08-16.
+- Tree clean, all on `origin/main`. CI green at tip: `gh run list --branch main --limit 3`.
+- **Do not build an APK or AAB.** Owner holds delivery until he approves the design. Phase two polish comes after the overhaul and he wants to see it first.
+- **The v4 overhaul is the work.** `docs/V4.md` is the plan and has authority over `DESIGN.md`. Progress is a command: `python3 tools/checks/check_v4.py`. 41 of 55 components converted.
+- Phone at baseline, stays plugged in: font scale 1.0, animator 1.0, no reader, night mode auto. Holds the current build and the month6 fixture.
 
 ## 2. Reading ladder
 
@@ -32,57 +23,34 @@ Read on demand, never in bulk.
 | Need | Read |
 |---|---|
 | What to do next | `gh issue view 321`, then this file |
+| The design, and the order of work | **`docs/V4.md`** |
 | What will bite me | `docs/TRAPS.md`, **one section**, from its own table |
-| Why is it like this | `DECISIONS.md`, search a D number. Index at its top |
-| What should it look like | `DESIGN.md`, numbered section. Index at its top |
+| Why is it like this | `DECISIONS.md`, search a D number |
 | What may the data do | `contract/DATA-CONTRACT.md` |
 | What the app is for | `MASTER_SPEC.md` |
-| Delegation | `AGENTS.md`. Subagents never write |
-| Long unattended runs | `RUN-SAFETY.md` |
+| Delegation, unattended runs | `AGENTS.md`, `RUN-SAFETY.md`. Subagents never write |
 | How it got here | `docs/RUN-LOG.md`. **History. Never to orient** |
 
-Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT.md` (data) > `DESIGN.md` (visual) > `RUN-SAFETY.md`/`AGENTS.md` > `PROJECT-DELTAS.md` > `MASTER_SPEC.md` > template.
+`DESIGN.md` is superseded where it disagrees with `docs/V4.md`. It still holds the accessibility gate (12), the component library (7) and the interaction grammar (9).
+
+Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` > `contract/DATA-CONTRACT.md` (data) > `RUN-SAFETY.md`/`AGENTS.md` > `PROJECT-DELTAS.md` > `MASTER_SPEC.md` > template.
 
 ## 3. The work
 
-**#376** is the live list: the owner's direction of 2026-08-13, overnight, after using the build. **The acceptance criterion is a shippable app**, not a green run and not a correct screen. It names six failures and quotes him on all of them.
+**#384, v4 phase one: the fourteen remaining components.** `docs/V4.md` is the plan. The list is a command: `python3 tools/checks/check_v4.py`.
 
-1. The text is hard to read. **Done**, D154: the whole ladder lifted, body 14sp to 16.
-2. Today is hard to use. **Mostly done** through 3 and 4, plus the clutter: the word "Options" off every card, the capture button standing down while arranging, Done given weight.
-3. **A card is square or full width, and he had said so more than once.** Done, D153, and the square fills itself.
-4. Adding, removing and changing cards **must mimic the phone's own home screen**. Done: hold to arrange, carry the card itself, others move aside, back keeps it, and **the gallery offers the real card rather than a line describing it** (D157).
-5. **The projects overhaul.** **Done for the home, D164, 2026-08-16, on the owner's direct order**: one fixed reading order on every project, the three verbs as a tile row, the road vertical with the move control on the current stage, the file as five doors, no folds. The stranger-test failures around it are also closed: D162/D163 (the name settled back to Projects, the screens teach), the picker rows repaired, the Notebook categorized. **Open on #369**: the five deep screens (setup, trail, papers, people, steps) untouched by the redesign, and "+ Start" placement.
-6. **No data entry screen is boring or lazily designed.** **Two of fourteen done.** `AddPersonScreen` asked five questions at one weight while D147 recorded it as converted. `EmergencyCardEditScreen` said "Who to call first" twice within three lines, once as a mono header and once as a body label.
+**Component before screen.** A component fixed once is fixed on every screen that uses it. Screen by screen is what produced an overhaul three components deep out of fifty five while it was being called finished; the owner caught it on the care team folds.
 
-   **Not a sweep for folding**, and the count on #376 is why: four forms were already staged and seven are too short to need it. The two done needed two different things: a fold, and a duplicated heading taken out.
+Order, and none of it starts early:
 
-   **The biggest thing left on item 6 is one decision, not a sweep.** Four of #374's correction surfaces, plus the care thread rename, are one question on an otherwise empty screen: a chip, a title, a lead, a field, then two thirds of a Pixel 8 doing nothing. **A one question correction may be sheet shaped rather than screen shaped**, and the app already answers a question in a sheet in four places. Against it: `AddThreadScreen` also starts a thread from nothing, and D151 gives it a chip and a `displayM` title a sheet does not wear. Written up on #376. The emergency card also **drew its whole care team as chips**, fifteen names filling the first screen while `CHIP_CAP` in `Chips.kt` caps a chip set at five; `cappedChips` could not serve it because it takes one selection and the card takes a set, so there is a multi select cap now and **nobody already on the card is ever folded away**. `EmergencyCardEditScreenTest` is its first test.
+1. **#384**, the fourteen components, batched by tell rather than by screen.
+2. **The screens that arrange them**: hierarchy, not restyling. What leads, what recedes, what is grouped. Projects home, the Document screen, Trail, Progress, Money, Chapters and Threads have not been read against `docs/V4.md` section 1.
+3. **Rule 11 states** on all 85 screens: empty, one, many, long text, RTL.
+4. **#383**, polish and motion. Blocked until the check reports zero.
 
-**Everything above was looked at on the phone**, not only tested. **5 and 6 are where the work is**: twelve project screens and thirteen forms have not been through this.
+**Also open:** **#381** forms (setup and measurement done, seven to go), **#382** the edit mark awaiting the owner's eye, **#379** four items (project interior as a checklist, standing instructions, linking any item to a document, the More page), **#378** a document reopening at dropped resolution, **#369** five deep project screens.
 
-**What the phone found and no test would have.** The square was right and still wrong: the answer sat in the top third and two thirds was empty white, rule 11's blank area. **The chevron then landed in the middle of the card, and then in the wrong corner**, over two builds, because `align` says where a box goes and not how big it is. The capture button covered the words on the card beneath it at font scale 2.0. The word "Options" appeared on five cards at once. **A project's road was four dots on a dashed line**, which is a progress bar and is the one thing rule 13 rules out. **The gallery was seventeen rows of words** describing cards instead of showing them. None of that is visible in source and none of it fails a test.
-
-**Still owed on Today, and it is the owner's to weigh.** At font scale 2.0 the capture button covers the words under it: "Levothyroxine · 50 mcg, morn" runs under the FAB. The list has clearance at its end, so this is the button floating over mid content rather than a missing inset, and it predates the type lift. Moving the FAB or insetting every card is a decision rather than a repair.
-
-**#375** was the previous direction and #376 supersedes it as the live list. Its four asks are not withdrawn.
-
-**#374 is done. All six records can be corrected**, 2026-08-14: a chapter's name, a project's name, a question's own words, a standing instruction's own words, a reading, and a measure's name and unit. The first four reuse the one question screen, which now takes `leadKey`, `section`, `initialName` and `singleLine`. The reading and the measure reuse the forms that created them, because two forms for one record is how two forms drift apart.
-
-**They are also B6's real proof.** Both full screen surfaces together cost the shell **220 bytes**, against the 1,860 bytes of headroom it had before #373, when one added parameter on an existing screen was enough to fail the build. **#373** is B6 and is done.
-
-**Each correction is reached from the thing itself**, per rule 17 and #374's own acceptance: the reading's from its row on the progress screen, the measure's from under its chart, the question's and the instruction's from their sheets, the two names from their own screens. **All six walked on the phone**, light, scale 1.0. **Three had a defect every test passed**: a save button repeating the words of the control that opened it, a correction wearing the recording lead, and a control sitting under the wrong measure. All wrong words or wrong placement, which is the class a test cannot see.
-
-**Since covered**: the reader walk on four of them in `ScreenReaderTest`, and RTL against a forced layout direction plus font scale 2.0 in `CorrectionsHoldUpTest`. **The kind assertion there was watched failing** against `kindIsFixed` set back to false, because the chip and the sentence carry the same words and asserting the words alone would have passed either way.
-
-**Dark was walked**, 2026-08-14, on a fresh install: onboarding, setup, the situation picker, the notebook list scrolled to its end, and Chapters. The theme holds, the notebook list clears the capture button at its end, and the mono eyebrows and tinted section icons read as they do in light.
-
-**It found #377**, which was not a theme problem: Chapters opened to a drawing, a sentence and nothing to touch. **Now closed.** The empty state and the list both offer "Say they moved", which asks for the place and nothing else and writes through `moveToChapter`, so the old place closes today and the new one starts today. D159 answers what D158 left open: a place is something the person names, and naming it is a move. **A transfer between two nursing homes was impossible before this** and is two taps now.
-
-**Still owed**: the same look at the other project screens. A test says a screen holds together; it cannot say whether it reads.
-
-**The whole of #374 cost the shell 2,919 bytes.** Before #373 the shell had 1,860 bytes of headroom and one added parameter on an existing screen failed the build. Six full screen surfaces later there are **35,937 bytes** left. That is what B6 was worth, and it is a better number than any taken on the bytecode alone.
-
-#371, the five-panel audit, is closed.
+**What the phone found that no test would have**, kept because the pattern repeats: a saturated hero read as a paragraph when it was a pale wash; six tinted cards of equal weight read as a rainbow; a square tile left an honest empty state marooned in white; a phone number broke across two lines on the screen whose promise is that the number is one tap away; the readable export printed a raw column name into an Arabic archive; the edit mark read as an eyedropper. **None of that is visible in source and none of it fails a test.**
 
 ## 4. Blocked, read before planning
 
@@ -124,7 +92,7 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 - Pixel 8, `39151FDJH00506`, Android 17, USB. **The owner's test phone, not his daily driver.** He said so on 2026-08-15, correcting what this line and several D entries had assumed since the start. **His daily driver is a separate device this session never sees**, and it is where he installs a build to actually use it.
 - **The care about this device stands anyway.** He uses it, personal content reaches its screen, and the screenshot guard writes into a public repository. D31, D43, D53 and rule 19 are unchanged: record before changing, restore exactly, never capture the share sheet or a password field. **The reason written in `tools/screenshot.sh` is now wrong and the guard it protects is not.** Do not relax it on the strength of this line.
 - Baseline: font scale 1.0, animator 1.0, touch exploration 0, no per-app locale, app theme "Follow the phone". Rule 19 lets these change **only** if the prior value is recorded first and restored exactly.
-- Say when it can be unplugged. Most work needs no device.
+- **It stays plugged in.** It is a dedicated development device, not his daily driver, so there is nothing to say about unplugging it. Corrected 2026-08-16.
 - **Never screenshot**: the share sheet, the calendar app, any screen with a password field (the password manager puts its own bar in the shot).
 - `tools/screenshot.sh` refuses while app theme is "Follow the phone" (device night mode is `auto`). Set Light or Dark, capture, set back.
 - Chinese is `zh-Hans`, never bare `zh` (D52).

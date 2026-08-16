@@ -6,7 +6,6 @@ Every face the app renders is bundled in `android/app/src/main/res/font`. Nothin
 
 | File | Family | Weight | Copyright | License |
 |---|---|---|---|---|
-| `bricolage_grotesque_bold.ttf` | Bricolage Grotesque | 700 | Copyright 2022 The Bricolage Grotesque Project Authors | OFL 1.1 |
 | `atkinson_hyperlegible_regular.ttf` | Atkinson Hyperlegible | 400 | Copyright 2020 Braille Institute of America, Inc. | OFL 1.1 |
 | `atkinson_hyperlegible_bold.ttf` | Atkinson Hyperlegible | 700 | Copyright 2020 Braille Institute of America, Inc. | OFL 1.1 |
 | `jetbrains_mono_regular.ttf` | JetBrains Mono | 400 | Copyright 2020 The JetBrains Mono Project Authors | OFL 1.1 |
@@ -19,7 +18,6 @@ Every face the app renders is bundled in `android/app/src/main/res/font`. Nothin
 
 **Atkinson Hyperlegible is a functional choice, not an aesthetic one.** The Braille Institute designed it for maximum character distinction for low vision readers. The audience for this app is stressed, frequently older, and often reading in bad light, which is the case the face exists for. It is the reason the body face is not simply the display face at a smaller size.
 
-Bricolage Grotesque carries display text. JetBrains Mono carries eyebrows, counts, timestamps, and metadata.
 
 ## How the fallback works
 
@@ -47,3 +45,8 @@ adb shell cmd locale set-app-locales com.kamsiob.healthtrail --locales ""
 The second line clears it. This is per app, so it never changes the system language, which matters because the test device is the owner's daily driver.
 
 **Running Arabic this way immediately found something no check had:** the app chrome is translated and the template catalog is not, so the interface was Arabic and every situation name inside it was English. That is issue #62.
+
+**Bricolage Grotesque was removed in D174.** A display face whose appeal is
+its quirks does not pair with a legibility face, and the owner said so three
+times. The file is out of the build rather than left unreferenced in `res/font`,
+where it would ship in every APK for nothing.

@@ -68,7 +68,7 @@ If a run ends with TalkBack on:
     adb shell settings put secure enabled_accessibility_services org.kde.kdeconnect_tp/org.kde.kdeconnect.plugins.mousereceiver.MouseReceiverService
     adb shell settings put secure accessibility_enabled 0
 
-**Say when the phone can be unplugged.** The owner waits to be told.
+**The phone stays plugged in.** It is a dedicated development device. The owner said so on 2026-08-16: "you don't need to worry about me unplugging the phone". His daily driver is a separate device this session never sees, and it is where he installs a build to actually use it.
 
 **Tools.** `walk.sh see` prints the semantics tree (text plus `desc:` descriptions). `walk.sh tap "X"` taps and prints what it tapped. `walk.sh fields` lists editable fields with coordinates. By hand: `adb shell uiautomator dump /sdcard/w.xml`, tap the center of a node's bounds. `python3 tools/checks/report_today_rungs.py` says which rung of `DESIGN.md` 21.4 each Today card lands on per fixture: a report, not a gate, and its queries are a second copy of `Repository.todayAnswers`, so **if a rung it promises is not on screen, believe the screen**. The empty Today comes only from a cleared install plus walking onboarding.
 
