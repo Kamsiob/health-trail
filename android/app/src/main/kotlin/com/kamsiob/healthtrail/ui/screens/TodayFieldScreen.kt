@@ -853,6 +853,10 @@ private fun CardFor(
     TodayCard(
         tab = tab,
         hue = hueForCard(card.type),
+        // **An empty answer centers itself in the square.** The none line sat
+        // on the bottom edge under a void, which on a fresh notebook made the
+        // whole first screen read as four broken boxes. #376.
+        centerContent = answer == null || (answer.isEmpty && !answer.sourceClosed),
         // **Raw parts, joined once.** Bidi.join isolates every part it is
         // given, so handing it a string that was already joined wraps the whole
         // thing again and the marks nest. The same defect was fixed on the

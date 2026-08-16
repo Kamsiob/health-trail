@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -225,6 +226,16 @@ fun TodayCard(
     onLongPress: (() -> Unit)? = null,
     /** What a reader calls the hold. Required whenever [onLongPress] is set. */
     longPressLabel: String? = null,
+    /**
+     * Centers the answer in the square instead of dropping it to the bottom.
+     *
+     * **For the empty rung only.** A filled square lines its answer along the
+     * bottom so a row of cards reads across one baseline; an empty square
+     * doing that put one small gray line under two thirds of blank white,
+     * which is the first thing a brand new notebook showed anybody. Rule 11's
+     * blank area, on the first screen of a first run. #376.
+     */
+    centerContent: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
@@ -329,7 +340,23 @@ fun TodayCard(
                     .background(hue.wash)
                     .padding(horizontal = Space.s, vertical = 2.dp),
             )
-            Column(modifier = silence.padding(top = Space.s)) {
+            Column(
+                modifier = silence
+                    .padding(top = Space.s)
+                    // **The empty line takes the leftover square and centers
+                    // in it.** Weight only on the small card: the wide card's
+                    // height is set by its content, and a weight there would
+                    // stretch a two line card for no reason.
+                    .then(
+                        if (centerContent && size == CardSize.SMALL) {
+                            Modifier
+                                .weight(1f)
+                                .wrapContentHeight(Alignment.CenterVertically)
+                        } else {
+                            Modifier
+                        },
+                    ),
+            ) {
                 content()
             }
             action?.invoke()
