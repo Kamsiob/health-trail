@@ -86,6 +86,14 @@ class ProjectPapersScreenTest {
     fun aPlaceCanBeAddedAndTheFieldIsTheOnlyThingThatStopsIt() {
         showList()
         compose.onNodeWithTag(ProjectPapersTags.ADD).assertIsNotEnabled()
+        // **Scrolled to before it is typed into, as well as before it is
+        // tapped.** The comment below records this failing once when the type
+        // ladder grew; it failed again when the ladder grew a second time for
+        // D167, because the field itself was then outside the window and the
+        // text went nowhere. Scrolling to each control before touching it is
+        // what makes this test independent of how tall the content above is.
+        compose.onNodeWithTag(SectionTags.root(ProjectPapersTags.NAME))
+            .performScrollToNode(hasTestTag(ProjectPapersTags.ADD_FIELD))
         compose.onNodeWithTag(ProjectPapersTags.ADD_FIELD).performTextInput("The denial letter")
         // **Scrolled to before it is touched.** `SectionScaffold` renders
         // through a `LazyColumn`, so a control below the fold is composed but

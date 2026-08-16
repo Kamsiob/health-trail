@@ -220,6 +220,16 @@ fun StartProjectScreen(
                                 color = colors.ink2,
                                 modifier = Modifier.padding(vertical = Space.l),
                             )
+                            // **A search that matches nothing is exactly when
+                            // starting from nothing is the answer**, and
+                            // moving this block to the browse branch took it
+                            // away from the one screen state that needs it
+                            // most. A test caught it, and the test was right:
+                            // somebody whose process is not in the catalog
+                            // searches for it first, finds nothing, and must
+                            // not be left staring at a sentence. #379.
+                            OwnProject(onStart = onStartOwn)
+                            Spacer(Modifier.height(Space.l))
                         }
                     }
                 } else {
@@ -436,38 +446,52 @@ private fun OwnProject(onStart: (String) -> Unit) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     var name by rememberSaveable { mutableStateOf("") }
+    var open by rememberSaveable { mutableStateOf(false) }
 
+    // **Prominent but compact until it is wanted.** #379 moved this to the
+    // top because it was invisible at the bottom, and the first attempt put
+    // the whole form up there: a text field and a button above everything
+    // else, which pushed the later categories out of the list's composition
+    // window entirely. A test caught that by failing to reach the papers
+    // fold, which is a real person failing to reach it too.
+    //
+    // Closed it is one raised row that says what it offers. Open it is the
+    // form. Either way it leads.
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .raisedCard(Radius.card)
             .clip(Radius.card)
             .background(colors.card)
-            .padding(Space.cardPadding)
             .testTag(StartProjectTags.OWN),
     ) {
-        GroupHeader(labelKey = "projects.blank")
-        Spacer(Modifier.height(Space.headerGap))
-        Text(
-            text = strings["projects.blank.aside"],
-            style = HealthTrail.type.bodyM,
-            color = colors.ink2,
+        DenseRow(
+            title = strings["projects.blank"],
+            subtitle = strings["projects.blank.aside"],
+            subtitleMaxLines = Int.MAX_VALUE,
+            chevron = !open,
+            divider = false,
+            onClick = if (open) null else { { open = true } },
+            clickLabel = strings["projects.start"],
         )
-        Spacer(Modifier.height(Space.m))
-        HealthTrailTextField(
-            label = strings["projects.name"],
-            value = name,
-            onValueChange = { name = it },
-            hint = strings["projects.name.hint"],
-            fieldTestTag = StartProjectTags.OWN_NAME,
-        )
-        if (name.isNotBlank()) {
-            Spacer(Modifier.height(Space.m))
-            FilledButton(
-                label = strings["projects.start"],
-                onClick = { onStart(name.trim()) },
-                modifier = Modifier.fillMaxWidth().testTag(StartProjectTags.OWN_START),
-            )
+        if (open) {
+            Column(modifier = Modifier.padding(Space.cardPadding)) {
+                HealthTrailTextField(
+                    label = strings["projects.name"],
+                    value = name,
+                    onValueChange = { name = it },
+                    hint = strings["projects.name.hint"],
+                    fieldTestTag = StartProjectTags.OWN_NAME,
+                )
+                if (name.isNotBlank()) {
+                    Spacer(Modifier.height(Space.m))
+                    FilledButton(
+                        label = strings["projects.start"],
+                        onClick = { onStart(name.trim()) },
+                        modifier = Modifier.fillMaxWidth().testTag(StartProjectTags.OWN_START),
+                    )
+                }
+            }
         }
     }
 }

@@ -250,6 +250,8 @@ class ProjectSetupScreenTest {
         compose.onNodeWithTag(SectionTags.root(ProjectSetupTags.NAME))
             .performScrollToNode(hasText(strings["projects.save_as_template"]))
         compose.onNodeWithText(strings["projects.save_as_template"]).assertIsDisplayed()
-        assertEquals("Save this setup as your own template", strings["projects.save_as_template"])
+        // Shortened on 2026-08-16 in the plain English pass: seven words
+        // describing an action is the "Change what this says" defect again.
+        assertEquals("Save as a template", strings["projects.save_as_template"])
     }
 }
