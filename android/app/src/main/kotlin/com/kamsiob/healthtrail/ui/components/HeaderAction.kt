@@ -18,8 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
@@ -164,52 +163,70 @@ fun EditAction(
             .testTag(tag ?: HeaderActionTags.EDIT),
         contentAlignment = Alignment.Center,
     ) {
-        PencilMark(tint = colors.ink)
+        PencilMark(tint = colors.ink, ground = colors.sand)
     }
 }
 
 /**
  * A drawn pencil, because the app has no icon set and never wanted one.
  *
- * Three strokes: the barrel on the diagonal, the ferrule across it, and the
- * point. Drawn in fractions of the given size so it stays itself when the
- * person's font scale grows the touch target around it.
+ * **The first attempt read as an eyedropper**, and the owner said so. It was
+ * three round-capped strokes: a thick tube on the diagonal with a rounded end
+ * and a bulb at the tip, which is the silhouette of a dropper rather than a
+ * pencil. Round caps were the whole mistake.
+ *
+ * **A pencil is recognized by its corners.** A flat eraser end cut square
+ * across, straight parallel sides, a band where the ferrule is, and a wedge
+ * narrowing to an actual point. So it is one filled outline rather than
+ * strokes, with two lines across it: the ferrule, and the cut where the wood
+ * ends and the graphite begins.
+ *
+ * Laid out along the diagonal in fractions of the given size, so it keeps its
+ * proportions when the touch target around it grows with the font scale.
  */
 @Composable
-private fun PencilMark(tint: Color) {
+private fun PencilMark(tint: Color, ground: Color) {
     Canvas(modifier = Modifier.size(Space.editMark)) {
         val s = size.minDimension
-        val barrel = s * 0.155f
-        // Barrel, from the point at lower left to the eraser at upper right.
+
+        // The axis runs from the point at lower left to the eraser at upper
+        // right. Everything below is a distance along it, or across it.
+        fun on(t: Float) = Offset(s * (0.14f + 0.72f * t), s * (0.86f - 0.72f * t))
+        val across = s * 0.075f
+        fun edge(t: Float, side: Float) = on(t).let { Offset(it.x + across * side, it.y + across * side) }
+
+        val point = on(0f)
+        val shoulder = 0.19f
+        val ferrule = 0.82f
+        val end = 1f
+
+        val body = Path().apply {
+            moveTo(point.x, point.y)
+            edge(shoulder, 1f).let { lineTo(it.x, it.y) }
+            edge(end, 1f).let { lineTo(it.x, it.y) }
+            edge(end, -1f).let { lineTo(it.x, it.y) }
+            edge(shoulder, -1f).let { lineTo(it.x, it.y) }
+            close()
+        }
+        drawPath(body, color = tint)
+
+        // The ferrule, and the cut where the wood ends. Painted in the
+        // button's own ground rather than cleared: `BlendMode.Clear` on a
+        // canvas with no offscreen layer punches through to whatever is behind
+        // the window, which is black. Two gaps in the ground color are what
+        // make the shape legible at 22dp.
+        val hairline = s * 0.055f
         drawLine(
-            color = tint,
-            start = Offset(s * 0.30f, s * 0.70f),
-            end = Offset(s * 0.74f, s * 0.26f),
-            strokeWidth = barrel,
-            cap = StrokeCap.Round,
+            color = ground,
+            start = edge(ferrule, 1f),
+            end = edge(ferrule, -1f),
+            strokeWidth = hairline,
         )
-        // Ferrule: the band across the barrel that makes it a pencil rather
-        // than a stick. Without it the mark reads as a slash at small sizes.
         drawLine(
-            color = tint,
-            start = Offset(s * 0.55f, s * 0.33f),
-            end = Offset(s * 0.67f, s * 0.45f),
-            strokeWidth = s * 0.07f,
-            cap = StrokeCap.Round,
-        )
-        // The point, and the short line it has just drawn.
-        drawLine(
-            color = tint,
-            start = Offset(s * 0.16f, s * 0.84f),
-            end = Offset(s * 0.30f, s * 0.78f),
-            strokeWidth = s * 0.075f,
-            cap = StrokeCap.Round,
-        )
-        drawCircle(
-            color = tint,
-            radius = s * 0.038f,
-            center = Offset(s * 0.185f, s * 0.815f),
-            style = Stroke(width = s * 0.05f),
+            color = ground,
+            start = edge(shoulder, 1f),
+            end = edge(shoulder, -1f),
+            strokeWidth = hairline * 0.8f,
         )
     }
 }

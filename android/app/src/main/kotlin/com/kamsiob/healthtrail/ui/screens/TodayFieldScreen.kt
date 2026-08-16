@@ -563,7 +563,11 @@ fun TodayFieldScreen(
                                 onTips = { showTips = true },
                                 onEdit = { editing = true },
                                 editLabel = strings["today.arrange.action"],
-                                modifier = Modifier.testTag(TodayFieldTags.EDIT),
+                                // The tag goes on the pencil, not on the row:
+                                // the row stamps its own tag over whatever the
+                                // caller passed, which is the same collision
+                                // `EditAction` already had to solve.
+                                editTag = TodayFieldTags.EDIT,
                             )
                         }
                     }

@@ -127,8 +127,13 @@ class ProjectStepsScreenTest {
                 step("c3", "Send it certified", cluster = "The paperwork"),
             ),
         )
-        compose.onNodeWithText(Bidi.join("THE PAPERWORK", "2")).assertIsDisplayed()
-        compose.onNodeWithText(Bidi.join("THE PHONE CALLS", "1")).assertIsDisplayed()
+        // **Sentence case since D171.** The group header used to uppercase
+        // what it was given, which put a third typographic voice on screens
+        // that already carry a display heading and body text. These are the
+        // person's own words for their own groups, and shouting them was never
+        // the app's decision to make.
+        compose.onNodeWithText(Bidi.join("The paperwork", "2")).assertIsDisplayed()
+        compose.onNodeWithText(Bidi.join("The phone calls", "1")).assertIsDisplayed()
     }
 
     // The sheet, which is where everything that can be done to a step lives.

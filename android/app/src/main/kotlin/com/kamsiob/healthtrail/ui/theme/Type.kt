@@ -112,8 +112,37 @@ data class HealthTrailTypography(
 // 680 kilobytes for everything here put together. Chinese falls back to the
 // system face until #12 settles how to carry it. The app is honest about this
 // on the issue rather than pretending the coverage is complete.
+/**
+ * The display face, which is the body face. D174.
+ *
+ * **Bricolage Grotesque is gone.** The owner, three times: the fonts are
+ * unnatural, they do not mix well together, and "that font at the top is just
+ * weird". The brief was "clean fonts that are easy to read with a little bit of
+ * Elegance but not something weird or something that is artsy", and Bricolage
+ * is a characterful display face whose whole appeal is its quirks: the flared
+ * terminals and the odd `g` and `y` are what a headline was being set in, above
+ * body text drawn on completely different principles. Two faces that disagree
+ * about what a letter is do not become a pair by being on the same screen.
+ *
+ * **One family app-wide, which cannot clash with itself.** Atkinson
+ * Hyperlegible at Bold is the headline now. It was drawn by the Braille
+ * Institute specifically so that letters stay distinct from one another, which
+ * is the opposite of artsy and exactly right for an app somebody reads while
+ * exhausted. Nothing is lost from the display end: the contrast that made the
+ * hero the loudest thing on the screen was always size, weight and space rather
+ * than a second typeface, which is this project's own rule 15.
+ *
+ * **Mono stays**, for figures that line up in a column. That is two faces total
+ * and they have different jobs, which is what "they do not mix" was asking for.
+ *
+ * **A bundled display face is still worth revisiting** when there is network to
+ * fetch one: something in the Inter or Plus Jakarta Sans family would give the
+ * headline a little more elegance without the quirk. It could not be evaluated
+ * here, so the honest choice was the good face already in the build rather than
+ * keeping the one that was called weird.
+ */
 private val DisplayFamily = FontFamily(
-    Font(R.font.bricolage_grotesque_bold, FontWeight.Bold),
+    Font(R.font.atkinson_hyperlegible_bold, FontWeight.Bold),
     Font(R.font.noto_sans_arabic_bold, FontWeight.Bold),
 )
 

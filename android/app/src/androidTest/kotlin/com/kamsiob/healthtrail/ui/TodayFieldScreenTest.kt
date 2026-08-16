@@ -618,16 +618,24 @@ class TodayFieldScreenTest {
             readings !in spoken("c-small"),
         )
 
-        // **A square card is square**, D153, which is the owner's own words:
-        // a widget on the phone somebody already owns is a square or it is the
-        // width of the screen. Within a point, because a cell width that does
-        // not divide evenly leaves a rounding remainder and a test that fails
-        // on one pixel is a test somebody deletes.
+        // **A small card is a tile, and no longer a square.** D174 supersedes
+        // D153 here. The square came from the owner's own words about widgets,
+        // and it was right until the cards had to hold honest empty states: a
+        // square small card is a little over two hundred dp tall on a phone, so
+        // "Nothing scheduled" sat centered in an empty white field with a
+        // hand's width of nothing above and below it, four times at once. The
+        // approved v4 mockup draws these tiles at 120 against 170, and the v4
+        // baseline is the authority now.
+        //
+        // **What is still pinned is that it is a tile rather than a row**: it
+        // keeps real height, so the pair of them read as cells on a field and
+        // not as two more list items. The floor is deliberately loose because a
+        // card with a long answer grows past it, which it always could.
         val square = compose.onNodeWithTag(TodayFieldTags.card("c-small"))
             .fetchSemanticsNode().size
         assertTrue(
-            "the small card is ${square.width} by ${square.height}, which is not square",
-            kotlin.math.abs(square.width - square.height) <= 1,
+            "the small card is ${square.width} by ${square.height}, which is not a tile",
+            square.height > square.width * 0.5,
         )
 
         // And the full width card is the width of the field rather than half.
