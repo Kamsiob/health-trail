@@ -1,29 +1,37 @@
 package com.kamsiob.healthtrail.ui.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
- * A heading over a run of rows, per `DESIGN.md` section 5.13: a mono eyebrow
- * with a hairline running out to the end edge, which is how the reference file
- * heads a month in the trail.
+ * A heading over a run of rows: an eyebrow, and nothing else.
+ *
+ * **The hairline is gone and the words are uppercase**, which is what the
+ * approved v4 mockups draw. `m3v4-1` heads two groups with "PEOPLE AND CARE"
+ * and "THE RECORD", tracked and quiet, with clear space to the end edge;
+ * `m3v4-3` heads a list with "EVERYONE ELSE ON THE UNIT" the same way. D173:
+ * where the mockup and `DESIGN.md` 5.13 disagree, the mockup wins.
+ *
+ * **The rule was decorative by this file's own account**, "remove it and
+ * nothing becomes unreadable, because the words carry the heading alone", and
+ * on the phone it was the loudest thing about a heading meant to recede: a
+ * line running the width of the screen out of every group name in the app.
+ *
+ * **This is the app's eyebrow and it was set in `bodyS`**, which is the same
+ * style as the row subtitles underneath it. D176 gave the eyebrow its own
+ * token and this component was invisible to that pass, because the pass swept
+ * for the mono face and this had never been mono. Uniform weight, rule 15,
+ * found by looking at the screen rather than by any check.
  *
  * **One component, because a long list is grouped one way in this app.** The
  * notebook and the situation picker both needed it in the same session, and
@@ -37,13 +45,9 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * neither script has case, and the eyebrow reads as an eyebrow there through
  * its size and tracking.
  *
- * The label carries no layout weight and the rule carries all of it, so the
- * label takes exactly the width it needs. A label long enough to fill the row,
- * which is what the longest language does, wraps inside the row and the rule
- * shrinks to nothing rather than pushing the words off the end edge.
- *
- * The rule is decorative in the sense section 2.3 defines: remove it and
- * nothing becomes unreadable, because the words carry the heading alone.
+ * The label carries no layout weight, so it takes exactly the width it needs
+ * and a label long enough to fill the row, which is what the longest language
+ * does, wraps inside the row rather than running off the end edge.
  */
 @Composable
 fun GroupHeader(labelKey: String, modifier: Modifier = Modifier) {
@@ -109,20 +113,16 @@ fun GroupHeaderText(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = shown,
-            style = HealthTrail.type.bodyS,
+            // **Uppercased here, which this file has claimed since it was
+            // written and never did.** The KDoc above described the locale
+            // rule in detail and the code passed the label through untouched,
+            // so every group heading in the app read as a sentence in the
+            // caption ink. Against `strings.locale` rather than the device's,
+            // so a Turkish phone showing the English catalog cannot turn an
+            // "i" into a dotted capital.
+            text = shown.uppercase(strings.locale),
+            style = HealthTrail.type.eyebrow,
             color = tint ?: colors.ink2,
         )
-        Spacer(Modifier.width(Space.sm))
-        Canvas(modifier = Modifier.weight(1f).height(1.dp)) {
-            drawLine(
-                color = colors.ink3.copy(alpha = HAIRLINE_ALPHA),
-                start = Offset(0f, size.height / 2f),
-                end = Offset(size.width, size.height / 2f),
-                strokeWidth = size.height,
-            )
-        }
     }
 }
-
-private const val HAIRLINE_ALPHA = 0.4f

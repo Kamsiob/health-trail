@@ -588,6 +588,7 @@ fun NotebookShell(
                                     openIncidents = incidents.count { it.isOpen },
                                     onOpenUnfiled = { trayOpen = true },
                                     onOpenIncidents = { incidentsOpen = true },
+                                    onSearch = { searchOpen = true },
                                 )
                             }
                         }

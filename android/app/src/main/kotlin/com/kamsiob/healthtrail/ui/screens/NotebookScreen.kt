@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.UniversalSearchDoor
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.IconTile
@@ -50,6 +51,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 
 object NotebookTags {
     const val ROOT = "notebook_root"
+    const val SEARCH = "notebook_search"
     fun section(section: Repository.Section) = "notebook_section_${section.name.lowercase()}"
     fun count(section: Repository.Section) = "notebook_count_${section.name.lowercase()}"
     const val WAITING = "notebook_waiting"
@@ -210,6 +212,8 @@ fun NotebookScreen(
     openIncidents: Int = 0,
     onOpenUnfiled: () -> Unit = {},
     onOpenIncidents: () -> Unit = {},
+    /** Opens universal search, which this screen is the front door to. */
+    onSearch: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -274,6 +278,21 @@ fun NotebookScreen(
                 HeaderActions(onTips = { showTips = true })
             }
 
+            // **The door to everything, on the screen that is about
+            // everything.** The approved v4 mockup puts it directly under the
+            // title, `m3v4-1`, and the built screen had no way into search at
+            // all: it was reachable from Today, Today's field and More, and
+            // not from the table of contents.
+            //
+            // **This is the surface [UniversalSearchDoor] is for.** Its own
+            // note rules it out inside a section, where a universal field
+            // brings eleven other sections to answer a question about one.
+            // The notebook is not a section, it is the way to all of them.
+            UniversalSearchDoor(
+                onOpen = onSearch,
+                modifier = Modifier.testTag(NotebookTags.SEARCH),
+            )
+
             // **What needs the person, as one row rather than a hero.**
             //
             // The grid draws it as a single grouped row with an open marker, and
@@ -337,7 +356,14 @@ fun NotebookScreen(
                 Box(modifier = Modifier.arrivesInOrder(groupIndex * 2)) {
                     GroupHeader(labelKey = group.labelKey)
                 }
-                Spacer(Modifier.height(Space.headerGap))
+                // **No gap here, because the column already spaces its
+                // children.** With `headerGap` on top of that the eyebrow sat
+                // 30dp from the group it names and 40dp from the one above,
+                // which is almost the same distance: on the phone it read as
+                // floating between the two rather than belonging to either.
+                // Rule 15 asks that what belongs together be grouped, and a
+                // heading that is not attached to its own rows is the one
+                // thing a heading has to get right.
                 GroupedRows(items = rows) { row, isLast ->
                     SectionRow(row = row, isLast = isLast, onOpen = onOpen)
                 }

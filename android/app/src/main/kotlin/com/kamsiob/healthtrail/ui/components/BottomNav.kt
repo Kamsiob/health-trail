@@ -150,16 +150,23 @@ private fun NavTab(
         // under the icon, and it does the same job better: it is a larger shape
         // signal, so selection survives for somebody who cannot separate the two
         // blues, and it is what the reference file draws.
+        //
+        // **Gold rather than blue**, which is what the approved v4 mockups
+        // draw on every one of the six. D172 puts gold on a chip, an icon and
+        // the capture button, and a nav pill is exactly that size: an accent,
+        // never a field. Blue is the app's focus and action color, and having
+        // it also mean "the tab you are on" spent the loudest color in the
+        // palette on the one fact the person already knows.
         Box(
             modifier = Modifier
                 .clip(Radius.pill)
-                .background(if (selected) colors.blueWash else Color.Transparent)
+                .background(if (selected) colors.goldWash else Color.Transparent)
                 .padding(horizontal = Space.sm, vertical = 3.dp),
             contentAlignment = Alignment.Center,
         ) {
             NavIcon(
                 destination = destination,
-                tint = if (selected) colors.blueDeep else colors.ink2,
+                tint = if (selected) colors.goldInk else colors.ink2,
             )
         }
         Spacer(Modifier.height(3.dp))
@@ -190,7 +197,7 @@ private fun NavTab(
                 fontSize = HealthTrail.type.navLabel.fontSize * capped,
                 lineHeight = HealthTrail.type.navLabel.lineHeight * capped,
             ),
-            color = if (selected) colors.blueDeep else colors.ink2,
+            color = if (selected) colors.goldInk else colors.ink2,
             textAlign = TextAlign.Center,
             // Two lines rather than one, because the longest word in the
             // longest language will not fit on one at any size, and a second
