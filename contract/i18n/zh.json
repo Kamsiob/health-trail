@@ -1572,5 +1572,16 @@
   "tips.more.point1": "导出会生成一个加密文件，手机丢失时那是唯一的退路。",
   "tips.more.point2": "没有账号，也没有云。除非您自己发送，否则什么都不会离开手机。",
   "tips.open": "这个页面是做什么的",
-  "tips.close": "关闭"
+  "tips.close": "关闭",
+  "people.title": "这本笔记本记的是谁",
+  "people.open": "记的是谁",
+  "people.lead": "一本笔记本可以记录不止一个人。您记下的一切都属于当前显示的那个人，切换绝不会把他们混在一起。",
+  "people.showing": "当前显示",
+  "people.others": "本笔记本中的其他人",
+  "people.switch": "显示这个人",
+  "people.add": "添加另一个人",
+  "people.add.title": "您还在照顾谁？",
+  "people.add.lead": "他们会有自己的笔记本：自己的照护团队、用药、文件和记录。与第一个人不共享任何内容。",
+  "people.add.name": "他们的名字",
+  "people.add.save": "开始他们的笔记本"
 }

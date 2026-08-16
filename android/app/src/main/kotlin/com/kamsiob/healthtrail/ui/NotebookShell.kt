@@ -133,6 +133,7 @@ import com.kamsiob.healthtrail.ui.screens.StageEditSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectPreviewSheet
 import com.kamsiob.healthtrail.ui.screens.StartProjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
+import com.kamsiob.healthtrail.ui.screens.PeopleScreen
 import com.kamsiob.healthtrail.ui.screens.PaperViewerScreen
 import com.kamsiob.healthtrail.ui.screens.AddAppointmentScreen
 import com.kamsiob.healthtrail.ui.screens.AppointmentDraft
@@ -490,6 +491,8 @@ fun NotebookShell(
         BackHandler(enabled = renamingChapter != null) { renamingChapter = null }
         BackHandler(enabled = sayingMoved) { sayingMoved = false }
         BackHandler(enabled = viewingPaper != null) { viewingPaper = null }
+        BackHandler(enabled = subjectsOpen && !addingSubject) { subjectsOpen = false }
+        BackHandler(enabled = addingSubject) { addingSubject = false }
         BackHandler(enabled = renamingProject != null) { renamingProject = null }
         BackHandler(enabled = correctingQuestion != null) { correctingQuestion = null }
         BackHandler(enabled = correctingInstruction != null) { correctingInstruction = null }
@@ -782,6 +785,7 @@ fun NotebookShell(
                             onLibrary = { libraryOpen = true },
                             onSituation = { situationOpen = true },
                             onSubject = { correctingSubject = true },
+                            onPeople = { subjectsOpen = true },
                             onExport = { exportState = ExportState.READY; exportOpen = true },
                             onRestore = {
                                 restoreOpen = true
@@ -1476,6 +1480,61 @@ fun NotebookShell(
             // Painted after the overlay groups so a viewer opened from a
             // document that was itself opened from a project's papers sits on
             // top of that whole stack, and back peels only the viewer.
+            // **Who this notebook holds**, #379. Loaded when the door opens
+            // rather than on every recomposition, and re-read after a switch
+            // or an addition so the list is what the database now says.
+            if (subjectsOpen) {
+                LaunchedEffect(subjectsOpen, revision) {
+                    heldSubjects = repository.subjects()
+                    activeSubjectId = repository.activeSubject()?.id
+                }
+                PeopleScreen(
+                    subjects = heldSubjects,
+                    activeId = activeSubjectId,
+                    onSwitch = { switchingSubject = it.id },
+                    onAdd = { addingSubject = true },
+                    onBack = { subjectsOpen = false },
+                )
+            }
+
+            if (addingSubject) {
+                AddThreadScreen(
+                    onStart = { name ->
+                        savingNewSubject = name
+                        addingSubject = false
+                    },
+                    onCancel = { addingSubject = false },
+                    titleKey = "people.add.title",
+                    labelKey = "people.add.name",
+                    hintKey = null,
+                    saveKey = "people.add.save",
+                    leadKey = "people.add.lead",
+                    section = Repository.Section.CARE_TEAM,
+                )
+            }
+
+            switchingSubject?.let { id ->
+                LaunchedEffect(id) {
+                    // **Everything on screen belongs to the person showing**,
+                    // so the switch closes the door it was opened from and
+                    // bumps the revision, which is what every query keys on.
+                    repository.makeSubjectActive(id)
+                    switchingSubject = null
+                    subjectsOpen = false
+                    revision += 1
+                }
+            }
+
+            savingNewSubject?.let { name ->
+                LaunchedEffect(name) {
+                    // bidi-ok: on its way to the database.
+                    repository.addSubject(displayName = name)
+                    savingNewSubject = null
+                    subjectsOpen = false
+                    revision += 1
+                }
+            }
+
             viewingPaper?.let { (sha, title) ->
                 val paperStore = remember(context) { Attachments.open(context) }
                 PaperViewerScreen(

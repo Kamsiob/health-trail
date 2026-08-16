@@ -54,6 +54,7 @@ import com.kamsiob.healthtrail.ui.screens.CorrectEntryScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectIncidentScreen
 import com.kamsiob.healthtrail.ui.screens.CorrectSubjectScreen
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
+import com.kamsiob.healthtrail.ui.screens.PeopleScreen
 import androidx.compose.ui.test.onAllNodesWithTag
 import com.kamsiob.healthtrail.ui.screens.PaperViewerTags
 import com.kamsiob.healthtrail.ui.screens.PaperViewerScreen
@@ -2603,5 +2604,26 @@ class ScreenReaderTest {
                 .fetchSemanticsNodes().isNotEmpty()
         }
         assertEverythingIsLabeled("the paper viewer")
+    }
+
+    /**
+     * Who the notebook is about, #379. Two people, one showing, so the walk
+     * covers both the row that switches and the row that only marks.
+     */
+    @Test
+    fun theSubjectsLabelEverything() {
+        compose.show {
+            PeopleScreen(
+                subjects = listOf(
+                    Repository.Subject("s1", "Margaret", "Mom", null),
+                    Repository.Subject("s2", "Walter", "Dad", null),
+                ),
+                activeId = "s1",
+                onSwitch = {},
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("who this notebook is about")
     }
 }

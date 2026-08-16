@@ -1572,5 +1572,16 @@
   "tips.more.point1": "Export writes one encrypted file that is the only way back if the phone is lost.",
   "tips.more.point2": "There is no account and no cloud. Nothing leaves the phone unless you send it.",
   "tips.open": "What this page is for",
-  "tips.close": "Close"
+  "tips.close": "Close",
+  "people.title": "Who this notebook is about",
+  "people.open": "Who this is about",
+  "people.lead": "One notebook can hold more than one person. Everything you write down belongs to whoever is showing, and switching never mixes them.",
+  "people.showing": "Showing now",
+  "people.others": "Also in this notebook",
+  "people.switch": "Show this person",
+  "people.add": "Add another person",
+  "people.add.title": "Who else are you looking after?",
+  "people.add.lead": "They get their own notebook: their own care team, medications, papers and trail. Nothing is shared with the first person.",
+  "people.add.name": "Their name",
+  "people.add.save": "Start their notebook"
 }

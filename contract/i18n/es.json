@@ -1572,5 +1572,16 @@
   "tips.more.point1": "Exportar escribe un archivo cifrado que es la única vuelta atrás si pierde el teléfono.",
   "tips.more.point2": "No hay cuenta ni nube. Nada sale del teléfono salvo que usted lo envíe.",
   "tips.open": "Para qué sirve esta página",
-  "tips.close": "Cerrar"
+  "tips.close": "Cerrar",
+  "people.title": "Sobre quién es este cuaderno",
+  "people.open": "Sobre quién es",
+  "people.lead": "Un cuaderno puede tener a más de una persona. Todo lo que anote pertenece a quien esté mostrándose, y cambiar nunca los mezcla.",
+  "people.showing": "Mostrando ahora",
+  "people.others": "También en este cuaderno",
+  "people.switch": "Mostrar a esta persona",
+  "people.add": "Añadir otra persona",
+  "people.add.title": "¿A quién más está cuidando?",
+  "people.add.lead": "Tendrá su propio cuaderno: su equipo, sus medicamentos, sus papeles y su recorrido. No se comparte nada con la primera persona.",
+  "people.add.name": "Su nombre",
+  "people.add.save": "Empezar su cuaderno"
 }

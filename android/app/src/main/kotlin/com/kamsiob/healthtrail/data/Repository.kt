@@ -197,6 +197,72 @@ class Repository private constructor(
     )
 
     /**
+     * Everyone this notebook is keeping, oldest first. #379.
+     *
+     * **The `subject` table has carried `is_active` since Phase 0** and
+     * nothing in the app ever reached it, so a family caring for two parents
+     * had one notebook and no way to say which parent a row was about. The
+     * data layer anticipated this; only the surface was missing.
+     */
+    suspend fun subjects(): List<Subject> = withContext(Dispatchers.IO) {
+        db().database.rawQuery(
+            "SELECT id, display_name, relationship, situation_template_id " +
+                "FROM live_subject ORDER BY created_at",
+            null,
+        ).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) {
+                    add(
+                        Subject(
+                            id = cursor.getString(0),
+                            displayName = cursor.getString(1),
+                            relationship = cursor.getString(2),
+                            situationTemplateId = cursor.getString(3),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Switches which person the notebook is showing.
+     *
+     * **Exactly one is active, always.** Every query in the app reads the
+     * active subject, so two actives would silently mix two people's records
+     * on one screen, which is the worst thing this app could do. The clear
+     * and the set are one transaction for that reason.
+     */
+    suspend fun makeSubjectActive(subjectId: String) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        db().database.write(
+            "UPDATE subject SET is_active = 0, updated_at = ?, rev = rev + 1 " +
+                "WHERE is_active = 1 AND deleted_at IS NULL",
+            arrayOf<Any?>(now),
+        )
+        db().database.write(
+            "UPDATE subject SET is_active = 1, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(now, subjectId),
+        )
+    }
+
+    /**
+     * Starts a second person, and makes them the one being shown.
+     *
+     * **Their records are separate from the first person's by construction**,
+     * because every table already carries `subject_id` and every query already
+     * filters on it. Nothing is shared and nothing is copied.
+     */
+    suspend fun addSubject(
+        displayName: String,
+        relationship: String? = null,
+    ): String {
+        val id = createSubject(displayName = displayName, relationship = relationship)
+        makeSubjectActive(id)
+        return id
+    }
+
+    /**
      * Corrects who this notebook is about. #371.
      *
      * **The name was typed once at setup and could never be changed.** There

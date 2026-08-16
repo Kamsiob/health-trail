@@ -206,6 +206,23 @@ internal class ShellState {
 
     /** Correcting who the notebook is about, and what to write. #371. */
     var correctingSubject by mutableStateOf(false)
+
+    /**
+     * #379: who this notebook holds, and switching between them.
+     *
+     * **Named for the subject rather than "people"**, because `peopleOpen`
+     * already means a project's people and `addingPerson` already means the
+     * care team's add form. Two things called people is exactly the collision
+     * this app keeps finding in its own vocabulary.
+     */
+    var subjectsOpen by mutableStateOf(false)
+    var addingSubject by mutableStateOf(false)
+    var switchingSubject by mutableStateOf<String?>(null)
+    var savingNewSubject by mutableStateOf<String?>(null)
+    var heldSubjects by mutableStateOf<List<Repository.Subject>>(emptyList())
+
+    /** Which of them is showing, so the list can mark it. */
+    var activeSubjectId by mutableStateOf<String?>(null)
     /** The subject row, read when the correction opens rather than held all the time. */
     var subjectRow by mutableStateOf<Repository.Subject?>(null)
     var savingSubject by mutableStateOf<SubjectCorrection?>(null)

@@ -19,6 +19,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 
 object MoreTags {
+    const val PEOPLE = "more_people"
     const val COMING = "more_coming"
     const val ABOUT = "more_about"
     const val SEARCH = "more_search"
@@ -61,6 +62,8 @@ fun MoreScreen(
     onSituation: () -> Unit = {},
     /** Opens the correction for who this notebook is about. #371. */
     onSubject: () -> Unit = {},
+    /** Who this notebook is about, and anyone else it holds. #379. */
+    onPeople: () -> Unit = {},
     onConflicts: () -> Unit = {},
     /**
      * How many merge resolutions the person has not looked at.
@@ -101,6 +104,7 @@ fun MoreScreen(
                 onLibrary = onLibrary,
                 onSituation = onSituation,
                 onSubject = onSubject,
+                onPeople = onPeople,
                 onConflicts = onConflicts,
                 conflicts = conflicts,
             )
@@ -126,6 +130,7 @@ private fun MoreDestinations(
     onLibrary: () -> Unit,
     onSituation: () -> Unit,
     onSubject: () -> Unit,
+    onPeople: () -> Unit,
     onConflicts: () -> Unit,
     conflicts: Int,
 ) {
@@ -163,6 +168,9 @@ private fun MoreDestinations(
         // invisible until a clinician was holding it. Beside the situation,
         // because both are "how this notebook was set up".
         Destination(strings["more.subject"], onSubject, MoreTags.SUBJECT),
+        // **More than one person, #379.** Beside who this is about, because
+        // they are the same question one step apart: who, and who else.
+        Destination(strings["people.open"], onPeople, MoreTags.PEOPLE),
         Destination(strings["more.export"], onExport, MoreTags.EXPORT),
         Destination(strings["more.restore"], onRestore, MoreTags.RESTORE),
         Destination(strings["more.about"], onAbout, MoreTags.ABOUT),
