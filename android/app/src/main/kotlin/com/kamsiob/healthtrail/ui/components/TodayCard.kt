@@ -3,6 +3,11 @@ package com.kamsiob.healthtrail.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.defaultMinSize
@@ -276,17 +281,18 @@ fun TodayCard(
             // nothing pointed at it. D142.
             .raisedCard(Radius.cardLarge)
             .clip(Radius.cardLarge)
-            // **The card carries its section's color.** A grid of white boxes
-            // with colored stickers was the old design wearing new paint;
-            // tinting the surface itself is what makes Today read as a set of
-            // distinct places at a glance. D170.
-            .background(hue.wash)
+            // **The card is quiet and the screen has one colored thing.**
+            // D171. Tinting every card turned Today into a rainbow: six
+            // washes competing, none of them meaning anything, and the eye
+            // with nowhere to land. Restraint is what elegance is made of
+            // here: the lead carries the color, the cards carry the content,
+            // and the section's hue appears as one small mark rather than as
+            // a field.
+            .background(colors.card)
             .openableByTap(
                 label = openLabel,
                 onTap = onOpen,
-                // The card's own tint is what a press darkens, so it does not
-                // flash back to white under a finger. D170.
-                resting = hue.wash,
+                resting = colors.card,
                 shape = Radius.cardLarge,
                 // long-press-twin: Today's Arrange action, per the parameter above.
                 onLongPress = onLongPress,
@@ -331,19 +337,28 @@ fun TodayCard(
                 Arrangement.Top
             },
         ) {
-            // **The tab is a label, not a plaque.** D170: every card carried a
-            // filled chip in its corner, so a grid of four read as four
-            // stickers on four empty boxes, and the round four work put the
-            // section's color into the card's own surface instead. The name
-            // is set in the section's ink at label weight, which says the
-            // same thing and leaves the card to be a card.
+            // **One quiet line, in the app's own body face.** D171. This was
+            // a filled chip, then it was uppercase mono in the section's ink,
+            // and both were louder than the answer underneath them. Uppercase
+            // letterspaced mono is a third typographic voice, and three
+            // voices on a card the size of a stamp is why the grid read as
+            // noise. The hue survives as a dot: enough to tell the sections
+            // apart, not enough to shout.
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = silence) {
+                Box(
+                    modifier = Modifier
+                        .size(Space.sectionDot)
+                        .clip(CircleShape)
+                        .background(hue.base),
+                )
+                Spacer(Modifier.width(Space.xs))
             Text(
-                text = tab.uppercase(LocalStrings.current.locale),
-                style = type.mono,
-                color = hue.ink,
+                text = tab,
+                style = type.bodyS,
+                color = colors.ink2,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = silence
+                modifier = Modifier
                     // **The chevron's room, kept clear.** The tab had no
                     // width limit and the chevron floats in the corner over
                     // the top of it, so a card naming its source, "Project ·
@@ -353,6 +368,7 @@ fun TodayCard(
                     // nothing collides until the text is long enough.
                     .padding(end = if (corner == null) CHEVRON_ROOM else CORNER_ROOM),
             )
+            }
             Column(
                 modifier = silence
                     .padding(top = Space.s)

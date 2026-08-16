@@ -122,6 +122,9 @@ object Space {
     /** How far a row rises as it arrives. D168. */
     val arrivalRise: Dp = 10.dp
 
+    /** The dot that tells one section from another without shouting. D171. */
+    val sectionDot: Dp = 7.dp
+
     /** How far a carried card lifts off the field. D169. */
     val carryLift: Dp = 8.dp
 

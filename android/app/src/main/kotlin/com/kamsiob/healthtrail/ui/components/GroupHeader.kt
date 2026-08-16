@@ -96,7 +96,7 @@ fun GroupHeaderText(
     // carries no layout weight so a long one wraps, and a separate count Text
     // after it would be the thing squeezed off the end edge in the longest
     // language. Joined, it wraps with the words it belongs to.
-    val shown = Bidi.join(label.uppercase(strings.locale), count)
+    val shown = Bidi.join(label, count)
 
     Row(
         modifier = modifier
@@ -110,7 +110,7 @@ fun GroupHeaderText(
     ) {
         Text(
             text = shown,
-            style = HealthTrail.type.mono,
+            style = HealthTrail.type.bodyS,
             color = tint ?: colors.ink2,
         )
         Spacer(Modifier.width(Space.sm))

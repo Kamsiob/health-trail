@@ -149,9 +149,14 @@ fun TodayLead(
             // are in [content] and clearing it would put them out of reach.
             modifier = if (speaksAsOneNode) Modifier.clearAndSetSemantics { } else Modifier,
         ) {
+            // **One quiet line above the answer**, D171. Uppercase letterspaced
+            // mono was a third typographic voice competing with the display
+            // face above it and the body face below, on a screen that already
+            // has a masthead. Sentence case in the section's ink says the same
+            // thing and lets the answer be the loud one.
             Text(
-                text = eyebrow.uppercase(strings.locale),
-                style = HealthTrail.type.mono,
+                text = eyebrow,
+                style = HealthTrail.type.bodyS,
                 color = hue.ink,
             )
             Spacer(Modifier.height(Space.s))
