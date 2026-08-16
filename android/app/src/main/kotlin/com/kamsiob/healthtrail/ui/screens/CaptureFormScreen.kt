@@ -396,7 +396,7 @@ fun CaptureFormScreen(
                 // **Saving is live from here.** Somebody who types one sentence
                 // and taps save never sees stage two or three, which is the
                 // fifteen second path law 3 is written around.
-                if (stage == 0) {
+                if (kind.slots[stage] == Slot.NOTE) {
                 DictatableField(
                     label = strings[key(kind, "note")],
                     value = note,
@@ -421,7 +421,7 @@ fun CaptureFormScreen(
                 // sections down one scroll. With one question on screen they
                 // were dead space at the top of stages two and three, which
                 // read as a screen that had failed to load its first line.
-                if (stage == 1) {
+                if (kind.slots[stage] == Slot.WHEN) {
                 ChoiceChipGroup(
                     // **A question has not happened yet.** Asking "when" about
                     // one, in the same words used for a call that already
@@ -477,7 +477,7 @@ fun CaptureFormScreen(
 
                 }
 
-                if (stage == 2) {
+                if (kind.slots[stage] == Slot.WHO) {
                 HealthTrailTextField(
                     label = strings[key(kind, "who")],
                     value = who,
@@ -782,10 +782,10 @@ fun CaptureFormScreen(
                         // carrying `capture.next` for, unused, in all four
                         // languages. Rule 10: decided here rather than
                         // escalated.
-                        val filled = when (stage) {
-                            0 -> state.note.isNotBlank()
-                            1 -> state.pickedEdtf != null || state.rough != null
-                            else -> state.who.isNotBlank() ||
+                        val filled = when (kind.slots[stage]) {
+                            Slot.NOTE -> state.note.isNotBlank()
+                            Slot.WHEN -> state.pickedEdtf != null || state.rough != null
+                            Slot.WHO -> state.who.isNotBlank() ||
                                 state.threadId != null ||
                                 state.personId != null ||
                                 state.medicationId != null
@@ -984,6 +984,27 @@ val RoughWhen.labelKey: String
  * thread and the medication, which are what the app can work out or live
  * without, and they stay behind one control nobody has to touch.
  */
+/**
+ * What each stage of the form asks, and in what order for each kind.
+ *
+ * **A call starts with who you spoke to.** The owner's direction, #379: "for
+ * logging a call it should start off with who did you speak to and then notes
+ * about the call and an ability to connect it to anything else that I want ...
+ * and then the date." That is how the conversation actually went: a name, then
+ * what they said, then what it was about, then when.
+ *
+ * **Everything else keeps the order it had**, because for an incident or a
+ * visit the note is the thing somebody opened the app to write, and the
+ * fifteen second path law 3 is built around is typing one sentence and saving.
+ */
+private enum class Slot { NOTE, WHEN, WHO }
+
+private val CaptureKind.slots: List<Slot>
+    get() = when (this) {
+        CaptureKind.CALL -> listOf(Slot.WHO, Slot.NOTE, Slot.WHEN)
+        else -> listOf(Slot.NOTE, Slot.WHEN, Slot.WHO)
+    }
+
 private const val STAGES = 3
 
 fun RoughWhen.edtf(today: LocalDate): Edtf.Date = when (this) {

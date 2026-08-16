@@ -123,9 +123,26 @@ class CaptureTest {
         }
     }
 
-    /** The note is stage one, the date is stage two, and who is stage three. */
-    private val WHEN_STAGE = 1
-    private val WHO_STAGE = 2
+    /**
+     * Where each question sits **for a call**, which is what this class shows.
+     *
+     * **A call asks who first now**, #379: "it should start off with who did
+     * you speak to and then notes about the call ... and then the date." Every
+     * other kind keeps note, when, who, and `CaptureKind.slots` is the one
+     * place that order is decided.
+     */
+    private val WHO_STAGE = 0
+    private val NOTE_STAGE = 1
+    private val WHEN_STAGE = 2
+
+    /**
+     * The same three questions in the other order, for every kind that is not
+     * a call. A visit or an incident still opens on the note, because that is
+     * the sentence somebody came to write.
+     */
+    private fun whoStageFor(kind: CaptureKind) = if (kind == CaptureKind.CALL) 0 else 2
+
+    private fun noteStageFor(kind: CaptureKind) = if (kind == CaptureKind.CALL) 1 else 0
 
     @Test
     fun aBlankCallStillSaves() {
@@ -358,9 +375,13 @@ class CaptureTest {
         // **What the note stage holds, then what the who stage holds.** Both
         // survive the walk between them, which is the thing worth asserting
         // now that they are two screens rather than two fields.
-        compose.onNodeWithTag(CaptureFormTags.NOTE).performTextInput("Said they would call back")
+        // **In the order a call now asks them**, who first: `toStage` walks
+        // forward through the stages and cannot go back, which is honest about
+        // how somebody moves through the form.
         toStage(WHO_STAGE)
         compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput("Ward desk")
+        toStage(NOTE_STAGE)
+        compose.onNodeWithTag(CaptureFormTags.NOTE).performTextInput("Said they would call back")
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 
         assertEquals("Ward desk", draft!!.who)
@@ -423,7 +444,7 @@ class CaptureTest {
         var draft: CaptureDraft? = null
         showForm(kind = kind, onSave = { draft = it })
 
-        toStage(WHO_STAGE)
+        toStage(whoStageFor(kind))
         compose.onNodeWithTag(CaptureFormTags.WHO).performTextInput("Dr Aurelio")
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 
