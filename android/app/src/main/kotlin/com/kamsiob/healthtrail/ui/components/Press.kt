@@ -75,6 +75,33 @@ fun pressedSurface(interaction: InteractionSource, resting: Color): State<Color>
 }
 
 /**
+ * The give a surface has under a finger. D167.
+ *
+ * **One spring for the whole app, in the same file as the other two press
+ * primitives.** It lived private inside `Buttons.kt`, so anything that was not
+ * a button hand-rolled its own copy: the same six lines, the same label string,
+ * and one more place for the reduced-motion path to be forgotten. Three of the
+ * fourteen v4 components needed exactly this and could not reach it.
+ *
+ * **The scale comes from the motion tokens**, which is what lets the reduced
+ * motion setting turn it off. With motion reduced the scale is 1 and the press
+ * still answers in color, through [pressedSurface].
+ *
+ * Callers that own a whole surface want [Modifier.openableByTap] instead, which
+ * carries this, the resting color and the focus ring together.
+ */
+@Composable
+fun pressScale(interaction: InteractionSource): State<Float> {
+    val motion = LocalMotion.current
+    val pressed by interaction.collectIsPressedAsState()
+    return animateFloatAsState(
+        targetValue = if (pressed) motion.pressScale else 1f,
+        animationSpec = motion.springy(),
+        label = "pressScale",
+    )
+}
+
+/**
  * The focus ring's alpha, so a focused control fades its ring in rather than
  * snapping it on. The ring itself is 2dp of `blue` at the control's own radius,
  * which is the focus treatment 5.9 and 5.11 already name for fields and chips:

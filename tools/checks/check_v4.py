@@ -60,10 +60,10 @@ ALLOWED = {
 # Still to convert. Each entry is a promise to somebody, not a permanent
 # exemption: take entries out as they are done, and never add one.
 REMAINING = {
-    # no-press: writes its own gesture and does not answer it. Rule 16.
-    # ChipPicker and Disclosure were on this list and were never broken: they
-    # hand onClick to DenseRow and TextAction, which spring.
-    "Dictate", "EdgeScrubber", "MonthGrid",
+    # no-press is empty: Dictate, EdgeScrubber and MonthGrid were the three
+    # that wrote their own gesture and did not answer it, and they now spring
+    # through the shared pressScale in Press.kt. ChipPicker and Disclosure were
+    # on this list and were never broken.
     # old-shape: Radius.card or fold, against the containers' cardLarge.
     "ChartCard", "DateRow", "GroupedSurface", "LatestWordCard", "Press",
     "RoundCard", "StandingCard", "Tile",

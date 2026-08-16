@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +29,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
@@ -141,15 +144,28 @@ fun DictateAction(
     }
 
     if (inField) {
+        val micInteraction = remember { MutableInteractionSource() }
+        val micScale by pressScale(micInteraction)
+
         // **A 48dp target on an 18dp glyph**, per `DESIGN.md` 12, which is why
         // the icon is centered in a box rather than clickable itself. The field
         // is 48dp tall, so this fills its end edge exactly and nothing grows.
         Box(
             modifier = modifier
                 .size(Space.touchTarget)
+                // **The glyph springs, not the field.** This is the one control
+                // in the app a person presses with the keyboard already up and
+                // their eye on the words they are typing, so the answer has to
+                // be at the point of contact.
+                .graphicsLayer {
+                    scaleX = micScale
+                    scaleY = micScale
+                }
                 .clip(Radius.tile)
                 .clickable(
                     enabled = enabled,
+                    interactionSource = micInteraction,
+                    indication = null,
                     role = Role.Button,
                     onClickLabel = strings["dictate.speak"],
                     onClick = speak,

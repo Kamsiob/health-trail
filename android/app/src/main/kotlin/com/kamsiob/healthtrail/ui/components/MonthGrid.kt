@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
@@ -63,7 +67,7 @@ fun MonthGrid(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(colors.card)
             .padding(Space.s),
         verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -132,16 +136,31 @@ private fun DayCell(
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
+    // **A day with nothing on it is not a control**, so it gets no press
+    // treatment and no interaction source. Springing an empty square would
+    // promise something behind it, and there is nothing behind it.
+    val openable = day.count > 0
+    val interaction = remember { MutableInteractionSource() }
+    val resting = if (day.isToday) colors.blueWash else Color.Transparent
+    val surface by pressedSurface(interaction, resting)
+    val scale by pressScale(interaction)
+
     Box(
         modifier = modifier
             .aspectRatio(1f)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(Radius.tile)
             // **Today is a ring, not a fill**, so it does not compete with the
             // marks that say something is written down. The app's own sense of
             // where it is should never outweigh the person's record.
-            .background(if (day.isToday) colors.blueWash else Color.Transparent)
+            .background(if (openable) surface else resting)
             .clickable(
-                enabled = day.count > 0,
+                enabled = openable,
+                interactionSource = interaction,
+                indication = null,
                 role = Role.Button,
                 onClickLabel = day.description,
                 onClick = { onOpenDay(day) },

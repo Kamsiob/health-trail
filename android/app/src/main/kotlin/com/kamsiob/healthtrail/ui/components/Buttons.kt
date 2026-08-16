@@ -53,23 +53,9 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * exist only inside a confirmation flow, never as a resting state on a screen,
  * and the shared confirmation component is where that belongs.
  */
-/**
- * The give a button has under a finger. D167.
- *
- * **Buttons are the most touched thing in the app**, so this is where physics
- * is felt most. The scale comes from the motion tokens, which means reduced
- * motion turns it off and the press still answers in color.
- */
-@Composable
-private fun pressScale(interaction: InteractionSource): State<Float> {
-    val motion = LocalMotion.current
-    val pressed by interaction.collectIsPressedAsState()
-    return animateFloatAsState(
-        targetValue = if (pressed) motion.pressScale else 1f,
-        animationSpec = motion.springy(),
-        label = "buttonPress",
-    )
-}
+// The give a button has under a finger is [pressScale] in `Press.kt`, beside
+// the resting surface and the focus ring. It was private here, so everything
+// that was not a button copied it. D167.
 
 @Composable
 fun FilledButton(

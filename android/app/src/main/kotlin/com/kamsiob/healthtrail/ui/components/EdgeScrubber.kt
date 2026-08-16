@@ -5,6 +5,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -142,18 +144,33 @@ fun EdgeScrubber(
     ) {
         labels.forEachIndexed { index, label ->
             val current = index == currentIndex
+            // **The drag answers with a tick and the tap answered with
+            // nothing.** The two ways into this control are meant to be equal,
+            // per the note below on why the tap path exists at all, and one of
+            // them was silent. A person who cannot hold a precise drag got the
+            // path with no feedback in it.
+            val interaction = remember { MutableInteractionSource() }
+            val resting = if (current) colors.blueWash else colors.paper
+            val surface by pressedSurface(interaction, resting)
+            val scale by pressScale(interaction)
             Box(
                 modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                    }
                     .clip(Radius.tile)
                     // **Opaque, so the rail's line runs between the labels
                     // rather than through them.** `paper` because the scrubber
                     // rides a reserved margin and never sits over content.
-                    .background(if (current) colors.blueWash else colors.paper)
+                    .background(surface)
                     // **Each label is its own tap target**, which is what makes
                     // the non-gesture path real rather than claimed. A person
                     // who cannot hold a precise drag, and anybody using a screen
                     // reader, reaches every year by tapping.
                     .clickable(
+                        interactionSource = interaction,
+                        indication = null,
                         role = Role.Button,
                         onClickLabel = label,
                         onClick = {
