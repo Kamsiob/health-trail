@@ -134,26 +134,30 @@ private val MonoFamily = FontFamily(
 )
 
 val HealthTrailType = HealthTrailTypography(
+    // **The display end carries the weight contrast**, D167. Award level
+    // Material 3 Expressive is not bigger type, it is a harder gap between
+    // the loudest thing on a screen and everything else, with the headline
+    // tracked tight so it reads as one object rather than as words.
     hero = TextStyle(
+        fontFamily = DisplayFamily,
+        fontSize = 28.sp,
+        lineHeight = 33.sp,
+        fontWeight = FontWeight.ExtraBold,
+        letterSpacing = (-0.022).em,
+    ),
+    displayL = TextStyle(
+        fontFamily = DisplayFamily,
+        fontSize = 34.sp,
+        lineHeight = 39.sp,
+        fontWeight = FontWeight.ExtraBold,
+        letterSpacing = (-0.028).em,
+    ),
+    displayM = TextStyle(
         fontFamily = DisplayFamily,
         fontSize = 26.sp,
         lineHeight = 31.sp,
         fontWeight = FontWeight.ExtraBold,
-        letterSpacing = (-0.015).em,
-    ),
-    displayL = TextStyle(
-        fontFamily = DisplayFamily,
-        fontSize = 31.sp,
-        lineHeight = 37.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = (-0.02).em,
-    ),
-    displayM = TextStyle(
-        fontFamily = DisplayFamily,
-        fontSize = 24.sp,
-        lineHeight = 30.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = (-0.015).em,
+        letterSpacing = (-0.022).em,
     ),
     displayS = TextStyle(
         fontFamily = DisplayFamily,
@@ -210,8 +214,11 @@ val HealthTrailType = HealthTrailTypography(
         fontFamily = MonoFamily,
         fontSize = 12.sp,
         lineHeight = 17.sp,
-        fontWeight = FontWeight.Normal,
-        letterSpacing = 0.12.em,
+        // **The eyebrow is a label, so it carries weight and wider tracking**,
+        // which is what makes a small line read as deliberate rather than as
+        // leftover. D167.
+        fontWeight = FontWeight.Medium,
+        letterSpacing = 0.16.em,
         fontFeatureSettings = TABULAR_FIGURES,
     ),
     monoL = TextStyle(

@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,16 +74,42 @@ fun CaptureFab(
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, colors.gold)
+    val motion = HealthTrail.motion
     val turn by animateFloatAsState(
         targetValue = if (open) 45f else 0f,
-        animationSpec = HealthTrail.motion.standard(),
+        animationSpec = motion.springy(),
         label = "capture",
+    )
+
+    // **The button changes shape as it opens, and it is the app's one piece of
+    // true shape morphing.** D167. Material 3 Expressive's signature move is a
+    // control whose silhouette answers the state it is in: a squircle at rest,
+    // rounder as it becomes the thing you are canceling. The corner is
+    // animated rather than swapped, so it reads as the same object moving.
+    //
+    // **A press squashes it a little**, which is the physics every other
+    // surface in the app now has. Reduced motion snaps all of it.
+    val pressed by interaction.collectIsPressedAsState()
+    val corner by animateDpAsState(
+        targetValue = when {
+            open -> Space.fabSize / 2
+            pressed -> Radius.fabCornerPressed
+            else -> Radius.fabCorner
+        },
+        animationSpec = motion.springy(),
+        label = "captureShape",
+    )
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.94f else 1f,
+        animationSpec = motion.springy(),
+        label = "captureScale",
     )
 
     Box(
         modifier = modifier
+            .graphicsLayer { scaleX = scale; scaleY = scale }
             .size(Space.fabSize)
-            .clip(FabShape)
+            .clip(RoundedCornerShape(corner))
             .background(surface)
             .clickable(
                 interactionSource = interaction,

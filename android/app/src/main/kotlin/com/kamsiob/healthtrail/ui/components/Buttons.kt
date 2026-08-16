@@ -14,6 +14,12 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.runtime.State
+import androidx.compose.ui.graphics.graphicsLayer
+import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +51,24 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * exist only inside a confirmation flow, never as a resting state on a screen,
  * and the shared confirmation component is where that belongs.
  */
+/**
+ * The give a button has under a finger. D167.
+ *
+ * **Buttons are the most touched thing in the app**, so this is where physics
+ * is felt most. The scale comes from the motion tokens, which means reduced
+ * motion turns it off and the press still answers in color.
+ */
+@Composable
+private fun pressScale(interaction: InteractionSource): State<Float> {
+    val motion = LocalMotion.current
+    val pressed by interaction.collectIsPressedAsState()
+    return animateFloatAsState(
+        targetValue = if (pressed) motion.pressScale else 1f,
+        animationSpec = motion.springy(),
+        label = "buttonPress",
+    )
+}
+
 @Composable
 fun FilledButton(
     label: String,
@@ -56,9 +80,11 @@ fun FilledButton(
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, if (enabled) colors.blue else colors.sand)
     val ring by focusRingAlpha(interaction)
+    val scale by pressScale(interaction)
 
     Box(
         modifier = modifier
+            .graphicsLayer { scaleX = scale; scaleY = scale }
             // The touch target is 48dp regardless of how tall the button looks,
             // which is the floor for everything in this app.
             .sizeIn(minHeight = Space.touchTarget)
@@ -139,9 +165,11 @@ fun QuietButton(
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, colors.card)
     val ring by focusRingAlpha(interaction)
+    val scale by pressScale(interaction)
 
     Box(
         modifier = modifier
+            .graphicsLayer { scaleX = scale; scaleY = scale }
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.pill)
             .background(surface)

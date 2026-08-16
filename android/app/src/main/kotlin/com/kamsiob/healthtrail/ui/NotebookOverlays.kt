@@ -71,6 +71,7 @@ import com.kamsiob.healthtrail.ui.screens.EmergencyCardScreen
 import com.kamsiob.healthtrail.ui.screens.TrailScreen
 import com.kamsiob.healthtrail.ui.screens.labelKey
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.screens.LocalRefresh
 import com.kamsiob.healthtrail.ui.screens.LocalSectionBackKey
 import com.kamsiob.healthtrail.ui.screens.TemplateLibraryScreen
 
@@ -1085,8 +1086,10 @@ internal fun ProjectStepOverlays(
                 Destination.TODAY -> "section.back.today"
                 else -> "section.back"
             },
-
-
+            // **Pulling a section list down re-reads the record**, D167. The
+            // revision counter is what every query in the shell already keys
+            // on, so bumping it is exactly what a refresh means here.
+            LocalRefresh provides { revision += 1 },
         ) {
             when (openSection) {
                 null -> Unit

@@ -299,9 +299,9 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 
 | Role | Face | Size / line | Weight | Use |
 |---|---|---|---|---|
-| Hero | Bricolage | **26sp** / 31 | 800, tracking -0.015em | The one thing, section 2 law 1 |
-| Display L | Bricolage | **31sp** / 37 | 800, -0.02em | The heading of a thing's own screen, above a section title |
-| Display M | Bricolage | **24sp** / 30 | 800, -0.015em | Screen titles, the current chapter, a round's reason |
+| Hero | Bricolage | **28sp** / 33 | 800, tracking -0.022em | The one thing, section 2 law 1 |
+| Display L | Bricolage | **34sp** / 39 | 800, -0.028em | The heading of a thing's own screen, above a section title |
+| Display M | Bricolage | **26sp** / 31 | 800, -0.022em | Screen titles, the current chapter, a round's reason |
 | Display S | Bricolage | **20sp** / 26 | 800 | A card's own title, and the title line of a row where a row title is too quiet |
 | Row title | Bricolage | **17sp** / 23 | 700, -0.01em | The title line of a group row |
 | Body L | Atkinson | **17sp** / 26 | 400 | The lead sentence under a screen title |

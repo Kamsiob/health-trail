@@ -133,13 +133,48 @@ object Radius {
      * 17dp, inside the 16 to 18 range section 6 states and one off the drawing.
      * D142 makes the grids authoritative on measurement, so it is 18.
      */
-    val card = RoundedCornerShape(18.dp)
+    val card = RoundedCornerShape(22.dp)
+
+    /**
+     * The hero, and only the hero. **Extra large, and asymmetric.**
+     *
+     * D167: shape variety is the loudest signal of Material 3 Expressive, and
+     * one radius on every surface is what made this app read as clean rather
+     * than as designed. The one thing a screen leads with gets a corner
+     * treatment nothing else has, so the eye lands on it before a word is
+     * read. The diagonal, large on one pair and small on the other, is the
+     * shape library's own device: it gives a rectangle a direction.
+     */
+    val hero = RoundedCornerShape(
+        topStart = 36.dp, topEnd = 18.dp, bottomStart = 18.dp, bottomEnd = 36.dp,
+    )
+
+    /** The hero's mirror, for a pair that should not look stamped. */
+    val heroMirrored = RoundedCornerShape(
+        topStart = 18.dp, topEnd = 36.dp, bottomStart = 36.dp, bottomEnd = 18.dp,
+    )
+
+    /** A square card on Today: generous, so a grid of them reads as pebbles. */
+    val cardLarge = RoundedCornerShape(26.dp)
+
+    /** The leading edge of a connected button row. */
+    val groupStart = RoundedCornerShape(
+        topStart = 24.dp, bottomStart = 24.dp, topEnd = 8.dp, bottomEnd = 8.dp,
+    )
+
+    /** The middle of a connected button row. */
+    val groupMiddle = RoundedCornerShape(8.dp)
+
+    /** The trailing edge of a connected button row. */
+    val groupEnd = RoundedCornerShape(
+        topEnd = 24.dp, bottomEnd = 24.dp, topStart = 8.dp, bottomStart = 8.dp,
+    )
 
     /** Inset tile, icon in its wash, chip container, the search bar's siblings. */
-    val tile = RoundedCornerShape(13.dp)
+    val tile = RoundedCornerShape(16.dp)
 
     /** A fold, `.fold` in both grids at 14px. `FoldRow` drew its own before. */
-    val fold = RoundedCornerShape(14.dp)
+    val fold = RoundedCornerShape(18.dp)
 
     /**
      * The capture button, `.fab` at 17px in all three grids.
@@ -147,7 +182,13 @@ object Radius {
      * **A circle here would be the one fully round object on a screen made of
      * soft rectangles**, which is why the drawing is not one.
      */
-    val fab = RoundedCornerShape(17.dp)
+    val fab = RoundedCornerShape(26.dp)
+
+    /** The capture button's corner at rest, as a value the morph can animate. */
+    val fabCorner = 26.dp
+
+    /** The same corner while it is held, which is where the morph goes. D167. */
+    val fabCornerPressed = 34.dp
 
     /** The reference line, `.refline` at 7px in the Projects grid. */
     val referenceLine = RoundedCornerShape(7.dp)
@@ -155,7 +196,7 @@ object Radius {
     /** A card's source tab, `.wtab` at 5px in the Today grid. */
     val sourceTab = RoundedCornerShape(5.dp)
 
-    val thumbnail = RoundedCornerShape(13.dp)
+    val thumbnail = RoundedCornerShape(16.dp)
 
     /** A sheet rises with 24dp top corners, DESIGN.md section 6. */
     val bottomSheet = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)

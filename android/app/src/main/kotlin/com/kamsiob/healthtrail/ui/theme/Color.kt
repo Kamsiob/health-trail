@@ -161,8 +161,14 @@ data class TabHue(
  * measured against the actual warm surfaces rather than against white. D80.
  */
 val LightColors = HealthTrailColors(
-    paper = Color(0xFFF6F1E6),
-    sand = Color(0xFFECE4D1),
+    // **The canvas is quiet and the color lives in the containers.** It was
+    // a warm beige, and the owner called it off-putting; the research agreed,
+    // because every showcase Material 3 Expressive surface puts vibrant tonal
+    // blocks on near-white ground so the color reads as deliberate objects
+    // rather than as atmosphere. The warmth did not leave the app, it moved:
+    // into the washes, the gold, and the paper of a document itself. D167.
+    paper = Color(0xFFFBFAF8),
+    sand = Color(0xFFF1EEE7),
     card = Color(0xFFFFFFFF),
 
     ink = Color(0xFF233240),
@@ -170,7 +176,7 @@ val LightColors = HealthTrailColors(
     ink2 = Color(0xFF576873),
     ink3 = Color(0xFF94A0A9),
 
-    foldSurface = Color(0xFFECE4D1),
+    foldSurface = Color(0xFFF1EEE7),
     hairline = Color(0x1A233240),
     hairlineHeavy = Color(0x33233240),
 

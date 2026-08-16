@@ -13,6 +13,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -150,7 +151,28 @@ fun Modifier.openableByTap(
     val ring by focusRingAlpha(interaction)
     val haptics = LocalHapticFeedback.current
 
+    // **Every tappable surface in the app now answers with physics.** D167.
+    // A color change alone is what a web page does; a surface that gives
+    // under a finger and springs back is what a phone does, and it is the
+    // single cheapest thing that makes an interface feel built rather than
+    // assembled. One spring here reaches every card, row, tile and thumbnail
+    // that goes through this modifier, which is most of them.
+    //
+    // **Reduced motion sets the scale to 1 and the spring to a snap**, so the
+    // press still answers, in color, exactly as it did before.
+    val motion = LocalMotion.current
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) motion.pressScale else 1f,
+        animationSpec = motion.springy(),
+        label = "pressScale",
+    )
+
     return this
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
         // **Raised, like every other surface in the app.** #324 lifted the
         // cards and reached `GroupedSurface`, `Tile`, `TodayCard` and the rest,
         // and missed this one, so every card built through the tappable path

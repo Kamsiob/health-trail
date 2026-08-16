@@ -59,19 +59,34 @@ fun HealthTrailTheme(
             onPrimary = colors.onBlue,
             primaryContainer = colors.blueWash,
             onPrimaryContainer = colors.blueDeep,
-            secondary = colors.leaf,
-            onSecondary = colors.card,
+            secondary = colors.goldInk,
+            onSecondary = colors.onGold,
+            secondaryContainer = colors.goldWash,
+            onSecondaryContainer = colors.goldInk,
+            tertiary = colors.leafInk,
+            onTertiary = colors.card,
+            tertiaryContainer = colors.leafWash,
+            onTertiaryContainer = colors.leafInk,
             background = colors.paper,
             onBackground = colors.ink,
-            surface = colors.card,
+            surface = colors.paper,
             onSurface = colors.ink,
             surfaceVariant = colors.sand,
             onSurfaceVariant = colors.ink2,
+            // **Every container role is named.** Left undefined, Material
+            // falls back to its baseline lavender, which is how a mockup of
+            // this app first came out purple. D167.
+            surfaceContainerLowest = colors.card,
+            surfaceContainerLow = colors.sand,
+            surfaceContainer = colors.sand,
+            surfaceContainerHigh = colors.foldSurface,
+            surfaceContainerHighest = colors.foldSurface,
             error = colors.alert,
             onError = colors.onAlertFill,
             errorContainer = colors.alertWash,
             onErrorContainer = colors.alertInk,
             outline = colors.ink3,
+            outlineVariant = colors.hairline,
         )
     }
 

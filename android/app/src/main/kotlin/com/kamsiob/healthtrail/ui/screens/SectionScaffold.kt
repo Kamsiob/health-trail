@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -60,6 +63,15 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * there is no way for one of them to be forgotten.
  */
 val LocalSectionBackKey = androidx.compose.runtime.compositionLocalOf { "section.back" }
+
+/**
+ * Re-reads the record, provided once by the shell. D167.
+ *
+ * **A composition local rather than a parameter on twelve screens**, the same
+ * shape `LocalSectionBackKey` already uses, because every section list wants
+ * the same gesture and none of them should have to be told about it.
+ */
+val LocalRefresh = androidx.compose.runtime.compositionLocalOf<(() -> Unit)?> { null }
 
 /**
  * How much of the screen's height the edge rail occupies.
@@ -111,6 +123,20 @@ fun SectionScaffold(
      * lie the person only notices by being surprised.
      */
     backLabelKey: String = LocalSectionBackKey.current,
+    /**
+     * Re-reads the record when the person pulls the list down. D167.
+     *
+     * **A local notebook has nothing to fetch, and that is exactly why this is
+     * honest here rather than decorative.** It re-reads what is on disk, which
+     * genuinely changes: a restore replaces everything, an export runs beside
+     * it, and a person who has just brought a notebook back wants to see that
+     * it arrived. The gesture is the one every phone owner already has for
+     * "show me that again", and Material 3 supplies its physics.
+     *
+     * Null on a screen with nothing worth re-reading, and then no indicator
+     * appears at all.
+     */
+    onRefresh: (() -> Unit)? = LocalRefresh.current,
     /**
      * Which section this is, so the screen can wear its own tab.
      *
@@ -249,6 +275,27 @@ fun SectionScaffold(
                 .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.ime)),
         ) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            var refreshing by remember { mutableStateOf(false) }
+            val refreshScope = rememberCoroutineScope()
+            PullToRefreshBox(
+                isRefreshing = refreshing,
+                onRefresh = {
+                    if (onRefresh != null) {
+                        refreshing = true
+                        onRefresh()
+                        // **Held briefly on purpose.** Re-reading a local
+                        // database is instant, and an indicator that vanishes
+                        // before it is seen reads as a gesture that did
+                        // nothing. This is the shortest pause that still says
+                        // "I heard you".
+                        refreshScope.launch {
+                            kotlinx.coroutines.delay(450)
+                            refreshing = false
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            ) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -288,6 +335,7 @@ fun SectionScaffold(
                 content()
 
                 item { Spacer(Modifier.height(Space.l)) }
+            }
             }
 
                 rail?.let { strip ->

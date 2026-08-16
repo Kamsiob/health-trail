@@ -2990,6 +2990,30 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D167. The interface is rebuilt on the round four language: neutral canvas, shape variety, spring physics
+
+**Date:** 2026-08-16. **The owner, after four rounds of mockups:** "redesign the entire app with round 4 styles ... animations and motions and shape morphing and pull to refresh physics ... it's missing attention to detail."
+
+**Researched before built.** Material 3 Expressive as Google actually shipped it through Gmail, Keep, Files and Docs, and the current design award winners, agree on the same devices: vibrant tonal containers on a quiet near-white canvas, emphasized editorial type with hard weight contrast, the 35-shape library used for variety rather than one radius everywhere, springs with visible overshoot, and short navigation bars.
+
+**Done at the system layer, not screen by screen.** Seventy five screens inherit from a handful of files, so the redesign lives in the tokens and the shared components and every screen follows. That is also what keeps it verifiable: one type ladder, one shape scale, one motion vocabulary.
+
+**The canvas went neutral and the warmth moved into the containers.** `paper` was a warm beige and the owner called it off-putting; he was right, and the reason is that color spread across the whole ground reads as atmosphere rather than as objects. It is near-white now, the washes carry the color, and the paper metaphor survives where it belongs, on a document.
+
+**Every Material 3 container role is named.** Left undefined they fall back to baseline lavender, which is how the first mockup of this app came out purple.
+
+**The display end carries real weight contrast**: hero 28, Display L 34, Display M 26, all ExtraBold with tighter tracking, and the mono eyebrow gains weight and wider tracking so a small line reads as deliberate. `DESIGN.md` 5.1 moved with it, because `check_type_ladder` holds the document and the code to the same numbers.
+
+**Shape variety is the loudest expressive signal**, so the scale gained a hero shape with asymmetric corners, a mirrored variant, a larger card, and the three shapes of a connected button row.
+
+**Every tappable surface in the app now answers with physics.** One spring in `openableByTap` reaches every card, row, tile and thumbnail; the buttons carry the same. **The capture button morphs**: squircle at rest, rounder under a finger, round as it becomes the control that closes.
+
+**Pull to refresh is honest rather than decorative.** A local notebook has nothing to fetch, and it re-reads what is on disk, which genuinely changes after a restore. Provided once through `LocalRefresh` so every section list has it without being told.
+
+**Reduced motion turns all of it off** and loses nothing: no scale, no springs, no morph, and the press still answers in color.
+
+---
+
 ### D166. What 1.0 means, and the two judgment calls that closed it
 
 **Date:** 2026-08-16. **The owner: "the 1.0 it's supposed to mean something. finish the entire app... the acceptance criteria here is that it is a complete shippable app."**

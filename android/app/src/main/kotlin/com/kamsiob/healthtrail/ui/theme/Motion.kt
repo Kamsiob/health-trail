@@ -74,6 +74,26 @@ interface Motion {
     /** How long one half of that tilt takes. Cards are offset so they do not march in step. */
     val arrangeTiltMillis: Int
 
+    /**
+     * The spring a thing settles on when it is picked up or lands. D167.
+     *
+     * **Bouncier than [expressive] on purpose.** Material 3 Expressive's whole
+     * motion argument is that a spring with visible overshoot reads as
+     * physical, and physical reads as responsive. This is for the moments
+     * worth a small flourish: a press releasing, a card arriving, a control
+     * changing shape under a finger.
+     */
+    fun <T> springy(): FiniteAnimationSpec<T>
+
+    /**
+     * A slower, heavier spring for something large moving: a sheet, a hero
+     * expanding, a list settling after a pull.
+     */
+    fun <T> settle(): FiniteAnimationSpec<T>
+
+    /** How far a pressed surface shrinks. 1f when motion is reduced. */
+    val pressScale: Float
+
     val isReduced: Boolean
 }
 
@@ -113,6 +133,17 @@ object FullMotion : Motion {
 
     override val arrangeTiltMillis: Int = ARRANGE_TILT_MILLIS
 
+    override fun <T> springy(): FiniteAnimationSpec<T> =
+        spring(dampingRatio = 0.55f, stiffness = 520f)
+
+    override fun <T> settle(): FiniteAnimationSpec<T> =
+        spring(dampingRatio = 0.78f, stiffness = 220f)
+
+    // **A whole percent and a half, which is felt rather than seen.** Larger
+    // and a row looks like it is collapsing; smaller and a press on a big
+    // card reads as nothing happening at all.
+    override val pressScale: Float = 0.985f
+
     override val isReduced: Boolean = false
 }
 
@@ -133,6 +164,13 @@ object ReducedMotion : Motion {
     // its remove mark and its worded move actions; the tilt was the shortcut.
     override val arrangeTiltDegrees: Float = 0f
     override val arrangeTiltMillis: Int = ARRANGE_TILT_MILLIS
+
+    override fun <T> springy(): FiniteAnimationSpec<T> = snap()
+    override fun <T> settle(): FiniteAnimationSpec<T> = snap()
+
+    // **No scale at all.** A shrink is motion, and this mode has none of it;
+    // the press still answers through color, which `pressedSurface` carries.
+    override val pressScale: Float = 1f
 
     override val isReduced: Boolean = true
 }
