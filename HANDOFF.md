@@ -11,7 +11,7 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 ## 1. State
 
 - Tree clean, everything on `origin/main`. Verify: `git status --porcelain`.
-- **725+ instrumented tests**, suite running over the 2026-08-16 overhaul as this is written; the last full green was 725/725 on 2026-08-15. Plus 28 repo checks, 218 unit tests, lint. Run alone on a clean device: two runs at once produce `DELETE_FAILED_INTERNAL_ERROR` and failures in unrelated tests.
+- **728 instrumented tests, 0 failures**, 2026-08-16, over the full overhaul. Two earlier runs that night died to foreground theft, `docs/TRAPS.md` has the tell. Plus 28 repo checks, 218 unit tests, lint. Plus 28 repo checks, 218 unit tests, lint. Run alone on a clean device: two runs at once produce `DELETE_FAILED_INTERNAL_ERROR` and failures in unrelated tests.
 - CI green at tip. Check after each push: `gh run list --branch main --limit 3`.
 - Phone at baseline and **can be unplugged**: font scale 1.0, animator 1.0, no reader, night mode auto, all four read back after being changed. Holds the current build and the month6 fixture.
 - **Looked at on the phone**, not only tested: Today at scale 1.0 and 2.0, Projects, a project's own screen, the trail, the card gallery, two forms. Screenshots in `docs/screenshots/`: `today-*`, `projects-list-*`, `sweep-*`, `form-*`, `add-card-gallery-*`.
