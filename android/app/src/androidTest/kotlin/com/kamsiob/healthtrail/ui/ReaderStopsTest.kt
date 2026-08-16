@@ -130,7 +130,11 @@ class ReaderStopsTest {
         )
         assertTrue(
             "the row's count is not in the same announcement as its name: $careTeam",
-            careTeam.first().contains("Nothing yet"),
+            // **The empty row now teaches instead of shrugging.** #376: twelve
+            // rows saying "Nothing yet" spent the one line that could say what
+            // belongs in each section on the same two words, and the stranger
+            // could not find anything. The purpose line is the zero state.
+            careTeam.first().contains("people you deal with"),
         )
     }
 
@@ -140,13 +144,18 @@ class ReaderStopsTest {
             NotebookScreen(sections = sections, onOpen = {})
         }
 
-        // **"Nothing yet" plus the one row that says something else.** The
-        // emergency card is a single thing rather than a list, so its count
-        // reads "Nothing on it yet", and counting only the generic phrase
-        // silently asserted eleven while claiming to assert twelve.
-        val rowStops = stops().count {
-            it.contains("Nothing yet") || it.contains("Nothing on it yet")
-        }
+        // **Each empty row announces its own purpose line now**, so the
+        // twelve are counted by the twelve purposes rather than by one
+        // repeated phrase. A purpose missing from a stop is a row whose name
+        // and teaching line broke into separate swipes.
+        val purposes = listOf(
+            "people you deal with", "What they take", "Visits coming up",
+            "places they have been", "each ongoing issue", "in order",
+            "you choose to track", "papers you are handed", "not settled",
+            "in their words", "next visit", "in an emergency",
+        )
+        val all = stops()
+        val rowStops = purposes.count { p -> all.any { it.contains(p) } }
 
         // **Twelve, not thirteen, and the difference is deliberate.**
         // `Repository.Section` has thirteen values because Projects is a

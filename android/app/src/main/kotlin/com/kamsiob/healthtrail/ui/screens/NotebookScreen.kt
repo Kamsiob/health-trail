@@ -26,10 +26,8 @@ import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.IconTile
-import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.components.Waypoint
-import com.kamsiob.healthtrail.ui.components.TabChip
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.GroupedRows
 import com.kamsiob.healthtrail.ui.components.FoldRow
@@ -252,11 +250,11 @@ fun NotebookScreen(
         ) {
             Spacer(Modifier.height(Space.sm))
 
-            // **The binder's own tab.** The notebook belongs to no section, so
-            // it takes gold and the base ladder rather than a section hue, per
-            // `DESIGN.md` 4.3.
-            TabChip(hue = wholeAppHue(), labelKey = "notebook.tab")
-
+            // **No eyebrow chip on a tab root.** The bottom bar already says
+            // where you are, and this screen wore a second name, "The binder",
+            // over its first. Two names for one place is what the stranger
+            // test failed on: the chip taught vocabulary nobody needed. The
+            // chip stays on interior screens, where it is the way back. #376.
             Text(
                 text = strings["notebook.title"],
                 style = HealthTrail.type.displayM,

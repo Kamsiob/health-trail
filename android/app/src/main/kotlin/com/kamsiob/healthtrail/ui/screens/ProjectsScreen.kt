@@ -20,8 +20,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.fabSafeActionBar
 import com.kamsiob.healthtrail.ui.components.fabScrollClearance
-import com.kamsiob.healthtrail.ui.components.wholeAppHue
-import com.kamsiob.healthtrail.ui.components.TabChip
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
@@ -102,10 +100,9 @@ fun ProjectsScreen(
         ) {
             item {
                 Spacer(Modifier.height(Space.sm))
-                // Projects belong to no section, so gold and the base ladder
-                // rather than a section hue, per `DESIGN.md` 4.3.
-                TabChip(hue = wholeAppHue(), labelKey = "projects.tab")
-                Spacer(Modifier.height(Space.s))
+                // **No eyebrow chip on a tab root**: it repeated the title
+                // word for word, and the bottom bar already says where you
+                // are. #376.
                 Text(
                     text = strings["nav.projects"],
                     style = HealthTrail.type.displayM,

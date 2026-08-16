@@ -340,6 +340,12 @@ private fun Templates(
                 trailing = template.steps.size
                     .takeIf { it > 0 }
                     ?.let { strings("projects.step_count", "count" to it) },
+                // **The count sits beside the first line of the name.** These
+                // names wrap to three lines and the subtitle to three more, so
+                // a centered trailing floated in the middle of a tall row,
+                // reading as part of neither. Money's wrapping amount hit the
+                // same collision and this is that fix. #376.
+                trailingAtTop = true,
                 chevron = true,
                 divider = index < templates.lastIndex,
                 onClick = { onChoose(template) },
@@ -390,6 +396,12 @@ private fun OwnTemplates(
                 trailing = template.steps.size
                     .takeIf { it > 0 }
                     ?.let { strings("projects.step_count", "count" to it) },
+                // **The count sits beside the first line of the name.** These
+                // names wrap to three lines and the subtitle to three more, so
+                // a centered trailing floated in the middle of a tall row,
+                // reading as part of neither. Money's wrapping amount hit the
+                // same collision and this is that fix. #376.
+                trailingAtTop = true,
                 chevron = true,
                 divider = index < own.lastIndex,
                 onClick = { onChoose(template) },
