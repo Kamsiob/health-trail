@@ -931,6 +931,7 @@
   "project.fold.people": "People",
   "project.fold.steps": "Steps",
   "project.fold.trail": "The trail",
+  "project.file": "The file",
   "project.kinds.add": "Add a kind",
   "project.kinds.add.hint": "Response window, decision expected, renewal",
   "project.kinds.keeps_dates": "This is what gets offered next time. Dates you have already written down keep the words you used then, whatever you do here.",

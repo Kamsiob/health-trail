@@ -7,10 +7,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
@@ -24,7 +20,6 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DateRow
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.LatestWordCard
 import com.kamsiob.healthtrail.ui.components.RoadSize
@@ -32,7 +27,17 @@ import com.kamsiob.healthtrail.ui.components.RoadStage
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RoadStrip
 import com.kamsiob.healthtrail.ui.components.StandingCard
-import com.kamsiob.healthtrail.ui.components.StepRow
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.kamsiob.healthtrail.ui.components.SpineRow
+import com.kamsiob.healthtrail.ui.components.Tile
+import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.IconTile
+import com.kamsiob.healthtrail.ui.components.wholeAppHue
+import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -136,6 +141,13 @@ fun ProjectHomeScreen(
     trailCount: Int = 0,
     /** Opens the project's own trail. 20.5 screen 11. */
     onOpenTrail: () -> Unit = {},
+    /**
+     * Opens the steps as their own screen. D164: the steps used to unfold in
+     * place on one project shape and fold away on the others, the exact
+     * accordion grammar the owner named; they have had a screen of their own
+     * all along and the file row is now the one way to it.
+     */
+    onOpenSteps: () -> Unit = {},
     /** Opens the project's papers as paper. 20.5 screen 13. */
     onOpenPaperwork: () -> Unit = {},
     /** Opens the people this process has involved. 20.5 screen 14. */
@@ -153,12 +165,6 @@ fun ProjectHomeScreen(
      */
     onReopen: () -> Unit = {},
 ) {
-    // **Open from the start on the busy stretch**, where the steps are the
-    // lead, and closed everywhere else, where they are volume behind the
-    // answer. The person's own toggle wins from the first tap.
-    var stepsOpen by rememberSaveable(project.id) { mutableStateOf(project.lead == "steps") }
-    var papersOpen by rememberSaveable(project.id) { mutableStateOf(false) }
-    var trailOpen by rememberSaveable(project.id) { mutableStateOf(false) }
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val type = HealthTrail.type
@@ -177,50 +183,27 @@ fun ProjectHomeScreen(
         backLabelKey = "section.back.projects",
         modifier = modifier,
     ) {
-        // **The road, first and bare.** It is the one element that says "this is
-        // a project" before a single word is read.
-        if (stages.size >= 2) {
-            item {
-                RoadStrip(
-                    stages = stages.map { RoadStage(name = it.name, reached = it.isReached) },
-                    description = roadDescription(project.name, stages, strings),
-                    size = RoadSize.FULL,
-                    modifier = Modifier.testTag(ProjectHomeTags.ROAD),
-                )
-                // **The road is bare and its control is beside it**, 20.6. The
-                // strip itself does nothing on touch, so the way to move along
-                // it is an outlined action rather than a tappable waypoint,
-                // which would make an information graphic look like a picker.
-                //
-                // **Not on a closed project.** The road stays, because it is
-                // the shape of what happened and worth reading afterwards, but
-                // an action that says move it along sits above a block that
-                // says how it ended and contradicts it. Reopening is the way
-                // back to moving, and it is right there.
-                if (!project.isFinished) {
-                    Spacer(Modifier.height(Space.s))
-                    QuietButton(
-                        label = strings["project.stage.move.short"],
-                        onClick = onMoveStage,
-                        modifier = Modifier.testTag(ProjectHomeTags.MOVE_STAGE),
-                    )
-                }
-                Spacer(Modifier.height(Space.sectionGap))
-            }
-        }
+        // == The redesign, 2026-08-16, D164. ==================================
+        //
+        // **The owner, live: "there's just menus and sub menus and tabs and
+        // accordions. it's just a gigantic mess."** The old screen stacked a
+        // road strip, a move control, three answer cards whose ORDER CHANGED
+        // per project, an inline steps cluster that appeared on one shape and
+        // folded on the others, three fold-shaped doors, and four pills. A
+        // person could learn one project and be lost on the next, because the
+        // screen itself moved.
+        //
+        // **The new contract: one fixed order on every project, always.**
+        //   1. The answer: where it stands, composed as one block.
+        //   2. The three verbs, in one row, in one place, forever.
+        //   3. The road, vertical, with the move control on the current stage.
+        //   4. The latest word.
+        //   5. The file: five plain rows, no folds, no accordions.
+        //   6. Housekeeping.
+        // Nothing reorders itself, nothing unfolds in place, and every door
+        // looks like a door.
 
-        // **A project nobody has touched for months greets you.** 20.5 screen
-        // 16, and lapse tolerance is law: it says plainly what it held while
-        // the person was gone and offers one gentle way back in, which is
-        // confirming where it stands.
-        //
-        // **No shame, no streaks, nothing owed.** It does not say how long it
-        // has been since they last did anything, it says how long the file has
-        // been holding this, which is a fact about the record rather than about
-        // them. Rule 13.
-        //
-        // **Not on a closed project**, which leads with how it ended: a file
-        // that finished in March is not waiting for anybody.
+        // -- 0. The greeting, kept: lapse tolerance is law. -------------------
         val away = if (project.isFinished) null else monthsAway(entries)
         if (away != null) {
             item {
@@ -230,10 +213,6 @@ fun ProjectHomeScreen(
                     since = returnLine(entries, standing, strings),
                     modifier = Modifier.testTag(ProjectHomeTags.RETURN),
                     actions = {
-                        // **One way back in, and it is the smallest one.** Not
-                        // a list of everything that could be caught up on:
-                        // confirming where it stands is one tap and it is the
-                        // only thing that goes stale on its own.
                         QuietButton(
                             label = strings["project.return.confirm"],
                             onClick = onUpdateStanding,
@@ -244,16 +223,7 @@ fun ProjectHomeScreen(
             }
         }
 
-        // **A closed project leads with how it ended.** 20.5 screen 17. The
-        // three answers below still render, because the record is kept whole
-        // and a finished process is still a process somebody may need to read,
-        // but the question this screen answers first has changed: not "where
-        // does it stand" but "what happened, and what did it take".
-        //
-        // **Nothing here scores the person.** The numbers are counts of the
-        // record: how long it ran, how many calls, how many papers, how many
-        // people. Rule 13 and 20.7 both rule out anything that reads as a grade
-        // on how well somebody handled it.
+        // -- 1. The answer. A closed project answers with how it ended. -------
         if (project.isFinished) {
             item {
                 StandingCard(
@@ -262,9 +232,6 @@ fun ProjectHomeScreen(
                     since = endedSpan(project, strings),
                     modifier = Modifier.testTag(ProjectHomeTags.ENDED),
                     actions = {
-                        // **Outlined, and the only action here.** Reopening is
-                        // a real thing somebody does and it is not the point of
-                        // the screen, which is the record.
                         QuietButton(
                             label = strings["project.reopen"],
                             onClick = onReopen,
@@ -279,12 +246,8 @@ fun ProjectHomeScreen(
                 DenseRow(
                     title = strings["project.story.line"],
                     subtitle = storyLine(project, entries, papers, peopleCount, strings),
-                    subtitleMaxLines = Int.MAX_VALUE,
                     modifier = Modifier.testTag(ProjectHomeTags.STORY),
                 )
-                // **What closing did not do**, said plainly, because that is
-                // the whole promise of the screen's name. Nothing is deleted,
-                // nothing is archived away, and the export still holds it.
                 Text(
                     text = strings["project.story.kept"],
                     style = type.bodyS,
@@ -293,107 +256,212 @@ fun ProjectHomeScreen(
                 )
                 Spacer(Modifier.height(Space.sectionGap))
             }
-        }
+        } else {
+            item {
+                // **One block, not three cards fighting.** The eyebrow names
+                // the question, the holder answers it at display weight, the
+                // date sits under it as the one line with a clock in it. The
+                // old screen made "where it stands", "the next date" and "the
+                // latest word" three siblings and then shuffled them; a person
+                // opening any project now reads down: standing, date, verbs,
+                // road, word. Law 1: one thing leads.
+                Column(modifier = Modifier.testTag(ProjectHomeTags.STANDING)) {
+                    Text(
+                        text = strings["project.where_it_stands"],
+                        style = type.mono,
+                        color = colors.goldInk,
+                    )
+                    Spacer(Modifier.height(Space.xs))
+                    Text(
+                        text = standing?.holderLabel?.let { Bidi.isolate(it) }
+                            ?: strings["project.stands.none"],
+                        style = type.displayS,
+                        color = if (standing != null) colors.ink else colors.ink2,
+                    )
+                    (if (standing != null) standingSince else strings["project.stands.none.note"])
+                        ?.let {
+                            Spacer(Modifier.height(Space.xs))
+                            Text(text = it, style = type.bodyM, color = colors.ink2)
+                        }
+                }
+                Spacer(Modifier.height(Space.cardGap))
+            }
 
-        // **The three answers, in the order this project's shape puts them.**
-        // DESIGN.md 20.3. The components and their meanings do not change:
-        // only the order does, which is what keeps somebody who has learned one
-        // project able to read the next one.
-        //
-        // The lead is drawn at its own weight; the other two follow as rows.
-        // **The date is the only one that changes size**, because a countdown
-        // that leads is the thing the closing window is for and a countdown
-        // under a lead must not out-shout it.
-        val standingBlock: @Composable () -> Unit = {
-            if (standing != null) {
-                StandingCard(
-                    eyebrow = strings["project.where_it_stands"],
-                    holder = Bidi.isolate(standing.holderLabel),
-                    since = standingSince,
-                    modifier = Modifier.testTag(ProjectHomeTags.STANDING),
-                    // **An outlined pill, and a verb**, 20.6. It records what
-                    // somebody was told; it does not suggest chasing anybody.
-                    actions = {
-                        QuietButton(
-                            label = strings["project.standing.update"],
-                            onClick = onUpdateStanding,
-                            modifier = Modifier.testTag(ProjectHomeTags.UPDATE_STANDING),
-                        )
-                    },
-                )
-            } else {
-                // **A calm state, never a scold.** It says what would go here
-                // and does not imply anybody should have filled it in.
-                StandingCard(
-                    eyebrow = strings["project.where_it_stands"],
-                    holder = strings["project.stands.none"],
-                    since = strings["project.stands.none.note"],
-                    modifier = Modifier.testTag(ProjectHomeTags.STANDING),
-                    // **The none-yet rung names its one action**, 21.4's rule
-                    // applied here: a calm state that says what would go in it.
-                    actions = {
-                        QuietButton(
-                            label = strings["project.standing.update"],
-                            onClick = onUpdateStanding,
-                            modifier = Modifier.testTag(ProjectHomeTags.UPDATE_STANDING),
-                        )
-                    },
-                )
+            item {
+                // **The date is a row under the answer, at the same place on
+                // every project.** Tappable when there is one, per rule 17: the
+                // date is editable forever from the thing itself.
+                if (nextDate != null && countdown != null && dateKind != null) {
+                    DateRow(
+                        countdown = countdown,
+                        what = Bidi.join(dateKind, dateWhen),
+                        source = nextDate.sourceNote,
+                        description = Bidi.join(
+                            countdown, dateKind, dateWhen, nextDate.sourceNote,
+                        ),
+                        onOpen = onOpenDate,
+                        openLabel = strings["project.open_date"],
+                        prominent = false,
+                        modifier = Modifier.testTag(ProjectHomeTags.DATE),
+                    )
+                } else {
+                    Text(
+                        text = strings["project.date.none"],
+                        style = type.bodyM,
+                        color = colors.ink2,
+                        modifier = Modifier
+                            .testTag(ProjectHomeTags.DATE)
+                            .padding(vertical = Space.xs),
+                    )
+                }
+                Spacer(Modifier.height(Space.sectionGap))
+            }
+
+            // -- 2. The three verbs of a long process, one row, forever. ------
+            item {
+                // **Log a call, write down a date, say where it stands.**
+                // Everything a bureaucracy does to a family lands in one of
+                // these three, and the old screen scattered them: one under
+                // the latest word, one under the date, one on the standing
+                // card, each appearing and disappearing with its block. Three
+                // tiles in one row never move, which is what builds the only
+                // kind of speed this person gets to keep: muscle memory.
+                // Rule 22: a tile for a fixed set of destinations.
+                val hue = wholeAppHue()
+                Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                    Tile(
+                        label = strings["project.log_call"],
+                        onClick = onLogCall,
+                        compact = true,
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag(ProjectHomeTags.LOG_CALL),
+                        icon = { tileSize, drawingSize ->
+                            IconTile(
+                                kind = CaptureKind.CALL,
+                                tint = hue.ink,
+                                background = hue.wash,
+                                tileSize = tileSize,
+                                iconSize = drawingSize,
+                            )
+                        },
+                    )
+                    Tile(
+                        label = strings["project.date.add"],
+                        onClick = onAddDate,
+                        compact = true,
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag(ProjectHomeTags.ADD_DATE),
+                        icon = { tileSize, drawingSize ->
+                            IconTile(
+                                section = Repository.Section.APPOINTMENTS,
+                                tint = hue.ink,
+                                background = hue.wash,
+                                tileSize = tileSize,
+                                iconSize = drawingSize,
+                            )
+                        },
+                    )
+                    Tile(
+                        label = strings["project.standing.update"],
+                        onClick = onUpdateStanding,
+                        compact = true,
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag(ProjectHomeTags.UPDATE_STANDING),
+                        icon = { tileSize, drawingSize ->
+                            IconTile(
+                                section = Repository.Section.CHAPTERS,
+                                tint = hue.ink,
+                                background = hue.wash,
+                                tileSize = tileSize,
+                                iconSize = drawingSize,
+                            )
+                        },
+                    )
+                }
+                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
-        val dateBlock: @Composable () -> Unit = {
-            Column {
-            if (nextDate != null && countdown != null && dateKind != null) {
-                DateRow(
-                    countdown = countdown,
-                    // **Both built from the same raw parts**, so neither is a
-                    // joined string handed back into a join. Bidi.join isolates
-                    // every part it is given, and isolating an isolate nests the
-                    // marks.
-                    what = Bidi.join(dateKind, dateWhen),
-                    source = nextDate.sourceNote,
-                    description = Bidi.join(
-                        countdown, dateKind, dateWhen, nextDate.sourceNote,
-                    ),
-                    onOpen = onOpenDate,
-                    openLabel = strings["project.open_date"],
-                    prominent = project.lead == "date",
-                    modifier = Modifier.testTag(ProjectHomeTags.DATE),
-                )
-            } else {
-                // **The none-yet rung names its one action**, 21.4. A project
-                // with no date written down is an ordinary state, and the card
-                // says what would go here rather than only that nothing does.
-                Text(
-                    text = strings["project.date.none"],
-                    style = type.bodyS,
-                    color = colors.ink2,
+        // -- 3. The road, vertical, with the record's own grammar. ------------
+        // **A project is a journey through stages the way the person's care is
+        // a journey through places, and the app already speaks that language
+        // everywhere else**: the trail, the chapters, the milestones all run
+        // on one vertical spine. The horizontal strip was the only road in the
+        // app lying on its side, and it needed a separate control floating
+        // beside it. Vertical, each stage is a waypoint: passed ones solid,
+        // the current one ringed as a milestone, the ones ahead hollow, and
+        // "Move it along" sits ON the current stage, which is rule 18: the
+        // control lives where the state it changes lives.
+        if (stages.size >= 2) {
+            item {
+                Column(
                     modifier = Modifier
-                        .testTag(ProjectHomeTags.DATE)
-                        .padding(horizontal = Space.xs, vertical = Space.s),
-                )
-            }
-            // **Always offered, not only when there are none.** A project with
-            // a filing deadline still gets a hearing date, and an action that
-            // appears only on an empty screen is an action nobody finds twice.
-            Spacer(Modifier.height(Space.s))
-            QuietButton(
-                label = strings["project.date.add"],
-                onClick = onAddDate,
-                modifier = Modifier.testTag(ProjectHomeTags.ADD_DATE),
-            )
+                        .testTag(ProjectHomeTags.ROAD)
+                        .semantics { contentDescription = roadDescription(project.name, stages, strings) },
+                ) {
+                    // **A file that exists is standing at its first stretch.**
+                    // A fresh project has reached nothing, and indexOfLast
+                    // returns -1: drawn literally, the road had no ring and no
+                    // move control, a path with nobody on it. Seen on the
+                    // phone. The first stage is where a just-started process
+                    // stands, which is also where the horizontal preview said
+                    // it would begin.
+                    val current = stages.indexOfLast { it.isReached }
+                        .let { if (it < 0) 0 else it }
+                    stages.forEachIndexed { index, stage ->
+                        SpineRow(
+                            continuesAbove = index > 0,
+                            continuesBelow = index < stages.lastIndex,
+                            // **The node draws only when given a color**: null
+                            // is "no waypoint at this row", which left the
+                            // road a bare line. Seen on the phone.
+                            node = colors.gold,
+                            state = when {
+                                index == current && !project.isFinished -> Waypoint.MILESTONE
+                                stage.isReached -> Waypoint.HAPPENED
+                                else -> Waypoint.UPCOMING
+                            },
+                            dash = null,
+                        ) {
+                            Column(modifier = Modifier.padding(bottom = Space.s)) {
+                                Text(
+                                    text = Bidi.isolate(stage.name),
+                                    style = if (index == current && !project.isFinished) {
+                                        type.bodyL
+                                    } else {
+                                        type.bodyM
+                                    },
+                                    color = when {
+                                        index == current && !project.isFinished -> colors.ink
+                                        stage.isReached -> colors.ink2
+                                        else -> colors.ink2
+                                    },
+                                )
+                                if (index == current && !project.isFinished) {
+                                    Spacer(Modifier.height(Space.xs))
+                                    QuietButton(
+                                        label = strings["project.stage.move.short"],
+                                        onClick = onMoveStage,
+                                        modifier = Modifier.testTag(ProjectHomeTags.MOVE_STAGE),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
-        val latestBlock: @Composable () -> Unit = {
-            Column {
+        // -- 4. The latest word, in the same place on every project. ----------
+        item {
             if (latestWord != null && !latestWord.body.isNullOrBlank()) {
                 LatestWordCard(
                     eyebrow = strings["project.latest_word"],
                     words = latestWord.body,
-                    // Both built from the same raw parts, so neither is a
-                    // joined string handed back into a join.
                     attribution = Bidi.join(attributionWho, attributionWhen),
                     description = Bidi.join(
                         strings["project.latest_word"],
@@ -406,23 +474,12 @@ fun ProjectHomeScreen(
                     modifier = Modifier.testTag(ProjectHomeTags.LATEST),
                 )
             } else {
-                // **The eyebrow stays when the card goes.** Without it this
-                // rung is the sentence "Nothing written down from them yet"
-                // with nothing on the screen that says who "them" is: the
-                // filled card carries "The latest word" and the empty one
-                // dropped it, so on a brand new project two of the three
-                // answers were loose gray lines with no label at all. 20.1
-                // says the screen answers three questions, and a question is
-                // not answered by a sentence that does not name it.
-                //
-                // The date rung needs none of this: "No date written down yet"
-                // says what it is about, and the filled DateRow has no eyebrow
-                // either, so adding one there would invent a label the drawn
-                // state does not have.
+                // **The eyebrow stays when the card goes**, so the empty rung
+                // still names its own question.
                 Column(
                     modifier = Modifier
                         .testTag(ProjectHomeTags.LATEST)
-                        .padding(horizontal = Space.xs, vertical = Space.s),
+                        .padding(vertical = Space.s),
                 ) {
                     Text(
                         text = strings["project.latest_word"],
@@ -436,257 +493,74 @@ fun ProjectHomeScreen(
                     )
                 }
             }
-            // **Always offered.** The latest word is the thing that changes
-            // most often on a long process, and an action that appears only
-            // when there is nothing recorded would be gone the moment it
-            // started being useful.
-            Spacer(Modifier.height(Space.s))
-            QuietButton(
-                label = strings["project.log_call"],
-                onClick = onLogCall,
-                modifier = Modifier.testTag(ProjectHomeTags.LOG_CALL),
-            )
-            }
+            Spacer(Modifier.height(Space.sectionGap))
         }
 
-        // **The steps lead on the busy stretch.** Two intense weeks of small
-        // parallel arrangements is a screen somebody opens to see what is left,
-        // not to read a sentence about an office, so the cluster sits above the
-        // other two answers and starts open. On the other two shapes the steps
-        // are volume behind the answer and fold away below.
-        val stepsBlock: @Composable () -> Unit = {
-            Column(modifier = Modifier.testTag(ProjectHomeTags.STEPS)) {
-                FoldRow(
-                    labelKey = "project.fold.steps",
-                    expanded = stepsOpen,
-                    onToggle = { stepsOpen = !stepsOpen },
-                    count = steps.size.toString(),
+        // -- 5. The file: everything else, as five doors that look like doors.
+        // **No folds, no accordions, no counts that vanish.** The steps, the
+        // trail, the papers, the people and the setup each already have a
+        // screen of their own; the old home reached them through fold-shaped
+        // rows that sometimes opened in place and sometimes navigated, which
+        // is exactly the grammar the owner called a mess. Five dense rows
+        // under one header: every one navigates, every one says what it
+        // holds, none of them moves.
+        item {
+            GroupHeader(labelKey = "project.file")
+            Spacer(Modifier.height(Space.headerGap))
+            GroupedSurface {
+                DenseRow(
+                    title = strings["project.fold.steps"],
+                    trailing = strings("projects.step_count", "count" to steps.size),
+                    chevron = true,
+                    divider = true,
+                    onClick = onOpenSteps,
+                    modifier = Modifier.testTag(ProjectHomeTags.STEPS),
                 )
-                if (stepsOpen) {
-                    Spacer(Modifier.height(Space.cardGap))
-                    // **Clustered by area on the busy stretch**, 20.3. Two
-                    // intense weeks of small parallel arrangements is not one
-                    // list: the house, the ride and the equipment are different
-                    // errands with different people, and a flat list of
-                    // nineteen makes somebody re-sort them in their head every
-                    // time they open it.
-                    //
-                    // **Steps with no area keep their own group at the end**,
-                    // because a step nobody has filed is still a step and
-                    // hiding it until it is tidy would be the app asking to be
-                    // organized before it will help.
-                    val clustered = steps.groupBy { it.cluster?.takeIf { c -> c.isNotBlank() } }
-                    val named = clustered.filterKeys { it != null }
-                    val loose = clustered[null].orEmpty()
-
-                    for ((position, entry) in named.entries.withIndex()) {
-                        val (area, inArea) = entry
-                        // **The room goes above the label, not below it.** A
-                        // heading belongs to the rows under it, so the gap that
-                        // separates one area from the next sits before the
-                        // heading. Trailing it instead left every label tight to
-                        // the block it named and loose from its own rows.
-                        if (position > 0) Spacer(Modifier.height(Space.m))
-                        GroupHeaderText(
-                            // **Raw, because the header isolates it itself.**
-                            // Isolating here too nests the marks, which is the
-                            // same defect three other screens had.
-                            label = area.orEmpty(),
-                            // **A count of what is in the group and nothing
-                            // else.** The grid draws "1 OF 3" here; rule 13
-                            // rules out a completion count on the person's own
-                            // work, and that conflict is the owner's to settle.
-                            // Until then this says what every other count in
-                            // the app says. DECISIONS.md D116.
-                            count = inArea.size.toString(),
-                            countDescription = strings(
-                                "projects.step_count",
-                                "count" to inArea.size,
-                            ),
-                        )
-                        Spacer(Modifier.height(Space.xs))
-                        inArea.forEach { step ->
-                            StepRow(
-                                text = Bidi.isolate(step.text),
-                                done = step.isDone,
-                                handler = step.handlerLabel,
-                                onToggle = { onToggleStep(step) },
-                                description = stepDescription(step, strings),
-                            )
-                        }
-                    }
-                    if (named.isNotEmpty() && loose.isNotEmpty()) {
-                        Spacer(Modifier.height(Space.m))
-                    }
-                    loose.forEach { step ->
-                        StepRow(
-                            text = Bidi.isolate(step.text),
-                            done = step.isDone,
-                            handler = step.handlerLabel,
-                            onToggle = { onToggleStep(step) },
-                            description = stepDescription(step, strings),
-                        )
-                    }
-                }
-            }
-        }
-
-        // **The greeting stands in for the standing card, it does not sit above
-        // it.** The return block already says where it stood and offers the one
-        // way back in, so drawing the standing card underneath put the same
-        // action on the screen twice, two rows apart, which law 2 rules out:
-        // one costume per thing. Grid screen 16 draws the greeting and the
-        // folds and no standing card, for the same reason.
-        val standingOrGreeting: (@Composable () -> Unit)? =
-            if (away != null) null else standingBlock
-
-        val order: List<@Composable () -> Unit> = when (project.lead) {
-            "date" -> listOfNotNull(dateBlock, standingOrGreeting, latestBlock)
-            "steps" -> listOfNotNull(
-                if (steps.isNotEmpty()) stepsBlock else null,
-                standingOrGreeting,
-                dateBlock,
-                latestBlock,
-            )
-            else -> listOfNotNull(standingOrGreeting, dateBlock, latestBlock)
-        }
-
-        order.forEachIndexed { index, block ->
-            item {
-                block()
-                Spacer(
-                    Modifier.height(
-                        if (index == order.lastIndex) Space.sectionGap else Space.cardGap,
-                    ),
+                DenseRow(
+                    title = strings["project.fold.trail"],
+                    trailing = trailCount.toString(),
+                    chevron = true,
+                    divider = true,
+                    onClick = onOpenTrail,
+                    modifier = Modifier.testTag(ProjectHomeTags.TRAIL),
+                )
+                DenseRow(
+                    title = strings["project.fold.papers"],
+                    // bidi-ok: a bare count with no direction of its own, the
+                    // same shape every fold in the app has always carried.
+                    trailing = papers.size.toString(),
+                    chevron = true,
+                    divider = true,
+                    onClick = onOpenPaperwork,
+                    modifier = Modifier.testTag(ProjectHomeTags.PAPERS),
+                )
+                DenseRow(
+                    title = strings["project.fold.people"],
+                    trailing = peopleCount.toString(),
+                    chevron = true,
+                    divider = true,
+                    onClick = onOpenPeople,
+                    modifier = Modifier.testTag(ProjectHomeTags.PEOPLE),
+                )
+                DenseRow(
+                    title = strings["project.setup.open"],
+                    chevron = true,
+                    divider = false,
+                    onClick = onOpenSetup,
+                    modifier = Modifier.testTag(ProjectHomeTags.SETUP),
                 )
             }
+            Spacer(Modifier.height(Space.sectionGap))
         }
 
-        // **Everything else, folded and counted.** DESIGN.md 20.5 screen 5: the
-        // three answers first, then the volume behind them. A project with two
-        // hundred entries and forty papers is not a screen anybody can read,
-        // and the fold is what makes the answers stay first. Section 7.
-        //
-        // **The counts are counts, never scores.** "Steps 6" says what is in the
-        // fold, which is what every other fold in this app says, and rule 13
-        // rules out "2 of 6".
-        // **Everything said about this project, folded and counted.** The
-        // latest word is above; this is the rest of it, and 20.5 screen 11 puts
-        // the project's own trail here. It folds because a project two years
-        // old has two hundred of these and the three answers stay first.
-        // **A door rather than a fold, since 20.5 screen 11 is a screen.** The
-        // fold listed the linked entries and nothing else; the project's trail
-        // is those *and* the road turning *and* the dates it is running
-        // against, on one spine, read forwards, with its own filters. None of
-        // that fits under a disclosure on a screen whose job is the three
-        // answers. It keeps the fold row's own shape, the way Setup does.
-        // **Always here, even at nothing.** A door that appears only once there
-        // is something behind it is one nobody learns about, which is the same
-        // arithmetic that put "Write down a date" on a project that already has
-        // one. "Nothing on this project's trail yet" is a real answer and the
-        // trail screen gives it; a missing row gives nothing.
-        item {
-            FoldRow(
-                labelKey = "project.fold.trail",
-                expanded = false,
-                onToggle = onOpenTrail,
-                count = trailCount.toString(),
-                modifier = Modifier.testTag(ProjectHomeTags.TRAIL),
-            )
-            Spacer(Modifier.height(Space.cardGap))
-        }
-
-        // Only when the steps are not the lead, or the busy stretch would
-        // draw the same cluster twice.
-        if (steps.isNotEmpty() && project.lead != "steps") {
-            item {
-                FoldRow(
-                    labelKey = "project.fold.steps",
-                    expanded = stepsOpen,
-                    onToggle = { stepsOpen = !stepsOpen },
-                    count = steps.size.toString(),
-                )
-                Spacer(Modifier.height(Space.cardGap))
-            }
-            if (stepsOpen) {
-                items(steps, key = { it.id }) { step ->
-                    StepRow(
-                        text = Bidi.isolate(step.text),
-                        done = step.isDone,
-                        handler = step.handlerLabel,
-                        onToggle = { onToggleStep(step) },
-                        description = stepDescription(step, strings),
-                    )
-                }
-                item { Spacer(Modifier.height(Space.cardGap)) }
-            }
-        }
-
-        // **A door, like the trail.** The fold listed the places and their two
-        // states and nothing else; 20.5 screen 13 shows the paper itself, split
-        // by what they sent and what you sent, which is the question somebody
-        // is actually asking. Drawn even at zero, for the reason the trail is.
-        // **The people this process has involved**, 20.5 screen 14, above the
-        // papers because a long process is mostly other people.
-        item {
-            FoldRow(
-                labelKey = "project.fold.people",
-                expanded = false,
-                onToggle = onOpenPeople,
-                count = peopleCount.toString(),
-                modifier = Modifier.testTag(ProjectHomeTags.PEOPLE),
-            )
-            Spacer(Modifier.height(Space.cardGap))
-        }
-
-        item {
-            FoldRow(
-                labelKey = "project.fold.papers",
-                expanded = false,
-                onToggle = onOpenPaperwork,
-                count = papers.size.toString(),
-                modifier = Modifier.testTag(ProjectHomeTags.PAPERS),
-            )
-            Spacer(Modifier.height(Space.cardGap))
-        }
-
-        // **Correcting the name.** #374, and the surface #373 made room for.
-        // `renameProject` sat in the repository with no caller from the day the
-        // defect was found, and was deliberately kept out of the removal
-        // ledger, per D152, because a row there would have said the app decided
-        // somebody may not fix a name they typed wrong.
-        //
-        // **Above the setup fold and below everything about the process**,
-        // because correcting a name is rarer than any of the three answers and
-        // more common than taking the project apart. Same pill, sized to its
-        // label, as the care thread's and the chapter's.
+        // -- 6. Housekeeping, last, unchanged. --------------------------------
         item {
             QuietButton(
                 label = strings["projects.rename"],
                 onClick = onRename,
                 modifier = Modifier.testTag(ProjectHomeTags.RENAME),
             )
-            Spacer(Modifier.height(Space.sectionGap))
-        }
-
-        // **The way to everything the template decided.** 20.5 screen 18 and
-        // law 5: it sits last because it is the least often needed and the
-        // most reassuring to know is there.
-        item {
-            FoldRowText(
-                label = strings["project.setup.open"],
-                expanded = false,
-                onToggle = onOpenSetup,
-                modifier = Modifier.testTag(ProjectHomeTags.SETUP),
-            )
-            Spacer(Modifier.height(Space.sectionGap))
-        }
-
-        // **The project itself, removed from the project's own screen**, per
-        // #218 and law 2. Below the setup fold because it is the last thing
-        // anybody comes here for, and a pill sized to its label rather than a
-        // full width bar, D118.
-        item {
+            Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["remove.action"],
                 onClick = onRemove,
@@ -697,15 +571,6 @@ fun ProjectHomeScreen(
     }
 }
 
-/** What a reader says for one step, as one sentence rather than three stops. */
-private fun stepDescription(
-    step: Repository.ProjectStep,
-    strings: com.kamsiob.healthtrail.i18n.Strings,
-): String = Bidi.join(
-    step.text,
-    strings[if (step.isDone) "project.step.done" else "project.step.not_done"],
-    step.handlerLabel?.let { strings("project.step.handled_by", "who" to it) },
-)
 
 /**
  * What a reader says instead of the road.

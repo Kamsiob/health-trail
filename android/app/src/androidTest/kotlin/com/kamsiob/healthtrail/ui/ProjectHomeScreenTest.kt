@@ -2,9 +2,12 @@ package com.kamsiob.healthtrail.ui
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
@@ -13,25 +16,29 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeTags
+import com.kamsiob.healthtrail.ui.screens.SectionTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import java.util.Locale
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * One grammar, three arrangements. `DESIGN.md` 20.3.
+ * One order, every project, no exceptions. D164.
  *
- * **The shape of a project is only the order of the same components**, and that
- * claim is the reason somebody who has learned one project can read the next
- * one. It is also the easiest thing on this surface to break by accident, since
- * every shape renders the same four things and a wrong order still looks like a
- * finished screen.
+ * **The old contract was "one grammar, three arrangements": the same blocks in
+ * a lead-dependent order.** The owner's verdict on the result, live, was
+ * "menus and sub menus and tabs and accordions. it's just a gigantic mess",
+ * and the root of it was exactly the reordering: a person could learn one
+ * project and be lost on the next, because the screen itself moved.
  *
- * **What is asserted is vertical position, not presence.** Every shape shows
- * all three answers; what differs is which one is at the top, and a test that
- * only checked they were all on screen would pass on all three orders at once.
+ * **The new contract is the opposite claim**: the answer, the date, the three
+ * verbs, the road, the latest word, the file. In that order on the long road,
+ * on the closing window, and on the busy stretch alike. These tests hold the
+ * order constant across every lead value the old design used to reorder by,
+ * which is the strongest possible statement that the reordering is gone.
  */
 @RunWith(AndroidJUnit4::class)
 class ProjectHomeScreenTest {
@@ -40,6 +47,8 @@ class ProjectHomeScreenTest {
     val compose = createComposeRule()
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
+
+    private val strings by lazy { Strings.load(context, Locale.ENGLISH) }
 
     private fun project(lead: String) = Repository.Project(
         id = "p1",
@@ -86,14 +95,71 @@ class ProjectHomeScreenTest {
         Repository.ProjectStep("x2", "Gather the statements", null, null, "The paperwork", null),
     )
 
-    private fun show(lead: String, steps: List<Repository.ProjectStep> = this.steps) {
+    private fun show(
+        lead: String,
+        onLogCall: () -> Unit = {},
+        onAddDate: () -> Unit = {},
+        onUpdateStanding: () -> Unit = {},
+        onOpenSteps: () -> Unit = {},
+        onOpenTrail: () -> Unit = {},
+        onOpenPaperwork: () -> Unit = {},
+        onOpenPeople: () -> Unit = {},
+        onOpenSetup: () -> Unit = {},
+    ) {
         compose.setContent {
-            CompositionLocalProvider(
-                LocalStrings provides Strings.load(context, Locale.ENGLISH),
-            ) {
+            CompositionLocalProvider(LocalStrings provides strings) {
                 HealthTrailTheme {
                     ProjectHomeScreen(
                         project = project(lead),
+                        stages = stages,
+                        standing = standing,
+                        nextDate = nextDate,
+                        latestWord = null,
+                        countdown = "12 days",
+                        dateKind = nextDate.kind,
+                        dateWhen = "September 12, 2026",
+                        standingSince = "reviewing it",
+                        steps = steps,
+                        papers = emptyList(),
+                        onBack = {},
+                        onLogCall = onLogCall,
+                        onAddDate = onAddDate,
+                        onUpdateStanding = onUpdateStanding,
+                        onOpenSteps = onOpenSteps,
+                        onOpenTrail = onOpenTrail,
+                        onOpenPaperwork = onOpenPaperwork,
+                        onOpenPeople = onOpenPeople,
+                        onOpenSetup = onOpenSetup,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun scrollTo(tag: String) {
+        compose.onNodeWithTag(SectionTags.root(ProjectHomeTags.NAME))
+            .performScrollToNode(hasTestTag(tag))
+    }
+
+    private fun topOf(tag: String): Float =
+        compose.onNodeWithTag(tag).fetchSemanticsNode().positionInRoot.y
+
+    /**
+     * The reordering is gone: the answer leads and the date follows on every
+     * shape the old design shuffled. Run for each historical lead value, so a
+     * regression that brings the shuffling back fails three ways at once.
+     */
+    @Test
+    fun everyShapeReadsInTheSameOrder() {
+        // **One composition, three shapes.** setContent may run once per
+        // test, so the lead is state and the same tree re-reads for each
+        // value the old design used to reorder by.
+        val lead = androidx.compose.runtime.mutableStateOf("standing")
+        compose.setContent {
+            CompositionLocalProvider(LocalStrings provides strings) {
+                HealthTrailTheme {
+                    ProjectHomeScreen(
+                        project = project(lead.value),
                         stages = stages,
                         standing = standing,
                         nextDate = nextDate,
@@ -109,146 +175,114 @@ class ProjectHomeScreenTest {
                 }
             }
         }
+
+        for (shape in listOf("standing", "date", "steps")) {
+            compose.runOnUiThread { lead.value = shape }
+            compose.waitForIdle()
+            compose.onNodeWithTag(ProjectHomeTags.STANDING).assertIsDisplayed()
+            assertTrue(
+                "on lead=$shape the answer no longer leads",
+                topOf(ProjectHomeTags.STANDING) < topOf(ProjectHomeTags.DATE),
+            )
+            assertTrue(
+                "on lead=$shape the verbs are not under the date",
+                topOf(ProjectHomeTags.DATE) < topOf(ProjectHomeTags.LOG_CALL),
+            )
+        }
     }
 
-    private fun topOf(tag: String): Float =
-        compose.onNodeWithTag(tag).fetchSemanticsNode().positionInRoot.y
+    /** The three verbs are one row: same height, all present, all firing. */
+    @Test
+    fun theThreeVerbsSitTogetherAndFire() {
+        var calls = 0
+        var dates = 0
+        var standings = 0
+        show("standing", onLogCall = { calls++ }, onAddDate = { dates++ }, onUpdateStanding = { standings++ })
 
-    /** The same, for a heading the catalog cannot name: it is composed from data. */
-    private fun topOfText(text: String): Float =
-        compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
+        val callTop = topOf(ProjectHomeTags.LOG_CALL)
+        assertEquals(
+            "the verbs are not one row",
+            callTop,
+            topOf(ProjectHomeTags.ADD_DATE),
+            1f,
+        )
+        assertEquals(
+            "the third verb left the row",
+            callTop,
+            topOf(ProjectHomeTags.UPDATE_STANDING),
+            1f,
+        )
+
+        compose.onNodeWithTag(ProjectHomeTags.LOG_CALL).performClick()
+        compose.onNodeWithTag(ProjectHomeTags.ADD_DATE).performClick()
+        compose.onNodeWithTag(ProjectHomeTags.UPDATE_STANDING).performClick()
+        assertEquals(1, calls)
+        assertEquals(1, dates)
+        assertEquals(1, standings)
+    }
 
     /**
-     * Every shape shows all three answers.
-     *
-     * **The order changes and the content does not**, 20.3. A shape that
-     * dropped an answer would be a different screen rather than a different
-     * arrangement, so each of the three tests below asserts this as well as the
-     * order. It is not a fourth test, because `setContent` may be called once
-     * per rule and a loop over the three shapes silently tests only the first.
+     * The road is vertical and the move control lives on the current stage.
+     * Rule 18: the control sits where the state it changes sits.
      */
-    private fun assertAllThreeAnswersAreThere() {
-        compose.onNodeWithTag(ProjectHomeTags.STANDING).assertIsDisplayed()
-        compose.onNodeWithTag(ProjectHomeTags.DATE).assertIsDisplayed()
-        compose.onNodeWithTag(ProjectHomeTags.LATEST).assertIsDisplayed()
-    }
-
     @Test
-    fun theLongRoadOpensWithWhereItStands() {
+    fun theRoadCarriesItsMoveControlOnTheCurrentStage() {
         show("standing")
-        assertAllThreeAnswersAreThere()
-        assertTrue(
-            "the date came before where it stands on the long road",
-            topOf(ProjectHomeTags.STANDING) < topOf(ProjectHomeTags.DATE),
-        )
-    }
-
-    @Test
-    fun theClosingWindowOpensWithTheNextDate() {
-        show("date")
-        assertAllThreeAnswersAreThere()
-        assertTrue(
-            "where it stands came before the date on the closing window",
-            topOf(ProjectHomeTags.DATE) < topOf(ProjectHomeTags.STANDING),
-        )
-    }
-
-    @Test
-    fun theBusyStretchOpensWithTheSteps() {
-        show("steps")
-        assertAllThreeAnswersAreThere()
-        // **The cluster is open from the start here**, because somebody in the
-        // middle of two intense weeks opens this to see what is left rather
-        // than to read a sentence about an office.
-        //
-        // Asserted by position rather than by the step's own words: `StepRow`
-        // replaces its text with one composed description, which is what a
-        // reader should hear, so there is no text node saying "Get the form".
-        compose.onNodeWithTag(ProjectHomeTags.STEPS).assertIsDisplayed()
-        assertTrue(
-            "where it stands came before the steps on the busy stretch",
-            topOf(ProjectHomeTags.STEPS) < topOf(ProjectHomeTags.STANDING),
-        )
+        // The move control is the bottom of the road block, so landing it on
+        // screen lands the whole road. The names are asserted as present in
+        // the tree rather than as visible, because a tall road can honestly
+        // run past either screen edge on a small window.
+        scrollTo(ProjectHomeTags.MOVE_STAGE)
+        // docs/TRAPS.md: the names are bidi isolated, so the finder matches
+        // the isolated string rather than the raw one.
+        compose.onNodeWithText(Bidi.isolate("Applied")).assertExists()
+        compose.onNodeWithText(Bidi.isolate("In review")).assertExists()
+        compose.onNodeWithTag(ProjectHomeTags.MOVE_STAGE).assertIsDisplayed()
     }
 
     /**
-     * The busy stretch groups its steps by area, with a count of what is there.
-     *
-     * `DESIGN.md` 20.3. **The count is how many steps are in the area and never
-     * how many are done**, rule 13: this screen does not measure the person's
-     * own work, and the grid's "1 OF 3" is the one thing in the drawing that
-     * this does not draw. `DECISIONS.md` D116.
-     *
-     * **A step nobody has filed keeps its place.** It runs after the named
-     * areas without a heading of its own, because hiding it until it was tidy
-     * would be the app asking to be organized before it would help.
+     * The file is five doors that look like doors: every row navigates, and
+     * none of them unfolds anything in place. The accordion contract, dead.
      */
     @Test
-    fun theBusyStretchGroupsItsStepsByArea() {
+    fun theFileRowsAllNavigate() {
+        var steps = 0
+        var trail = 0
+        var papers = 0
+        var people = 0
+        var setup = 0
         show(
-            "steps",
-            listOf(
-                Repository.ProjectStep("g1", "Call them", null, null, "The phone calls", null),
-                Repository.ProjectStep("g2", "Get the form", null, null, "The paperwork", null),
-                Repository.ProjectStep("g3", "Send it certified", null, null, "The paperwork", null),
-                Repository.ProjectStep("g4", "Ask in writing", null, null, null, null),
-            ),
+            "standing",
+            onOpenSteps = { steps++ },
+            onOpenTrail = { trail++ },
+            onOpenPaperwork = { papers++ },
+            onOpenPeople = { people++ },
+            onOpenSetup = { setup++ },
         )
 
-        // Composed the way the header composes it, isolate marks and all. A
-        // test that compared the bare words passed for months while the screen
-        // rendered something else, which is how SituationPickerTest broke.
-        val calls = Bidi.join("THE PHONE CALLS", "1")
-        val paperwork = Bidi.join("THE PAPERWORK", "2")
-        compose.onNodeWithText(calls).assertIsDisplayed()
-        compose.onNodeWithText(paperwork).assertIsDisplayed()
+        for ((tag, _) in listOf(
+            ProjectHomeTags.STEPS to "steps",
+            ProjectHomeTags.TRAIL to "trail",
+            ProjectHomeTags.PAPERS to "papers",
+            ProjectHomeTags.PEOPLE to "people",
+            ProjectHomeTags.SETUP to "setup",
+        )) {
+            scrollTo(tag)
+            compose.onNodeWithTag(tag).performClick()
+        }
 
-        assertTrue(
-            "the areas ran in the order the steps came in",
-            topOfText(calls) < topOfText(paperwork),
-        )
+        assertEquals("the steps row did not navigate", 1, steps)
+        assertEquals("the trail row did not navigate", 1, trail)
+        assertEquals("the papers row did not navigate", 1, papers)
+        assertEquals("the people row did not navigate", 1, people)
+        assertEquals("the setup row did not navigate", 1, setup)
     }
 
-    /**
-     * A project whose steps have no areas gets no headings.
-     *
-     * A heading over the whole list says nothing that the list does not already
-     * say, and inventing one would be decoration standing in for hierarchy,
-     * rule 15.
-     */
-    @Test
-    fun stepsWithNoAreaGetNoHeadings() {
-        show(
-            "steps",
-            listOf(
-                Repository.ProjectStep("n1", "Call them", null, null, null, null),
-                Repository.ProjectStep("n2", "Get the form", null, null, "", null),
-            ),
-        )
-
-        compose.onNodeWithTag(ProjectHomeTags.STEPS).assertIsDisplayed()
-        // A blank area is not an area. Were the guard dropped, the empty string
-        // would become a group of its own and draw a heading with no words in
-        // it, which is the placeholder rule 11 rules out.
-        compose.onNodeWithText(Bidi.join("", "1")).assertDoesNotExist()
-        compose.onNodeWithText(Bidi.join("", "2")).assertDoesNotExist()
-    }
-
-    /**
-     * The latest word still names itself when there is nothing to show.
-     *
-     * `latestWord` is null in every case here, so this holds the empty rung.
-     * Without the eyebrow it was the bare sentence "Nothing written down from
-     * them yet" with nothing on the screen saying who "them" is, which is what
-     * a brand new project shows on the first screen anybody opens: 20.1 says
-     * this screen answers three questions, and a question is not answered by a
-     * sentence that does not name it. Found by starting a real project on the
-     * phone and looking at it.
-     */
+    /** The empty latest word still names its own question. Unchanged from the old contract. */
     @Test
     fun theEmptyLatestWordStillSaysWhatItIs() {
         show("standing")
-        val strings = Strings.load(context, Locale.ENGLISH)
+        scrollTo(ProjectHomeTags.LATEST)
         compose.onNodeWithText(strings["project.latest_word"]).assertIsDisplayed()
         compose.onNodeWithText(strings["project.word.none"]).assertIsDisplayed()
     }

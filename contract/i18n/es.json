@@ -931,6 +931,7 @@
   "project.fold.people": "Personas",
   "project.fold.steps": "Pasos",
   "project.fold.trail": "El recorrido",
+  "project.file": "El expediente",
   "project.kinds.add": "Añadir un tipo",
   "project.kinds.add.hint": "Plazo de respuesta, resolución prevista, renovación",
   "project.kinds.keeps_dates": "Esto es lo que se ofrecerá la próxima vez. Las fechas ya anotadas conservan las palabras que usó entonces, haga lo que haga aquí.",

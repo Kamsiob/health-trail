@@ -1503,7 +1503,11 @@ internal fun ProjectOverlays(
                 onOpenEntry = { openEntry = it.id },
                 onBack = { trailOpen = false },
             )
-        } else if (currentProject != null && setupOpen && stepsOpen) {
+        } else if (currentProject != null && stepsOpen) {
+            // **Reachable from the home's file row directly**, D164. The old
+            // gate required Setup to be open underneath, which was the "sub
+            // menus" half of the owner's complaint: a list of steps two doors
+            // deep behind a settings screen.
             ProjectStepsScreen(
                 projectName = currentProject.name,
                 steps = projectSteps,
@@ -1661,6 +1665,9 @@ internal fun ProjectOverlays(
                 entries = projectEntries,
                 trailCount = projectTrail.size,
                 onOpenTrail = { trailOpen = true },
+                // D164: the steps open as their own screen from the file row,
+                // no longer only from inside Setup.
+                onOpenSteps = { stepsOpen = true },
                 onOpenPaperwork = { paperworkOpen = true },
                 onOpenPeople = { peopleOpen = true },
                 peopleCount = projectPeople.size,
