@@ -40,8 +40,9 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * behind it rather than showing through, which is what makes it read as sticking
  * rather than as floating.
  *
- * **The month is Bricolage and the count is Mono**, which is the same split as
- * everywhere else: a month is something a person reads, a count is data.
+ * **The month is the reading face and the count is Mono**, which is the same
+ * split as everywhere else: a month is something a person reads, a count is
+ * data. D174 made that one family and Mono rather than two faces and Mono.
  *
  * **It is a heading for a screen reader**, so a reader user can jump between
  * months by heading rather than swiping through every entry in a five year

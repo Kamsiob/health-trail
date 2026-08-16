@@ -19,6 +19,20 @@ The four tells are the ones found on the phone, in the order they were found:
 
 ALLOWED holds the components that legitimately keep a tell, each with the
 reason. Everything else must come clean. Shrink REMAINING; never grow it.
+
+**It counts screens too, and it did not always.** For its first day this check
+read 55 component files and was blind to the 85 screens that arrange them,
+which is 60 percent of the surface the person actually sees. An overhaul three
+components deep was found by the owner's eye rather than by the command whose
+whole job is to say whether the overhaul is done, and a check that cannot see
+most of the app would have let that happen again.
+
+**A screen's press tell is not a component's.** A screen passing `onClick` into
+a converted component is correct and must not be flagged: the spring lives in
+the component and pressing that surface already answers. Only a raw
+`Modifier.clickable`/`selectable`/`toggleable` written on the screen itself is
+a silent surface. Scanning screens the component way reported 51 offenders when
+there was 1, and a check that cries wolf 50 times gets ignored on the 51st.
 """
 
 import pathlib
@@ -26,7 +40,9 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-COMPONENTS = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui/components"
+UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
+COMPONENTS = UI / "components"
+SCREENS = UI / "screens"
 
 # Components whose tell is correct, and why. A figure in a column is mono on
 # purpose; a component with no surface of its own has no shape to get wrong.
@@ -54,10 +70,41 @@ REMAINING = {
     "WashBand",
 }
 
+# Screens whose tell is correct, and why. Filled in as each mono site is judged:
+# a figure in a column keeps mono and earns a line here, a word loses it.
+SCREENS_ALLOWED = {}
 
-def tells(source: str) -> set:
+# The screens still carrying the old design. Thirty-five of eighty-five, found
+# once the press tell stopped counting a passed-through onClick as silence.
+SCREENS_REMAINING = {
+    # old-shape only. Every screen site is Radius.card, forty-four of them, and
+    # none is fold or small: containers drawn 22dp under components drawn 26dp.
+    "CareThreadsScreen", "DisclaimerScreen", "MeasurementScreen",
+    "MilestonesScreen", "MonthReviewScreen", "PersonScreen", "PrepScreen",
+    "ProjectDetailScreen", "ProjectTrailScreen", "RestoreScreen",
+    "SituationPickerScreen", "UnfiledTrayScreen",
+    # old-shape and mono. Each mono site is judged word against figure.
+    "AddInstructionScreen", "ChaptersScreen", "EntryScreen", "IncidentScreen",
+    "MedicationScreen", "ProgressScreen", "ProjectPaperworkScreen",
+    "ProjectsScreen", "SearchScreen", "StandingInstructionsScreen",
+    "StartProjectScreen", "TemplateLibraryScreen", "ThreadScreen",
+    "TodayScreen", "TrailScreen",
+    # mono only.
+    "AboutScreen", "EmergencyCardScreen", "PeopleScreen", "ProjectHomeScreen",
+    "StartProjectPreviewSheet", "TodayFieldScreen",
+    # the one genuinely silent surface in the app, and the one raw M3 card.
+    "CardOptionsSheet", "ChapterScreen",
+}
+
+
+def tells(source: str, own_press_only: bool = False) -> set:
     found = set()
-    tappable = bool(re.search(r"clickable\(|selectable\(|onClick", source))
+    if own_press_only:
+        # A screen is only silent where it writes the gesture itself. Passing
+        # onClick to a converted component is the spring, one level down.
+        tappable = bool(re.search(r"\.clickable\(|\.selectable\(|\.toggleable\(", source))
+    else:
+        tappable = bool(re.search(r"clickable\(|selectable\(|onClick", source))
     springs = bool(re.search(r"pressScale|springy\(\)|openableByTap|pressedSurface", source))
     if tappable and not springs:
         found.add("no-press")
@@ -67,36 +114,53 @@ def tells(source: str) -> set:
         found.add("mono")
     if re.search(r"Radius\.(card\b|fold\b|small\b)", source):
         found.add("old-shape")
+    if re.search(r"(?<!\w)(Elevated|Outlined)?Card\(", source):
+        found.add("m3-card")
     return found
 
 
-def main() -> int:
-    unexpected = []
-    done = []
-    for path in sorted(COMPONENTS.glob("*.kt")):
+def sweep(folder, remaining, allowed, own_press_only):
+    """Returns (unexpected, done, total) for one folder."""
+    unexpected, done = [], []
+    paths = sorted(folder.glob("*.kt"))
+    for path in paths:
         name = path.stem
-        found = tells(path.read_text(encoding="utf-8")) - ALLOWED.get(name, set())
-        if found and name not in REMAINING:
+        found = tells(path.read_text(encoding="utf-8"), own_press_only)
+        found -= allowed.get(name, set())
+        if found and name not in remaining:
             unexpected.append(f"{name}: {', '.join(sorted(found))}")
-        if not found and name in REMAINING:
+        if not found and name in remaining:
             done.append(name)
+    return unexpected, done, len(paths)
 
-    if unexpected:
-        print("Components carrying the old design that are not on the list:")
-        for line in unexpected:
-            print(f"  {line}")
-        print("\nEither convert it, or add it to REMAINING with a reason.")
-    if done:
-        print("Converted, so take these out of REMAINING in this file:")
-        for name in done:
-            print(f"  {name}")
 
-    if unexpected or done:
+def main() -> int:
+    failed = False
+    line = []
+    for label, folder, remaining, allowed, own in (
+        ("component", COMPONENTS, REMAINING, ALLOWED, False),
+        ("screen", SCREENS, SCREENS_REMAINING, SCREENS_ALLOWED, True),
+    ):
+        unexpected, done, total = sweep(folder, remaining, allowed, own)
+        if unexpected:
+            failed = True
+            print(f"{label.capitalize()}s carrying the old design "
+                  f"that are not on the list:")
+            for entry in unexpected:
+                print(f"  {entry}")
+            print(f"\nEither convert it, or list it with a reason.")
+        if done:
+            failed = True
+            print(f"Converted, so take these {label}s off the list in this file:")
+            for name in done:
+                print(f"  {name}")
+        line.append(f"{total - len(remaining)} of {total} {label}s")
+
+    if failed:
         return 1
 
-    total = len(list(COMPONENTS.glob("*.kt")))
-    print(f"v4: {total - len(REMAINING)} of {total} components converted, "
-          f"{len(REMAINING)} to go.")
+    remaining_total = len(REMAINING) + len(SCREENS_REMAINING)
+    print(f"v4: {', '.join(line)} converted. {remaining_total} to go.")
     return 0
 
 

@@ -14,11 +14,12 @@ import androidx.compose.ui.unit.sp
 /**
  * The type scale from DESIGN.md section 4.3.
  *
- * **The faces are bundled**, per issue #12. Bricolage Grotesque for display,
- * Atkinson Hyperlegible for body, JetBrains Mono for metadata, each falling
- * through to Noto Sans Arabic for glyphs it does not have. Every license was
- * verified against `google/fonts` rather than assumed. Simplified Chinese is
- * still on the system face, which is a size decision recorded below.
+ * **The faces are bundled**, per issue #12. Two of them, D174: Atkinson
+ * Hyperlegible for everything a person reads, at Bold for display, and
+ * JetBrains Mono for figures that line up in a column. Each falls through to
+ * Noto Sans Arabic for glyphs it does not have. Every license was verified
+ * against `google/fonts` rather than assumed. Simplified Chinese is still on
+ * the system face, which is a size decision recorded below.
  *
  * The 13sp floor and its two exemptions are in DESIGN.md section 4.3. The nav
  * label and the mono metadata style are the only two, both because they never
@@ -54,9 +55,10 @@ data class HealthTrailTypography(
      * smaller, which is a weight jump and a size drop. The app had the size
      * drop and no weight at all, on every list in it, which is most of it.
      *
-     * **The display face, because a row title is a name rather than prose.**
-     * Bricolage at 700 is the hand-lettered tab in a binder, and the body face
-     * underneath it is the note written in it. #361.
+     * **Bold, because a row title is a name rather than prose.** The weight is
+     * the hand-lettered tab in a binder, and the regular face underneath it is
+     * the note written in it. #361. Since D174 that is one family at two
+     * weights rather than two families, and the split reads the same.
      */
     val rowTitle: TextStyle,
     /** Note bodies, anything read at length. */
@@ -103,9 +105,10 @@ data class HealthTrailTypography(
 //
 // **Licenses, verified against google/fonts METADATA.pb on 2026-08-01**, all
 // SIL Open Font License 1.1: Atkinson Hyperlegible, Copyright 2020 Braille
-// Institute of America. Bricolage Grotesque, Copyright 2022 The Bricolage
-// Grotesque Project Authors. JetBrains Mono, Copyright 2020 The JetBrains Mono
+// Institute of America. JetBrains Mono, Copyright 2020 The JetBrains Mono
 // Project Authors. Noto Sans Arabic, Copyright 2022 The Noto Project Authors.
+// Bricolage Grotesque was bundled and was removed in D174, so its license is
+// no longer among the ones this app has to carry.
 //
 // **Simplified Chinese is not bundled yet**, and that is a size decision rather
 // than an oversight: Noto Sans SC is around ten megabytes per weight against
@@ -304,9 +307,9 @@ private val CONNECTED_SCRIPTS = setOf("ar", "fa", "ur")
 /**
  * The type scale for one locale.
  *
- * **The display face is Bricolage Grotesque, a Latin face, and its tight
- * tracking is a Latin typographic device.** `displayL` and `displayM` carry
- * negative letter spacing to hold large headings together. On a connected
+ * **The display face is a Latin face and its tight tracking is a Latin
+ * typographic device.** `displayL` and `displayM` carry negative letter
+ * spacing to hold large headings together. On a connected
  * script that is wrong twice over: it crushes the joins that make the script
  * legible, and on the device it broke line layout outright.
  *
