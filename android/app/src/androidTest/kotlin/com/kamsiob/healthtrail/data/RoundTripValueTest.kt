@@ -310,4 +310,75 @@ class RoundTripValueTest {
         )
         assertEquals("an empty string changed across the round trip", "", after)
     }
+
+    /**
+     * **The fields added on 2026-08-16 have to survive the archive too.** A new
+     * column reaches the database long before it reaches the export spec, and a
+     * value that saves, shows on screen, and then vanishes on restore is the
+     * worst shape this app can fail in: the person is told their notebook came
+     * back and part of it did not. The owner asked for exactly this check.
+     *
+     * `frequency_text` on a medication, and `email` on a person.
+     */
+    @Test
+    fun theNewFieldsSurviveTheArchive() = runBlocking {
+        val repository = Repository.open(context)
+        val subjectId = subject()
+
+        val medication = repository.createMedication(
+            subjectId = subjectId,
+            name = "Levothyroxine",
+            doseText = "50 mcg",
+            frequencyText = "Every morning, before food",
+        )
+        val person = repository.createPerson(
+            subjectId = subjectId,
+            displayName = "Maria Alvarez",
+            phone = "5551234567",
+            email = "m.alvarez@example.org",
+        )
+
+        assertEquals("Every morning, before food", column("medication", medication, "frequency_text"))
+        assertEquals("m.alvarez@example.org", column("person", person, "email"))
+
+        roundTrip()
+
+        assertEquals(
+            "how often a medication is taken did not survive the archive",
+            "Every morning, before food",
+            column("medication", medication, "frequency_text"),
+        )
+        assertEquals(
+            "a person's email did not survive the archive",
+            "m.alvarez@example.org",
+            column("person", person, "email"),
+        )
+    }
+
+    /**
+     * **A blank is not an empty string, on the new fields as on every other.**
+     * The writers coerce blank to null so that "unknown" and "deliberately
+     * nothing" cannot drift apart across an export, which is the distinction
+     * this whole class exists to protect.
+     */
+    @Test
+    fun theNewFieldsKeepNullApartFromEmpty() = runBlocking {
+        val repository = Repository.open(context)
+        val medication = repository.createMedication(
+            subjectId = subject(),
+            name = "Aspirin",
+            doseText = "81 mg",
+            frequencyText = "   ",
+        )
+
+        assertNull("a blank frequency should be stored as nothing at all",
+            column("medication", medication, "frequency_text"))
+
+        roundTrip()
+
+        assertNull(
+            "a blank frequency came back as an empty string rather than nothing",
+            column("medication", medication, "frequency_text"),
+        )
+    }
 }
