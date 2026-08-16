@@ -1574,7 +1574,7 @@
   "tips.open": "这个页面是做什么的",
   "tips.close": "关闭",
   "people.title": "这本笔记本记的是谁",
-  "people.open": "记的是谁",
+  "people.open": "这个笔记本里的人",
   "people.lead": "一本笔记本可以记录不止一个人。您记下的一切都属于当前显示的那个人，切换绝不会把他们混在一起。",
   "people.showing": "当前显示",
   "people.others": "本笔记本中的其他人",
@@ -1593,5 +1593,7 @@
   "trail.since.none": "自您上次查看以来没有新内容。",
   "trail.since.all": "查看完整记录",
   "today.masthead": "{name}的一天",
-  "today.masthead.noname": "今天"
+  "today.masthead.noname": "今天",
+  "action.edit": "编辑",
+  "today.arrange.action": "整理卡片"
 }

@@ -29,7 +29,7 @@ import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.GroupedRows
-import com.kamsiob.healthtrail.ui.components.TipsButton
+import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipForDestination
 import androidx.compose.ui.Alignment
@@ -271,7 +271,7 @@ fun NotebookScreen(
                     style = HealthTrail.type.displayM,
                     color = colors.ink,
                 )
-                TipsButton(onOpen = { showTips = true })
+                HeaderActions(onTips = { showTips = true })
             }
 
             // **What needs the person, as one row rather than a hero.**

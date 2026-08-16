@@ -96,6 +96,9 @@ import com.kamsiob.healthtrail.ui.components.TabChip
 import com.kamsiob.healthtrail.ui.components.TodayCard
 import com.kamsiob.healthtrail.ui.components.TodayLead
 import com.kamsiob.healthtrail.ui.components.UniversalSearchDoor
+import com.kamsiob.healthtrail.ui.components.HeaderActions
+import com.kamsiob.healthtrail.ui.components.TipsSheet
+import com.kamsiob.healthtrail.ui.components.tipForDestination
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
@@ -276,6 +279,14 @@ fun TodayFieldScreen(
     // hold is a shortcut and never the only path, because a gesture nobody is
     // told about is a feature that does not exist for most people.
     var editing by rememberSaveable { mutableStateOf(false) }
+    var showTips by rememberSaveable { mutableStateOf(false) }
+
+    if (showTips) {
+        TipsSheet(
+            tip = tipForDestination("today"),
+            onDismiss = { showTips = false },
+        )
+    }
 
     // **Reported rather than pushed at every call site.** `editing` is set from
     // five places: the Arrange button, Done, Cancel, back, and a hold on any
@@ -536,9 +547,22 @@ fun TodayFieldScreen(
                                 )
                             }
                         } else {
-                            TextAction(
-                                label = strings["today.edit"],
-                                onClick = { editing = true },
+                            // **A mark in the corner, not a verb.** D173. The
+                            // word "Arrange" named one screen's version of an
+                            // action every screen has, so the corner had to be
+                            // read before it could be used and said something
+                            // different on the next page. The pencil is the
+                            // same mark app-wide and the lamp sits beside it in
+                            // the order [HeaderActions] fixes.
+                            //
+                            // **Today had no lamp at all**, which is where this
+                            // started: the tip text for this page had been
+                            // written and translated four ways and there was
+                            // nothing on the screen to open it.
+                            HeaderActions(
+                                onTips = { showTips = true },
+                                onEdit = { editing = true },
+                                editLabel = strings["today.arrange.action"],
                                 modifier = Modifier.testTag(TodayFieldTags.EDIT),
                             )
                         }

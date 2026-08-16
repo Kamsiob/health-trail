@@ -20,7 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import com.kamsiob.healthtrail.ui.components.TipsButton
+import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipForDestination
 import androidx.compose.runtime.mutableStateOf
@@ -134,7 +134,7 @@ fun AppearanceScreen(
                     color = colors.ink,
                 )
                 if (tipsKey != null) {
-                    TipsButton(onOpen = { showTips = true })
+                    HeaderActions(onTips = { showTips = true })
                 }
             }
             Spacer(Modifier.height(Space.xs))

@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.TipsButton
+import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipForDestination
 import androidx.compose.foundation.layout.Row
@@ -123,7 +123,7 @@ fun ProjectsScreen(
                         style = HealthTrail.type.displayM,
                         color = colors.ink,
                     )
-                    TipsButton(onOpen = { showTips = true })
+                    HeaderActions(onTips = { showTips = true })
                 }
                 // **The state of the person's own projects, not a definition
                 // of what a project is.** It read "The long processes:

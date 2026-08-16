@@ -108,6 +108,16 @@ object Space {
      * sizes, on the button and in the sheet's header, and two copies of a
      * drawing drift the moment one is nudged.
      */
+    /**
+     * The pencil in a header corner, D173.
+     *
+     * **Fixed rather than scaled with the type.** The touch target around it
+     * grows with the person's font scale, as every target does; the mark inside
+     * stays legible at its drawn proportions instead of becoming a scribble at
+     * 2.0 and a speck at 0.85.
+     */
+    val editMark: Dp = 22.dp
+
     val tipsBulb: Dp = 11.dp
     val tipsBulbLarge: Dp = 13.dp
     val tipsBase: Dp = 7.dp

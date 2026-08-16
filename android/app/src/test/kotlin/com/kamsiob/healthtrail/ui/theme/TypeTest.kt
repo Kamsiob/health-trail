@@ -29,8 +29,12 @@ class TypeTest {
     fun `Latin keeps the display tracking the design asks for`() {
         val type = healthTrailTypeFor(Locale.ENGLISH)
 
-        assertEquals((-0.02).em, type.displayL.letterSpacing)
-        assertEquals((-0.015).em, type.displayM.letterSpacing)
+        // The v4 values, D173. These were the pre-overhaul numbers and the test
+        // was asserting a design that no longer exists: what it guards is that
+        // a Latin locale keeps *some* negative tracking on the display end,
+        // because the point of the test is the scripts that must not have any.
+        assertEquals((-0.026).em, type.displayL.letterSpacing)
+        assertEquals((-0.022).em, type.displayM.letterSpacing)
     }
 
     @Test

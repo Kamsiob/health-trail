@@ -134,29 +134,38 @@ private val MonoFamily = FontFamily(
 )
 
 val HealthTrailType = HealthTrailTypography(
-    // **The display end carries the weight contrast**, D167. Award level
-    // Material 3 Expressive is not bigger type, it is a harder gap between
-    // the loudest thing on a screen and everything else, with the headline
-    // tracked tight so it reads as one object rather than as words.
+    // **The display end carries the weight contrast**, D167, at Bold rather
+    // than ExtraBold since D173. The approved mockup sets its headline Bold,
+    // and the owner's brief for the type is "clean fonts that are easy to read
+    // with a little bit of Elegance but not something weird or something that
+    // is artsy". ExtraBold at display size is the weight that starts reading as
+    // a poster: the letterforms thicken until the counters close up and the
+    // word becomes a shape. Bold keeps the gap against body text, which is what
+    // the contrast was ever for, and stays a word.
+    //
+    // **Tracked tight, but less tight than it was.** Negative tracking pulls a
+    // headline into one object; past about two and a half percent it starts
+    // pulling the letters into each other instead, which is most of what
+    // "the fonts are unnatural" was pointing at.
     hero = TextStyle(
         fontFamily = DisplayFamily,
         fontSize = 28.sp,
         lineHeight = 33.sp,
-        fontWeight = FontWeight.ExtraBold,
+        fontWeight = FontWeight.Bold,
         letterSpacing = (-0.022).em,
     ),
     displayL = TextStyle(
         fontFamily = DisplayFamily,
         fontSize = 34.sp,
         lineHeight = 39.sp,
-        fontWeight = FontWeight.ExtraBold,
-        letterSpacing = (-0.028).em,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = (-0.026).em,
     ),
     displayM = TextStyle(
         fontFamily = DisplayFamily,
         fontSize = 26.sp,
         lineHeight = 31.sp,
-        fontWeight = FontWeight.ExtraBold,
+        fontWeight = FontWeight.Bold,
         letterSpacing = (-0.022).em,
     ),
     displayS = TextStyle(

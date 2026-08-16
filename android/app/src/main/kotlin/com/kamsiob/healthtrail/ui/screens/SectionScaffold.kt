@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
-import com.kamsiob.healthtrail.ui.components.TipsButton
+import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipFor
 import androidx.compose.foundation.layout.Row
@@ -331,9 +331,19 @@ fun SectionScaffold(
                             label = title,
                         )
                         Spacer(Modifier.weight(1f))
-                        if (section != null) {
-                            TipsButton(onOpen = { showTips = true })
-                        }
+                        // **The same corner as every other screen**, D173, and
+                        // routed through the one component so it cannot drift
+                        // apart again. A section screen has no pencil of its
+                        // own: what it lists is edited by opening the entry,
+                        // not by an edit mode over the list. The slot is still
+                        // held, so the lamp is where the lamp always is.
+                        HeaderActions(
+                            onTips = if (section != null) {
+                                { showTips = true }
+                            } else {
+                                null
+                            },
+                        )
                     }
                     Spacer(Modifier.height(Space.s))
                     // Display M rather than the largest type in the app. Under

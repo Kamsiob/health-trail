@@ -1574,7 +1574,7 @@
   "tips.open": "ما الغرض من هذه الصفحة",
   "tips.close": "إغلاق",
   "people.title": "عمّن يدور هذا الدفتر",
-  "people.open": "عمّن يدور",
+  "people.open": "الأشخاص في هذا الدفتر",
   "people.lead": "يمكن للدفتر الواحد أن يضم أكثر من شخص. كل ما تدوّنه يخص من يُعرض الآن، والتبديل لا يخلط بينهم أبدًا.",
   "people.showing": "المعروض الآن",
   "people.others": "أيضًا في هذا الدفتر",
@@ -1593,5 +1593,7 @@
   "trail.since.none": "لا جديد منذ آخر زيارة لك.",
   "trail.since.all": "عرض المسار كاملًا",
   "today.masthead": "يوم {name}",
-  "today.masthead.noname": "اليوم"
+  "today.masthead.noname": "اليوم",
+  "action.edit": "تحرير",
+  "today.arrange.action": "ترتيب البطاقات"
 }

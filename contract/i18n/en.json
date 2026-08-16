@@ -1574,7 +1574,7 @@
   "tips.open": "What this page is for",
   "tips.close": "Close",
   "people.title": "Who this notebook is about",
-  "people.open": "Who this is about",
+  "people.open": "People in this notebook",
   "people.lead": "One notebook can hold more than one person. Everything you write down belongs to whoever is showing, and switching never mixes them.",
   "people.showing": "Showing now",
   "people.others": "Also in this notebook",
@@ -1593,5 +1593,7 @@
   "trail.since.none": "Nothing new since you were last here.",
   "trail.since.all": "See the whole trail",
   "today.masthead": "{name}'s day",
-  "today.masthead.noname": "Today"
+  "today.masthead.noname": "Today",
+  "action.edit": "Edit",
+  "today.arrange.action": "Arrange the cards"
 }
