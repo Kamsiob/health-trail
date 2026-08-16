@@ -152,7 +152,7 @@ private fun StarterCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(surface)
             .clickable(
                 interactionSource = interaction,

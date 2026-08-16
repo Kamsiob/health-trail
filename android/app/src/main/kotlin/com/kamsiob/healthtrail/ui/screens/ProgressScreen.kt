@@ -396,7 +396,7 @@ private fun ReadingRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .openableByTap(
                 label = strings("measurement.correct.open", "value" to (value ?: "")),
                 onTap = onCorrect,

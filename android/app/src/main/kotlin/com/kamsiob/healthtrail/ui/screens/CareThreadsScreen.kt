@@ -256,7 +256,7 @@ private fun ThreadRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             // A tap opens the thread, which is the rule every list in this
             // app learned on 2026-08-03. **#231: it says so now**, instead of
             // announcing "remove" and offering a long press that did nothing.

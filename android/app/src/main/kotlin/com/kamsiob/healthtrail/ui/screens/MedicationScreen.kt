@@ -173,7 +173,7 @@ fun MedicationScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .semantics(mergeDescendants = true) { }
-                                    .clip(Radius.card)
+                                    .clip(Radius.cardLarge)
                                     // #231: the tap opens the question's own
                                     // entry, and now says so.
                                     .openableByTap(
@@ -238,7 +238,7 @@ fun MedicationScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
-                                .clip(Radius.card)
+                                .clip(Radius.cardLarge)
                                 .background(colors.card)
                                 .testTag(MedicationTags.event(event.id))
                                 .padding(Space.cardPadding),

@@ -339,9 +339,9 @@ private fun SituationCard(
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
             .clickable(
                 interactionSource = interaction,
                 // The row's own surface is the press feedback, per 5.14.

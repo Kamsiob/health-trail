@@ -339,7 +339,7 @@ private fun UnfiledRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(colors.card)
             .testTag(UnfiledTags.entry(entry.id))
             .padding(Space.cardPadding),

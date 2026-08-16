@@ -532,9 +532,9 @@ private fun StepRow(
                 )
             }
             .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
             .combinedClickable(
                 interactionSource = interaction,
                 indication = null,

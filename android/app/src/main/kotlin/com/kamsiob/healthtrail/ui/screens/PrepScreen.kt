@@ -452,7 +452,7 @@ fun PrepScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .semantics(mergeDescendants = true) { }
-                                        .clip(Radius.card)
+                                        .clip(Radius.cardLarge)
                                         // **It opens the entry and it says so.**
                                         // This carried the removal treatment
                                         // before, which told a reader user that

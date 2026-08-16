@@ -64,10 +64,9 @@ REMAINING = {
     # that wrote their own gesture and did not answer it, and they now spring
     # through the shared pressScale in Press.kt. ChipPicker and Disclosure were
     # on this list and were never broken.
-    # old-shape: Radius.card or fold, against the containers' cardLarge.
-    "ChartCard", "DateRow", "GroupedSurface", "LatestWordCard", "Press",
-    "RoundCard", "StandingCard", "Tile",
-    # both, plus mono on a word.
+    # old-shape is empty: the 22dp `card` token is deleted, so there is no
+    # longer a smaller corner to reach for. All 58 sites were card containers.
+    # mono on a word, which is the last tell standing.
     "WashBand",
 }
 
@@ -84,21 +83,16 @@ SCREENS_ALLOWED = {
 # The screens still carrying the old design. Thirty-five of eighty-five, found
 # once the press tell stopped counting a passed-through onClick as silence.
 SCREENS_REMAINING = {
-    # old-shape only. Every screen site is Radius.card, forty-four of them, and
-    # none is fold or small: containers drawn 22dp under components drawn 26dp.
-    "CareThreadsScreen", "DisclaimerScreen", "MeasurementScreen",
-    "MilestonesScreen", "MonthReviewScreen", "PersonScreen", "PrepScreen",
-    "ProjectDetailScreen", "ProjectTrailScreen", "RestoreScreen",
-    "SituationPickerScreen", "UnfiledTrayScreen",
-    # old-shape and mono. Each mono site is judged word against figure.
-    "AddInstructionScreen", "ChaptersScreen", "EntryScreen", "IncidentScreen",
-    "MedicationScreen", "ProgressScreen", "ProjectPaperworkScreen",
-    "ProjectsScreen", "SearchScreen", "StandingInstructionsScreen",
+    # mono, and every site is judged a word against a figure. The twelve
+    # screens that carried only the old shape are gone from this list: the
+    # 22dp token they clipped to no longer exists.
+    "AboutScreen", "AddInstructionScreen", "ChaptersScreen",
+    "EmergencyCardScreen", "EntryScreen", "IncidentScreen", "MedicationScreen",
+    "PeopleScreen", "ProgressScreen", "ProjectHomeScreen",
+    "ProjectPaperworkScreen", "ProjectsScreen", "SearchScreen",
+    "StandingInstructionsScreen", "StartProjectPreviewSheet",
     "StartProjectScreen", "TemplateLibraryScreen", "ThreadScreen",
-    "TodayScreen", "TrailScreen",
-    # mono only.
-    "AboutScreen", "EmergencyCardScreen", "PeopleScreen", "ProjectHomeScreen",
-    "StartProjectPreviewSheet", "TodayFieldScreen",
+    "TodayFieldScreen", "TodayScreen", "TrailScreen",
     # the one genuinely silent surface in the app, and the one raw M3 card.
     "CardOptionsSheet", "ChapterScreen",
 }

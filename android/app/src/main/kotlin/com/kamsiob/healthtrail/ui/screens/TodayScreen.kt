@@ -533,9 +533,9 @@ private fun Step(number: Int, text: String, onOpen: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
             // **The advice goes where the advice points.** These were three
             // plain cards for as long as the screens they named did not exist.
             // They exist, so telling somebody to fill in the emergency card and
@@ -610,9 +610,9 @@ private fun OpenRow(item: OpenItem) {
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -663,9 +663,9 @@ private fun NextAppointment(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
             .clickable(
                 interactionSource = interaction,
                 indication = null,

@@ -167,13 +167,16 @@ object Space {
 
 @Immutable
 object Radius {
-    /** Cards and groups, 16 to 18dp under v4, with no border. */
-    /**
-     * **18dp, which is what both grid files draw**, `.group` in each. It was
-     * 17dp, inside the 16 to 18 range section 6 states and one off the drawing.
-     * D142 makes the grids authoritative on measurement, so it is 18.
-     */
-    val card = RoundedCornerShape(22.dp)
+    // **There is no `card` radius any more, and its absence is the point.**
+    // It was 22dp against the 26dp the containers use, so a fold sat under a
+    // card drawn by a different hand: the tell the v4 check calls `old-shape`,
+    // on 58 surfaces, which is most of the app's furniture. Every one of them
+    // was a clip, a raised card or a focus ring on a card-sized container, so
+    // there was no site where the smaller corner was doing a job.
+    //
+    // It is deleted rather than left pointing at [cardLarge], because a token
+    // that still exists gets reached for, and the next component drawn at 22dp
+    // would be invisible to the check that just finished removing them.
 
     /**
      * The hero, and only the hero. **Extra large, and asymmetric.**
@@ -194,7 +197,15 @@ object Radius {
         topStart = 18.dp, topEnd = 36.dp, bottomStart = 36.dp, bottomEnd = 18.dp,
     )
 
-    /** A square card on Today: generous, so a grid of them reads as pebbles. */
+    /**
+     * **The card radius, for every container in the app.** Generous, so a grid
+     * of them reads as pebbles rather than as boxes.
+     *
+     * It began as Today's square card and became the only card corner when the
+     * 22dp `card` token was deleted. The name is kept because 58 sites and the
+     * v4 mockups already speak it, and renaming a token that is drawn correctly
+     * everywhere buys nothing.
+     */
     val cardLarge = RoundedCornerShape(26.dp)
 
     /** The leading edge of a connected button row. */

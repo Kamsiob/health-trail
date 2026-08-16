@@ -76,8 +76,8 @@ fun StandingCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .raisedCard(Radius.card)
-            .clip(Radius.card)
+            .raisedCard(Radius.cardLarge)
+            .clip(Radius.cardLarge)
             .background(colors.card)
             .padding(horizontal = Space.sm, vertical = Space.sm),
     ) {

@@ -272,7 +272,7 @@ fun PersonScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
-                                .clip(Radius.card)
+                                .clip(Radius.cardLarge)
                                 // **`openableByTap`, not the removal
                                 // modifier with its gesture switched off.**
                                 // That declared a tap action called "remove" on

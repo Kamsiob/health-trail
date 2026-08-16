@@ -59,7 +59,7 @@ fun WashBand(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(hue.wash)
             .padding(horizontal = Space.cardPadding, vertical = Space.sm)
             .semantics(mergeDescendants = true) { contentDescription = description },

@@ -307,7 +307,7 @@ private fun ChapterRow(
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) { }
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             // **#231, and this one was not on the issue's list of five.** The
             // acceptance criterion is that no caller passes an empty
             // `onLongPress` anywhere, which is what found it.

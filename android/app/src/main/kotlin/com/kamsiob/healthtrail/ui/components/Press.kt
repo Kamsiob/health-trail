@@ -153,7 +153,7 @@ fun Modifier.openableByTap(
      * and it is the kind of thing that only shows up with a keyboard attached.
      * Defaults to the card radius because that is what most callers clip to.
      */
-    shape: Shape = Radius.card,
+    shape: Shape = Radius.cardLarge,
     /**
      * What touching and holding does, or null where holding does nothing.
      *

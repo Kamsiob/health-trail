@@ -60,8 +60,8 @@ fun RoundCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .raisedCard(Radius.card)
-            .clip(Radius.card)
+            .raisedCard(Radius.cardLarge)
+            .clip(Radius.cardLarge)
             .background(colors.card),
     ) {
         Column(

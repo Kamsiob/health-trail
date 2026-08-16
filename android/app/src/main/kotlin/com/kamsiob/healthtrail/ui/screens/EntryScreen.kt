@@ -430,9 +430,9 @@ private fun LinkRow(
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) { }
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
             .clickable(
                 interactionSource = interaction,
                 indication = null,

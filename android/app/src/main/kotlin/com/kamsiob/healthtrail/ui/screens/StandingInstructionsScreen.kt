@@ -283,7 +283,7 @@ private fun ViolationRow(
                     // them one at a time. Inside the card they were part of a
                     // single utterance that began with the instruction's name.
                     .semantics(mergeDescendants = true) { }
-                    .clip(Radius.card)
+                    .clip(Radius.cardLarge)
                     .openableByTap(
                         label = strings["open.action"],
                         onTap = onOpen,
@@ -363,7 +363,7 @@ private fun InstructionRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             // **A tap opens the request**, where how they answered is recorded
             // and where it can be taken off the list. It used to also carry
             // removal on a long press, which was the only path to it. #218.

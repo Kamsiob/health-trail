@@ -353,7 +353,7 @@ private fun Card(
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) { }
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .then(
                 if (onTap == null) {
                     // Not tappable, so it keeps the plain card surface and

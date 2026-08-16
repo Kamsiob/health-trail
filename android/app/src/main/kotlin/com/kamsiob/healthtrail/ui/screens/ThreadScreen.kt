@@ -176,7 +176,7 @@ fun ThreadScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
-                                .clip(Radius.card)
+                                .clip(Radius.cardLarge)
                                 // #231: a tap that opens says so, rather than
                                 // announcing "remove" and offering a long press
                                 // that runs an empty function.

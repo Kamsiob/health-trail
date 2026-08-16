@@ -225,7 +225,7 @@ private fun DisclaimerBlock(title: String, body: String, modifier: Modifier = Mo
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .background(colors.card)
             .padding(Space.cardPadding),
     ) {

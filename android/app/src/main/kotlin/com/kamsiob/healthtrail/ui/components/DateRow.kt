@@ -91,7 +91,7 @@ fun DateRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .openableByTap(label = openLabel, onTap = onOpen)
             .padding(horizontal = Space.sm, vertical = Space.s)
             .clearAndSetSemantics { contentDescription = description },

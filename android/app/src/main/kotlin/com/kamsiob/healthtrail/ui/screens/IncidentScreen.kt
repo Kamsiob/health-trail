@@ -184,9 +184,9 @@ private fun IncidentSpineRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics(mergeDescendants = true) { }
-                    .clip(Radius.card)
+                    .clip(Radius.cardLarge)
                     .background(surface)
-                    .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+                    .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
                     .clickable(
                         interactionSource = interaction,
                         indication = null,
@@ -423,7 +423,7 @@ fun IncidentScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .semantics(mergeDescendants = true) { }
-                            .clip(Radius.card)
+                            .clip(Radius.cardLarge)
                             // A tap opens the paper itself, the same as the
                             // people above and the entries below. #360.
                             .openableByTap(
@@ -506,7 +506,7 @@ fun IncidentScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
-                                .clip(Radius.card)
+                                .clip(Radius.cardLarge)
                                 // **`openableByTap`, which paints the surface
                                 // as well as taking the tap**, so the card
                                 // answers a finger the way every other entry

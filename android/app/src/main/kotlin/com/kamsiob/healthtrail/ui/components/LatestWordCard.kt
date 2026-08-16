@@ -71,7 +71,7 @@ fun LatestWordCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             // The wash is the resting color, so the press darkens the band
             // itself rather than a card behind it.
             .openableByTap(label = openLabel, onTap = onOpen, resting = colors.goldWash)

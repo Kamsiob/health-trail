@@ -402,7 +402,7 @@ private fun EntryLine(entry: Repository.TrailEntry, onOpen: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) { }
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .openableByTap(label = strings["review.entry.open"], onTap = onOpen)
             .testTag(ReviewTags.entry(entry.id))
             .padding(Space.cardPadding),

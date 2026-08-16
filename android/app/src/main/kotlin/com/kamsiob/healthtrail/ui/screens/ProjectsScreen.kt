@@ -289,7 +289,7 @@ private fun ProjectRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .openableByTap(label = strings["open.action"], onTap = onOpen)
             .testTag(ProjectTags.row(project.id))
             .padding(Space.cardPadding),

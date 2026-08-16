@@ -460,8 +460,8 @@ private fun OwnProject(onStart: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .raisedCard(Radius.card)
-            .clip(Radius.card)
+            .raisedCard(Radius.cardLarge)
+            .clip(Radius.cardLarge)
             .background(colors.card)
             .testTag(StartProjectTags.OWN),
     ) {

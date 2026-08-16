@@ -51,8 +51,8 @@ fun GroupedSurface(
             // surface rather than inside it. This component's own comment has
             // always said "no border, and the shadow is the definition", and
             // until 2026-08-10 it drew a fill and nothing else. #324.
-            .raisedCard(Radius.card)
-            .clip(Radius.card)
+            .raisedCard(Radius.cardLarge)
+            .clip(Radius.cardLarge)
             .background(HealthTrail.colors.card),
     ) {
         content()

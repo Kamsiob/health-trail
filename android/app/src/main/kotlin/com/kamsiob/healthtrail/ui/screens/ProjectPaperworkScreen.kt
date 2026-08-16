@@ -269,7 +269,7 @@ private fun PaperTile(
 
     Column(
         modifier = modifier
-            .clip(Radius.card)
+            .clip(Radius.cardLarge)
             .then(
                 if (onOpen != null) {
                     Modifier.openableByTap(

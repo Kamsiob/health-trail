@@ -110,7 +110,7 @@ fun MilestonesScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
-                                .clip(Radius.card)
+                                .clip(Radius.cardLarge)
                                 // **The label says what the tap does.** It said
                                 // "Open this milestone" and opened the sheet
                                 // headed "Change what you marked", so a reader

@@ -96,10 +96,10 @@ fun Tile(
             // until something focuses this, so it is not a second definition
             // competing with the shadow. 4.7 bans a border as a card's *only*
             // definition, which is what this used to be one of.
-            .raisedCard(Radius.card)
-            .clip(Radius.card)
+            .raisedCard(Radius.cardLarge)
+            .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.card)
+            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
             .clickable(
                 interactionSource = interaction,
                 // The tile's own surface is the press feedback, per 5.14.

@@ -218,7 +218,7 @@ fun RestoreScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(Radius.card)
+                            .clip(Radius.cardLarge)
                             .background(colors.card)
                             .padding(Space.cardPadding),
                     ) {
