@@ -468,9 +468,17 @@ fun TodayFieldScreen(
                         // tokens could not deliver: new color and new type on
                         // an old arrangement is still the old screen.
                         Column(modifier = Modifier.weight(1f)) {
+                            // **Two faces on this screen, not three.** D172. The
+                            // date was set in the mono face, which put a
+                            // typewriter line directly above a display-weight
+                            // sans name and a body-face sentence under that.
+                            // The owner's words were that the fonts do not mix
+                            // well, and this was where it was worst: mono is for
+                            // figures that must line up in a column, and a date
+                            // in a masthead is prose.
                             Text(
                                 text = EventDateText.masthead(strings, today),
-                                style = HealthTrail.type.mono,
+                                style = HealthTrail.type.bodyS,
                                 color = HealthTrail.colors.goldInk,
                             )
                             Spacer(Modifier.height(Space.xs))
@@ -849,7 +857,7 @@ private fun LeadSlot(
 
     TodayLead(
         eyebrow = eyebrow,
-        hue = hueForCard(card.type),
+        hue = leadHue(hueForCard(card.type)),
         // **Raw parts, joined once.** Bidi.join isolates every part it is
         // given, so handing it a string that was already joined wraps the whole
         // thing again and the marks nest.
@@ -2094,6 +2102,27 @@ internal fun hueForCard(type: String): TabHue = when (type) {
     // section, so gold and the base ladder. 4.3.
     else -> wholeAppHue()
 }
+
+/**
+ * The lead's hue, which is not always the card's. D172.
+ *
+ * **Gold is an accent color and the lead is a field.** It works at the size of a
+ * tab chip, an icon and the capture button, which is everywhere else it appears.
+ * Filled across the largest block on the screen it is a mustard slab, and the
+ * owner had already said the yellow background was off-putting once, about the
+ * mockups, before this made it four times the size.
+ *
+ * **So a whole-app card promoted to the lead wears slate there.** Slate is the
+ * calm blue the approved mockup leads with, and it is the only substitution: a
+ * section's card keeps its own hue, because that hue is identity and 21.2 does
+ * not bend for where the card happens to sit.
+ *
+ * **The card's own tab dot stays gold**, so nothing is lost about what the card
+ * belongs to; it is stated at the size the color works at.
+ */
+@Composable
+private fun leadHue(hue: TabHue): TabHue =
+    if (hue == wholeAppHue()) hueFor(Repository.Section.APPOINTMENTS) else hue
 
 /**
  * What a care team card says while its source is still being chosen.

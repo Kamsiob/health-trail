@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 
 /**
  * The color tokens from DESIGN.md sections 4.1 through 4.6, at their exact
@@ -152,7 +153,55 @@ data class TabHue(
     val base: Color,
     val ink: Color,
     val wash: Color,
-)
+) {
+    /**
+     * What text on top of [base] is colored.
+     *
+     * **Computed rather than declared**, because it is not a design choice: it
+     * is whichever of near-white or near-black clears contrast against the base
+     * this pack already has. Declaring it would mean twelve more constructor
+     * arguments that could each be got wrong, and the right answer is a
+     * function of a value already present.
+     *
+     * Light theme bases are mid-dark and take white. Dark theme bases are
+     * pastels and take the dark canvas back. The luminance test says both
+     * without the theme having to be consulted.
+     */
+    val onBase: Color
+        get() = if (base.luminance() > ON_BASE_PIVOT) Color(0xFF141C23) else Color(0xFFFFFFFF)
+}
+
+/** Above this the base is light enough that dark text is the readable choice. */
+private const val ON_BASE_PIVOT = 0.45f
+
+/**
+ * The palette as it reads *inside* a block of saturated hue. D172.
+ *
+ * **The approved mockup's hero is a solid color with white type on it**, not a
+ * pale wash, and that one saturated block is what gave the screen a place for
+ * the eye to land. Rebuilding it meant every piece of text, chip, hairline and
+ * chart line inside the hero had to flip, and those are written against
+ * `HealthTrail.colors` in eighteen places across the answer body alone.
+ *
+ * **So the palette flips instead of the call sites.** The colors are a
+ * composition local, so providing this copy for the hero's subtree recolors
+ * everything inside it coherently, including components that have never heard
+ * of the hero and never will. Nothing downstream needs a parameter.
+ *
+ * The alpha steps mirror the ordinary ink ladder: full strength for primary,
+ * a step down for secondary, and a non-text value for hairlines.
+ */
+fun HealthTrailColors.onHue(hue: TabHue): HealthTrailColors {
+    val on = hue.onBase
+    return copy(
+        paper = hue.base,
+        sand = on.copy(alpha = 0.10f),
+        card = on.copy(alpha = 0.16f),
+        ink = on,
+        ink2 = on.copy(alpha = 0.78f),
+        ink3 = on.copy(alpha = 0.30f),
+    )
+}
 
 /**
  * Light theme, DESIGN.md 4.1 through 4.3.

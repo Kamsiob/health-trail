@@ -123,13 +123,30 @@ private fun Modifier.atLeastSquare(): Modifier = layout { measurable, constraint
     // it would ask for an infinite card. The grid always gives a real width, so
     // this never fires today; it is here because the day it does fire is a
     // crash rather than a wrong shape.
+    // **Shorter than square**, D172. A square small card is a little over two
+    // hundred dp tall on a phone, and the honest answer in one is three words:
+    // "Nothing scheduled" sat in the middle of an empty white field with a
+    // hand's width of nothing above and below it. That is not calm, it is
+    // unfinished, and four of them at once was most of what the screen was.
+    //
+    // **The proportion is the approved mockup's**, whose count tiles are 120dp
+    // against a 170dp width. This keeps the tile a tile rather than letting it
+    // collapse to a row, and lets a card with a real answer in it grow past the
+    // minimum as it always could.
     val bounded = constraints.hasBoundedWidth
-    val square = if (bounded) constraints.maxWidth.coerceAtMost(constraints.maxHeight) else 0
+    val tile = if (bounded) {
+        (constraints.maxWidth * TILE_HEIGHT_RATIO).toInt().coerceAtMost(constraints.maxHeight)
+    } else {
+        0
+    }
     val placeable = measurable.measure(
-        constraints.copy(minHeight = square.coerceAtLeast(constraints.minHeight)),
+        constraints.copy(minHeight = tile.coerceAtLeast(constraints.minHeight)),
     )
     layout(placeable.width, placeable.height) { placeable.place(0, 0) }
 }
+
+/** The approved mockup's tile: 120dp tall against a 170dp column. */
+private const val TILE_HEIGHT_RATIO = 0.70f
 
 /**
  * One card on Today. `DESIGN.md` 21.2.
