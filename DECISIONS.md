@@ -2990,6 +2990,24 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D161. The release variant had never been built, and the rules it needs are narrow on purpose
+
+**Date:** 2026-08-15. **Found by trying to build one.** `minifyReleaseWithR8` failed: `Supplied proguard configuration does not exist: android/app/proguard-rules.pro`. **`build.gradle.kts` had referenced that file since the beginning and nothing had ever created it**, so `assembleRelease` had never once succeeded. Nobody noticed because CI and `verify.sh` build and test the debug variant.
+
+**The tempting fix is a blanket `-keep class com.kamsiob.** { *; }`.** It makes the build go green and turns minification off in everything but name, which is worse than not minifying at all, because the build then looks done. The app's own code uses essentially no reflection: one `LocaleManager::class.java`, and nothing else across the whole source tree. **It needs no keeps of its own.** What the file holds is the two libraries that resolve classes by name at runtime, where R8 cannot see the edge.
+
+**SQLCipher, because JNI binds by name.** A renamed native method is a link error at the first query, and on this app that is not a screen going wrong, it is the database not opening and nothing the person wrote down being readable.
+
+**BouncyCastle, because the JCE resolves algorithms through reflection.** Those implementation classes have no incoming reference for R8 to follow, so every one of them looks dead. Stripped, an export either fails outright or, far worse, fails only at the restore months later, which is exactly when it cannot fail.
+
+**Line numbers kept.** Without `SourceFile,LineNumberTable` a crash inside a suspend function points nowhere, and a crash report is the one artifact that has to be readable at the moment it appears.
+
+**Verified by running it, not by it compiling.** 13 MB against the debug build's 27. Installed on the test phone, walked through onboarding, into the notebook, and through a move that writes to the encrypted database: the place saved and came back dated today. Zero `FATAL EXCEPTION` in logcat.
+
+**What this does not tell us.** The export and restore path is the highest R8 risk in the app and it was not exercised: it is the one whose failure is silent and delayed. Owed before any release that a person other than the owner installs.
+
+---
+
 ### D160. The release key lives outside the repository, and a missing key builds unsigned rather than failing
 
 **Date:** 2026-08-15. **Decided under rule 10**, building the first signed APK because the owner asked for one to test. **This is not yet the Play upload key**, and that decision is his.

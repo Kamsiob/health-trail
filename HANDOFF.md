@@ -112,7 +112,8 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 
 ## 7. The phone
 
-- Pixel 8, `39151FDJH00506`, Android 17, USB. **The owner's daily driver.** No emulator (D21, D23, B4).
+- Pixel 8, `39151FDJH00506`, Android 17, USB. **The owner's test phone, not his daily driver.** He said so on 2026-08-15, correcting what this line and several D entries had assumed since the start. **His daily driver is a separate device this session never sees**, and it is where he installs a build to actually use it.
+- **The care about this device stands anyway.** He uses it, personal content reaches its screen, and the screenshot guard writes into a public repository. D31, D43, D53 and rule 19 are unchanged: record before changing, restore exactly, never capture the share sheet or a password field. **The reason written in `tools/screenshot.sh` is now wrong and the guard it protects is not.** Do not relax it on the strength of this line.
 - Baseline: font scale 1.0, animator 1.0, touch exploration 0, no per-app locale, app theme "Follow the phone". Rule 19 lets these change **only** if the prior value is recorded first and restored exactly.
 - Say when it can be unplugged. Most work needs no device.
 - **Never screenshot**: the share sheet, the calendar app, any screen with a password field (the password manager puts its own bar in the shot).
