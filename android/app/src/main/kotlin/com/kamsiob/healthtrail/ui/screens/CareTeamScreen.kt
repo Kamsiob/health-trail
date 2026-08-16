@@ -311,11 +311,24 @@ private fun PersonRow(
         // seven and hid that for the life of this screen. #361, owner's words:
         // it needs to fit. On the line it wraps like any other detail, and the
         // button says the verb, which is what law 2 gives an action.
+        // **The number gets its own line, and never breaks across two.** D174,
+        // seen on the phone twice. First "Appeals clerk, (555)" sat on one line
+        // with "555-0121" on the next, which is not a phone number any more but
+        // two fragments somebody has to reassemble before they can dial. Then,
+        // once the number was held together, the separator was orphaned at the
+        // end of the line above it.
+        //
+        // **So the role and the number are two lines rather than one sentence.**
+        // They are different kinds of fact and a middle dot was never doing
+        // real work between them. The spaces inside the number are held so the
+        // number still moves as one thing at any font scale.
         subtitle = listOfNotNull(
-            role.takeIf { it != heading },
-            phone?.takeIf { it != heading },
-            person.notes?.takeIf { it.isNotBlank() },
-        ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
+            listOfNotNull(
+                role.takeIf { it != heading },
+                phone?.takeIf { it != heading }?.replace(' ', '\u00A0'),
+            ).takeIf { it.isNotEmpty() }?.joinToString("\n") { Bidi.isolate(it) },
+            person.notes?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
+        ).joinToString("\n").takeIf { it.isNotBlank() },
         leading = {
             // The subject's own avatar carries blue, per `DESIGN.md` 7, and
             // there is exactly one of them. Everyone else is the section's rose.

@@ -139,8 +139,13 @@ class CareTeamScreenTest {
         show(listOf(person("p1", "Marguerite Boateng")))
 
         compose.onNodeWithText("Marguerite Boateng").assertIsDisplayed()
-        // The number is on the row's own line now, not inside the action.
-        compose.onNodeWithText("(555) 555-0100", substring = true).assertIsDisplayed()
+        // **The number is on the row's own line, and its spaces are
+        // non-breaking.** D174: on the phone a number split across two lines,
+        // "(555)" above and "555-0100" below, which is two fragments to
+        // reassemble rather than something you can read and dial. The space in
+        // the expected string is U+00A0 for that reason, and a test that looks
+        // for an ordinary space is asking for the version that wrapped.
+        compose.onNodeWithText("(555)\u00A0555-0100", substring = true).assertIsDisplayed()
         compose.onNodeWithText(strings["careteam.call"]).assertIsDisplayed()
         // And a reader still hears whose number it is.
         compose.onNodeWithContentDescription(
