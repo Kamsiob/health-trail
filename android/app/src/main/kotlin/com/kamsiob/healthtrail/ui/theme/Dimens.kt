@@ -182,13 +182,21 @@ object Radius {
      * **A circle here would be the one fully round object on a screen made of
      * soft rectangles**, which is why the drawing is not one.
      */
-    val fab = RoundedCornerShape(26.dp)
+    val fab = RoundedCornerShape(16.dp)
 
-    /** The capture button's corner at rest, as a value the morph can animate. */
-    val fabCorner = 26.dp
+    /**
+     * The capture button's corner at rest, as a value the morph animates.
+     *
+     * **A third of the 48dp button, not half.** At 26 it was past half and
+     * rendered as a plain circle, which is the one shape section 6 says this
+     * button must not be: a fully round object among soft rectangles. Seen on
+     * the phone. The morph goes rounder under a finger and all the way to a
+     * circle only when it becomes the control that closes.
+     */
+    val fabCorner = 16.dp
 
-    /** The same corner while it is held, which is where the morph goes. D167. */
-    val fabCornerPressed = 34.dp
+    /** Rounder while it is held, which is where the morph goes. D167. */
+    val fabCornerPressed = 22.dp
 
     /** The reference line, `.refline` at 7px in the Projects grid. */
     val referenceLine = RoundedCornerShape(7.dp)
