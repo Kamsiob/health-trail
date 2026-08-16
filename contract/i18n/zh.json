@@ -1588,5 +1588,8 @@
   "project.papers.fill.title": "哪份文件放这里？",
   "project.papers.fill.lead": "选择一份已经保存的，或者拍一份新的。",
   "project.papers.fill.new": "拍一份新的",
-  "project.papers.fill.none": "还没有保存任何文件。拍一份就会出现在这里。"
+  "project.papers.fill.none": "还没有保存任何文件。拍一份就会出现在这里。",
+  "trail.since.title": "自您上次查看以来",
+  "trail.since.none": "自您上次查看以来没有新内容。",
+  "trail.since.all": "查看完整记录"
 }

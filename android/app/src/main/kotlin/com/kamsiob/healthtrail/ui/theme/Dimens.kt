@@ -122,6 +122,12 @@ object Space {
     /** How far a row rises as it arrives. D168. */
     val arrivalRise: Dp = 10.dp
 
+    /** How far a carried card lifts off the field. D169. */
+    val carryLift: Dp = 8.dp
+
+    /** Flat on the field, which is where a card rests and lands. */
+    val flat: Dp = 0.dp
+
     /**
      * The mark on a choice in the capture bloom, and the drawing inside it.
      *

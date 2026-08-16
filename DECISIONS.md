@@ -2990,6 +2990,20 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D169. Arranging behaves like the phone, and the digest opens what it counted
+
+**Date:** 2026-08-16. **Three defects the owner found by using it**, all of them the kind only a hand finds.
+
+**A swipe in arrange mode picked up a card instead of scrolling.** His words: "there's very little room to be able to actually scroll up and down when you're trying to rearrange it and so when I try to move my finger up to move something I'm accidentally grabbing and moving a tile." `detectDragGestures` claims the first drag, so while arranging the grid could not be scrolled at all. **The phone's own home screen does not work that way**: in its edit mode a plain swipe still scrolls and a card is picked up by pressing and holding. It is `detectDragGesturesAfterLongPress` now, so the two gestures have two meanings and neither is ambiguous. **The grip handle keeps its immediate drag**, because a grip exists only to be dragged and asking for a hold on it would be a control ignoring the first thing done to it, which is also the visible twin law 2 requires.
+
+**Letting go teleported the card home.** "There's no real animation during the movement. it's just sudden jerk." The offset was set to zero in a single frame, so a card carried half a screen away arrived instantly. It springs back now, on the settle spring, and the state is tracked separately from the drag because a card that is no longer under a finger but not yet in its slot is a third thing: one follows the hand, the other follows physics.
+
+**It lifts as it is picked up**, four percent and eight dp of shadow, which is roughly what the phone does to an icon. A card that changes nothing when it leaves the grid reads as a rendering fault rather than as something now in the hand. A haptic fires at the moment of the pickup, because that is when the finger is committed before the eye has caught up.
+
+**The digest promised a filtered view and opened an unfiltered one.** "When I tap the big banner at the top gives you an update on the today page of new things that have happened and I tap it, it's not reflective of it's actually there." It counted what arrived since the last visit and then opened the entire trail, so the number and the screen disagreed and the person was left hunting three rows among hundreds. The trail now takes a `since`, changes its own heading to say it is filtered, and offers one control back to the whole thing. **This is the third time this exact defect has been fixed on this screen**: the incidents card and the unfiled card both used to open the trail and were given their own destinations on #360. A card that answers a question and then travels somewhere the answer is not is apparently this app's most repeatable mistake.
+
+---
+
 ### D168. The polish pass: arrival, settling, and a tick under the thumb
 
 **Date:** 2026-08-16. **The owner:** what was called prize winning is "maybe a 7/10", and the ask is to find where polish and top tier detail can come into play, researching again if needed.

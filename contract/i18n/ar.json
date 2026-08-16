@@ -1588,5 +1588,8 @@
   "project.papers.fill.title": "أي ورقة توضع هنا؟",
   "project.papers.fill.lead": "اختر ورقة حفظتها من قبل، أو صوّر واحدة جديدة.",
   "project.papers.fill.new": "صوّر واحدة جديدة",
-  "project.papers.fill.none": "لا أوراق محفوظة بعد. صوّر واحدة وستظهر هنا."
+  "project.papers.fill.none": "لا أوراق محفوظة بعد. صوّر واحدة وستظهر هنا.",
+  "trail.since.title": "منذ آخر زيارة لك",
+  "trail.since.none": "لا جديد منذ آخر زيارة لك.",
+  "trail.since.all": "عرض المسار كاملًا"
 }

@@ -215,6 +215,14 @@ internal class ShellState {
      * care team's add form. Two things called people is exactly the collision
      * this app keeps finding in its own vocabulary.
      */
+    /**
+     * The instant the trail is filtered from, or null for the whole thing.
+     *
+     * **Set only by the digest card**, D169, so the screen it opens shows the
+     * things it just counted rather than everything ever written.
+     */
+    var trailSince by mutableStateOf<Long?>(null)
+
     var subjectsOpen by mutableStateOf(false)
     var addingSubject by mutableStateOf(false)
     var switchingSubject by mutableStateOf<String?>(null)

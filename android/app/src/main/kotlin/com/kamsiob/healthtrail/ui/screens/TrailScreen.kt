@@ -40,6 +40,7 @@ import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.EdgeScrubber
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.PinMark
@@ -63,6 +64,7 @@ import java.time.ZoneId
 
 object TrailTags {
     const val NAME = "trail"
+    const val SEE_ALL = "trail_see_all"
     const val SEARCH = "trail_search"
     const val SCRUBBER = "trail_scrubber"
     const val FILTER = "trail_filter"
@@ -138,9 +140,33 @@ fun TrailScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     zone: ZoneId = ZoneId.systemDefault(),
+    /**
+     * Show only what arrived since this instant, or null for the whole trail.
+     *
+     * **The digest promised a filtered view and opened an unfiltered one.**
+     * D169, the owner: "when I tap the big banner at the top gives you an
+     * update on the today page of new things that have happened and I tap it,
+     * it's not reflective of it's actually there." The card said three new
+     * things since you were last here and the trail then showed everything
+     * ever written, so the count and the screen disagreed and the person was
+     * left looking for three items among two hundred.
+     *
+     * **The heading changes with it**, so a filtered trail says it is
+     * filtered rather than looking like a notebook that lost its history.
+     */
+    since: Long? = null,
+    /** Drops the filter, for the person who wants the rest after all. */
+    onSeeAll: (() -> Unit)? = null,
 ) {
     val strings = LocalStrings.current
     val motion = LocalMotion.current
+
+    // **Filtered at the top, so everything below reads one list.** The search,
+    // the kind chips, the month folds and the scrubber all work off `entries`,
+    // and narrowing it here means none of them has to know about the digest.
+    val entries = remember(entries, since) {
+        if (since == null) entries else entries.filter { it.createdAt >= since }
+    }
 
     var query by rememberSaveable { mutableStateOf("") }
     var openMonths by rememberSaveable { mutableStateOf(emptySet<String>()) }
@@ -244,6 +270,10 @@ fun TrailScreen(
         onBack = onBack,
         modifier = modifier,
         section = Repository.Section.TRAIL,
+        // **A filtered trail says so in its own heading.** Otherwise it reads
+        // as a notebook that has lost its history, which is a far worse
+        // impression than a narrower list. D169.
+        heading = if (since != null) strings["trail.since.title"] else null,
         headingKey = "trail.heading",
         listState = listState,
         rail = if (plan.years.size >= MIN_SCRUB_YEARS && query.isBlank()) {
@@ -268,6 +298,28 @@ fun TrailScreen(
             null
         },
     ) {
+        if (since != null) {
+            item {
+                QuietButton(
+                    label = strings["trail.since.all"],
+                    onClick = { onSeeAll?.invoke() },
+                    modifier = Modifier.testTag(TrailTags.SEE_ALL),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
+        if (since != null) {
+            item {
+                QuietButton(
+                    label = strings["trail.since.all"],
+                    onClick = { onSeeAll?.invoke() },
+                    modifier = Modifier.testTag(TrailTags.SEE_ALL),
+                )
+                Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
         if (entries.isEmpty()) {
             item {
                 SectionEmpty(

@@ -5,7 +5,13 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -325,10 +331,48 @@ fun TodayFieldScreen(
     // Which card the finger is carrying, by id, and how far it has moved from
     // where the grid put it. Null when nothing is being dragged.
     var dragging by remember { mutableStateOf<String?>(null) }
+
+    /**
+     * The card that has just been let go and is springing back to its slot.
+     *
+     * **Separate from [dragging]**, because the card is no longer under a
+     * finger but is still not where it belongs, and those are different
+     * states: one follows the hand, the other follows physics. D169.
+     */
+    var settling by remember { mutableStateOf<String?>(null) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
 
     // **Dropped the moment edit mode ends**, so a card cannot be left visually
     // offset from the slot it actually occupies.
+    val motion = HealthTrail.motion
+    val carried = dragging != null
+    val liftScale by animateFloatAsState(
+        targetValue = if (carried) LIFT_SCALE else 1f,
+        animationSpec = motion.springy(),
+        label = "lift",
+    )
+    val liftShadowDp by animateDpAsState(
+        targetValue = if (carried) Space.carryLift else Space.flat,
+        animationSpec = motion.springy(),
+        label = "liftShadow",
+    )
+    val settleX by animateFloatAsState(
+        targetValue = if (dragging != null) dragOffset.x else 0f,
+        animationSpec = if (dragging != null) snap() else motion.settle(),
+        label = "settleX",
+    )
+    val settleY by animateFloatAsState(
+        targetValue = if (dragging != null) dragOffset.y else 0f,
+        animationSpec = if (dragging != null) snap() else motion.settle(),
+        label = "settleY",
+    )
+    LaunchedEffect(settleX, settleY, dragging) {
+        if (dragging == null && settleX == 0f && settleY == 0f) {
+            settling = null
+            dragOffset = Offset.Zero
+        }
+    }
+
     if (!editing && dragging != null) {
         dragging = null
         dragOffset = Offset.Zero
@@ -565,11 +609,23 @@ fun TodayFieldScreen(
                         // **Above the field while it is being carried.** Without
                         // this the dragged card slides under its neighbors,
                         // which reads as the card falling through the screen.
-                        .zIndex(if (dragging == card.id) 1f else 0f)
+                        .zIndex(if (dragging == card.id || settling == card.id) 1f else 0f)
                         .graphicsLayer {
-                            if (dragging == card.id) {
-                                translationX = dragOffset.x
-                                translationY = dragOffset.y
+                            if (dragging == card.id || settling == card.id) {
+                                translationX = settleX
+                                translationY = settleY
+                                // **It lifts as it is picked up**, D169. A
+                                // card that changes nothing when it leaves the
+                                // grid reads as the screen having glitched
+                                // rather than as something now in the hand.
+                                // The phone's own home screen does exactly
+                                // this: the icon swells slightly and casts a
+                                // shadow while it is carried.
+                                scaleX = liftScale
+                                scaleY = liftScale
+                                shadowElevation = liftShadowDp.toPx()
+                                shape = Radius.cardLarge
+                                clip = false
                             }
                         }
                         .testTag(TodayFieldTags.card(card.id)),
@@ -583,8 +639,15 @@ fun TodayFieldScreen(
                         dragTo(card.id)
                     },
                     onDragEnd = {
+                        // **It settles rather than snapping.** D169, the
+                        // owner: "there's no real animation during the
+                        // movement. it's just sudden jerk." Letting go used to
+                        // set the offset to zero in one frame, so a card
+                        // carried half a screen away teleported home. It
+                        // springs back to its slot now, and the lift eases out
+                        // with it.
+                        settling = card.id
                         dragging = null
-                        dragOffset = Offset.Zero
                     },
                     today = today,
                     editing = editing,
@@ -846,6 +909,7 @@ private fun CardFor(
     ordinal: Int = 0,
 ) {
     val strings = LocalStrings.current
+    val haptics = LocalHapticFeedback.current
 
     val tab = tabFor(card, answer, strings)
     val shown = worded(card.type, answer, today)
@@ -896,14 +960,36 @@ private fun CardFor(
             .then(
                 if (editing) {
                     Modifier.pointerInput(card.id) {
-                        detectDragGestures(
-                            onDragStart = { onDragStart() },
+                        // **After a long press, not on any drag.** D169, and
+                        // it is the owner's complaint exactly: "there's very
+                        // little room to be able to actually scroll up and
+                        // down when you're trying to rearrange it and so when
+                        // I try to move my finger up to move something I'm
+                        // accidentally grabbing and moving a tile."
+                        //
+                        // `detectDragGestures` claimed the first drag in
+                        // arrange mode, so the grid could not be scrolled at
+                        // all while arranging: every attempt picked a card up.
+                        // **The phone's own home screen does not work that
+                        // way.** In its edit mode a plain swipe still scrolls
+                        // and a card is picked up by pressing and holding it,
+                        // which is what this does now. Two gestures, two
+                        // meanings, no ambiguity.
+                        // long-press-twin: the grip handle on the card, which
+                        // drags immediately and is visible throughout arrange
+                        // mode, so nothing here is reachable only by holding.
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = {
+                                // **It answers in the hand before it answers
+                                // on screen.** Picking something up is the one
+                                // moment in this app where a person's finger
+                                // is committed before their eye has caught up.
+                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onDragStart()
+                            },
                             onDragEnd = { onDragEnd() },
                             onDragCancel = { onDragEnd() },
                             onDrag = { change, delta ->
-                                // Consumed, so the grid does not scroll under
-                                // the card being carried, which is two things
-                                // answering one finger.
                                 change.consume()
                                 onDrag(delta)
                             },
@@ -2232,6 +2318,11 @@ private fun DragHandle(
             .size(GRIP_TARGET)
             .clearAndSetSemantics { }
             .pointerInput(Unit) {
+                // **The grip drags at once, and that is the difference.**
+                // D169: the card itself needs a long press because a swipe on
+                // a card is how somebody scrolls, but a grip exists only to be
+                // dragged, so asking for a hold on it would be a control that
+                // ignores the first thing you do to it.
                 detectDragGestures(
                     onDragStart = { onDragStart() },
                     onDragEnd = { onDragEnd() },
@@ -2384,3 +2475,12 @@ private fun optionsName(
     card: Repository.TodayCard,
     answer: Repository.TodayAnswer?,
 ): String = tabFor(card, answer, LocalStrings.current)
+
+/**
+ * How much a card grows while it is being carried, and how far it lifts.
+ *
+ * **Four percent and eight dp.** The phone's own home screen swells an icon
+ * about this much: enough that the card is unmistakably in the hand and not
+ * so much that the grid under it is obscured by the thing being moved.
+ */
+private const val LIFT_SCALE = 1.04f

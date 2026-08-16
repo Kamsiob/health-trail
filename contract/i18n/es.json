@@ -1588,5 +1588,8 @@
   "project.papers.fill.title": "¿Qué papel va aquí?",
   "project.papers.fill.lead": "Elija uno que ya haya guardado, o fotografíe uno nuevo.",
   "project.papers.fill.new": "Fotografiar uno nuevo",
-  "project.papers.fill.none": "Todavía no hay papeles guardados. Fotografíe uno y aparecerá aquí."
+  "project.papers.fill.none": "Todavía no hay papeles guardados. Fotografíe uno y aparecerá aquí.",
+  "trail.since.title": "Desde su última visita",
+  "trail.since.none": "Nada nuevo desde su última visita.",
+  "trail.since.all": "Ver todo el recorrido"
 }

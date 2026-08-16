@@ -686,6 +686,20 @@ fun NotebookShell(
                                             trayOpen = true
                                         }
 
+                                        // **The digest opens what it counted.**
+                                        // D169, and it is the same defect the
+                                        // two cards above were fixed for: it
+                                        // said three new things since you were
+                                        // last here and then opened the whole
+                                        // trail, so the count and the screen
+                                        // disagreed and the person was left
+                                        // hunting three rows among hundreds.
+                                        card.type == "digest" -> {
+                                            destination = Destination.NOTEBOOK
+                                            trailSince = lastVisit
+                                            openSection = Repository.Section.TRAIL
+                                        }
+
                                         // Somebody archived is not in the roster,
                                         // and their card is still a door: it opens
                                         // the section, where they can be found.

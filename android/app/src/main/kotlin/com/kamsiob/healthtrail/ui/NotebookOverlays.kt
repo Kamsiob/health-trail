@@ -1097,6 +1097,11 @@ internal fun ProjectStepOverlays(
 
                 Repository.Section.TRAIL -> TrailScreen(
                     entries = trail,
+                    // Set by the digest card and cleared on the way out, so
+                    // the trail is the whole trail unless somebody asked for
+                    // the new things. D169.
+                    since = trailSince,
+                    onSeeAll = { trailSince = null },
                     onOpen = { openEntry = it.id },
                     // The month header is the door, per rule 18 and 13.5. Any
                     // instant inside the month says which month it is, and the
@@ -1160,7 +1165,7 @@ internal fun ProjectStepOverlays(
                         .toEpochMilli(),
                     onOpen = { appointment -> openPrepFor = appointment.id },
                     onAdd = { editingAppointment = null; addingAppointment = true },
-                    onBack = { openSection = null },
+                    onBack = { openSection = null; trailSince = null },
                 )
 
                 Repository.Section.CHAPTERS -> ChaptersScreen(
