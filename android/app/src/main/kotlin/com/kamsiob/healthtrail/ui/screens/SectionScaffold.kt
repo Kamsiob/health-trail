@@ -18,6 +18,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import com.kamsiob.healthtrail.ui.components.TipsButton
+import com.kamsiob.healthtrail.ui.components.TipsSheet
+import com.kamsiob.healthtrail.ui.components.tipFor
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -269,6 +273,11 @@ fun SectionScaffold(
         // exactly like a save that did not fire. **The union takes the larger
         // of the two rather than the sum**, so with no keyboard this is the
         // bars alone and nothing else changes.
+        var showTips by remember { mutableStateOf(false) }
+        if (showTips && section != null) {
+            TipsSheet(tip = tipFor(section), onDismiss = { showTips = false })
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -309,10 +318,21 @@ fun SectionScaffold(
             ) {
                 item {
                     Spacer(Modifier.height(Space.sm))
-                    TabChipText(
-                        hue = section?.let { hueFor(it) } ?: wholeAppHue(),
-                        label = title,
-                    )
+                    // **The tab and the tips button share the line.** #379:
+                    // a button beside the section name on every page, opening
+                    // what this place is for. It sits with the tab rather than
+                    // beside the heading so it never competes with the one
+                    // thing the screen leads with.
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        TabChipText(
+                            hue = section?.let { hueFor(it) } ?: wholeAppHue(),
+                            label = title,
+                        )
+                        Spacer(Modifier.weight(1f))
+                        if (section != null) {
+                            TipsButton(onOpen = { showTips = true })
+                        }
+                    }
                     Spacer(Modifier.height(Space.s))
                     // Display M rather than the largest type in the app. Under
                     // v4 the hero is the one thing on the screen, and a section

@@ -29,6 +29,11 @@ import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.GroupedRows
+import com.kamsiob.healthtrail.ui.components.TipsButton
+import com.kamsiob.healthtrail.ui.components.TipsSheet
+import com.kamsiob.healthtrail.ui.components.tipForDestination
+import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.setValue
@@ -248,11 +253,24 @@ fun NotebookScreen(
             // over its first. Two names for one place is what the stranger
             // test failed on: the chip taught vocabulary nobody needed. The
             // chip stays on interior screens, where it is the way back. #376.
-            Text(
-                text = strings["notebook.title"],
-                style = HealthTrail.type.displayM,
-                color = colors.ink,
-            )
+            // **The tab root gets its own page onboarding**, #379, beside the
+            // title rather than under it, so the heading still leads.
+            var showTips by remember { mutableStateOf(false) }
+            if (showTips) {
+                TipsSheet(
+                    tip = tipForDestination("notebook"),
+                    onDismiss = { showTips = false },
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = strings["notebook.title"],
+                    style = HealthTrail.type.displayM,
+                    color = colors.ink,
+                )
+                TipsButton(onOpen = { showTips = true })
+            }
 
             // **What needs the person, as one row rather than a hero.**
             //

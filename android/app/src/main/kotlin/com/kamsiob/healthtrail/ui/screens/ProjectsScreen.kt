@@ -17,6 +17,11 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.TipsButton
+import com.kamsiob.healthtrail.ui.components.TipsSheet
+import com.kamsiob.healthtrail.ui.components.tipForDestination
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.fabSafeActionBar
 import com.kamsiob.healthtrail.ui.components.fabScrollClearance
@@ -27,6 +32,7 @@ import com.kamsiob.healthtrail.ui.components.RoadStrip
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -103,11 +109,22 @@ fun ProjectsScreen(
                 // **No eyebrow chip on a tab root**: it repeated the title
                 // word for word, and the bottom bar already says where you
                 // are. #376.
-                Text(
-                    text = strings["nav.projects"],
-                    style = HealthTrail.type.displayM,
-                    color = colors.ink,
-                )
+                var showTips by remember { mutableStateOf(false) }
+                if (showTips) {
+                    TipsSheet(
+                        tip = tipForDestination("projects"),
+                        onDismiss = { showTips = false },
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = strings["nav.projects"],
+                        style = HealthTrail.type.displayM,
+                        color = colors.ink,
+                    )
+                    TipsButton(onOpen = { showTips = true })
+                }
                 // **The state of the person's own projects, not a definition
                 // of what a project is.** It read "The long processes:
                 // applications, appeals, requests. Each one says where it

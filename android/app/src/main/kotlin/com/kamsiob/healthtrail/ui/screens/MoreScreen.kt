@@ -83,6 +83,8 @@ fun MoreScreen(
         // it now, so a person tapping "More" and landing on a screen headed
         // "Appearance" is the app showing its own structure, which is rule 20.
         titleKey = "nav.more",
+        // The More page says what it is for, like every other page. #379.
+        tipsKey = "more",
         subtitleKey = "more.subtitle",
         // **No eyebrow chip on a tab root**, D163: it repeated the title word
         // for word, and the bottom bar already says where you are. The last

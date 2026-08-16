@@ -20,6 +20,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.kamsiob.healthtrail.ui.components.TipsButton
+import com.kamsiob.healthtrail.ui.components.TipsSheet
+import com.kamsiob.healthtrail.ui.components.tipForDestination
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -91,6 +96,8 @@ fun AppearanceScreen(
     /** The destination's own title, so More says More rather than Appearance. */
     titleKey: String = "appearance.title",
     subtitleKey: String = "appearance.subtitle",
+    /** Which page's onboarding this screen offers, or null for none. #379. */
+    tipsKey: String? = null,
     tab: @Composable () -> Unit = {},
 ) {
     val strings = LocalStrings.current
@@ -109,11 +116,27 @@ fun AppearanceScreen(
             Spacer(Modifier.height(Space.sm))
             tab()
             Spacer(Modifier.height(Space.s))
-            Text(
-                text = strings[titleKey],
-                style = HealthTrail.type.displayM,
-                color = colors.ink,
-            )
+            // **Page onboarding beside the title**, #379, and only where the
+            // caller named a page for it. Appearance on its own is not a tab
+            // root and gets none.
+            var showTips by remember { mutableStateOf(false) }
+            if (showTips && tipsKey != null) {
+                TipsSheet(
+                    tip = tipForDestination(tipsKey),
+                    onDismiss = { showTips = false },
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = strings[titleKey],
+                    style = HealthTrail.type.displayM,
+                    color = colors.ink,
+                )
+                if (tipsKey != null) {
+                    TipsButton(onOpen = { showTips = true })
+                }
+            }
             Spacer(Modifier.height(Space.xs))
             Text(
                 text = strings[subtitleKey],

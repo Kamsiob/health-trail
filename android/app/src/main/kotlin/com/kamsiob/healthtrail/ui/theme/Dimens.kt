@@ -102,6 +102,24 @@ object Space {
     val fabSize: Dp = 48.dp
 
     /**
+     * The tips lamp, drawn rather than iconized. D167 and #379.
+     *
+     * **Three measurements, named once**, because the mark appears at two
+     * sizes, on the button and in the sheet's header, and two copies of a
+     * drawing drift the moment one is nudged.
+     */
+    val tipsBulb: Dp = 11.dp
+    val tipsBulbLarge: Dp = 13.dp
+    val tipsBase: Dp = 7.dp
+    val tipsBaseLarge: Dp = 8.dp
+    val tipsBaseThickness: Dp = 2.5.dp
+    val tipsBaseThicknessLarge: Dp = 3.dp
+    val tipsGap: Dp = 2.dp
+    val tipsHeaderTile: Dp = 44.dp
+    val tipsPointDot: Dp = 6.dp
+    val tipsPointDotTop: Dp = 7.dp
+
+    /**
      * The mark on a choice in the capture bloom, and the drawing inside it.
      *
      * **A mark rather than words**, so it is sized to itself the way an avatar
