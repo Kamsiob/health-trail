@@ -1509,6 +1509,7 @@ class ScreenReaderTest {
                 ),
                 onOpen = {},
                 onOpenMilestones = {},
+                onMoved = {},
                 // What the current chapter holds, #356: counted on the card
                 // rather than only inside it.
                 contents = mapOf(

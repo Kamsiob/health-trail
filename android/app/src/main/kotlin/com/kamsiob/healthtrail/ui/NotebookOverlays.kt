@@ -707,6 +707,43 @@ internal fun IncidentAndReviewOverlays(
             )
         }
 
+        // **Saying they are somewhere new**, #377, the same one question form
+        // every other name in the app is written in. It asks for the place and
+        // nothing else: the date is today by construction, and asking somebody
+        // to confirm the day their mother moved, on the day it happened, is the
+        // app making work for itself. Rule 17 leaves it editable from the
+        // chapter afterward.
+        if (sayingMoved) {
+            AddThreadScreen(
+                onStart = { name ->
+                    savingMove = name
+                    sayingMoved = false
+                },
+                onCancel = { sayingMoved = false },
+                titleKey = "chapters.moved.title",
+                labelKey = "chapters.moved.name",
+                hintKey = "chapters.moved.hint",
+                saveKey = "chapters.moved.save",
+                leadKey = "chapters.moved.lead",
+                section = Repository.Section.CHAPTERS,
+            )
+        }
+
+        savingMove?.let { name ->
+            LaunchedEffect(name) {
+                val subjectId = repository.activeSubject()?.id
+                // **The move, not just a new name**, which is the whole reason
+                // this writes through `moveToChapter`: it closes every open
+                // place today and starts this one today, so two current places
+                // never exist at once. The same seam the setting change flow
+                // hit and the comment there records.
+                // bidi-ok: on its way to the database.
+                if (subjectId != null) repository.moveToChapter(subjectId, name)
+                savingMove = null
+                revision += 1
+            }
+        }
+
         savingChapterRename?.let { rename ->
             LaunchedEffect(rename) {
                 // bidi-ok: on its way to the database.
@@ -1088,6 +1125,9 @@ internal fun ProjectStepOverlays(
                     chapters = chapters,
                     onOpenMilestones = { milestonesOpen = true },
                     onBack = { openSection = null },
+                    // #377. The section stays open underneath, so saving lands
+                    // back on the list with the new place at the top of it.
+                    onMoved = { sayingMoved = true },
                 )
 
                 Repository.Section.PROGRESS -> ProgressScreen(

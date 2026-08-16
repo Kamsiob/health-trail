@@ -189,6 +189,10 @@ internal class ShellState {
     var renamingChapter by mutableStateOf<Repository.Chapter?>(null)
     var savingChapterRename by mutableStateOf<Pair<String, String>?>(null)
 
+    /** #377: saying they are somewhere new, and the name on its way in. */
+    var sayingMoved by mutableStateOf(false)
+    var savingMove by mutableStateOf<String?>(null)
+
     /** The project being renamed, and what to write. #374. Same story. */
     var renamingProject by mutableStateOf<Repository.Project?>(null)
     var savingProjectRename by mutableStateOf<Pair<String, String>?>(null)

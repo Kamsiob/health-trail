@@ -487,6 +487,7 @@ fun NotebookShell(
         BackHandler(enabled = renamingThread != null) { renamingThread = null }
         // #374, and both of these are surfaces #373 made room for.
         BackHandler(enabled = renamingChapter != null) { renamingChapter = null }
+        BackHandler(enabled = sayingMoved) { sayingMoved = false }
         BackHandler(enabled = renamingProject != null) { renamingProject = null }
         BackHandler(enabled = correctingQuestion != null) { correctingQuestion = null }
         BackHandler(enabled = correctingInstruction != null) { correctingInstruction = null }

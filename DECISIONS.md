@@ -2990,6 +2990,24 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D159. A place is something the person can name, and naming it is a move
+
+**Date:** 2026-08-15. **Resolves the question D158 left open** and closes #377. **Decided by the owner**, who asked for the dead end fixed. Changes no schema and adds no writer.
+
+**The question was whether a place is something the person names, or only something that appears when the care setting changes.** It is the first. Rule 23: of two defensible answers, the easiest for the person, and it is safe, private and compatible, because it writes through a path that already existed.
+
+**Naming a place is a move, not an add**, which is what keeps the model D158 was protecting. `moveToChapter` closes every open chapter today and starts the new one today, so two current places never exist at once, and `MoveToChapterTest` already held that: the old place ends, keeps its name and its start date, and nothing filed against it is touched. **The right writer was already there**; only the door was missing.
+
+**Not gated on the care setting changing, which is the whole point.** A transfer between two nursing homes changes no setting and is still a move. The change flow could not express it, and its gate is correct for what it does: a chapter there is the boundary of a setting change. This is a different question asked in a different place, so it gets its own door rather than a loosened gate.
+
+**The form asks for the place and nothing else.** The date is today by construction; asking somebody to confirm the day their mother moved, on the day it happened, is the app making work for itself. Rule 17 leaves the date editable from the chapter afterward, which is where somebody entering a move a week late will change it.
+
+**Offered in the empty state and under the list, never both at once.** The empty state carries it while there is nothing there, and the button under the list appears once there is, which is what care threads does. Two of the same button on one screen is the competition 10.8 names.
+
+**Walked on the phone, twice.** A first move into an empty notebook, then a second, which put Riverbend under "Where they are now" and folded Maplewood into "Other places". One current place, both dated today.
+
+---
+
 ### D158. A door to the wrong room is not better than a wall, so the built fix was backed out
 
 **Date:** 2026-08-14. **Decided under rule 10**, and it decides only what to do tonight. **The question it leaves open is the owner's**, on #377.

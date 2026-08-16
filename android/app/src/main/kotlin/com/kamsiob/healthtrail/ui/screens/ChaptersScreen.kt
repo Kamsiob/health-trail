@@ -18,6 +18,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
+import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,6 +40,7 @@ object ChapterTags {
     const val NAME = "chapters"
     const val EARLIER_FOLD = "chapters_earlier_fold"
     const val MILESTONES = "chapters_milestones"
+    const val MOVED = "chapters_moved"
     fun row(id: String) = "chapter_$id"
     fun holds(id: String) = "chapter_holds_$id"
 }
@@ -83,6 +85,27 @@ fun ChaptersScreen(
      * nothing in it, so the row never says four zeroes.
      */
     contents: Map<String, Repository.ChapterContents> = emptyMap(),
+    /**
+     * Records that they are somewhere new. #377.
+     *
+     * **This screen had no way to add anything to it.** A place could be
+     * created from the optional setup field and from a care setting change,
+     * and nowhere else, so somebody whose person transferred between two
+     * facilities of the same kind could not record it at all. An empty
+     * Chapters screen was a drawing, a sentence saying places can be added
+     * whenever they move, and nothing to touch. Found by looking at it.
+     *
+     * **A move rather than an add**, which is what keeps the model honest:
+     * naming a place ends the one they were in and starts this one, both
+     * dated today, because somebody is in one place at a time. That is
+     * `moveToChapter`, which already existed for the setting change and was
+     * always the right writer for this.
+     *
+     * **Not gated on the care setting changing.** A transfer between two
+     * nursing homes changes no setting and is still a move, which is what the
+     * change flow could not express. D159.
+     */
+    onMoved: () -> Unit,
 ) {
     val strings = LocalStrings.current
     val current = chapters.filter { it.isCurrent }
@@ -99,7 +122,18 @@ fun ChaptersScreen(
         headingKey = "chapters.heading",
     ) {
         if (chapters.isEmpty()) {
-            item { SectionEmpty(name = ChapterTags.NAME, text = strings["chapters.empty"], section = Repository.Section.CHAPTERS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION)) }
+            item {
+                SectionEmpty(
+                    name = ChapterTags.NAME,
+                    text = strings["chapters.empty"],
+                    section = Repository.Section.CHAPTERS,
+                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
+                    // The one thing to do from an empty Chapters screen, and
+                    // the whole of #377: without it, zero taps lead anywhere.
+                    actionLabel = strings["chapters.moved"],
+                    onAction = onMoved,
+                )
+            }
         }
 
         if (current.isNotEmpty()) {
@@ -167,6 +201,25 @@ fun ChaptersScreen(
                         )
                     }
                 }
+            }
+        }
+
+        // **Under the list, where care threads puts its own.** The common
+        // errand here is opening a place already written down; saying they
+        // moved is the rarer one, and it is not hidden: 13.5 calls a
+        // capability only its author can find unfinished.
+        //
+        // **Absent while the list is empty**, because the empty state above is
+        // already carrying it and two of the same button on one screen is the
+        // competition 10.8 is about.
+        if (chapters.isNotEmpty()) {
+            item(key = "moved") {
+                Spacer(Modifier.height(Space.s))
+                QuietButton(
+                    label = strings["chapters.moved"],
+                    onClick = onMoved,
+                    modifier = Modifier.testTag(ChapterTags.MOVED),
+                )
             }
         }
 

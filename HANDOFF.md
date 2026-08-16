@@ -67,7 +67,7 @@ Precedence: verified code > this file > `DECISIONS.md` > `contract/DATA-CONTRACT
 
 **Dark was walked**, 2026-08-14, on a fresh install: onboarding, setup, the situation picker, the notebook list scrolled to its end, and Chapters. The theme holds, the notebook list clears the capture button at its end, and the mono eyebrows and tinted section icons read as they do in light.
 
-**It found #377, which is not a theme problem.** Chapters opens to a drawing, a sentence and nothing to touch, because a place can only be created from the optional setup field or from a care setting change. **A fix was built and backed out**, D158: it landed on a settings screen that cannot record a move. **The empty state is a dead end and it ships that way** until the owner decides whether a place is something the person names.
+**It found #377**, which was not a theme problem: Chapters opened to a drawing, a sentence and nothing to touch. **Now closed.** The empty state and the list both offer "Say they moved", which asks for the place and nothing else and writes through `moveToChapter`, so the old place closes today and the new one starts today. D159 answers what D158 left open: a place is something the person names, and naming it is a move. **A transfer between two nursing homes was impossible before this** and is two taps now.
 
 **Still owed**: the same look at the other project screens. A test says a screen holds together; it cannot say whether it reads.
 

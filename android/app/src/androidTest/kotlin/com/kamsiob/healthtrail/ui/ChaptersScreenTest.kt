@@ -3,15 +3,20 @@ package com.kamsiob.healthtrail.ui
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.ui.screens.ChapterTags
 import com.kamsiob.healthtrail.ui.screens.ChaptersScreen
+import com.kamsiob.healthtrail.ui.screens.SectionTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import java.util.Locale
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,6 +62,7 @@ class ChaptersScreenTest {
                         onOpen = {},
                         onOpenMilestones = {},
                         onBack = {},
+                        onMoved = {},
                     )
                 }
             }
@@ -128,5 +134,64 @@ class ChaptersScreenTest {
 
         compose.onNodeWithText("What is in this chapter", substring = true)
             .assertDoesNotExist()
+    }
+
+    private fun showChapters(chapters: List<Repository.Chapter>, onMoved: () -> Unit) {
+        compose.setContent {
+            CompositionLocalProvider(LocalStrings provides strings) {
+                HealthTrailTheme {
+                    ChaptersScreen(
+                        chapters = chapters,
+                        onOpen = {},
+                        onOpenMilestones = {},
+                        onBack = {},
+                        onMoved = onMoved,
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * **The empty screen had nothing to touch.** A notebook whose setup left
+     * the place blank arrived here to a drawing, a sentence saying places can
+     * be added whenever they move, and zero taps that led anywhere. #377, found
+     * by walking a fresh install on the phone rather than by reading anything.
+     */
+    @Test
+    fun theEmptyScreenOffersTheOneThingToDo() {
+        var moved = 0
+        showChapters(emptyList()) { moved += 1 }
+
+        compose.onNodeWithTag(SectionTags.emptyAction(ChapterTags.NAME)).performClick()
+
+        assertEquals("the empty state did not reach the move", 1, moved)
+    }
+
+    /**
+     * **And the screen with places on it offers it too**, under the list where
+     * care threads puts its own, because the second move is as ordinary as the
+     * first and a capability that exists only while empty is a trapdoor.
+     */
+    @Test
+    fun theListedScreenOffersItUnderTheList() {
+        var moved = 0
+        showChapters(listOf(current)) { moved += 1 }
+
+        compose.onNodeWithTag(ChapterTags.MOVED).performClick()
+
+        assertEquals("the move was not reachable with a place already there", 1, moved)
+    }
+
+    /**
+     * **Two of the same button on one screen is the competition 10.8 names.**
+     * The empty state carries the action while the list is empty, so the one
+     * under the list is absent then rather than stacked under it.
+     */
+    @Test
+    fun theEmptyScreenDoesNotOfferItTwice() {
+        showChapters(emptyList()) {}
+
+        compose.onNodeWithTag(ChapterTags.MOVED).assertDoesNotExist()
     }
 }
