@@ -2990,6 +2990,18 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D165. The round trip is proven on the minified build, and 1.0 was allowed to depend on it
+
+**Date:** 2026-08-16. **The debt D161 named, paid.** The owner ordered 1.0 cut tonight; this was the one item with a silent failure mode, so it went first.
+
+**The walk, on the signed release APK, on the device:** a fresh install, setup with a real name and the nursing home situation (which seeds five care threads), export with a passphrase to Downloads through the system dialog, the archive pulled to the machine and **decrypted with `tools/decrypt` alone**, contents verified to hold the subject's data. Then the app **uninstalled entirely**, reinstalled from the same APK, and restored from the file through its own flow: the file recognized, "32 records, made 2026-08-16 03:05", replace chosen, and the notebook came back with the five threads and the subject intact.
+
+**What this proves that no debug run could:** R8's tree shaking left every reflective edge of the crypto standing, in both directions, in the build a person would actually install. The export is real BouncyCastle under minification; the restore is a fresh process decrypting a real file; the readable half of the archive opens in a browser with no app at all.
+
+**What it does not prove:** attachments round-tripping (the notebook had no photographs), and a large notebook's performance. Both are ordinary risks, not silent ones.
+
+---
+
 ### D164. The project home is one fixed order and a vertical road
 
 **Date:** 2026-08-16. **The owner's order, given twice in one night**: first "the entire project's thing needs to be completely overhauled", then, on being told the redesign would wait for a proper pass, "you're a computer. do the entire thing everything." So it was done in the same night, and this entry records what and why.
