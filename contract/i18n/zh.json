@@ -1557,8 +1557,8 @@
   "tips.emergency_card.point2": "能填多少填多少，其余留空。填一半的卡也有用。",
   "tips.today.title": "一眼看清这一天",
   "tips.today.body": "今天页面回答您打开应用想知道的事：接下来是什么、有什么在等、什么变了。",
-  "tips.today.point1": "长按任意卡片即可重新排列，就像在手机主屏上一样。",
-  "tips.today.point2": "卡片是方形或整宽的。随意添加和移除，不会影响您记下的内容。",
+  "tips.today.point1": "长按任意卡片即可移动，或使用角落里的铅笔。",
+  "tips.today.point2": "可以随意添加或移除卡片，你记下的内容不受影响。",
   "tips.notebook.title": "每样东西住在哪里",
   "tips.notebook.body": "十二个位置从不移动，分好组，不用逐行读也能找到。",
   "tips.notebook.point1": "每一行都写明什么属于它，不需要猜。",
@@ -1595,5 +1595,6 @@
   "today.masthead": "{name}的一天",
   "today.masthead.noname": "今天",
   "action.edit": "编辑",
-  "today.arrange.action": "整理卡片"
+  "today.arrange.action": "整理卡片",
+  "measurement.own.group": "你在追踪的内容"
 }

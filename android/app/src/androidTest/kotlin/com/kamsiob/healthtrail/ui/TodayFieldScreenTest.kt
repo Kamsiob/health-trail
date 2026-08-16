@@ -217,16 +217,16 @@ class TodayFieldScreenTest {
 
     @Test
     fun theDigestLeadSaysWhatDayItIs() {
-        // The eyebrow is the day rather than the word Today, which is already
-        // on the tab chip and on the active navigation tab. Composed through
-        // the catalog's own pattern, so the shape of the date is part of the
-        // translation.
+        // **The screen names the day, and it is the masthead that does it.**
+        // D170 moved the date to the top of the screen, where it sits above
+        // whose day it is; the lead used to carry it and printing it in both
+        // places put the same date twice within an inch, which is what the
+        // phone showed. What must stay true is that Today says what day it is
+        // somewhere, not that one particular component does, so the assertion
+        // is against the screen rather than against the lead.
         val strings = Strings.load(context)
         show()
-        assertTrue(
-            "the lead does not name the day: ${spoken(TodayFieldTags.LEAD)}",
-            EventDateText.dayHeading(strings, today) in spoken(TodayFieldTags.LEAD),
-        )
+        compose.onNodeWithText(EventDateText.masthead(strings, today)).assertIsDisplayed()
     }
 
     @Test
@@ -1010,16 +1010,28 @@ class TodayFieldScreenTest {
         // **The gesture starts on the card**, D153, because the card is what a
         // finger carries now. It used to start on a 48dp grip in the corner,
         // which is not what holding a widget is on the phone somebody owns.
+        //
+        // **And it starts with a hold**, D169, which is the half this test was
+        // missing. A plain drag in arrange mode scrolls the field, because the
+        // owner could not scroll at all while arranging: every attempt to move
+        // the view picked a card up instead. The phone's own home screen holds
+        // to pick up and swipes to scroll, and so does this. A test that drags
+        // without holding is testing the gesture that was removed.
+        compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TodayFieldTags.card(before.first()))
             .performTouchInput {
                 down(center)
-                // Past the slop, then far enough to clear the card below it.
-                // One move would be a fling; the steps are what a finger does.
+                // Long enough for the press to become a hold, then past the
+                // slop and far enough to clear the card below it. One move
+                // would be a fling; the steps are what a finger does.
+                advanceEventTime(viewConfiguration.longPressTimeoutMillis + 100)
                 moveBy(Offset(0f, first * 0.4f))
                 moveBy(Offset(0f, first * 0.4f))
                 moveBy(Offset(0f, first * 0.4f))
                 up()
             }
+        compose.mainClock.autoAdvance = true
+        compose.waitForIdle()
 
         assertTrue(
             "the dragged card did not move: ${fieldOrder(layout)}",

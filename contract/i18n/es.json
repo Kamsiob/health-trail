@@ -1557,8 +1557,8 @@
   "tips.emergency_card.point2": "Rellene lo que pueda y deje el resto. Una tarjeta a medias también ayuda.",
   "tips.today.title": "Su día de un vistazo",
   "tips.today.body": "Hoy responde a lo que abre la aplicación para saber: qué viene, qué espera, qué cambió.",
-  "tips.today.point1": "Mantenga pulsada una tarjeta para reordenarlas, como en la pantalla de inicio.",
-  "tips.today.point2": "Las tarjetas son cuadradas o de ancho completo. Añádalas y quítelas sin miedo, nada de lo que anotó se toca.",
+  "tips.today.point1": "Manten pulsada cualquier tarjeta para moverla, o usa el lapiz de la esquina.",
+  "tips.today.point2": "Anade y quita tarjetas con libertad. Nada de lo que escribiste se ve afectado.",
   "tips.notebook.title": "Dónde vive cada cosa",
   "tips.notebook.body": "Doce lugares que nunca se mueven, agrupados para encontrarlos sin leer fila por fila.",
   "tips.notebook.point1": "Cada fila dice qué le corresponde, así no hay que adivinar nada.",
@@ -1595,5 +1595,6 @@
   "today.masthead": "El día de {name}",
   "today.masthead.noname": "Hoy",
   "action.edit": "Editar",
-  "today.arrange.action": "Organizar las tarjetas"
+  "today.arrange.action": "Organizar las tarjetas",
+  "measurement.own.group": "Lo que estás siguiendo"
 }

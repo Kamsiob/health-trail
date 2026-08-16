@@ -1557,8 +1557,8 @@
   "tips.emergency_card.point2": "Fill in what you can and leave the rest. A half filled card still helps.",
   "tips.today.title": "Your day at a glance",
   "tips.today.body": "Today answers the questions you open the app for: what is next, what is waiting, what changed.",
-  "tips.today.point1": "Hold any card to rearrange them, the way you would on your home screen.",
-  "tips.today.point2": "Cards are square or full width. Add and remove them freely, nothing you wrote is affected.",
+  "tips.today.point1": "Hold any card to move it, or use the pencil in the corner.",
+  "tips.today.point2": "Add and remove cards freely. Nothing you wrote down is affected.",
   "tips.notebook.title": "Where everything lives",
   "tips.notebook.body": "Twelve places that never move, grouped so you can find them without reading every row.",
   "tips.notebook.point1": "Each row says what belongs in it, so nothing has to be guessed.",
@@ -1595,5 +1595,6 @@
   "today.masthead": "{name}'s day",
   "today.masthead.noname": "Today",
   "action.edit": "Edit",
-  "today.arrange.action": "Arrange the cards"
+  "today.arrange.action": "Arrange the cards",
+  "measurement.own.group": "What you are tracking"
 }

@@ -44,6 +44,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.FieldGroup
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -426,70 +427,76 @@ private fun NameSomethingElse(
                 // same words in both slots is the defect #341 spent a night
                 // taking out of four other screens, and it went in here while
                 // that was being written.
-                HealthTrailTextField(
-                    label = strings["measurement.own.name.field"],
-                    value = name,
-                    onValueChange = { name = it },
-                    hint = strings["measurement.own.name.hint"],
-                    fieldTestTag = MeasurementTags.OWN_NAME,
-                )
+                // **One container rather than four loose controls.** D174.
+                // A name, a kind, a unit and their gaps read as four
+                // unrelated things stacked on paper; they are one
+                // decision about one measure and now they look like it.
+                FieldGroup("measurement.own.group") {
+                    HealthTrailTextField(
+                        label = strings["measurement.own.name.field"],
+                        value = name,
+                        onValueChange = { name = it },
+                        hint = strings["measurement.own.name.hint"],
+                        fieldTestTag = MeasurementTags.OWN_NAME,
+                    )
 
-                Spacer(Modifier.height(Space.m))
-                if (kindIsFixed) {
-                    // **Said, not offered.** A measure with readings in it
-                    // cannot change kind: every number already written down
-                    // would have nowhere to live. A chip that looks tappable
-                    // and is not would be worse than a sentence, per rule 16,
-                    // so this is a sentence.
-                    Text(
-                        text = strings["measurement.own.kind"],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.ink2,
-                    )
-                    Spacer(Modifier.height(Space.xs))
-                    Text(
-                        text = strings[
-                            if (isText) {
-                                "measurement.own.kind.text"
-                            } else {
-                                "measurement.own.kind.number"
-                            },
-                        ],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.ink,
-                    )
-                } else {
-                    ChoiceChipGroup(label = strings["measurement.own.kind"]) {
-                        ChoiceChip(
-                            label = strings["measurement.own.kind.number"],
-                            selected = !isText,
-                            onClick = { isText = false },
-                            modifier = Modifier.testTag(MeasurementTags.OWN_NUMBER),
+                    Spacer(Modifier.height(Space.m))
+                    if (kindIsFixed) {
+                        // **Said, not offered.** A measure with readings in it
+                        // cannot change kind: every number already written down
+                        // would have nowhere to live. A chip that looks tappable
+                        // and is not would be worse than a sentence, per rule 16,
+                        // so this is a sentence.
+                        Text(
+                            text = strings["measurement.own.kind"],
+                            style = HealthTrail.type.bodyM,
+                            color = colors.ink2,
                         )
-                        ChoiceChip(
-                            label = strings["measurement.own.kind.text"],
-                            selected = isText,
-                            onClick = { isText = true },
-                            modifier = Modifier.testTag(MeasurementTags.OWN_TEXT),
+                        Spacer(Modifier.height(Space.xs))
+                        Text(
+                            text = strings[
+                                if (isText) {
+                                    "measurement.own.kind.text"
+                                } else {
+                                    "measurement.own.kind.number"
+                                },
+                            ],
+                            style = HealthTrail.type.bodyM,
+                            color = colors.ink,
+                        )
+                    } else {
+                        ChoiceChipGroup(label = strings["measurement.own.kind"]) {
+                            ChoiceChip(
+                                label = strings["measurement.own.kind.number"],
+                                selected = !isText,
+                                onClick = { isText = false },
+                                modifier = Modifier.testTag(MeasurementTags.OWN_NUMBER),
+                            )
+                            ChoiceChip(
+                                label = strings["measurement.own.kind.text"],
+                                selected = isText,
+                                onClick = { isText = true },
+                                modifier = Modifier.testTag(MeasurementTags.OWN_TEXT),
+                            )
+                        }
+                    }
+
+                    // **The unit only where a unit could mean anything.** Words
+                    // have no units, and a field asking for one under "how the
+                    // wound looks" is the app not listening to the answer it just
+                    // got.
+                    if (!isText) {
+                        Spacer(Modifier.height(Space.m))
+                        HealthTrailTextField(
+                            label = strings["measurement.unit"],
+                            value = unit,
+                            onValueChange = { unit = it },
+                            hint = strings["measurement.own.unit.hint"],
+                            fieldTestTag = MeasurementTags.OWN_UNIT,
                         )
                     }
-                }
 
-                // **The unit only where a unit could mean anything.** Words
-                // have no units, and a field asking for one under "how the
-                // wound looks" is the app not listening to the answer it just
-                // got.
-                if (!isText) {
-                    Spacer(Modifier.height(Space.m))
-                    HealthTrailTextField(
-                        label = strings["measurement.unit"],
-                        value = unit,
-                        onValueChange = { unit = it },
-                        hint = strings["measurement.own.unit.hint"],
-                        fieldTestTag = MeasurementTags.OWN_UNIT,
-                    )
                 }
-
                 Spacer(Modifier.height(Space.xl))
             }
 
