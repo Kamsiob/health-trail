@@ -546,16 +546,20 @@ class Repository private constructor(
         medicationId: String,
         name: String,
         doseText: String?,
+        /** How often, in the words it was given in. #379. */
+        frequencyText: String? = null,
         purposeText: String?,
         notes: String?,
         onEmergencyCard: Boolean,
     ) = withContext(Dispatchers.IO) {
         db().database.write(
-            "UPDATE medication SET name = ?, dose_text = ?, purpose_text = ?, notes = ?, " +
+            "UPDATE medication SET name = ?, dose_text = ?, frequency_text = ?, " +
+                "purpose_text = ?, notes = ?, " +
                 "on_emergency_card = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(
                 name,
                 doseText?.ifBlank { null },
+                frequencyText?.ifBlank { null },
                 purposeText?.ifBlank { null },
                 notes?.ifBlank { null },
                 if (onEmergencyCard) 1 else 0,
@@ -2245,6 +2249,13 @@ class Repository private constructor(
         val notes: String?,
         val onEmergencyCard: Boolean,
         val stoppedEdtf: String?,
+        /**
+         * How often, in the words they were told it in. #379.
+         *
+         * **Last in the list and defaulted**, so every positional caller that
+         * predates it still compiles and means the same thing.
+         */
+        val frequencyText: String? = null,
     ) {
         /**
          * A medication that has been stopped is kept, not removed. Its whole
@@ -2277,7 +2288,7 @@ class Repository private constructor(
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
                 "SELECT id, name, dose_text, purpose_text, notes, on_emergency_card, " +
-                    "stopped_edtf FROM live_medication WHERE subject_id = ? " +
+                    "stopped_edtf, frequency_text FROM live_medication WHERE subject_id = ? " +
                     "ORDER BY stopped_edtf IS NOT NULL, created_at",
                 arrayOf(subjectId),
             ).use { cursor ->
@@ -2292,6 +2303,7 @@ class Repository private constructor(
                                 notes = cursor.getString(4),
                                 onEmergencyCard = cursor.getInt(5) == 1,
                                 stoppedEdtf = cursor.getString(6),
+                                frequencyText = cursor.getString(7),
                             ),
                         )
                     }
@@ -2307,12 +2319,15 @@ class Repository private constructor(
         purposeText: String? = null,
         notes: String? = null,
         onEmergencyCard: Boolean = false,
+        /** How often, in the words it was given in. #379. */
+        frequencyText: String? = null,
     ): String = insert(
         "medication",
         mapOf(
             "subject_id" to subjectId,
             "name" to name,
             "dose_text" to doseText?.ifBlank { null },
+            "frequency_text" to frequencyText?.ifBlank { null },
             "purpose_text" to purposeText?.ifBlank { null },
             "notes" to notes?.ifBlank { null },
             "on_emergency_card" to if (onEmergencyCard) 1 else 0,

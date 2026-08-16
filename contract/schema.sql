@@ -545,6 +545,15 @@ CREATE TABLE IF NOT EXISTS medication (
   -- parses a dose into a number and a unit, because misparsing a dose is worse
   -- than not parsing one.
   dose_text     TEXT,
+  -- How often, in the words the person was told it in, and never parsed. The
+  -- owner asked for it by name, 2026-08-16, #379: a medication is a name, a
+  -- dose and a frequency, and the first form asked for two of the three.
+  --
+  -- Text for the same reason dose_text is text. "Twice a day", "every other
+  -- morning", "with meals, but not the Tuesday dialysis day" are all real
+  -- answers, and a schedule type that could not hold the third would push the
+  -- person to write something less true.
+  frequency_text TEXT,
   purpose_text  TEXT,
   prescriber_person_id TEXT REFERENCES person (id),
   started_edtf  TEXT,

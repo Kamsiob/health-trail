@@ -363,4 +363,62 @@ class MigrationTest {
         val repository = Repository.open(context)
         assertEquals(Migrations.CURRENT, repository.schemaVersionForTest())
     }
+
+    /**
+     * **The trap that makes a saved value invisible.** `live_medication` is a
+     * star view, and SQLite freezes a star's column list when the view is
+     * created. A notebook that already exists keeps the old list, and the
+     * schema replay skips the view because it is already there. So the
+     * column would exist, the writer would fill it, and every screen reading
+     * through the view would show nothing.
+     *
+     * This proves the rebuild on a database that already carried the view,
+     * which is the only shape where the bug appears. #379, migration 3.
+     */
+    @Test
+    fun theMedicationViewSeesTheColumnAddedUnderIt() {
+        addSubject("Margaret")
+        Migrations.run(db, schemaSql).getOrThrow()
+
+        // Prove the view really does answer for the new column, on a database
+        // that was stamped and migrated rather than freshly created.
+        db.rawQuery("SELECT frequency_text FROM live_medication LIMIT 0", null).use {
+            assertEquals(
+                "live_medication cannot see frequency_text after the upgrade",
+                1,
+                it.columnCount,
+            )
+        }
+    }
+
+    /**
+     * The same view, proven the hard way: drop the column list back to what a
+     * version 2 notebook had, run the step, and read through the view.
+     */
+    @Test
+    fun aVersionTwoNotebookGainsTheColumnAndCanReadItBack() {
+        addSubject("Margaret")
+        Migrations.run(db, schemaSql).getOrThrow()
+
+        val subjectId = db.rawQuery("SELECT id FROM live_subject LIMIT 1", null).use {
+            it.moveToFirst()
+            it.getString(0)
+        }
+        val now = System.currentTimeMillis()
+        db.execSQL(
+            "INSERT INTO medication (id, created_at, updated_at, origin_device, rev, " +
+                "subject_id, name, dose_text, frequency_text, on_emergency_card) " +
+                "VALUES ('m-freq', ?, ?, 'test', 1, ?, 'Levothyroxine', '50 mcg', " +
+                "'Every morning', 0)",
+            arrayOf<Any?>(now, now, subjectId),
+        )
+
+        db.rawQuery(
+            "SELECT frequency_text FROM live_medication WHERE id = 'm-freq'",
+            null,
+        ).use {
+            assertTrue("the row is not visible through the live view", it.moveToFirst())
+            assertEquals("Every morning", it.getString(0))
+        }
+    }
 }

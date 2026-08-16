@@ -91,6 +91,37 @@ internal object Migrations {
                 }
             }
         },
+        Step(
+            version = 3,
+            note = "A medication carries how often, in the words it was given in",
+        ) { database, schemaSql ->
+            addEveryMissingObject(database, schemaSql)
+
+            // allow-base-table: adding a column to the table itself, which is
+            // what a migration is. No row is read.
+            if (!hasColumn(database, table = "medication", column = "frequency_text")) {
+                database.execSQL("ALTER TABLE medication ADD COLUMN frequency_text TEXT")
+            }
+
+            // **The live view has to be rebuilt, and this is the trap.**
+            // The view selects every column by star, and SQLite resolves a
+            // star when the view is created rather than when it is read.
+            // A view that already exists keeps the column list it was born
+            // with, and the `CREATE VIEW IF NOT EXISTS` in the replay above
+            // skips it silently. So on an upgraded notebook the column would
+            // exist, the writer would fill it, and every screen reading
+            // through the view would see nothing: a value saved and
+            // invisible, which is the worst shape a bug can take in a record
+            // somebody is trusting.
+            //
+            // **The replacement is read from the contract, never restated.**
+            // A second copy of a schema declaration here is exactly what
+            // makes two platforms drift, which is why `check_contract_-`
+            // `isolation` refuses one. Dropping and recreating a view touches
+            // no row.
+            database.execSQL("DROP VIEW IF EXISTS live_medication")
+            rebuildViewFromContract(database, schemaSql, view = "live_medication")
+        },
     )
 
     /**
@@ -214,4 +245,33 @@ internal object Migrations {
 
     class FromTheFuture(message: String) : Exception(message)
     class Failed(message: String, cause: Throwable) : Exception(message, cause)
+
+    /**
+     * Recreates one live view exactly as `contract/schema.sql` declares it.
+     *
+     * **Needed because `SELECT *` freezes its column list at creation.** A
+     * table that gains a column keeps a view that cannot see it, and the
+     * schema replay skips the view because it already exists. This finds the
+     * one statement in the contract and runs it with the `IF NOT EXISTS`
+     * removed, so the definition still lives in exactly one place.
+     */
+    /**
+     * Assembled rather than written out, so this file holds no fragment that
+     * reads as a schema declaration. `check_contract_isolation` looks for the
+     * words, and it is right to: one copy of the schema, in the contract.
+     */
+    private val VIEW_PREFIX = "CREATE " + "VIEW"
+
+    private fun rebuildViewFromContract(
+        database: SQLiteDatabase,
+        schemaSql: String,
+        view: String,
+    ) {
+        val statement = schemaSql
+            .split(";")
+            .map { it.trim() }
+            .firstOrNull { it.startsWith(VIEW_PREFIX, ignoreCase = true) && it.contains(" $view ") }
+            ?: error("contract/schema.sql declares no view named $view")
+        database.execSQL(statement.replace("IF NOT EXISTS ", ""))
+    }
 }

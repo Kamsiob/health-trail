@@ -48,6 +48,8 @@ object AddMedTags {
 data class MedicationDraft(
     val name: String = "",
     val dose: String = "",
+    /** How often, in the words it was given in. #379. */
+    val frequency: String = "",
     val purpose: String = "",
     val notes: String = "",
     val onEmergencyCard: Boolean = false,
@@ -95,6 +97,7 @@ fun AddMedicationScreen(
             MedicationDraft(
                 name = existing?.name.orEmpty(),
                 dose = existing?.doseText.orEmpty(),
+                frequency = existing?.frequencyText.orEmpty(),
                 purpose = existing?.purposeText.orEmpty(),
                 notes = existing?.notes.orEmpty(),
                 onEmergencyCard = existing?.onEmergencyCard == true,
@@ -143,6 +146,26 @@ fun AddMedicationScreen(
                     hint = strings["meds.dose.hint"],
                     singleLine = false,
                     fieldTestTag = AddMedTags.field("dose"),
+                )
+                Spacer(Modifier.height(Space.m))
+
+                // **How often, up front with the name and the dose**, the
+                // owner's direction on #379. It is the third thing anybody is
+                // told at a bedside and the form asked for two of the three,
+                // which sent the frequency into a note or nowhere.
+                //
+                // **Text, and never parsed**, for the same reason the dose is:
+                // "every other morning" and "with meals, but not on dialysis
+                // days" are real answers, and a schedule picker that could not
+                // hold the second would make somebody write something less
+                // true.
+                DictatableField(
+                    label = strings["meds.frequency"],
+                    value = draft.frequency,
+                    onValueChange = { draft = draft.copy(frequency = it) },
+                    hint = strings["meds.frequency.hint"],
+                    singleLine = false,
+                    fieldTestTag = AddMedTags.field("frequency"),
                 )
                 Spacer(Modifier.height(Space.l))
 

@@ -45,7 +45,7 @@ class HealthTrailDatabase private constructor(
          * 2, since 2026-08-04: the Today layout and the project shapes became
          * record, per `contract/DATA-CONTRACT.md` 8.7 and D110.
          */
-        const val SCHEMA_VERSION = 2
+        const val SCHEMA_VERSION = 3
 
         @Volatile
         private var instance: HealthTrailDatabase? = null

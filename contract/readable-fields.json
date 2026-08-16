@@ -1492,6 +1492,7 @@
       "subject_id",
       "name",
       "dose_text",
+      "frequency_text",
       "purpose_text",
       "prescriber_person_id",
       "started_edtf",
@@ -1530,6 +1531,9 @@
         "render": "value"
       },
       "dose_text": {
+        "render": "value"
+      },
+      "frequency_text": {
         "render": "value"
       },
       "purpose_text": {
