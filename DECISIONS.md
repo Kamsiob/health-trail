@@ -2990,6 +2990,30 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D173. One corner grammar, and the v4 baseline replaces the old spec
+
+**Date:** 2026-08-16. **The owner:** the top right of Today "should have an edit icon instead of the word arrange", there is "no light bulb tip button" for that page, and the standing rule: **"if there's anything on one page then the user should know where to find it on a different page."** Also: **"make sure you're not referencing the original design.md spec or outdated instructions."**
+
+**The v4 mockups are the design authority now, and `DESIGN.md` is not.** Several of its laws are the specific things rejected on the phone: the transparent hero, the wash-filled lead, the square tile. Where the two disagree the mockup wins and the section is marked superseded in writing rather than quietly ignored. This is the standing instruction, not a one-time correction: the baseline applies to every element, not to flagship screens.
+
+**The corner is one grammar everywhere.** Reading inward from the edge: the pencil furthest right, because it is reached for most and the corner is the easiest target on a phone; the lamp beside it. **Both slots are held open when a control is missing**, which is the part that was actually wrong: Today had lamp and pencil so the lamp sat one place in, More had a lamp alone so the lamp sat in the corner. Same control, two positions, found again on every screen. An invisible box is a cheap price for a corner that is learned once.
+
+**A mark rather than a verb.** "Arrange" named one screen's version of an action every screen has, so the corner had to be read before it could be used and said something different on the next page. A pencil is read once. The spoken label stays the screen's own, because the mark is general and what it edits is not: a reader hears "arrange the cards", not "edit".
+
+**Today had no lamp at all**, and its tip text had been written and translated into four languages with nothing on the screen to open it. That is the whole defect in one line.
+
+**The pencil moved out of the body on five screens.** Person, bill, document, medication and the emergency card each had a quiet button somewhere down the page, at a distance that depended on how much the entry happened to hold. The scaffold carries it now, so a detail screen built next week gets it without being told.
+
+**The tags travel with the control.** Two `testTag` calls in one modifier chain do not compose, the later one silently wins, so the tag is a parameter. Layering it on at the call site would have left the component's tag overriding all five and five instrumented tests looking for nodes that never appear, which is a green suite that has stopped checking the thing it names.
+
+**Type: Bold rather than ExtraBold, and less negative tracking.** The brief was "clean fonts that are easy to read with a little bit of Elegance but not something weird or something that is artsy". ExtraBold at display size closes the counters until the word becomes a shape; past about two and a half percent, negative tracking pulls letters into each other rather than pulling the line into one object. **The tab chip leaves the mono face** for the same reason: it was a third typeface on screens that already carry a display heading and body text. Mono keeps the figures that line up in a column, which is what it is for.
+
+**Two defects the phone found that no test did.** The readable export printed "Frequency text", a raw column name, in the middle of an Arabic archive: the catalogs had the right word four ways, but the test vector freezes its own label map and the new column was never added to it, so the archive fell back to a humanized column name. That is the database talking to a person. And More listed "Who this is about" twice, two rows with identical text and different destinations, from the people work landing beside the existing subject row.
+
+**`tools/seed.sh` could not finish a restore, and that quietly poisoned the night.** The review screen grew a file summary, two options with three lines of explanation each, and a warning paragraph, which push the confirm button past the bottom of the viewport; a tap at a position that is not on screen does nothing and reports nothing. Every run ended with an empty notebook, and every screenshot taken afterward was of an app with no data in it, which is how three screens were assessed tonight while showing their empty states. **The app was checked by hand before the script was blamed**: scrolled, tapped, "Restored." The lesson is the one this file keeps relearning, that a tool which cannot tell a loaded notebook from an empty one makes every later observation a lie.
+
+---
+
 ### D172. The approved mockup was the baseline, and it was not being read
 
 **Date:** 2026-08-16. **The owner, after the D170 build:** it "still looks really ugly", the fonts "don't mix well together", "it's overly colorful, looks like a rainbow", it lacks "Elegance and polish and simplicity and minimalism" without "going dead", and "we've gone backwards". Then the sentence that mattered: **"I don't want it to look completely sterile either. I don't know why you're guessing you made the mock-ups before that I approved as the baseline."**
