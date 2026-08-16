@@ -12,9 +12,11 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 - **735 instrumented tests green**, 218 unit, 29 repo checks, lint. 2026-08-16.
 - Tree clean, all on `origin/main`. CI green at tip: `gh run list --branch main --limit 3`.
-- **Do not build an APK or AAB.** Owner holds delivery until he approves the design. Phase two polish comes after the overhaul and he wants to see it first.
-- **The v4 overhaul is the work.** `docs/V4.md` is the plan and has authority over `DESIGN.md`. Progress is a command: `python3 tools/checks/check_v4.py`. 41 of 55 components converted.
-- Phone at baseline, stays plugged in: font scale 1.0, animator 1.0, no reader, night mode auto. Holds the current build and the month6 fixture.
+- **Do not build a release APK or AAB.** Owner holds delivery until he approves the design. The debug install is the rule 21 loop and is not what he is holding.
+- **The v4 overhaul is the work.** `docs/V4.md` is the plan and has authority over `DESIGN.md`. Progress is a command: `python3 tools/checks/check_v4.py`.
+- **`check_v4.py` reports zero: 55 of 55 components, 85 of 85 screens.** It covers screens as well as components since 2026-08-16; it read only the 55 component files before that, which is 40 percent of the surface.
+- **Conformance being zero is not the overhaul being done.** It measures four tells. The layers it cannot see are hierarchy, rule 11 states and motion, and those are the work now. Section 3.
+- Phone at baseline, stays plugged in: font scale 1.0, animator 1.0, no reader, **night mode `no`** (this file said auto and the device says no). Holds the current build and the month6 fixture.
 
 ## 2. Reading ladder
 
@@ -37,7 +39,20 @@ Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` >
 
 ## 3. The work
 
-**#384, v4 phase one: the fourteen remaining components.** `docs/V4.md` is the plan. The list is a command: `python3 tools/checks/check_v4.py`.
+**#384 is done and closed. The work is layer 3 onward in `docs/V4.md` section 4.**
+
+**What the mockup comparison found, and it is the method that matters.** Install, seed, capture, open the approved mockup beside it. Three defects on the notebook alone that no check could see: the app's own eyebrow was set in the same style as the row subtitles under it, its heading sat equidistant between its own group and the one above, and the table of contents had no way into search while Today, Today's field and More all did. **The eyebrow one had a KDoc describing uppercasing that the code never did.**
+
+**Open against the mockups, not started:**
+
+- **The two square cards on Today** carry an eyebrow at the top and a number at the bottom with a hand's width of white between. `TodayCard` sets `SpaceBetween` deliberately so a row of squares lines its answers along one baseline. It reads as empty rather than as calm, and the fix is the card's height, not its arrangement.
+- **The chart card** is a line with a dot at every reading. The mockup draws one smooth line, a gradient under it and a single end dot.
+- **The hero on Today** is a sentence on a slate block. The mockup carries a chip, a display title, a subtitle and an inset white action row inside the same block.
+- **`TodayCard`'s eyebrow is sentence case and the mockup's is tracked caps**, and **this is an owner question rather than a defect.** D171 tried uppercase there and rejected it as louder than the answer beneath it, on a card the size of a stamp. Half of that reasoning was about mono being a third typeface, which D176 removed. The mockup's uppercase eyebrow is on a full width chart card, not a stamp. **Do not flip it without asking**, rule 23.
+
+**#381 is eleven forms, not seven.** `SetupScreen` and `MeasurementScreen` are the only two using `FieldGroup`. The medication form is converted as the worked example: `Aside` for the lead, `ToggleRow` for the card question.
+
+**The medication mockup's frequency chips are not built and need the owner.** Five chips plus "Say it another way" is roughly 24 catalog strings across four languages, including Arabic and Chinese phrasing next to medical words. Rule 24 forbids shipping English only.
 
 **Component before screen.** A component fixed once is fixed on every screen that uses it. Screen by screen is what produced an overhaul three components deep out of fifty five while it was being called finished; the owner caught it on the care team folds.
 
