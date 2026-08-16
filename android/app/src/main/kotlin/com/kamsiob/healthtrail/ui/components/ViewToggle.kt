@@ -10,7 +10,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -90,7 +89,12 @@ fun ViewToggle(
                     .selectable(
                         selected = isSelected,
                         interactionSource = interaction,
-                        indication = ripple(),
+                        // No ripple. D175: the app answers a touch by
+                        // springing and by shifting the surface, and this
+                        // segment was the last place a spreading circle
+                        // appeared. The selected surface already says which
+                        // one is chosen, so the press only has to be felt.
+                        indication = null,
                         role = Role.Tab,
                         onClick = { onSelect(option.key) },
                     )

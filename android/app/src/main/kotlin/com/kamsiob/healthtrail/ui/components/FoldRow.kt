@@ -1,6 +1,8 @@
 package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -114,14 +115,30 @@ fun FoldRowText(
         label = "fold",
     )
 
+    // **It presses like everything else now.** D175. This row answered a touch
+    // with a Material ripple while every other surface in the app answers by
+    // springing under the finger, which is exactly the mix of old and new the
+    // owner spotted: "just look at the accordions on the care team page, that's
+    // copy and paste from the old design." One interaction grammar, per rule 16.
+    val press by animateFloatAsState(
+        targetValue = if (interaction.collectIsPressedAsState().value) {
+            LocalMotion.current.pressScale
+        } else {
+            1f
+        },
+        animationSpec = LocalMotion.current.springy(),
+        label = "foldPress",
+    )
+
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .graphicsLayer { scaleX = press; scaleY = press }
             .clip(FoldShape)
             .background(surface)
             .clickable(
                 interactionSource = interaction,
-                indication = ripple(),
+                indication = null,
                 onClick = onToggle,
             )
             // The row is 46dp visually and the touch target is 48dp, per
@@ -155,10 +172,16 @@ fun FoldRowText(
             horizontalArrangement = Arrangement.spacedBy(Space.s),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+        // **A fold is a way in, so it is written like one.** D175. The label
+        // sat at the small size in the secondary ink, which is the treatment
+        // this app gives captions: on the care team screen the three folds are
+        // the only route to everyone not pinned at the top, and they read as
+        // footnotes under the real content. Body weight in the primary ink,
+        // like every other row that goes somewhere.
         Text(
             text = label,
-            style = type.bodyS,
-            color = colors.ink2,
+            style = type.bodyM,
+            color = colors.ink,
             modifier = Modifier.weight(1f, fill = false),
         )
 
@@ -172,7 +195,10 @@ fun FoldRowText(
                     .background(if (expanded) colors.foldSurface else colors.card)
                     .padding(horizontal = Space.s, vertical = 2.dp),
             ) {
-                Text(text = count, style = type.mono, color = colors.ink2)
+                // The body face, not mono. A count beside a label is a word
+                // in a sentence rather than a figure in a column, and mono
+                // here was the third typeface on the screen.
+                Text(text = count, style = type.bodyS, color = colors.ink2)
             }
         }
 
@@ -207,15 +233,28 @@ fun QuietAction(
     val colors = HealthTrail.colors
     val interaction = remember { MutableInteractionSource() }
     val surface by pressedSurface(interaction, Color.Transparent)
+    val actionPress by animateFloatAsState(
+        targetValue = if (interaction.collectIsPressedAsState().value) {
+            LocalMotion.current.pressScale
+        } else {
+            1f
+        },
+        animationSpec = LocalMotion.current.springy(),
+        label = "quietActionPress",
+    )
 
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .graphicsLayer { scaleX = actionPress; scaleY = actionPress }
             .clip(FoldShape)
             .background(surface)
             .clickable(
                 interactionSource = interaction,
-                indication = ripple(),
+                // The last ripple in the app. D175, and the same reason as the
+                // fold above: one interaction grammar, and this app's is a
+                // spring rather than a spreading circle.
+                indication = null,
                 onClick = onClick,
             )
             .defaultMinSize(minHeight = Space.touchTarget)
@@ -235,4 +274,11 @@ fun QuietAction(
  * Softer than a card, because a fold is a row rather than a surface that holds
  * things. The grid draws it at 14dp against the card's 17dp.
  */
-private val FoldShape = Radius.fold
+/**
+ * The fold's corners, which are the app's container corners. D175.
+ *
+ * It had its own eighteen against the twenty six every card and group uses, so
+ * a fold sitting directly under a card was visibly a different kind of object
+ * drawn by a different hand. There is one container shape.
+ */
+private val FoldShape = Radius.cardLarge

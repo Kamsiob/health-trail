@@ -261,7 +261,7 @@ fun DenseRow(
                 // row.
                 Text(
                     text = trailing,
-                    style = type.mono,
+                    style = type.bodyS,
                     color = colors.ink2,
                     modifier = Modifier.weight(1f, fill = false),
                 )

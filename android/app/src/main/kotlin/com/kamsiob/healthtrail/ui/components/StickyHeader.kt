@@ -135,7 +135,7 @@ fun StickySectionHeader(
         )
         Row(verticalAlignment = Alignment.Bottom) {
             if (count != null) {
-                Text(text = count, style = type.mono, color = colors.ink2)
+                Text(text = count, style = type.bodyS, color = colors.ink2)
             }
             if (onOpen != null) {
                 Spacer(Modifier.width(Space.xs))

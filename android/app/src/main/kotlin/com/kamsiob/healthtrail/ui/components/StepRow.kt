@@ -150,7 +150,7 @@ fun StepRow(
             Text(
                 // Isolated, because a name is text the person typed.
                 text = Bidi.isolate(handler),
-                style = type.mono,
+                style = type.bodyS,
                 color = colors.ink2,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

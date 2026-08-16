@@ -83,7 +83,7 @@ fun LatestWordCard(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = eyebrow,
-                style = type.mono,
+                style = type.bodyS,
                 color = colors.goldInk,
             )
             Text(

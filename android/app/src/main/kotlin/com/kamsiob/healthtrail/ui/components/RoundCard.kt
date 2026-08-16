@@ -73,7 +73,7 @@ fun RoundCard(
             ),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            Text(text = eyebrow, style = type.mono, color = hue.ink)
+            Text(text = eyebrow, style = type.bodyS, color = hue.ink)
             Text(
                 text = reason,
                 style = type.displayS,

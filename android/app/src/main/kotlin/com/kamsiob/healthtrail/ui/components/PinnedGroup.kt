@@ -79,7 +79,7 @@ fun PinnedGroupText(
             PinMark(tint = colors.goldInk)
             Text(
                 text = label,
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.goldInk,
             )
         }

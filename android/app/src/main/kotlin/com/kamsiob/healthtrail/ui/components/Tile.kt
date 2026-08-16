@@ -123,7 +123,7 @@ fun Tile(
             Spacer(Modifier.height(Space.xs))
             Text(
                 text = count,
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
                 modifier = if (countTestTag == null) {
                     Modifier

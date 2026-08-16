@@ -83,7 +83,7 @@ fun StandingCard(
     ) {
         Text(
             text = eyebrow,
-            style = type.mono,
+            style = type.bodyS,
             color = colors.goldInk,
         )
         Text(
