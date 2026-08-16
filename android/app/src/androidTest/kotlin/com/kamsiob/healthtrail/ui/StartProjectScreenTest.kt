@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -168,6 +169,11 @@ class StartProjectScreenTest {
     fun theBlankProjectOffersNoActionUntilItHasAName() {
         show()
         compose.onNodeWithTag(StartProjectTags.OWN_START).assertDoesNotExist()
+        // **The block opens before it can be typed into**, since #379 made it
+        // a compact row at the top of the picker rather than a form standing
+        // open above the sixteen templates. The rule under test is unchanged:
+        // naming it is what makes the action appear.
+        compose.onNodeWithTag(StartProjectTags.OWN).performScrollTo().performClick()
         compose.onNodeWithTag(StartProjectTags.OWN_NAME).performTextInput("Sort out the wheelchair")
         // **Exists rather than displayed**, because the block sits at the foot
         // of a scrolling list and whether it is on screen depends on the
