@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -112,18 +113,27 @@ fun TodayLead(
     val colors = HealthTrail.colors
     val strings = LocalStrings.current
 
+    // **The lead is a block of color with a shape of its own.** D170, and this
+    // is the structural half of the redesign: it was transparent, so the one
+    // thing the screen leads with looked like a paragraph that happened to be
+    // first. It is the section's own wash now, at the hero shape, which is the
+    // only place in the app that corner treatment appears. Nothing else on
+    // Today can be mistaken for it.
+    //
+    // **The wash rather than the base**, because the answer inside it is the
+    // person's own words and has to stay black on light. A saturated fill
+    // would make every lead a white-on-color plaque and cost the readability
+    // this app is built around.
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(Radius.card)
-            // **Transparent at rest**, so the press is a tint rather than a
-            // surface appearing where there was none. Section 5.14 still
-            // reaches it: rule 16 wants everything the person touches to
-            // respond, and the lead is the largest tap target on the screen.
+            .clip(Radius.hero)
+            .background(hue.wash)
             .openableByTap(
                 label = openLabel,
                 onTap = onOpen,
-                resting = Color.Transparent,
+                resting = hue.wash,
+                shape = Radius.hero,
                 // long-press-twin: Today's Arrange action, per the parameter above.
                 onLongPress = onLongPress,
                 longPressLabel = longPressLabel,
@@ -131,7 +141,7 @@ fun TodayLead(
             // The lead's sentence sits on the lead's own node, beside its tap
             // action, so one stop says both.
             .semantics { contentDescription = description }
-            .padding(vertical = Space.s),
+            .padding(horizontal = Space.cardPadding, vertical = Space.m),
     ) {
         Column(
             // Silenced rather than cleared away, exactly as `TodayCard` does

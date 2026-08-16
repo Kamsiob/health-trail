@@ -273,4 +273,23 @@ object EventDateText {
      */
     private fun pattern(strings: Strings, key: String): DateTimeFormatter =
         DateTimeFormatter.ofPattern(strings[key], strings.locale)
+
+    /**
+     * The date as a masthead overline: "SUNDAY, 16 AUGUST". D170.
+     *
+     * **Localized through the platform rather than assembled here**, so the
+     * order of weekday, day and month is whatever the reader's locale puts
+     * them in, and Arabic gets Arabic numerals and month names for free. The
+     * uppercase is the style's, applied by the caller's own type token rather
+     * than baked into the string, because several scripts have no case at all
+     * and forcing it there produces nothing.
+     */
+    fun masthead(strings: Strings, day: LocalDate): String {
+        val locale = strings.locale
+        val pattern = DateTimeFormatter.ofPattern(
+            android.text.format.DateFormat.getBestDateTimePattern(locale, "EEEEdMMMM"),
+            locale,
+        )
+        return day.format(pattern)
+    }
 }

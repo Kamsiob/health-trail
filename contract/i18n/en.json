@@ -1591,5 +1591,7 @@
   "project.papers.fill.none": "No papers kept yet. Photograph one and it lands here.",
   "trail.since.title": "Since you were last here",
   "trail.since.none": "Nothing new since you were last here.",
-  "trail.since.all": "See the whole trail"
+  "trail.since.all": "See the whole trail",
+  "today.masthead": "{name}'s day",
+  "today.masthead.noname": "Today"
 }

@@ -220,6 +220,16 @@ fun TodayFieldScreen(
      */
     today: LocalDate = LocalDate.now(),
     /**
+     * Whose day this is, for the masthead. Null before setup names anybody.
+     *
+     * **The screen says the person's name, D170.** Today opened with the word
+     * "Today" in a chip, which is the one word already printed on the active
+     * navigation tab an inch below it. A masthead that says whose day it is
+     * puts the person at the top of the app that exists for them, and it is
+     * what the round four mockups led with.
+     */
+    subjectName: String? = null,
+    /**
      * Whether anything has ever been written down.
      *
      * **Only the digest asks**, and only to avoid telling somebody on their
@@ -452,8 +462,28 @@ fun TodayFieldScreen(
                         // weight two lines above it would give the screen two
                         // first things. The word is already on the active
                         // navigation tab besides.
-                        TabChip(hue = wholeAppHue(), labelKey = "today.tab")
-                        Spacer(Modifier.weight(1f))
+                        // **The masthead, D170.** A gold overline carrying the
+                        // date, and whose day it is at display weight under
+                        // it. This is the structural half of the redesign that
+                        // tokens could not deliver: new color and new type on
+                        // an old arrangement is still the old screen.
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = EventDateText.masthead(strings, today),
+                                style = HealthTrail.type.mono,
+                                color = HealthTrail.colors.goldInk,
+                            )
+                            Spacer(Modifier.height(Space.xs))
+                            Text(
+                                text = subjectName
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?.let { strings("today.masthead", "name" to Bidi.isolate(it)) }
+                                    ?: strings["today.masthead.noname"],
+                                style = HealthTrail.type.displayL,
+                                color = HealthTrail.colors.ink,
+                            )
+                        }
+                        Spacer(Modifier.width(Space.s))
                         if (editing) {
                             // **A flow row, because three pills do not fit.**
                             // They were unweighted children of a fixed row, so
@@ -809,7 +839,10 @@ private fun LeadSlot(
     // other card the eyebrow is the tab itself and the reader's sentence is
     // built from that tab's own raw parts below. Carrying the joined eyebrow
     // into those parts would say the card's name twice and nest its isolates.
-    val day = if (card.type == "digest") EventDateText.dayHeading(strings, today) else null
+    // **The masthead already says the date**, D170, so the digest repeating it
+    // as its own eyebrow printed the day twice within an inch. The digest's
+    // eyebrow is its own name now, like every other card's.
+    val day = null
     val eyebrow = day ?: tab
 
     val shown = worded(card.type, answer, today)

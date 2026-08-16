@@ -1591,5 +1591,7 @@
   "project.papers.fill.none": "لا أوراق محفوظة بعد. صوّر واحدة وستظهر هنا.",
   "trail.since.title": "منذ آخر زيارة لك",
   "trail.since.none": "لا جديد منذ آخر زيارة لك.",
-  "trail.since.all": "عرض المسار كاملًا"
+  "trail.since.all": "عرض المسار كاملًا",
+  "today.masthead": "يوم {name}",
+  "today.masthead.noname": "اليوم"
 }

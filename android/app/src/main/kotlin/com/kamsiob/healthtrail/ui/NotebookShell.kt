@@ -262,6 +262,7 @@ fun NotebookShell(
                 // the session that created it is not reachable, `DESIGN.md` 13.5.
                 unseenConflicts = repository.unseenConflicts()
                 val subject = repository.activeSubject()
+                activeSubjectName = subject?.displayName
                 situationId = subject?.situationTemplateId
                 val emphasis = emphasisFor(context, subject?.situationTemplateId)
                 // **The roles this situation actually has**, so adding a contact
@@ -620,6 +621,8 @@ fun NotebookShell(
                                 // is where the person would go to see the whole of
                                 // it. A project card opens the project itself.
                                 digest = digest,
+                                // Whose day it is, for the masthead. D170.
+                                subjectName = activeSubjectName,
                                 // **The same signal the previous Today used**, so
                                 // the digest does not tell somebody on their first
                                 // morning what has changed since a visit they never

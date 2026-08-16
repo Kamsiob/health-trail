@@ -231,6 +231,9 @@ internal class ShellState {
 
     /** Which of them is showing, so the list can mark it. */
     var activeSubjectId by mutableStateOf<String?>(null)
+
+    /** Whose day Today's masthead names. D170. */
+    var activeSubjectName by mutableStateOf<String?>(null)
     /** The subject row, read when the correction opens rather than held all the time. */
     var subjectRow by mutableStateOf<Repository.Subject?>(null)
     var savingSubject by mutableStateOf<SubjectCorrection?>(null)

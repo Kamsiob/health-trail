@@ -2990,6 +2990,22 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D170. Today is rebuilt, because tokens cannot make a screen
+
+**Date:** 2026-08-16. **The owner, looking at the build:** "I'm not seeing the premium expressive material 3 design update. I hope you're not still working on the old design."
+
+**He was right and the correction is worth writing down.** D167 changed the canvas, the type ladder, the shape scale and the motion vocabulary, and then said seventy five screens would inherit the redesign. **A token layer cannot produce a masthead, a saturated hero, a gradient chart or a tinted grid.** Those are arrangements, and arrangements are per screen. What shipped was new paint on the old structure, and it read exactly like that.
+
+**Today now leads with whose day it is.** A gold overline carrying the date and the person's name at Display L. It opened with the word "Today" in a chip, which is the same word already printed on the active navigation tab an inch below: the screen's most valuable line spent restating the tab. The date is localized through the platform's best pattern for the locale rather than assembled here, so the order of weekday, day and month is whatever the reader's language puts them in.
+
+**The lead is a block of color at the hero shape.** It was transparent, so the one thing the screen leads with looked like a paragraph that happened to be first. The wash rather than the base, because the answer inside is the person's own words and has to stay dark on light; a saturated fill would make every lead a white-on-color plaque and cost the readability this app is built on.
+
+**Every card carries its section's color.** A grid of white boxes with colored stickers in the corner was the clearest symptom of paint-on-old-structure. The tint is on the surface now and the name is a label in the section's ink rather than a filled chip, so Today reads as a set of distinct places at a glance and the corner is left to the chevron.
+
+**The date printed twice**, once in the new masthead and once as the digest's own eyebrow, within an inch of each other. Seen on the phone in the first capture after the masthead landed.
+
+---
+
 ### D169. Arranging behaves like the phone, and the digest opens what it counted
 
 **Date:** 2026-08-16. **Three defects the owner found by using it**, all of them the kind only a hand finds.

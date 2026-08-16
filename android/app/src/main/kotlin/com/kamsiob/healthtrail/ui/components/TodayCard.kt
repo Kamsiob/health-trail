@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.TabHue
@@ -273,11 +274,20 @@ fun TodayCard(
             // 15dp while the token was 17 and both grids draw 18, so the most
             // looked at surface in the app was three off the drawing and
             // nothing pointed at it. D142.
-            .raisedCard(Radius.card)
-            .clip(Radius.card)
+            .raisedCard(Radius.cardLarge)
+            .clip(Radius.cardLarge)
+            // **The card carries its section's color.** A grid of white boxes
+            // with colored stickers was the old design wearing new paint;
+            // tinting the surface itself is what makes Today read as a set of
+            // distinct places at a glance. D170.
+            .background(hue.wash)
             .openableByTap(
                 label = openLabel,
                 onTap = onOpen,
+                // The card's own tint is what a press darkens, so it does not
+                // flash back to white under a finger. D170.
+                resting = hue.wash,
+                shape = Radius.cardLarge,
                 // long-press-twin: Today's Arrange action, per the parameter above.
                 onLongPress = onLongPress,
                 longPressLabel = longPressLabel,
@@ -321,8 +331,14 @@ fun TodayCard(
                 Arrangement.Top
             },
         ) {
+            // **The tab is a label, not a plaque.** D170: every card carried a
+            // filled chip in its corner, so a grid of four read as four
+            // stickers on four empty boxes, and the round four work put the
+            // section's color into the card's own surface instead. The name
+            // is set in the section's ink at label weight, which says the
+            // same thing and leaves the card to be a card.
             Text(
-                text = tab,
+                text = tab.uppercase(LocalStrings.current.locale),
                 style = type.mono,
                 color = hue.ink,
                 maxLines = 1,
@@ -335,10 +351,7 @@ fun TodayCard(
                     // words underneath the chevron and ellipsized behind it.
                     // Seen on the phone and invisible in the code, because
                     // nothing collides until the text is long enough.
-                    .padding(end = if (corner == null) CHEVRON_ROOM else CORNER_ROOM)
-                    .clip(Radius.sourceTab)
-                    .background(hue.wash)
-                    .padding(horizontal = Space.s, vertical = 2.dp),
+                    .padding(end = if (corner == null) CHEVRON_ROOM else CORNER_ROOM),
             )
             Column(
                 modifier = silence
