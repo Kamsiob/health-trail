@@ -296,7 +296,7 @@ private fun ProjectRow(
     ) {
         Text(
             text = strings["projects.status.${project.status}"],
-            style = HealthTrail.type.mono,
+            style = HealthTrail.type.eyebrow,
             // Waiting and stalled are stated, never colored as a problem. The
             // app does not have a view about how a bureaucracy is going.
             color = colors.ink2,

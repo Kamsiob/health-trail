@@ -127,7 +127,7 @@ fun MedicationScreen(
             )
             facts.forEach {
                 // bidi-ok: a catalog label, in the app's own words rather than the person's.
-                Text(text = it, style = HealthTrail.type.mono, color = colors.ink2)
+                Text(text = it, style = HealthTrail.type.bodyS, color = colors.ink2)
                 Spacer(Modifier.height(Space.xs))
             }
 
@@ -187,7 +187,7 @@ fun MedicationScreen(
                                 question.roleLabel?.takeIf { it.isNotBlank() }?.let {
                                     Text(
                                         text = Bidi.isolate(it),
-                                        style = HealthTrail.type.mono,
+                                        style = HealthTrail.type.eyebrow,
                                         color = colors.ink2,
                                     )
                                     Spacer(Modifier.height(Space.xs))

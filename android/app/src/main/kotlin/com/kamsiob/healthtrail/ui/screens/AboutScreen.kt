@@ -133,7 +133,7 @@ fun AboutScreen(
             Spacer(Modifier.height(Space.l))
             Text(
                 text = strings("about.version", "version" to BuildConfig.VERSION_NAME),
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
         }

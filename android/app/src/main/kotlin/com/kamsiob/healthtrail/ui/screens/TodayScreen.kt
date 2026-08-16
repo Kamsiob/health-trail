@@ -562,7 +562,7 @@ private fun Step(number: Int, text: String, onOpen: () -> Unit) {
         ) {
             Text(
                 text = number.toString(),
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
         }
@@ -633,7 +633,7 @@ private fun OpenRow(item: OpenItem) {
                 Spacer(Modifier.height(Space.xs))
                 Text(
                     text = Bidi.isolate(item.detail),
-                    style = HealthTrail.type.mono,
+                    style = HealthTrail.type.bodyS,
                     color = colors.ink2,
                 )
             }

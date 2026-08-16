@@ -182,7 +182,7 @@ fun StartProjectScreen(
                     // eyebrows arguing about which one says where you are.
                     Text(
                         text = strings["projects.start.stage"],
-                        style = HealthTrail.type.mono,
+                        style = HealthTrail.type.eyebrow,
                         color = colors.ink2,
                     )
                     Spacer(Modifier.height(Space.l))

@@ -59,6 +59,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
@@ -86,6 +87,7 @@ import com.kamsiob.healthtrail.ui.components.DistanceMarker
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.Plot
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.pressScale
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -2276,14 +2278,27 @@ private fun digestAnswer(
 @Composable
 private fun SizeChip(label: String, selected: Boolean, onClick: () -> Unit) {
     val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, if (selected) colors.ink else colors.sand)
+    val scale by pressScale(interaction)
     Text(
         text = label,
-        style = HealthTrail.type.mono,
+        style = HealthTrail.type.label,
         color = if (selected) colors.paper else colors.ink2,
         modifier = Modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(Radius.pill)
-            .background(if (selected) colors.ink else colors.sand)
-            .clickable(onClickLabel = label, role = Role.Button, onClick = onClick)
+            .background(surface)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                onClickLabel = label,
+                role = Role.Button,
+                onClick = onClick,
+            )
             .padding(horizontal = Space.s, vertical = Space.xs),
     )
 }
@@ -2476,15 +2491,31 @@ private fun EditAction(
     modifier: Modifier = Modifier,
 ) {
     val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, Color.Transparent)
+    val scale by pressScale(interaction)
     Text(
         text = label,
-        style = HealthTrail.type.mono,
+        style = HealthTrail.type.label,
         color = colors.blueDeep,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(Radius.pill)
-            .clickable(onClickLabel = spoken, role = Role.Button, onClick = onClick)
+            // Transparent at rest, so the press is the faint tint Press.kt
+            // gives a control with no container of its own.
+            .background(surface)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                onClickLabel = spoken,
+                role = Role.Button,
+                onClick = onClick,
+            )
             .semantics { contentDescription = spoken }
             .padding(horizontal = Space.s, vertical = Space.s),
     )

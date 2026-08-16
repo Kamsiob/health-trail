@@ -450,7 +450,7 @@ private fun LinkRow(
             Text(text = label, style = HealthTrail.type.displayS, color = colors.ink)
             Spacer(Modifier.height(Space.xs))
             // bidi-ok: every caller isolates before handing it here.
-            Text(text = note, style = HealthTrail.type.mono, color = colors.ink2)
+            Text(text = note, style = HealthTrail.type.bodyS, color = colors.ink2)
         }
     }
 }
@@ -486,9 +486,9 @@ private fun EditableRow(label: String, testTag: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // bidi-ok: every caller isolates before handing it here.
-        Text(text = label, style = HealthTrail.type.mono, color = colors.ink)
+        Text(text = label, style = HealthTrail.type.eyebrow, color = colors.ink)
         Spacer(Modifier.width(Space.s))
-        Text(text = strings["entry.date.change"], style = HealthTrail.type.mono, color = colors.blue)
+        Text(text = strings["entry.date.change"], style = HealthTrail.type.label, color = colors.blue)
     }
 }
 

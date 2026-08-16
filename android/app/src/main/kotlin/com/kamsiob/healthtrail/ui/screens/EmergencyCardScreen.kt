@@ -419,7 +419,7 @@ private fun CardField(entry: CardEntry, isLast: Boolean) {
         Text(
             // bidi-ok: a catalog label, in the app's own words rather than the person's.
             text = entry.label,
-            style = HealthTrail.type.mono,
+            style = HealthTrail.type.eyebrow,
             color = colors.alertInk,
         )
         Spacer(Modifier.height(Space.xs))

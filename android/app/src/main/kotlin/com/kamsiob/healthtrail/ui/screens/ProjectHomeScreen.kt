@@ -268,7 +268,7 @@ fun ProjectHomeScreen(
                 Column(modifier = Modifier.testTag(ProjectHomeTags.STANDING)) {
                     Text(
                         text = strings["project.where_it_stands"],
-                        style = type.mono,
+                        style = type.eyebrow,
                         color = colors.goldInk,
                     )
                     Spacer(Modifier.height(Space.xs))
@@ -483,7 +483,7 @@ fun ProjectHomeScreen(
                 ) {
                     Text(
                         text = strings["project.latest_word"],
-                        style = type.mono,
+                        style = type.eyebrow,
                         color = colors.goldInk,
                     )
                     Text(

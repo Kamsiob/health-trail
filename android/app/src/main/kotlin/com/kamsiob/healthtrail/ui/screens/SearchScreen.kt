@@ -230,7 +230,7 @@ fun SearchScreen(
                         strings["search.best"],
                         strings[sectionKey(best.section)],
                     ),
-                    style = HealthTrail.type.mono,
+                    style = HealthTrail.type.eyebrow,
                     color = colors.ink2,
                 )
                 Spacer(Modifier.height(Space.xs))

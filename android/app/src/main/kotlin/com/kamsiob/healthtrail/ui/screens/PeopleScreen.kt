@@ -152,7 +152,7 @@ private fun PersonRow(
                 ) {
                     Text(
                         text = strings["people.showing"],
-                        style = HealthTrail.type.mono,
+                        style = HealthTrail.type.eyebrow,
                         color = colors.leafInk,
                     )
                 }

@@ -405,7 +405,7 @@ fun TrailScreen(
                 ) {
                     Text(
                         text = strings("trail.filter.showing", "count" to hidden),
-                        style = HealthTrail.type.mono,
+                        style = HealthTrail.type.bodyS,
                         color = HealthTrail.colors.ink2,
                         modifier = Modifier.weight(1f).testTag(TrailTags.FILTER_STATE),
                     )
@@ -423,7 +423,7 @@ fun TrailScreen(
                     text = strings("trail.search.count", "count" to plan.rows.count {
                         it is TrailRowSpec.Entry
                     }),
-                    style = HealthTrail.type.mono,
+                    style = HealthTrail.type.bodyS,
                     color = HealthTrail.colors.ink2,
                     modifier = Modifier.padding(bottom = Space.s),
                 )
@@ -959,7 +959,7 @@ private fun TrailRow(
             Spacer(Modifier.height(Space.xs))
             Text(
                 text = strings["trail.unfiled"],
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.eyebrow,
                 color = colors.ink2,
             )
         }

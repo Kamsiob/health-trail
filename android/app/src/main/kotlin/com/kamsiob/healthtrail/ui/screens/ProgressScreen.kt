@@ -441,7 +441,7 @@ private fun ReadingRow(
             Spacer(Modifier.height(Space.s))
             Text(
                 text = strings["progress.by_clinician"],
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
         }

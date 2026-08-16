@@ -221,7 +221,7 @@ private fun IncidentSpineRow(
                     } else {
                         strings("incidents.settled.count", "count" to incident.entryCount)
                     },
-                    style = HealthTrail.type.mono,
+                    style = HealthTrail.type.bodyS,
                     color = colors.ink2,
                 )
             }

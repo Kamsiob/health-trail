@@ -60,6 +60,7 @@ ROLES = {
     "Body S": "bodyS",
     "Label": "label",
     "Nav label": "navLabel",
+    "Eyebrow": "eyebrow",
     "Mono": "mono",
     "Mono L": "monoL",
 }

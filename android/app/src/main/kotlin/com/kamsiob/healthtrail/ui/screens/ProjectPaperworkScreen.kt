@@ -313,7 +313,7 @@ private fun PaperTile(
         )
         Text(
             text = subtitleFor(card, compact = true),
-            style = type.mono,
+            style = type.bodyS,
             color = colors.ink2,
         )
     }

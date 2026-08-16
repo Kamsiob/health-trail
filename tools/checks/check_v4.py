@@ -55,6 +55,7 @@ ALLOWED = {
     "RoadStrip": {"mono"},        # stage names measured to one width, tabular
     "Spine": {"mono"},            # the step number on a sequence
     "DateRow": {"mono"},          # a date at prominence is a figure
+    "WashBand": {"mono"},         # monoL on the band's number, which is its job
 }
 
 # Still to convert. Each entry is a promise to somebody, not a permanent
@@ -64,10 +65,9 @@ REMAINING = {
     # that wrote their own gesture and did not answer it, and they now spring
     # through the shared pressScale in Press.kt. ChipPicker and Disclosure were
     # on this list and were never broken.
-    # old-shape is empty: the 22dp `card` token is deleted, so there is no
-    # longer a smaller corner to reach for. All 58 sites were card containers.
-    # mono on a word, which is the last tell standing.
-    "WashBand",
+    # Empty. no-press went with the shared spring in Press.kt, old-shape went
+    # with the 22dp token, and WashBand's mono turned out to be the big number
+    # the component exists to draw.
 }
 
 # Screens whose tell is correct, and why. Filled in as each mono site is judged:
@@ -78,24 +78,18 @@ SCREENS_ALLOWED = {
     # scaling a full-screen photograph under the finger that is trying to
     # magnify it would fight the gesture it is acknowledging.
     "PaperViewerScreen": {"no-press"},
+    # Two figures and no words: a count at display size in the big-number rung,
+    # and an amount of money in a list of amounts, which is the column mono
+    # exists to line up. Its two chips left the face, per D173.
+    "TodayFieldScreen": {"mono"},
 }
 
 # The screens still carrying the old design. Thirty-five of eighty-five, found
 # once the press tell stopped counting a passed-through onClick as silence.
-SCREENS_REMAINING = {
-    # mono, and every site is judged a word against a figure. The twelve
-    # screens that carried only the old shape are gone from this list: the
-    # 22dp token they clipped to no longer exists.
-    "AboutScreen", "AddInstructionScreen", "ChaptersScreen",
-    "EmergencyCardScreen", "EntryScreen", "IncidentScreen", "MedicationScreen",
-    "PeopleScreen", "ProgressScreen", "ProjectHomeScreen",
-    "ProjectPaperworkScreen", "ProjectsScreen", "SearchScreen",
-    "StandingInstructionsScreen", "StartProjectPreviewSheet",
-    "StartProjectScreen", "TemplateLibraryScreen", "ThreadScreen",
-    "TodayFieldScreen", "TodayScreen", "TrailScreen",
-    # the one genuinely silent surface in the app, and the one raw M3 card.
-    "CardOptionsSheet", "ChapterScreen",
-}
+# Empty, and it is meant to stay that way. Adding a name here is a promise to
+# somebody rather than an exemption; a tell that is correct goes in
+# SCREENS_ALLOWED with the reason it is correct.
+SCREENS_REMAINING = set()
 
 
 def tells(source: str) -> set:
@@ -117,7 +111,11 @@ def tells(source: str) -> set:
         found.add("mono")
     if re.search(r"Radius\.(card\b|fold\b|small\b)", source):
         found.add("old-shape")
-    if re.search(r"(?<!\w)(Elevated|Outlined)?Card\(", source):
+    # **The import, not the call.** Matching `Card(` named ChapterScreen, which
+    # declares a private composable of that name and imports nothing from
+    # Material but Text. The app has its own vocabulary and reaches for M3
+    # primitives almost nowhere, so the import is the honest signal.
+    if re.search(r"import androidx\.compose\.material3\.(Elevated|Outlined)?Card\b", source):
         found.add("m3-card")
     return found
 

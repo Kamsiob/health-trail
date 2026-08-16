@@ -376,7 +376,7 @@ private fun ChapterRow(
             // app's own words rather than anything the person typed.
             Text(
                 text = strings["chapters.holds"],
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))

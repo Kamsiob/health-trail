@@ -108,7 +108,7 @@ fun StartProjectPreviewSheet(
             Spacer(Modifier.height(Space.s))
             Text(
                 text = strings["project.preview.stage"],
-                style = type.mono,
+                style = type.eyebrow,
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))

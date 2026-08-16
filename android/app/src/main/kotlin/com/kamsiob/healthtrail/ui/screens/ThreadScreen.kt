@@ -133,7 +133,7 @@ fun ThreadScreen(
         item(key = "where") {
             Text(
                 text = strings["thread.where"],
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.eyebrow,
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))

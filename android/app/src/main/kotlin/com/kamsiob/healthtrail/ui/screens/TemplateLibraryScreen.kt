@@ -299,7 +299,7 @@ private fun TemplateCard(
         Column(modifier = Modifier.semantics(mergeDescendants = true) { }) {
             Text(
                 text = strings("projects.step_count", "count" to steps),
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))

@@ -299,17 +299,18 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 
 | Role | Face | Size / line | Weight | Use |
 |---|---|---|---|---|
-| Hero | Bricolage | **28sp** / 33 | 800, tracking -0.022em | The one thing, section 2 law 1 |
-| Display L | Bricolage | **34sp** / 39 | 800, -0.028em | The heading of a thing's own screen, above a section title |
-| Display M | Bricolage | **26sp** / 31 | 800, -0.022em | Screen titles, the current chapter, a round's reason |
-| Display S | Bricolage | **20sp** / 26 | 800 | A card's own title, and the title line of a row where a row title is too quiet |
-| Row title | Bricolage | **17sp** / 23 | 700, -0.01em | The title line of a group row |
+| Hero | Atkinson | **28sp** / 33 | 800, tracking -0.022em | The one thing, section 2 law 1 |
+| Display L | Atkinson | **34sp** / 39 | 800, -0.028em | The heading of a thing's own screen, above a section title |
+| Display M | Atkinson | **26sp** / 31 | 800, -0.022em | Screen titles, the current chapter, a round's reason |
+| Display S | Atkinson | **20sp** / 26 | 800 | A card's own title, and the title line of a row where a row title is too quiet |
+| Row title | Atkinson | **17sp** / 23 | 700, -0.01em | The title line of a group row |
 | Body L | Atkinson | **17sp** / 26 | 400 | The lead sentence under a screen title |
 | Body | Atkinson | **16sp** / 24 | 400 | Supporting content. **The floor** |
 | Body S | Atkinson | **14sp** / 21 | 400 | Folded rows on sand, row subtitles |
 | Label | Atkinson | **15sp** / 20 | 700 | Buttons and chips |
 | Nav label | Atkinson | **12sp** / 15 | 700 | Bottom navigation only. Exempt from the floor |
-| Mono | JetBrains Mono | **12sp** / 17 | 400, tracking 0.12em, uppercase | Eyebrows, counts, amounts. **Never a date**, see below. Exempt from the floor |
+| Eyebrow | Atkinson | **12sp** / 17 | 700, tracking 0.14em | The quiet line naming a group, rule 15. Exempt from the floor |
+| Mono | JetBrains Mono | **12sp** / 17 | 400, tracking 0.12em, uppercase | Figures that line up in a column only, D173. **Never a date**, see below. Exempt from the floor |
 | Mono L | JetBrains Mono | **24sp** / 28 | 700, tracking 0, tabular | A number at display size, in the big-number component and nowhere else |
 
 **This ladder was lifted on 2026-08-13, at the owner's instruction, and it is D142's recorded accessibility exception rather than drift.** The owner used the build and said the text is hard to read. It was: body sat at 14sp and the row under it at 13, against a platform whose own body text is 14 to 16, in an app whose reader is exhausted, often not young, and often reading in a corridor in bad light. Every role moved up one to three points and every line height moved with it. **The jumps between roles were preserved rather than flattened**, because the hierarchy is what law 1 is made of and closing it to make a screen look balanced is the most common way to lose it.

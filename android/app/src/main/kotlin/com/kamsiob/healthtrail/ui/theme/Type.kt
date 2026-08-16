@@ -71,7 +71,30 @@ data class HealthTrailTypography(
     val label: TextStyle,
     /** Bottom navigation only. Exempt from the 13sp floor. */
     val navLabel: TextStyle,
-    /** Eyebrow labels, timestamps, counts, metadata. Exempt from the 13sp floor. */
+    /**
+     * The quiet line that names a group. Rule 15. Exempt from the 13sp floor.
+     *
+     * **This is [mono]'s metrics in the reading face, and that is the whole
+     * point of it.** The eyebrow was set in JetBrains Mono, which put a
+     * typewriter line directly above a display heading and body text on most
+     * screens in the app. D172 is the owner saying the fonts do not mix, and
+     * D173 settles where the boundary is: mono keeps the figures that line up
+     * in a column, and everything a person reads as words leaves it.
+     *
+     * **The role survives the face change.** Rule 15 asks for a quiet eyebrow
+     * to group what belongs together, and small size, weight and wide tracking
+     * are what make a short line read as deliberate rather than as leftover.
+     * None of that needed a second typeface to do.
+     */
+    val eyebrow: TextStyle,
+    /**
+     * Figures that line up in a column, and nothing else. Exempt from the floor.
+     *
+     * Chart axes, day grids, reference values, the date picker, the scrubber, a
+     * step number, an amount of money in a list of amounts. **A count, a label,
+     * an eyebrow and a person's name are words**, and they take [eyebrow] or
+     * [bodyS]. V4.md section 3, D173.
+     */
     val mono: TextStyle,
     /**
      * A number at display size, in the big-number component and nowhere else.
@@ -251,15 +274,27 @@ val HealthTrailType = HealthTrailTypography(
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center,
     ),
+    eyebrow = TextStyle(
+        fontFamily = BodyFamily,
+        fontSize = 12.sp,
+        lineHeight = 17.sp,
+        // **Weight and wider tracking are what make a small line read as
+        // deliberate rather than as leftover.** D167 wrote that about the mono
+        // eyebrow and it was never about the face. Bold rather than Medium,
+        // because Atkinson at 12sp is a quieter letter than JetBrains Mono at
+        // 12sp and the line has to hold its own under a display heading.
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 0.14.em,
+    ),
     mono = TextStyle(
         fontFamily = MonoFamily,
         fontSize = 12.sp,
         lineHeight = 17.sp,
-        // **The eyebrow is a label, so it carries weight and wider tracking**,
-        // which is what makes a small line read as deliberate rather than as
-        // leftover. D167.
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.16.em,
+        // **The reason mono exists.** Every digit on one width, so a column of
+        // figures lines up and a changing number does not shift the ones
+        // beside it.
         fontFeatureSettings = TABULAR_FIGURES,
     ),
     monoL = TextStyle(
@@ -330,6 +365,13 @@ fun healthTrailTypeFor(locale: java.util.Locale): HealthTrailTypography =
             hero = HealthTrailType.hero.copy(letterSpacing = TextUnit.Unspecified),
             displayL = HealthTrailType.displayL.copy(letterSpacing = TextUnit.Unspecified),
             displayM = HealthTrailType.displayM.copy(letterSpacing = TextUnit.Unspecified),
+            // **The eyebrow carries positive tracking, and that is worse on a
+            // connected script than negative tracking is.** Letting the joins
+            // out is what the script uses to say two letters are one word.
+            // It is here from the day the token exists rather than after
+            // somebody finds a broken group label in Arabic, which is how the
+            // three above it were found.
+            eyebrow = HealthTrailType.eyebrow.copy(letterSpacing = TextUnit.Unspecified),
         )
     } else {
         HealthTrailType

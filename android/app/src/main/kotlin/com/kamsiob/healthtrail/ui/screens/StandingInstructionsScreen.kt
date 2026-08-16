@@ -413,7 +413,7 @@ private fun InstructionRow(
                 Text(
                     // bidi-ok: a catalog label, in the app's own words rather than the person's.
                     text = tag.label,
-                    style = HealthTrail.type.mono,
+                    style = HealthTrail.type.eyebrow,
                     color = if (instruction.tag == "federal") {
                         colors.leafInk
                     } else {

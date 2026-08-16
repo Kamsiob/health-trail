@@ -169,7 +169,7 @@ private fun StarterCard(
         Spacer(Modifier.height(Space.sm))
         Text(
             text = strings["instructions.what_to_say"],
-            style = HealthTrail.type.mono,
+            style = HealthTrail.type.eyebrow,
             color = colors.ink2,
         )
         Spacer(Modifier.height(Space.xs))
@@ -186,7 +186,7 @@ private fun StarterCard(
             Spacer(Modifier.height(Space.sm))
             Text(
                 text = strings["instructions.how_to_ask"],
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.eyebrow,
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))

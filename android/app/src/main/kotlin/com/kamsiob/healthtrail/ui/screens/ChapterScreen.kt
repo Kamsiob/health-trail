@@ -374,7 +374,7 @@ private fun Card(
     ) {
         eyebrow?.let {
             // bidi-ok: every caller isolates before handing it here.
-            Text(text = it, style = HealthTrail.type.mono, color = colors.ink2)
+            Text(text = it, style = HealthTrail.type.eyebrow, color = colors.ink2)
             Spacer(Modifier.height(Space.xs))
         }
         // bidi-ok: every caller isolates before handing it here.

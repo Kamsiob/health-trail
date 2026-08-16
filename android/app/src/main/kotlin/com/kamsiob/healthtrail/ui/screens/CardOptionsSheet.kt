@@ -17,17 +17,23 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.GroupHeader
+import com.kamsiob.healthtrail.ui.components.pressScale
+import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -126,7 +132,7 @@ fun CardOptionsSheet(
             // which card, which is the shape every sheet in this app uses.
             Text(
                 text = strings["today.options.eyebrow"].uppercase(strings.locale),
-                style = type.mono,
+                style = type.eyebrow,
                 // **`ink2`, because this is text.** 4.1 and D92: the app has two
                 // text levels and `ink3` is non-text only, at 2.37 to 1 on
                 // paper. A check catches this and caught it here.
@@ -262,15 +268,28 @@ private fun SizeChip(
     modifier: Modifier = Modifier,
 ) {
     val colors = HealthTrail.colors
+    val interaction = remember { MutableInteractionSource() }
+    val surface by pressedSurface(interaction, if (selected) colors.ink else colors.sand)
+    val scale by pressScale(interaction)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = label,
             style = HealthTrail.type.label,
             color = if (selected) colors.paper else colors.ink,
             modifier = modifier
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
                 .clip(Radius.pill)
-                .background(if (selected) colors.ink else colors.sand)
-                .clickable(onClickLabel = label, role = Role.Button, onClick = onClick)
+                .background(surface)
+                .clickable(
+                    interactionSource = interaction,
+                    indication = null,
+                    onClickLabel = label,
+                    role = Role.Button,
+                    onClick = onClick,
+                )
                 .padding(horizontal = Space.m, vertical = Space.s),
         )
     }
