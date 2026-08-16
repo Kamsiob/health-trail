@@ -2990,6 +2990,24 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D164. The project home is one fixed order and a vertical road
+
+**Date:** 2026-08-16. **The owner's order, given twice in one night**: first "the entire project's thing needs to be completely overhauled", then, on being told the redesign would wait for a proper pass, "you're a computer. do the entire thing everything." So it was done in the same night, and this entry records what and why.
+
+**The root defect was the reordering.** DESIGN.md 20.3's "one grammar, three arrangements" put the same blocks in a lead-dependent order, which meant the screen itself moved between projects. A person who learned the long road was lost on the closing window. Everything else he named, "menus and sub menus and tabs and accordions", sat on top of that: folds that sometimes opened in place and sometimes navigated, steps two doors deep behind Setup, a road lying on its side with its control floating beside it.
+
+**The new contract: answer, verbs, road, word, file. Always.** Supersedes 20.3's arrangements. The three verbs, log a call, write down a date, update where it stands, are tiles in one row that never moves, because everything a bureaucracy does to a family lands in one of those three.
+
+**The road is vertical because the app already speaks vertical.** The trail, the chapters, the milestone arc all run on one spine; the horizontal strip was the only road in the app lying on its side. Passed stages solid, the current stage ringed as a milestone with "Move it along" hanging on it (rule 18), the stages ahead hollow. **A fresh file stands at its first stretch**: nothing reached drew a road with no ring and no control, seen on the phone.
+
+**The file is five doors that look like doors.** Steps, trail, papers, people, setup: every row navigates, none unfolds. The steps overlay no longer requires Setup open underneath, which was the literal "sub menus".
+
+**Two defects only the phone found**, third and fourth of the night: SpineRow draws no node unless handed a color, so the road rendered as a bare line; and a stage row asserting its name failed until the test matched the bidi-isolated string, which is the exact trap TRAPS already records.
+
+**Not touched tonight**: ProjectSetupScreen, ProjectTrailScreen, ProjectPapersScreen, ProjectPeopleScreen, the sheets. They are one door deep from a stable home now; if they still read as a mess in use, each is its own pass on #369.
+
+---
+
 ### D163. The tab is Projects again, and the Notebook's categories are finally drawn
 
 **Date:** 2026-08-16. **Made with the owner live**, which is rarer and better than rule 10: he watched the Paperwork build and said the word is wrong, projects was closer, and the Notebook is "a gigantic wall of options. there's no categories. nothing makes sense."
