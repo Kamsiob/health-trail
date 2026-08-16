@@ -385,7 +385,9 @@ fun SectionEmpty(
         verticalArrangement = Arrangement.Center,
     ) {
         EmptyDrawing(section = section)
-        Spacer(Modifier.height(Space.l))
+        // The drawing draws nothing for a null section since 2026-08-16, so
+        // its gap goes with it rather than floating above the lead.
+        if (section != null) Spacer(Modifier.height(Space.l))
         if (lead != null) {
             Text(
                 text = lead,

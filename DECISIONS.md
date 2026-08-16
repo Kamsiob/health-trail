@@ -2990,6 +2990,20 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D166. What 1.0 means, and the two judgment calls that closed it
+
+**Date:** 2026-08-16. **The owner: "the 1.0 it's supposed to mean something. finish the entire app... the acceptance criteria here is that it is a complete shippable app."**
+
+**What 1.0 means, verified rather than asserted:** the export, wipe, restore round trip proven on the signed minified build in both directions (D165); the stranger-test failures closed (D162 through D164: the Notebook categorized and teaching, the project home one fixed order, the paper viewer); every `needs-design-review` issue reviewed on the device and closed; the entry form family walked with saves proven, the unknown date first class, context carried between screens; 728 instrumented tests, 218 unit tests, 28 repo checks, lint, CI green; versionCode 2, versionName 1.0.0; the AAB built with the release key and placed in the project folder.
+
+**"+ Start" stays below the list, and the grid departure is recorded.** Grid screen 02 draws it at the top. Below the list is where the empty state's action, D137's bar, and the FAB clearance all already are, and a person with two projects sees it without scrolling; a person with ten is scrolling anyway. Rule 23 and no new header furniture. D142 satisfied by this paragraph.
+
+**The five deep project screens ship as they are, and that is a verdict, not an omission.** All five stand on SectionScaffold with the shared grammar, all are suite covered and reader walked, and the one structural failure among them, the steps buried behind Setup, was fixed in D164. What remains on #369 is polish degree, tracked, not blocking.
+
+**Post 1.0, explicitly:** #369 polish, #370 (a schema question, rule 3, genuinely the owner's), #375 as the standing bar, attachments in the round trip walk, and the deferred locales (D141).
+
+---
+
 ### D165. The round trip is proven on the minified build, and 1.0 was allowed to depend on it
 
 **Date:** 2026-08-16. **The debt D161 named, paid.** The owner ordered 1.0 cut tonight; this was the one item with a silent failure mode, so it went first.

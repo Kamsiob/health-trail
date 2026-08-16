@@ -11,8 +11,6 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.ShellTags
 import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.wholeAppHue
-import com.kamsiob.healthtrail.ui.components.TabChip
 import com.kamsiob.healthtrail.ui.components.GroupedRows
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -86,7 +84,10 @@ fun MoreScreen(
         // "Appearance" is the app showing its own structure, which is rule 20.
         titleKey = "nav.more",
         subtitleKey = "more.subtitle",
-        tab = { TabChip(hue = wholeAppHue(), labelKey = "nav.more") },
+        // **No eyebrow chip on a tab root**, D163: it repeated the title word
+        // for word, and the bottom bar already says where you are. The last
+        // of the four roots to lose it.
+        tab = {},
         // **Above the theme, because these are what somebody opens More to
         // reach.** The theme is changed once; search and export are not.
         header = {
