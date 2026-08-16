@@ -98,7 +98,14 @@ fun TabChipText(
             }
             .padding(TabChipPadding),
     ) {
-        Text(text = label, style = type.mono, color = hue.ink)
+        // **The body face, not the mono one.** D173. The chip was the third
+        // typeface on screens that already carry a display heading and body
+        // text, and the owner's note was that the fonts do not mix well and
+        // should not be artsy. A typewriter face on an index tab is a costume:
+        // the tab's job is to say which section you are in, quietly, and the
+        // hue and the underline already do the identifying. Mono stays where it
+        // earns its place, which is figures that line up in a column.
+        Text(text = label, style = type.bodyS, color = hue.ink)
     }
 }
 

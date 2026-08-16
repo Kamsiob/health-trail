@@ -64,6 +64,16 @@ fun HeaderActions(
     onEdit: (() -> Unit)? = null,
     /** What a reader calls the edit action, in this screen's own words. */
     editLabel: String? = null,
+    /**
+     * The screen's own tag for its edit control.
+     *
+     * **The tag follows the control rather than the position.** Five screens
+     * had their own tag on a button in the body; moving the button to the
+     * corner without bringing the tag would have left five instrumented tests
+     * looking for a node that no longer exists, and a green suite that had
+     * stopped checking the thing it names.
+     */
+    editTag: String? = null,
 ) {
     if (onTips == null && onEdit == null) return
     Row(
@@ -78,7 +88,11 @@ fun HeaderActions(
         // person has to look for it again on every screen. Reserving the empty
         // slot costs one invisible box and makes the corner learnable once.
         if (onTips != null) TipsButton(onOpen = onTips) else HeldSlot()
-        if (onEdit != null) EditAction(onClick = onEdit, label = editLabel) else HeldSlot()
+        if (onEdit != null) {
+            EditAction(onClick = onEdit, label = editLabel, tag = editTag)
+        } else {
+            HeldSlot()
+        }
     }
 }
 
@@ -111,6 +125,16 @@ fun EditAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     label: String? = null,
+    /**
+     * The screen's own tag, replacing the shared one.
+     *
+     * **A parameter rather than a `testTag` in the caller's modifier.** Two
+     * `testTag` calls in one chain do not compose: the later one silently wins,
+     * so the component's own tag would have overridden every screen's and the
+     * five tests moved here would have gone looking for nodes that never
+     * appeared. One tag, chosen once.
+     */
+    tag: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -137,7 +161,7 @@ fun EditAction(
                 onClick = onClick,
             )
             .semantics { contentDescription = spoken }
-            .testTag(HeaderActionTags.EDIT),
+            .testTag(tag ?: HeaderActionTags.EDIT),
         contentAlignment = Alignment.Center,
     ) {
         PencilMark(tint = colors.ink)

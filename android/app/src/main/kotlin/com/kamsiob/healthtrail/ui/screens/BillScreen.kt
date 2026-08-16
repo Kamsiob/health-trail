@@ -78,6 +78,9 @@ fun BillScreen(
     val colors = HealthTrail.colors
 
     SectionScaffold(
+        onEdit = onEdit,
+        editTag = BillTags.EDIT,
+        editLabel = strings["bill.edit"],
         name = BillTags.NAME,
         title = strings["notebook.section.money"],
         heading = Bidi.isolate(bill.description),
@@ -201,11 +204,6 @@ fun BillScreen(
         // errand, and it opens the confirmation rather than removing anything.
         item {
             Spacer(Modifier.height(Space.sectionGap))
-            QuietButton(
-                label = strings["bill.edit"],
-                onClick = onEdit,
-                modifier = Modifier.testTag(BillTags.EDIT),
-            )
             Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["remove.action"],

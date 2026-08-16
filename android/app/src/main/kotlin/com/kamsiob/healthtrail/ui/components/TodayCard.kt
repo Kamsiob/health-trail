@@ -373,7 +373,15 @@ fun TodayCard(
                 text = tab,
                 style = type.bodyS,
                 color = colors.ink2,
-                maxLines = 1,
+                // **Two lines rather than an ellipsis.** D173, and rule 11
+                // bans truncation by name. A tracked measure's tab is
+                // "Tracking, " plus whatever the person called the thing they
+                // are tracking, and their own words are exactly what must not
+                // be cut: "Tracking, How she ..." on a card half the screen
+                // wide tells them nothing and looks broken. Two lines holds
+                // every label the fixture has at the largest font scale, and a
+                // card that grows a line is a card that grew a line.
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     // **The chevron's room, kept clear.** The tab had no

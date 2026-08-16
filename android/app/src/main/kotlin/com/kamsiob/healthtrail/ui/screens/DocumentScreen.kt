@@ -92,6 +92,9 @@ fun DocumentScreen(
     val attachments = remember(context) { Attachments.open(context) }
 
     SectionScaffold(
+        onEdit = onEdit,
+        editTag = OneDocTags.EDIT,
+        editLabel = strings["document.edit"],
         name = OneDocTags.NAME,
         title = strings["notebook.section.documents"],
         heading = Bidi.isolate(document.title),
@@ -253,11 +256,6 @@ fun DocumentScreen(
         // confirmation says so in the same words it says everywhere else.
         item {
             Spacer(Modifier.height(Space.sectionGap))
-            QuietButton(
-                label = strings["document.edit"],
-                onClick = onEdit,
-                modifier = Modifier.testTag(OneDocTags.EDIT),
-            )
             Spacer(Modifier.height(Space.cardGap))
             QuietButton(
                 label = strings["remove.action"],

@@ -157,6 +157,29 @@ fun SectionScaffold(
      */
     section: Repository.Section? = null,
     /**
+     * Changes what is already written on this screen. D173.
+     *
+     * **The corner, on every screen that has one.** It was a quiet button in
+     * the body of five different detail screens, at five different distances
+     * down the page depending on how much the entry happened to hold, so
+     * finding it meant scanning the screen rather than reaching for a place.
+     * The owner's rule: the same thing is in the same place everywhere.
+     *
+     * Null on a screen that lists rather than holds, where what gets edited is
+     * whatever entry you open rather than the list itself.
+     */
+    onEdit: (() -> Unit)? = null,
+    /**
+     * What a reader announces for the pencil, in this screen's own words.
+     *
+     * **"Edit" alone is not enough for somebody listening.** The mark is
+     * general on purpose; what it changes is not, so a reader hears "edit this
+     * medication" rather than a verb with no object.
+     */
+    editLabel: String? = null,
+    /** The screen's own tag for the pencil, so its tests keep their handle. */
+    editTag: String? = null,
+    /**
      * What the screen calls itself, which is not what the section is called.
      *
      * **The tab says where you are and the heading says what you came for.**
@@ -343,6 +366,9 @@ fun SectionScaffold(
                             } else {
                                 null
                             },
+                            onEdit = onEdit,
+                            editLabel = editLabel,
+                            editTag = editTag,
                         )
                     }
                     Spacer(Modifier.height(Space.s))

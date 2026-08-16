@@ -132,6 +132,9 @@ fun PersonScreen(
     val colors = HealthTrail.colors
 
     SectionScaffold(
+        onEdit = onEdit,
+        editTag = PersonTags.EDIT,
+        editLabel = strings["person.edit"],
         name = PersonTags.NAME,
         // **The chip says where you are, the heading says what you came for.**
         // This passed the record's own words as the title, which put them in an
@@ -204,11 +207,6 @@ fun PersonScreen(
                 modifier = Modifier.testTag(PersonTags.CAPTURE),
             )
             Spacer(Modifier.height(Space.cardGap))
-            QuietButton(
-                label = strings["person.edit"],
-                onClick = onEdit,
-                modifier = Modifier.testTag(PersonTags.EDIT),
-            )
             Spacer(Modifier.height(Space.sectionGap))
         }
 

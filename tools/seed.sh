@@ -163,6 +163,20 @@ walk "No thanks" 2
 # depend on what the last run left.
 walk "Replace what is here" 2
 
+# **The confirm button is below the fold and taps do not scroll to it.** The
+# review screen grew: a file summary, two options with three lines of
+# explanation each, and the warning paragraph, which together push the button
+# past the bottom of the viewport on a 1080x2400 phone. A tap at a location
+# that is not on screen does nothing and reports nothing, so every run since
+# ended with "The restore did not finish" and an empty notebook, and the
+# screenshots taken afterward were of an app with no data in it.
+#
+# **The app is fine and was checked by hand**: scrolled, tapped, and it said
+# "Restored." This is the script failing to reach a control, not a control
+# that cannot be reached.
+"$ADB" shell input swipe 540 1600 540 900 300
+sleep 1
+
 walk "Replace everything with this" 10
 
 # **It says what happened rather than assuming it.** A seed script that cannot
