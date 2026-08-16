@@ -45,9 +45,32 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * person typed and says what it could not read, in [note], without discarding
  * the input and without scolding.
  *
- * The label sits above the field rather than floating into it, because a
+ * **The field is outlined rather than filled**, which is what the approved v4
+ * mockup draws. `docs/screenshots/m3v4-4-light.png`, D172.
+ *
+ * **It was a sand slab**, and that shape is most of what "#381: forms are a
+ * wall of label and box" was pointing at. Every field was a gray block; a
+ * column of them is a column of blocks, and the paper the rest of the app is
+ * drawn on stopped anywhere a form began. An outline lets the paper through, so
+ * a form reads as writing on the page rather than as boxes stacked on it. **One
+ * component, 64 sites, every form in the app.**
+ *
+ * **The label stays above the field, and the mockup's notch was tried and
+ * rejected on the copy.** D177. The mockup draws the label sitting in a gap in
+ * the top border, which is correct for the labels drawn in it: "The dose", "What
+ * it is called". The catalog's real labels are sentences, "The dose, as you were
+ * told it" and "Anything worth remembering", and a notch holds one line. At font
+ * scale 2.0, which rule 19 verifies at, that line either truncates, which rule 11
+ * forbids, or wraps and punches a two line hole through the outline.
+ *
+ * **`check_silent_clip.py` caught it the moment the cap went in**, which is the
+ * check working exactly as intended: a `maxLines = 1` with nothing said about
+ * the rest is a layout that holds only with tidy sample data.
+ *
+ * The reason the label was above the field in the first place still holds: a
  * floating label disappears exactly when someone interrupted mid sentence needs
- * it most.
+ * it most. The outline is the half of the mockup that survives contact with the
+ * app's own words, and it is the half that was doing the work.
  */
 @Composable
 fun HealthTrailTextField(
@@ -101,10 +124,15 @@ fun HealthTrailTextField(
     val focused by interaction.collectIsFocusedAsState()
 
     Column(modifier = modifier.fillMaxWidth()) {
+        // **Above the field and never in the border.** D177: the notch the
+        // mockup draws holds one short line, and these labels are sentences.
+        // It turns blue with focus, which is the one thing the notch was
+        // buying that is worth keeping: the label and its field agree about
+        // where you are.
         Text(
             text = label,
             style = type.bodyM,
-            color = if (enabled) colors.ink2 else colors.ink2,
+            color = if (focused) colors.blue else colors.ink2,
         )
 
         Spacer(Modifier.height(Space.s))
@@ -112,15 +140,17 @@ fun HealthTrailTextField(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(Radius.tile)
-                .background(colors.sand)
-                .then(
+                .clip(Radius.cardLarge)
+                .border(
                     // The same focus treatment as every other focusable thing:
-                    // a 2dp blue outline, offset 2dp. Accessibility floor,
-                    // section 9.
-                    if (focused) Modifier.border(2.dp, colors.blue, Radius.tile) else Modifier
+                    // a 2dp blue outline. Accessibility floor, section 9. At
+                    // rest it is the non-text hairline rather than nothing,
+                    // because an outline is what says where to write.
+                    width = if (focused) Space.focusRing else Space.hairlineWidth,
+                    color = if (focused) colors.blue else colors.ink3,
+                    shape = Radius.cardLarge,
                 )
-                .padding(horizontal = Space.m, vertical = 14.dp),
+                .padding(horizontal = Space.m, vertical = Space.fieldVertical),
         ) {
             Row(verticalAlignment = Alignment.Top) {
                 Box(modifier = Modifier.weight(1f)) {

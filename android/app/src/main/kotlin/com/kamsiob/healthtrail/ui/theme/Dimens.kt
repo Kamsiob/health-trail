@@ -98,6 +98,23 @@ object Space {
      * the track's edge at either end. **The switch is never the touch target**:
      * the whole row is, at [touchTarget] or more.
      */
+    /**
+     * The breathing room above and below what somebody types in a field.
+     *
+     * With the 20dp minimum on the editable line itself this clears the 48dp
+     * target, which is what section 12 asks of anything a finger lands on.
+     */
+    val fieldVertical: Dp = 14.dp
+
+    /**
+     * The focus ring, which is one width everywhere it is drawn.
+     *
+     * Section 9's accessibility floor: a keyboard or switch user has to see
+     * where they are, and a ring that is 2dp on a button and 1dp on a field is
+     * two treatments where the app promises one.
+     */
+    val focusRing: Dp = 2.dp
+
     val switchTrackWidth: Dp = 52.dp
     val switchTrackHeight: Dp = 32.dp
     val switchThumb: Dp = 24.dp

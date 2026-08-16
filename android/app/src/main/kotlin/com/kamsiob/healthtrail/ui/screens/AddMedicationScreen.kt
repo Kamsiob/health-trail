@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,8 +23,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.ChoiceChip
-import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.Aside
+import com.kamsiob.healthtrail.ui.components.ToggleRow
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
@@ -125,7 +124,18 @@ fun AddMedicationScreen(
                     } else {
                         strings["meds.edit.title"]
                     },
-                    lead = strings["meds.add.lead"],
+                    // **The lead moves out of the header and into an aside**,
+                    // which is what the approved mockup draws: the sentence
+                    // that sets the terms for the whole form sits on the
+                    // section's wash with its own icon, rather than as the
+                    // smallest gray line under the title. D172.
+                    lead = null,
+                    section = Repository.Section.MEDICATIONS,
+                )
+                Spacer(Modifier.height(Space.m))
+
+                Aside(
+                    text = strings["meds.add.lead"],
                     section = Repository.Section.MEDICATIONS,
                 )
                 Spacer(Modifier.height(Space.l))
@@ -169,30 +179,25 @@ fun AddMedicationScreen(
                 )
                 Spacer(Modifier.height(Space.l))
 
-                // The group asks the question and the chip is the answer. They
-                // carried the same words at first, which read as the label
-                // repeating itself and made the control look like a heading.
+                // **A switch, because the question has two answers and one of
+                // them is what happens if nobody touches it.** The approved
+                // mockup asks it this way and the form asked it with a single
+                // chip, which reads as a filter everywhere else in this app.
+                // The note that sat underneath in the caption ink is the
+                // switch's own subtitle now, so the question and the reason
+                // for it are one object.
                 //
                 // **It stays above the disclosure**, unlike the two fields
                 // below it: the moment somebody writes a medication down is the
                 // moment they know whether it matters in an emergency, and a
                 // question folded away is a question nobody answers.
-                ChoiceChipGroup(label = strings["meds.on_card"]) {
-                    ChoiceChip(
-                        label = strings["meds.on_card.chip"],
-                        selected = draft.onEmergencyCard,
-                        onClick = {
-                            draft = draft.copy(onEmergencyCard = !draft.onEmergencyCard)
-                        },
-                        modifier = Modifier.testTag(AddMedTags.ON_CARD),
-                    )
-                }
-
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["meds.on_card.note"],
-                    style = HealthTrail.type.bodyS,
-                    color = colors.ink2,
+                ToggleRow(
+                    title = strings["meds.on_card.badge"],
+                    subtitle = strings["meds.on_card.note"],
+                    checked = draft.onEmergencyCard,
+                    onCheckedChange = { draft = draft.copy(onEmergencyCard = it) },
+                    section = Repository.Section.EMERGENCY_CARD,
+                    modifier = Modifier.testTag(AddMedTags.ON_CARD),
                 )
 
                 Spacer(Modifier.height(Space.sectionGap))

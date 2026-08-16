@@ -81,7 +81,7 @@ fun StepRow(
         modifier = modifier
             .fillMaxWidth()
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), RoundedCornerShape(0.dp))
+            .border(Space.focusRing, colors.blue.copy(alpha = ring), RoundedCornerShape(0.dp))
             .toggleable(
                 value = done,
                 interactionSource = interaction,

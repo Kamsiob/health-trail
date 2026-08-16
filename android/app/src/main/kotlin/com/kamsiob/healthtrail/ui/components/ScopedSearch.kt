@@ -89,7 +89,7 @@ fun ScopedSearch(
             .defaultMinSize(minHeight = Space.touchTarget)
             .clip(Radius.pill)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.pill)
+            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.pill)
             .padding(horizontal = Space.cardPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {

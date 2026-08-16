@@ -311,7 +311,7 @@ private fun ResultRow(
             .fillMaxWidth()
             .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
+            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)
             .clickable(
                 interactionSource = interaction,
                 indication = null,

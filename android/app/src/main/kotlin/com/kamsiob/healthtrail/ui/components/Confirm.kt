@@ -156,7 +156,7 @@ private fun DestructiveButton(
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.pill)
             .background(surface)
-            .border(2.dp, colors.ink.copy(alpha = ring), Radius.pill)
+            .border(Space.focusRing, colors.ink.copy(alpha = ring), Radius.pill)
             .clickable(
                 interactionSource = interaction,
                 indication = null,

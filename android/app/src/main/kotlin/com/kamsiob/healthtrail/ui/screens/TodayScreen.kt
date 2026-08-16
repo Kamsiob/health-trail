@@ -456,7 +456,7 @@ private fun SearchRow(onSearch: () -> Unit) {
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.tile)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
+            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.tile)
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -535,7 +535,7 @@ private fun Step(number: Int, text: String, onOpen: () -> Unit) {
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
+            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)
             // **The advice goes where the advice points.** These were three
             // plain cards for as long as the screens they named did not exist.
             // They exist, so telling somebody to fill in the emergency card and
@@ -612,7 +612,7 @@ private fun OpenRow(item: OpenItem) {
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
+            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -665,7 +665,7 @@ private fun NextAppointment(
             .fillMaxWidth()
             .clip(Radius.cardLarge)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.cardLarge)
+            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)
             .clickable(
                 interactionSource = interaction,
                 indication = null,

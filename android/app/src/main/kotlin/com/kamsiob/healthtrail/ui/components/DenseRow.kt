@@ -182,7 +182,7 @@ fun DenseRow(
                 // as a border on the window rather than as a focused row.
                 .clip(Radius.tile)
                 .background(surface)
-                .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
+                .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.tile)
                 .then(
                     if (onClick == null) {
                         Modifier

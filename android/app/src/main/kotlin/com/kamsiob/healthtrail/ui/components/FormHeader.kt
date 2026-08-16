@@ -44,7 +44,17 @@ import androidx.compose.material3.Text
 @Composable
 fun FormHeader(
     title: String,
-    lead: String,
+    /**
+     * The sentence under the title, or null where the screen says it in an
+     * [Aside] instead.
+     *
+     * **Null is not "no lead", it is "the lead is a real object".** The
+     * approved v4 mockup puts a form's opening sentence on the section's wash
+     * with its own icon, because it is the line that sets the terms for
+     * everything below it, and the caption ink under a heading is where a
+     * sentence goes to be skipped.
+     */
+    lead: String?,
     section: Repository.Section,
     modifier: Modifier = Modifier,
 ) {
@@ -64,11 +74,13 @@ fun FormHeader(
             color = colors.ink,
             modifier = Modifier.semantics { heading() },
         )
-        Spacer(Modifier.height(Space.xs))
-        Text(
-            text = lead,
-            style = HealthTrail.type.bodyM,
-            color = colors.ink2,
-        )
+        if (lead != null) {
+            Spacer(Modifier.height(Space.xs))
+            Text(
+                text = lead,
+                style = HealthTrail.type.bodyM,
+                color = colors.ink2,
+            )
+        }
     }
 }

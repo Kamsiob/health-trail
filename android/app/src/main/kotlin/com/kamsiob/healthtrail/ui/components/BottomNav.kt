@@ -134,7 +134,7 @@ private fun NavTab(
             .sizeIn(minWidth = Space.touchTarget, minHeight = Space.touchTarget)
             .clip(Radius.tile)
             .background(surface)
-            .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
+            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.tile)
             .clickable(
                 interactionSource = interaction,
                 indication = null,

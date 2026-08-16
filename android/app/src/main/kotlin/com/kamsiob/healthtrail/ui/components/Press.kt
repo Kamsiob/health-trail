@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.raisedCard
 
 /**
@@ -209,7 +210,7 @@ fun Modifier.openableByTap(
         // `Raise.kt` either way, which is correct there. #361.
         .raisedCard(shape)
         .background(surface)
-        .border(2.dp, HealthTrail.colors.blue.copy(alpha = ring), shape)
+        .border(Space.focusRing, HealthTrail.colors.blue.copy(alpha = ring), shape)
         // long-press-twin: the caller's own visible control, named on the
         // onLongPress parameter above. D155.
         .then(

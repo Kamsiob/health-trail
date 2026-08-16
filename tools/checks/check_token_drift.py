@@ -43,7 +43,7 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # index rail needed and what the sticky header had been typing. #361.
 # Every radius outside the theme is a token now, each naming the grid selector
 # it came from, so a later reader can check it against the drawing.
-BASELINE = 152
+BASELINE = 127
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

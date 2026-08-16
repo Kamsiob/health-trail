@@ -75,7 +75,7 @@ fun ChoiceRow(
                 .sizeIn(minHeight = Space.touchTarget)
                 .clip(Radius.tile)
                 .background(surface)
-                .border(2.dp, colors.blue.copy(alpha = ring), Radius.tile)
+                .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.tile)
                 .clickable(
                     interactionSource = interaction,
                     // The row's own surface is the answer to the touch, per

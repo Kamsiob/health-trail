@@ -27,9 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntOffset
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -145,6 +147,8 @@ private fun Switch(checked: Boolean) {
         label = "switchThumb",
     )
 
+    val thumbTravelPx = with(LocalDensity.current) { thumbTravel.toPx() }
+
     Box(
         modifier = Modifier
             .width(Space.switchTrackWidth)
@@ -169,7 +173,12 @@ private fun Switch(checked: Boolean) {
     ) {
         Box(
             modifier = Modifier
-                .offset(x = thumbTravel * traveled)
+                // **The lambda overload, so the thumb moves without
+                // recomposing.** An animated value read here rather than in a
+                // lambda re-runs composition on every frame of the spring, on
+                // a control whose whole job is to move. Lint names this one by
+                // itself, `UseOfNonLambdaOffsetOverload`.
+                .offset { IntOffset(x = (thumbTravelPx * traveled).toInt(), y = 0) }
                 .size(Space.switchThumb)
                 .clip(CircleShape)
                 .background(colors.paper),

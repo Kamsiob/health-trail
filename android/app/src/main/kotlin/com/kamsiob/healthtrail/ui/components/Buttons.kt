@@ -79,7 +79,7 @@ fun FilledButton(
             .sizeIn(minHeight = Space.touchTarget)
             .clip(Radius.pill)
             .background(surface)
-            .border(2.dp, colors.blueDeep.copy(alpha = ring), Radius.pill)
+            .border(Space.focusRing, colors.blueDeep.copy(alpha = ring), Radius.pill)
             .clickable(
                 enabled = enabled,
                 interactionSource = interaction,
