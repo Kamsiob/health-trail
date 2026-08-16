@@ -1,7 +1,24 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+// **The release key is read from outside the repository and never in it.**
+// `keystore.properties` is gitignored and holds a path to a keystore that
+// lives under the home directory, so nothing about the app's identity is in
+// git and a clone of this repository cannot sign anything.
+//
+// **Absent means unsigned, not broken.** CI and any other machine build the
+// release variant without the key, and get an unsigned APK rather than a
+// failure, which is what keeps a missing secret from looking like a bug.
+// D160.
+val signingProps = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val hasSigningKey = signingProps.getProperty("storeFile")?.let { File(it).exists() } == true
 
 // The contract and the template catalog live outside this module, at the root
 // of the monorepo, because they are shared with the web platform and neither
@@ -36,6 +53,23 @@ android {
         resourceConfigurations += setOf("en", "es", "zh", "ar")
     }
 
+    if (hasSigningKey) {
+        signingConfigs {
+            create("release") {
+                storeFile = File(signingProps.getProperty("storeFile"))
+                storePassword = signingProps.getProperty("storePassword")
+                keyAlias = signingProps.getProperty("keyAlias")
+                keyPassword = signingProps.getProperty("keyPassword")
+                // v1 is off because minSdk is well above the API 24 that
+                // needed it, and leaving it on ships a weaker signature
+                // alongside the strong one for nobody's benefit.
+                enableV1Signing = false
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
     buildTypes {
         debug {
             // No suffix. A suffix produces a second application id, a second
@@ -44,6 +78,7 @@ android {
             isMinifyEnabled = false
         }
         release {
+            if (hasSigningKey) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

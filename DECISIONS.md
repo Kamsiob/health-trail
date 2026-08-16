@@ -2990,6 +2990,24 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D160. The release key lives outside the repository, and a missing key builds unsigned rather than failing
+
+**Date:** 2026-08-15. **Decided under rule 10**, building the first signed APK because the owner asked for one to test. **This is not yet the Play upload key**, and that decision is his.
+
+**Generated:** RSA 4096, SHA384withRSA, valid to 2053-12-31, alias `health-trail`, at `~/.kamsiob/health-trail-release.jks`, mode 600. Certificate fingerprint SHA256 `6B:9D:D3:96:E9:45:9C:E5:69:CF:F7:F3:96:A1:77:97:35:15:41:B3:E3:83:1E:32:CB:77:75:9B:D5:A3:44:22`.
+
+**Outside the repository, not merely gitignored.** `.gitignore` already listed `*.jks` and `keystore.properties`, so the belt existed; the braces are that the key is not in the tree at all, and a clone of this repository cannot sign anything. `android/keystore.properties` holds the path and the passwords and is ignored.
+
+**A missing key builds unsigned rather than failing.** CI has no keystore and must keep building the release variant, and a build that dies on an absent secret makes a missing file look like a broken tree. `hasSigningKey` gates both the config and its use.
+
+**v1 signing off, v2 and v3 on.** minSdk is far above the API 24 that needed v1, and leaving it on ships a weaker signature beside the strong one for nobody.
+
+**THE OWNER MUST BACK THIS FILE UP, and it is the one thing here that cannot be recovered.** If this becomes the upload key and the file is lost, that application id can never be updated on Play again. Play App Signing changes what is at stake, not whether the file matters. Not written down anywhere else, because nowhere else in this repository is the right place for it.
+
+**A debug build and a release build cannot upgrade each other**, different keys, so installing this one over the debug build asks for an uninstall, and an uninstall takes the notebook with it. Local first with no cloud means export first. Said here because it will be forgotten.
+
+---
+
 ### D159. A place is something the person can name, and naming it is a move
 
 **Date:** 2026-08-15. **Resolves the question D158 left open** and closes #377. **Decided by the owner**, who asked for the dead end fixed. Changes no schema and adds no writer.

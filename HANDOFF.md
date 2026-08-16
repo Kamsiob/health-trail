@@ -143,6 +143,15 @@ Reading an archive needs no phone:
 
     echo <passphrase> | python3 tools/decrypt/decrypt.py <archive> <folder>
 
+A signed release, D160. No phone, no device step:
+
+    cd android && ./gradlew :app:assembleRelease
+    # -> app/build/outputs/apk/release/app-release.apk
+
+**The key is at `~/.kamsiob/health-trail-release.jks`, and `android/keystore.properties` points at it.** Neither is in git and neither can be: `*.jks` and `keystore.properties` are both ignored, and the keystore is outside the tree. **No key present builds unsigned rather than failing**, which is what CI gets.
+
+**A debug build and a release build cannot upgrade each other.** Different keys, so swapping one for the other asks for an uninstall, and an uninstall takes the notebook with it. Export first.
+
 ## 9. What is built
 
 - Foundation, four destinations, all section screens: complete but for #182 (blocked).
