@@ -521,7 +521,18 @@ private fun StepRow(
             .semantics(mergeDescendants = true) {
                 // A reader is told the state rather than left to infer it from
                 // a shape, which is the same reason chips report as checked.
-                stateDescription = if (step.isDone) "done" else "not done"
+                //
+                // **It said "done" and "not done" in English to everybody.**
+                // The two words were written straight into the semantics tree,
+                // where no check looks: `check_text_sources.py` reads what is
+                // drawn, and a string that is only ever spoken is drawn
+                // nowhere. A reader user in Spanish heard one English word per
+                // step, on the screen that lists every step of a project.
+                stateDescription = if (step.isDone) {
+                    strings["step.done"]
+                } else {
+                    strings["step.not_done"]
+                }
                 customActions = listOf(
                     CustomAccessibilityAction(strings["projects.step.title"]) {
                         onEdit(); true

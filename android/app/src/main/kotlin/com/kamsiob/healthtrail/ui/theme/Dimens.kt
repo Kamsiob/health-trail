@@ -85,6 +85,24 @@ object Space {
      */
     val touchTarget: Dp = 48.dp
 
+    /**
+     * The switch in [ToggleRow], which this app draws rather than imports.
+     *
+     * **Here rather than in the component**, because a measurement written into
+     * a screen comes from nowhere and is invisible to every check: the drift
+     * check caught these seven the hour they were written, which is what it is
+     * for.
+     *
+     * The track is wide enough that the thumb's travel reads as a state change
+     * rather than a nudge, and the inset is what keeps the thumb from touching
+     * the track's edge at either end. **The switch is never the touch target**:
+     * the whole row is, at [touchTarget] or more.
+     */
+    val switchTrackWidth: Dp = 52.dp
+    val switchTrackHeight: Dp = 32.dp
+    val switchThumb: Dp = 24.dp
+    val switchThumbInset: Dp = 4.dp
+
 
     /**
      * The FAB's own size, and the clearance everything else owes it.
