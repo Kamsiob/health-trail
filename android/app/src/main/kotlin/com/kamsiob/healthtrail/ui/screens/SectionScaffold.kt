@@ -22,6 +22,8 @@ import com.kamsiob.healthtrail.ui.components.TipsButton
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipFor
 import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -338,10 +340,38 @@ fun SectionScaffold(
                     // v4 the hero is the one thing on the screen, and a section
                     // title is furniture: it says where you are, and what
                     // matters is what is under it.
+                    // **The heading settles as the list moves under it.**
+                    // D168, and it is Google's own signature on a large app
+                    // bar: the title starts at its full size and eases down
+                    // toward the tab as the content scrolls, so the screen
+                    // gives its space to what the person came to read.
+                    //
+                    // **Driven by the first item's offset**, which is the
+                    // heading's own item, so the effect is exactly as long as
+                    // the header is on screen and stops dead once it is gone.
+                    // Reduced motion holds it at full size.
+                    val motion = HealthTrail.motion
+                    val shrink by remember {
+                        derivedStateOf {
+                            if (motion.isReduced || listState.firstVisibleItemIndex > 0) {
+                                if (motion.isReduced) 0f else 1f
+                            } else {
+                                (listState.firstVisibleItemScrollOffset / HEADING_SETTLE_PX)
+                                    .coerceIn(0f, 1f)
+                            }
+                        }
+                    }
                     Text(
                         text = heading ?: headingKey?.let { strings[it] } ?: title,
                         style = HealthTrail.type.displayM,
                         color = colors.ink,
+                        modifier = Modifier.graphicsLayer {
+                            val scale = 1f - (shrink * HEADING_SETTLE_SCALE)
+                            scaleX = scale
+                            scaleY = scale
+                            transformOrigin = TransformOrigin(0f, 0.5f)
+                            alpha = 1f - (shrink * HEADING_SETTLE_FADE)
+                        },
                     )
                     Spacer(Modifier.height(Space.xs))
                     Text(
@@ -500,3 +530,14 @@ const val EMPTY_HEIGHT_FRACTION = 0.62f
  * loading.
  */
 const val EMPTY_HEIGHT_TALL = 0.82f
+
+/**
+ * How far the heading settles, and over how much scroll.
+ *
+ * **A sixth smaller, not half.** The heading is furniture that gives way, and
+ * a title that visibly collapses draws more attention on the way out than it
+ * had sitting still, which is the opposite of the point.
+ */
+private const val HEADING_SETTLE_SCALE = 0.16f
+private const val HEADING_SETTLE_FADE = 0.35f
+private const val HEADING_SETTLE_PX = 220f

@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -74,7 +75,13 @@ fun <T> GroupedRows(
     if (items.isEmpty()) return
     GroupedSurface(modifier = modifier) {
         items.forEachIndexed { index, item ->
-            row(item, index == items.lastIndex)
+            // **The rows arrive in order rather than all at once**, D168.
+            // Every grouped list in the app goes through here, so one line
+            // gives the notebook, the care team, the medications and the rest
+            // the same rhythm. Reduced motion draws them instantly.
+            Box(modifier = Modifier.arrivesInOrder(index)) {
+                row(item, index == items.lastIndex)
+            }
         }
     }
 }

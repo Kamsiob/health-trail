@@ -2990,6 +2990,24 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D168. The polish pass: arrival, settling, and a tick under the thumb
+
+**Date:** 2026-08-16. **The owner:** what was called prize winning is "maybe a 7/10", and the ask is to find where polish and top tier detail can come into play, researching again if needed.
+
+**Researched rather than guessed.** The consistent finding across the animation and interaction literature is that premium is not more motion, it is three specific things: staggered entrance, scroll linked settling, and micro feedback at the moment of commitment. Airbnb's measured result on cascading list items is a thirty percent gain in comprehension at thirty to sixty millisecond offsets; the reported optimum for feedback is two hundred to four hundred milliseconds.
+
+**Content arrives rather than appears.** `arrivesInOrder` fades and lifts each row with a thirty five millisecond offset, capped at twelve so a long list never makes its tail wait. Every grouped list in the app goes through `GroupedRows`, so one line gives the notebook, the care team, the medications and the rest the same rhythm, and the notebook's four clusters land in reading order.
+
+**The heading settles as the list moves under it.** The section title eases down a sixth and fades a third, driven by the header item's own scroll offset so the effect lasts exactly as long as the header is on screen. A sixth rather than a half, because a title that visibly collapses draws more attention leaving than it had sitting still.
+
+**A tick under the thumb at the moment of commitment.** The filled button is the one that saves, starts and confirms, so it carries a confirm haptic. The quiet button stays silent, because a secondary action that buzzes is noise.
+
+**Reduced motion turns all three off** and loses nothing: rows draw instantly, the heading holds full size, and the press still answers in color.
+
+**What is deliberately not here.** Shared element transitions between screens are the one remaining technique from the research with real weight, and they are a navigation change rather than a polish change: this app paints overlays over a shell rather than routing, so a shared axis would be a restructure. Written down rather than half done.
+
+---
+
 ### D167. The interface is rebuilt on the round four language: neutral canvas, shape variety, spring physics
 
 **Date:** 2026-08-16. **The owner, after four rounds of mockups:** "redesign the entire app with round 4 styles ... animations and motions and shape morphing and pull to refresh physics ... it's missing attention to detail."

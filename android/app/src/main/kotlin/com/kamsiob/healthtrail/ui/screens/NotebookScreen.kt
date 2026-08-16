@@ -34,6 +34,8 @@ import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipForDestination
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.Box
+import com.kamsiob.healthtrail.ui.components.arrivesInOrder
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.setValue
@@ -326,10 +328,15 @@ fun NotebookScreen(
             // **The order inside each group never changes**, so a person who
             // learned where documents live finds them in the same place, only
             // now under a name that says why they live there.
-            for (group in NotebookGroup.entries) {
+            for ((groupIndex, group) in NotebookGroup.entries.withIndex()) {
                 val rows = group.sections.mapNotNull { bySection[it] }
                 if (rows.isEmpty()) continue
-                GroupHeader(labelKey = group.labelKey)
+                // **The headers arrive with their groups**, D168, so the four
+                // clusters land in reading order rather than the whole screen
+                // appearing at once.
+                Box(modifier = Modifier.arrivesInOrder(groupIndex * 2)) {
+                    GroupHeader(labelKey = group.labelKey)
+                }
                 Spacer(Modifier.height(Space.headerGap))
                 GroupedRows(items = rows) { row, isLast ->
                     SectionRow(row = row, isLast = isLast, onOpen = onOpen)

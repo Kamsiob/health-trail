@@ -119,6 +119,9 @@ object Space {
     val tipsPointDot: Dp = 6.dp
     val tipsPointDotTop: Dp = 7.dp
 
+    /** How far a row rises as it arrives. D168. */
+    val arrivalRise: Dp = 10.dp
+
     /**
      * The mark on a choice in the capture bloom, and the drawing inside it.
      *

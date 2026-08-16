@@ -20,6 +20,8 @@ import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.graphicsLayer
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,6 +83,7 @@ fun FilledButton(
     val surface by pressedSurface(interaction, if (enabled) colors.blue else colors.sand)
     val ring by focusRingAlpha(interaction)
     val scale by pressScale(interaction)
+    val haptics = LocalHapticFeedback.current
 
     Box(
         modifier = modifier
@@ -96,7 +99,16 @@ fun FilledButton(
                 interactionSource = interaction,
                 indication = null,
                 role = Role.Button,
-                onClick = onClick,
+                onClick = {
+                    // **The filled button is the commit**, D168: saving,
+                    // starting, confirming. A tick under the thumb at the
+                    // moment something is written down is the difference
+                    // between an interface that responded and one that felt
+                    // like it did. Quiet buttons stay silent, because a
+                    // secondary action that buzzes is noise.
+                    haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+                    onClick()
+                },
             )
             .padding(horizontal = Space.l, vertical = Space.sm),
         contentAlignment = Alignment.Center,
