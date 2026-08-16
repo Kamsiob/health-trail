@@ -60,19 +60,26 @@ ALLOWED = {
 # Still to convert. Each entry is a promise to somebody, not a permanent
 # exemption: take entries out as they are done, and never add one.
 REMAINING = {
-    # no-press: tappable and silent under the finger. Rule 16.
-    "ChipPicker", "Dictate", "Disclosure", "EdgeScrubber", "MonthGrid",
-    "RoundCard",
+    # no-press: writes its own gesture and does not answer it. Rule 16.
+    # ChipPicker and Disclosure were on this list and were never broken: they
+    # hand onClick to DenseRow and TextAction, which spring.
+    "Dictate", "EdgeScrubber", "MonthGrid",
     # old-shape: Radius.card or fold, against the containers' cardLarge.
     "ChartCard", "DateRow", "GroupedSurface", "LatestWordCard", "Press",
-    "StandingCard", "Tile",
+    "RoundCard", "StandingCard", "Tile",
     # both, plus mono on a word.
     "WashBand",
 }
 
 # Screens whose tell is correct, and why. Filled in as each mono site is judged:
 # a figure in a column keeps mono and earns a line here, a word loses it.
-SCREENS_ALLOWED = {}
+SCREENS_ALLOWED = {
+    # The double tap zooms the paper, and the zoom is the answer. Rule 16 asks
+    # that a touch be answered, not that it be answered with a spring, and
+    # scaling a full-screen photograph under the finger that is trying to
+    # magnify it would fight the gesture it is acknowledging.
+    "PaperViewerScreen": {"no-press"},
+}
 
 # The screens still carrying the old design. Thirty-five of eighty-five, found
 # once the press tell stopped counting a passed-through onClick as silence.
@@ -97,14 +104,16 @@ SCREENS_REMAINING = {
 }
 
 
-def tells(source: str, own_press_only: bool = False) -> set:
+def tells(source: str) -> set:
     found = set()
-    if own_press_only:
-        # A screen is only silent where it writes the gesture itself. Passing
-        # onClick to a converted component is the spring, one level down.
-        tappable = bool(re.search(r"\.clickable\(|\.selectable\(|\.toggleable\(", source))
-    else:
-        tappable = bool(re.search(r"clickable\(|selectable\(|onClick", source))
+    # **A file answers for the gestures it writes, and only those.** Passing
+    # onClick down to a component that springs is correct, and the component it
+    # is passed to is scanned on its own line, so nothing goes unchecked by
+    # decomposing it this way. Counting a passed-through onClick as silence
+    # named 51 screens and 3 components that were already right.
+    tappable = bool(
+        re.search(r"\.clickable\(|\.selectable\(|\.toggleable\(|detectTapGestures", source)
+    )
     springs = bool(re.search(r"pressScale|springy\(\)|openableByTap|pressedSurface", source))
     if tappable and not springs:
         found.add("no-press")
@@ -119,13 +128,13 @@ def tells(source: str, own_press_only: bool = False) -> set:
     return found
 
 
-def sweep(folder, remaining, allowed, own_press_only):
+def sweep(folder, remaining, allowed):
     """Returns (unexpected, done, total) for one folder."""
     unexpected, done = [], []
     paths = sorted(folder.glob("*.kt"))
     for path in paths:
         name = path.stem
-        found = tells(path.read_text(encoding="utf-8"), own_press_only)
+        found = tells(path.read_text(encoding="utf-8"))
         found -= allowed.get(name, set())
         if found and name not in remaining:
             unexpected.append(f"{name}: {', '.join(sorted(found))}")
@@ -137,11 +146,11 @@ def sweep(folder, remaining, allowed, own_press_only):
 def main() -> int:
     failed = False
     line = []
-    for label, folder, remaining, allowed, own in (
-        ("component", COMPONENTS, REMAINING, ALLOWED, False),
-        ("screen", SCREENS, SCREENS_REMAINING, SCREENS_ALLOWED, True),
+    for label, folder, remaining, allowed in (
+        ("component", COMPONENTS, REMAINING, ALLOWED),
+        ("screen", SCREENS, SCREENS_REMAINING, SCREENS_ALLOWED),
     ):
-        unexpected, done, total = sweep(folder, remaining, allowed, own)
+        unexpected, done, total = sweep(folder, remaining, allowed)
         if unexpected:
             failed = True
             print(f"{label.capitalize()}s carrying the old design "
