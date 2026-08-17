@@ -57,6 +57,14 @@ fun ListRow(
     markTint: Color = HealthTrail.colors.ink2,
     markWash: Color = HealthTrail.colors.card,
     /**
+     * What stands where the mark would, when the mark is not a symbol.
+     *
+     * A person's row carries their initials rather than a glyph, and initials
+     * are a mark for a person the way a symbol is a mark for a section. Passing
+     * this instead of [mark] keeps one row rather than growing a second one.
+     */
+    leading: (@Composable () -> Unit)? = null,
+    /**
      * A value the row is scanned by: a dose, a date, an amount.
      *
      * **Weighted with `fill = false`, so it cannot take the whole row and a
@@ -98,7 +106,9 @@ fun ListRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        if (mark != null) {
+        if (leading != null) {
+            leading()
+        } else if (mark != null) {
             Box(
                 modifier = Modifier
                     .size(MARK_TILE)
