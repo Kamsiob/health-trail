@@ -30,13 +30,14 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.Thumbnail
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object ProjectPaperworkTags {
     const val NAME = "project-paperwork"
@@ -222,17 +223,15 @@ fun ProjectPaperworkScreen(
             item {
                 Block(padding = Space.none) {
                     shown.forEachIndexed { index, card ->
-                        DenseRow(
+                        ListRow(
                             title = Bidi.isolate(card.paper.name),
-                            subtitle = subtitleFor(card),
-                            subtitleMaxLines = 2,
-                            chevron = true,
+                            support = subtitleFor(card),
+                            isDoor = true,
                             // **An empty place offers to be filled**, rather
                             // than sitting inert. #379.
                             onClick = card.documentId
                                 ?.let { id -> { onOpenDocument(id) } }
                                 ?: { onFillPaper(card.paper) },
-                            divider = index < shown.lastIndex,
                             leading = {
                                 Thumbnail(
                                     sha256 = card.sha256,
@@ -242,6 +241,7 @@ fun ProjectPaperworkScreen(
                             },
                             modifier = Modifier.testTag(ProjectPaperworkTags.paper(card.paper.id)),
                         )
+                        if (index < shown.lastIndex) RowDivider()
                     }
                 }
             }

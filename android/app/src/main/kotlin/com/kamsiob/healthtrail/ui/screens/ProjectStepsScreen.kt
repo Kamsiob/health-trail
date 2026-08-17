@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,13 +16,14 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object ProjectStepsTags {
     const val NAME = "project-steps"
@@ -188,14 +190,15 @@ private fun StepEditRow(
     divider: Boolean,
 ) {
     val strings = LocalStrings.current
-    DenseRow(
-        title = Bidi.isolate(step.text),
-        subtitle = step.note?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) }
-            ?: step.handlerLabel?.let { strings("project.step.handled_by", "who" to it) },
-        subtitleMaxLines = 3,
-        chevron = true,
-        onClick = onOpen,
-        divider = divider,
-        modifier = Modifier.testTag(ProjectStepsTags.step(step.id)),
-    )
+    Column {
+        ListRow(
+            title = Bidi.isolate(step.text),
+            support = step.note?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) }
+                ?: step.handlerLabel?.let { strings("project.step.handled_by", "who" to it) },
+            isDoor = true,
+            onClick = onOpen,
+            modifier = Modifier.testTag(ProjectStepsTags.step(step.id)),
+        )
+        if (divider) RowDivider(inset = false)
+    }
 }

@@ -23,10 +23,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.kamsiob.healthtrail.ui.components.Avatar
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.Hairline
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -34,6 +32,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object EmergencyTags {
     const val NAME = "emergency_card"
@@ -330,44 +330,46 @@ private fun ContactRow(
     // team gives a person and what grid screen 17 draws: the number trails the
     // name rather than sitting on a line of its own, so three contacts take
     // three rows instead of nine lines.
-    DenseRow(
-        title = Bidi.isolate(contact.displayName),
-        // **The number is on the line, where a stranger can read it out.** It
-        // was inside the Call button, and a real United States number is
-        // "(555) 123-4567": fourteen characters plus the word Call, on the one
-        // screen somebody else reads under pressure and possibly cannot tap,
-        // because the phone may be locked or theirs. On the line it wraps and
-        // it can be read aloud. #361.
-        subtitle = listOfNotNull(
-            relationship,
-            phone,
-            strings["careteam.no_phone"].takeIf { phone == null },
-        ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
-        leading = {
-            Avatar(
-                name = contact.displayName,
-                hue = hueFor(Repository.Section.EMERGENCY_CARD),
-            )
-        },
-        trailingContent = if (phone != null) {
-            {
-                QuietButton(
-                    label = strings["careteam.call"],
-                    onClick = onCall,
-                    modifier = Modifier
-                        .semantics {
-                            contentDescription =
-                                strings("careteam.call.number", "number" to phone)
-                        }
-                        .testTag(EmergencyTags.call(contact.id)),
+    Column {
+        ListRow(
+            title = Bidi.isolate(contact.displayName),
+            // **The number is on the line, where a stranger can read it out.** It
+            // was inside the Call button, and a real United States number is
+            // "(555) 123-4567": fourteen characters plus the word Call, on the one
+            // screen somebody else reads under pressure and possibly cannot tap,
+            // because the phone may be locked or theirs. On the line it wraps and
+            // it can be read aloud. #361.
+            support = listOfNotNull(
+                relationship,
+                phone,
+                strings["careteam.no_phone"].takeIf { phone == null },
+            ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
+            leading = {
+                Avatar(
+                    name = contact.displayName,
+                    hue = hueFor(Repository.Section.EMERGENCY_CARD),
                 )
-            }
-        } else {
-            null
-        },
-        divider = !isLast,
-        modifier = Modifier.testTag(EmergencyTags.contact(contact.id)),
-    )
+            },
+            trailing = if (phone != null) {
+                {
+                    QuietButton(
+                        label = strings["careteam.call"],
+                        onClick = onCall,
+                        modifier = Modifier
+                            .semantics {
+                                contentDescription =
+                                    strings("careteam.call.number", "number" to phone)
+                            }
+                            .testTag(EmergencyTags.call(contact.id)),
+                    )
+                }
+            } else {
+                null
+            },
+            modifier = Modifier.testTag(EmergencyTags.contact(contact.id)),
+        )
+        if (!isLast) RowDivider()
+    }
 }
 
 /**
@@ -383,12 +385,14 @@ private fun ContactRow(
  */
 @Composable
 private fun MedicationCardRow(medication: Repository.Medication, isLast: Boolean) {
-    DenseRow(
-        title = Bidi.isolate(medication.name),
-        trailing = medication.doseText?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
-        divider = !isLast,
-        modifier = Modifier.testTag(EmergencyTags.field("med_${medication.id}")),
-    )
+    Column {
+        ListRow(
+            title = Bidi.isolate(medication.name),
+            value = medication.doseText?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
+            modifier = Modifier.testTag(EmergencyTags.field("med_${medication.id}")),
+        )
+        if (!isLast) RowDivider(inset = false)
+    }
 }
 
 /** One line of the card, present only because it has something in it. */
@@ -430,6 +434,6 @@ private fun CardField(entry: CardEntry, isLast: Boolean) {
         )
     }
     if (!isLast) {
-        Hairline(inset = Space.cardPadding, end = Space.cardPadding)
+        RowDivider(inset = false)
     }
 }

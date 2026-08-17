@@ -31,7 +31,6 @@ import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
@@ -40,6 +39,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object SituationPickerTags {
     const val ROOT = "situation_picker_root"
@@ -292,14 +293,15 @@ private fun SituationRow(
     divider: Boolean,
     onClick: () -> Unit,
 ) {
-    DenseRow(
-        title = Bidi.isolate(situation.name),
-        subtitle = situation.subtitle.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
-        subtitleMaxLines = Int.MAX_VALUE,
-        divider = divider,
-        onClick = onClick,
-        modifier = Modifier.testTag(SituationPickerTags.row(situation.id)),
-    )
+    Column {
+        ListRow(
+            title = Bidi.isolate(situation.name),
+            support = situation.subtitle.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
+            onClick = onClick,
+            modifier = Modifier.testTag(SituationPickerTags.row(situation.id)),
+        )
+        if (divider) RowDivider(inset = false)
+    }
 }
 
 /**

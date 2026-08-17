@@ -22,12 +22,13 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.ChoiceRow
+import com.kamsiob.healthtrail.ui.v4.ChoiceRow
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -252,19 +253,18 @@ fun RestoreScreen(
                     Block(padding = Space.none) {
                         ChoiceRow(
                             label = strings["restore.how.replace.label"],
-                            detail = strings["restore.how.replace.detail"],
                             selected = how == RestoreHow.REPLACE,
                             onClick = { how = RestoreHow.REPLACE },
-                            isLast = false,
-                            testTag = RestoreTags.HOW_REPLACE,
+                            detail = strings["restore.how.replace.detail"],
+                            modifier = Modifier.testTag(RestoreTags.HOW_REPLACE),
                         )
+                        RowDivider(inset = false)
                         ChoiceRow(
                             label = strings["restore.how.merge.label"],
-                            detail = strings["restore.how.merge.detail"],
                             selected = how == RestoreHow.MERGE,
                             onClick = { how = RestoreHow.MERGE },
-                            isLast = true,
-                            testTag = RestoreTags.HOW_MERGE,
+                            detail = strings["restore.how.merge.detail"],
+                            modifier = Modifier.testTag(RestoreTags.HOW_MERGE),
                         )
                     }
 

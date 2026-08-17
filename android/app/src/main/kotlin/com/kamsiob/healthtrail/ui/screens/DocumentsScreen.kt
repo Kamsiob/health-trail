@@ -31,7 +31,6 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.CARD_SIZE
 import com.kamsiob.healthtrail.ui.components.FILL
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
@@ -45,6 +44,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object DocTags {
     const val NAME = "documents"
@@ -317,24 +318,26 @@ private fun DocumentRow(
     onOpen: () -> Unit,
 ) {
     val strings = LocalStrings.current
-    DenseRow(
-        title = Bidi.isolate(document.title),
-        subtitle = document.originalLocation?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
-        leading = {
-            Thumbnail(
-                sha256 = document.sha256,
-                attachments = attachments,
-                section = Repository.Section.DOCUMENTS,
-                size = ROW_SIZE,
-            )
-        },
-        trailing = document.receivedEdtf?.takeIf { it.isNotBlank() }
-            ?.let { EventDateText.render(strings, it) },
-        divider = divider,
-        onClick = onOpen,
-        clickLabel = strings["open.action"],
-        modifier = Modifier.testTag(DocTags.row(document.id)),
-    )
+    Column {
+        ListRow(
+            title = Bidi.isolate(document.title),
+            support = document.originalLocation?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
+            leading = {
+                Thumbnail(
+                    sha256 = document.sha256,
+                    attachments = attachments,
+                    section = Repository.Section.DOCUMENTS,
+                    size = ROW_SIZE,
+                )
+            },
+            value = document.receivedEdtf?.takeIf { it.isNotBlank() }
+                ?.let { EventDateText.render(strings, it) },
+            onClick = onOpen,
+            clickLabel = strings["open.action"],
+            modifier = Modifier.testTag(DocTags.row(document.id)),
+        )
+        if (divider) RowDivider()
+    }
 }
 
 /**

@@ -78,6 +78,20 @@ fun ListRow(
      */
     value: String? = null,
     /**
+     * Whether the value starts level with the title rather than centering
+     * against the whole row.
+     *
+     * **Opt in, and centered stays the default on purpose.** For the ordinary
+     * row, one line of title over one line of support, centering is right and
+     * top aligning would lift the value off the row. **It stops being right the
+     * moment the title wraps**: a bill called "Monthly room and board" runs to
+     * two lines with its date under it, and the amount sat level with the
+     * second line, beside the wrap rather than beside the name. Seen on the
+     * phone, rule 21, and carried forward here because the row it was found on
+     * is one of these now.
+     */
+    valueAtTop: Boolean = false,
+    /**
      * The one thing to do about this row, as a mark at its end.
      *
      * **Unweighted, and that is the difference from [value].** A weighted slot
@@ -143,7 +157,9 @@ fun ListRow(
                 text = it,
                 style = HealthTrail.type.mono,
                 color = HealthTrail.colors.ink,
-                modifier = Modifier.weight(1f, fill = false),
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .then(if (valueAtTop) Modifier.align(Alignment.Top) else Modifier),
             )
         }
         trailing?.invoke()
@@ -232,6 +248,14 @@ fun ChoiceRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     detail: String? = null,
+    /**
+     * A mark for the choice itself, where the choices differ by more than their
+     * words: a thread's color, a route swatch.
+     *
+     * The same slot [ListRow] carries, and it is here so that a picker whose
+     * options are colored does not need a second row to say so.
+     */
+    leading: (@Composable () -> Unit)? = null,
 ) {
     val colors = HealthTrail.colors
     Row(
@@ -243,6 +267,7 @@ fun ChoiceRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
+        leading?.invoke()
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,

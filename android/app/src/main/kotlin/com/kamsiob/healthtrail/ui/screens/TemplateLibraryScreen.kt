@@ -22,7 +22,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.i18n.Strings
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
@@ -30,6 +29,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
 import java.time.Instant
 
@@ -189,16 +190,16 @@ fun TemplateLibraryScreen(
                 if (unusedOwnOpen) {
                     Block(padding = Space.none) {
                         ownUnused.forEachIndexed { index, template ->
-                            DenseRow(
+                            ListRow(
                                 title = Bidi.isolate(template.name),
-                                subtitle = ownProvenance(template, strings),
-                                trailing = strings(
+                                support = ownProvenance(template, strings),
+                                value = strings(
                                     "projects.step_count",
                                     "count" to template.steps.size,
                                 ),
-                                divider = index < ownUnused.lastIndex,
                                 modifier = Modifier.testTag(LibraryTags.own(template.id)),
                             )
+                            if (index < ownUnused.lastIndex) RowDivider(inset = false)
                         }
                     }
                 }
@@ -239,24 +240,19 @@ fun TemplateLibraryScreen(
                             // a chevron here would point at nothing, which is
                             // the dead end rule 18 forbids. Starting one is the
                             // picker's job, and it is one tap from Projects.
-                            DenseRow(
+                            ListRow(
                                 // English until #62, so an opposite-direction
                                 // run in an Arabic layout. Section 15.
                                 title = Bidi.isolate(template.name),
-                                subtitle = template.subtitle.takeIf { it.isNotBlank() }
+                                support = template.subtitle.takeIf { it.isNotBlank() }
                                     ?.let { Bidi.isolate(it) },
-                                // **Uncapped, because this subtitle is a sentence somebody
-                                // reads to choose.** At one line every row ended mid-sentence,
-                                // and at two they did it again the moment the system font
-                                // reached 2.0. Any fixed cap truncates at some size.
-                                subtitleMaxLines = Int.MAX_VALUE,
-                                trailing = strings(
+                                value = strings(
                                     "projects.step_count",
                                     "count" to template.steps.size,
                                 ),
-                                divider = index < inCategory.lastIndex,
                                 modifier = Modifier.testTag(LibraryTags.shipped(template.id)),
                             )
+                            if (index < inCategory.lastIndex) RowDivider(inset = false)
                         }
                     }
                     Spacer(Modifier.height(Space.cardGap))
@@ -321,14 +317,16 @@ private fun TemplateCard(
         }
 
         started.forEachIndexed { index, project ->
-            DenseRow(
-                title = Bidi.isolate(project.name),
-                subtitle = strings["projects.status.${project.status}"],
-                chevron = true,
-                divider = index < started.lastIndex,
-                onClick = { onOpenProject(project) },
-                modifier = Modifier.testTag(LibraryTags.project(project.id)),
-            )
+            Column {
+                ListRow(
+                    title = Bidi.isolate(project.name),
+                    support = strings["projects.status.${project.status}"],
+                    isDoor = true,
+                    onClick = { onOpenProject(project) },
+                    modifier = Modifier.testTag(LibraryTags.project(project.id)),
+                )
+                if (index < started.lastIndex) RowDivider(inset = false)
+            }
         }
     }
 }

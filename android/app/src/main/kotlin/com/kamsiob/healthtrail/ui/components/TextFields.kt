@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 /**
  * A text field, per DESIGN.md section 5.9.
@@ -430,7 +431,7 @@ fun FieldRow(
                     .background(colors.blue),
             )
         } else if (divider) {
-            Hairline(inset = Space.cardPadding, end = Space.cardPadding)
+            RowDivider(inset = false)
         }
 
         // The same as the field above: the hint is supporting text under the

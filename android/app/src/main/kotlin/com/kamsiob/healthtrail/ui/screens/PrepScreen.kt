@@ -25,7 +25,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.CalendarHandoff
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.FoldRowText
@@ -40,6 +39,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object PrepTags {
     const val NAME = "prep"
@@ -301,13 +302,12 @@ fun PrepScreen(
                         }
                         Block(padding = Space.none) {
                             inRole.forEachIndexed { row, question ->
-                                DenseRow(
+                                ListRow(
                                     // The question itself carries the row,
                                     // because it is the thing being read out
                                     // loud. Its role is the heading above it
                                     // and is not repeated here, per 17.
                                     title = Bidi.isolate(question.text),
-                                    divider = row < inRole.lastIndex,
                                     // **It opens, because this is the screen
                                     // somebody is holding in the room.** The
                                     // rows were the only ones on this sheet
@@ -322,6 +322,7 @@ fun PrepScreen(
                                     modifier = Modifier
                                         .testTag(PrepTags.question(question.id)),
                                 )
+                                if (row < inRole.lastIndex) RowDivider(inset = false)
                             }
                         }
                         Spacer(Modifier.height(Space.cardGap))
@@ -360,20 +361,20 @@ fun PrepScreen(
                 item(key = "asked_here_rows") {
                     Block(padding = Space.none) {
                         prep.asked.forEachIndexed { row, question ->
-                            DenseRow(
+                            ListRow(
                                 title = Bidi.isolate(question.text),
                                 // What came back, where somebody wrote it down.
                                 // Absent rather than empty when they did not:
                                 // being told nothing and not having written it
                                 // down are different things.
-                                subtitle = question.answerText
+                                support = question.answerText
                                     ?.takeIf { it.isNotBlank() }
                                     ?.let { Bidi.isolate(it) },
-                                divider = row < prep.asked.lastIndex,
                                 onClick = { onOpenQuestion(question) },
                                 clickLabel = strings["open.action"],
                                 modifier = Modifier.testTag(PrepTags.asked(question.id)),
                             )
+                            if (row < prep.asked.lastIndex) RowDivider(inset = false)
                         }
                     }
                     Spacer(Modifier.height(Space.sectionGap))

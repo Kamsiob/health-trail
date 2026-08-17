@@ -23,7 +23,6 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -31,6 +30,8 @@ import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -100,25 +101,25 @@ fun ProjectPapersScreen(
             item {
                 Block(padding = Space.none) {
                     papers.forEachIndexed { index, paper ->
-                        DenseRow(
+                        ListRow(
                             title = Bidi.isolate(paper.name),
                             // **"Waiting" and never "missing".** An empty place
                             // is the ordinary state of a paper nobody has been
                             // sent yet, rule 13, and the word chooses between
                             // those two readings for somebody scanning six of
                             // them at eleven at night.
-                            subtitle = strings[
+                            support = strings[
                                 if (paper.isFilled) {
                                     "project.papers.filed"
                                 } else {
                                     "project.papers.waiting"
                                 },
                             ],
-                            chevron = true,
+                            isDoor = true,
                             onClick = { onOpen(paper) },
-                            divider = index != papers.lastIndex,
                             modifier = Modifier.testTag(ProjectPapersTags.paper(paper.id)),
                         )
+                        if (index != papers.lastIndex) RowDivider(inset = false)
                     }
                 }
             }

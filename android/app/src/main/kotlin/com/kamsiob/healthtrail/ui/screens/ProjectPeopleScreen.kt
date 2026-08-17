@@ -18,13 +18,13 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Avatar
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
 
 object ProjectPeopleTags {
     const val NAME = "project-people"
@@ -101,12 +101,12 @@ fun ProjectPeopleScreen(
             val person = entry.person
             Column {
                 Block(padding = Space.none) {
-                    DenseRow(
+                    ListRow(
                         title = Bidi.isolate(person.displayName),
                         // **Their role, then how often and when.** The role is
                         // what a person is looking for months later; the count
                         // is context and never a judgment on anybody.
-                        subtitle = Bidi.join(
+                        support = Bidi.join(
                             person.roleLabel?.takeIf { it.isNotBlank() },
                             strings("project.people.mentions", "count" to entry.mentions),
                             entry.lastEdtf?.let {
@@ -116,15 +116,13 @@ fun ProjectPeopleScreen(
                                 )
                             },
                         ),
-                        subtitleMaxLines = 2,
                         leading = {
                             Avatar(
                                 name = person.displayName,
                                 hue = hueFor(Repository.Section.CARE_TEAM),
                             )
                         },
-                        chevron = true,
-                        divider = false,
+                        isDoor = true,
                         onClick = { onOpenPerson(person) },
                         modifier = Modifier.testTag(ProjectPeopleTags.person(person.id)),
                     )
@@ -148,20 +146,19 @@ fun ProjectPeopleScreen(
                 entry.alsoIn.forEach { other ->
                     Spacer(Modifier.height(Space.s))
                     Block(padding = Space.none) {
-                        DenseRow(
+                        ListRow(
                             title = strings(
                                 "project.people.also_in",
                                 "name" to Bidi.isolate(person.displayName),
                             ),
-                            subtitle = Bidi.isolate(other.name),
+                            support = Bidi.isolate(other.name),
                             // **Marked as a project.** Without it this card is
                             // the same white row as the person above it and
                             // reads as another person rather than as a door
                             // into another process. The gold waypoint is what
                             // the entry screen already uses to mean a project.
                             leading = { WaypointDot(color = colors.gold) },
-                            chevron = true,
-                            divider = false,
+                            isDoor = true,
                             onClick = { onOpenProject(other) },
                             modifier = Modifier.testTag(
                                 ProjectPeopleTags.alsoIn(other.id),
@@ -190,11 +187,10 @@ fun ProjectPeopleScreen(
                 )
             }
             Block(padding = Space.none) {
-                DenseRow(
+                ListRow(
                     title = strings["notebook.section.care_team"],
-                    subtitle = strings("project.people.care_team.count", "count" to careTeamSize),
-                    chevron = true,
-                    divider = false,
+                    support = strings("project.people.care_team.count", "count" to careTeamSize),
+                    isDoor = true,
                     onClick = onOpenCareTeam,
                     modifier = Modifier.testTag(ProjectPeopleTags.CARE_TEAM),
                 )

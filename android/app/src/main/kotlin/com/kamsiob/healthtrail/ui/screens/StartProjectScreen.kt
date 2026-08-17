@@ -25,7 +25,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.Aside
@@ -42,6 +41,8 @@ import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object StartProjectTags {
     const val OWN = "start_project_own"
@@ -341,7 +342,7 @@ private fun Templates(
 
     Block(padding = Space.none) {
         templates.forEachIndexed { index, template ->
-            DenseRow(
+            ListRow(
                 // **Isolated even though it is catalog copy rather than the
                 // person's own words.** The sixteen are English until #62
                 // translates them, so in an Arabic layout every one of these is
@@ -349,14 +350,9 @@ private fun Templates(
                 // rule exists for. A name ending in a bracket or a digit
                 // reorders against the layout without it.
                 title = Bidi.isolate(template.name),
-                subtitle = template.subtitle.takeIf { it.isNotBlank() }
+                support = template.subtitle.takeIf { it.isNotBlank() }
                     ?.let { Bidi.isolate(it) },
-                // **Uncapped, because this subtitle is a sentence somebody
-                // reads to choose.** At one line every row ended mid-sentence,
-                // and at two they did it again the moment the system font
-                // reached 2.0. Any fixed cap truncates at some size.
-                subtitleMaxLines = Int.MAX_VALUE,
-                trailing = template.steps.size
+                value = template.steps.size
                     .takeIf { it > 0 }
                     ?.let { strings("projects.step_count", "count" to it) },
                 // **The count sits beside the first line of the name.** These
@@ -364,12 +360,12 @@ private fun Templates(
                 // a centered trailing floated in the middle of a tall row,
                 // reading as part of neither. Money's wrapping amount hit the
                 // same collision and this is that fix. #376.
-                trailingAtTop = true,
-                chevron = true,
-                divider = index < templates.lastIndex,
+                valueAtTop = true,
+                isDoor = true,
                 onClick = { onChoose(template) },
                 modifier = Modifier.testTag(StartProjectTags.template(template.id)),
             )
+            if (index < templates.lastIndex) RowDivider(inset = false)
         }
     }
 
@@ -407,12 +403,12 @@ private fun OwnTemplates(
     val strings = LocalStrings.current
     Block(padding = Space.none) {
         own.forEachIndexed { index, template ->
-            DenseRow(
+            ListRow(
                 title = Bidi.isolate(template.name),
-                subtitle = strings[
+                support = strings[
                     if (template.derivedFromId != null) "library.derived" else "library.scratch"
                 ],
-                trailing = template.steps.size
+                value = template.steps.size
                     .takeIf { it > 0 }
                     ?.let { strings("projects.step_count", "count" to it) },
                 // **The count sits beside the first line of the name.** These
@@ -420,12 +416,12 @@ private fun OwnTemplates(
                 // a centered trailing floated in the middle of a tall row,
                 // reading as part of neither. Money's wrapping amount hit the
                 // same collision and this is that fix. #376.
-                trailingAtTop = true,
-                chevron = true,
-                divider = index < own.lastIndex,
+                valueAtTop = true,
+                isDoor = true,
                 onClick = { onChoose(template) },
                 modifier = Modifier.testTag(StartProjectTags.ownTemplate(template.id)),
             )
+            if (index < own.lastIndex) RowDivider(inset = false)
         }
     }
 }
@@ -471,12 +467,10 @@ private fun OwnProject(onStart: (String) -> Unit) {
             .background(colors.card)
             .testTag(StartProjectTags.OWN),
     ) {
-        DenseRow(
+        ListRow(
             title = strings["projects.blank"],
-            subtitle = strings["projects.blank.aside"],
-            subtitleMaxLines = Int.MAX_VALUE,
-            chevron = !open,
-            divider = false,
+            support = strings["projects.blank.aside"],
+            isDoor = !open,
             onClick = if (open) null else { { open = true } },
             clickLabel = strings["projects.start"],
         )

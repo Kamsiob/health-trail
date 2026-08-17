@@ -15,6 +15,8 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DateRow
@@ -29,7 +31,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.PaddingValues
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.LatestWordCard
@@ -295,11 +296,14 @@ fun ProjectHomeScreen(
             }
             item {
                 GroupHeaderText(label = strings["project.story"])
-                DenseRow(
-                    title = strings["project.story.line"],
-                    subtitle = storyLine(project, entries, papers, peopleCount, strings),
-                    modifier = Modifier.testTag(ProjectHomeTags.STORY),
-                )
+                Column {
+                    ListRow(
+                        title = strings["project.story.line"],
+                        support = storyLine(project, entries, papers, peopleCount, strings),
+                        modifier = Modifier.testTag(ProjectHomeTags.STORY),
+                    )
+                    RowDivider(inset = false)
+                }
                 Text(
                     text = strings["project.story.kept"],
                     style = type.bodyS,
@@ -525,44 +529,43 @@ fun ProjectHomeScreen(
             GroupHeader(labelKey = "project.file")
             Spacer(Modifier.height(Space.headerGap))
             Block(padding = Space.none) {
-                DenseRow(
+                ListRow(
                     title = strings["project.fold.steps"],
-                    trailing = strings("projects.step_count", "count" to steps.size),
-                    chevron = true,
-                    divider = true,
+                    value = strings("projects.step_count", "count" to steps.size),
+                    isDoor = true,
                     onClick = onOpenSteps,
                     modifier = Modifier.testTag(ProjectHomeTags.STEPS),
                 )
-                DenseRow(
+                RowDivider(inset = false)
+                ListRow(
                     title = strings["project.fold.trail"],
-                    trailing = trailCount.toString(),
-                    chevron = true,
-                    divider = true,
+                    value = trailCount.toString(),
+                    isDoor = true,
                     onClick = onOpenTrail,
                     modifier = Modifier.testTag(ProjectHomeTags.TRAIL),
                 )
-                DenseRow(
+                RowDivider(inset = false)
+                ListRow(
                     title = strings["project.fold.papers"],
                     // bidi-ok: a bare count with no direction of its own, the
                     // same shape every fold in the app has always carried.
-                    trailing = papers.size.toString(),
-                    chevron = true,
-                    divider = true,
+                    value = papers.size.toString(),
+                    isDoor = true,
                     onClick = onOpenPaperwork,
                     modifier = Modifier.testTag(ProjectHomeTags.PAPERS),
                 )
-                DenseRow(
+                RowDivider(inset = false)
+                ListRow(
                     title = strings["project.fold.people"],
-                    trailing = peopleCount.toString(),
-                    chevron = true,
-                    divider = true,
+                    value = peopleCount.toString(),
+                    isDoor = true,
                     onClick = onOpenPeople,
                     modifier = Modifier.testTag(ProjectHomeTags.PEOPLE),
                 )
-                DenseRow(
+                RowDivider(inset = false)
+                ListRow(
                     title = strings["project.setup.open"],
-                    chevron = true,
-                    divider = false,
+                    isDoor = true,
                     onClick = onOpenSetup,
                     modifier = Modifier.testTag(ProjectHomeTags.SETUP),
                 )

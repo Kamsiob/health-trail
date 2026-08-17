@@ -43,7 +43,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
@@ -58,6 +57,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object UnfiledTags {
     const val ROOT = "unfiled_root"
@@ -236,15 +237,14 @@ fun UnfiledTrayScreen(
                         item(key = "behind_list") {
                             Block(padding = Space.none) {
                                 behind.forEachIndexed { index, entry ->
-                                    DenseRow(
+                                    ListRow(
                                         title = Bidi.isolate(
                                             entry.title?.takeIf { it.isNotBlank() }
                                                 ?: strings[kindKey(entry.kind)],
                                         ),
-                                        trailing = EventDateText.render(
+                                        value = EventDateText.render(
                                             strings, entry.occurredEdtf,
                                         ),
-                                        divider = index < behind.size - 1,
                                         // Tapping one brings it to the front,
                                         // which is the only thing this list can
                                         // usefully do: it is a queue, and the
@@ -263,6 +263,7 @@ fun UnfiledTrayScreen(
                                         },
                                         modifier = Modifier.testTag(UnfiledTags.behind(entry.id)),
                                     )
+                                    if (index < behind.size - 1) RowDivider(inset = false)
                                 }
                             }
                             Spacer(Modifier.height(Space.cardGap))

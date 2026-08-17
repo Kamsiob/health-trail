@@ -23,7 +23,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.EdtfSaver
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -31,6 +30,8 @@ import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ChoiceRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
@@ -129,9 +130,15 @@ fun StageSheet(
 
             Block(padding = Space.none) {
                 stages.forEachIndexed { index, stage ->
-                    DenseRow(
-                        title = Bidi.isolate(stage.name),
-                        subtitle = stage.enteredEdtf
+                    // **A choice, so it announces as one.** The sheet asks which
+                    // stage the project is at and the answer is one of these;
+                    // a plain row would have said which one is current only by
+                    // its wash, which a reader cannot hear.
+                    ChoiceRow(
+                        label = Bidi.isolate(stage.name),
+                        selected = stage.id == currentStageId,
+                        onClick = { onPick(stage, on) },
+                        detail = stage.enteredEdtf
                             ?.let {
                                 strings(
                                     "project.stage.reached",
@@ -139,11 +146,9 @@ fun StageSheet(
                                 )
                             }
                             ?: strings["project.stage.not_reached"],
-                        selected = stage.id == currentStageId,
-                        onClick = { onPick(stage, on) },
-                        divider = index < stages.lastIndex,
                         modifier = Modifier.testTag(StageTags.stage(stage.id)),
                     )
+                    if (index < stages.lastIndex) RowDivider(inset = false)
                 }
             }
 

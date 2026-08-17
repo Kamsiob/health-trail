@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.ChoiceRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -144,19 +146,27 @@ fun ChipPickerSheet(
                     modifier = Modifier.fillMaxWidth().heightIn(max = LIST_MAX),
                 ) {
                     items(shown, key = { it.id }) { option ->
-                        DenseRow(
-                            // bidi-ok: every caller isolates before handing it here.
-                            title = option.label,
-                            // bidi-ok: every caller isolates before handing it here.
-                            subtitle = option.detail,
-                            leading = option.routeColor?.let { color ->
-                                { RouteSwatch(color = color, index = option.routeIndex) }
-                            },
-                            selected = option.id == selectedId,
-                            divider = option != shown.last(),
-                            onClick = { onPick(option) },
-                            modifier = Modifier.testTag(ChipPickerTags.option(option.id)),
-                        )
+                        // A lazy item is one slot, so the row and the line
+                        // under it share a column of their own.
+                        Column {
+                            // **A choice rather than a row**, because this list
+                            // is a question with one answer: the chosen option
+                            // announces as chosen instead of being told apart
+                            // by its wash alone.
+                            ChoiceRow(
+                                // bidi-ok: every caller isolates before handing it here.
+                                label = option.label,
+                                selected = option.id == selectedId,
+                                onClick = { onPick(option) },
+                                // bidi-ok: every caller isolates before handing it here.
+                                detail = option.detail,
+                                leading = option.routeColor?.let { color ->
+                                    { RouteSwatch(color = color, index = option.routeIndex) }
+                                },
+                                modifier = Modifier.testTag(ChipPickerTags.option(option.id)),
+                            )
+                            if (option != shown.last()) RowDivider(inset = false)
+                        }
                     }
                 }
             }

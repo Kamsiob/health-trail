@@ -18,6 +18,8 @@ import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.TabHue
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 /**
  * One round of lab work: the draw, its reason, and every test in it.
@@ -114,11 +116,14 @@ fun RoundTestRow(
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    DenseRow(
-        title = name,
-        subtitle = status,
-        chevron = true,
-        onClick = onOpen,
-        modifier = modifier,
-    )
+    Column {
+        ListRow(
+            title = name,
+            support = status,
+            isDoor = true,
+            onClick = onOpen,
+            modifier = modifier,
+        )
+        RowDivider(inset = false)
+    }
 }

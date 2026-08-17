@@ -42,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.Box
 import com.kamsiob.healthtrail.ui.components.arrivesInOrder
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf

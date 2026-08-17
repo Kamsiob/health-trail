@@ -26,6 +26,8 @@ import com.kamsiob.healthtrail.ui.components.ViewOption
 import com.kamsiob.healthtrail.ui.components.ViewToggle
 import com.kamsiob.healthtrail.ui.components.rememberViewChoice
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
@@ -33,7 +35,6 @@ import java.time.ZoneId
 import java.time.temporal.WeekFields
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -256,19 +257,21 @@ private fun AppointmentRow(
     // **The date is the trailing value**, because it is what somebody scans a
     // list of appointments by, and it is data so it is Mono and tabular. Where
     // it is and any note become the second line.
-    DenseRow(
-        title = Bidi.isolate(appointment.title),
-        subtitle = listOfNotNull(
-            appointment.locationNote?.takeIf { it.isNotBlank() },
-            appointment.notes?.takeIf { it.isNotBlank() },
-        ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
-        trailing = EventDateText.render(strings, appointment.scheduledEdtf),
-        chevron = true,
-        divider = !isLast,
-        onClick = onOpen,
-        clickLabel = strings["open.action"],
-        modifier = Modifier.testTag(ApptTags.row(appointment.id)),
-    )
+    Column {
+        ListRow(
+            title = Bidi.isolate(appointment.title),
+            support = listOfNotNull(
+                appointment.locationNote?.takeIf { it.isNotBlank() },
+                appointment.notes?.takeIf { it.isNotBlank() },
+            ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
+            value = EventDateText.render(strings, appointment.scheduledEdtf),
+            isDoor = true,
+            onClick = onOpen,
+            clickLabel = strings["open.action"],
+            modifier = Modifier.testTag(ApptTags.row(appointment.id)),
+        )
+        if (!isLast) RowDivider(inset = false)
+    }
 }
 
 /**

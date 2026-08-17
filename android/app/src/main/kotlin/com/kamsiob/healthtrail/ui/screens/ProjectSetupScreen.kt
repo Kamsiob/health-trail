@@ -19,13 +19,14 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object ProjectSetupTags {
     const val NAME = "project-setup"
@@ -153,34 +154,35 @@ fun ProjectSetupScreen(
         // rule 13 rules out saying how many of them somebody has got through.
         item {
             Block(padding = Space.none) {
-                DenseRow(
+                ListRow(
                     title = strings["project.setup.stages"],
                     // **Joined by Bidi rather than by a dot**, because these
                     // are names a family typed and a run of them in one script
                     // inside a layout in another reorders without an isolate
                     // around each. `Bidi.join` also drops the blanks, so a
                     // stage with no name cannot produce a stray separator.
-                    subtitle = Bidi.join(stages.map { it.name })
+                    support = Bidi.join(stages.map { it.name })
                         .ifBlank { strings["project.setup.nothing_yet"] },
-                    subtitleMaxLines = 2,
-                    chevron = true,
+                    isDoor = true,
                     onClick = onOpenRoad,
                     modifier = Modifier.testTag(ProjectSetupTags.STAGES),
                 )
+                RowDivider(inset = false)
                 // **A door, not a line.** 20.5 screen 18 draws this with a
                 // chevron, and adding, editing, reordering and removing a step
                 // all went with the superseded detail screen: the repository
                 // has kept every one of those calls with nothing reachable
                 // making them. A screen that says everything is changeable and
                 // offers no way to change it is the promise without the thing.
-                DenseRow(
+                ListRow(
                     title = strings["project.setup.steps"],
-                    subtitle = strings("projects.step_count", "count" to steps.size),
-                    chevron = true,
+                    support = strings("projects.step_count", "count" to steps.size),
+                    isDoor = true,
                     onClick = onOpenSteps,
                     modifier = Modifier.testTag(ProjectSetupTags.STEPS),
                 )
-                DenseRow(
+                RowDivider(inset = false)
+                ListRow(
                     title = strings["project.setup.papers"],
                     // **How many places there are, and not how many are
                     // filled.** `ProjectPaperworkScreen` says why in as many
@@ -194,21 +196,20 @@ fun ProjectSetupScreen(
                     //
                     // **The papers screen's own key**, rather than a second one
                     // saying nearly the same thing in four languages. D133.
-                    subtitle = strings(
+                    support = strings(
                         "project.paperwork.count",
                         "count" to papers.size,
                     ),
-                    chevron = true,
+                    isDoor = true,
                     onClick = onOpenPapers,
                     modifier = Modifier.testTag(ProjectSetupTags.PAPERS),
                 )
-                DenseRow(
+                RowDivider(inset = false)
+                ListRow(
                     title = strings["project.setup.kinds"],
-                    subtitle = Bidi.join(dateKinds)
+                    support = Bidi.join(dateKinds)
                         .ifBlank { strings["project.setup.nothing_yet"] },
-                    subtitleMaxLines = 2,
-                    divider = false,
-                    chevron = true,
+                    isDoor = true,
                     onClick = onOpenKinds,
                     modifier = Modifier.testTag(ProjectSetupTags.KINDS),
                 )

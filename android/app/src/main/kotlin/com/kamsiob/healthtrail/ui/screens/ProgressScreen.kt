@@ -28,7 +28,6 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChartCard
 import com.kamsiob.healthtrail.ui.components.ChartHeight
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -36,6 +35,8 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.chartPoints
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object ProgressTags {
     const val NAME = "progress"
@@ -209,17 +210,17 @@ fun ProgressScreen(
                 Block(padding = Space.none) {
                     others.forEachIndexed { index, measure ->
                         val forMeasure = byMeasure[measure.id].orEmpty()
-                        DenseRow(
+                        ListRow(
                             title = Bidi.isolate(measure.name),
-                            trailing = latestOf(strings, measure, forMeasure, brief = true)
+                            value = latestOf(strings, measure, forMeasure, brief = true)
                                 ?: strings("progress.readings", "count" to 0),
-                            divider = index < others.size - 1,
                             onClick = {
                                 chosen = measure.id
                                 everyReading = false
                             },
                             modifier = Modifier.testTag(ProgressTags.measure(measure.id)),
                         )
+                        if (index < others.size - 1) RowDivider(inset = false)
                     }
                 }
                 Spacer(Modifier.height(Space.cardGap))

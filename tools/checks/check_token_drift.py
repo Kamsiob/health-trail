@@ -65,7 +65,7 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # 119 once the Today card stopped typing its own minimum height and took the
 # field's one card height from the grid instead. Owner, 2026-08-17: two widths,
 # one height, no third size.
-BASELINE = 119
+BASELINE = 111
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

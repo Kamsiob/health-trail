@@ -25,7 +25,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.Avatar
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -38,6 +37,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object IncidentTags {
     const val LIST_NAME = "incidents"
@@ -387,9 +388,9 @@ fun IncidentScreen(
             item(key = "people") {
                 Block(padding = Space.none) {
                     people.forEachIndexed { index, person ->
-                        DenseRow(
+                        ListRow(
                             title = Bidi.isolate(person.displayName),
-                            subtitle = person.roleLabel?.takeIf { it.isNotBlank() }
+                            support = person.roleLabel?.takeIf { it.isNotBlank() }
                                 ?.let { Bidi.isolate(it) },
                             leading = {
                                 Avatar(
@@ -397,11 +398,11 @@ fun IncidentScreen(
                                     hue = hueFor(Repository.Section.CARE_TEAM),
                                 )
                             },
-                            chevron = true,
-                            divider = index < people.size - 1,
+                            isDoor = true,
                             onClick = { onOpenPerson(person) },
                             modifier = Modifier.testTag(IncidentTags.person(person.id)),
                         )
+                        if (index < people.size - 1) RowDivider()
                     }
                 }
                 Spacer(Modifier.height(Space.cardGap))
@@ -461,9 +462,9 @@ fun IncidentScreen(
             item(key = "violations") {
                 Block(padding = Space.none) {
                     violations.forEachIndexed { index, violation ->
-                        DenseRow(
+                        ListRow(
                             title = Bidi.isolate(violation.instructionName.orEmpty()),
-                            subtitle = violation.note?.takeIf { it.isNotBlank() }
+                            support = violation.note?.takeIf { it.isNotBlank() }
                                 ?.let { Bidi.isolate(it) },
                             // **The way back is the list of what was asked
                             // for**, because a request has no screen of its
@@ -472,10 +473,10 @@ fun IncidentScreen(
                             // limit, B6.
                             onClick = onOpenViolations,
                             clickLabel = strings["open.action"],
-                            chevron = true,
-                            divider = index < violations.size - 1,
+                            isDoor = true,
                             modifier = Modifier.testTag(IncidentTags.violation(violation.id)),
                         )
+                        if (index < violations.size - 1) RowDivider(inset = false)
                     }
                 }
                 Spacer(Modifier.height(Space.cardGap))

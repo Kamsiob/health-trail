@@ -25,7 +25,6 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -36,6 +35,8 @@ import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -119,18 +120,18 @@ fun ProjectRoadScreen(
         item {
             Block(padding = Space.none) {
                 stages.forEachIndexed { index, stage ->
-                    DenseRow(
+                    ListRow(
                         title = Bidi.isolate(stage.name),
-                        subtitle = if (stage.isReached) {
+                        support = if (stage.isReached) {
                             strings["project.road.reached"]
                         } else {
                             null
                         },
-                        chevron = true,
+                        isDoor = true,
                         onClick = { onOpen(stage) },
-                        divider = index != stages.lastIndex,
                         modifier = Modifier.testTag(ProjectRoadTags.stage(stage.id)),
                     )
+                    if (index != stages.lastIndex) RowDivider(inset = false)
                 }
             }
         }

@@ -23,7 +23,6 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -31,6 +30,8 @@ import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -99,13 +100,13 @@ fun ProjectDateKindsScreen(
             item {
                 Block(padding = Space.none) {
                     kinds.forEachIndexed { index, kind ->
-                        DenseRow(
+                        ListRow(
                             title = Bidi.isolate(kind.label),
-                            chevron = true,
+                            isDoor = true,
                             onClick = { onOpen(kind) },
-                            divider = index != kinds.lastIndex,
                             modifier = Modifier.testTag(ProjectKindsTags.kind(kind.id)),
                         )
+                        if (index != kinds.lastIndex) RowDivider(inset = false)
                     }
                 }
             }

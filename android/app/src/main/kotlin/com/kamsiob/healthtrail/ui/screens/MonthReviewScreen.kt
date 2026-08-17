@@ -20,7 +20,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -33,6 +32,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
 
 object ReviewTags {
@@ -181,9 +182,9 @@ fun MonthReviewScreen(
             group(key = "where", headingKey = "review.where") {
                 Block(padding = Space.none) {
                     places.forEachIndexed { index, chapter ->
-                        DenseRow(
+                        ListRow(
                             title = Bidi.isolate(chapter.name),
-                            subtitle = strings[
+                            support = strings[
                                 when {
                                     chapter.id in began && chapter.id in ended ->
                                         "review.bothends"
@@ -191,11 +192,11 @@ fun MonthReviewScreen(
                                     else -> "review.ended"
                                 },
                             ],
-                            chevron = true,
-                            divider = index < places.lastIndex,
+                            isDoor = true,
                             onClick = { onOpenChapter(chapter) },
                             modifier = Modifier.testTag(ReviewTags.chapter(chapter.id)),
                         )
+                        if (index < places.lastIndex) RowDivider(inset = false)
                     }
                 }
             }
@@ -205,22 +206,22 @@ fun MonthReviewScreen(
             group(key = "appointments", headingKey = "review.appointments") {
                 Block(padding = Space.none) {
                     review.appointments.forEachIndexed { index, appointment ->
-                        DenseRow(
+                        ListRow(
                             title = Bidi.isolate(
                                 appointment.title.ifBlank { strings["prep.untitled"] },
                             ),
                             // The date at exactly the precision somebody gave
                             // it, in mono because a date beside a name is data.
-                            trailing = appointment.scheduledEdtf
+                            value = appointment.scheduledEdtf
                                 ?.takeIf { it.isNotBlank() }
                                 ?.let { EventDateText.render(strings, it) },
-                            chevron = true,
-                            divider = index < review.appointments.lastIndex,
+                            isDoor = true,
                             onClick = { onOpenAppointment(appointment) },
                             modifier = Modifier.testTag(
                                 ReviewTags.appointment(appointment.id),
                             ),
                         )
+                        if (index < review.appointments.lastIndex) RowDivider(inset = false)
                     }
                 }
             }
@@ -263,15 +264,15 @@ fun MonthReviewScreen(
             group(key = "documents", headingKey = "review.documents") {
                 Block(padding = Space.none) {
                     review.documents.forEachIndexed { index, document ->
-                        DenseRow(
+                        ListRow(
                             title = Bidi.isolate(document.title),
-                            subtitle = document.category?.takeIf { it.isNotBlank() }
+                            support = document.category?.takeIf { it.isNotBlank() }
                                 ?.let { Bidi.isolate(it) },
-                            chevron = true,
-                            divider = index < review.documents.lastIndex,
+                            isDoor = true,
                             onClick = { onOpenDocument(document) },
                             modifier = Modifier.testTag(ReviewTags.document(document.id)),
                         )
+                        if (index < review.documents.lastIndex) RowDivider(inset = false)
                     }
                 }
             }
@@ -372,16 +373,16 @@ private fun IncidentRows(
     val strings = LocalStrings.current
     Block(padding = Space.none) {
         incidents.forEachIndexed { index, incident ->
-            DenseRow(
+            ListRow(
                 title = Bidi.isolate(incident.title),
-                subtitle = stateOf(incident)?.let { strings[it] },
-                trailing = incident.reportedEdtf?.takeIf { it.isNotBlank() }
+                support = stateOf(incident)?.let { strings[it] },
+                value = incident.reportedEdtf?.takeIf { it.isNotBlank() }
                     ?.let { EventDateText.render(strings, it) },
-                chevron = true,
-                divider = index < incidents.lastIndex,
+                isDoor = true,
                 onClick = { onOpen(incident) },
                 modifier = Modifier.testTag(ReviewTags.incident(incident.id)),
             )
+            if (index < incidents.lastIndex) RowDivider(inset = false)
         }
     }
 }

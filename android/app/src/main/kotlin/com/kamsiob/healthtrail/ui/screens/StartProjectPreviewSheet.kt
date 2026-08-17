@@ -22,7 +22,6 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.RoadSize
@@ -32,6 +31,8 @@ import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -132,23 +133,21 @@ fun StartProjectPreviewSheet(
             }
 
             Block(padding = Space.none) {
-                DenseRow(
+                ListRow(
                     title = strings("project.preview.steps", "count" to template.steps.size),
-                    subtitle = strings["project.preview.steps.aside"],
-                    subtitleMaxLines = 3,
+                    support = strings["project.preview.steps.aside"],
                     modifier = Modifier.testTag(StartPreviewTags.STEPS),
                 )
-                DenseRow(
+                RowDivider(inset = false)
+                ListRow(
                     title = strings("project.preview.papers", "count" to template.papers.size),
-                    subtitle = strings["project.preview.papers.aside"],
-                    subtitleMaxLines = 3,
+                    support = strings["project.preview.papers.aside"],
                     modifier = Modifier.testTag(StartPreviewTags.PAPERS),
                 )
-                DenseRow(
+                RowDivider(inset = false)
+                ListRow(
                     title = strings["project.preview.kinds"],
-                    subtitle = strings["project.preview.kinds.aside"],
-                    subtitleMaxLines = 3,
-                    divider = false,
+                    support = strings["project.preview.kinds.aside"],
                     modifier = Modifier.testTag(StartPreviewTags.KINDS),
                 )
             }
