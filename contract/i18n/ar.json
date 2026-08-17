@@ -565,6 +565,7 @@
   "document.filed_as": "محفوظ ضمن",
   "document.folder": "المجلد الذي هو فيه",
   "document.nophoto": "لا توجد صورة له بعد. ما دُوّن عنه موجود هنا، ويمكن إضافة صورة متى توفرت.",
+  "document.received": "وصل في {date}",
   "document.save": "احفظ الورقة أو شاركها",
   "document.save.chooser": "احفظ أو شارك",
   "document.save.failed": "تعذر فتحها الآن. الورقة ما زالت هنا.",

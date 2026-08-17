@@ -565,6 +565,7 @@
   "document.filed_as": "归档为",
   "document.folder": "它所在的文件夹",
   "document.nophoto": "还没有它的照片。您记下的内容都在这里，有照片时随时可以补上。",
+  "document.received": "{date} 收到",
   "document.save": "保存或分享这份文件",
   "document.save.chooser": "保存或分享",
   "document.save.failed": "现在打不开。文件还在。",

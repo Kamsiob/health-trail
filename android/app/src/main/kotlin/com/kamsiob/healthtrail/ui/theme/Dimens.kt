@@ -66,6 +66,16 @@ object Space {
      */
     val markTile: Dp = 44.dp
 
+    /**
+     * A mark set inside a line of type, or inside an action beside its label.
+     *
+     * **Smaller than the 24dp a symbol draws at on its own**, because a glyph
+     * matched to a 24dp box beside 16sp text reads as a second word rather than
+     * as a mark on the line. `m3v4-5` sets the calendar this way beside its
+     * date and the zoom mark this way inside its button. D183.
+     */
+    val markInline: Dp = 20.dp
+
     /** Between stacked elements. */
     val cardGap: Dp = 10.dp
 

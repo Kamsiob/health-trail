@@ -1,14 +1,21 @@
 package com.kamsiob.healthtrail.ui.v4
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -62,6 +69,22 @@ fun Page(
     eyebrowColor: Color = HealthTrail.colors.goldInk,
     /** One line under the name, where the drawing puts what this page is for. */
     subtitle: String? = null,
+    /**
+     * A mark before the subtitle, which is how `m3v4-5` sets a date.
+     *
+     * Never announced: it draws what the words beside it already say,
+     * `docs/V4.md` 2.1.
+     */
+    @DrawableRes subtitleMark: Int? = null,
+    /**
+     * What the page leads with, above its own name.
+     *
+     * **`m3v4-5` puts the photograph of the paper here**, and the name of the
+     * document under it, because on a screen whose subject is an object the
+     * object is the heading and the words are the caption. Null on every page
+     * whose subject is its own title, which is most of them.
+     */
+    hero: (@Composable () -> Unit)? = null,
     /** A short state, drawn as a tonal pill opposite the back arrow. */
     badge: String? = null,
     /** What sits in the trailing corner: the tips lamp, an edit mark. */
@@ -73,6 +96,12 @@ fun Page(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                // **The page owns its insets**, because a page opens over the
+                // shell rather than inside it: without this the back arrow sits
+                // under the status bar and the first thing the person sees is
+                // their own paper with a clock on top of it. Seen on the phone,
+                // which is the only place it was visible. Rule 21.
+                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.ime))
                 .padding(horizontal = Space.screenHorizontal),
             verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
@@ -105,18 +134,34 @@ fun Page(
                 }
             }
 
+            hero?.let { lead -> item { lead() } }
+
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     eyebrow?.let { Eyebrow(text = it, color = eyebrowColor) }
                     Lead(text = title)
                     subtitle?.let {
-                        Body(
-                            // bidi-ok: this line is the app's own sentence about
-                            // what the page is for. A page whose subtitle is
-                            // somebody's words isolates them at its call site.
-                            text = it,
-                            style = HealthTrail.type.bodyL,
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Space.s),
+                        ) {
+                            subtitleMark?.let { mark ->
+                                Symbol(
+                                    symbol = mark,
+                                    contentDescription = null,
+                                    tint = colors.ink2,
+                                    modifier = Modifier.size(Space.markInline),
+                                )
+                            }
+                            Body(
+                                // bidi-ok: this line is the app's own sentence
+                                // about what the page is for. A page whose
+                                // subtitle is somebody's words isolates them at
+                                // its call site.
+                                text = it,
+                                style = HealthTrail.type.bodyL,
+                            )
+                        }
                     }
                 }
             }

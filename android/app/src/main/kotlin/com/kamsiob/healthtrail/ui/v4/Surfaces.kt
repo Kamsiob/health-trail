@@ -1,12 +1,15 @@
 package com.kamsiob.healthtrail.ui.v4
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +22,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.TextUnit
 import com.kamsiob.healthtrail.i18n.Bidi
+import com.kamsiob.healthtrail.ui.components.Symbol
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -187,6 +191,52 @@ fun BigNumber(
             style = HealthTrail.type.displayM,
             color = color,
         )
+    }
+}
+
+/**
+ * One fact, raised: a mark, the words naming it, and the sentence itself.
+ *
+ * **This is how `m3v4-5` draws where the paper is**, and it is the shape for
+ * any single fact a screen exists to carry: a gold block, the mark at the
+ * leading edge, a fixed capital label over the person's own words at reading
+ * size. The words are the content, so they are set at [HealthTrail.type.bodyL]
+ * rather than at a row's size: a row would put "signed and handed back to the
+ * ward clerk" at the same weight as a date, and that sentence is what saves the
+ * phone call six weeks later.
+ *
+ * **One of these per screen at most**, `docs/V4.md` 2.1. A second raised block
+ * is a rainbow and gives the eye nowhere to land.
+ */
+@Composable
+fun FactBlock(
+    label: String,
+    text: String,
+    modifier: Modifier = Modifier,
+    tone: BlockTone = BlockTone.Gold,
+    @DrawableRes mark: Int? = null,
+) {
+    Block(modifier = modifier, tone = tone) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            mark?.let {
+                // At the symbol's own 24dp, because this one is a mark on a
+                // block rather than a glyph on a line of type.
+                Symbol(symbol = it, contentDescription = null, tint = tone.label())
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+                // bidi-ok: the label is fixed app copy naming what the block
+                // holds, never the person's words. The sentence below it is
+                // theirs and the caller isolates it.
+                Eyebrow(text = label, color = tone.label())
+                Body(
+                    // bidi-ok: the caller isolates, because the sentence here is
+                    // usually somebody's own words and only the caller knows.
+                    text = text,
+                    color = HealthTrail.colors.ink,
+                    style = HealthTrail.type.bodyL,
+                )
+            }
+        }
     }
 }
 

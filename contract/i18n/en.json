@@ -565,6 +565,7 @@
   "document.filed_as": "Filed as",
   "document.folder": "The folder it is in",
   "document.nophoto": "No photograph of this one yet. What is written down about it is here, and a picture can be added whenever there is one.",
+  "document.received": "Received {date}",
   "document.save": "Save or share this paper",
   "document.save.chooser": "Save or share",
   "document.save.failed": "That could not be opened just now. The paper is still here.",

@@ -565,6 +565,7 @@
   "document.filed_as": "Archivado como",
   "document.folder": "La carpeta en la que está",
   "document.nophoto": "Todavía no hay una fotografía. Lo que usted anotó está aquí, y se puede añadir una imagen cuando la haya.",
+  "document.received": "Recibido el {date}",
   "document.save": "Guardar o compartir este papel",
   "document.save.chooser": "Guardar o compartir",
   "document.save.failed": "No se pudo abrir ahora mismo. El papel sigue aquí.",

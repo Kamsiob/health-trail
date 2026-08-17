@@ -1,9 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -13,18 +11,22 @@ import com.kamsiob.healthtrail.data.Attachments
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.DenseRow
-import com.kamsiob.healthtrail.ui.components.FILL
-import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.Thumbnail
-import com.kamsiob.healthtrail.ui.components.openableByTap
-import com.kamsiob.healthtrail.ui.components.Waypoint
-import com.kamsiob.healthtrail.ui.components.WaypointDot
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
+import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Body
+import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.IconAction
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
+import com.kamsiob.healthtrail.ui.v4.PaperCard
+import com.kamsiob.healthtrail.ui.v4.labeledBlock
 
 object OneDocTags {
     const val SAVE = "document_save"
@@ -35,29 +37,41 @@ object OneDocTags {
     const val CHAPTER = "document_chapter"
     const val FOLDER = "document_folder"
     fun project(id: String) = "document_project_$id"
+
+    /**
+     * The screen itself.
+     *
+     * **The tag the old scaffold produced**, written out rather than borrowed,
+     * so a journey that waits for this screen still finds it after the rewrite.
+     * `PageTags.BACK` keeps the way back the same way, #386.
+     */
+    const val ROOT = "section_root_document"
 }
 
 /**
- * One document: the paper itself, large.
+ * One document: the paper itself, large. Rewritten onto `ui/v4`, #386.
  *
- * **Tapping a document used to open the form that edits it**, the same defect
- * one bill had. A section whose whole point is that the app holds the person's
- * own paper had no screen that showed a piece of it at a size anybody could
- * read.
+ * **This is `m3v4-5` measured rather than remembered.** The drawing leads with
+ * the paper on a white card, puts the document's name under it as the caption,
+ * raises where the paper original is into a gold block with its own mark, and
+ * files everything the record links to under quiet labels below. The two marks
+ * opposite the back arrow are what to do with the paper: save it, or change
+ * what is written down about it.
  *
- * **The photograph is the one thing and it gets the width.** Everything the
- * record knows about it is underneath, in the order somebody needs it: where
- * the paper original actually is, when it arrived, and what it came out of.
+ * **Nothing here descends from the old set**, per `docs/ACCEPTANCE.md`: no
+ * `SectionScaffold`, no `GroupedSurface`, no `DenseRow`, no `GroupHeader`, no
+ * `Thumbnail`, no `QuietButton`.
  *
  * **Where the paper is matters more than the photograph does.** The schema says
  * so in its own comment and it is the reason this section exists: the digital
  * copy is rarely the one a clerk will accept, so "signed and handed back to the
  * ward clerk, copy in the blue folder" is the line that saves a phone call six
- * weeks later.
+ * weeks later. It is the one raised block on the screen, `docs/V4.md` 2.1.
  *
  * **A document with no photograph is a real document** and says so plainly
- * rather than showing an empty frame. Knowing the discharge summary exists and
- * lives in the blue folder is worth writing down before there is a picture.
+ * rather than showing an empty frame, rule 13. Knowing the discharge summary
+ * exists and lives in the blue folder is worth writing down before there is a
+ * picture.
  */
 @Composable
 fun DocumentScreen(
@@ -90,110 +104,139 @@ fun DocumentScreen(
     val colors = HealthTrail.colors
     val context = LocalContext.current
     val attachments = remember(context) { Attachments.open(context) }
+    // **Unknown is a first class value**, rule 17, and it is not "received on
+    // unknown". A date somebody chose not to give says so on its own line;
+    // wrapping it in the sentence produced "Received Date not known", which was
+    // invisible until the screen was on the phone. Rule 21.
+    val date = document.receivedEdtf?.takeIf { it.isNotBlank() }?.let { Edtf.parse(it) }
+    val received = when {
+        date == null || date.precision == Edtf.Precision.UNKNOWN -> strings["date.unknown"]
+        else -> strings("document.received", "date" to EventDateText.render(strings, date))
+    }
 
-    SectionScaffold(
-        onEdit = onEdit,
-        editTag = OneDocTags.EDIT,
-        editLabel = strings["document.edit"],
-        name = OneDocTags.NAME,
-        title = strings["notebook.section.documents"],
-        heading = Bidi.isolate(document.title),
-        section = Repository.Section.DOCUMENTS,
-        subtitle = document.receivedEdtf?.takeIf { it.isNotBlank() }
-            ?.let { EventDateText.render(strings, it) }
-            ?: strings["date.unknown"],
+    // The picture opens at reading size where there is one and a viewer to open
+    // it in. Both halves are the caller's, so the tap and the action under the
+    // card are decided once rather than twice.
+    val sha = document.sha256
+    val openPaper: (() -> Unit)? = if (sha != null && onOpenPaper != null) {
+        { onOpenPaper(sha) }
+    } else {
+        null
+    }
+
+    val paperCard: @Composable () -> Unit = {
+        PaperCard(
+            sha256 = sha,
+            attachments = attachments,
+            absent = strings["document.nophoto"],
+            imageLabel = strings["document.image.open"],
+            onOpen = openPaper,
+            action = openPaper?.let {
+                {
+                    // **Filled, because the card has exactly one action and a
+                    // tonal pill on a white card is barely a container.** The
+                    // drawing sets it solid for the same reason. It opens
+                    // rather than writes, so it does not tick.
+                    Action(
+                        label = strings["document.image.open"],
+                        onClick = it,
+                        emphasis = ActionEmphasis.Main,
+                        mark = Symbols.fullSize,
+                        confirms = false,
+                    )
+                }
+            },
+            modifier = Modifier.testTag(OneDocTags.IMAGE),
+        )
+    }
+
+    Page(
+        // The name is the person's own words for their paper.
+        title = Bidi.isolate(document.title),
         onBack = onBack,
-        backLabelKey = backLabelKey,
-        modifier = modifier,
+        backLabel = strings[backLabelKey],
+        subtitle = received,
+        // The calendar mark the drawing sets the date with. Not announced: it
+        // draws what the date beside it already says.
+        subtitleMark = Symbols.today,
+        // **The paper leads only when there is one.** With no photograph there
+        // is no hero, and a gray paragraph standing where the picture would be,
+        // above the person's own name for their document, inverts rule 15. The
+        // note moves under the facts instead.
+        hero = if (sha != null) paperCard else null,
+        actions = {
+            Row(horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+                // **Saving is the system sheet**, which is how a phone puts a
+                // file in Downloads, in the gallery, or into a message. The
+                // drawing puts a download mark and a share mark side by side;
+                // this app has one control for both, because the sheet Android
+                // opens is the same sheet.
+                if (sha != null && onSavePaper != null) {
+                    IconAction(
+                        symbol = Symbols.download,
+                        label = strings["document.save"],
+                        onClick = { onSavePaper(sha) },
+                        modifier = Modifier.testTag(OneDocTags.SAVE),
+                    )
+                }
+                IconAction(
+                    symbol = Symbols.edit,
+                    label = strings["document.edit"],
+                    onClick = onEdit,
+                    modifier = Modifier.testTag(OneDocTags.EDIT),
+                )
+            }
+        },
+        modifier = modifier.testTag(OneDocTags.ROOT),
     ) {
-        item {
-            if (document.sha256 != null) {
-                Thumbnail(
-                    sha256 = document.sha256,
-                    attachments = attachments,
-                    section = Repository.Section.DOCUMENTS,
-                    size = FILL,
-                    // **Decoded for the width it is drawn at**, not for a grid
-                    // cell. The photograph is the one thing on this screen
-                    // and it rendered at 512 pixels. #378.
-                    targetPixels = PAPER_PRESENT_PIXELS,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .then(
-                            if (onOpenPaper != null) {
-                                Modifier.openableByTap(
-                                    label = strings["document.image.open"],
-                                    onTap = { onOpenPaper(document.sha256) },
-                                )
-                            } else {
-                                Modifier
-                            },
-                        )
-                        .testTag(OneDocTags.IMAGE),
-                )
-            } else {
-                Text(
-                    text = strings["document.nophoto"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
-                    modifier = Modifier.testTag(OneDocTags.IMAGE),
-                )
-            }
-            if (document.sha256 != null && onSavePaper != null) {
-                Spacer(Modifier.height(Space.s))
-                QuietButton(
-                    label = strings["document.save"],
-                    onClick = { onSavePaper(document.sha256) },
-                    modifier = Modifier.testTag(OneDocTags.SAVE),
-                )
-            }
-            Spacer(Modifier.height(Space.sectionGap))
-        }
-
-        // **Where the paper is, at reading weight rather than in a row.** It is
-        // the sentence somebody came here for, and a row would put it at the
-        // same weight as a date.
+        // **The one raised block on this screen**, and it is not the picture.
         document.originalLocation?.takeIf { it.isNotBlank() }?.let { where ->
             item {
-                Text(
+                FactBlock(
+                    label = strings["docs.original"],
                     text = Bidi.isolate(where),
-                    style = HealthTrail.type.bodyL,
-                    color = colors.ink,
+                    mark = Symbols.whereThePaperIs,
                 )
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
+        // **Said after the facts rather than in place of the picture**, because
+        // a document with no photograph is a real document, rule 13, and what
+        // is written down about it is the point of the screen either way.
+        if (sha == null) {
+            item { paperCard() }
+        }
+
+        // What the person wrote about it, grouped as a thing rather than left
+        // loose on the canvas.
         document.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             item {
-                Text(
-                    text = Bidi.isolate(notes),
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
-                )
-                Spacer(Modifier.height(Space.cardGap))
+                Block {
+                    Body(text = Bidi.isolate(notes), color = colors.ink)
+                }
             }
         }
 
         // Both ways, per rule 18: a chapter lists its paperwork, and now a
         // piece of paperwork names its chapter.
         document.chapterId?.let { chapterId ->
-            val name = document.chapterName?.takeIf { it.isNotBlank() } ?: return@let
-            item {
-                Spacer(Modifier.height(Space.s))
-                GroupHeader(labelKey = "document.where")
-                Spacer(Modifier.height(Space.headerGap))
-                GroupedSurface {
-                    DenseRow(
-                        title = Bidi.isolate(name),
-                        leading = { WaypointDot(color = colors.gold, state = Waypoint.MILESTONE) },
-                        chevron = true,
-                        divider = false,
-                        onClick = { onOpenChapter(chapterId) },
-                        modifier = Modifier.testTag(OneDocTags.CHAPTER),
-                    )
-                }
-                Spacer(Modifier.height(Space.cardGap))
+            val name = document.chapterName?.takeIf { it.isNotBlank() }
+            if (name != null) {
+                labeledBlock(
+                    label = strings["document.where"],
+                    rows = listOf {
+                        ListRow(
+                            title = Bidi.isolate(name),
+                            mark = Symbols.chapters,
+                            markTint = colors.goldInk,
+                            markWash = colors.goldWash,
+                            isDoor = true,
+                            onClick = { onOpenChapter(chapterId) },
+                            clickLabel = name,
+                            modifier = Modifier.testTag(OneDocTags.CHAPTER),
+                        )
+                    },
+                )
             }
         }
 
@@ -203,73 +246,65 @@ fun DocumentScreen(
         // document has to be able to say where it was filed, which is rule 18:
         // if the folder shows the document, the document shows the folder. #221.
         document.category?.takeIf { it.isNotBlank() }?.let { folder ->
-            item {
-                Spacer(Modifier.height(Space.s))
-                GroupHeader(labelKey = "document.folder")
-                Spacer(Modifier.height(Space.headerGap))
-                GroupedSurface {
-                    DenseRow(
+            labeledBlock(
+                label = strings["document.folder"],
+                rows = listOf {
+                    ListRow(
                         title = Bidi.isolate(folder),
-                        divider = false,
-                        // **No chevron and no tap**, because a folder is not a
-                        // screen: it is a fold on the documents list. A row
+                        mark = Symbols.documents,
+                        // **The section's own wash**, not the default white
+                        // tile: a white square inside a sand block was the
+                        // loudest thing on the screen and it named a fold on a
+                        // list. Gold stays on the two rows that lead somewhere.
+                        markTint = hueFor(Repository.Section.DOCUMENTS).ink,
+                        markWash = hueFor(Repository.Section.DOCUMENTS).wash,
+                        // **No mark at the end and no tap**, because a folder is
+                        // not a screen: it is a fold on the documents list. A row
                         // that looked openable and was not would be the defect
                         // rule 11 names.
                         modifier = Modifier.testTag(OneDocTags.FOLDER),
                     )
-                }
-                Spacer(Modifier.height(Space.cardGap))
-            }
+                },
+            )
         }
 
         // **The other half of screen 13's link.** A project's papers open the
         // document; without this the document said nothing about the process it
         // belongs to, which is what somebody opening it from Documents months
         // later most wants to know. Rule 18.
-        if (filings.isNotEmpty()) {
-            item {
-                Spacer(Modifier.height(Space.s))
-                GroupHeader(labelKey = "document.filed_as")
-                Spacer(Modifier.height(Space.headerGap))
-                GroupedSurface {
-                    filings.forEachIndexed { index, filing ->
-                        DenseRow(
-                            title = Bidi.isolate(filing.projectName),
-                            // **The place, not just the project.** "The award
-                            // letter" is what the person called the slot, and
-                            // it is the half that says why this paper is there.
-                            subtitle = Bidi.isolate(filing.paperName),
-                            leading = { WaypointDot(color = colors.gold) },
-                            chevron = true,
-                            divider = index < filings.lastIndex,
-                            onClick = { onOpenProject(filing.projectId) },
-                            modifier = Modifier.testTag(OneDocTags.project(filing.projectId)),
-                        )
-                    }
+        labeledBlock(
+            label = strings["document.filed_as"],
+            rows = filings.map { filing ->
+                {
+                    ListRow(
+                        title = Bidi.isolate(filing.projectName),
+                        // **The place, not just the project.** "The award
+                        // letter" is what the person called the slot, and it is
+                        // the half that says why this paper is there.
+                        support = Bidi.isolate(filing.paperName),
+                        mark = Symbols.projects,
+                        markTint = colors.goldInk,
+                        markWash = colors.goldWash,
+                        isDoor = true,
+                        onClick = { onOpenProject(filing.projectId) },
+                        clickLabel = filing.projectName,
+                        modifier = Modifier.testTag(OneDocTags.project(filing.projectId)),
+                    )
                 }
-                Spacer(Modifier.height(Space.cardGap))
-            }
-        }
+            },
+        )
 
-        // **Both sized to their label**, D118, so neither competes with the way
-        // back. **Removing the document removes the record of it**, and the
-        // confirmation says so in the same words it says everywhere else.
+        // **Sized to its label**, D118, and quiet, because removing the record
+        // is never what this screen is for. **Removing the document removes the
+        // record of it**, and the confirmation says so in the same words it
+        // says everywhere else.
         item {
-            Spacer(Modifier.height(Space.sectionGap))
-            Spacer(Modifier.height(Space.cardGap))
-            QuietButton(
+            Action(
                 label = strings["remove.action"],
                 onClick = onRemove,
+                emphasis = ActionEmphasis.Quiet,
                 modifier = Modifier.testTag(OneDocTags.REMOVE),
             )
-            Spacer(Modifier.height(Space.l))
         }
     }
 }
-
-/**
- * The inline rendering's decode ceiling. Full screen width with headroom for
- * a modest pinch out in the viewer that opens from it; the viewer does its
- * own, larger decode.
- */
-private const val PAPER_PRESENT_PIXELS = 1440
