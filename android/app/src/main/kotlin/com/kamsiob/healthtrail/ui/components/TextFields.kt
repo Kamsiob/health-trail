@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
@@ -250,7 +251,20 @@ fun HealthTrailTextField(
                     if (value.isEmpty() && hint != null) {
                         Text(
                             text = hint,
-                            style = type.bodyL,
+                            // **Italic, so it does not read as content.** The
+                            // owner, 2026-08-17: "when you use the same font
+                            // and same style it looks like more text. there
+                            // needs to be a way to indicate that this is a
+                            // field that you type in beyond just the oval
+                            // around it."
+                            //
+                            // **Slant rather than a paler ink**, because paler
+                            // is the one thing this cannot be: D92 keeps text
+                            // at two levels and `ink3` is 2.37:1 on paper,
+                            // which `check_ink3_is_not_text.py` refuses. Slant
+                            // says "not yet typed" at full contrast, which is
+                            // what a hint somebody has to read needs.
+                            style = type.bodyL.copy(fontStyle = FontStyle.Italic),
                             color = colors.ink2,
                         )
                     }
@@ -386,7 +400,10 @@ fun FieldRow(
                         // caught this one the same minute it was written.
                         Text(
                             text = hint,
-                            style = type.bodyL,
+                            // Italic for the same reason as the field above:
+                            // slant says "this is where you type" without
+                            // spending contrast a hint cannot spare.
+                            style = type.bodyL.copy(fontStyle = FontStyle.Italic),
                             color = colors.ink2,
                         )
                     }

@@ -382,12 +382,13 @@ fun CaptureFormScreen(
                     lead = null,
                     section = Repository.Section.TRAIL,
                 )
-                    Spacer(Modifier.height(Space.betweenGroups))
+                    // The title and the terms are one thing: what this screen
+                    // is. They sit at the within value.
+                    Spacer(Modifier.height(Space.withinGroup))
                     Aside(text = strings["capture.sub"], section = Repository.Section.TRAIL)
 
-                // **The terms, then the question**, which are two zones rather
-                // than two paragraphs. D188.
-                Spacer(Modifier.height(Space.betweenZones))
+                // **The terms, then the question**, one group to the next.
+                Spacer(Modifier.height(Space.betweenGroups))
 
                 // **What happened comes first, and until 2026-08-03 it came
                 // last.** The person taps this having just put a phone down,
@@ -545,9 +546,23 @@ fun CaptureFormScreen(
                     // together, and at the same gap as everything else it read
                     // as a new section. Rule 15, D188.
                     Spacer(Modifier.height(Space.withinGroup))
+                    // **The shortcuts are a hint under the field, not a
+                    // section of their own.** The owner, 2026-08-17: the gap
+                    // above them and the gap below them said two different
+                    // things, and "it's not just a spacing issue, it's a visual
+                    // structure that's still kind of absent." The label was set
+                    // as a heading and sat eight points under a field, so the
+                    // type said "new section" while the air said "same thing".
+                    // These fill that field in: they get the field's own
+                    // supporting line and nothing louder.
+                    //
+                    // **A reader still hears the set named**, which is what
+                    // `showLabel` is for: the words stay at the call site and
+                    // in the semantics.
                     ChoiceChipGroup(
                         label = strings["capture.who.known"],
                         aside = strings["capture.who.known.aside"],
+                        showLabel = false,
                     ) {
                         shownPeople.forEach { person ->
                             ChoiceChip(
@@ -570,9 +585,11 @@ fun CaptureFormScreen(
                     }
                 }
 
-                // **The question, then the extras**, which is the third zone
-                // and gets the zone's own air. D188.
-                Spacer(Modifier.height(Space.betweenZones))
+                // **One group to the next**, which is the between value. The
+                // zone value is spent once, on the band that separates asking
+                // from acting, and spending it twice is what made the rhythm
+                // read as arbitrary. D188.
+                Spacer(Modifier.height(Space.betweenGroups))
 
                 // **Everything below here is behind one control nobody has to
                 // touch**, per 10.8 and the disclosure in `Disclosure.kt`.
