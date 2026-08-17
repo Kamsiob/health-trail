@@ -11,8 +11,8 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 ## 1. State
 
 - Tree clean, all on `origin/main`. CI green at tip: `gh run list --branch main --limit 3`.
-- **735 instrumented tests green**, 218 unit, 29 repo checks, lint. Full suite run on the phone 2026-08-17 after the sheet went app wide: 735 run, 0 failed, read from the counts.
-- **Do not build a release APK or AAB.** Owner holds delivery until he approves the design. The debug install is the rule 21 loop and is not what he is holding.
+- 218 unit, 29 repo checks, lint, all green. **The instrumented suite has not been run clean end to end since the Today work**: it died at 430 on the Compose alpha, and the class that failed passes alone. Run it and read the counts before believing anything about it.
+- **The APK is the last thing, not the next thing.** Owner, 2026-08-17: "the APK is after the full app is complete. all surfaces and widgets and buttons and text and styling and spacing and everything is updated to the material 3 expressive."
 - Phone at baseline, stays plugged in: font scale 1.0, animator 1.0, no reader, night mode `no`.
 
 ## 2. The work
@@ -37,15 +37,13 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 ### Next, in this order
 
-1. **The arranged Today**, `m3v4-0`, and **read D191 before touching it**. **There are two Today screens.** `NotebookShell` draws `TodayFieldScreen` when the subject has a `todayLayout` and `TodayScreen` when it does not, and **onboarding always writes one** (`AppRoot.kt` calls `applySituation` or `applyDefaultStartingHand`), so **every real notebook and every seed shows the card surface**. The shell's own comment saying otherwise is stale. The fallback is done. **What is left is `TodayFieldScreen` 2,643 lines, `TodayCard` 458, `TodayLead` 190**, all still in the old language, rewritten whole per rule 12 rather than edited.
+**The owner's acceptance for this run: a complete app, every surface on Material 3 Expressive, and then an APK. No APK before that.** 2026-08-17.
 
-   What the drawing wants that the card surface does not yet have: the next appointment as a **saturated blue lead** carrying its **location** and an **inset white card counting the questions ready for it**, and the measure card as a **white card** with the measure's name as its eyebrow, the value at display size, a **readings chip**, the **`Trace`** and the month it starts in. All five surfaces are written and waiting.
-
-   **No seed can show the fallback**: `generate.py` writes a layout whether or not `--arranged` is passed, deliberately. To see the fallback, set a notebook up through the app rather than seeding one.
-2. **The project screen**, `m3v4-2`. The owner has ruled: "it's absolutely horrid and so far away from the mock-ups." Gold decision block, status pill, one filled action beside two tonal, "The road" over the spine.
-3. **The rest of the lists and detail screens.** All one shape: `Page` + `labeledBlock` + `ListRow`.
-4. **Appointments and the documents list last of the lists**: each drags an old component in, `MonthGrid` and the thumbnail grid.
-5. Then phases 5 to 9 of `docs/ACCEPTANCE.md`.
+1. **Finish the arranged Today.** `TodayFieldScreen` 2,600+ lines, `TodayCard` 458, `TodayLead` 190. The hero, the header, the card surfaces and the measure card are done; the per-type answer bodies, arrange mode's controls, and the card gallery are not. D191, D192, D193.
+2. **The remaining screens**, roughly 64 of 85. All one shape: `Page` + `labeledBlock` + `ListRow`, with `Block`, `FactBlock`, `StatBlock`, `Trace`, `Chip`, `NextBlock` and `Road` where the content asks for them.
+3. **Appointments and the documents list last of the lists**: each drags an old component in, `MonthGrid` and the thumbnail grid.
+4. **More than one person in one notebook**, owner 2026-08-17, and it is a correctness job rather than a drawing one. All the testing so far has been on a single subject. What has to be proved: every query is scoped to the active subject and nothing leaks between them; export and restore keep them apart and do not merge or overwrite; **which subject is active is visible wherever it matters**; and **every write says plainly which profile it is going into**. Start with a sweep for repository reads and writes that take no `subject_id`.
+5. Then phases 5 to 9 of `docs/ACCEPTANCE.md`, and the APK last.
 
 ### What the owner ruled on 2026-08-17, now rules
 
@@ -58,6 +56,11 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 - **Nothing behind a fold** that a label and a scroll can carry. D185.
 
 ### Traps this work has already paid for
+
+- **A tonal surface is set in two places.** `TodayLead` and `TodayCard` both paint a `background` and then an `openableByTap(resting = ...)` over it. Changing only the first gives a block drawn in the old color with the new ink on it: dark on dark. D192.
+- **The next appointment is "soonest of the future", not "soonest, if future".** Filtering after `minByOrNull` resolves a second year notebook to its first ever appointment and then to nothing.
+- **`onNodeWithText` does not see a `contentDescription`.** Anything that speaks as one merged node, the inset door and every icon action, is found with `onNodeWithContentDescription`.
+- **The instrumented suite dies around 430 tests on the Compose alpha.** Re-run the class alone before believing a failure; `NotebookScreenTest` failed in the suite and passed 14 of 14 by itself.
 
 - **A road goes in one lazy item**, or the page's own air puts gaps in the line. And **it does not know which way time runs**: each half says whether it has been traveled.
 - **`Page`'s bar is pinned**, because as a list item it scrolled away and left the gesture as the only way out.
