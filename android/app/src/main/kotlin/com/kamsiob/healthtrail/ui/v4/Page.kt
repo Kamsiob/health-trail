@@ -92,9 +92,15 @@ fun Page(
     content: LazyListScope.() -> Unit,
 ) {
     val colors = HealthTrail.colors
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
+    Surface(modifier = Modifier.fillMaxSize(), color = colors.paper) {
         LazyColumn(
-            modifier = Modifier
+            // **The caller's modifier lands on the list, not on the surface
+            // around it.** A test that scrolls to a control does
+            // `performScrollToNode` on the screen's own tag, and that only
+            // works when the tagged node is the scrolling one: on the surface
+            // it reported "no node found in scrollable container" for a button
+            // sitting at the foot of the list. #386.
+            modifier = modifier
                 .fillMaxSize()
                 // **The page owns its insets**, because a page opens over the
                 // shell rather than inside it: without this the back arrow sits

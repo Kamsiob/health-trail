@@ -1,59 +1,50 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
-import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.DenseRow
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Body
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
+import com.kamsiob.healthtrail.ui.v4.labeledBlock
 
 object MedsTags {
     const val NAME = "medications"
     const val ADD = "medications_add"
     fun row(id: String) = "medication_$id"
-    const val STOPPED_FOLD = "medications_stopped_fold"
+
+    /** The tag the old scaffold produced, kept so a journey still finds this screen. */
+    const val ROOT = "section_root_medications"
 }
 
 /**
- * Medications: what they take, written down.
+ * Medications: what they take, written down. Rewritten onto `ui/v4`, #386.
  *
- * **Record only, and the screen says so out loud.** `MASTER_SPEC.md` section
- * 4.3 requires it to state plainly that the app does not remind or alert, and
- * that sentence is in the subtitle rather than buried. Somebody arriving at a
- * screen called Medications reasonably expects reminders, and the honest place
- * to correct that expectation is the moment they arrive, not after they have
- * relied on it.
+ * **Record only, and the screen says so out loud.** `MASTER_SPEC.md` 4.3
+ * requires it to state plainly that the app does not remind or alert, and that
+ * sentence is the page's own line rather than something buried. Somebody
+ * arriving at a screen called Medications reasonably expects reminders, and the
+ * honest place to correct that expectation is the moment they arrive.
  *
  * **A dose is never parsed into a number and a unit.** The schema says so and
  * this screen shows the sentence the person was told, in the words they were
- * told it in. Misparsing a dose is worse than not parsing one, and there is
- * nothing the app could do with a number that it cannot do with the sentence.
+ * told it in. Misparsing a dose is worse than not parsing one.
  *
- * **A stopped medication stays.** It moves below the current ones and says it
- * stopped, because "she was on this until March" is the answer to a question
- * somebody will eventually be asked, and a record that quietly drops what
- * ended is not a record.
+ * **A stopped medication stays, and it is no longer behind a fold.** "She was
+ * on this until March" is the answer to a question somebody will eventually be
+ * asked. It sits under its own label below the current ones, which says
+ * finished without hiding it and without asking for a tap. D185.
  */
 @Composable
 fun MedicationsScreen(
@@ -65,88 +56,63 @@ fun MedicationsScreen(
     /**
      * How many questions are still waiting on each medication, by id. #352.
      *
-     * **A medication with none is absent from the map** rather than present
-     * with a zero, so a row cannot say "0 questions" by accident.
+     * **A medication with none is absent from the map** rather than present with
+     * a zero, so a row cannot say "0 questions" by accident.
      */
     openQuestions: Map<String, Int> = emptyMap(),
+    backLabelKey: String = LocalSectionBackKey.current,
 ) {
     val strings = LocalStrings.current
-    var stoppedOpen by rememberSaveable { mutableStateOf(false) }
+    val hue = hueFor(Repository.Section.MEDICATIONS)
 
-    SectionScaffold(
-        name = MedsTags.NAME,
-        title = strings["notebook.section.medications"],
+    val current = medications.filterNot { it.isStopped }
+    val stopped = medications.filter { it.isStopped }
+
+    Page(
+        eyebrow = strings["notebook.section.medications"],
+        eyebrowColor = hue.ink,
+        title = strings["meds.heading"],
         subtitle = strings["meds.subtitle"],
         onBack = onBack,
-        modifier = modifier,
-        section = Repository.Section.MEDICATIONS,
-        headingKey = "meds.heading",
+        backLabel = strings[backLabelKey],
+        modifier = modifier.testTag(MedsTags.ROOT),
     ) {
+        // **An empty section is a sentence on a quiet block**, which is the
+        // shape every v4 screen uses for "nothing here yet": the words are the
+        // content and rule 13 forbids reading an unfilled thing as a failure.
         if (medications.isEmpty()) {
             item {
-                SectionEmpty(name = MedsTags.NAME, text = strings["meds.empty"], section = Repository.Section.MEDICATIONS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
-                Spacer(Modifier.height(Space.l))
-            }
-        }
-
-        // **Current medications lead, stopped ones fold**, per grid screen 12
-        // and law 4: a finished group collapses rather than sitting among the
-        // ones that are still true.
-        //
-        // **Stopped is kept forever and never hidden**, which is the whole
-        // point of a record. The fold names them and counts them.
-        val current = medications.filterNot { it.isStopped }
-        val stopped = medications.filter { it.isStopped }
-
-        if (current.isNotEmpty()) {
-            item {
-                GroupedSurface {
-                    current.forEachIndexed { index, medication ->
-                        MedicationRow(
-                            medication = medication,
-                            waiting = openQuestions[medication.id] ?: 0,
-                            onOpen = { onOpen(medication) },
-                            isLast = index == current.lastIndex,
-                        )
-                    }
-                }
-                Spacer(Modifier.height(Space.cardGap))
-            }
-        }
-
-        if (stopped.isNotEmpty()) {
-            item {
-                FoldRow(
-                    labelKey = "meds.stopped.fold",
-                    expanded = stoppedOpen,
-                    onToggle = { stoppedOpen = !stoppedOpen },
-                    count = stopped.size.toString(),
-                    modifier = Modifier.testTag(MedsTags.STOPPED_FOLD),
-                )
-                Spacer(Modifier.height(Space.cardGap))
-            }
-            if (stoppedOpen) {
-                item {
-                    GroupedSurface {
-                        stopped.forEachIndexed { index, medication ->
-                            MedicationRow(
-                                medication = medication,
-                                waiting = openQuestions[medication.id] ?: 0,
-                                onOpen = { onOpen(medication) },
-                                isLast = index == stopped.lastIndex,
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(Space.cardGap))
+                Block {
+                    // bidi-ok: the app's own sentence about an empty list.
+                    Body(
+                        text = strings["meds.empty"],
+                        color = HealthTrail.colors.ink,
+                        style = HealthTrail.type.bodyL,
+                    )
                 }
             }
         }
+
+        labeledBlock(
+            label = null,
+            rows = current.map { medication ->
+                { MedicationRow(medication, openQuestions[medication.id] ?: 0, hue, onOpen) }
+            },
+        )
+
+        labeledBlock(
+            label = strings["meds.stopped"].takeIf { stopped.isNotEmpty() },
+            rows = stopped.map { medication ->
+                { MedicationRow(medication, openQuestions[medication.id] ?: 0, hue, onOpen) }
+            },
+        )
 
         item {
             Spacer(Modifier.height(Space.s))
-            QuietButton(
+            Action(
                 label = strings["meds.add"],
                 onClick = onAdd,
+                mark = Symbols.add,
                 modifier = Modifier.testTag(MedsTags.ADD),
             )
         }
@@ -154,10 +120,11 @@ fun MedicationsScreen(
 }
 
 /**
- * One medication.
+ * One medication: the name, the dose beside it, and one line of why.
  *
- * The name carries the weight and the dose sits with it, because those are the
- * two things somebody reads together. What it is for and anything else recede.
+ * **The dose is the trailing value, in the mono face and tabular**, per
+ * `DESIGN.md` 5: a dose is data, so it lines up down the column and two of them
+ * can be compared without reading a sentence twice.
  *
  * **The emergency card marker is words, never a color alone**, per section 9,
  * and it is stated rather than styled as a badge competing with the name.
@@ -167,26 +134,16 @@ private fun MedicationRow(
     medication: Repository.Medication,
     /** Questions attached to it and not asked yet. Zero says nothing at all. */
     waiting: Int,
-    onOpen: () -> Unit,
-    isLast: Boolean,
+    hue: com.kamsiob.healthtrail.ui.theme.TabHue,
+    onOpen: (Repository.Medication) -> Unit,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
 
-    // **The dose is the trailing value, in Mono and tabular**, per grid screen
-    // 12 and `DESIGN.md` 5: a dose is data, so it aligns down the column and a
-    // person can compare two of them without reading a sentence twice.
-    //
-    // **Everything else that was on the card becomes the second line.** A
-    // medication is a name, a dose and one line of why: that is a row somebody
-    // scans, not a card somebody reads.
     val detail = listOfNotNull(
         strings["meds.stopped"].takeIf { medication.isStopped },
         // **A question waiting leads the second line**, after the stopped
-        // marker, which is state. The grid draws it in place of the purpose
-        // entirely, #352 and screen 12; keeping the purpose loses nothing and
-        // putting the waiting question last buried it at the end of a line
-        // that wraps. Rule 15: the thing somebody can act on gets the position.
+        // marker, which is state. Rule 15: the thing somebody can act on gets
+        // the position.
         strings("meds.questions.waiting", "count" to waiting).takeIf { waiting > 0 },
         medication.purposeText?.takeIf { it.isNotBlank() },
         medication.notes?.takeIf { it.isNotBlank() },
@@ -197,18 +154,26 @@ private fun MedicationRow(
         strings["meds.on_card.badge"].takeIf { medication.showsOnEmergencyCard },
     ).let { Bidi.join(it) }.takeIf { it.isNotBlank() }
 
-    DenseRow(
+    ListRow(
         title = Bidi.isolate(medication.name),
-        subtitle = detail,
-        // **Isolated, like the name above it.** The list showed a dose raw
-        // while the medication's own screen isolated the same string, which is
-        // one record reading two ways. Seen in Arabic on the phone: nothing in
-        // the source said which of the two was right.
-        trailing = medication.doseText?.takeIf { it.isNotBlank() }
-            ?.let { Bidi.isolate(it) },
-        chevron = true,
-        divider = !isLast,
-        onClick = onOpen,
+        support = detail,
+        mark = Symbols.medications,
+        markTint = hue.ink,
+        markWash = hue.wash,
+        trailing = medication.doseText?.takeIf { it.isNotBlank() }?.let { dose ->
+            {
+                Body(
+                    // **Isolated, like the name beside it.** The list showed a
+                    // dose raw while the medication's own screen isolated the
+                    // same string, which is one record reading two ways. Seen
+                    // in Arabic on the phone.
+                    text = Bidi.isolate(dose),
+                    style = HealthTrail.type.mono,
+                    color = HealthTrail.colors.ink,
+                )
+            }
+        },
+        onClick = { onOpen(medication) },
         clickLabel = strings["open.action"],
         modifier = Modifier.testTag(MedsTags.row(medication.id)),
     )

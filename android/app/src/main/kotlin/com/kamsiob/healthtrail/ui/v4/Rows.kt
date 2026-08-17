@@ -106,7 +106,19 @@ fun ListRow(
                 )
             }
         }
-        trailing?.invoke()
+        trailing?.let {
+            // **Weighted so it cannot take the whole row, `fill = false` so a
+            // short one still sits at its natural width.** An unweighted
+            // trailing value measures at whatever it wants and leaves the
+            // title's weighted column its minimum: on the medications list a
+            // dose reading "500 mg, twice a day" left "Levothyroxine" rendering
+            // one letter per line. Seen on the phone, rule 21, and it is the
+            // same trap the old dense row already carried a comment about.
+            Box(
+                modifier = Modifier.weight(1f, fill = false),
+                contentAlignment = Alignment.CenterEnd,
+            ) { it() }
+        }
         if (isDoor && trailing == null) {
             Symbol(
                 symbol = com.kamsiob.healthtrail.ui.components.Symbols.forward,

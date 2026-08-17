@@ -33,7 +33,7 @@ Step 2, #386, done so far: **the face, the icons, the navigation bar, the group 
 
 **Step 2 is finished.** The accordion was the last row of the replace table and it is not being swapped for another accordion: it already carries the spring, Material's chevron and the one container corner, and `m3v4-3` draws the care team with no fold on it at all. It dies per screen, in phase 4. **D185.**
 
-**Phase 4 is under way: 5 of 85 screens are rewritten**, the notebook, the document, the care team, the person and About.
+**Phase 4 is under way: 6 of 85 screens are rewritten**, the notebook, the document, the care team, the person, medications and About. **Medications is the recipe for every section list**: `Page` + `labeledBlock` + `ListRow`, the empty state a sentence on a quiet block, a finished group under its own label rather than behind a fold, and the add action at the foot sized to its label.
 
 **Next, and why in this order.** The section lists, which are all one shape: `Page` + `labeledBlock` + `ListRow`. Then the project screen and Today, the two the owner has named, and **the project screen needs the v4 spine**: `m3v4-2` draws "The road" with a 24dp filled node carrying a check, a 20dp gold node in a `goldWash` halo for where it is now, a hollow 17dp ring ahead, a 3.7dp line, and a 56dp gutter. Measured, D183. The spine stays out of the person screen deliberately, D187. Each is rewritten onto `ui/v4` with the components it needs written as it needs them.
 
