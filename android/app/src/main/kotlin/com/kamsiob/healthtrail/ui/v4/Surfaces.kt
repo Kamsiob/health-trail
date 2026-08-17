@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.TextUnit
+import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -150,7 +151,17 @@ fun Lead(
     modifier: Modifier = Modifier,
     color: Color = HealthTrail.colors.ink,
 ) {
-    Text(text = text, style = HealthTrail.type.displayM, color = color, modifier = modifier)
+    // **Isolated, because a heading is usually a name.** A project the person
+    // named, a person, a place: a Latin name inside an Arabic layout is pulled
+    // into the sentence around it without this. D180 stopped verifying RTL for
+    // version one and explicitly did not delete the marks, because they are
+    // ordinary correct layout and rewriting them later would be expensive.
+    Text(
+        text = Bidi.isolate(text),
+        style = HealthTrail.type.displayM,
+        color = color,
+        modifier = modifier,
+    )
 }
 
 /**
@@ -170,7 +181,9 @@ fun BigNumber(
 ) {
     Box(modifier = modifier) {
         Text(
-            text = if (unit == null) value else "$value $unit",
+            // Isolated for the same reason a figure always is: a Latin number
+            // keeps its own direction rather than joining the words beside it.
+            text = Bidi.isolate(if (unit == null) value else "$value $unit"),
             style = HealthTrail.type.displayM,
             color = color,
         )
@@ -184,6 +197,11 @@ fun Body(
     modifier: Modifier = Modifier,
     color: Color = HealthTrail.colors.ink2,
     style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyMedium,
+    // bidi-ok: a caller passing a person's own words isolates them, because
+    // only the caller knows whether this line is a sentence the app wrote or
+    // something somebody typed. The three that must never be isolated, a field
+    // being edited, a draft on its way to the database, and a filename, all
+    // reach this the same way.
 ) {
     Text(text = text, style = style, color = color, modifier = modifier)
 }
