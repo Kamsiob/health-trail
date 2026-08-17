@@ -2990,6 +2990,30 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D188. Three gaps and no more, taken from Material's own research rather than judged
+
+**Date:** 2026-08-17. **Phase 4, #386.** The owner, twice in one hour: "it's still crammed. it needs to be able to breathe and some visual structure", and: "there really shouldn't be much guesswork here."
+
+**So it was read rather than guessed.** Google's own research write up on expressive design reports people finding what they came for **up to four times faster** on the expressive versions of the same screens, and names five things that did it: size, color, **containment**, shape and motion. Containment is defined there as grouping related elements with spacing and boundaries. Material's spacing guidance is a **4dp grid**, with **16dp** as the standard compact margin and **24dp** as the section value.
+
+**What was wrong here was not the amount of air. It was that every gap was the same.** The page put twelve points between every item, so a labeled block, a road, a footnote and the actions all sat the same distance apart, and a person scanning it was told nothing about what belonged to what. That is the opposite of what containment buys, on a screen made entirely of groups.
+
+**Three gaps, named once in `Space`, and nothing else:**
+
+- `withinGroup`, **8dp**: two things that answer one question. A field and the chips that fill it in.
+- `betweenGroups`, **24dp**: one question and the next. Material's own section value, and what a page now puts between its items.
+- `betweenZones`, **32dp**: the part that asks and the part that acts.
+
+**Every one is on the 4dp grid**, and the screen margin stays at Material's 16dp, which the drawings already measured to.
+
+**What this is not.** It is not a new component, a new color or a new costume: it is air, which is the one thing that costs nothing and was carrying no information. The forms keep their fields on the canvas, per `m3v4-4` and D183, and the actions keep the tonal band the drawing gives them.
+
+**Still to take from the same reading, and deliberately not taken today.** Material 3 Expressive ships a second type scale, the **emphasized** styles, fifteen roles beside the fifteen baseline ones, meant exactly for the focal points of a screen. This app has its own ladder, measured off the approved drawings in D183, and swapping it wholesale is a change to every screen at once rather than a spacing fix. It belongs in its own increment against the drawings.
+
+**Sources.** `design.google/library/expressive-material-design-google-research`, `m3.material.io/styles/spacing/tokens`, `developer.android.com/jetpack/androidx/releases/compose-material3`.
+
+---
+
 ### D187. The spine is for a path, not for a filter, so the person screen has none
 
 **Date:** 2026-08-17. **Phase 4, #386.** The person screen rewritten onto `ui/v4`.

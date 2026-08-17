@@ -87,6 +87,30 @@ object Space {
     val avatarRow: Dp = 42.dp
     val avatarLead: Dp = 56.dp
 
+    /**
+     * The three gaps that carry the structure of a screen, and there are only
+     * three.
+     *
+     * **Uniform air is why a screen reads as one long thing.** Google's own
+     * research on Material 3 Expressive measured people finding what they came
+     * for **up to four times faster** when related things were grouped and the
+     * groups were separated, and containment plus spacing is how it names that.
+     * A screen where every gap is the same has told the eye nothing about what
+     * belongs to what.
+     *
+     * - [withinGroup]: two things that answer one question, a field and the
+     *   chips that fill it in.
+     * - [betweenGroups]: one question and the next. Material's own section
+     *   value, and the baseline it calls the most common spacing there is.
+     * - [betweenZones]: the part that asks and the part that acts.
+     *
+     * Every one of them is on the 4dp grid Material is built on. 2026-08-17,
+     * the owner: "it needs to be able to breathe and some visual structure."
+     */
+    val withinGroup: Dp = 8.dp
+    val betweenGroups: Dp = 24.dp
+    val betweenZones: Dp = 32.dp
+
     /** Between stacked elements. */
     val cardGap: Dp = 10.dp
 

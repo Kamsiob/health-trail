@@ -42,7 +42,7 @@ fun FieldBlock(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Space.sm),
+        verticalArrangement = Arrangement.spacedBy(Space.withinGroup),
     ) {
         Eyebrow(text = label, color = labelColor)
         content()

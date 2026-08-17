@@ -160,7 +160,12 @@ fun Page(
             modifier = modifier
                 .fillMaxSize()
                 .padding(horizontal = Space.screenHorizontal),
-            verticalArrangement = Arrangement.spacedBy(Space.sm),
+            // **Every item of a page is a group, so the air between them is
+            // the between-groups gap.** At twelve points a labeled block, a
+            // road and an action all sat the same distance apart and the screen
+            // read as one column of things. Material puts sections 24dp apart
+            // and its own research measured what that buys. D188.
+            verticalArrangement = Arrangement.spacedBy(Space.betweenGroups),
         ) {
             hero?.let { lead -> item { lead() } }
 
@@ -244,7 +249,8 @@ fun LazyListScope.labeledBlock(
 ) {
     if (rows.isEmpty()) return
     item {
-        Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
+        // A label belongs to the block under it, so it sits close to it.
+        Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
             label?.let {
                 Eyebrow(
                     text = it,

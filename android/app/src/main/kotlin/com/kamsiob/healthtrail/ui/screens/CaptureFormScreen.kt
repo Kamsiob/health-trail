@@ -382,10 +382,12 @@ fun CaptureFormScreen(
                     lead = null,
                     section = Repository.Section.TRAIL,
                 )
-                    Spacer(Modifier.height(Space.m))
+                    Spacer(Modifier.height(Space.betweenGroups))
                     Aside(text = strings["capture.sub"], section = Repository.Section.TRAIL)
 
-                Spacer(Modifier.height(Space.l))
+                // **The terms, then the question**, which are two zones rather
+                // than two paragraphs. D188.
+                Spacer(Modifier.height(Space.betweenZones))
 
                 // **What happened comes first, and until 2026-08-03 it came
                 // last.** The person taps this having just put a phone down,
@@ -541,8 +543,8 @@ fun CaptureFormScreen(
                     // these are a way of answering that field rather than a
                     // second question. Air is what says which things belong
                     // together, and at the same gap as everything else it read
-                    // as a new section. Rule 15.
-                    Spacer(Modifier.height(Space.s))
+                    // as a new section. Rule 15, D188.
+                    Spacer(Modifier.height(Space.withinGroup))
                     ChoiceChipGroup(
                         label = strings["capture.who.known"],
                         aside = strings["capture.who.known.aside"],
@@ -568,7 +570,9 @@ fun CaptureFormScreen(
                     }
                 }
 
-                Spacer(Modifier.height(Space.sectionGap))
+                // **The question, then the extras**, which is the third zone
+                // and gets the zone's own air. D188.
+                Spacer(Modifier.height(Space.betweenZones))
 
                 // **Everything below here is behind one control nobody has to
                 // touch**, per 10.8 and the disclosure in `Disclosure.kt`.
@@ -745,7 +749,7 @@ fun CaptureFormScreen(
                 // is going, and it sits directly under the control that would
                 // let them change it.
                 if (threads.isNotEmpty() && threadId == null) {
-                    Spacer(Modifier.height(Space.s))
+                    Spacer(Modifier.height(Space.withinGroup))
                     // **A footnote to the control above it, not a block of its
                     // own.** It was tried as a block and that made three sand
                     // surfaces stacked down one screen, which is the blending

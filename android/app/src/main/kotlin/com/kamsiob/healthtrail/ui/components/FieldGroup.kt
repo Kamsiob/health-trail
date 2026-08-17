@@ -64,5 +64,5 @@ fun FieldGroup(
 /** The gap between one group and the next. Bigger than the gap inside one. */
 @Composable
 fun FieldGroupGap() {
-    Spacer(Modifier.height(Space.sectionGap))
+    Spacer(Modifier.height(Space.betweenGroups))
 }
