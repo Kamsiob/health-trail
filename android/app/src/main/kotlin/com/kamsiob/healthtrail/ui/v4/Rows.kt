@@ -133,6 +133,16 @@ fun ListRow(
                 Symbol(symbol = mark, contentDescription = null, tint = markTint)
             }
         }
+        // **A long value goes under the title rather than beside it.**
+        // Measured on the phone: an appointment's "August 18, 2026 at 10:15 AM"
+        // and a reading's "131.2 lb · May 8, 2026" are sentences rather than
+        // values, and at the end of the row they took half its width and broke
+        // mid-phrase, with the title wrapping around what was left. The slot at
+        // the end is for something short enough to scan down a column, which is
+        // what a dose and a bare date are; anything longer is a line of its own.
+        // Rule 20: the row absorbs this so no screen has to know.
+        val shown = value?.takeIf { it.isNotBlank() }
+        val below = shown != null && shown.length > VALUE_INLINE_MAX
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
@@ -151,8 +161,15 @@ fun ListRow(
                     },
                 )
             }
+            if (below) {
+                Text(
+                    text = shown,
+                    style = HealthTrail.type.mono,
+                    color = HealthTrail.colors.ink,
+                )
+            }
         }
-        value?.takeIf { it.isNotBlank() }?.let {
+        shown?.takeIf { !below }?.let {
             Text(
                 text = it,
                 style = HealthTrail.type.mono,
@@ -187,6 +204,16 @@ fun RowDivider(modifier: Modifier = Modifier, inset: Boolean = true) {
         color = HealthTrail.colors.hairline,
     )
 }
+
+/**
+ * How long a value may be and still sit at the end of a row.
+ *
+ * **Measured rather than chosen**: "500 mg" and "6 readings" scan down a column
+ * at the end of a row; "August 18, 2026 at 10:15 AM" does not, and on the phone
+ * it took half the row and broke mid-phrase. Sixteen characters is the widest
+ * thing in the app that still reads as a value rather than as a sentence.
+ */
+private const val VALUE_INLINE_MAX = 16
 
 /** The squircle a row's mark sits in, measured off `m3v4-1`. */
 private val MARK_TILE = Space.markTile
