@@ -180,6 +180,8 @@ internal fun MilestoneOverlays(
                 appointments = appointments.filter { it.personId == person.id },
                 onOpenAppointment = { openPerson = null; openPrepFor = it.id },
                 onCall = { number -> dial(context, number) },
+                // Writing to them, the same way the care team offers it. #386.
+                onEmail = { address -> email(context, address) },
                 onSetPinned = { pinned -> pinningPerson = person.id to pinned },
                 onSetArchived = { archived -> archivingPerson = person.id to archived },
                 onEdit = { editingPerson = person; addingPerson = true; openPerson = null },

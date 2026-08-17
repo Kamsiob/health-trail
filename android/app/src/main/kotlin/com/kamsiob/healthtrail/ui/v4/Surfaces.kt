@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.ui.components.Symbol
@@ -269,11 +270,27 @@ fun Body(
     modifier: Modifier = Modifier,
     color: Color = HealthTrail.colors.ink2,
     style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyMedium,
+    /**
+     * How much of somebody's own writing a preview shows.
+     *
+     * **Unbounded everywhere except a card that stands for a longer thing**,
+     * because rule 11 forbids truncation: an ellipsis is only honest where the
+     * whole text is one tap away and the card says so by being tappable.
+     */
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
     // bidi-ok: a caller passing a person's own words isolates them, because
     // only the caller knows whether this line is a sentence the app wrote or
     // something somebody typed. The three that must never be isolated, a field
     // being edited, a draft on its way to the database, and a filename, all
     // reach this the same way.
 ) {
-    Text(text = text, style = style, color = color, modifier = modifier)
+    Text(
+        text = text,
+        style = style,
+        color = color,
+        maxLines = maxLines,
+        overflow = overflow,
+        modifier = modifier,
+    )
 }

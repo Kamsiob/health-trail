@@ -2990,6 +2990,20 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D187. The spine is for a path, not for a filter, so the person screen has none
+
+**Date:** 2026-08-17. **Phase 4, #386.** The person screen rewritten onto `ui/v4`.
+
+**It was drawn dashed to say one word.** `DESIGN.md` 5.2.3 gave a person's entries a dashed spine to mean "a filter over the record rather than this person's own path", the same treatment a search result gets, deliberately not the continuous line an incident thread carries. **That is a costume carrying one word of meaning**, and the word is already on the screen: the eyebrow says "Everything that involved them".
+
+**So the spine stays where it means the path itself**: the trail, and a project's road, which is the one `m3v4-2` draws. Rule 22: the component comes from the shape of the content, and a person's entries are a list of things that were said, which is a list.
+
+**What replaces it.** Each entry is a quiet block: the date as an eyebrow in its own case, the title at row weight, and three lines of what was written with the rest one tap away. **Three lines is a preview and not truncation**, because the whole entry is behind the tap and the block says so by being tappable, which is the exception rule 11 allows.
+
+**Two defects came off the phone**, rule 21. The block put a 56dp mark alone on a row with nothing beside it, which for most people on a care team, a name and a number, is half a block of empty, the blank area rule 11 forbids: the mark and the reach actions now share the row. Then "Write something down about them" wrapped around its own plus sign in the narrower column, so it moved under the row at the block's full width. **Neither was visible in the source.**
+
+---
+
 ### D186. A person's mark is their own color, and the care team splits by a toggle rather than by folds
 
 **Date:** 2026-08-17. **Phase 4, #386.** The care team rewritten onto `ui/v4` from `m3v4-3`.
