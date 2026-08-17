@@ -57,6 +57,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.Color
@@ -489,12 +490,30 @@ fun TodayFieldScreen(
                             // well, and this was where it was worst: mono is for
                             // figures that must line up in a column, and a date
                             // in a masthead is prose.
+                            // **An eyebrow, which is what the drawing puts
+                            // here.** It was `bodyS` in sentence case, so the
+                            // date read as a line of body text above a title
+                            // rather than as the quiet label rule 15 asks for.
+                            // Measured against `m3v4-0`: the date there is
+                            // 7.7dp of uppercase ink on a tracked 12sp line,
+                            // and this was 12dp of mixed case at 14sp.
                             Text(
-                                text = EventDateText.masthead(strings, today),
-                                style = HealthTrail.type.bodyS,
+                                // **The configuration's locale, not
+                                // `Locale.getDefault()`.** Lint calls the
+                                // second non-observable in a composable and it
+                                // is right: a per-app language change would not
+                                // recompose this line, so the date would keep
+                                // the casing rules of the language before it.
+                                text = EventDateText.masthead(strings, today)
+                                    .uppercase(LocalConfiguration.current.locales[0]),
+                                style = HealthTrail.type.eyebrow,
                                 color = HealthTrail.colors.goldInk,
                             )
-                            Spacer(Modifier.height(Space.xs))
+                            // **Sixteen, not four.** The drawing puts 16.3dp
+                            // between the date and the name. Four made them one
+                            // block, which is most of why this masthead read as
+                            // cramped.
+                            Spacer(Modifier.height(Space.m))
                             Text(
                                 text = subjectName
                                     ?.takeIf { it.isNotBlank() }

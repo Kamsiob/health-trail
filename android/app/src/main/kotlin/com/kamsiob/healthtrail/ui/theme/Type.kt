@@ -201,29 +201,29 @@ val HealthTrailType = HealthTrailTypography(
     // "the fonts are unnatural" was pointing at.
     hero = TextStyle(
         fontFamily = DisplayFamily,
-        fontSize = 28.sp,
-        lineHeight = 33.sp,
+        fontSize = 30.sp,
+        lineHeight = 35.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = (-0.022).em,
     ),
     displayL = TextStyle(
         fontFamily = DisplayFamily,
-        fontSize = 34.sp,
-        lineHeight = 39.sp,
+        fontSize = 40.sp,
+        lineHeight = 44.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = (-0.026).em,
     ),
     displayM = TextStyle(
         fontFamily = DisplayFamily,
-        fontSize = 26.sp,
-        lineHeight = 31.sp,
+        fontSize = 32.sp,
+        lineHeight = 37.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = (-0.022).em,
     ),
     displayS = TextStyle(
         fontFamily = DisplayFamily,
-        fontSize = 20.sp,
-        lineHeight = 26.sp,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
         fontWeight = FontWeight.Bold,
     ),
     rowTitle = TextStyle(

@@ -299,10 +299,10 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 
 | Role | Face | Size / line | Weight | Use |
 |---|---|---|---|---|
-| Hero | Roboto | **28sp** / 33 | 800, tracking -0.022em | The one thing, section 2 law 1 |
-| Display L | Roboto | **34sp** / 39 | 800, -0.028em | The heading of a thing's own screen, above a section title |
-| Display M | Roboto | **26sp** / 31 | 800, -0.022em | Screen titles, the current chapter, a round's reason |
-| Display S | Roboto | **20sp** / 26 | 800 | A card's own title, and the title line of a row where a row title is too quiet |
+| Hero | Roboto | **30sp** / 35 | 800, tracking -0.022em | The one thing, section 2 law 1 |
+| Display L | Roboto | **40sp** / 44 | 800, -0.028em | The heading of a thing's own screen, above a section title |
+| Display M | Roboto | **32sp** / 37 | 800, -0.022em | Screen titles, the current chapter, a round's reason |
+| Display S | Roboto | **22sp** / 28 | 800 | A card's own title, and the title line of a row where a row title is too quiet |
 | Row title | Roboto | **17sp** / 23 | 700, -0.01em | The title line of a group row |
 | Body L | Roboto | **17sp** / 26 | 400 | The lead sentence under a screen title |
 | Body | Roboto | **16sp** / 24 | 400 | Supporting content. **The floor** |
