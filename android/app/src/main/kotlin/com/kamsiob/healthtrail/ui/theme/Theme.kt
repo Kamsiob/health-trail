@@ -7,6 +7,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -34,7 +35,10 @@ fun HealthTrailTheme(
 ) {
     val colors = if (darkTheme) DarkColors else LightColors
     val motion = rememberSystemMotion()
-    val material = materialSchemeFor(colors)
+    // Remembered because both are forty eight and fifteen argument objects
+    // built at the root of the tree, and neither changes unless the theme or
+    // the locale does.
+    val material = remember(colors) { materialSchemeFor(colors) }
 
     // **The type scale depends on the locale**, because the display face's
     // tight tracking is a Latin device that breaks a connected script. Read
@@ -43,7 +47,7 @@ fun HealthTrailTheme(
     // configuration either way. See healthTrailTypeFor.
     val locale = LocalConfiguration.current.locales[0]
     val type = healthTrailTypeFor(locale)
-    val materialType = materialTypographyFor(type)
+    val materialType = remember(type) { materialTypographyFor(type) }
 
     CompositionLocalProvider(
         LocalHealthTrailColors provides colors,

@@ -18,6 +18,18 @@ The floors, from DESIGN.md section 2.3 and section 9:
 The pairs are read from the Kotlin theme rather than from a copy kept here, so
 a token that changes in one place changes here too.
 
+**Two files, because there are two places a pair gets made.** `Color.kt` holds
+this app's own tokens, and every screen it draws itself reads those. `Theme.kt`
+maps the same tokens onto Material's forty eight color roles, and every
+Material component reads the roles instead. Since #385 the interface is built
+on Material 3 Expressive, so the second mapping is not a fallback any more, it
+is what a button, a chip, a field and the navigation bar actually draw with.
+
+So this also reads `Theme.kt` and checks two things there: that all forty eight
+roles are named, since a role left undefined renders in Material's baseline
+lavender rather than failing, and that every `on` role clears its floor against
+the role it sits on.
+
 Exit 0 when every pair clears its floor, 1 with the failures otherwise.
 
 Kamsiob, AGPL-3.0.
@@ -29,6 +41,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 COLOR_KT = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui/theme/Color.kt"
+THEME_KT = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui/theme/Theme.kt"
 
 TEXT_FLOOR = 4.5
 LARGE_TEXT_FLOOR = 3.0
@@ -190,6 +203,144 @@ def pairs_for(theme: dict) -> list:
     return checks
 
 
+def parse_scheme(text: str, tokens: dict, light: dict, is_dark: bool) -> dict:
+    """Resolve `Theme.kt`'s Material color scheme into hex values, for one theme.
+
+    **A second place where color pairs are formed, and until #385 nothing
+    measured it.** `Color.kt` holds this app's own tokens and everything above
+    reads them. `Theme.kt` maps those tokens onto Material's forty eight roles,
+    and every Material component draws from the roles rather than from the
+    tokens: an `onSecondary` pointed at the wrong token is unreadable text on a
+    real screen and is invisible to a check that only reads `Color.kt`.
+
+    The mapping is Kotlin, so this reads the four forms it is allowed to be in:
+    a bare token name, `if (isDark) a else b`, `LightColors.token` for a role
+    that is fixed across themes, and a literal `Color(0x...)`. A form outside
+    those is reported rather than skipped, because a role this cannot read is a
+    role nothing is measuring.
+    """
+    body = text[text.index("ColorScheme("):]
+    depth, end = 0, 0
+    for index, character in enumerate(body):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth == 0:
+                end = index
+                break
+    body = body[len("ColorScheme("):end]
+    # Comments carry the reasoning and some of them name tokens. Strip them
+    # first, or a sentence explaining a role becomes an assignment.
+    body = "\n".join(line.split("//")[0] for line in body.splitlines())
+
+    # The container ladder is computed above the call, since its direction
+    # inverts between themes. Resolve those names before the roles that use
+    # them.
+    locals_ = {}
+    for name, when_dark, when_light in re.findall(
+        r"val (\w+) = if \(isDark\) (\w+) else (\w+)", text[:text.index("ColorScheme(")]
+    ):
+        locals_[name] = when_dark if is_dark else when_light
+    for name, value in re.findall(
+        r"val (\w+) = (\w+)\n", text[:text.index("ColorScheme(")]
+    ):
+        locals_.setdefault(name, value)
+
+    scheme, unreadable = {}, []
+    for role, expression in re.findall(r"(\w+) = ([^,\n]+(?:\n\s*[^,\n]+)*?),\n", body + ",\n"):
+        expression = " ".join(expression.split())
+        literal = re.fullmatch(r"Color\(0x([0-9A-Fa-f]{8})\)", expression)
+        conditional = re.fullmatch(r"if \(isDark\) (\w+) else (\w+)", expression)
+        fixed = re.fullmatch(r"LightColors\.(\w+)", expression)
+        if literal:
+            scheme[role] = literal.group(1)
+        elif conditional:
+            scheme[role] = tokens[conditional.group(1) if is_dark else conditional.group(2)]
+        elif fixed:
+            scheme[role] = light[fixed.group(1)]
+        elif expression in locals_:
+            scheme[role] = tokens[locals_[expression]]
+        elif expression in tokens:
+            scheme[role] = tokens[expression]
+        else:
+            unreadable.append(f"{role} = {expression}")
+    scheme["_unreadable"] = unreadable
+    return scheme
+
+
+# **Every Material color role there is, and the count is the check.** A role
+# left out of `Theme.kt` does not fail to draw, it draws in Material's baseline,
+# which is lavender: D167, and how a mockup of this app first came out purple.
+# Before #385 the dark scheme named sixteen of these and the light one named
+# twenty one, and nothing anywhere noticed.
+MATERIAL_ROLES = [
+    "primary", "onPrimary", "primaryContainer", "onPrimaryContainer", "inversePrimary",
+    "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
+    "tertiary", "onTertiary", "tertiaryContainer", "onTertiaryContainer",
+    "background", "onBackground",
+    "surface", "onSurface", "surfaceVariant", "onSurfaceVariant", "surfaceTint",
+    "inverseSurface", "inverseOnSurface",
+    "error", "onError", "errorContainer", "onErrorContainer",
+    "outline", "outlineVariant", "scrim",
+    "surfaceBright", "surfaceDim",
+    "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest",
+    "surfaceContainerLow", "surfaceContainerLowest",
+    "primaryFixed", "primaryFixedDim", "onPrimaryFixed", "onPrimaryFixedVariant",
+    "secondaryFixed", "secondaryFixedDim", "onSecondaryFixed", "onSecondaryFixedVariant",
+    "tertiaryFixed", "tertiaryFixedDim", "onTertiaryFixed", "onTertiaryFixedVariant",
+]
+
+# Every Material role pair a component actually draws, and the floor it answers
+# to. The `on` roles are text and take the text floor. `outline` is this app's
+# hairline, which section 4.6 already calls non-text, so it is measured and
+# reported rather than held, exactly as `ink3` is above.
+MATERIAL_PAIRS = [
+    ("onPrimary", "primary", TEXT_FLOOR, "a label on a filled Material button"),
+    ("onPrimaryContainer", "primaryContainer", TEXT_FLOOR, "text in a Material primary container"),
+    ("onSecondary", "secondary", TEXT_FLOOR, "a label on a Material secondary fill"),
+    ("onSecondaryContainer", "secondaryContainer", TEXT_FLOOR,
+     "the navigation bar's selected label in its indicator"),
+    ("onTertiary", "tertiary", TEXT_FLOOR, "a label on a Material tertiary fill"),
+    ("onTertiaryContainer", "tertiaryContainer", TEXT_FLOOR, "text in a Material tertiary container"),
+    ("onError", "error", TEXT_FLOOR, "a label on a Material error fill"),
+    ("onErrorContainer", "errorContainer", TEXT_FLOOR, "text in a Material error container"),
+    ("onBackground", "background", TEXT_FLOOR, "text on the Material background"),
+    ("onSurface", "surface", TEXT_FLOOR, "text on a Material surface"),
+    ("onSurfaceVariant", "surfaceVariant", TEXT_FLOOR, "supporting text on a Material surface"),
+    ("onSurface", "surfaceBright", TEXT_FLOOR, "text on the brightest Material surface"),
+    ("onSurface", "surfaceDim", TEXT_FLOOR, "text on the dimmest Material surface"),
+    ("inverseOnSurface", "inverseSurface", TEXT_FLOOR, "text on an inverted surface, a snackbar"),
+    ("inversePrimary", "inverseSurface", UI_FLOOR, "an action on an inverted surface"),
+    ("onPrimaryFixed", "primaryFixed", TEXT_FLOOR, "text on a fixed primary container"),
+    ("onPrimaryFixedVariant", "primaryFixed", TEXT_FLOOR, "supporting text on a fixed primary container"),
+    ("onSecondaryFixed", "secondaryFixed", TEXT_FLOOR, "text on a fixed secondary container"),
+    ("onSecondaryFixedVariant", "secondaryFixed", TEXT_FLOOR,
+     "supporting text on a fixed secondary container"),
+    ("onTertiaryFixed", "tertiaryFixed", TEXT_FLOOR, "text on a fixed tertiary container"),
+    ("onTertiaryFixedVariant", "tertiaryFixed", TEXT_FLOOR,
+     "supporting text on a fixed tertiary container"),
+    ("surfaceTint", "surface", UI_FLOOR, "the tint a raised Material surface carries"),
+    ("outline", "surface", None, "a Material outline on a surface"),
+    ("outlineVariant", "surface", None, "a Material divider on a surface"),
+]
+
+# The container ladder, which every expressive component sits on. Text lands on
+# all five and the ladder is the thing the old scheme had in one theme and not
+# the other, so each rung is measured rather than assumed to be near its
+# neighbor.
+MATERIAL_PAIRS += [
+    ("onSurface", rung, TEXT_FLOOR, f"text on {rung}")
+    for rung in (
+        "surfaceContainerLowest",
+        "surfaceContainerLow",
+        "surfaceContainer",
+        "surfaceContainerHigh",
+        "surfaceContainerHighest",
+    )
+]
+
+
 def main():
     if not COLOR_KT.is_file():
         print(f"Contrast check skipped: {COLOR_KT.relative_to(ROOT)} does not exist yet.")
@@ -200,6 +351,37 @@ def main():
 
     failures = []
     measured = []
+
+    if THEME_KT.is_file():
+        theme_text = THEME_KT.read_text(encoding="utf-8")
+        for theme_name, tokens in themes.items():
+            scheme = parse_scheme(theme_text, tokens, themes["light"], theme_name == "dark")
+            for role in scheme.pop("_unreadable"):
+                failures.append(
+                    f"{theme_name}: the Material role `{role}` is written in a form this "
+                    f"check cannot read, so nothing is measuring it"
+                )
+            for role in MATERIAL_ROLES:
+                if role not in scheme:
+                    failures.append(
+                        f"{theme_name}: Theme.kt does not name the Material role `{role}`, "
+                        f"so it falls back to Material's baseline lavender. D167"
+                    )
+            for foreground, background, floor, description in MATERIAL_PAIRS:
+                if foreground not in scheme or background not in scheme:
+                    failures.append(
+                        f"{theme_name}: Material role {foreground} or {background} is not named "
+                        f"in Theme.kt, and an unnamed role falls back to baseline lavender"
+                    )
+                    continue
+                value = ratio(scheme[foreground], scheme[background])
+                measured.append((theme_name, foreground, background, value, floor, description))
+                if floor is not None and value < floor:
+                    failures.append(
+                        f"{theme_name}: {description}\n"
+                        f"      Material {foreground} on {background} measures {value:.2f}:1, "
+                        f"floor is {floor}:1"
+                    )
 
     for theme_name, tokens in themes.items():
         for foreground, background, floor, description in pairs_for(tokens):
