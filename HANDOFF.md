@@ -4,14 +4,14 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Written for a machine: fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-16, for the interface rebuild.
+**Last rewritten:** 2026-08-17, for the interface rebuild.
 
 ---
 
 ## 1. State
 
 - Tree clean, all on `origin/main`. CI green at tip: `gh run list --branch main --limit 3`.
-- **735 instrumented tests green**, 218 unit, 29 repo checks, lint.
+- **735 instrumented tests green**, 218 unit, 29 repo checks, lint. Last device run: 128 across `ScreenReaderTest`, `PaperViewerTest` and `RemovalIsVisibleTest`, 0 failed.
 - **Do not build a release APK or AAB.** Owner holds delivery until he approves the design. The debug install is the rule 21 loop and is not what he is holding.
 - Phone at baseline, stays plugged in: font scale 1.0, animator 1.0, no reader, night mode `no`.
 
@@ -32,6 +32,10 @@ Step 2, #386, done so far: **the face, the icons, the navigation bar, the group 
 **The method changed on 2026-08-17 and `docs/ACCEPTANCE.md` is the authority on it.** The owner: "no old design language at all. get rid of it so it doesn't influence." **Nothing old is edited any more.** The new set is written from scratch in `ui/v4`, a screen is rewritten onto it rather than adapted, and an old component is deleted the moment its last caller goes. **The old package being empty is the test.**
 
 **Step 2 still to do: the sheet and the sand accordion.** `rememberModalBottomSheetState` is also deprecated in the alpha at 18 sites and gets fixed with them. Then step 3, the screens.
+
+**Phase 1 of `docs/ACCEPTANCE.md` is finished: all six drawn screens carry the drawing.** The document screen was the last, rewritten onto `ui/v4` on 2026-08-17. `ui/v4` gained `PaperCard`, `FactBlock`, `Action` and `IconAction`, and `Page` gained a hero slot, a subtitle mark, and **its own window insets**: a page opens over the shell rather than inside it, so without them the back arrow sits under the status bar. Any screen built on `Page` inherits that fix.
+
+**Two of 85 screens are rewritten** and the old set still stands: `QuietButton` 153 callers, `GroupedSurface` 101, `DenseRow` 99, `GroupHeader` 90, `SectionScaffold` 70, `Thumbnail` 12. Each goes as its last caller goes, and the old package being empty is the test.
 
 **Step 3 starts with the project screen, and the owner has already ruled on it:** "it's absolutely horrid and so far away from the mock-ups." Against `m3v4-2` it needs a gold "decision expected" tonal block where a white date row is now, a status pill in the top corner, one filled action beside two tonal ones with their icons above the labels rather than three white tiles, and a "The road" heading over the spine. Today's card grid is the other one he has named: a lone small card leaves half a row empty beside it.
 
