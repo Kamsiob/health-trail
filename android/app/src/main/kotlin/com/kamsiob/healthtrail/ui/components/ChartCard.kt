@@ -104,7 +104,20 @@ fun ChartCard(
 
         Plot(
             readings = readings,
-            line = hue.base,
+            // **A mark cannot be drawn in the color of the thing it is drawn
+            // on.** The line is the section's own hue, which is identity on a
+            // white card and invisible inside a hero, because a hero *is* that
+            // hue at full strength. On Today's arranged lead the chart was a
+            // scatter of faint rings with no line at all: the stroke was there,
+            // painted in exactly the background color.
+            //
+            // **`onHue` flips the ink ladder and cannot reach this**, because
+            // this color comes from the `TabHue` rather than from the palette.
+            // D172's rule still holds, that the palette flips and call sites do
+            // not, so the test is on the palette: if the paper under this chart
+            // is already the hue, the mark takes the ink that was chosen to
+            // read against it.
+            line = if (colors.paper == hue.base) colors.ink else hue.base,
             height = height,
         )
 

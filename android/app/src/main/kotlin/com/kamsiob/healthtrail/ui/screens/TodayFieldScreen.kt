@@ -1305,7 +1305,12 @@ private fun AnswerBody(
         Spacer(Modifier.height(Space.xs))
         Plot(
             readings = chartPoints(answer.series),
-            line = hue.base,
+            // A mark cannot be drawn in the color of the thing it is drawn on.
+            // This rung renders inside the saturated lead as well as on a white
+            // card, and in the lead the paper is this very hue, so the line was
+            // painted in exactly the background and the chart became a scatter
+            // of rings. Same test and same reason as `ChartCard`.
+            line = if (colors.paper == hue.base) colors.ink else hue.base,
             height = ChartHeight.standard,
         )
     }

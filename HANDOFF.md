@@ -43,12 +43,13 @@ Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` >
 
 **What the mockup comparison found, and it is the method that matters.** Install, seed, capture, open the approved mockup beside it. Three defects on the notebook alone that no check could see: the app's own eyebrow was set in the same style as the row subtitles under it, its heading sat equidistant between its own group and the one above, and the table of contents had no way into search while Today, Today's field and More all did. **The eyebrow one had a KDoc describing uppercasing that the code never did.**
 
-**Open against the mockups, not started:**
+**Three things this file called open were not defects, and the correction is the lesson.** They were written by comparing a screenshot to a mockup without reading the reasons already in the code. That is D172's failure with the sides swapped: reasoning from the mockup instead of from the artifact.
 
-- **The two square cards on Today** carry an eyebrow at the top and a number at the bottom with a hand's width of white between. `TodayCard` sets `SpaceBetween` deliberately so a row of squares lines its answers along one baseline. It reads as empty rather than as calm, and the fix is the card's height, not its arrangement.
-- **The chart card** is a line with a dot at every reading. The mockup draws one smooth line, a gradient under it and a single end dot.
-- **The hero on Today** is a sentence on a slate block. The mockup carries a chip, a display title, a subtitle and an inset white action row inside the same block.
-- **`TodayCard`'s eyebrow is sentence case and the mockup's is tracked caps**, and **this is an owner question rather than a defect.** D171 tried uppercase there and rejected it as louder than the answer beneath it, on a card the size of a stamp. Half of that reasoning was about mono being a third typeface, which D176 removed. The mockup's uppercase eyebrow is on a full width chart card, not a stamp. **Do not flip it without asking**, rule 23.
+- **The two square cards on Today are the approved proportion.** `TILE_HEIGHT_RATIO` is 0.70, which is the mockup's own 120dp against 170dp, and `atLeastSquare` applies it as a minimum the card grows past when the words need it. The white inside one is the tile being a tile with a short answer in it.
+- **The dot on every chart reading is deliberate and is closer to rule 2 than a smooth line would be.** Its own note: every recorded value gets one, including a lone reading with no line at all, and a hairline ring keeps two close readings countable rather than merged. Dots say "these are the readings you took"; a smoothed gradient says "here is the trend", which is interpretation.
+- **Today's hero is a sentence because the fixture is quiet.** `TodayLead` takes an eyebrow, a display title, content and an inline action, and the mockup's rich lead is that component with an appointment in it. Use the appointment fixture to see it: `tools/device.sh year2 6 walk-appointment --arranged --appointment-on YYYY-MM-DD`.
+
+**Still genuinely open, and it is an owner question rather than a defect.** `TodayCard`'s eyebrow is sentence case and the mockup's is tracked caps. D171 tried uppercase there and rejected it as louder than the answer beneath it, on a card the size of a stamp. Half that reasoning was about mono being a third typeface, which D176 removed; the other half stands. The mockup's uppercase eyebrow is on a full width chart card, not a stamp. **Do not flip it without asking**, rule 23.
 
 **#381 is eleven forms, not seven.** `SetupScreen` and `MeasurementScreen` are the only two using `FieldGroup`. The medication form is converted as the worked example: `Aside` for the lead, `ToggleRow` for the card question.
 
