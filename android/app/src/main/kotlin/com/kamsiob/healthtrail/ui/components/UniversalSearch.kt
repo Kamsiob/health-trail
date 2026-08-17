@@ -63,10 +63,17 @@ fun UniversalSearchDoor(
             // words is the same mark the field it opens wears, and a reader
             // announcing it too would say search twice.
             .clearAndSetSemantics { contentDescription = label }
-            .padding(horizontal = Space.cardPadding),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(horizontal = Space.cardPadding, vertical = Space.sm),
+        // **The mark sits with the first line, not with the middle of the
+        // block.** Centered, it was fine at font scale 1.0 where the label is
+        // one line, and at 2.0 the label wraps and the magnifier floated
+        // between the two lines beside nothing. Found on the phone at maximum
+        // font scale, which is the only place it exists. Rule 19's pass.
+        verticalAlignment = Alignment.Top,
     ) {
-        MagnifierMark()
+        // Nudged down to the first line's optical center, because a 15dp mark
+        // hung from the same top edge as a 16sp line sits visibly high.
+        MagnifierMark(modifier = Modifier.padding(top = Space.xs))
         Spacer(Modifier.width(Space.s))
         Text(
             text = label,

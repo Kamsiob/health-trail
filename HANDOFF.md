@@ -86,7 +86,7 @@ Order, and none of it starts early:
 3. Commit and push per increment. An increment ends when `origin/main` has it.
 4. The fixture must only produce rows the app itself can write. A fixture filling a column no writer fills is how a screen looks joined up and is empty.
 5. Look at the screen before closing anything.
-6. `tools/seed.sh` drives the restore screen; changing that screen breaks seeding.
+6. `tools/seed.sh` drives the restore screen; changing that screen breaks seeding. **So does raising the font scale.** It taps by position, and at 2.0 the restore screen's controls are somewhere else, so the run ends on the wrong screen. **Seed at font scale 1.0, then raise it.** The tell is the last line: it said "Back to More" rather than "Restored." and the notebook was empty. Found 2026-08-16 doing the rule 19 pass.
 
 ## 6. Traps that cost real time (full set: `docs/TRAPS.md`)
 

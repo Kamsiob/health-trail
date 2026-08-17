@@ -169,11 +169,11 @@ fun ScopedSearch(
  * be missing.
  */
 @Composable
-internal fun MagnifierMark(size: Dp = 15.dp) {
+internal fun MagnifierMark(modifier: Modifier = Modifier, size: Dp = 15.dp) {
     val colors = HealthTrail.colors
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
-    Canvas(modifier = Modifier.size(size)) {
+    Canvas(modifier = modifier.size(size)) {
         val stroke = 2.dp.toPx()
         val radius = this.size.minDimension * 0.32f
         val cx = if (rtl) this.size.width - radius - stroke else radius + stroke
