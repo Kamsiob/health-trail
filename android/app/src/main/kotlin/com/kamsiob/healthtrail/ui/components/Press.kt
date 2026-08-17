@@ -146,7 +146,13 @@ fun focusRingAlpha(interaction: InteractionSource): State<Float> {
 fun Modifier.openableByTap(
     label: String,
     onTap: () -> Unit,
-    resting: Color = HealthTrail.colors.card,
+    // **Tonal, not white.** `docs/V4.md` 2.1: a group is a flat block in
+    // `sand` on `paper`, and depth is the difference between those two rather
+    // than elevation. This default is where most of the app's white cards
+    // came from: every tappable card in the app is built through here, so the
+    // projects list, the care threads and the rest stayed white while the
+    // components around them went tonal. #386.
+    resting: Color = HealthTrail.colors.sand,
     /**
      * The focus ring's corners, which must be the caller's own clip.
      *
@@ -201,14 +207,10 @@ fun Modifier.openableByTap(
             scaleX = scale
             scaleY = scale
         }
-        // **Raised, like every other surface in the app.** #324 lifted the
-        // cards and reached `GroupedSurface`, `Tile`, `TodayCard` and the rest,
-        // and missed this one, so every card built through the tappable path
-        // stayed flat: a person moved from the notebook, where surfaces sit
-        // above the paper, to projects and care threads, where they dissolve
-        // into it. Twenty two call sites, one line. Dark theme is flat by
-        // `Raise.kt` either way, which is correct there. #361.
-        .raisedCard(shape)
+        // **The shadow is gone with the white.** #324 lifted every card in
+        // the app because elevation was how a surface separated from the
+        // paper; under the new language the container's own color does that,
+        // and doing both is what made the old screens feel busy. D182.
         .background(surface)
         .border(Space.focusRing, HealthTrail.colors.blue.copy(alpha = ring), shape)
         // long-press-twin: the caller's own visible control, named on the

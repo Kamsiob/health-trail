@@ -67,7 +67,7 @@ fun FieldGroup(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(Radius.cardLarge)
-                .background(colors.card)
+                .background(colors.sand)
                 .padding(horizontal = Space.cardPadding, vertical = Space.cardPadding),
         ) {
             content()

@@ -27,7 +27,8 @@ import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.Avatar
-import com.kamsiob.healthtrail.ui.components.TextAction
+import com.kamsiob.healthtrail.ui.components.CircleAction
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -336,8 +337,14 @@ private fun PersonRow(
         },
         trailingContent = if (phone != null) {
             {
-                QuietButton(
-                    label = strings["careteam.call"],
+                // **A gold circular button carrying the phone**, which is
+                // what `m3v4-3` draws on every row of the unit list. It was
+                // the word "Call" in blue, which is the one costume law 2
+                // says a person cannot tell from ordinary emphasis, and
+                // fifteen of them down a list read as a column of links
+                // rather than as the one action a row offers.
+                CircleAction(
+                    symbol = Symbols.call,
                     onClick = onCall,
                     // **A reader still hears whose number it is.** The word
                     // alone on fifteen rows would be fifteen controls called

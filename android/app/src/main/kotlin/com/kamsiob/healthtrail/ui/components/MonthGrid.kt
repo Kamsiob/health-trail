@@ -68,7 +68,7 @@ fun MonthGrid(
         modifier = modifier
             .fillMaxWidth()
             .clip(Radius.cardLarge)
-            .background(colors.card)
+            .background(colors.sand)
             .padding(Space.s),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {

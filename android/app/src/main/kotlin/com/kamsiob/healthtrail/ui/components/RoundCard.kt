@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.raisedCard
@@ -60,9 +61,11 @@ fun RoundCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .raisedCard(Radius.cardLarge)
+            // **A tonal block, not a raised white card.** `docs/V4.md` 2.1:
+            // depth is `paper` against `sand`, and the shadow was doing the
+            // job the container's own color does. #386.
             .clip(Radius.cardLarge)
-            .background(colors.card),
+            .background(colors.sand),
     ) {
         Column(
             modifier = Modifier.padding(
@@ -73,7 +76,15 @@ fun RoundCard(
             ),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            Text(text = eyebrow, style = type.bodyS, color = hue.ink)
+            // **The eyebrow token rather than body text in a hue.** A small
+            // tracked label is what names what follows; body text in a color
+            // is just a colored sentence. Without the tracking, because this
+            // label is a state the caller composes and can run long.
+            Text(
+                text = eyebrow,
+                style = type.eyebrow.copy(letterSpacing = TextUnit.Unspecified),
+                color = hue.ink,
+            )
             Text(
                 text = reason,
                 style = type.displayS,

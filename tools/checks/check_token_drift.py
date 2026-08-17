@@ -43,6 +43,8 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # index rail needed and what the sticky header had been typing. #361.
 # Every radius outside the theme is a token now, each naming the grid selector
 # it came from, so a later reader can check it against the drawing.
+# 113 once the chevron became a Material symbol and the raised white cards
+# became tonal blocks.
 # 115 once the buttons became Material's filled and tonal ones.
 # 117 once the icon tile drew a Material Symbol rather than a hand-authored
 # path, and the notebook stopped sizing that tile itself.
@@ -50,7 +52,7 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # hand-drawn glyphs went with it. **The rebuild is expected to keep pushing
 # this down**: a measurement typed into a screen is usually a component this
 # app drew for itself, and step 2 is replacing those with Material's. #386.
-BASELINE = 115
+BASELINE = 113
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

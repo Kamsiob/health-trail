@@ -1,14 +1,9 @@
 package com.kamsiob.healthtrail.ui.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 
@@ -38,33 +33,35 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 fun Chevron(
     modifier: Modifier = Modifier,
     pointsForward: Boolean = true,
-    width: Dp = 8.dp,
-    height: Dp = 14.dp,
+    width: Dp = SIZE,
+    height: Dp = SIZE,
 ) {
-    val colors = HealthTrail.colors
-    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-
-    Canvas(modifier = modifier.size(width = width, height = height)) {
-        val strokeWidth = 2.dp.toPx()
-        val midY = size.height / 2f
-        // Forward means the end edge, whichever edge that is in this direction.
-        val forward = pointsForward != rtl
-        val tipX = if (forward) size.width else 0f
-        val baseX = if (forward) 0f else size.width
-
-        drawLine(
-            color = colors.ink3,
-            start = Offset(baseX, 0f),
-            end = Offset(tipX, midY),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round,
-        )
-        drawLine(
-            color = colors.ink3,
-            start = Offset(tipX, midY),
-            end = Offset(baseX, size.height),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round,
-        )
-    }
+    // **Material's mark, not two lines this app draws.** #386, `docs/V4.md` 4
+    // lists "the app's hand-drawn switch, chevron and controls" among the
+    // things being replaced, and this one sat at the end of rows on most
+    // screens in the app: two `drawLine` calls with their own stroke, their
+    // own cap and their own direction flip.
+    //
+    // **The direction still flips**, because `chevron_right` is a directional
+    // mark and `DESIGN.md` 4.4 mirrors those. The vector drawable is
+    // autoMirrored through the layout direction rather than by arithmetic
+    // here, and `pointsForward = false` picks the other symbol outright.
+    //
+    // **Still non-text and still unannounced.** The thing it sits inside is
+    // the button, and that is what says where it goes.
+    Symbol(
+        symbol = if (pointsForward) Symbols.forward else Symbols.back,
+        contentDescription = null,
+        modifier = modifier.size(width = width, height = height),
+        tint = HealthTrail.colors.ink3,
+    )
 }
+
+/**
+ * The mark's box, which is square now rather than 8 by 14.
+ *
+ * A Material Symbol is drawn on a square grid: given the old rectangle it
+ * squeezed the glyph. The visual weight is the same because the symbol's own
+ * strokes sit well inside its box.
+ */
+private val SIZE: Dp = 20.dp

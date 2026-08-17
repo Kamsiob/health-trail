@@ -10,7 +10,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.annotation.DrawableRes
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -221,4 +225,38 @@ fun TextAction(
     @Suppress("UNUSED_PARAMETER") leading: (@Composable () -> Unit)? = null,
 ) {
     QuietButton(label = label, onClick = onClick, modifier = modifier, enabled = enabled)
+}
+
+/**
+ * One action as a mark in a filled circle. `m3v4-3`, #386.
+ *
+ * **The drawing puts these at the end of a row**: a phone on every person in
+ * the unit list, gold on the section's own wash. A word in blue at the end of
+ * fifteen rows reads as a column of links, and law 2 bans a bare text link
+ * precisely because it is the costume a tired person cannot tell from ordinary
+ * emphasis.
+ *
+ * **The description is required rather than optional.** The mark is the only
+ * thing naming this control, so a reader gets nothing without it, and "Call"
+ * fifteen times is the ambiguity `DESIGN.md` 5.12 exists to prevent: the caller
+ * passes whose number it is.
+ */
+@Composable
+fun CircleAction(
+    @DrawableRes symbol: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    container: Color = HealthTrail.colors.goldWash,
+    tint: Color = HealthTrail.colors.goldInk,
+) {
+    FilledIconButton(
+        onClick = onClick,
+        modifier = modifier.size(Space.touchTarget),
+        colors = IconButtonDefaults.filledIconButtonColors(
+            containerColor = container,
+            contentColor = tint,
+        ),
+    ) {
+        Symbol(symbol = symbol, contentDescription = null)
+    }
 }

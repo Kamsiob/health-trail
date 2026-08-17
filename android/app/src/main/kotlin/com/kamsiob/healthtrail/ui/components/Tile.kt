@@ -96,7 +96,6 @@ fun Tile(
             // until something focuses this, so it is not a second definition
             // competing with the shadow. 4.7 bans a border as a card's *only*
             // definition, which is what this used to be one of.
-            .raisedCard(Radius.cardLarge)
             .clip(Radius.cardLarge)
             .background(surface)
             .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)

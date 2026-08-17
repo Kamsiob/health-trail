@@ -210,8 +210,13 @@ private fun LabelsOrList(
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val perStage = with(LocalDensity.current) { (maxWidth / stages.size).toPx() }
-        val widest = remember(stages, type.mono, perStage) {
-            stages.maxOf { measurer.measure(it.name, type.mono).size.width }
+        // **A stage name is a word, so it is not set in the mono face.**
+        // D173 and D176: mono carries figures that line up in a column, and
+        // everything a person reads as words left it. Three stage names in a
+        // typewriter face across every project card was the loudest place
+        // that rule was still being broken. #386.
+        val widest = remember(stages, type.bodyS, perStage) {
+            stages.maxOf { measurer.measure(it.name, type.bodyS).size.width }
         }
 
         // **A word wider than its column is a word Compose breaks in half.**
@@ -237,7 +242,7 @@ private fun LabelsOrList(
                         // node up, which is the test disagreeing with the
                         // comment and being right.
                         text = Bidi.isolate(stage.name),
-                        style = type.mono,
+                        style = type.bodyS,
                         // **ink2 and not ink3 for a stage not yet reached.**
                         // The grid draws it in the faintest tone it has, and on
                         // a bright monitor that reads as pleasantly quiet. ink3
@@ -280,7 +285,7 @@ private fun LabelsOrList(
             // both halves of that are covered.
             Text(
                 text = Bidi.isolate(stages.getOrNull(current)?.name ?: stages.first().name),
-                style = type.mono,
+                style = type.bodyS,
                 color = colors.ink,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -289,7 +294,7 @@ private fun LabelsOrList(
         } else {
             Text(
                 text = stageNamesLine(stages),
-                style = type.mono,
+                style = type.bodyS,
                 color = colors.ink2,
                 modifier = Modifier.fillMaxWidth().padding(top = Space.xs),
             )

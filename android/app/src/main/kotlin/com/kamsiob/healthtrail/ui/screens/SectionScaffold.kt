@@ -33,6 +33,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -411,6 +414,22 @@ fun SectionScaffold(
                             }
                         }
                     }
+                    // **The section's name as a quiet eyebrow over the
+                    // heading**, which is what `m3v4-3` draws: "CARE TEAM"
+                    // over "Who you call". The gold underlined tab chip that
+                    // used to do this job was a costume of its own; the
+                    // eyebrow is the language's own way of naming what
+                    // follows, in the section's ink so it also says which
+                    // section without a second color system.
+                    Text(
+                        text = title.uppercase(LocalConfiguration.current.locales[0]),
+                        style = HealthTrail.type.eyebrow,
+                        color = section?.let { hueFor(it).ink } ?: HealthTrail.colors.goldInk,
+                        // The capitals are for the eye. A reader is handed the
+                        // natural words, D183.
+                        modifier = Modifier.semantics { contentDescription = title },
+                    )
+                    Spacer(Modifier.height(Space.xs))
                     Text(
                         text = heading ?: headingKey?.let { strings[it] } ?: title,
                         style = HealthTrail.type.displayM,

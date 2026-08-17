@@ -73,7 +73,7 @@ fun ChartCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(Radius.cardLarge)
-            .background(colors.card)
+            .background(colors.sand)
             .padding(horizontal = Space.cardPadding, vertical = Space.sm)
             .semantics(mergeDescendants = true) { contentDescription = description },
         verticalArrangement = Arrangement.spacedBy(Space.s),
