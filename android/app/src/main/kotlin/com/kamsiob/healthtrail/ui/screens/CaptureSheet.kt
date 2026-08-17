@@ -13,9 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,8 +23,9 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.IconTile
 import com.kamsiob.healthtrail.ui.components.Tile
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Sheet
+import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
 /**
  * The capture sheet, which is the only way data enters this app.
@@ -61,33 +60,11 @@ fun CaptureSheet(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberSheet()
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = colors.card,
-        // **A scrim that actually dims.** Material's default is a light veil,
-        // and against this app's dark surfaces the notebook behind the sheet
-        // stayed almost as bright as the sheet itself and went on competing for
-        // the eye. Looked at on the phone, it did not read as a sheet over a
-        // screen so much as two screens at once.
-        scrimColor = Color.Black.copy(alpha = SCRIM_ALPHA),
-        shape = Radius.bottomSheet,
-        // **No drag handle**, and it is removed rather than labeled.
-        //
-        // `ScreenReaderTest` found it carrying a click action and announcing
-        // nothing, so a reader user met an unlabeled button on the one screen
-        // every piece of data enters through. With `skipPartiallyExpanded` the
-        // handle has no state to toggle, so it was a control that did nothing
-        // and said nothing.
-        //
-        // Labeling it was tried twice, wrapping it and passing the modifier
-        // down, and Material applies its own semantics outside both. Removing
-        // it costs nothing the reference asked for: section 3 item 7 records
-        // that the mockups draw this as a dimmed composite with no handle. The
-        // sheet still dismisses by tapping outside and by the back gesture.
-        dragHandle = null,
+    Sheet(
+        onDismiss = onDismiss,
+        state = sheetState,
         modifier = Modifier.testTag(CaptureTags.SHEET),
     ) {
         Column(
@@ -210,12 +187,3 @@ private fun labelKey(kind: CaptureKind): String = when (kind) {
     CaptureKind.DOCUMENT -> "capture.document"
 }
 
-/**
- * How far the scrim dims what is behind the sheet.
- *
- * Enough that the notebook reads as behind rather than beside, and not so much
- * that the person loses where they were. Judged on the device in dark theme,
- * which is the harder of the two: on warm paper a lighter scrim would do, and
- * one value that works in both is worth more than two that each work in one.
- */
-private const val SCRIM_ALPHA = 0.62f

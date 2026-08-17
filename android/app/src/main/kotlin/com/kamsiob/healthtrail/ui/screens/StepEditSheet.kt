@@ -12,16 +12,13 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
@@ -31,8 +28,9 @@ import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Sheet
+import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
 object StepEditTags {
     const val SHEET = "step-edit-sheet"
@@ -77,18 +75,14 @@ fun StepEditSheet(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberSheet()
 
     var text by remember(step.id) { mutableStateOf(step.text) }
     var note by remember(step.id) { mutableStateOf(step.note.orEmpty()) }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = colors.card,
-        shape = Radius.bottomSheet,
-        scrimColor = Color.Black.copy(alpha = 0.62f),
-        dragHandle = null,
+    Sheet(
+        onDismiss = onDismiss,
+        state = sheetState,
         modifier = Modifier.testTag(StepEditTags.SHEET),
     ) {
         Column(

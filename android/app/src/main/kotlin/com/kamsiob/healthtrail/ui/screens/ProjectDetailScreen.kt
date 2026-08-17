@@ -17,9 +17,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
@@ -60,6 +57,8 @@ import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Sheet
+import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
 object ProjectDetailTags {
     const val NAME = "project_detail"
@@ -605,17 +604,13 @@ private fun StepSheet(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberSheet()
     var text by remember(step?.id) { mutableStateOf(step?.text.orEmpty()) }
     var note by remember(step?.id) { mutableStateOf(step?.note.orEmpty()) }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = colors.card,
-        scrimColor = Color.Black.copy(alpha = SHEET_SCRIM),
-        shape = Radius.bottomSheet,
-        dragHandle = null,
+    Sheet(
+        onDismiss = onDismiss,
+        state = sheetState,
         modifier = Modifier.testTag(ProjectDetailTags.STEP_SHEET),
     ) {
         Column(
@@ -707,5 +702,3 @@ private fun StepSheet(
     }
 }
 
-/** Enough to read the sheet as over the screen rather than beside it. */
-private const val SHEET_SCRIM = 0.62f

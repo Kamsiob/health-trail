@@ -17,9 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -37,6 +35,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Sheet
+import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
 object TipsTags {
     const val BUTTON = "tips_button"
@@ -140,13 +140,11 @@ fun TipsSheet(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheet = rememberSheet()
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheet,
-        containerColor = colors.card,
-        shape = Radius.bottomSheet,
+    Sheet(
+        onDismiss = onDismiss,
+        state = sheet,
         modifier = Modifier.testTag(TipsTags.SHEET),
     ) {
         Column(

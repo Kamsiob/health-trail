@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,8 +25,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Sheet
+import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
 object ChipPickerTags {
     const val SHEET = "chip_picker_sheet"
@@ -82,7 +81,7 @@ fun ChipPickerSheet(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberSheet()
     var query by remember { mutableStateOf("") }
 
     // Matched on the same simple contains-ignoring-case the rest of the app
@@ -98,16 +97,9 @@ fun ChipPickerSheet(
         }
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = colors.card,
-        scrimColor = Color.Black.copy(alpha = PICKER_SCRIM),
-        shape = Radius.bottomSheet,
-        // Removed rather than labeled, for the reason recorded on the capture
-        // sheet: Material applies its own semantics outside anything that wraps
-        // it, so the handle was an unlabeled button that did nothing.
-        dragHandle = null,
+    Sheet(
+        onDismiss = onDismiss,
+        state = sheetState,
         modifier = Modifier.testTag(ChipPickerTags.SHEET),
     ) {
         Column(
@@ -172,7 +164,6 @@ fun ChipPickerSheet(
     }
 }
 
-private const val PICKER_SCRIM = 0.62f
 
 /**
  * How tall the list may grow.

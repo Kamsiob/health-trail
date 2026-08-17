@@ -12,16 +12,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
@@ -36,9 +33,10 @@ import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import java.time.LocalDate
+import com.kamsiob.healthtrail.ui.v4.Sheet
+import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
 object StandingTags {
     const val SHEET = "standing-sheet"
@@ -82,7 +80,7 @@ fun StandingSheet(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberSheet()
 
     var holder by remember(previous?.id) { mutableStateOf(previous?.holderLabel.orEmpty()) }
     var activity by remember(previous?.id) { mutableStateOf(previous?.activity.orEmpty()) }
@@ -92,15 +90,9 @@ fun StandingSheet(
     var since by remember(previous?.id) { mutableStateOf(Edtf.day(LocalDate.now())) }
     var picking by remember { mutableStateOf(false) }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = colors.card,
-        shape = Radius.bottomSheet,
-        scrimColor = Color.Black.copy(alpha = 0.62f),
-        // D42: with the sheet fully expanded the handle is a control that does
-        // nothing and announces nothing.
-        dragHandle = null,
+    Sheet(
+        onDismiss = onDismiss,
+        state = sheetState,
         modifier = Modifier.testTag(StandingTags.SHEET),
     ) {
         Column(

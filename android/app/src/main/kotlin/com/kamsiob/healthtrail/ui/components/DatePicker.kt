@@ -18,10 +18,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +45,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.TextStyle as JavaTextStyle
+import com.kamsiob.healthtrail.ui.v4.Sheet
+import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
 object DatePickerTags {
     const val SHEET = "date_picker_sheet"
@@ -103,7 +103,7 @@ fun DatePickerSheet(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberSheet()
 
     val opening = remember(initial) { Opening.of(initial, today) }
     var month by remember { mutableStateOf(opening.month) }
@@ -122,15 +122,9 @@ fun DatePickerSheet(
      */
     var zoom by remember { mutableStateOf(Zoom.DAYS) }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = colors.card,
-        shape = Radius.bottomSheet,
-        scrimColor = Color.Black.copy(alpha = 0.62f),
-        // Removed for the reason D42 gives: with the sheet fully expanded the
-        // handle is a control that does nothing and announces nothing.
-        dragHandle = null,
+    Sheet(
+        onDismiss = onDismiss,
+        state = sheetState,
         modifier = Modifier.testTag(DatePickerTags.SHEET),
     ) {
         Column(

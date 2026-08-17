@@ -14,9 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -38,6 +35,8 @@ import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Sheet
+import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
 object CardOptionsTags {
     const val SHEET = "card-options"
@@ -101,19 +100,11 @@ fun CardOptionsSheet(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val type = HealthTrail.type
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberSheet()
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = colors.card,
-        scrimColor = Color.Black.copy(alpha = SHEET_SCRIM),
-        shape = Radius.bottomSheet,
-        // Removed rather than labeled, for the reason the capture sheet and the
-        // picker both record: Material applies its own semantics outside
-        // anything that wraps it, so the handle was an unlabeled button that
-        // did nothing.
-        dragHandle = null,
+    Sheet(
+        onDismiss = onDismiss,
+        state = sheetState,
         modifier = Modifier.testTag(CardOptionsTags.SHEET),
     ) {
         Column(
@@ -295,5 +286,3 @@ private fun SizeChip(
     }
 }
 
-/** How far the scrim dims Today behind the sheet. The picker's value. */
-private const val SHEET_SCRIM = 0.62f

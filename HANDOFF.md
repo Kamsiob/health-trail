@@ -31,7 +31,9 @@ Step 2, #386, done so far: **the face, the icons, the navigation bar, the group 
 
 **The method changed on 2026-08-17 and `docs/ACCEPTANCE.md` is the authority on it.** The owner: "no old design language at all. get rid of it so it doesn't influence." **Nothing old is edited any more.** The new set is written from scratch in `ui/v4`, a screen is rewritten onto it rather than adapted, and an old component is deleted the moment its last caller goes. **The old package being empty is the test.**
 
-**Step 2 still to do: the sheet and the sand accordion.** `rememberModalBottomSheetState` is also deprecated in the alpha at 18 sites and gets fixed with them. Then step 3, the screens.
+**Step 2 still to do: the sand accordion.** Then step 3, the screens.
+
+**The sheet is done and it is app wide.** `ui/v4/Sheet.kt` carries the container, the corner, the scrim and the missing handle, `SheetBody` carries the insets and the screen margin, and `rememberSheet` replaces the deprecated `rememberModalBottomSheetState` at **all 18 call sites**: the build has no deprecation warnings left. The call sites keep their own contents until their screens are rewritten, so this changed no layout; the tips sheet is the one visible difference, since it alone had Material's light veil and a drag handle.
 
 **Phase 1 of `docs/ACCEPTANCE.md` is finished: all six drawn screens carry the drawing.** The document screen was the last, rewritten onto `ui/v4` on 2026-08-17. `ui/v4` gained `PaperCard`, `FactBlock`, `Action` and `IconAction`, and `Page` gained a hero slot, a subtitle mark, and **its own window insets**: a page opens over the shell rather than inside it, so without them the back arrow sits under the status bar. Any screen built on `Page` inherits that fix.
 
@@ -45,7 +47,7 @@ Step 2, #386, done so far: **the face, the icons, the navigation bar, the group 
 
 **`MaterialShapes` is inside material3 1.5.0.** No `androidx.graphics:graphics-shapes` is needed. The old note saying otherwise was written from the same unverified paragraph.
 
-**`rememberModalBottomSheetState` is deprecated in the alpha**, at 18 call sites, for `rememberBottomSheetState`. Warnings, not errors. The sheet is one of step 2's six surfaces, so they are fixed there rather than churned twice.
+**`rememberBottomSheetState` is what the alpha wants** and `ui/v4/rememberSheet()` is the app's one call to it: a hidden initial value with the half open stop left out of `enabledValues`, which is what `skipPartiallyExpanded` used to say. The parameter is `enabledValues`, not `sheetValues`, and the compiler is the only place that says so.
 
 **The order is theme, then shared surfaces, then screens**, and a screen is rewritten or left alone. Nothing half converted. `docs/V4.md` 3.
 
