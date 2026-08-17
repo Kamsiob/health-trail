@@ -29,11 +29,13 @@ object Space {
     /**
      * Screen horizontal padding, DESIGN.md section 6.
      *
-     * 13dp under v4, down from 20dp. The grid is drawn tighter to the edge than
-     * the previous direction, which is what lets a dense row carry a leading
-     * element, two lines, a trailing value, and a chevron without crowding.
+     * **16dp, measured off the approved mockups**: the notebook's containers
+     * start 16.0dp from the edge and Today's hero 17.7dp. It was 13, which is
+     * part of what the owner meant by "look how cluttered it looks". The v4
+     * grid file it came from was drawn tighter to the edge than the mockups
+     * that superseded it. D183.
      */
-    val screenHorizontal: Dp = 13.dp
+    val screenHorizontal: Dp = 16.dp
 
     /** Group row padding, 11 to 13dp. This is the outer value. */
     val cardPadding: Dp = 13.dp

@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -331,7 +332,7 @@ fun TodayCard(
         val silence = if (speaksAsOneNode) Modifier.clearAndSetSemantics { } else Modifier
 
         Column(
-            modifier = Modifier.padding(Space.sm),
+            modifier = Modifier.padding(Space.ml),
             // **A square card fills its square**, which is what a widget does
             // on the phone somebody already owns and what the first build of
             // this did not do. "6 / on the list now" sat in the top third of a
@@ -362,17 +363,27 @@ fun TodayCard(
             // noise. The hue survives as a dot: enough to tell the sections
             // apart, not enough to shout.
             Row(verticalAlignment = Alignment.CenterVertically, modifier = silence) {
-                Box(
-                    modifier = Modifier
-                        .size(Space.sectionDot)
-                        .clip(CircleShape)
-                        .background(hue.base),
-                )
-                Spacer(Modifier.width(Space.xs))
             Text(
+                // **The eyebrow's metrics and the section's ink, in sentence
+                // case.** The mockups set these labels in capitals, and every
+                // label they draw is short: "WEIGHT", "PART OF", "DECISION
+                // EXPECTED". This one is written by the person, "Project,
+                // Medicaid application", and capitals cost about fifteen
+                // percent of the width: on a half width card it ellipsized
+                // their own project name, which rule 11 bans by name. Seen on
+                // the phone, twice, since the first attempt broke it mid word
+                // as well.
                 text = tab,
-                style = type.bodyS,
-                color = colors.ink2,
+                // **The eyebrow without its tracking**, which is the third
+                // attempt at this line and the one that fits. 0.14em is what
+                // makes a short label read as deliberate, and it adds about
+                // fifty points of width to a thirty character one: "Project,
+                // Medicaid application" ellipsized on a half width card in
+                // capitals and again in sentence case. The size, the weight
+                // and the section's ink are what carry the treatment; the
+                // tracking is what a label the person wrote cannot afford.
+                style = type.eyebrow.copy(letterSpacing = TextUnit.Unspecified),
+                color = hue.ink,
                 // **Two lines rather than an ellipsis.** D173, and rule 11
                 // bans truncation by name. A tracked measure's tab is
                 // "Tracking, " plus whatever the person called the thing they
@@ -383,16 +394,23 @@ fun TodayCard(
                 // card that grows a line is a card that grew a line.
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                // **One weight in this row, not two.** The first build gave
+                // the label `weight(1f, fill = false)` and then put a weighted
+                // spacer after it, so the two split the row evenly and a label
+                // that had half a card broke mid word: "PROJEC" over "T, ME".
+                // Seen on the phone one screenshot later.
                 modifier = Modifier
-                    // **The chevron's room, kept clear.** The tab had no
-                    // width limit and the chevron floats in the corner over
-                    // the top of it, so a card naming its source, "Project ·
-                    // Appeal the level of care assessment", ran its own
-                    // words underneath the chevron and ellipsized behind it.
-                    // Seen on the phone and invisible in the code, because
-                    // nothing collides until the text is long enough.
-                    .padding(end = if (corner == null) CHEVRON_ROOM else CORNER_ROOM),
+                    .weight(1f)
+                    .padding(end = if (corner == null) Space.s else CORNER_ROOM),
             )
+            if (corner == null) {
+                Symbol(
+                    symbol = Symbols.forward,
+                    contentDescription = null,
+                    modifier = Modifier.size(Space.ml),
+                    tint = colors.ink3,
+                )
+            }
             }
             Column(
                 modifier = silence
@@ -426,8 +444,15 @@ fun TodayCard(
         // `align` says, and only `wrapContentSize` decides where the drawing
         // inside it sits. With the default it centered, which put the chevron
         // in the middle of the card.
-        Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
-            corner?.invoke() ?: Chevron(modifier = Modifier.padding(Space.s))
+        // **Only the corner slot floats now.** The chevron used to hang here
+        // and a long tab ran its own words underneath it: "Project, Appeal the
+        // level of care assessment" ellipsized behind a drawing. It sits at the
+        // end of the eyebrow's row instead, where nothing can collide with it.
+        // The corner keeps the remove dot, which is what edit mode draws here.
+        if (corner != null) {
+            Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
+                corner.invoke()
+            }
         }
     }
 }
