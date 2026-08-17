@@ -17,54 +17,49 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 ## 2. The work
 
-**The interface is being replaced, from the ground up, on Google's Material 3 Expressive. `docs/V4.md` is the plan and the authority.**
+**The interface is being replaced on Material 3 Expressive.** `docs/V4.md` is the design authority and **its section 2.1 is the complete build manual**: a screen nobody drew is built from there, not guessed at. `docs/ACCEPTANCE.md` is the run, nine phases, and the run does not stop until every one is finished.
 
-**The back end does not change.** Repository, schema, change log, export container, decryptor, fixtures, `contract/DATA-CONTRACT.md`: all stay. This is a user interface replacement. Anything needing a schema change is out of scope and goes to the owner.
+**The back end does not change.** Repository, schema, change log, export container, decryptor, fixtures, `contract/DATA-CONTRACT.md`. Anything needing a schema change is out of scope and goes to the owner.
 
-**Where it stands: steps 1 and 2 are done, and phase 4, the screens, is under way.**
+**The method, owner ruling, not negotiable.** "No old design language at all. get rid of it so it doesn't influence." Nothing old is edited. A screen is **rewritten onto `ui/v4`** or left alone. An old component is deleted the moment its last caller goes. **The old package being empty is the test.**
 
-Step 1, #385. `Theme.kt` is `MaterialExpressiveTheme`, with all 48 Material color roles named in both themes, all 15 type roles, five different corners on the shape scale, and reduced motion reaching Material's own components through `StillMotionScheme`.
+### Where it stands
 
-Step 2, #386, done so far: **the face, the icons, the navigation bar, the group container, the icon tile, the row's air, the button, the switch, the section furniture, and the type ladder.** Roboto replaces Atkinson (D181). 34 Material Symbols replace the hand-drawn marks (D182). The nav bar is Material's `ShortNavigationBar`, its gold indicator free from the theme. `GroupedSurface` is a flat tonal block. Buttons and the switch are Material's (D184). The full width back footer is deleted app wide and `SectionTags.BACK` moved to a back arrow in the top corner. The measurements came off the drawing (D183): row air 13dp, screen margin 16dp, Today card padding 20dp, and the display end of the ladder raised so the title to row jump is the drawing's 2.3 rather than 1.5.
+- **Step 1, the theme: done.** #385. `MaterialExpressiveTheme`, 48 color roles, the type ladder, five corners, reduced motion through `StillMotionScheme`.
+- **Step 2, the shared surfaces: done.** #386. Face, icons, nav bar, blocks, rows, buttons, switch, sheet, forms. The accordion was closed rather than replaced, D185.
+- **Phase 4, the screens: 20 of 85.** The notebook, the document, the care team, the person, medications, the questions, money, the milestones, the chapters, the care threads, the bill, the medication, the thread, the chapter, More, Appearance, the people, the paper picker, the violation, About.
 
-**The field was already right.** `m3v4-4` draws a notched outline with a floating label and the app already did.
+**`ui/v4` holds:** `Page` + `labeledBlock`, `Block`/`BlockTone`, `FactBlock`, `Eyebrow`, `Lead`, `BigNumber`, `Body`, `ListRow`/`RowDivider`/`ChoiceRow`, `SearchDoor`, `PaperCard`, `Action`/`ActionEmphasis`/`IconAction`, `Sheet`/`SheetBody`/`rememberSheet`, `Avatar`/`PersonHero`/`PersonRow`, `Segments`, `Road`/`Stop`/`RouteMark`, `FieldBlock`.
 
-**The method changed on 2026-08-17 and `docs/ACCEPTANCE.md` is the authority on it.** The owner: "no old design language at all. get rid of it so it doesn't influence." **Nothing old is edited any more.** The new set is written from scratch in `ui/v4`, a screen is rewritten onto it rather than adapted, and an old component is deleted the moment its last caller goes. **The old package being empty is the test.**
+**Still to write:** the stat block, the chips, the switch row, the chart, and a grid cell for the documents pictures view.
 
-**Step 2 is finished.** The accordion was the last row of the replace table and it is not being swapped for another accordion: it already carries the spring, Material's chevron and the one container corner, and `m3v4-3` draws the care team with no fold on it at all. It dies per screen, in phase 4. **D185.**
+### Next, in this order
 
-**Today is drawn and it is not what is built. `m3v4-0`, measured 2026-08-17, dp is px/3:**
+1. **Today**, `m3v4-0`. Drawn, and nothing like what ships: a gold date eyebrow and "<name>'s day" over a **saturated blue hero holding the next appointment** with an inset white card of questions ready to ask, then "What you track" over a white card with a value, a readings chip and a line chart. Needs the appointment's location, the count of questions ready for it, and one tracked measurement.
+2. **The project screen**, `m3v4-2`. The owner has ruled: "it's absolutely horrid and so far away from the mock-ups." Gold decision block, status pill, one filled action beside two tonal, "The road" over the spine.
+3. **The rest of the lists and detail screens.** All one shape: `Page` + `labeledBlock` + `ListRow`.
+4. **Appointments and the documents list last of the lists**: each drags an old component in, `MonthGrid` and the thumbnail grid.
+5. Then phases 5 to 9 of `docs/ACCEPTANCE.md`.
 
-- **The header is the date and the person, not a tab chip.** A gold eyebrow carrying the weekday and date, a display title reading "<name>'s day", and the subject's avatar in the top corner.
-- **The hero is the next appointment, in a saturated blue block** (`46,109,140` = `blue`), full bleed to a 17.7dp margin, holding a translucent pill "TOMORROW · 10:15", the appointment at display size in white, where it is under that, and **an inset white card**: a count in a wash circle, "questions ready to ask", and a circular arrow. Nothing else on the screen is that loud, which is `docs/V4.md` 2.1's one saturated block.
-- **Then "What you track"**, a display S heading with a gold text action "Progress" opposite it, over **a white card**: the section eyebrow, the value as a big number with its unit beside it, a "6 readings" chip on the section's wash, a line chart, and the month label at the foot.
-- The capture button is the gold squircle, and the nav bar carries a count badge on Notebook.
+### What the owner ruled on 2026-08-17, now rules
 
-**None of that is the digest sentence and the fold that are built now.** It needs the appointment's location, the count of questions ready for it, and one tracked measurement with its readings, all of which the repository already answers for other screens. It is its own increment.
+- **Three gaps and no more**: `withinGroup` 8, `betweenGroups` 24, `betweenZones` 32. D188.
+- **Hints live under fields, never inside them**, at the `Support` 12sp role, 4dp down, aligned to the field's text. D189.
+- **A person before their number**, and the name asked as a name.
+- **Password, never passphrase**, everywhere a person reads it.
+- **A label's weight and the air around it must agree.**
+- **The spine is a path, never a filter.** D187.
+- **Nothing behind a fold** that a label and a scroll can carry. D185.
 
-**Phase 4 is under way: 20 of 85 screens are rewritten**, the notebook, the document, the care team, the person, medications, the questions, money, the milestones, the chapters, the care threads, the bill, the medication, the thread, the chapter, More, Appearance, the people, the paper picker, the violation and About. **The v4 road is written**, `ui/v4/Spine.kt`, measured off `m3v4-2`: a 24dp filled node carrying Material's check, a 20dp gold disc in a 28dp halo for where it is now, an 18dp outline ahead, a 4dp line, a 56dp gutter, solid behind and pale in front. Its tokens are `Trail.road*`. **Every form in the app changed shape on 2026-08-17, from three components.** `FormHeader` lost the gold tab chip, `docs/V4.md` 4's last piece of the old binder language, and says the section as an eyebrow above the title instead. `ChoiceChipGroup`'s label is an eyebrow rather than a gray sentence over a gray sentence. The owner, on the setup screen: "the text just kind of gets lost and it seems like clutter." `FieldGroup` drew its label as a gray sentence above a sand block of fields whose own floating labels are gray sentences, so nothing said which was the heading. It is `ui/v4/FieldBlock` now: a tracked capital eyebrow, and **the fields on the canvas rather than in a block**, which is what `m3v4-4` draws. A field is already a container; putting it inside a second one is two edges around one thing. **The page's bar is pinned rather than scrolled**: as the first item of the list it scrolled away on a long screen and left the platform gesture as the only way out, which is the dead end rule 18 forbids. Found by a journey that saved something from the foot of a list and then could not leave. **A road goes in one lazy item**, because a page puts air between items and air between two stops is a road with gaps in it. **And it does not know which way time runs**: the project reads forward, the chapters read backward from where they are now, so each half of the line says whether it has been traveled rather than deriving it from the stop. **Medications is the recipe for every section list**: `Page` + `labeledBlock` + `ListRow`, the empty state a sentence on a quiet block, a finished group under its own label rather than behind a fold, and the add action at the foot sized to its label.
+### Traps this work has already paid for
 
-**Next, and why in this order.** The section lists, which are all one shape: `Page` + `labeledBlock` + `ListRow`. **Appointments is the awkward one and it is not started**: its month view is `MonthGrid`, a whole old component, so rewriting that screen either drags the grid in or leaves the screen half converted, which `docs/V4.md` 3 forbids. Take the lists that carry no old component first, chapters, milestones, questions, instructions, money, threads, and come back to appointments with the grid. Then the project screen and Today, the two the owner has named, and **the project screen needs the v4 spine**: `m3v4-2` draws "The road" with a 24dp filled node carrying a check, a 20dp gold node in a `goldWash` halo for where it is now, a hollow 17dp ring ahead, a 3.7dp line, and a 56dp gutter. Measured, D183. The spine stays out of the person screen deliberately, D187. Each is rewritten onto `ui/v4` with the components it needs written as it needs them.
-
-**The care team, 2026-08-17.** `m3v4-3` measured: one person raised into a block in the section's wash with calling and writing to them inside it, everyone else a separated tonal row with a gold call mark, and **a toggle where the accordions were**. Per-person avatar hues, the number off the row, email through `ACTION_SENDTO`. **D186**, which also records what it gave up.
-
-**The sheet is done and it is app wide.** `ui/v4/Sheet.kt` carries the container, the corner, the scrim and the missing handle, `SheetBody` carries the insets and the screen margin, and `rememberSheet` replaces the deprecated `rememberModalBottomSheetState` at **all 18 call sites**: the build has no deprecation warnings left. The call sites keep their own contents until their screens are rewritten, so this changed no layout; the tips sheet is the one visible difference, since it alone had Material's light veil and a drag handle.
-
-**Phase 1 of `docs/ACCEPTANCE.md` is finished: all six drawn screens carry the drawing.** The document screen was the last, rewritten onto `ui/v4` on 2026-08-17. `ui/v4` gained `PaperCard`, `FactBlock`, `Action` and `IconAction`, and `Page` gained a hero slot, a subtitle mark, and **its own window insets**: a page opens over the shell rather than inside it, so without them the back arrow sits under the status bar. Any screen built on `Page` inherits that fix.
-
-**The old set still stands**, counted 2026-08-17 with `grep -E "\bX\s*[({]"` outside `ui/components`, because a component called with a trailing lambda has no parentheses and the obvious grep misses every one of them: `QuietButton` 85, `DenseRow` 54, `TextAction` 54, `GroupedSurface` 51, `GroupHeader` 48, `SectionScaffold` 40, `SpineRow` 22, `FoldRow` 17, `GroupHeaderText` 8, `FoldRowText` 7, `Thumbnail` 7. Each goes as its last caller goes, and the old package being empty is the test.
-
-**The project screen is the one the owner has ruled on, and it is not rewritten yet:** "it's absolutely horrid and so far away from the mock-ups." Against `m3v4-2` it needs a gold "decision expected" tonal block where a white date row is now, a status pill in the top corner, one filled action beside two tonal ones with their icons above the labels rather than three white tiles, and a "The road" heading over the spine. Today's card grid is the other one he has named: a lone small card leaves half a row empty beside it.
-
-**Six of today's fixes were found by measuring the approved PNG in pixels** and comparing it against a capture off the phone: the typeface, the tile's near-circle corner, the 54dp row pitch against the drawing's 64, the 13dp screen margin against 16, the card's 12dp padding against 21, and a type ladder whose jump was 1.5 where the drawing's is 2.3. **Do that before forming an impression**, `docs/V4.md` 6. D183.
-
-**The foundation was not on the classpath, whatever three documents said. D179.** In stable material3 1.4.0 the expressive theme and the motion scheme are `internal` and the expressive components do not exist. The build now pins **material3 1.5.0-alpha26**, past the bom, and the bom is **2026.08.00** so Compose UI stays 1.12.0 stable rather than being dragged to a beta. **One artifact off the stable channel, deliberately.** Check the pin against what is stable before any release build.
-
-**`MaterialShapes` is inside material3 1.5.0.** No `androidx.graphics:graphics-shapes` is needed. The old note saying otherwise was written from the same unverified paragraph.
-
-**`rememberBottomSheetState` is what the alpha wants** and `ui/v4/rememberSheet()` is the app's one call to it: a hidden initial value with the half open stop left out of `enabledValues`, which is what `skipPartiallyExpanded` used to say. The parameter is `enabledValues`, not `sheetValues`, and the compiler is the only place that says so.
-
-**The order is theme, then shared surfaces, then screens**, and a screen is rewritten or left alone. Nothing half converted. `docs/V4.md` 3.
+- **A road goes in one lazy item**, or the page's own air puts gaps in the line. And **it does not know which way time runs**: each half says whether it has been traveled.
+- **`Page`'s bar is pinned**, because as a list item it scrolled away and left the gesture as the only way out.
+- **A weighted trailing slot reserves its share**: a row has a `value` (weighted) and a `trailing` mark (not).
+- **The caller's modifier lands on the list**, not the surface, or `performScrollToNode` finds no scrollable container.
+- **`tools/seed.sh` taps the password field by `=Password`**, an exact match added to `walk.sh` on 2026-08-17. Layout changes to the restore screen break the seed; its last line says "Restored." or it did not finish.
+- **A `SlotWriter` `ArrayIndexOutOfBoundsException` mid suite is the Compose alpha**, not the change under test. Re-run the class alone.
+- **An eyebrow's words are capitals on screen and natural in the description.** Assert on the description.
 
 ## 3. Reading ladder
 
@@ -103,7 +98,7 @@ Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` >
 ## 6. Traps that cost real time (full set: `docs/TRAPS.md`)
 
 - **Merged nodes**: a `DenseRow`/card testTag assertion passes when the line is absent. **Assert on words.**
-- **`tools/seed.sh` taps by position.** Seed at font scale 1.0; a raised scale moves the restore screen's controls and the run ends on the wrong screen with an empty notebook. Its last line says "Restored." or it did not finish.
+- **`tools/seed.sh` walks the restore screen by text**, and taps the password field by `=Password`, an exact match. Seed at font scale 1.0, and **any layout change to the restore screen can break it**: its last line says "Restored." or it did not finish, and every capture taken after a failed seed is of an empty notebook.
 - **`tools/walk.sh tap` matches the first node containing the word.** The capture button is described "Add something to the notebook", so tapping "Notebook" opens the capture sheet. Navigate the four destinations by nav bar position.
 - `performScrollTo` fails on a pinned footer or non-scrolling parent. Drop the scroll.
 - **`SectionScaffold` is a `LazyColumn`**, so `performScrollTo` cannot reach a control below the fold: scroll the list instead with `performScrollToNode`.
