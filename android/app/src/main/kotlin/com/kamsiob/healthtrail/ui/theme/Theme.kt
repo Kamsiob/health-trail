@@ -223,7 +223,7 @@ private val HealthTrailShapes = Shapes(
  * **All fifteen, for the same reason all forty eight colors are named**: a role
  * left undefined is Material's default face, which is not a face this app
  * bundles, so a single unnamed role puts one line of Roboto on a screen set in
- * Atkinson Hyperlegible. The old mapping named eight.
+ * Roboto. The old mapping named eight.
  *
  * The ladder itself is `Type.kt` and `DESIGN.md` 5.1, which
  * `check_type_ladder.py` holds together. Nothing new is invented here; this is

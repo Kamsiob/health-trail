@@ -288,10 +288,10 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 | Face | Job |
 |---|---|
 | **Bricolage Grotesque** | Display, titles, row titles, hero lines. **The only bold voice.** |
-| **Atkinson Hyperlegible** | Everything a person reads, including dates, locations, and roles |
+| **Roboto** | Everything a person reads, including dates, locations, and roles |
 | **JetBrains Mono** | **Strictly data**: eyebrow labels, counts, amounts, phone numbers, measurement values, distance markers. Always tabular |
 
-**Mono never touches a date, a location, a role, or anything with a verb.** A date is something a person reads, so it is Atkinson. A count is data, so it is Mono. That line is the one most often crossed and it is what makes a screen read as a dashboard instead of a notebook.
+**Mono never touches a date, a location, a role, or anything with a verb.** A date is something a person reads, so it is the reading face. A count is data, so it is Mono. That line is the one most often crossed and it is what makes a screen read as a dashboard instead of a notebook.
 
 **The ladder below said "dates as data" in the Mono row until 2026-08-13, and it contradicted the paragraph above it.** Two design panels reading the same screen on the same day both cited that row to call a correctly rendered date a defect, which is what a document contradicting itself costs. The row is corrected and the paragraph is the rule. **A rendered EDTF is prose**, however short: "Sometime in November 2024" and "August 13, 2026" are both read rather than scanned. **What stays Mono is a distance marker**, "Day 14" or "3 weeks later", which is a count of elapsed time rather than a date. D149, and #371 item 3 is the work of moving the 21 sites that still cross the line.
 
@@ -299,17 +299,17 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 
 | Role | Face | Size / line | Weight | Use |
 |---|---|---|---|---|
-| Hero | Atkinson | **28sp** / 33 | 800, tracking -0.022em | The one thing, section 2 law 1 |
-| Display L | Atkinson | **34sp** / 39 | 800, -0.028em | The heading of a thing's own screen, above a section title |
-| Display M | Atkinson | **26sp** / 31 | 800, -0.022em | Screen titles, the current chapter, a round's reason |
-| Display S | Atkinson | **20sp** / 26 | 800 | A card's own title, and the title line of a row where a row title is too quiet |
-| Row title | Atkinson | **17sp** / 23 | 700, -0.01em | The title line of a group row |
-| Body L | Atkinson | **17sp** / 26 | 400 | The lead sentence under a screen title |
-| Body | Atkinson | **16sp** / 24 | 400 | Supporting content. **The floor** |
-| Body S | Atkinson | **14sp** / 21 | 400 | Folded rows on sand, row subtitles |
-| Label | Atkinson | **15sp** / 20 | 700 | Buttons and chips |
-| Nav label | Atkinson | **12sp** / 15 | 700 | Bottom navigation only. Exempt from the floor |
-| Eyebrow | Atkinson | **12sp** / 17 | 700, tracking 0.14em | The quiet line naming a group, rule 15. Exempt from the floor |
+| Hero | Roboto | **28sp** / 33 | 800, tracking -0.022em | The one thing, section 2 law 1 |
+| Display L | Roboto | **34sp** / 39 | 800, -0.028em | The heading of a thing's own screen, above a section title |
+| Display M | Roboto | **26sp** / 31 | 800, -0.022em | Screen titles, the current chapter, a round's reason |
+| Display S | Roboto | **20sp** / 26 | 800 | A card's own title, and the title line of a row where a row title is too quiet |
+| Row title | Roboto | **17sp** / 23 | 700, -0.01em | The title line of a group row |
+| Body L | Roboto | **17sp** / 26 | 400 | The lead sentence under a screen title |
+| Body | Roboto | **16sp** / 24 | 400 | Supporting content. **The floor** |
+| Body S | Roboto | **14sp** / 21 | 400 | Folded rows on sand, row subtitles |
+| Label | Roboto | **15sp** / 20 | 700 | Buttons and chips |
+| Nav label | Roboto | **12sp** / 15 | 700 | Bottom navigation only. Exempt from the floor |
+| Eyebrow | Roboto | **12sp** / 17 | 700, tracking 0.14em | The quiet line naming a group, rule 15. Exempt from the floor |
 | Mono | JetBrains Mono | **12sp** / 17 | 400, tracking 0.12em, uppercase | Figures that line up in a column only, D173. **Never a date**, see below. Exempt from the floor |
 | Mono L | JetBrains Mono | **24sp** / 28 | 700, tracking 0, tabular | A number at display size, in the big-number component and nowhere else |
 
@@ -337,7 +337,7 @@ Before any screen work begins: screenshot a screen containing all three faces, c
 
 **Version one ships English, per D141, and none of this section is deferred by that.** The bundled Arabic face and the CJK reasoning both stay: they are what makes a returning language a content job rather than a typography job, and font fallback defects are exactly the kind that are invisible until somebody's name renders as a box. Removing coverage now to add it back later is the retrofit this section exists to prevent.
 
-Bricolage Grotesque and Atkinson Hyperlegible cover Latin. **Arabic needs Noto Sans Arabic, bundled.** In Arabic, display text uses the Noto face at bold weight rather than forcing a Latin display face that has no coverage. Never ship a screen where one language renders in a different face than the rest of that language's screen.
+Bricolage Grotesque and Roboto cover Latin. **Arabic needs Noto Sans Arabic, bundled.** In Arabic, display text uses the Noto face at bold weight rather than forcing a Latin display face that has no coverage. Never ship a screen where one language renders in a different face than the rest of that language's screen.
 
 **Chinese uses the system face and is not bundled. This is a rule, not a compromise.** Android ships Noto Sans CJK and renders it well, and it is the face a Chinese-reading person already sees in every other app on their phone. Bundling would add roughly ten megabytes per weight to reproduce something already present and correct. Arabic is bundled because coverage there is genuinely inconsistent across devices, so the same reasoning gives the opposite answer.
 

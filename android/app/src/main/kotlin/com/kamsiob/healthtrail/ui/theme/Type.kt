@@ -14,12 +14,12 @@ import androidx.compose.ui.unit.sp
 /**
  * The type scale from DESIGN.md section 4.3.
  *
- * **The faces are bundled**, per issue #12. Two of them, D174: Atkinson
- * Hyperlegible for everything a person reads, at Bold for display, and
- * JetBrains Mono for figures that line up in a column. Each falls through to
- * Noto Sans Arabic for glyphs it does not have. Every license was verified
- * against `google/fonts` rather than assumed. Simplified Chinese is still on
- * the system face, which is a size decision recorded below.
+ * **The faces are bundled**, per issue #12. Two of them, D181: Roboto for
+ * everything a person reads, at Bold for display, and JetBrains Mono for
+ * figures that line up in a column. Each falls through to Noto Sans Arabic for
+ * glyphs it does not have. Every license was verified against `google/fonts`
+ * rather than assumed. Simplified Chinese is still on the system face, which is
+ * a size decision recorded below.
  *
  * The 13sp floor and its two exemptions are in DESIGN.md section 4.3. The nav
  * label and the mono metadata style are the only two, both because they never
@@ -113,11 +113,10 @@ data class HealthTrailTypography(
 // runtime: this app works offline and a typeface that needs the network is a
 // typeface that is sometimes absent.
 //
-// **Atkinson Hyperlegible is a deliberate choice rather than an aesthetic
-// one.** It was designed by the Braille Institute for maximum character
-// distinction for low vision readers, and the audience for this app is
-// stressed, frequently older, and often reading in bad light. It is the reason
-// the body face is not whatever the display face is.
+// **Roboto, because the approved mockups are set in it.** D181. It is also
+// what Material 3 Expressive is drawn against, so a Material component and a
+// heading this app writes itself are the same letterforms rather than two that
+// nearly agree.
 //
 // **Each family lists its Arabic face after its Latin one.** Android matches a
 // glyph against the family in order and falls through to the next entry when a
@@ -126,55 +125,53 @@ data class HealthTrailTypography(
 // name in one script inside a sentence in another, and a locale switch would
 // get that wrong in exactly the case nobody tests.
 //
-// **Licenses, verified against google/fonts METADATA.pb on 2026-08-01**, all
-// SIL Open Font License 1.1: Atkinson Hyperlegible, Copyright 2020 Braille
-// Institute of America. JetBrains Mono, Copyright 2020 The JetBrains Mono
-// Project Authors. Noto Sans Arabic, Copyright 2022 The Noto Project Authors.
-// Bricolage Grotesque was bundled and was removed in D174, so its license is
-// no longer among the ones this app has to carry.
+// **Licenses, verified against google/fonts METADATA.pb**, all SIL Open Font
+// License 1.1: Roboto, Copyright 2011 The Roboto Project Authors, checked
+// 2026-08-16. JetBrains Mono, Copyright 2020 The JetBrains Mono Project
+// Authors. Noto Sans Arabic, Copyright 2022 The Noto Project Authors, both
+// checked 2026-08-01. Bricolage Grotesque went in D174 and Atkinson
+// Hyperlegible in D181, so neither license is one this app still carries.
 //
 // **Simplified Chinese is not bundled yet**, and that is a size decision rather
 // than an oversight: Noto Sans SC is around ten megabytes per weight against
-// 680 kilobytes for everything here put together. Chinese falls back to the
+// 800 kilobytes for everything here put together. Chinese falls back to the
 // system face until #12 settles how to carry it. The app is honest about this
 // on the issue rather than pretending the coverage is complete.
 /**
- * The display face, which is the body face. D174.
+ * The display face, which is the body face. **Roboto, D181**, superseding the
+ * Atkinson Hyperlegible of [D174] and the Bricolage Grotesque before it.
  *
- * **Bricolage Grotesque is gone.** The owner, three times: the fonts are
- * unnatural, they do not mix well together, and "that font at the top is just
- * weird". The brief was "clean fonts that are easy to read with a little bit of
- * Elegance but not something weird or something that is artsy", and Bricolage
- * is a characterful display face whose whole appeal is its quirks: the flared
- * terminals and the odd `g` and `y` are what a headline was being set in, above
- * body text drawn on completely different principles. Two faces that disagree
- * about what a letter is do not become a pair by being on the same screen.
+ * **The approved mockups are set in Roboto and the app was not.** The owner,
+ * looking at the first captures off the rebuilt theme: "the style and the font
+ * and the icons are different". Measured rather than eyeballed: the headline in
+ * `m3v4-0-light.png` is a tight neo-grotesque, and Atkinson at the same size is
+ * visibly wider, rounder and more openly spaced. The mockups are the spec, so
+ * the face follows them.
  *
- * **One family app-wide, which cannot clash with itself.** Atkinson
- * Hyperlegible at Bold is the headline now. It was drawn by the Braille
- * Institute specifically so that letters stay distinct from one another, which
- * is the opposite of artsy and exactly right for an app somebody reads while
- * exhausted. Nothing is lost from the display end: the contrast that made the
- * hero the loudest thing on the screen was always size, weight and space rather
- * than a second typeface, which is this project's own rule 15.
+ * **What this gives up, stated plainly.** Atkinson was drawn by the Braille
+ * Institute for maximum character distinction for low vision readers, and the
+ * audience here is stressed, frequently older, and often reading in bad light.
+ * That was a real argument and it lost to the design the owner approved. The
+ * legibility work that survives is the part that was never about the face: the
+ * 13sp floor, the two text colors at their measured contrast, and the weight
+ * and size jumps of rule 15.
  *
- * **Mono stays**, for figures that line up in a column. That is two faces total
- * and they have different jobs, which is what "they do not mix" was asking for.
+ * **Bundled rather than taken from the system**, like every other face here.
+ * `FontFamily.Default` is Roboto on a Pixel and something else on a Samsung,
+ * and a design that changes shape by manufacturer is not a design. 315 KB for
+ * the two weights, instanced from Google's official variable font.
  *
- * **A bundled display face is still worth revisiting** when there is network to
- * fetch one: something in the Inter or Plus Jakarta Sans family would give the
- * headline a little more elegance without the quirk. It could not be evaluated
- * here, so the honest choice was the good face already in the build rather than
- * keeping the one that was called weird.
+ * **Mono stays**, for figures that line up in a column. Two faces total with
+ * different jobs, which is what "they do not mix" was asking for.
  */
 private val DisplayFamily = FontFamily(
-    Font(R.font.atkinson_hyperlegible_bold, FontWeight.Bold),
+    Font(R.font.roboto_bold, FontWeight.Bold),
     Font(R.font.noto_sans_arabic_bold, FontWeight.Bold),
 )
 
 private val BodyFamily = FontFamily(
-    Font(R.font.atkinson_hyperlegible_regular, FontWeight.Normal),
-    Font(R.font.atkinson_hyperlegible_bold, FontWeight.Bold),
+    Font(R.font.roboto_regular, FontWeight.Normal),
+    Font(R.font.roboto_bold, FontWeight.Bold),
     Font(R.font.noto_sans_arabic_regular, FontWeight.Normal),
     Font(R.font.noto_sans_arabic_bold, FontWeight.Bold),
 )
@@ -281,7 +278,7 @@ val HealthTrailType = HealthTrailTypography(
         // **Weight and wider tracking are what make a small line read as
         // deliberate rather than as leftover.** D167 wrote that about the mono
         // eyebrow and it was never about the face. Bold rather than Medium,
-        // because Atkinson at 12sp is a quieter letter than JetBrains Mono at
+        // because Roboto at 12sp is a quieter letter than JetBrains Mono at
         // 12sp and the line has to hold its own under a display heading.
         fontWeight = FontWeight.Bold,
         letterSpacing = 0.14.em,

@@ -2990,6 +2990,38 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D181. The app is set in Roboto, because the approved mockups are and it was not
+
+**Date:** 2026-08-16. **The owner, on the first captures off the rebuilt theme:** "neither of those that you just showed me looks remotely similar to the V4 material 3 expressive shots ... the style and the font and the icons are different and the overall feel and design are different."
+
+**The finding, measured rather than eyeballed.** The headline in `docs/screenshots/m3v4-0-light.png` was cropped, magnified and set beside the same words rendered in the bundled face. **The mockups are a tight neo-grotesque of the Roboto family. Atkinson Hyperlegible is visibly wider, rounder and more openly spaced.** The mockups the owner approved were never set in the app's font, and no document said so, because nobody had put the two next to each other.
+
+**The decision, and it was the owner's to make**, since it overrides one he drove himself. Asked directly, with the tradeoff stated: **match the mockups.** Roboto at 400 and 700, bundled, replacing Atkinson everywhere. [D174]'s removal of Bricolage Grotesque stands; this replaces what D174 put in its place.
+
+**What is given up, and it is not nothing.** Atkinson was drawn by the Braille Institute for maximum character distinction for low vision readers, and this app's audience is stressed, frequently older, and often reading in bad light. **That was a real argument and it lost to the design the owner approved.** What survives is the legibility work that was never about the face: the 13sp floor, two text colors at measured contrast, and rule 15's size and weight jumps.
+
+**Bundled rather than the system face.** `FontFamily.Default` is Roboto on a Pixel and something else on a Samsung, and a design that changes shape by manufacturer is not a design. 315 KB for two static instances cut from Google's official variable font at wght 400 and 700. **License checked the same day against `google/fonts` METADATA.pb**: OFL 1.1, Copyright 2011 The Roboto Project Authors.
+
+**Mono is untouched.** JetBrains Mono still carries figures that line up in a column, per [D173] and [D176]. Two faces with different jobs.
+
+**What would reopen it:** the owner preferring the legibility face after seeing Roboto on the phone. It is one token in `Type.kt` and two files in `res/font`.
+
+---
+
+### D180. RTL stops being a gate. Version one is American English and nothing else is verified
+
+**Date:** 2026-08-16. **The owner, looking at the step 1 captures:** "Don't worry about right to left for now. we're not doing other languages right now until v2.0. we're only doing American English."
+
+**The decision.** RTL is not verified, not an acceptance criterion, and not a reason to hold a screen open. **Rule 24 is amended in place** rather than a new rule being added, because a second rule about languages is how one gets missed.
+
+**What does not change.** The four catalogs stay complete and checked, and `check_i18n.py`, `check_string_keys.py` and the bidi isolation check keep running. D141's reason still holds: letting the waiting three rot is how a deferral becomes a cancelation. **What changes is only the per screen RTL verification**, which was costing every screen a pass against a layout direction no one will ship for a year.
+
+**Nothing is deleted for it.** `Bidi.join`, the isolate marks, the start and end padding everywhere: all of that is ordinary correct layout and stays. It costs nothing to keep and rewriting it later would be expensive. The rule change is about what gets **verified**, not about what gets **written**.
+
+**What would reopen it:** 2.0, or the owner asking for a language sooner.
+
+---
+
 ### D179. Material 3 Expressive is not in a stable material3, so the build takes one alpha and pins it
 
 **Date:** 2026-08-16. **Decided under rule 10**, working #385, step 1 of the rebuild. **Corrects the central factual claim of [D178], of `docs/V4.md` 1, and of #385 itself.**

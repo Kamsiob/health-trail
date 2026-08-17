@@ -294,7 +294,7 @@ private fun ViolationRow(
             ) {
                 // **Not mono.** `DESIGN.md` 5: "Mono never touches a date, a
                 // location, a role, or anything with a verb. A date is
-                // something a person reads, so it is Atkinson." Its own scale
+                // something a person reads, so it is the reading face." Its own scale
                 // ladder said "dates as data" until two panels cited that row
                 // to call this line a defect; the row is corrected and the law
                 // stands. D149, and #371 item 3 is the 21 sites still crossing

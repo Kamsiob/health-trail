@@ -2,21 +2,25 @@
 
 Every face the app renders is bundled in `android/app/src/main/res/font`. Nothing is fetched at runtime, because this app works offline and a typeface that needs the network is a typeface that is sometimes absent.
 
-**Licenses were verified against `google/fonts` METADATA.pb on 2026-08-01**, not assumed. `DESIGN.md` section 4.3 asks for exactly that. All four families are under the SIL Open Font License 1.1, which permits bundling in a closed or open application provided the fonts are not sold on their own and the copyright notice travels with them.
+**Licenses were verified against `google/fonts` METADATA.pb**, not assumed. `DESIGN.md` section 4.3 asks for exactly that. All three families are under the SIL Open Font License 1.1, which permits bundling in a closed or open application provided the fonts are not sold on their own and the copyright notice travels with them.
 
-| File | Family | Weight | Copyright | License |
-|---|---|---|---|---|
-| `atkinson_hyperlegible_regular.ttf` | Atkinson Hyperlegible | 400 | Copyright 2020 Braille Institute of America, Inc. | OFL 1.1 |
-| `atkinson_hyperlegible_bold.ttf` | Atkinson Hyperlegible | 700 | Copyright 2020 Braille Institute of America, Inc. | OFL 1.1 |
-| `jetbrains_mono_regular.ttf` | JetBrains Mono | 400 | Copyright 2020 The JetBrains Mono Project Authors | OFL 1.1 |
-| `noto_sans_arabic_regular.ttf` | Noto Sans Arabic | 400 | Copyright 2022 The Noto Project Authors | OFL 1.1 |
-| `noto_sans_arabic_bold.ttf` | Noto Sans Arabic | 700 | Copyright 2022 The Noto Project Authors | OFL 1.1 |
+| File | Family | Weight | Copyright | License | Checked |
+|---|---|---|---|---|---|
+| `roboto_regular.ttf` | Roboto | 400 | Copyright 2011 The Roboto Project Authors | OFL 1.1 | 2026-08-16 |
+| `roboto_bold.ttf` | Roboto | 700 | Copyright 2011 The Roboto Project Authors | OFL 1.1 | 2026-08-16 |
+| `jetbrains_mono_regular.ttf` | JetBrains Mono | 400 | Copyright 2020 The JetBrains Mono Project Authors | OFL 1.1 | 2026-08-01 |
+| `noto_sans_arabic_regular.ttf` | Noto Sans Arabic | 400 | Copyright 2022 The Noto Project Authors | OFL 1.1 | 2026-08-01 |
+| `noto_sans_arabic_bold.ttf` | Noto Sans Arabic | 700 | Copyright 2022 The Noto Project Authors | OFL 1.1 | 2026-08-01 |
 
-680 KB for all six.
+800 KB for all five.
+
+**The two Roboto files are static instances of Google's official variable font**, `Roboto[wdth,wght].ttf`, cut at wght 400 and 700 with wdth 100. The variable file is the only thing `google/fonts` ships now, and a variable font on the classpath means every weight in the app depends on axis support behaving the same way on every device. Two static files do not.
 
 ## Why these
 
-**Atkinson Hyperlegible is a functional choice, not an aesthetic one.** The Braille Institute designed it for maximum character distinction for low vision readers. The audience for this app is stressed, frequently older, and often reading in bad light, which is the case the face exists for. It is the reason the body face is not simply the display face at a smaller size.
+**Roboto because the approved mockups are set in it.** D181. The owner, looking at the first captures off the rebuilt theme: "the style and the font and the icons are different". The mockups are the spec, and the app was rendering a different face. It is also what Material 3 Expressive itself is drawn against, so a Material component and a heading this app writes are the same letterforms rather than two that nearly agree.
+
+**What that gave up.** Atkinson Hyperlegible was here until D181, and it was a functional choice rather than an aesthetic one: the Braille Institute drew it for maximum character distinction for low vision readers, and this audience is stressed, frequently older, and often reading in bad light. That argument was real and it lost to the design the owner approved. **The legibility work that survives is the part that was never about the face**: the 13sp floor, two text colors at measured contrast, and the size and weight jumps of rule 15.
 
 
 ## How the fallback works
