@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
+import com.kamsiob.healthtrail.ui.v4.Body
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -174,7 +175,6 @@ import com.kamsiob.healthtrail.ui.screens.TodayFieldScreen
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
 import com.kamsiob.healthtrail.ui.screens.TrackedMeasure
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
-import com.kamsiob.healthtrail.ui.components.Waiting
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -3134,7 +3134,12 @@ internal val SECTION_ORDER = listOf(
 
 /** The app's one loading treatment, so the shell and the root cannot drift. */
 @Composable
-private fun Loading() = Waiting()
+private fun Loading() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        // bidi-ok: the app's own word for waiting.
+        Body(text = LocalStrings.current["common.loading"])
+    }
+}
 
 /**
  * The counts could not be read.
