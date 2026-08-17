@@ -43,6 +43,7 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
+import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth

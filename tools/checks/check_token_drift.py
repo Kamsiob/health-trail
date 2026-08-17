@@ -65,7 +65,13 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # 119 once the Today card stopped typing its own minimum height and took the
 # field's one card height from the grid instead. Owner, 2026-08-17: two widths,
 # one height, no third size.
-BASELINE = 106
+# 100 through the retirements, nineteen in six passes and every one of them a
+# component this app drew for itself: the dense row's two heights and its
+# hairline, the old choice row, the avatar's three sizes, the four buttons, and
+# the chip's height, dot and two border widths. **This is the prediction above
+# coming true**: the measurements typed into screens were mostly furniture the
+# rebuild deletes rather than spacing anybody chose. #387.
+BASELINE = 100
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

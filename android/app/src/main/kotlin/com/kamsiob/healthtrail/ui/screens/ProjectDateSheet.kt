@@ -25,16 +25,16 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.EdtfSaver
-import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
+import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.Sheet
+import com.kamsiob.healthtrail.ui.v4.cappedChips
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
 object ProjectDateTags {

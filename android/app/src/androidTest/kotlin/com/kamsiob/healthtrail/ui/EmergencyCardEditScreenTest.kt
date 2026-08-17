@@ -12,7 +12,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
-import com.kamsiob.healthtrail.ui.components.CHIP_CAP
+import com.kamsiob.healthtrail.ui.v4.CHIP_CAP
 import com.kamsiob.healthtrail.ui.screens.EmergencyCardEditScreen
 import com.kamsiob.healthtrail.ui.screens.EmergencyEditTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
