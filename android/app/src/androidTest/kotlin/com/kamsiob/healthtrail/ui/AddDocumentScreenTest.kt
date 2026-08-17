@@ -158,7 +158,12 @@ class AddDocumentScreenTest {
         // below the fold is present and reachable rather than absent.
         compose.onNodeWithText(strings["docs.title"]).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(strings["docs.original"]).performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText(strings["docs.received"]).performScrollTo().assertIsDisplayed()
+        // **The chip group's label is an eyebrow now**, #386, so the words on
+        // the screen are capitals and the natural ones are the node's
+        // description, which is what a reader is handed. D183.
+        compose.onNodeWithContentDescription(strings["docs.received"])
+            .performScrollTo()
+            .assertIsDisplayed()
         // No stages, so no way on and no way back.
         compose.onNodeWithText(strings["capture.skip"]).assertDoesNotExist()
         compose.onNodeWithText(strings["capture.back"]).assertDoesNotExist()

@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -302,10 +303,16 @@ fun ChoiceChipGroup(
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (showLabel) {
-            Text(text = label, style = type.bodyM, color = colors.ink2)
+            // **The eyebrow, not a gray sentence.** A label naming what follows
+            // and a line of body text under it were the same size and the same
+            // ink, so the heading read as one more sentence in a screen made of
+            // sentences. `docs/V4.md` 2.1, and the same fix the field groups
+            // took on 2026-08-17. bidi-ok: the app's own label.
+            Eyebrow(text = label)
         }
         if (aside != null) {
             Spacer(Modifier.height(Space.xs))
+            // bidi-ok: the app's own sentence about how to use the chips.
             Text(text = aside, style = type.bodyS, color = colors.ink2)
         }
         Spacer(Modifier.height(Space.s))

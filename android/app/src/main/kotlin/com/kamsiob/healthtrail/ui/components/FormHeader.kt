@@ -11,6 +11,9 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.screens.labelKey
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.v4.Body
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Lead
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import androidx.compose.material3.Text
@@ -63,24 +66,20 @@ fun FormHeader(
 
     Column(modifier = modifier) {
         Spacer(Modifier.height(Space.sm))
-        TabChipText(
-            hue = hueFor(section),
-            label = strings[labelKey(section)],
-        )
-        Spacer(Modifier.height(Space.s))
-        Text(
-            text = title,
-            style = HealthTrail.type.displayM,
-            color = colors.ink,
-            modifier = Modifier.semantics { heading() },
-        )
+        // **The tab chip is gone**, `docs/V4.md` 4: it named the section
+        // directly above a heading that names the form, which is two names for
+        // one place, and it was the last piece of the old binder language left
+        // on the forms. The section is where the person came from and the app
+        // has said it once already. #386.
+        //
+        // **The eyebrow says which section this belongs to**, in that section's
+        // own ink, which is what the drawings put above a display title.
+        Eyebrow(text = strings[labelKey(section)], color = hueFor(section).ink)
+        Lead(text = title, modifier = Modifier.semantics { heading() })
         if (lead != null) {
-            Spacer(Modifier.height(Space.xs))
-            Text(
-                text = lead,
-                style = HealthTrail.type.bodyM,
-                color = colors.ink2,
-            )
+            // bidi-ok: a form's opening sentence is the app's own words about
+            // what the form is for, never anything somebody typed.
+            Body(text = lead, style = HealthTrail.type.bodyL)
         }
     }
 }
