@@ -41,6 +41,21 @@ object Space {
     /** Group row padding, the tighter value, for a row carrying two lines. */
     val rowPaddingTight: Dp = 11.dp
 
+    /**
+     * The air above and below a row's own content, and **it is why the app read
+     * as denser than the drawing it was built from.**
+     *
+     * The owner, comparing the two: "the mockup is much nicer. it breathes.
+     * it's more clear and user friendly." Measured rather than adjusted by eye:
+     * the icon tiles in `m3v4-1` sit on a **64dp pitch** and the built rows sat
+     * on **54**, with tiles the same size in both. The whole difference was
+     * eight points of vertical padding where the drawing has thirteen.
+     *
+     * **A token because it is every list in the app at once**, which is the
+     * point: one row that breathes and forty that do not is worse than either.
+     */
+    val rowVertical: Dp = 13.dp
+
     /** Between stacked elements. */
     val cardGap: Dp = 10.dp
 

@@ -208,7 +208,7 @@ fun DenseRow(
                 // Full bleed callers pass zero, which is the trail's case: there
                 // the screen's own padding provides the inset and doubling it
                 // would push a 1,630 row list needlessly inward.
-                .padding(horizontal = contentPadding, vertical = Space.s),
+                .padding(horizontal = contentPadding, vertical = Space.rowVertical),
             verticalAlignment = if (trailingAtTop) Alignment.Top else Alignment.CenterVertically,
         ) {
             if (leading != null) {
