@@ -27,33 +27,21 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 - **Step 1, the theme: done.** #385. `MaterialExpressiveTheme`, 48 color roles, the type ladder, five corners, reduced motion through `StillMotionScheme`.
 - **Step 2, the shared surfaces: done.** #386. Face, icons, nav bar, blocks, rows, buttons, switch, sheet, forms. The accordion was closed rather than replaced, D185.
-- **Phase 4, the screens: 21 of 85.** The notebook, the document, the care team, the person, medications, the questions, money, the milestones, the chapters, the care threads, the bill, the medication, the thread, the chapter, More, Appearance, the people, the paper picker, the violation, About, and **the fallback Today**.
+- **Phase 4.** Counting screens was the wrong measure and it made the job look bigger than it is: what is left is a component retirement, `gh issue view 387`. Today is part done: the permanent hero, the header, the card surfaces, the sizing rule and the measure card are in; the per-type card bodies, arrange mode and the card gallery are not.
 
 **`ui/v4` holds:** `Page` + `labeledBlock`, `Block`/`BlockTone`, `FactBlock`, `Eyebrow`, `Lead`, `BigNumber`, `Body`, `ListRow`/`RowDivider`/`ChoiceRow`, `SearchDoor`, `PaperCard`, `Action`/`ActionEmphasis`/`IconAction`, `Sheet`/`SheetBody`/`rememberSheet`, `Avatar`/`PersonHero`/`PersonRow`, `Segments`, `Road`/`Stop`/`RouteMark`, `FieldBlock`.
 
-**Also in `ui/v4` now:** `Trace` (+ `TraceHeight`), `Chip`, `StatBlock`, `NextBlock`/`InsetDoor`/`Face`.
+**Also in `ui/v4` now:** `Trace` (+ `TraceHeight`), `Chip`, `StatBlock`, `NextBlock`/`InsetDoor`/`Face`/`BlockAction`/`BlockIconAction`. Fourteen files.
 
-**Still to write:** the switch row, and a grid cell for the documents pictures view.
+**Still to write:** the switch row, and a grid cell for the documents pictures view. **Everything else a retirement needs already exists.**
 
-### Next, in this order
+### Next
 
-**The owner's acceptance for this run: a complete app, every surface on Material 3 Expressive, and then an APK. No APK before that.** 2026-08-17.
+**`gh issue view 321` is the order, and `gh issue view 387` is the checklist.** Not repeated here.
 
-1. **Finish the arranged Today.** `TodayFieldScreen` 2,600+ lines, `TodayCard` 458, `TodayLead` 190. The hero, the header, the card surfaces and the measure card are done; the per-type answer bodies, arrange mode's controls, and the card gallery are not. D191, D192, D193.
-2. **The remaining screens**, roughly 64 of 85. All one shape: `Page` + `labeledBlock` + `ListRow`, with `Block`, `FactBlock`, `StatBlock`, `Trace`, `Chip`, `NextBlock` and `Road` where the content asks for them.
-3. **Appointments and the documents list last of the lists**: each drags an old component in, `MonthGrid` and the thumbnail grid.
-4. **More than one person in one notebook**, owner 2026-08-17, and it is a correctness job rather than a drawing one. All the testing so far has been on a single subject. What has to be proved: every query is scoped to the active subject and nothing leaks between them; export and restore keep them apart and do not merge or overwrite; **which subject is active is visible wherever it matters**; and **every write says plainly which profile it is going into**. Start with a sweep for repository reads and writes that take no `subject_id`.
-5. Then phases 5 to 9 of `docs/ACCEPTANCE.md`, and the APK last.
+**The short version: the work left is retiring about ten components out of `ui/components` onto `ui/v4`, not rewriting screens.** Measured 2026-08-17. Six of them are renames, `GroupedSurface` and `DenseRow` are already drawing v4. The largest real design debt is the folds: `FoldRow` and `Disclosure` across 22 screens, which D185 bans.
 
-### What the owner ruled on 2026-08-17, now rules
-
-- **Three gaps and no more**: `withinGroup` 8, `betweenGroups` 24, `betweenZones` 32. D188.
-- **Hints live under fields, never inside them**, at the `Support` 12sp role, 4dp down, aligned to the field's text. D189.
-- **A person before their number**, and the name asked as a name.
-- **Password, never passphrase**, everywhere a person reads it.
-- **A label's weight and the air around it must agree.**
-- **The spine is a path, never a filter.** D187.
-- **Nothing behind a fold** that a label and a scroll can carry. D185.
+**The test is that `ui/components` empties.**
 
 ### The card grammar, owner 2026-08-17, and it is not negotiable
 
