@@ -33,7 +33,7 @@ Step 2, #386, done so far: **the face, the icons, the navigation bar, the group 
 
 **Step 2 is finished.** The accordion was the last row of the replace table and it is not being swapped for another accordion: it already carries the spring, Material's chevron and the one container corner, and `m3v4-3` draws the care team with no fold on it at all. It dies per screen, in phase 4. **D185.**
 
-**Phase 4 is under way: 3 of 85 screens are rewritten**, the notebook, the document and the care team. Each is rewritten onto `ui/v4` with the components it needs written as it needs them.
+**Phase 4 is under way: 4 of 85 screens are rewritten**, the notebook, the document, the care team and About. Each is rewritten onto `ui/v4` with the components it needs written as it needs them.
 
 **The care team, 2026-08-17.** `m3v4-3` measured: one person raised into a block in the section's wash with calling and writing to them inside it, everyone else a separated tonal row with a gold call mark, and **a toggle where the accordions were**. Per-person avatar hues, the number off the row, email through `ACTION_SENDTO`. **D186**, which also records what it gave up.
 
