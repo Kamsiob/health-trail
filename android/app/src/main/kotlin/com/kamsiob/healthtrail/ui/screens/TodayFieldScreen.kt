@@ -78,9 +78,8 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.i18n.formatMoney
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.Avatar
-import com.kamsiob.healthtrail.ui.components.AvatarOverflow
-import com.kamsiob.healthtrail.ui.components.AvatarSize
+import com.kamsiob.healthtrail.ui.v4.Avatar
+import com.kamsiob.healthtrail.ui.v4.AvatarOverflow
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.components.ChartHeight
@@ -1493,7 +1492,7 @@ private fun AnswerBody(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             for (item in answer.items) {
-                Avatar(name = item.label, hue = hue, size = AvatarSize.row)
+                Avatar(name = item.label, hue = hue, size = Space.avatarFace)
             }
             val hidden = (answer.count ?: 0) - answer.items.size
             if (hidden > 0) {
@@ -1507,7 +1506,7 @@ private fun AnswerBody(
                         strings("today.card.care_team.overflow", "count" to hidden),
                     ),
                     hue = hue,
-                    size = AvatarSize.row,
+                    size = Space.avatarFace,
                 )
             }
         }

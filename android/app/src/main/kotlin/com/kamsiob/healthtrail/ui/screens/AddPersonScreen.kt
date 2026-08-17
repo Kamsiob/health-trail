@@ -36,8 +36,7 @@ import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
-import com.kamsiob.healthtrail.ui.components.Avatar
-import com.kamsiob.healthtrail.ui.components.AvatarSize
+import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.components.FieldRow
@@ -244,7 +243,7 @@ fun AddPersonScreen(
                         Avatar(
                             name = name,
                             hue = hueFor(Repository.Section.CARE_TEAM),
-                            size = AvatarSize.header,
+                            size = Space.avatarLead,
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                         )
                     }

@@ -389,7 +389,7 @@ fun InsetDoor(
 private const val PILL_ALPHA = 0.22f
 
 /** A face on the block, measured off the drawing: two circles across 52dp. */
-private val FACE = Space.xl
+private val FACE = Space.avatarFace
 
 /**
  * How much of the circle behind is covered, so the pair reads as one group.

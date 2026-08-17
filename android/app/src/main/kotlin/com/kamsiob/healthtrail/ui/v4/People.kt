@@ -23,8 +23,9 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import java.text.BreakIterator
+import java.util.Locale
 import com.kamsiob.healthtrail.i18n.Bidi
-import com.kamsiob.healthtrail.ui.components.initialsOf
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -54,9 +55,10 @@ import com.kamsiob.healthtrail.ui.theme.TabHue
  *
  * **Decorative for a reader**, because the name is always beside it.
  *
- * `initialsOf` is borrowed rather than rewritten: it is a unit tested string
- * function about names, not a piece of the old design language, and two
- * algorithms for one answer is how they drift apart.
+ * `initialsOf` lives in this file now. It was borrowed from the old component
+ * rather than rewritten, because it is a unit tested string function about
+ * names rather than a piece of the old design language, and it moved here when
+ * that component was retired.
  */
 @Composable
 fun Avatar(
@@ -95,6 +97,132 @@ fun Avatar(
         }
     }
 }
+
+/**
+ * The last circle in a row of faces, saying how many are not drawn.
+ *
+ * **A row of faces that stops has to say it stopped.** A card with room for
+ * three faces and nine people would otherwise show three, which reads as a care
+ * team of three: the app would be deciding which three of somebody's people
+ * matter.
+ *
+ * **The same circle as an [Avatar] and deliberately not a different object.** It
+ * is the last member of the row rather than a control or a label, so it takes
+ * the row's hue, the row's size, and the same pinned text scale.
+ *
+ * **Not tappable.** The card behind it is the door, and a second door inside the
+ * row would spend a touch target saying the same thing.
+ *
+ * @param label already worded and already counted, because the plus and the
+ *   number belong to the reader's language.
+ */
+@Composable
+fun AvatarOverflow(
+    label: String,
+    hue: TabHue,
+    modifier: Modifier = Modifier,
+    size: Dp = Space.avatarFace,
+) {
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(hue.wash)
+            // Decorative, exactly as an avatar is: the card's own sentence
+            // already says how many more there are, and a reader stopping here
+            // would hear the same fact twice.
+            .clearAndSetSemantics { },
+        contentAlignment = Alignment.Center,
+    ) {
+        CompositionLocalProvider(
+            LocalDensity provides Density(
+                density = LocalDensity.current.density,
+                fontScale = 1f,
+            ),
+        ) {
+            Text(
+                text = label,
+                style = HealthTrail.type.label,
+                // **Quiet, because it is a remainder and not a person.** The
+                // faces beside it carry the hue's ink; this carries the second
+                // ink so the eye reads the names first.
+                color = HealthTrail.colors.ink2,
+                maxLines = 1,
+                softWrap = false,
+            )
+        }
+    }
+}
+
+/**
+ * The first character of each of the first two words, taken **by grapheme
+ * cluster rather than by character index**.
+ *
+ * This is the part that has to be right rather than approximately right. A name
+ * in Arabic, a name with a combining accent, and a name whose first character is
+ * outside the basic plane all have to survive being cut to two, and **cutting by
+ * code unit produces half a character**, which renders as a replacement box. In
+ * a record-keeping app the thing most likely to be cut wrong is a person's name,
+ * which is exactly the content that must never render as a box.
+ *
+ * Uppercased against the catalog's own locale rather than the device's, so a
+ * Turkish phone showing the English catalog cannot turn an "i" into a dotted
+ * capital.
+ *
+ * **A name that was never recorded gets no initials**, and the caller shows the
+ * care team drawing instead. A question mark would read as the app asking the
+ * person something.
+ *
+ * **A string function about names rather than a piece of the old design
+ * language**, which is why the rebuild moved it here rather than rewriting it:
+ * it is unit tested, and two algorithms for one answer is how they drift apart.
+ */
+internal fun initialsOf(name: String, locale: Locale = Locale.ROOT): String {
+    val words = name.trim().split(WHITESPACE)
+        .filter { it.isNotEmpty() }
+        .dropTitles()
+    if (words.isEmpty()) return ""
+
+    val take = if (words.size == 1) listOf(words[0]) else listOf(words[0], words[words.size - 1])
+    return take.joinToString("") { firstGrapheme(it) }.uppercase(locale)
+}
+
+/**
+ * Drops a leading honorific, so "Dr. Priya Raman" gives PR rather than DR.
+ *
+ * **Found by the test rather than by looking**, which is the reason it is worth
+ * a comment. The care team in the reference file lists "Dr. Priya Raman" beside
+ * an avatar reading PR, and the obvious implementation gives DR: a title becomes
+ * a name, and every doctor on the roster gets the same initials as every other
+ * doctor, which is precisely the wall this component exists to avoid.
+ *
+ * **The rule is shape, not a vocabulary list.** A leading short word ending in a
+ * period is an abbreviation rather than a name. That covers Dr., Mr., Ms., Mrs.,
+ * Prof., Fr., Sr., and the Spanish Sr. and Sra. without this app maintaining a
+ * list of honorifics in four languages and getting it wrong in the fifth.
+ * Arabic and Chinese do not use the pattern at all, so it is a no-op there,
+ * which is correct rather than a gap.
+ *
+ * **It never drops everything.** A person recorded only as "Dr." keeps it, since
+ * an empty avatar helps nobody and that is the name the person actually wrote
+ * down.
+ */
+private fun List<String>.dropTitles(): List<String> {
+    val trimmed = dropWhile { it.endsWith(".") && it.length <= MAX_TITLE_LENGTH }
+    return trimmed.ifEmpty { this }
+}
+
+/** "Prof." is the longest this app expects. Beyond it, treat it as a name. */
+private const val MAX_TITLE_LENGTH = 5
+
+private fun firstGrapheme(word: String): String {
+    val iterator = BreakIterator.getCharacterInstance()
+    iterator.setText(word)
+    val end = iterator.next()
+    return if (end == BreakIterator.DONE) word else word.substring(0, end)
+}
+
+private val WHITESPACE = Regex("\\s+")
 
 /**
  * The hue a person's mark wears, decided once from who they are.

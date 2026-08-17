@@ -88,6 +88,16 @@ object Space {
     val avatarLead: Dp = 56.dp
 
     /**
+     * A face in a row of faces, which is smaller than a face in a row of one.
+     *
+     * A card that shows who is on the care team draws three or four of these
+     * overlapping, and at the row size they would be the card. `m3v4-0` sets
+     * them at this, and Today's next block and the care team card are the two
+     * places it appears.
+     */
+    val avatarFace: Dp = 32.dp
+
+    /**
      * The three gaps that carry the structure of a screen, and there are only
      * three.
      *
