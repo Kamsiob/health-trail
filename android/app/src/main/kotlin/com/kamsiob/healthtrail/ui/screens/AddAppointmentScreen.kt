@@ -29,10 +29,8 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -43,7 +41,9 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.MoreChip
 import com.kamsiob.healthtrail.ui.v4.cappedChips
 import java.time.LocalDate
@@ -162,12 +162,12 @@ fun AddAppointmentScreen(
                     )
                 Spacer(Modifier.height(Space.l))
 
-                HealthTrailTextField(
+                Field(
                     label = strings["appts.title"],
                     value = draft.title,
                     onValueChange = { draft = draft.copy(title = it) },
-                    hint = strings["appts.title.hint"],
                     fieldTestTag = AddApptTags.field("title"),
+                    support = strings["appts.title.hint"],
                 )
                 Spacer(Modifier.height(Space.m))
 
@@ -256,12 +256,12 @@ fun AddAppointmentScreen(
                     startOpen = draft.where.isNotBlank() || draft.notes.isNotBlank(),
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        HealthTrailTextField(
+                        Field(
                             label = strings["appts.where"],
                             value = draft.where,
                             onValueChange = { draft = draft.copy(where = it) },
-                            hint = strings["appts.where.hint"],
                             fieldTestTag = AddApptTags.field("where"),
+                            support = strings["appts.where.hint"],
                         )
                         Spacer(Modifier.height(Space.m))
 
@@ -269,7 +269,7 @@ fun AddAppointmentScreen(
                             label = strings["appts.notes"],
                             value = draft.notes,
                             onValueChange = { draft = draft.copy(notes = it) },
-                            hint = strings["appts.notes.hint"],
+                            support = strings["appts.notes.hint"],
                             singleLine = false,
                             imeAction = ImeAction.Done,
                             fieldTestTag = AddApptTags.field("notes"),

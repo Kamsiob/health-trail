@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,12 +25,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object CorrectSubjectTags {
     const val ROOT = "correct_subject"
@@ -105,23 +106,26 @@ fun CorrectSubjectScreen(
 
                 Spacer(Modifier.height(Space.l))
 
-                Block(padding = Space.none) {
-                    FieldRow(
+                // **Fields sit on the canvas, never in a block.** A field is
+                // already a container with its own outline and its own label, so a
+                // second one around it is two edges on one thing, which is the
+                // clutter D183 took out of the forms. `docs/V4.md` 2.1, `m3v4-4`.
+                Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
+                    Field(
                         label = strings["setup.name.label"],
                         value = name,
                         onValueChange = { name = it },
-                        hint = strings["setup.name.hint"],
+                        support = strings["setup.name.hint"],
                         imeAction = ImeAction.Next,
                         fieldTestTag = CorrectSubjectTags.NAME,
                     )
-                    FieldRow(
+                    Field(
                         label = strings["setup.relationship.label"],
                         value = relationship,
                         onValueChange = { relationship = it },
-                        hint = strings["setup.relationship.hint"],
+                        support = strings["setup.relationship.hint"],
                         imeAction = ImeAction.Done,
                         fieldTestTag = CorrectSubjectTags.RELATIONSHIP,
-                        divider = false,
                     )
                 }
 

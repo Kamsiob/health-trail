@@ -16,13 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
-import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.DictatableField
+import com.kamsiob.healthtrail.ui.v4.Field
 import java.time.LocalDate
 
 object MedEventTags {
@@ -142,12 +142,16 @@ fun MedicationEventScreen(
 
             Spacer(Modifier.height(Space.sectionGap))
 
-            HealthTrailTextField(
+            Field(
                 label = strings["medevent.dose"],
                 value = dose,
                 onValueChange = { dose = it },
-                hint = strings["medevent.dose.hint"],
-                note = strings["medevent.dose.note"],
+                // **The example is the line, and it is the one that carries the
+                // promise.** "Half of one, twice a day" is not a number, which
+                // says however it was said is fine more convincingly than a
+                // second sentence saying so. One supporting line, `docs/V4.md`
+                // 2.1.
+                support = strings["medevent.dose.hint"],
                 fieldTestTag = MedEventTags.DOSE,
             )
 
@@ -157,7 +161,7 @@ fun MedicationEventScreen(
                 label = strings["medevent.note"],
                 value = note,
                 onValueChange = { note = it },
-                hint = strings["medevent.note.hint"],
+                support = strings["medevent.note.hint"],
                 fieldTestTag = MedEventTags.NOTE,
             )
 

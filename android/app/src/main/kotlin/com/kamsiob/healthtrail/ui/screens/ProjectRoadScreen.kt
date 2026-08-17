@@ -25,7 +25,6 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
 import com.kamsiob.healthtrail.ui.components.RoadStrip
@@ -34,6 +33,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
@@ -152,7 +152,7 @@ fun ProjectRoadScreen(
                 label = strings["project.road.new"],
                 value = pending,
                 onValueChange = { pending = it },
-                hint = strings["project.road.add.hint"],
+                support = strings["project.road.add.hint"],
                 singleLine = true,
                 imeAction = ImeAction.Done,
                 fieldTestTag = ProjectRoadTags.ADD_FIELD,
@@ -253,7 +253,7 @@ fun StageEditSheet(
                 label = strings["project.road.name"],
                 value = name,
                 onValueChange = { name = it },
-                hint = strings["project.road.add.hint"],
+                support = strings["project.road.add.hint"],
                 singleLine = true,
                 imeAction = ImeAction.Done,
                 fieldTestTag = StageEditTags.NAME,

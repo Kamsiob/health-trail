@@ -40,13 +40,13 @@ import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.DictatableField
+import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 import java.time.LocalDate
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.FieldGroup
-import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
@@ -430,13 +430,13 @@ private fun NameSomethingElse(
                 // A name, a kind, a unit and their gaps read as four
                 // unrelated things stacked on paper; they are one
                 // decision about one measure and now they look like it.
-                FieldGroup("measurement.own.group") {
-                    HealthTrailTextField(
+                FieldBlock(label = strings["measurement.own.group"]) {
+                    Field(
                         label = strings["measurement.own.name.field"],
                         value = name,
                         onValueChange = { name = it },
-                        hint = strings["measurement.own.name.hint"],
                         fieldTestTag = MeasurementTags.OWN_NAME,
+                        support = strings["measurement.own.name.hint"],
                     )
 
                     Spacer(Modifier.height(Space.m))
@@ -486,12 +486,12 @@ private fun NameSomethingElse(
                     // got.
                     if (!isText) {
                         Spacer(Modifier.height(Space.m))
-                        HealthTrailTextField(
+                        Field(
                             label = strings["measurement.unit"],
                             value = unit,
                             onValueChange = { unit = it },
-                            hint = strings["measurement.own.unit.hint"],
                             fieldTestTag = MeasurementTags.OWN_UNIT,
+                            support = strings["measurement.own.unit.hint"],
                         )
                     }
 
@@ -707,13 +707,9 @@ private fun RecordValue(
 
                 Spacer(Modifier.height(Space.l))
 
-                HealthTrailTextField(
+                Field(
                     label = strings[
                         if (isText) "measurement.value.text" else "measurement.value.number"
-                    ],
-                    hint = strings[
-                        if (isText) "measurement.value.text.hint"
-                        else "measurement.value.number.hint"
                     ],
                     value = raw,
                     onValueChange = { raw = it },
@@ -724,6 +720,10 @@ private fun RecordValue(
                     keyboardType = if (isText) KeyboardType.Text else KeyboardType.Decimal,
                     imeAction = ImeAction.Next,
                     fieldTestTag = MeasurementTags.VALUE,
+                    support = strings[
+                        if (isText) "measurement.value.text.hint"
+                        else "measurement.value.number.hint"
+                    ],
                 )
 
                 // One unit is not a choice, so it is not offered as one.
@@ -778,7 +778,7 @@ private fun RecordValue(
 
                 DictatableField(
                     label = strings["measurement.note"],
-                    hint = strings["measurement.note.hint"],
+                    support = strings["measurement.note.hint"],
                     value = note,
                     onValueChange = { note = it },
                     imeAction = ImeAction.Done,

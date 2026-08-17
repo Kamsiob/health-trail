@@ -27,9 +27,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -39,7 +37,9 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 import java.time.LocalDate
 
 object CorrectIncidentTags {
@@ -133,12 +133,12 @@ fun CorrectIncidentScreen(
                     )
                 Spacer(Modifier.height(Space.l))
 
-                HealthTrailTextField(
+                Field(
                     label = strings["incident.correct.what"],
                     value = title,
                     onValueChange = { title = it },
-                    hint = strings["incident.correct.what.hint"],
                     fieldTestTag = CorrectIncidentTags.TITLE,
+                    support = strings["incident.correct.what.hint"],
                 )
                 Spacer(Modifier.height(Space.m))
 
@@ -176,7 +176,7 @@ fun CorrectIncidentScreen(
                     label = strings["incident.correct.note"],
                     value = description,
                     onValueChange = { description = it },
-                    hint = strings["incident.correct.note.hint"],
+                    support = strings["incident.correct.note.hint"],
                     singleLine = false,
                     imeAction = ImeAction.Done,
                     fieldTestTag = CorrectIncidentTags.DESCRIPTION,

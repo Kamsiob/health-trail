@@ -15,12 +15,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object ExportTags {
     const val NAME = "export"
@@ -223,12 +223,19 @@ fun ExportScreen(
             Eyebrow(text = strings["export.passphrase"])
             Spacer(Modifier.height(Space.headerGap))
 
-            HealthTrailTextField(
+            Field(
                 label = strings["export.passphrase"],
                 value = passphrase,
                 onValueChange = { passphrase = it },
-                hint = strings["export.passphrase.hint"],
-                note = if (edgeSpace) strings["export.passphrase.edges"] else null,
+                // **The warning takes the line from the example**, rather than
+                // stacking under it: a field carries one supporting line, and
+                // where a space at either end could cost somebody their archive
+                // that is the line worth having. `docs/V4.md` 2.1.
+                support = if (edgeSpace) {
+                    strings["export.passphrase.edges"]
+                } else {
+                    strings["export.passphrase.hint"]
+                },
                 enabled = !busy,
                 keyboardType = KeyboardType.Password,
                 masked = !revealed,
@@ -241,18 +248,16 @@ fun ExportScreen(
             // field is an interrogation. Here the label is already the
             // instruction, and "Type it again" repeated inside the box would
             // be the same words in two slots, which section 1 bans by name.
-            HealthTrailTextField(
+            Field(
                 label = strings["export.passphrase.again"],
                 value = again,
                 onValueChange = { again = it },
-                // Said only when the two actually differ, so it is a
-                // correction rather than a warning hanging over an empty field.
-                note = if (mismatch) strings["export.mismatch"] else null,
                 enabled = !busy,
                 keyboardType = KeyboardType.Password,
                 masked = !revealed,
                 imeAction = ImeAction.Done,
                 fieldTestTag = ExportTags.AGAIN,
+                support = if (mismatch) strings["export.mismatch"] else null,
             )
 
             // **Hidden by default, with the person free to look.** Typing a
@@ -291,22 +296,22 @@ fun ExportScreen(
             // "Where the passphrase is written down, not the passphrase" is the
             // whole instruction, and it teaches the safe answer instead of
             // leaving somebody to invent one and then be told off.
-            HealthTrailTextField(
+            Field(
                 label = strings["export.hint.label"],
                 value = hint,
                 onValueChange = { hint = it },
-                hint = strings["export.hint.hint"],
                 // Said when it is true, which is the one case worth interrupting
                 // for: a reminder that contains the passphrase turns an
                 // encrypted archive into an unencrypted one for anybody who
                 // opens the outer layer. It does not block saving, per rule 13,
-                // because this is the person's own record and their call.
-                note = if (hint.isNotBlank() && passphrase.isNotBlank() &&
+                // because this is the person's own record and their call. It
+                // takes the line from the example while it applies.
+                support = if (hint.isNotBlank() && passphrase.isNotBlank() &&
                     hint.contains(passphrase, ignoreCase = true)
                 ) {
                     strings["export.hint.contains"]
                 } else {
-                    null
+                    strings["export.hint.hint"]
                 },
                 enabled = !busy,
                 imeAction = ImeAction.Done,

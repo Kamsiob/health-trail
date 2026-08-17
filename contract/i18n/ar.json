@@ -754,7 +754,6 @@
   "measurement.value.text.hint": "بكلماتك أنت",
   "medevent.dose": "الجرعة الآن",
   "medevent.dose.hint": "نصف حبة، مرتين يوميًا",
-  "medevent.dose.note": "كما قيل لك.",
   "medevent.lead": "ما قيل لك، بالكلمات التي قيلت بها.",
   "medevent.note": "شيء يستحق التذكر",
   "medevent.note.hint": "من قاله، ولماذا",

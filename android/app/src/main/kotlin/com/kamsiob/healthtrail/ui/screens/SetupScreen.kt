@@ -23,14 +23,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FieldGroup
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
-import com.kamsiob.healthtrail.ui.components.FieldGroupGap
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 
 object SetupTags {
     const val ROOT = "setup_root"
@@ -161,57 +160,57 @@ fun SetupScreen(
                 // it scrolled, with a hairline and a word standing in for
                 // structure. Grouping the fields into objects lets somebody
                 // finish one part and scroll past a thing they have completed.
-                FieldGroup("setup.group.who") {
-                    HealthTrailTextField(
+                FieldBlock(label = strings["setup.group.who"]) {
+                    Field(
                         label = strings["setup.name.label"],
-                        hint = strings["setup.name.hint"],
                         value = name,
                         onValueChange = { name = it },
                         fieldTestTag = SetupTags.NAME,
+                        support = strings["setup.name.hint"],
                     )
 
                     Spacer(Modifier.height(Space.m))
 
-                    HealthTrailTextField(
+                    Field(
                         label = strings["setup.relationship.label"],
-                        hint = strings["setup.relationship.hint"],
                         value = relationship,
                         onValueChange = { relationship = it },
+                        support = strings["setup.relationship.hint"],
                     )
                 }
 
-                FieldGroupGap()
+                Spacer(Modifier.height(Space.betweenGroups))
 
-                FieldGroup("setup.group.where") {
-                    HealthTrailTextField(
+                FieldBlock(label = strings["setup.group.where"]) {
+                    Field(
                         label = strings["setup.where.label"],
-                        hint = strings["setup.where.hint"],
                         value = where,
                         onValueChange = { where = it },
                         fieldTestTag = SetupTags.WHERE,
+                        support = strings["setup.where.hint"],
                     )
                 }
 
-                FieldGroupGap()
+                Spacer(Modifier.height(Space.betweenGroups))
 
-                FieldGroup("setup.group.reach") {
-                    HealthTrailTextField(
+                FieldBlock(label = strings["setup.group.reach"]) {
+                    Field(
                         label = strings["setup.phone.person.label"],
-                        hint = strings["setup.phone.person.hint"],
                         value = phoneName,
                         onValueChange = { phoneName = it },
+                        support = strings["setup.phone.person.hint"],
                     )
 
                     Spacer(Modifier.height(Space.m))
 
-                    HealthTrailTextField(
+                    Field(
                         label = strings["setup.phone.number.label"],
-                        hint = strings["setup.phone.number.hint"],
                         value = phoneNumber,
                         onValueChange = { phoneNumber = it },
                         keyboardType = KeyboardType.Phone,
                         imeAction = ImeAction.Done,
                         fieldTestTag = SetupTags.PHONE,
+                        support = strings["setup.phone.number.hint"],
                     )
                 }
 

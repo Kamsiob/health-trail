@@ -26,12 +26,12 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.cappedChips
 import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.v4.Sheet
@@ -151,7 +151,7 @@ fun StandingSheet(
                 label = strings["project.standing.who"],
                 value = holder,
                 onValueChange = { holder = it },
-                hint = strings["project.standing.who.hint"],
+                support = strings["project.standing.who.hint"],
                 singleLine = true,
                 imeAction = ImeAction.Next,
                 fieldTestTag = StandingTags.WHO,
@@ -163,7 +163,7 @@ fun StandingSheet(
                 label = strings["project.standing.what"],
                 value = activity,
                 onValueChange = { activity = it },
-                hint = strings["project.standing.what.hint"],
+                support = strings["project.standing.what.hint"],
                 singleLine = false,
                 imeAction = ImeAction.Done,
                 fieldTestTag = StandingTags.WHAT,

@@ -27,7 +27,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -43,6 +42,7 @@ import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -484,12 +484,12 @@ private fun OwnProject(onStart: (String) -> Unit) {
         )
         if (open) {
             Column(modifier = Modifier.padding(Space.cardPadding)) {
-                HealthTrailTextField(
+                Field(
                     label = strings["projects.name"],
                     value = name,
                     onValueChange = { name = it },
-                    hint = strings["projects.name.hint"],
                     fieldTestTag = StartProjectTags.OWN_NAME,
+                    support = strings["projects.name.hint"],
                 )
                 if (name.isNotBlank()) {
                     Spacer(Modifier.height(Space.m))

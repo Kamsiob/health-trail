@@ -26,10 +26,10 @@ import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.MoreChip
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -191,7 +191,7 @@ fun ViolationScreen(
                 label = strings["violation.what"],
                 value = note,
                 onValueChange = { note = it },
-                hint = strings["violation.what.hint"],
+                support = strings["violation.what.hint"],
                 fieldTestTag = ViolationTags.NOTE,
             )
 

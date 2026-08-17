@@ -26,13 +26,13 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.EdtfSaver
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.cappedChips
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
@@ -135,7 +135,7 @@ fun ProjectDateSheet(
                 label = strings["project.date.kind"],
                 value = kind,
                 onValueChange = { kind = it },
-                hint = strings["project.date.kind.hint"],
+                support = strings["project.date.kind.hint"],
                 singleLine = true,
                 imeAction = ImeAction.Next,
                 fieldTestTag = ProjectDateTags.KIND,
@@ -160,7 +160,7 @@ fun ProjectDateSheet(
                 label = strings["project.date.source"],
                 value = source,
                 onValueChange = { source = it },
-                hint = strings["project.date.source.hint"],
+                support = strings["project.date.source.hint"],
                 singleLine = true,
                 imeAction = ImeAction.Done,
                 fieldTestTag = ProjectDateTags.SOURCE,

@@ -42,7 +42,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ConfirmRemoveSheet
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
 import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
@@ -56,6 +55,7 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -351,12 +351,12 @@ fun ProjectDetailScreen(
             // "waiting", because somebody is usually waiting on somebody long
             // before they think to change a status.
             Spacer(Modifier.height(Space.m))
-            HealthTrailTextField(
+            Field(
                 label = strings["projects.waiting_field"],
                 value = waitingOn,
                 onValueChange = { waitingOn = it },
-                hint = strings["projects.waiting_field.hint"],
                 fieldTestTag = ProjectDetailTags.WAITING,
+                support = strings["projects.waiting_field.hint"],
             )
 
             // **Saving is explicit and the control only exists when there is
@@ -630,12 +630,12 @@ private fun StepSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            HealthTrailTextField(
+            Field(
                 label = strings["projects.step.text"],
                 value = text,
                 onValueChange = { text = it },
-                hint = strings["projects.step.text.hint"],
                 fieldTestTag = ProjectDetailTags.STEP_TEXT,
+                support = strings["projects.step.text.hint"],
             )
 
             // **Only on a step that exists.** A note about a step nobody has
@@ -643,13 +643,13 @@ private fun StepSheet(
             // that adds one should ask for the one thing it needs.
             if (step != null) {
                 Spacer(Modifier.height(Space.m))
-                HealthTrailTextField(
+                Field(
                     label = strings["projects.step.note"],
                     value = note,
                     onValueChange = { note = it },
-                    hint = strings["projects.step.note.hint"],
                     fieldTestTag = ProjectDetailTags.STEP_NOTE,
                     singleLine = false,
+                    support = strings["projects.step.note.hint"],
                 )
 
                 Spacer(Modifier.height(Space.m))

@@ -19,7 +19,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.ExportContainer
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.ChoiceRow
@@ -28,6 +27,7 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.Instant
 import java.time.ZoneId
@@ -175,19 +175,15 @@ fun RestoreScreen(
                         )
                     }
                     Spacer(Modifier.height(Space.m))
-                    HealthTrailTextField(
+                    Field(
                         label = strings["export.passphrase"],
-                        // **Inside the empty box rather than only above it**,
-                        // D37. Somebody restoring is often doing it months
-                        // later on a new phone, and the useful thing to say is
-                        // which passphrase, not that one is wanted.
-                        hint = strings["restore.passphrase.hint"],
                         value = passphrase,
                         onValueChange = { passphrase = it },
                         keyboardType = KeyboardType.Password,
                         masked = true,
                         imeAction = ImeAction.Done,
                         fieldTestTag = RestoreTags.PASSPHRASE,
+                        support = strings["restore.passphrase.hint"],
                     )
                     Spacer(Modifier.height(Space.m))
                     Action(

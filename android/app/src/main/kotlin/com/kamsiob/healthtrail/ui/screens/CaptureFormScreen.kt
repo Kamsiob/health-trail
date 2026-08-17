@@ -47,7 +47,9 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.MoreChip
 import com.kamsiob.healthtrail.ui.v4.cappedChips
 import java.time.LocalDate
@@ -57,8 +59,6 @@ import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.StageDots
 import com.kamsiob.healthtrail.ui.components.PickerOption
-import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -433,7 +433,7 @@ fun CaptureFormScreen(
                     label = strings[key(kind, "note")],
                     value = note,
                     onValueChange = { onStateChange(state.copy(note = it)) },
-                    hint = strings[key(kind, "note.hint")],
+                    support = strings[key(kind, "note.hint")],
                     fieldTestTag = CaptureFormTags.NOTE,
                     // Grows with what is typed rather than sitting at a fixed
                     // height, because a fixed height silently teaches people to
@@ -510,12 +510,12 @@ fun CaptureFormScreen(
                 }
 
                 if (kind.slots[stage] == Slot.WHO) {
-                HealthTrailTextField(
+                Field(
                     label = strings[key(kind, "who")],
                     value = who,
                     onValueChange = { onStateChange(state.copy(who = it)) },
-                    hint = strings[key(kind, "who.hint")],
                     fieldTestTag = CaptureFormTags.WHO,
+                    support = strings[key(kind, "who.hint")],
                 )
 
                 // **The care team, offered rather than retyped, and capped at

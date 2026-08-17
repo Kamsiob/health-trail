@@ -23,11 +23,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -111,7 +111,7 @@ fun StepEditSheet(
                 label = strings["project.step.text"],
                 value = text,
                 onValueChange = { text = it },
-                hint = strings["project.step.text.hint"],
+                support = strings["project.step.text.hint"],
                 singleLine = false,
                 imeAction = ImeAction.Next,
                 fieldTestTag = StepEditTags.TEXT,
@@ -123,7 +123,7 @@ fun StepEditSheet(
                 label = strings["project.step.note"],
                 value = note,
                 onValueChange = { note = it },
-                hint = strings["project.step.note.hint"],
+                support = strings["project.step.note.hint"],
                 singleLine = false,
                 imeAction = ImeAction.Done,
                 fieldTestTag = StepEditTags.NOTE,

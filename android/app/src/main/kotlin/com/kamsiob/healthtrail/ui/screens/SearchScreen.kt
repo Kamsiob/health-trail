@@ -33,7 +33,6 @@ import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
@@ -41,6 +40,7 @@ import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object SearchTags {
     const val NAME = "search"
@@ -124,14 +124,14 @@ fun SearchScreen(
         modifier = modifier.testTag(SearchTags.ROOT),
     ) {
         item {
-            HealthTrailTextField(
+            Field(
                 label = strings["search.label"],
                 value = query,
                 onValueChange = onQueryChange,
-                hint = strings["search.hint"],
                 fieldTestTag = SearchTags.FIELD,
                 singleLine = true,
                 imeAction = androidx.compose.ui.text.input.ImeAction.Search,
+                support = strings["search.hint"],
             )
             Spacer(Modifier.height(Space.l))
         }

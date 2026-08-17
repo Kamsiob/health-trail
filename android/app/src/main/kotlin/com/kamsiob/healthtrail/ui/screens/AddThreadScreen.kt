@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -31,6 +30,7 @@ import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object AddThreadTags {
     const val STAGE = "add_thread"
@@ -166,13 +166,13 @@ fun AddThreadScreen(
                 // **The field's label is not the heading again**, which is the
                 // defect #341 took out of four screens. The heading asks what
                 // keeps coming up; the field says what to type.
-                HealthTrailTextField(
+                Field(
                     label = strings[labelKey],
                     value = name,
                     onValueChange = { name = it },
-                    hint = hintKey?.let { strings[it] },
                     singleLine = singleLine,
                     fieldTestTag = AddThreadTags.NAME,
+                    support = hintKey?.let { strings[it] },
                 )
 
                 Spacer(Modifier.height(Space.xl))

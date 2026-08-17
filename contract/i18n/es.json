@@ -754,7 +754,6 @@
   "measurement.value.text.hint": "Con sus propias palabras",
   "medevent.dose": "La dosis ahora",
   "medevent.dose.hint": "Media, dos veces al día",
-  "medevent.dose.note": "Como se lo dijeron.",
   "medevent.lead": "Lo que le hayan dicho, con las palabras con que se lo dijeron.",
   "medevent.note": "Algo que recordar",
   "medevent.note.hint": "Quién lo dijo, y por qué",

@@ -22,11 +22,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -122,7 +122,7 @@ fun LogCallSheet(
                 label = strings["project.log_call.title"],
                 value = words,
                 onValueChange = { words = it },
-                hint = strings["project.log_call.words.hint"],
+                support = strings["project.log_call.words.hint"],
                 singleLine = false,
                 imeAction = ImeAction.Default,
                 fieldTestTag = LogCallTags.WORDS,
@@ -134,7 +134,7 @@ fun LogCallSheet(
                 label = strings["project.log_call.who"],
                 value = who,
                 onValueChange = { who = it },
-                hint = strings["project.log_call.who.hint"],
+                support = strings["project.log_call.who.hint"],
                 singleLine = true,
                 imeAction = ImeAction.Done,
                 fieldTestTag = LogCallTags.WHO,

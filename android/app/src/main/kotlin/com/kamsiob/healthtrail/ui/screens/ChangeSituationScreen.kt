@@ -15,12 +15,12 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object ChangeSituationTags {
     const val NAME = "change_situation"
@@ -184,12 +184,12 @@ fun ChangeSituationScreen(
                 // "Where they are now" and a header saying the same three words
                 // directly above it is 5.13's heading that carries nothing.
                 // Every other form in the app labels its fields and stops.
-                HealthTrailTextField(
+                Field(
                     label = strings["situation.change.chapter"],
                     value = chapterName,
                     onValueChange = { chapterName = it },
-                    hint = strings["situation.change.chapter.hint"],
                     fieldTestTag = ChangeSituationTags.CHAPTER,
+                    support = strings["situation.change.chapter.hint"],
                 )
                 Spacer(Modifier.height(Space.xs))
                 // Said plainly rather than left to be inferred from an empty

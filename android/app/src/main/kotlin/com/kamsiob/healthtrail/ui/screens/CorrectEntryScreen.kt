@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +26,6 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictateAction
-import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -36,6 +36,7 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object CorrectEntryTags {
     const val ROOT = "correct_entry"
@@ -124,21 +125,25 @@ fun CorrectEntryScreen(
 
                 Spacer(Modifier.height(Space.l))
 
-                Block(padding = Space.none) {
-                    FieldRow(
+                // **Fields sit on the canvas, never in a block.** A field is
+                // already a container with its own outline and its own label, so a
+                // second one around it is two edges on one thing, which is the
+                // clutter D183 took out of the forms. `docs/V4.md` 2.1, `m3v4-4`.
+                Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
+                    Field(
                         label = strings[kindNameKey(entry.kind)],
                         value = title,
                         onValueChange = { title = it },
-                        hint = strings["entry.untitled"],
+                        support = strings["entry.untitled"],
                         imeAction = ImeAction.Next,
                         fieldTestTag = CorrectEntryTags.TITLE,
                     )
 
-                    FieldRow(
+                    Field(
                         label = strings["capture.call.note"],
                         value = body,
                         onValueChange = { body = it },
-                        hint = strings["capture.call.note.hint"],
+                        support = strings["capture.call.note.hint"],
                         singleLine = false,
                         imeAction = ImeAction.Done,
                         fieldTestTag = CorrectEntryTags.BODY,
@@ -157,7 +162,6 @@ fun CorrectEntryScreen(
                                 },
                             )
                         },
-                        divider = false,
                     )
                 }
 

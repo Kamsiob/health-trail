@@ -27,6 +27,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.ChoiceRow
+import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
@@ -121,12 +122,12 @@ fun ChipPickerSheet(
 
             Spacer(Modifier.height(Space.m))
 
-            HealthTrailTextField(
+            Field(
                 label = strings["picker.search"],
                 value = query,
                 onValueChange = { query = it },
-                hint = strings["picker.search.hint"],
                 fieldTestTag = ChipPickerTags.SEARCH,
+                support = strings["picker.search.hint"],
             )
 
             Spacer(Modifier.height(Space.m))

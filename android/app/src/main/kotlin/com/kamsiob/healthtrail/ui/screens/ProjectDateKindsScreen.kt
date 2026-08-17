@@ -23,12 +23,12 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
@@ -117,7 +117,7 @@ fun ProjectDateKindsScreen(
                 label = strings["project.kinds.new"],
                 value = pending,
                 onValueChange = { pending = it },
-                hint = strings["project.kinds.add.hint"],
+                support = strings["project.kinds.add.hint"],
                 singleLine = true,
                 imeAction = ImeAction.Done,
                 fieldTestTag = ProjectKindsTags.ADD_FIELD,
@@ -206,7 +206,7 @@ fun DateKindEditSheet(
                 label = strings["project.kinds.name"],
                 value = label,
                 onValueChange = { label = it },
-                hint = strings["project.kinds.add.hint"],
+                support = strings["project.kinds.add.hint"],
                 singleLine = true,
                 imeAction = ImeAction.Done,
                 fieldTestTag = KindEditTags.NAME,

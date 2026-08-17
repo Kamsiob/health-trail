@@ -4,12 +4,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
-import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 /**
  * A group of fields under the quiet label that names it. #386.
@@ -47,5 +57,166 @@ fun FieldBlock(
     ) {
         Eyebrow(text = label, color = labelColor)
         content()
+    }
+}
+
+/**
+ * A field, on Material's own outlined text field. #386.
+ *
+ * **The label is persistent and carries the meaning**, in the notched outline,
+ * `docs/V4.md` 2.1. It is there before somebody types, while they type, and
+ * after: a label that leaves when the field fills is the pattern that fails
+ * exactly when an interrupted person looks back at what they were doing.
+ *
+ * **The hint is supporting text under the field, never inside it.** Nielsen
+ * Norman Group's research on form design is unambiguous, and two of the seven
+ * problems they list are what the owner saw on 2026-08-17: people read
+ * placeholder text as content already filled in and skip the field, and an empty
+ * field draws the eye better than one that looks full. The others are worse: a
+ * placeholder vanishes the moment somebody types, so it is gone when it is
+ * needed most, and it comes back only by deleting what they wrote. D189.
+ *
+ * **One supporting line, never two.** A field with an example and a promise and
+ * a warning under it is three sentences competing to be read at the moment
+ * somebody is trying to write one. Where a warning applies, it takes the line
+ * from the example: the caller chooses, because only the caller knows.
+ *
+ * **It never turns red and never blocks.** Nothing in this app is required, so a
+ * field cannot be wrong. Rule 13.
+ *
+ * **Material's own rather than hand drawn**, which is the rebuild's rule for
+ * anything Material already does: the old one drew its own notch, measured its
+ * own label, and painted the page's color over the outline to make a gap for the
+ * words. That is a lot of geometry to maintain in order to arrive at the control
+ * the platform ships.
+ */
+@Composable
+fun Field(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    /** The one line under the field: an example, or the warning that replaces it. */
+    support: String? = null,
+    /** A tag on the editable line itself, which is what a test types into. */
+    fieldTestTag: String? = null,
+    enabled: Boolean = true,
+    singleLine: Boolean = true,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    imeAction: ImeAction = ImeAction.Next,
+    /** A passphrase, and the only thing in this app that is ever hidden. */
+    masked: Boolean = false,
+    /** What sits at the end of the line inside the field: dictation, a unit. */
+    trailing: (@Composable () -> Unit)? = null,
+) {
+    val colors = HealthTrail.colors
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier
+            .fillMaxWidth()
+            .then(fieldTestTag?.let { Modifier.testTag(it) } ?: Modifier),
+        enabled = enabled,
+        // bidi-ok: the label is the app's own words for what the field asks.
+        label = { Text(text = label, style = HealthTrail.type.bodyS) },
+        textStyle = HealthTrail.type.bodyL,
+        trailingIcon = trailing,
+        supportingText = support?.let {
+            {
+                // bidi-ok: the app's own example or warning about this field.
+                Text(text = it, style = HealthTrail.type.support)
+            }
+        },
+        visualTransformation = if (masked) {
+            PasswordVisualTransformation()
+        } else {
+            VisualTransformation.None
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+        singleLine = singleLine,
+        shape = Radius.cardLarge,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = colors.ink,
+            unfocusedTextColor = colors.ink,
+            disabledTextColor = colors.ink2,
+            cursorColor = colors.blue,
+            // **The canvas shows through.** A field sits on the page rather
+            // than in a block, `m3v4-4`, so a container color here would be the
+            // second edge around one thing that D183 took out of the forms.
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            // The outline at rest is the non-text ink, which is what says where
+            // to write; focused it is the same 2dp blue every focusable thing
+            // in this app takes. `DESIGN.md` 12.
+            focusedBorderColor = colors.blue,
+            unfocusedBorderColor = colors.ink3,
+            disabledBorderColor = colors.hairline,
+            focusedLabelColor = colors.blue,
+            unfocusedLabelColor = colors.ink2,
+            disabledLabelColor = colors.ink2,
+            focusedSupportingTextColor = colors.ink2,
+            unfocusedSupportingTextColor = colors.ink2,
+            disabledSupportingTextColor = colors.ink2,
+        ),
+    )
+}
+
+/**
+ * A field and its dictation control, which is the pairing every text area uses.
+ *
+ * Exists so that "every text area offers dictation" is one call rather than a
+ * habit twelve screens have to remember, and so the spacing between the two is
+ * decided once.
+ *
+ * **Spoken text is appended with a space**, so half typed and half spoken is a
+ * sentence rather than two words jammed together.
+ */
+@Composable
+fun DictatableField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    support: String? = null,
+    fieldTestTag: String? = null,
+    enabled: Boolean = true,
+    singleLine: Boolean = false,
+    imeAction: ImeAction = ImeAction.Default,
+    /**
+     * Whether speaking is the point of this screen rather than an alternative
+     * to typing on it. Law 3, on the note stage of capture.
+     */
+    prominentVoice: Boolean = false,
+) {
+    val append: (String) -> Unit = { spoken ->
+        onValueChange(if (value.isBlank()) spoken else "${value.trimEnd()} $spoken")
+    }
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Space.withinGroup),
+    ) {
+        Field(
+            label = label,
+            value = value,
+            onValueChange = onValueChange,
+            support = support,
+            fieldTestTag = fieldTestTag,
+            enabled = enabled,
+            singleLine = singleLine,
+            imeAction = imeAction,
+            // **Inside the field**, unless this is the one screen where
+            // speaking is the point rather than an alternative.
+            trailing = if (prominentVoice) {
+                null
+            } else {
+                { DictateAction(inField = true, enabled = enabled, onText = append) }
+            },
+        )
+
+        if (prominentVoice) {
+            DictateAction(prominent = true, enabled = enabled, onText = append)
+        }
     }
 }

@@ -47,9 +47,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
@@ -70,7 +68,9 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object AddDocTags {
     const val ROOT = "add_doc_root"
@@ -437,12 +437,12 @@ fun AddDocumentScreen(
 
                 if (!staged) Spacer(Modifier.height(Space.sectionGap))
 
-                HealthTrailTextField(
+                Field(
                     label = strings["docs.title"],
                     value = draft.title,
                     onValueChange = { draft = draft.copy(title = it) },
-                    hint = strings["docs.title.hint"],
                     fieldTestTag = AddDocTags.field("title"),
+                    support = strings["docs.title.hint"],
                 )
                 Spacer(Modifier.height(Space.m))
 
@@ -491,12 +491,12 @@ fun AddDocumentScreen(
                 // comment: the digital copy is rarely the one a clerk will
                 // accept. It leads its stage rather than sitting behind the
                 // disclosure with the folder and the notes.
-                HealthTrailTextField(
+                Field(
                     label = strings["docs.original"],
                     value = draft.originalLocation,
                     onValueChange = { draft = draft.copy(originalLocation = it) },
-                    hint = strings["docs.original.hint"],
                     fieldTestTag = AddDocTags.field("original"),
+                    support = strings["docs.original.hint"],
                 )
 
                 Spacer(Modifier.height(Space.sectionGap))
@@ -528,12 +528,12 @@ fun AddDocumentScreen(
                 // **Tapping the chip that is already chosen clears it**, which
                 // is how a document comes back out of a folder without the
                 // person having to select the text and delete it.
-                HealthTrailTextField(
+                Field(
                     label = strings["docs.folder"],
                     value = draft.category,
                     onValueChange = { draft = draft.copy(category = it) },
-                    hint = strings["docs.folder.hint"],
                     fieldTestTag = AddDocTags.field("folder"),
+                    support = strings["docs.folder.hint"],
                 )
                 if (folders.isNotEmpty()) {
                     Spacer(Modifier.height(Space.s))
@@ -560,7 +560,7 @@ fun AddDocumentScreen(
                     label = strings["appts.notes"],
                     value = draft.notes,
                     onValueChange = { draft = draft.copy(notes = it) },
-                    hint = strings["appts.notes.hint"],
+                    support = strings["appts.notes.hint"],
                     singleLine = false,
                     imeAction = ImeAction.Done,
                     fieldTestTag = AddDocTags.field("notes"),

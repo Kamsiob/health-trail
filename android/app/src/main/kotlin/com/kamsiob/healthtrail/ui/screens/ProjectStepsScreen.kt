@@ -16,11 +16,11 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
@@ -155,7 +155,7 @@ fun ProjectStepsScreen(
                 label = strings["project.steps.new"],
                 value = pending,
                 onValueChange = { pending = it },
-                hint = strings["project.steps.add.hint"],
+                support = strings["project.steps.add.hint"],
                 singleLine = true,
                 imeAction = ImeAction.Done,
                 fieldTestTag = ProjectStepsTags.ADD_FIELD,

@@ -754,7 +754,6 @@
   "measurement.value.text.hint": "In your own words",
   "medevent.dose": "The dose now",
   "medevent.dose.hint": "Half of one, twice a day",
-  "medevent.dose.note": "However it was said.",
   "medevent.lead": "Whatever you were told, in the words you were told it in.",
   "medevent.note": "Anything to remember",
   "medevent.note.hint": "Who said it, and why",

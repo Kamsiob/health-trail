@@ -39,7 +39,6 @@ import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.components.DictateAction
-import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -49,6 +48,7 @@ import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object AddPersonTags {
     const val EMAIL = "add_person_email"
@@ -269,34 +269,37 @@ fun AddPersonScreen(
                 // **Found by opening the form on the phone**, where it was five
                 // rows of identical weight and D147 said it had been converted.
                 // #376.
-                Block(padding = Space.none) {
-                    FieldRow(
+                // **Fields sit on the canvas, never in a block.** A field is
+                // already a container with its own outline and its own label, so a
+                // second one around it is two edges on one thing, which is the
+                // clutter D183 took out of the forms. `docs/V4.md` 2.1, `m3v4-4`.
+                Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
+                    Field(
                         label = strings["careteam.add.name"],
                         value = name,
                         onValueChange = { name = it },
-                        hint = strings["careteam.add.name.hint"],
+                        support = strings["careteam.add.name.hint"],
                         imeAction = ImeAction.Next,
                         fieldTestTag = AddPersonTags.NAME,
                     )
 
-                    FieldRow(
+                    Field(
                         label = strings["careteam.add.role"],
                         value = role,
                         onValueChange = { role = it },
-                        hint = strings["careteam.add.role.hint"],
+                        support = strings["careteam.add.role.hint"],
                         imeAction = ImeAction.Next,
                         fieldTestTag = AddPersonTags.ROLE,
                     )
 
-                    FieldRow(
+                    Field(
                         label = strings["careteam.add.phone"],
                         value = phone,
                         onValueChange = { phone = it },
-                        hint = strings["careteam.add.phone.hint"],
+                        support = strings["careteam.add.phone.hint"],
                         imeAction = ImeAction.Next,
                         keyboardType = KeyboardType.Phone,
                         fieldTestTag = AddPersonTags.PHONE,
-                        divider = false,
                     )
                 }
 
@@ -357,36 +360,40 @@ fun AddPersonScreen(
                     testTag = AddPersonTags.MORE,
                     startOpen = where.isNotBlank() || notes.isNotBlank(),
                 ) {
-                Block(padding = Space.none) {
+                // **Fields sit on the canvas, never in a block.** A field is
+                // already a container with its own outline and its own label, so a
+                // second one around it is two edges on one thing, which is the
+                // clutter D183 took out of the forms. `docs/V4.md` 2.1, `m3v4-4`.
+                Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
                     // **Where they work, which the care team folds by.** Grid
                     // screen 11 groups the people who are not in the lead by
                     // exactly this, and the column and its index shipped in
                     // Phase 0 with nothing writing either, so the fold could
                     // not be built: grouping by a column nothing writes gives
                     // one fold holding everybody. #353.
-                    FieldRow(
+                    Field(
                         label = strings["careteam.add.where"],
                         value = where,
                         onValueChange = { where = it },
-                        hint = strings["careteam.add.where.hint"],
+                        support = strings["careteam.add.where.hint"],
                         imeAction = ImeAction.Next,
                         fieldTestTag = AddPersonTags.WHERE,
                     )
 
-                    FieldRow(
+                    Field(
                         label = strings["careteam.add.email"],
                         value = email,
                         onValueChange = { email = it },
-                        hint = strings["careteam.add.email.hint"],
+                        support = strings["careteam.add.email.hint"],
                         imeAction = ImeAction.Next,
                         fieldTestTag = AddPersonTags.EMAIL,
                     )
 
-                    FieldRow(
+                    Field(
                         label = strings["careteam.add.notes"],
                         value = notes,
                         onValueChange = { notes = it },
-                        hint = strings["careteam.add.notes.hint"],
+                        support = strings["careteam.add.notes.hint"],
                         singleLine = false,
                         imeAction = ImeAction.Done,
                         fieldTestTag = AddPersonTags.NOTES,
@@ -405,7 +412,6 @@ fun AddPersonScreen(
                                 },
                             )
                         },
-                        divider = false,
                     )
                 }
 

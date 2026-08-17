@@ -25,10 +25,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -38,7 +36,9 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object AddBillTags {
     const val ROOT = "add_bill_root"
@@ -128,22 +128,22 @@ fun AddBillScreen(
                     )
                 Spacer(Modifier.height(Space.l))
 
-                HealthTrailTextField(
+                Field(
                     label = strings["money.what"],
                     value = draft.description,
                     onValueChange = { draft = draft.copy(description = it) },
-                    hint = strings["money.what.hint"],
                     fieldTestTag = AddBillTags.field("what"),
+                    support = strings["money.what.hint"],
                 )
                 Spacer(Modifier.height(Space.m))
 
-                HealthTrailTextField(
+                Field(
                     label = strings["money.amount"],
                     value = draft.amount,
                     onValueChange = { draft = draft.copy(amount = it) },
-                    hint = strings["money.amount.hint"],
                     keyboardType = KeyboardType.Decimal,
                     fieldTestTag = AddBillTags.field("amount"),
+                    support = strings["money.amount.hint"],
                 )
                 Spacer(Modifier.height(Space.m))
 
@@ -178,7 +178,7 @@ fun AddBillScreen(
                         label = strings["appts.notes"],
                         value = draft.notes,
                         onValueChange = { draft = draft.copy(notes = it) },
-                        hint = strings["appts.notes.hint"],
+                        support = strings["appts.notes.hint"],
                         singleLine = false,
                         imeAction = ImeAction.Done,
                         fieldTestTag = AddBillTags.field("notes"),

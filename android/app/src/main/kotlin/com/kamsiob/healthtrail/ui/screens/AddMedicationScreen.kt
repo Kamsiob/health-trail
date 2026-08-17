@@ -26,16 +26,16 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.ToggleRow
 import com.kamsiob.healthtrail.ui.components.Disclosure
-import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Field
 
 object AddMedTags {
     const val ROOT = "add_med_root"
@@ -146,12 +146,12 @@ fun AddMedicationScreen(
                 )
                 Spacer(Modifier.height(Space.l))
 
-                HealthTrailTextField(
+                Field(
                     label = strings["meds.name"],
                     value = draft.name,
                     onValueChange = { draft = draft.copy(name = it) },
-                    hint = strings["meds.name.hint"],
                     fieldTestTag = AddMedTags.field("name"),
+                    support = strings["meds.name.hint"],
                 )
                 Spacer(Modifier.height(Space.m))
 
@@ -159,7 +159,7 @@ fun AddMedicationScreen(
                     label = strings["meds.dose"],
                     value = draft.dose,
                     onValueChange = { draft = draft.copy(dose = it) },
-                    hint = strings["meds.dose.hint"],
+                    support = strings["meds.dose.hint"],
                     singleLine = false,
                     fieldTestTag = AddMedTags.field("dose"),
                 )
@@ -179,7 +179,7 @@ fun AddMedicationScreen(
                     label = strings["meds.frequency"],
                     value = draft.frequency,
                     onValueChange = { draft = draft.copy(frequency = it) },
-                    hint = strings["meds.frequency.hint"],
+                    support = strings["meds.frequency.hint"],
                     singleLine = false,
                     fieldTestTag = AddMedTags.field("frequency"),
                 )
@@ -223,7 +223,7 @@ fun AddMedicationScreen(
                             label = strings["meds.purpose"],
                             value = draft.purpose,
                             onValueChange = { draft = draft.copy(purpose = it) },
-                            hint = strings["meds.purpose.hint"],
+                            support = strings["meds.purpose.hint"],
                             singleLine = false,
                             fieldTestTag = AddMedTags.field("purpose"),
                         )
@@ -233,7 +233,7 @@ fun AddMedicationScreen(
                             label = strings["meds.notes"],
                             value = draft.notes,
                             onValueChange = { draft = draft.copy(notes = it) },
-                            hint = strings["meds.notes.hint"],
+                            support = strings["meds.notes.hint"],
                             singleLine = false,
                             imeAction = ImeAction.Done,
                             fieldTestTag = AddMedTags.field("notes"),

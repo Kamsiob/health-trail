@@ -28,8 +28,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -38,6 +36,7 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.MoreChip
@@ -229,21 +228,21 @@ fun EmergencyCardEditScreen(
                 Eyebrow(text = strings["emergency.group.medical"])
                 Spacer(Modifier.height(Space.headerGap))
 
-                Field(
+                CardLine(
                     key = "allergies",
                     label = strings["emergency.allergies"],
                     hint = strings["emergency.allergies.hint"],
                     value = draft.allergies,
                     onChange = { draft = draft.copy(allergies = it) },
                 )
-                Field(
+                CardLine(
                     key = "blood_type",
                     label = strings["emergency.blood_type"],
                     hint = strings["emergency.blood_type.hint"],
                     value = draft.bloodType,
                     onChange = { draft = draft.copy(bloodType = it) },
                 )
-                Field(
+                CardLine(
                     key = "conditions",
                     label = strings["emergency.conditions"],
                     hint = strings["emergency.conditions.hint"],
@@ -255,35 +254,35 @@ fun EmergencyCardEditScreen(
                 Eyebrow(text = strings["emergency.group.paperwork"])
                 Spacer(Modifier.height(Space.headerGap))
 
-                Field(
+                CardLine(
                     key = "resuscitation",
                     label = strings["emergency.resuscitation"],
                     hint = strings["emergency.resuscitation.hint"],
                     value = draft.resuscitationStatus,
                     onChange = { draft = draft.copy(resuscitationStatus = it) },
                 )
-                Field(
+                CardLine(
                     key = "resuscitation_where",
                     label = strings["emergency.resuscitation.where"],
                     hint = strings["emergency.resuscitation.where.hint"],
                     value = draft.resuscitationWhere,
                     onChange = { draft = draft.copy(resuscitationWhere = it) },
                 )
-                Field(
+                CardLine(
                     key = "decision_maker_where",
                     label = strings["emergency.decision_maker.where"],
                     hint = strings["emergency.decision_maker.where.hint"],
                     value = draft.decisionMakerWhere,
                     onChange = { draft = draft.copy(decisionMakerWhere = it) },
                 )
-                Field(
+                CardLine(
                     key = "insurance",
                     label = strings["emergency.insurance"],
                     hint = strings["emergency.insurance.hint"],
                     value = draft.insurance,
                     onChange = { draft = draft.copy(insurance = it) },
                 )
-                Field(
+                CardLine(
                     key = "other",
                     label = strings["emergency.other"],
                     hint = strings["emergency.other.hint"],
@@ -322,7 +321,7 @@ fun EmergencyCardEditScreen(
 }
 
 @Composable
-private fun Field(
+private fun CardLine(
     key: String,
     label: String,
     hint: String,
@@ -334,7 +333,7 @@ private fun Field(
         label = label,
         value = value,
         onValueChange = onChange,
-        hint = hint,
+        support = hint,
         imeAction = imeAction,
         // Every one of these can run long. An allergy is often a sentence, and
         // the resuscitation line is a quotation from a form, so none of them is
