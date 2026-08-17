@@ -2990,6 +2990,22 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D185. The sand accordion is not swapped for a new accordion. It is what each screen stops needing
+
+**Date:** 2026-08-17. **Step 2, #386.** The last row of `docs/V4.md` 4's replace table.
+
+**There was nothing left to swap.** The fold was expected to be a lump of old design language and it is not: D175 gave it the app's spring press and took the last ripple out, D182 put Material's `chevron_right` in it through `Chevron`, D175 also put it on the one container corner, and its label is already body weight in the primary ink. Writing a second accordion in `ui/v4` and pointing twenty call sites at it would have produced the same pixels under a new name, which is the definition of churn.
+
+**And the drawing does not draw one.** `m3v4-3` is the care team, the screen the owner named when he said "just look at the accordions on the care team page, that's copy and paste from the old design", and **the approved drawing has no accordion on it at all**: a segmented toggle at the top, then plain rows. The built screen has three folds. So what replaces the accordion there is not a component, it is an arrangement, and it arrives when that screen is rewritten.
+
+**Alternatives considered.** Writing `ui/v4/Fold.kt` from scratch and delegating the old names to it, which is the pattern `QuietButton` uses and the pattern the sheet just used. Rejected here because both of those replaced something that was visibly old, and this is not: the delegation would be a rename with a migration cost and no visible change, and rule 14's retroactive bar is about how a screen looks rather than which file a composable lives in.
+
+**So step 2 is finished with the sheet**, and the accordion is carried into phase 4. Each screen that is rewritten either drops its folds, as `m3v4-3` does, or composes a container that expands from `Block`, and an undrawn one is logged under rule 12 like any other undrawn thing. The old `FoldRow` is deleted when its last caller goes, which is the same rule every other old component is under.
+
+**What would change this:** a mockup that draws a fold. Then it is measured and written from scratch like every other drawn thing, D183.
+
+---
+
 ### D184. Material's own controls replace the hand-drawn ones, and the back footer is deleted
 
 **Date:** 2026-08-17. **Step 2, #386.** `docs/V4.md` 4's replace table, worked through.

@@ -31,7 +31,9 @@ Step 2, #386, done so far: **the face, the icons, the navigation bar, the group 
 
 **The method changed on 2026-08-17 and `docs/ACCEPTANCE.md` is the authority on it.** The owner: "no old design language at all. get rid of it so it doesn't influence." **Nothing old is edited any more.** The new set is written from scratch in `ui/v4`, a screen is rewritten onto it rather than adapted, and an old component is deleted the moment its last caller goes. **The old package being empty is the test.**
 
-**Step 2 still to do: the sand accordion.** Then step 3, the screens.
+**Step 2 is finished.** The accordion was the last row of the replace table and it is not being swapped for another accordion: it already carries the spring, Material's chevron and the one container corner, and `m3v4-3` draws the care team with no fold on it at all. It dies per screen, in phase 4. **D185.**
+
+**Next is phase 4, the screens**, 83 of them, each rewritten onto `ui/v4` with the components it needs written as it needs them.
 
 **The sheet is done and it is app wide.** `ui/v4/Sheet.kt` carries the container, the corner, the scrim and the missing handle, `SheetBody` carries the insets and the screen margin, and `rememberSheet` replaces the deprecated `rememberModalBottomSheetState` at **all 18 call sites**: the build has no deprecation warnings left. The call sites keep their own contents until their screens are rewritten, so this changed no layout; the tips sheet is the one visible difference, since it alone had Material's light veil and a drag handle.
 
