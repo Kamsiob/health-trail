@@ -43,7 +43,11 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # index rail needed and what the sticky header had been typing. #361.
 # Every radius outside the theme is a token now, each naming the grid selector
 # it came from, so a later reader can check it against the drawing.
-BASELINE = 126
+# 123 once the navigation bar became Material's own short bar and its
+# hand-drawn glyphs went with it. **The rebuild is expected to keep pushing
+# this down**: a measurement typed into a screen is usually a component this
+# app drew for itself, and step 2 is replacing those with Material's. #386.
+BASELINE = 123
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

@@ -121,40 +121,6 @@ private fun IconTile(
     }
 }
 
-/**
- * One icon on its own, with no tile behind it.
- *
- * The navigation bar has no room for a tile and does not want one: a tile
- * behind four glyphs at the bottom of every screen is four more boxes competing
- * with the content above them. Same paths, same grid, same stroke.
- */
-@Composable
-fun NavIcon(
-    destination: Destination,
-    tint: Color,
-    modifier: Modifier = Modifier,
-    iconSize: Dp = 22.dp,
-) {
-    val drawing = remember(destination) {
-        Path().apply {
-            SectionIconPaths.of(destination).forEach { data ->
-                addPath(PathParser().parsePathString(data).toPath())
-            }
-        }
-    }
-
-    Canvas(modifier = modifier.size(iconSize)) {
-        val factor = size.minDimension / VIEWPORT
-        scale(factor, pivot = Offset.Zero) {
-            drawPath(
-                path = drawing,
-                color = tint,
-                style = Stroke(width = STROKE, cap = StrokeCap.Round, join = StrokeJoin.Round),
-            )
-        }
-    }
-}
-
 private const val VIEWPORT = 24f
 private const val STROKE = 1.7f
 
