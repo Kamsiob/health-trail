@@ -146,7 +146,12 @@ class CareTeamScreenTest {
         // the expected string is U+00A0 for that reason, and a test that looks
         // for an ordinary space is asking for the version that wrapped.
         compose.onNodeWithText("(555)\u00A0555-0100", substring = true).assertIsDisplayed()
-        compose.onNodeWithText(strings["careteam.call"]).assertIsDisplayed()
+        // **The action is a mark now, not the word.** #386: `m3v4-3` draws a
+        // gold circular button carrying a phone on every row of the unit list,
+        // and the word "Call" in blue was the bare text link law 2 bans. What
+        // must stay true is that a reader still hears whose number it is,
+        // which the description below asserts, so this line goes rather than
+        // being weakened to a substring match on something invisible.
         // And a reader still hears whose number it is.
         compose.onNodeWithContentDescription(
             strings("careteam.call.number", "number" to "(555) 555-0100"),

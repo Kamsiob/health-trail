@@ -32,6 +32,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
@@ -60,6 +63,7 @@ import com.kamsiob.healthtrail.ui.components.TabChipText
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.Symbol
 import com.kamsiob.healthtrail.ui.components.railWidth
+import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -174,6 +178,15 @@ fun SectionScaffold(
      * Null on a screen that lists rather than holds, where what gets edited is
      * whatever entry you open rather than the list itself.
      */
+    /**
+     * A short state, drawn as a tonal pill in the header's trailing corner.
+     *
+     * **`m3v4-2` puts "IN REVIEW" there**, which is the one fact about a long
+     * process you want before you read anything else: not how far through it
+     * you are, which the road says, but whether it is moving. Null on a screen
+     * that has no such state, which is most of them.
+     */
+    badge: String? = null,
     onEdit: (() -> Unit)? = null,
     /**
      * What a reader announces for the pencil, in this screen's own words.
@@ -371,6 +384,20 @@ fun SectionScaffold(
                             )
                         }
                         Spacer(Modifier.weight(1f))
+                        badge?.let { state ->
+                            Text(
+                                text = state.uppercase(LocalConfiguration.current.locales[0]),
+                                style = HealthTrail.type.eyebrow,
+                                color = HealthTrail.colors.goldInk,
+                                modifier = Modifier
+                                    .clip(Radius.pill)
+                                    .background(HealthTrail.colors.goldWash)
+                                    .padding(horizontal = Space.sm, vertical = Space.xs)
+                                    // The capitals are for the eye, D183.
+                                    .semantics { contentDescription = state },
+                            )
+                            Spacer(Modifier.width(Space.s))
+                        }
                         // **The same corner as every other screen**, D173, and
                         // routed through the one component so it cannot drift
                         // apart again. A section screen has no pencil of its

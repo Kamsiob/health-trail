@@ -190,6 +190,11 @@ fun ProjectHomeScreen(
             project.templateId != null -> strings["projects.from_a_template"]
             else -> strings["projects.own"]
         },
+        // **The state, in the corner the drawing puts it.** The stage the
+        // project is standing at, which is the answer to "is this moving" and
+        // is otherwise only readable by finding the ringed waypoint on the
+        // road further down.
+        badge = stages.lastOrNull { it.isReached }?.name?.takeIf { !project.isFinished },
         onBack = onBack,
         backLabelKey = "section.back.projects",
         modifier = modifier,
@@ -215,6 +220,42 @@ fun ProjectHomeScreen(
         // looks like a door.
 
         // -- 0. The greeting, kept: lapse tolerance is law. -------------------
+            // **The date leads, which is where `m3v4-2` puts it.** D164
+            // fixed this screen's order and that order stands; what moved is
+            // which block is first. The drawing opens with the decision and
+            // the days left, because on a process that takes a year the one
+            // time critical fact is when somebody else's clock runs out.
+            // Everything below it keeps D164's sequence exactly. #386.
+            item {
+            // **The date is a row under the answer, at the same place on
+            // every project.** Tappable when there is one, per rule 17: the
+            // date is editable forever from the thing itself.
+            if (nextDate != null && countdown != null && dateKind != null) {
+                DateRow(
+                    countdown = countdown,
+                    what = Bidi.join(dateKind, dateWhen),
+                    source = nextDate.sourceNote,
+                    description = Bidi.join(
+                        countdown, dateKind, dateWhen, nextDate.sourceNote,
+                    ),
+                    onOpen = onOpenDate,
+                    openLabel = strings["project.open_date"],
+                    prominent = false,
+                    modifier = Modifier.testTag(ProjectHomeTags.DATE),
+                )
+            } else {
+                Text(
+                    text = strings["project.date.none"],
+                    style = type.bodyM,
+                    color = colors.ink2,
+                    modifier = Modifier
+                        .testTag(ProjectHomeTags.DATE)
+                        .padding(vertical = Space.xs),
+                )
+            }
+            Spacer(Modifier.height(Space.sectionGap))
+            }
+
         val away = if (project.isFinished) null else monthsAway(entries)
         if (away != null) {
             item {
@@ -298,35 +339,6 @@ fun ProjectHomeScreen(
                 Spacer(Modifier.height(Space.cardGap))
             }
 
-            item {
-                // **The date is a row under the answer, at the same place on
-                // every project.** Tappable when there is one, per rule 17: the
-                // date is editable forever from the thing itself.
-                if (nextDate != null && countdown != null && dateKind != null) {
-                    DateRow(
-                        countdown = countdown,
-                        what = Bidi.join(dateKind, dateWhen),
-                        source = nextDate.sourceNote,
-                        description = Bidi.join(
-                            countdown, dateKind, dateWhen, nextDate.sourceNote,
-                        ),
-                        onOpen = onOpenDate,
-                        openLabel = strings["project.open_date"],
-                        prominent = false,
-                        modifier = Modifier.testTag(ProjectHomeTags.DATE),
-                    )
-                } else {
-                    Text(
-                        text = strings["project.date.none"],
-                        style = type.bodyM,
-                        color = colors.ink2,
-                        modifier = Modifier
-                            .testTag(ProjectHomeTags.DATE)
-                            .padding(vertical = Space.xs),
-                    )
-                }
-                Spacer(Modifier.height(Space.sectionGap))
-            }
 
             // -- 2. The three verbs of a long process, one row, forever. ------
             item {

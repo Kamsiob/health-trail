@@ -47,9 +47,9 @@
 
 | Phase | State |
 |---|---|
-| 1. The drawn screens | Today, the notebook and the project screen converted. The care team, the form and the document screen remain |
+| 1. The drawn screens | Today, the notebook, the project and the care team carry the drawing. The form was already right. The document screen remains |
 | 2. Extract the language | done: `docs/V4.md` 2.1, every rule measured off the drawings |
-| 3. Every component | inventory under way: 58 components, 85 screens |
+| 3. Every component | inventory taken: 31 of 58 components and 17 of 85 screens carried tells. The shared ones are converted: the press surface, the chevron, the raised cards, the buttons, the switch, the nav bar, the tile, the row |
 | 4. Every screen | not started |
 | 5. Verify everything was touched | not started |
 | 6. Expert review | not started |

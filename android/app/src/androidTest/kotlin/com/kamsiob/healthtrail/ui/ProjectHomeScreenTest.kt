@@ -180,13 +180,20 @@ class ProjectHomeScreenTest {
             compose.runOnUiThread { lead.value = shape }
             compose.waitForIdle()
             compose.onNodeWithTag(ProjectHomeTags.STANDING).assertIsDisplayed()
+            // **The date leads now, and the order is still fixed**, which is
+            // what D164 actually promised: one order on every project, so a
+            // person who learned one is not lost on the next. #386 changed
+            // which block is first, because m3v4-2 opens with the decision and
+            // the days left, and on a process that takes a year that is the
+            // one time critical fact. The rest of D164's sequence is intact
+            // and this test still holds it.
             assertTrue(
-                "on lead=$shape the answer no longer leads",
-                topOf(ProjectHomeTags.STANDING) < topOf(ProjectHomeTags.DATE),
+                "on lead=$shape the date no longer leads",
+                topOf(ProjectHomeTags.DATE) < topOf(ProjectHomeTags.STANDING),
             )
             assertTrue(
-                "on lead=$shape the verbs are not under the date",
-                topOf(ProjectHomeTags.DATE) < topOf(ProjectHomeTags.LOG_CALL),
+                "on lead=$shape the verbs are not under the answer",
+                topOf(ProjectHomeTags.STANDING) < topOf(ProjectHomeTags.LOG_CALL),
             )
         }
     }
