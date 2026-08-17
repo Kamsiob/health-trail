@@ -160,19 +160,10 @@ private fun MedicationRow(
         mark = Symbols.medications,
         markTint = hue.ink,
         markWash = hue.wash,
-        trailing = medication.doseText?.takeIf { it.isNotBlank() }?.let { dose ->
-            {
-                Body(
-                    // **Isolated, like the name beside it.** The list showed a
-                    // dose raw while the medication's own screen isolated the
-                    // same string, which is one record reading two ways. Seen
-                    // in Arabic on the phone.
-                    text = Bidi.isolate(dose),
-                    style = HealthTrail.type.mono,
-                    color = HealthTrail.colors.ink,
-                )
-            }
-        },
+        // **Isolated, like the name beside it.** The list showed a dose raw
+        // while the medication's own screen isolated the same string, which is
+        // one record reading two ways. Seen in Arabic on the phone.
+        value = medication.doseText?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
         onClick = { onOpen(medication) },
         clickLabel = strings["open.action"],
         modifier = Modifier.testTag(MedsTags.row(medication.id)),

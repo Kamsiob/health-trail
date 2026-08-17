@@ -1189,6 +1189,7 @@
   "questions.group.waiting": "待询问",
   "questions.heading": "随身带着",
   "questions.mark_asked": "我问过了",
+  "questions.mark_asked.what": "已经问过：{question}",
   "questions.open.lead": "有机会时把它标记为已问。到时候可以记下对方说的话。",
   "questions.open.title": "还没有问",
   "questions.subtitle": "有机会时要问的问题。在您标记为已问之前，它们会一直留在这里。",

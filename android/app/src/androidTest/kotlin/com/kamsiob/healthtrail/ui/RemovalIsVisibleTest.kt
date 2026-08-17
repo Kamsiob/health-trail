@@ -295,9 +295,8 @@ class RemovalIsVisibleTest {
             )
         }
         assertNoLongPress(QuestionTags.row(waiting.id))
-        // Asked questions are folded away, and never hidden: the fold names
-        // them and counts them. Opening it is part of walking this screen.
-        compose.onNodeWithTag(QuestionTags.ASKED_FOLD).performScrollTo().performClick()
+        // **Asked questions are on the screen now, under their own label**, so
+        // there is no fold to open first. D185, #386.
         assertNoLongPress(QuestionTags.row(asked.id))
     }
 

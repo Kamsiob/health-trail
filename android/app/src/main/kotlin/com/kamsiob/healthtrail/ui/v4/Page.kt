@@ -199,11 +199,20 @@ object PageTags {
 fun LazyListScope.labeledBlock(
     label: String?,
     rows: List<@Composable () -> Unit>,
+    /**
+     * Whether the label is the app's own fixed words or somebody's.
+     *
+     * **Capitals and tracking only where the words are fixed and short**,
+     * `docs/V4.md` 2.1: a group named after a role somebody typed keeps its own
+     * case, because capitals cost about fifteen percent of the width and the
+     * result is their own words cut off. D183.
+     */
+    fixedLabel: Boolean = true,
 ) {
     if (rows.isEmpty()) return
     item {
         Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
-            label?.let { Eyebrow(text = it) }
+            label?.let { Eyebrow(text = it, fixed = fixedLabel) }
             Block(padding = Space.none) {
                 rows.forEachIndexed { index, row ->
                     row()

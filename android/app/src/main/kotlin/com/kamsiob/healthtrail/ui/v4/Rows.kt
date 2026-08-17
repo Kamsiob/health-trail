@@ -55,6 +55,27 @@ fun ListRow(
     @DrawableRes mark: Int? = null,
     markTint: Color = HealthTrail.colors.ink2,
     markWash: Color = HealthTrail.colors.card,
+    /**
+     * A value the row is scanned by: a dose, a date, an amount.
+     *
+     * **Weighted with `fill = false`, so it cannot take the whole row and a
+     * short one still sits at its natural width.** An unweighted value measures
+     * at whatever it wants and leaves the title its minimum: a dose reading
+     * "500 mg, twice a day" left "Levothyroxine" rendering one letter per line.
+     *
+     * **In the mono face and tabular**, `DESIGN.md` 5: a value is data, so it
+     * lines up down the column and two of them compare without being read
+     * twice.
+     */
+    value: String? = null,
+    /**
+     * The one thing to do about this row, as a mark at its end.
+     *
+     * **Unweighted, and that is the difference from [value].** A weighted slot
+     * reserves its share whether or not the mark needs it, which put a 48dp
+     * circle in the middle of the row with the title squeezed into the half
+     * beside it. Seen on the phone, rule 21.
+     */
     trailing: (@Composable () -> Unit)? = null,
     isDoor: Boolean = false,
     onClick: (() -> Unit)? = null,
@@ -106,19 +127,15 @@ fun ListRow(
                 )
             }
         }
-        trailing?.let {
-            // **Weighted so it cannot take the whole row, `fill = false` so a
-            // short one still sits at its natural width.** An unweighted
-            // trailing value measures at whatever it wants and leaves the
-            // title's weighted column its minimum: on the medications list a
-            // dose reading "500 mg, twice a day" left "Levothyroxine" rendering
-            // one letter per line. Seen on the phone, rule 21, and it is the
-            // same trap the old dense row already carried a comment about.
-            Box(
+        value?.takeIf { it.isNotBlank() }?.let {
+            Text(
+                text = it,
+                style = HealthTrail.type.mono,
+                color = HealthTrail.colors.ink,
                 modifier = Modifier.weight(1f, fill = false),
-                contentAlignment = Alignment.CenterEnd,
-            ) { it() }
+            )
         }
+        trailing?.invoke()
         if (isDoor && trailing == null) {
             Symbol(
                 symbol = com.kamsiob.healthtrail.ui.components.Symbols.forward,

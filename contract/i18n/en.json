@@ -1189,6 +1189,7 @@
   "questions.group.waiting": "Still to ask",
   "questions.heading": "In your pocket",
   "questions.mark_asked": "I asked this",
+  "questions.mark_asked.what": "I asked this: {question}",
   "questions.open.lead": "Mark it asked when you get the chance. You can write down what you were told then.",
   "questions.open.title": "Not asked yet",
   "questions.subtitle": "Things to ask when you get the chance. They stay here until you say they were asked.",

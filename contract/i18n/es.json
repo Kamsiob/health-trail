@@ -1189,6 +1189,7 @@
   "questions.group.waiting": "Por preguntar",
   "questions.heading": "En el bolsillo",
   "questions.mark_asked": "Ya lo pregunté",
+  "questions.mark_asked.what": "Ya lo pregunté: {question}",
   "questions.open.lead": "Márcala como preguntada cuando tengas ocasión. Entonces podrás anotar lo que te dijeron.",
   "questions.open.title": "Todavía sin preguntar",
   "questions.subtitle": "Cosas que preguntar cuando tenga ocasión. Se quedan aquí hasta que usted diga que las preguntó.",

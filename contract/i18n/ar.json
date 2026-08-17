@@ -1189,6 +1189,7 @@
   "questions.group.waiting": "لم يُسأل بعد",
   "questions.heading": "في جيبك",
   "questions.mark_asked": "سألت هذا",
+  "questions.mark_asked.what": "سألت هذا: {question}",
   "questions.open.lead": "علّمه بأنك طرحته عندما تسنح الفرصة. ويمكنك تدوين ما قيل لك حينها.",
   "questions.open.title": "لم يُطرح بعد",
   "questions.subtitle": "أشياء تسألها عندما تسنح الفرصة. تبقى هنا حتى تقول إنك سألتها.",
