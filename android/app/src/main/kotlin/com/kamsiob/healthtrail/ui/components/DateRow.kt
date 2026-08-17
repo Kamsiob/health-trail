@@ -3,6 +3,13 @@ package com.kamsiob.healthtrail.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -92,52 +99,68 @@ fun DateRow(
         modifier = modifier
             .fillMaxWidth()
             .clip(Radius.cardLarge)
-            .openableByTap(label = openLabel, onTap = onOpen)
-            .padding(horizontal = Space.sm, vertical = Space.s)
+            // **A gold tonal block, which is what `m3v4-2` draws here.** It was
+            // a bare row: a countdown, a fact and a chevron on the page's own
+            // paper, so the one date a project turns on looked like every other
+            // line on the screen. Every color in the drawing's block is already
+            // a token here, `goldWash` behind `goldInk` with a `gold` circle,
+            // measured off the PNG rather than matched by eye. D183.
+            // **The resting color goes to `openableByTap`, not to a
+            // `background` before it.** That modifier draws its own surface so
+            // a press can darken it, and it defaults to `card`: a gold block
+            // painted underneath it came out white on the phone, which is the
+            // whole reason this line is a parameter rather than a fill.
+            .openableByTap(label = openLabel, onTap = onOpen, resting = colors.goldWash)
+            .padding(Space.ml)
             .clearAndSetSemantics { contentDescription = description },
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
-        // **Top, not center.** The countdown is one line and the fact beside it
-        // is two or three, so centering floated "63 days" in the middle of
-        // "Renewal · October 17, 2026 / the letter of March 5" with nothing
-        // level with it. The two belong to each other and the way to say so is
-        // to start them on the same line. Seen on a project's own screen after
-        // the type ladder was lifted, which is what made the fact wrap.
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            // Isolated, so a Latin number inside an Arabic layout keeps its own
-            // direction rather than being pulled into the sentence beside it.
-            text = Bidi.isolate(countdown),
-            style = if (prominent) type.monoL else type.bodyL,
-            color = colors.ink,
-            // **No cap.** "In 3 days" is short in English and is a phrase in
-            // every other language this ships in, and a countdown that ends
-            // mid-word tells somebody a date they do not have.
-            //
-            // **Weighted, so it cannot take the whole row.** Uncapped and
-            // unweighted it measured first: "passed 6 days ago" at `monoL` and
-            // font scale 2.0 left the column beside it, which is what the row
-            // is about, at zero width along with the chevron. #361.
-            modifier = Modifier.weight(1f, fill = false),
-        )
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = what,
-                style = type.bodyM,
+                text = what.uppercase(LocalConfiguration.current.locales[0]),
+                style = type.eyebrow,
+                color = colors.goldInk,
+                // **No cap and no ellipsis.** This line carries the kind and
+                // the day, and a date that ends mid word is a date somebody
+                // does not have. Rule 11.
+            )
+            Spacer(Modifier.height(Space.xs))
+            Text(
+                // Isolated, so a Latin number inside an Arabic layout keeps its
+                // own direction rather than being pulled into the sentence
+                // beside it.
+                text = Bidi.isolate(countdown),
+                // **The big thing in the block**, which is what the drawing
+                // leads with: the number of days is the answer, and the date
+                // it resolves to is the supporting line. `prominent` still
+                // decides whether this competes with the screen's own lead.
+                style = if (prominent) type.displayM else type.displayS,
                 color = colors.ink,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
             )
             if (!source.isNullOrBlank()) {
                 Text(
                     text = source,
                     style = type.bodyS,
                     color = colors.ink2,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
-        Chevron()
+        // **The mark, in the accent the block is made of.** `m3v4-2` puts a
+        // filled gold circle here carrying a calendar. It is decoration beside
+        // words that already say everything, so it is not announced.
+        Box(
+            modifier = Modifier
+                .size(Space.touchTarget)
+                .clip(CircleShape)
+                .background(colors.gold),
+            contentAlignment = Alignment.Center,
+        ) {
+            Symbol(
+                symbol = Symbols.appointments,
+                contentDescription = null,
+                tint = colors.onGold,
+            )
+        }
     }
 }

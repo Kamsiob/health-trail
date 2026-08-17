@@ -508,6 +508,18 @@ fun TodayFieldScreen(
                                     .uppercase(LocalConfiguration.current.locales[0]),
                                 style = HealthTrail.type.eyebrow,
                                 color = HealthTrail.colors.goldInk,
+                                // **Capitals are for the eye and not for the
+                                // reader.** Compose has no text transform, so
+                                // uppercasing changes the string the semantics
+                                // tree carries too, and a reader announcing
+                                // "MONDAY, AUGUST 17" is being handed a shape
+                                // rather than a date. The description puts the
+                                // natural words back, which is what rule 19's
+                                // reader pass is for.
+                                modifier = Modifier.semantics {
+                                    contentDescription =
+                                        EventDateText.masthead(strings, today)
+                                },
                             )
                             // **Sixteen, not four.** The drawing puts 16.3dp
                             // between the date and the name. Four made them one

@@ -5,6 +5,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -106,6 +108,14 @@ class StartProjectScreenTest {
         show()
         compose.onNodeWithTag(StartProjectTags.template("records_request")).assertDoesNotExist()
         compose.onNodeWithTag(StartProjectTags.category("papers")).performClick()
+        // **Scrolled to, because the rows are taller than they were.** D183
+        // gave every row the drawing's 13dp of air and raised the display end
+        // of the ladder, so the template that used to open into the viewport
+        // now opens just below it. The list is a LazyColumn, so this is
+        // performScrollToNode on the list rather than performScrollTo on the
+        // node, which is the trap docs/TRAPS.md 2 names.
+        compose.onNodeWithTag(StartProjectTags.ROOT)
+            .performScrollToNode(hasTestTag(StartProjectTags.template("records_request")))
         compose.onNodeWithTag(StartProjectTags.template("records_request")).assertIsDisplayed()
     }
 

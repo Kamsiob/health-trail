@@ -226,7 +226,15 @@ class TodayFieldScreenTest {
         // is against the screen rather than against the lead.
         val strings = Strings.load(context)
         show()
-        compose.onNodeWithText(EventDateText.masthead(strings, today)).assertIsDisplayed()
+        // **Ignoring case, because the masthead sets the date in capitals**,
+        // which is what m3v4-0 draws. #386. The screen still has to say what
+        // day it is, which is what this test is about, and a reader is handed
+        // the natural words through the node's description rather than the
+        // shape on the screen.
+        compose.onNodeWithText(
+            EventDateText.masthead(strings, today),
+            ignoreCase = true,
+        ).assertIsDisplayed()
     }
 
     @Test

@@ -18,6 +18,17 @@ import com.kamsiob.healthtrail.time.Edtf
 import java.time.ZoneId
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DateRow
+import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.components.Symbol
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.annotation.DrawableRes
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.PaddingValues
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
@@ -327,58 +338,40 @@ fun ProjectHomeScreen(
                 // tiles in one row never move, which is what builds the only
                 // kind of speed this person gets to keep: muscle memory.
                 // Rule 22: a tile for a fixed set of destinations.
-                val hue = wholeAppHue()
+                // **One filled action beside two tonal ones**, which is what
+                // `m3v4-2` draws: logging the call is the verb this screen
+                // exists for and the other two are the things you might also
+                // do. Three white tiles at one weight made the person sort
+                // them, which is exactly what rule 15 says uniform weight
+                // costs. The icons sit above the labels, as the drawing has
+                // them, so three verbs of different lengths still line up.
                 Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
-                    Tile(
+                    ProjectAction(
                         label = strings["project.log_call"],
+                        symbol = Symbols.call,
+                        filled = true,
                         onClick = onLogCall,
-                        compact = true,
                         modifier = Modifier
                             .weight(1f)
                             .testTag(ProjectHomeTags.LOG_CALL),
-                        icon = { tileSize, drawingSize ->
-                            IconTile(
-                                kind = CaptureKind.CALL,
-                                tint = hue.ink,
-                                background = hue.wash,
-                                tileSize = tileSize,
-                                iconSize = drawingSize,
-                            )
-                        },
                     )
-                    Tile(
+                    ProjectAction(
                         label = strings["project.date.add"],
+                        symbol = Symbols.appointments,
+                        filled = false,
                         onClick = onAddDate,
-                        compact = true,
                         modifier = Modifier
                             .weight(1f)
                             .testTag(ProjectHomeTags.ADD_DATE),
-                        icon = { tileSize, drawingSize ->
-                            IconTile(
-                                section = Repository.Section.APPOINTMENTS,
-                                tint = hue.ink,
-                                background = hue.wash,
-                                tileSize = tileSize,
-                                iconSize = drawingSize,
-                            )
-                        },
                     )
-                    Tile(
+                    ProjectAction(
                         label = strings["project.standing.update"],
+                        symbol = Symbols.edit,
+                        filled = false,
                         onClick = onUpdateStanding,
-                        compact = true,
                         modifier = Modifier
                             .weight(1f)
                             .testTag(ProjectHomeTags.UPDATE_STANDING),
-                        icon = { tileSize, drawingSize ->
-                            IconTile(
-                                section = Repository.Section.CHAPTERS,
-                                tint = hue.ink,
-                                background = hue.wash,
-                                tileSize = tileSize,
-                                iconSize = drawingSize,
-                            )
-                        },
                     )
                 }
                 Spacer(Modifier.height(Space.sectionGap))
@@ -397,6 +390,17 @@ fun ProjectHomeScreen(
         // control lives where the state it changes lives.
         if (stages.size >= 2) {
             item {
+                Column {
+                    // **The road is named**, which `m3v4-2` draws and this
+                    // screen did not: the spine began under the actions with
+                    // nothing saying what it was. The string has been in the
+                    // catalog since the road was built and nothing rendered it.
+                    Text(
+                        text = strings["project.road.title"],
+                        style = type.displayS,
+                        color = colors.ink,
+                    )
+                    Spacer(Modifier.height(Space.sm))
                 Column(
                     modifier = Modifier
                         .testTag(ProjectHomeTags.ROAD)
@@ -451,6 +455,7 @@ fun ProjectHomeScreen(
                             }
                         }
                     }
+                }
                 }
                 Spacer(Modifier.height(Space.sectionGap))
             }
@@ -731,4 +736,64 @@ private fun returnLine(
     val last = entries.firstOrNull()?.occurredEdtf?.takeIf { it.isNotBlank() }
         ?.let { strings("project.return.last", "date" to EventDateText.render(strings, it)) }
     return Bidi.join(last, standing?.holderLabel)
+}
+
+/**
+ * One of a project's three verbs. `m3v4-2`, #386.
+ *
+ * **A Material button with its mark above its word**, rather than the tile this
+ * screen used to draw. A tile is for a fixed set of destinations, rule 22, and
+ * these are actions: they do something here rather than taking you somewhere.
+ *
+ * **Only one of the three is filled.** Logging the call is the verb a long
+ * process is made of; the other two are things you might also do, and three
+ * actions at one weight is the flatness rule 15 names.
+ */
+@Composable
+private fun ProjectAction(
+    label: String,
+    @DrawableRes symbol: Int,
+    filled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HealthTrail.colors
+    val content: @Composable ColumnScope.() -> Unit = {
+        Symbol(symbol = symbol, contentDescription = null)
+        Spacer(Modifier.height(Space.s))
+        Text(
+            text = label,
+            style = HealthTrail.type.label,
+            textAlign = TextAlign.Center,
+        )
+    }
+    val shape = Radius.button
+    val padding = PaddingValues(horizontal = Space.sm, vertical = Space.m)
+    if (filled) {
+        Button(
+            onClick = onClick,
+            modifier = modifier,
+            shape = shape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colors.blue,
+                contentColor = colors.onBlue,
+            ),
+            contentPadding = padding,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, content = content)
+        }
+    } else {
+        FilledTonalButton(
+            onClick = onClick,
+            modifier = modifier,
+            shape = shape,
+            colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = colors.sand,
+                contentColor = colors.ink,
+            ),
+            contentPadding = padding,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, content = content)
+        }
+    }
 }
