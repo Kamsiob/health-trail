@@ -59,7 +59,7 @@ object OneDocTags {
  * what is written down about it.
  *
  * **Nothing here descends from the old set**, per `docs/ACCEPTANCE.md`: no
- * `SectionScaffold`, no `GroupedSurface`, no `DenseRow`, no `GroupHeader`, no
+ * `SectionScaffold`, no `Block`, no `DenseRow`, no `GroupHeader`, no
  * `Thumbnail`, no `QuietButton`.
  *
  * **Where the paper is matters more than the photograph does.** The schema says

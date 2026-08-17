@@ -26,11 +26,11 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.EdtfSaver
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
@@ -127,7 +127,7 @@ fun StageSheet(
 
             Spacer(Modifier.height(Space.m))
 
-            GroupedSurface {
+            Block(padding = Space.none) {
                 stages.forEachIndexed { index, stage ->
                     DenseRow(
                         title = Bidi.isolate(stage.name),

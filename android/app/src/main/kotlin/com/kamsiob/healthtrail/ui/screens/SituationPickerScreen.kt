@@ -39,6 +39,7 @@ import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object SituationPickerTags {
     const val ROOT = "situation_picker_root"
@@ -190,7 +191,7 @@ fun SituationPickerScreen(
                         Spacer(Modifier.height(Space.cardGap))
                     }
                     // **One lazy item per setting, and no surface around the
-                    // run.** `GroupedSurface`'s own rule: not around a list long
+                    // run.** `Block`'s own rule: not around a list long
                     // enough to scroll, where the rows should be full bleed with
                     // hairlines so the scroll is not a slab moving under a
                     // window. Fourteen settings is that list.

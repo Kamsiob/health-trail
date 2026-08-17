@@ -18,10 +18,10 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object ProjectStepsTags {
     const val NAME = "project-steps"
@@ -104,7 +104,7 @@ fun ProjectStepsScreen(
                     countDescription = strings("projects.step_count", "count" to inArea.size),
                 )
                 Spacer(Modifier.height(Space.xs))
-                GroupedSurface {
+                Block(padding = Space.none) {
                     inArea.forEachIndexed { index, step ->
                         StepEditRow(
                             step = step,
@@ -119,7 +119,7 @@ fun ProjectStepsScreen(
         if (loose.isNotEmpty()) {
             item {
                 if (named.isNotEmpty()) Spacer(Modifier.height(Space.m))
-                GroupedSurface {
+                Block(padding = Space.none) {
                     loose.forEachIndexed { index, step ->
                         StepEditRow(
                             step = step,

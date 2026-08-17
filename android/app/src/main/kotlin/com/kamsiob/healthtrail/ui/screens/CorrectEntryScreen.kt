@@ -29,10 +29,10 @@ import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object CorrectEntryTags {
     const val ROOT = "correct_entry"
@@ -115,7 +115,7 @@ fun CorrectEntryScreen(
 
                 Spacer(Modifier.height(Space.l))
 
-                GroupedSurface {
+                Block(padding = Space.none) {
                     FieldRow(
                         label = strings[kindNameKey(entry.kind)],
                         value = title,

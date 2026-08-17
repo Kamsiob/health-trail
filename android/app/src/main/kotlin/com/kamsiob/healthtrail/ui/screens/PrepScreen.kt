@@ -31,7 +31,6 @@ import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
@@ -40,6 +39,7 @@ import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object PrepTags {
     const val NAME = "prep"
@@ -299,7 +299,7 @@ fun PrepScreen(
                             GroupHeaderText(label = Bidi.isolate(label))
                             Spacer(Modifier.height(Space.s))
                         }
-                        GroupedSurface {
+                        Block(padding = Space.none) {
                             inRole.forEachIndexed { row, question ->
                                 DenseRow(
                                     // The question itself carries the row,
@@ -358,7 +358,7 @@ fun PrepScreen(
             }
             if (askedOpen) {
                 item(key = "asked_here_rows") {
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         prep.asked.forEachIndexed { row, question ->
                             DenseRow(
                                 title = Bidi.isolate(question.text),

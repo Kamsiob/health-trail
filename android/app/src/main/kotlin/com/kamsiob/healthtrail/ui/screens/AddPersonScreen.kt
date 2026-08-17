@@ -42,12 +42,12 @@ import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object AddPersonTags {
     const val EMAIL = "add_person_email"
@@ -262,7 +262,7 @@ fun AddPersonScreen(
                 // **Found by opening the form on the phone**, where it was five
                 // rows of identical weight and D147 said it had been converted.
                 // #376.
-                GroupedSurface {
+                Block(padding = Space.none) {
                     FieldRow(
                         label = strings["careteam.add.name"],
                         value = name,
@@ -350,7 +350,7 @@ fun AddPersonScreen(
                     testTag = AddPersonTags.MORE,
                     startOpen = where.isNotBlank() || notes.isNotBlank(),
                 ) {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     // **Where they work, which the care team folds by.** Grid
                     // screen 11 groups the people who are not in the lead by
                     // exactly this, and the column and its index shipped in

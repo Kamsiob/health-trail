@@ -26,7 +26,6 @@ import com.kamsiob.healthtrail.ui.components.Avatar
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.Hairline
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -34,6 +33,7 @@ import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object EmergencyTags {
     const val NAME = "emergency_card"
@@ -155,7 +155,7 @@ fun EmergencyCardScreen(
                 // type below the fold on the one screen in this app that is
                 // not for the person who wrote it, and a stranger under
                 // pressure reads it once. #354.
-                GroupedSurface {
+                Block(padding = Space.none) {
                     contacts.forEachIndexed { index, contact ->
                         ContactRow(
                             contact = contact,
@@ -209,7 +209,7 @@ fun EmergencyCardScreen(
                         color = HealthTrail.colors.ink2,
                         modifier = Modifier.padding(bottom = Space.xs),
                     )
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         medications.forEachIndexed { index, medication ->
                             MedicationCardRow(
                                 medication = medication,
@@ -269,7 +269,7 @@ fun EmergencyCardScreen(
                 item {
                     GroupHeader(labelKey = "emergency.group.medical")
                     Spacer(Modifier.height(Space.headerGap))
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         inAHurry.forEachIndexed { index, entry ->
                             CardField(entry = entry, isLast = index == inAHurry.lastIndex)
                         }
@@ -283,7 +283,7 @@ fun EmergencyCardScreen(
                     Spacer(Modifier.height(Space.s))
                     GroupHeader(labelKey = "emergency.group.paperwork")
                     Spacer(Modifier.height(Space.headerGap))
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         paperwork.forEachIndexed { index, entry ->
                             CardField(entry = entry, isLast = index == paperwork.lastIndex)
                         }

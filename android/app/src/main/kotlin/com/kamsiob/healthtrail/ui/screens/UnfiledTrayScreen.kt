@@ -47,7 +47,6 @@ import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.PickerOption
@@ -58,6 +57,7 @@ import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object UnfiledTags {
     const val ROOT = "unfiled_root"
@@ -234,7 +234,7 @@ fun UnfiledTrayScreen(
 
                     if (behindOpen) {
                         item(key = "behind_list") {
-                            GroupedSurface {
+                            Block(padding = Space.none) {
                                 behind.forEachIndexed { index, entry ->
                                     DenseRow(
                                         title = Bidi.isolate(

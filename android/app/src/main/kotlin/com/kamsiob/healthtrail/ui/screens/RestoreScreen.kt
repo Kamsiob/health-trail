@@ -23,11 +23,11 @@ import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.ChoiceRow
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -249,7 +249,7 @@ fun RestoreScreen(
                     // question with two answers, each needing a sentence, which
                     // is a radio group. `ChoiceRow` is the same shape the
                     // appearance question uses.
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         ChoiceRow(
                             label = strings["restore.how.replace.label"],
                             detail = strings["restore.how.replace.detail"],

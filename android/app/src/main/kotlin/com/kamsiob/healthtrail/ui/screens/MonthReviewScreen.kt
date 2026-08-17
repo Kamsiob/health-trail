@@ -24,7 +24,6 @@ import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -33,6 +32,7 @@ import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 import java.time.ZoneId
 
 object ReviewTags {
@@ -179,7 +179,7 @@ fun MonthReviewScreen(
             val began = review.began.map { it.id }.toSet()
             val ended = review.ended.map { it.id }.toSet()
             group(key = "where", headingKey = "review.where") {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     places.forEachIndexed { index, chapter ->
                         DenseRow(
                             title = Bidi.isolate(chapter.name),
@@ -203,7 +203,7 @@ fun MonthReviewScreen(
 
         if (review.appointments.isNotEmpty()) {
             group(key = "appointments", headingKey = "review.appointments") {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     review.appointments.forEachIndexed { index, appointment ->
                         DenseRow(
                             title = Bidi.isolate(
@@ -261,7 +261,7 @@ fun MonthReviewScreen(
 
         if (review.documents.isNotEmpty()) {
             group(key = "documents", headingKey = "review.documents") {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     review.documents.forEachIndexed { index, document ->
                         DenseRow(
                             title = Bidi.isolate(document.title),
@@ -370,7 +370,7 @@ private fun IncidentRows(
     stateOf: (Repository.Incident) -> String?,
 ) {
     val strings = LocalStrings.current
-    GroupedSurface {
+    Block(padding = Space.none) {
         incidents.forEachIndexed { index, incident ->
             DenseRow(
                 title = Bidi.isolate(incident.title),

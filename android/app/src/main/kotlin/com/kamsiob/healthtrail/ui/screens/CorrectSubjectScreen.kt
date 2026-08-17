@@ -26,10 +26,10 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object CorrectSubjectTags {
     const val ROOT = "correct_subject"
@@ -105,7 +105,7 @@ fun CorrectSubjectScreen(
 
                 Spacer(Modifier.height(Space.l))
 
-                GroupedSurface {
+                Block(padding = Space.none) {
                     FieldRow(
                         label = strings["setup.name.label"],
                         value = name,

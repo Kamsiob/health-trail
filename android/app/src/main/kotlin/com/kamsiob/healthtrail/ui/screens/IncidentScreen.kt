@@ -26,7 +26,6 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.Avatar
 import com.kamsiob.healthtrail.ui.components.DenseRow
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -38,6 +37,7 @@ import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object IncidentTags {
     const val LIST_NAME = "incidents"
@@ -385,7 +385,7 @@ fun IncidentScreen(
             // The same shape the care team uses, with the same initials, so a
             // person looks the same wherever they appear.
             item(key = "people") {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     people.forEachIndexed { index, person ->
                         DenseRow(
                             title = Bidi.isolate(person.displayName),
@@ -459,7 +459,7 @@ fun IncidentScreen(
             // because a request and a note is two lines somebody scans rather
             // than three they read. Rule 22.
             item(key = "violations") {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     violations.forEachIndexed { index, violation ->
                         DenseRow(
                             title = Bidi.isolate(violation.instructionName.orEmpty()),

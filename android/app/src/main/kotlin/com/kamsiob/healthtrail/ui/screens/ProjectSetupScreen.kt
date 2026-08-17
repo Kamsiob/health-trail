@@ -20,12 +20,12 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DenseRow
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object ProjectSetupTags {
     const val NAME = "project-setup"
@@ -152,7 +152,7 @@ fun ProjectSetupScreen(
         // counts are counts and never scores: "6 steps" is what is there, and
         // rule 13 rules out saying how many of them somebody has got through.
         item {
-            GroupedSurface {
+            Block(padding = Space.none) {
                 DenseRow(
                     title = strings["project.setup.stages"],
                     // **Joined by Bidi rather than by a dot**, because these

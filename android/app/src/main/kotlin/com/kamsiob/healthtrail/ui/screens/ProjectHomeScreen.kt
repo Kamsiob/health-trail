@@ -45,12 +45,12 @@ import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Tile
 import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.IconTile
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object ProjectHomeTags {
     const val NAME = "project-home"
@@ -524,7 +524,7 @@ fun ProjectHomeScreen(
         item {
             GroupHeader(labelKey = "project.file")
             Spacer(Modifier.height(Space.headerGap))
-            GroupedSurface {
+            Block(padding = Space.none) {
                 DenseRow(
                     title = strings["project.fold.steps"],
                     trailing = strings("projects.step_count", "count" to steps.size),

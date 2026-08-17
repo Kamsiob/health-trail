@@ -32,7 +32,6 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.temporal.WeekFields
 import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,6 +42,7 @@ import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object ApptTags {
     const val NAME = "appointments"
@@ -191,7 +191,7 @@ fun AppointmentsScreen(
         // the record rather than the job.
         if (upcoming.isNotEmpty()) {
             item {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     upcoming.forEachIndexed { index, appointment ->
                         AppointmentRow(
                             appointment = appointment,
@@ -217,7 +217,7 @@ fun AppointmentsScreen(
             }
             if (pastOpen) {
                 item {
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         // Most recent first, which is the reverse of upcoming
                         // and is what somebody looking back actually wants.
                         val recent = past.reversed()

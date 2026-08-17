@@ -31,12 +31,12 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DenseRow
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.Thumbnail
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object ProjectPaperworkTags {
     const val NAME = "project-paperwork"
@@ -220,7 +220,7 @@ fun ProjectPaperworkScreen(
             }
         } else {
             item {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     shown.forEachIndexed { index, card ->
                         DenseRow(
                             title = Bidi.isolate(card.paper.name),

@@ -34,7 +34,6 @@ import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRowText
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.ViewOption
 import com.kamsiob.healthtrail.ui.components.ViewToggle
@@ -45,6 +44,7 @@ import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object DocTags {
     const val NAME = "documents"
@@ -166,7 +166,7 @@ fun DocumentsScreen(
             // and it was worse than nothing here because the two documents it
             // was ignoring are the two somebody looked at most recently.
             if (view.value == VIEW_LIST) {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     recent.forEachIndexed { index, document ->
                         DocumentRow(
                             document = document,
@@ -246,7 +246,7 @@ fun DocumentsScreen(
 
             if (view.value == VIEW_LIST) {
                 item(key = "list_$label") {
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         inFolder.forEachIndexed { index, document ->
                             DocumentRow(
                                 document = document,

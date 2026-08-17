@@ -26,10 +26,10 @@ import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 import java.time.ZoneId
 import java.time.Instant
 
@@ -187,7 +187,7 @@ fun TemplateLibraryScreen(
                 )
                 Spacer(Modifier.height(Space.cardGap))
                 if (unusedOwnOpen) {
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         ownUnused.forEachIndexed { index, template ->
                             DenseRow(
                                 title = Bidi.isolate(template.name),
@@ -232,7 +232,7 @@ fun TemplateLibraryScreen(
                 )
                 Spacer(Modifier.height(Space.cardGap))
                 if (key in openCategories) {
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         inCategory.forEachIndexed { index, template ->
                             // **No chevron and no handler.** These have started
                             // nothing, and there is no template detail screen:

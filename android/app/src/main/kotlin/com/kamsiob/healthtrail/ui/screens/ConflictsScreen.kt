@@ -17,10 +17,10 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
 import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.Hairline
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.time.EventDateText
 import java.time.Instant
 import java.time.ZoneId
@@ -116,7 +116,7 @@ fun ConflictsScreen(
 
         items(resolutions.size) { index ->
             val resolution = resolutions[index]
-            GroupedSurface {
+            Block(padding = Space.none) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

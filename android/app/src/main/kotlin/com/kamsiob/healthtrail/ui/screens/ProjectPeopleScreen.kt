@@ -19,12 +19,12 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Avatar
 import com.kamsiob.healthtrail.ui.components.DenseRow
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object ProjectPeopleTags {
     const val NAME = "project-people"
@@ -100,7 +100,7 @@ fun ProjectPeopleScreen(
         items(people, key = { it.person.id }) { entry ->
             val person = entry.person
             Column {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     DenseRow(
                         title = Bidi.isolate(person.displayName),
                         // **Their role, then how often and when.** The role is
@@ -147,7 +147,7 @@ fun ProjectPeopleScreen(
                 // whole reason this row exists.
                 entry.alsoIn.forEach { other ->
                     Spacer(Modifier.height(Space.s))
-                    GroupedSurface {
+                    Block(padding = Space.none) {
                         DenseRow(
                             title = strings(
                                 "project.people.also_in",
@@ -189,7 +189,7 @@ fun ProjectPeopleScreen(
                     modifier = Modifier.padding(bottom = Space.s),
                 )
             }
-            GroupedSurface {
+            Block(padding = Space.none) {
                 DenseRow(
                     title = strings["notebook.section.care_team"],
                     subtitle = strings("project.people.care_team.count", "count" to careTeamSize),

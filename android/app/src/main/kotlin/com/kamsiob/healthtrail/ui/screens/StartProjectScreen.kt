@@ -32,7 +32,6 @@ import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
@@ -42,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 
 object StartProjectTags {
     const val OWN = "start_project_own"
@@ -339,7 +339,7 @@ private fun Templates(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    GroupedSurface {
+    Block(padding = Space.none) {
         templates.forEachIndexed { index, template ->
             DenseRow(
                 // **Isolated even though it is catalog copy rather than the
@@ -405,7 +405,7 @@ private fun OwnTemplates(
     onChoose: (Repository.OwnTemplate) -> Unit,
 ) {
     val strings = LocalStrings.current
-    GroupedSurface {
+    Block(padding = Space.none) {
         own.forEachIndexed { index, template ->
             DenseRow(
                 title = Bidi.isolate(template.name),

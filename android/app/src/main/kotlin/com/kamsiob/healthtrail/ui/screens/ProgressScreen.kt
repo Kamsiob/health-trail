@@ -31,9 +31,9 @@ import com.kamsiob.healthtrail.ui.components.ChartHeight
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.chartPoints
 
@@ -206,7 +206,7 @@ fun ProgressScreen(
         val others = ordered.filter { it.id != hero.id }
         if (others.isNotEmpty()) {
             item(key = "others") {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     others.forEachIndexed { index, measure ->
                         val forMeasure = byMeasure[measure.id].orEmpty()
                         DenseRow(

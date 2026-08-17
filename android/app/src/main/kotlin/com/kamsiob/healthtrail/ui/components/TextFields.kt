@@ -323,7 +323,7 @@ fun HealthTrailTextField(
  * form on every platform looked like in 2010 and what a person recognizes
  * instantly as data entry. Four of them down one screen is four slabs.
  *
- * **One card, rows, hairlines, no boxes.** The same [GroupedSurface] the rest of
+ * **One card, rows, hairlines, no boxes.** The same `Block` the rest of
  * the app is made of, so a form reads as a card of facts rather than as a queue
  * of inputs, and it matches the screens that display those same facts. Rule 22:
  * the component comes from the shape of the content, and a name, a role and a

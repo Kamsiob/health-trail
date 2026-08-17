@@ -35,8 +35,6 @@ import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.IconTile
 import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.components.Waypoint
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
-import com.kamsiob.healthtrail.ui.components.GroupedRows
 import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipForDestination
