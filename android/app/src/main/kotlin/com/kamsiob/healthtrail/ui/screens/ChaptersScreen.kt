@@ -149,8 +149,8 @@ fun ChaptersScreen(
                             continuesBelow = index < road.lastIndex,
                             // **This road reads backward**, where they are now
                             // first and the places behind them under it, so
-                            // every half of it has been travelled.
-                            travelledBelow = true,
+                            // every half of it has been traveled.
+                            traveledBelow = true,
                         ) {
                             ChapterStop(
                                 chapter = chapter,
