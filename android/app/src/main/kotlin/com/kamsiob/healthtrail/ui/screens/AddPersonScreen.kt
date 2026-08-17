@@ -33,15 +33,15 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Disclosure
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -464,7 +464,7 @@ fun AddPersonScreen(
             // they have not done enough.
             Spacer(Modifier.height(Space.m))
 
-            FilledButton(
+            Action(
                 label = strings["capture.save"],
                 onClick = {
                     onSave(
@@ -481,12 +481,12 @@ fun AddPersonScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddPersonTags.SAVE),
+                    .testTag(AddPersonTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier

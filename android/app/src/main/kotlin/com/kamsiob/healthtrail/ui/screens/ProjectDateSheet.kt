@@ -29,12 +29,11 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.EdtfSaver
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -144,7 +143,7 @@ fun ProjectDateSheet(
 
             Spacer(Modifier.height(Space.m))
 
-            QuietButton(
+            Action(
                 // **The future tense, like the picker it opens.** A project's
                 // date is almost always ahead, and "When was this?" over a
                 // filing deadline reads as the app not knowing what it is
@@ -169,7 +168,7 @@ fun ProjectDateSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["project.date.save"],
                 // **A date and what it is, and the source may wait.** Rule 13:
                 // partial is a finished state, and somebody who has a deadline
@@ -177,12 +176,12 @@ fun ProjectDateSheet(
                 // not lose the deadline over it.
                 enabled = kind.isNotBlank() && due != null,
                 onClick = { due?.let { onSave(kind.trim(), it, source.trim()) } },
-                modifier = Modifier.fillMaxWidth().testTag(ProjectDateTags.SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(ProjectDateTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth(),

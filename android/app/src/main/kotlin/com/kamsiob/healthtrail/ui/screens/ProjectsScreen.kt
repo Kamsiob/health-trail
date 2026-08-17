@@ -22,7 +22,6 @@ import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipForDestination
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.fabSafeActionBar
 import com.kamsiob.healthtrail.ui.components.fabScrollClearance
 import com.kamsiob.healthtrail.ui.components.FoldRow
@@ -38,6 +37,7 @@ import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
 
 object ProjectTags {
     const val ROOT = "projects_root"
@@ -253,7 +253,7 @@ fun ProjectsScreen(
                 // clearance stays: the button no longer spans the width, and
                 // the token is what keeps that true at font scale 2.0 rather
                 // than an assumption about how wide the label happens to be.
-                QuietButton(
+                Action(
                     label = strings["projects.start"],
                     onClick = onStart,
                     modifier = Modifier

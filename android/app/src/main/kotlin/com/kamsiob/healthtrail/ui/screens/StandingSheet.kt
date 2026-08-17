@@ -29,11 +29,10 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
@@ -186,7 +185,7 @@ fun StandingSheet(
                 color = colors.ink2,
             )
             Spacer(Modifier.height(Space.xs))
-            QuietButton(
+            Action(
                 label = EventDateText.render(strings, since),
                 onClick = { picking = true },
                 modifier = Modifier.fillMaxWidth().testTag(StandingTags.WHEN),
@@ -194,19 +193,19 @@ fun StandingSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["project.standing.save"],
                 // **Partial is a finished state**, rule 13: a person who knows
                 // only that it is with the county can say that and nothing
                 // else. The one thing this cannot save is nothing at all.
                 enabled = holder.isNotBlank(),
                 onClick = { onSave(holder.trim(), activity.trim(), since) },
-                modifier = Modifier.fillMaxWidth().testTag(StandingTags.SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(StandingTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth(),

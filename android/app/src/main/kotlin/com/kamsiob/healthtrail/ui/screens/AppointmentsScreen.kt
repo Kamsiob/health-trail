@@ -26,6 +26,7 @@ import com.kamsiob.healthtrail.ui.components.ViewOption
 import com.kamsiob.healthtrail.ui.components.ViewToggle
 import com.kamsiob.healthtrail.ui.components.rememberViewChoice
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.Instant
@@ -38,7 +39,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -176,7 +176,7 @@ fun AppointmentsScreen(
             }
             item {
                 Spacer(Modifier.height(Space.s))
-                QuietButton(
+                Action(
                     label = strings["appts.add"],
                     onClick = onAdd,
                     modifier = Modifier.testTag(ApptTags.ADD),
@@ -236,7 +236,7 @@ fun AppointmentsScreen(
 
         item {
             Spacer(Modifier.height(Space.s))
-            QuietButton(
+            Action(
                 label = strings["appts.add"],
                 onClick = onAdd,
                 modifier = Modifier.testTag(ApptTags.ADD),
@@ -343,7 +343,7 @@ private fun MonthOfAppointments(
             horizontalArrangement = Arrangement.spacedBy(Space.s),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            QuietButton(
+            Action(
                 label = strings["appts.month.back"],
                 onClick = { onStep(-1) },
                 modifier = Modifier.testTag(ApptTags.MONTH_BACK),
@@ -361,7 +361,7 @@ private fun MonthOfAppointments(
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
             )
-            QuietButton(
+            Action(
                 label = strings["appts.month.next"],
                 onClick = { onStep(1) },
                 modifier = Modifier.testTag(ApptTags.MONTH_NEXT),

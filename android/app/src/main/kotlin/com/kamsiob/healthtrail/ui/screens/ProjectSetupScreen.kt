@@ -20,10 +20,9 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
@@ -283,7 +282,7 @@ fun ProjectSetupScreen(
             // pills, the way the project's own screen draws "Log a call".
             if (waitingOn.trim() != project.waitingOn.orEmpty().trim()) {
                 Spacer(Modifier.height(Space.s))
-                QuietButton(
+                Action(
                     label = strings["projects.waiting_save"],
                     onClick = { onSetWaitingOn(waitingOn.trim()) },
                     modifier = Modifier.testTag(ProjectSetupTags.SAVE_WAITING),
@@ -335,7 +334,7 @@ fun ProjectSetupScreen(
                         modifier = Modifier.testTag(ProjectSetupTags.SAVED_TEMPLATE),
                     )
                 } else {
-                    TextAction(
+                    Action(
                         label = strings["projects.save_as_template"],
                         onClick = onSaveAsTemplate,
                         modifier = Modifier.testTag(ProjectSetupTags.SAVE_TEMPLATE),

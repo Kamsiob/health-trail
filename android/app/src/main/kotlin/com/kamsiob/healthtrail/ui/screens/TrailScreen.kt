@@ -40,7 +40,6 @@ import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.EdgeScrubber
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.PinMark
@@ -50,7 +49,6 @@ import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.StickySectionHeader
@@ -59,6 +57,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
 import java.time.Instant
 import java.time.ZoneId
 
@@ -300,7 +299,7 @@ fun TrailScreen(
     ) {
         if (since != null) {
             item {
-                QuietButton(
+                Action(
                     label = strings["trail.since.all"],
                     onClick = { onSeeAll?.invoke() },
                     modifier = Modifier.testTag(TrailTags.SEE_ALL),
@@ -311,7 +310,7 @@ fun TrailScreen(
 
         if (since != null) {
             item {
-                QuietButton(
+                Action(
                     label = strings["trail.since.all"],
                     onClick = { onSeeAll?.invoke() },
                     modifier = Modifier.testTag(TrailTags.SEE_ALL),
@@ -409,7 +408,7 @@ fun TrailScreen(
                         color = HealthTrail.colors.ink2,
                         modifier = Modifier.weight(1f).testTag(TrailTags.FILTER_STATE),
                     )
-                    TextAction(
+                    Action(
                         label = strings["trail.filter.clear"],
                         onClick = { kinds = emptySet() },
                     )

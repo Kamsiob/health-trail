@@ -23,10 +23,10 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -142,18 +142,18 @@ fun LogCallSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["project.log_call.save"],
                 // Their words are the one thing this cannot be saved without.
                 // Everything else about a call can be filled in later or never.
                 enabled = words.isNotBlank(),
                 onClick = { onSave(who.trim(), words.trim()) },
-                modifier = Modifier.fillMaxWidth().testTag(LogCallTags.SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(LogCallTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth(),

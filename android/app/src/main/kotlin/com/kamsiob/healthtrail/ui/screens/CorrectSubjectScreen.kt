@@ -25,10 +25,10 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FieldRow
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 
 object CorrectSubjectTags {
@@ -130,7 +130,7 @@ fun CorrectSubjectScreen(
 
             Spacer(Modifier.height(Space.m))
 
-            FilledButton(
+            Action(
                 label = strings["capture.save"],
                 onClick = {
                     onSave(
@@ -140,12 +140,12 @@ fun CorrectSubjectScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
-                    .testTag(CorrectSubjectTags.SAVE),
+                    .testTag(CorrectSubjectTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier

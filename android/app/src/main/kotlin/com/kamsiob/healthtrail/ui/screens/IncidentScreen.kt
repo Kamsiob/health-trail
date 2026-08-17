@@ -23,10 +23,10 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.theme.hueFor
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
@@ -587,30 +587,30 @@ fun IncidentScreen(
             // screen gets opened. Answering and sharing are doors, not
             // competition, which is what the issue says in those words.
             if (incident.isOpen) {
-                FilledButton(
+                Action(
                     label = strings["incident.add"],
                     onClick = onAdd,
-                    modifier = Modifier.fillMaxWidth().testTag(IncidentTags.ADD),
+                    modifier = Modifier.fillMaxWidth().testTag(IncidentTags.ADD), emphasis = ActionEmphasis.Main,
                 )
             } else {
                 // **Once it is answered, adding is no longer the point.** The
                 // record stays open to additions, because an answer can turn
                 // out not to hold, but it stops being what the screen is for.
-                QuietButton(
+                Action(
                     label = strings["incident.add"],
                     onClick = onAdd,
                     modifier = Modifier.testTag(IncidentTags.ADD),
                 )
             }
             Spacer(Modifier.height(Space.cardGap))
-            QuietButton(
+            Action(
                 label = strings["readable.share"],
                 onClick = onShare,
                 modifier = Modifier.testTag(IncidentTags.SHARE),
             )
             Spacer(Modifier.height(Space.cardGap))
             if (incident.isOpen) {
-                QuietButton(
+                Action(
                     label = strings["incident.resolve"],
                     onClick = onResolve,
                     modifier = Modifier.testTag(IncidentTags.RESOLVE),
@@ -620,14 +620,14 @@ fun IncidentScreen(
                 // wrong one, or whose answer turned out not to hold, must be
                 // able to say so without the app treating it as a correction to
                 // be confessed.
-                QuietButton(
+                Action(
                     label = strings["incident.reopen"],
                     onClick = onReopen,
                     modifier = Modifier.testTag(IncidentTags.REOPEN),
                 )
             }
             Spacer(Modifier.height(Space.cardGap))
-            QuietButton(
+            Action(
                 label = strings["incident.correct"],
                 onClick = onCorrect,
                 modifier = Modifier.testTag(IncidentTags.CORRECT),
@@ -636,7 +636,7 @@ fun IncidentScreen(
             // the rarest thing anybody comes here to do, and it opens the
             // confirmation rather than doing anything itself.
             Spacer(Modifier.height(Space.sectionGap))
-            QuietButton(
+            Action(
                 label = strings["remove.action"],
                 onClick = onRemove,
                 modifier = Modifier.testTag(IncidentTags.REMOVE),

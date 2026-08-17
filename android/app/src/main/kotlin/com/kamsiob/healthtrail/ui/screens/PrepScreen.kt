@@ -23,12 +23,9 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.CalendarHandoff
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.FoldRowText
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
@@ -36,6 +33,8 @@ import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
@@ -385,7 +384,7 @@ fun PrepScreen(
         // has just read them is looking, rather than at the foot of a sheet
         // whose middle is forty entries. #46.
         item {
-            TextAction(
+            Action(
                 label = strings["questions.add"],
                 onClick = onAsk,
                 modifier = Modifier.testTag(PrepTags.ASK),
@@ -509,15 +508,15 @@ fun PrepScreen(
             // whatever the person already messages people with is the act the
             // rest of the screen is for. Everything else here is a supporting
             // move and wears the quiet costume.
-            FilledButton(
+            Action(
                 label = strings["prep.share"],
                 onClick = onShare,
-                modifier = Modifier.fillMaxWidth().testTag(PrepTags.SHARE),
+                modifier = Modifier.fillMaxWidth().testTag(PrepTags.SHARE), emphasis = ActionEmphasis.Main,
             )
 
             calendarIntent?.let { intent ->
                 Spacer(Modifier.height(Space.cardGap))
-                QuietButton(
+                Action(
                     label = strings["prep.calendar"],
                     onClick = {
                         // The calendar app opens its own new event screen with
@@ -538,7 +537,7 @@ fun PrepScreen(
             // stays full width because it is filled and is the one act this
             // screen exists for; a full width outlined pill is the way back's
             // costume and an in-content action must not wear it.
-            QuietButton(
+            Action(
                 label = strings["prep.writeup"],
                 onClick = onWriteUp,
                 modifier = Modifier.testTag(PrepTags.WRITE_UP),
@@ -548,7 +547,7 @@ fun PrepScreen(
             // screen: an appointment moves far more often than it is taken off
             // the record.
             Spacer(Modifier.height(Space.cardGap))
-            QuietButton(
+            Action(
                 label = strings["appts.correct"],
                 onClick = onCorrect,
                 modifier = Modifier.testTag(PrepTags.CORRECT),
@@ -558,7 +557,7 @@ fun PrepScreen(
             // screen**, per #218. It opens the confirmation and removes
             // nothing on its own.
             Spacer(Modifier.height(Space.sectionGap))
-            QuietButton(
+            Action(
                 label = strings["remove.action"],
                 onClick = onRemove,
                 modifier = Modifier.testTag(PrepTags.REMOVE),

@@ -35,6 +35,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -217,7 +218,7 @@ fun TipsSheet(
             }
 
             Spacer(Modifier.height(Space.l))
-            TextAction(
+            Action(
                 label = strings["tips.close"],
                 onClick = onDismiss,
                 modifier = Modifier

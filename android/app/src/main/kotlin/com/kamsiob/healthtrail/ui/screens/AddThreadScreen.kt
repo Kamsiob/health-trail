@@ -21,14 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 
@@ -180,7 +180,7 @@ fun AddThreadScreen(
 
             Spacer(Modifier.height(Space.m))
 
-            FilledButton(
+            Action(
                 label = strings[
                     saveKey
                         ?: if (existing == null) "threads.new.start" else "threads.rename.save",
@@ -193,12 +193,12 @@ fun AddThreadScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddThreadTags.START),
+                    .testTag(AddThreadTags.START), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.sm))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier

@@ -25,11 +25,9 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -39,6 +37,8 @@ import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
@@ -316,7 +316,7 @@ fun StartProjectScreen(
             // full width outlined bar is the way back and nothing else, and
             // under a full width filled action it is a second bar of which
             // only one leaves. #371 item 5, and it is retroactive per rule 14.
-            QuietButton(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
@@ -493,10 +493,10 @@ private fun OwnProject(onStart: (String) -> Unit) {
                 )
                 if (name.isNotBlank()) {
                     Spacer(Modifier.height(Space.m))
-                    FilledButton(
+                    Action(
                         label = strings["projects.start"],
                         onClick = { onStart(name.trim()) },
-                        modifier = Modifier.fillMaxWidth().testTag(StartProjectTags.OWN_START),
+                        modifier = Modifier.fillMaxWidth().testTag(StartProjectTags.OWN_START), emphasis = ActionEmphasis.Main,
                     )
                 }
             }

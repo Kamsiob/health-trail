@@ -42,6 +42,8 @@ import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import java.time.LocalDate
@@ -52,13 +54,11 @@ import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.StageDots
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.MoreChip
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -855,7 +855,7 @@ fun CaptureFormScreen(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (stage > 0) {
-                        TextAction(
+                        Action(
                             label = strings["capture.back"],
                             onClick = { stage -= 1 },
                             modifier = Modifier.testTag(CaptureFormTags.BACK),
@@ -882,7 +882,7 @@ fun CaptureFormScreen(
                                 state.personId != null ||
                                 state.medicationId != null
                         }
-                        TextAction(
+                        Action(
                             label = strings[if (filled) "capture.next" else "capture.skip"],
                             onClick = { stage += 1 },
                             modifier = Modifier.testTag(CaptureFormTags.NEXT),
@@ -895,7 +895,7 @@ fun CaptureFormScreen(
             // save never sees the other two questions, which is the fifteen
             // second path law 3 is written around. It saves whatever is filled
             // in, from wherever they are.
-            FilledButton(
+            Action(
                 label = strings["capture.save"],
                 onClick = {
                     onSave(
@@ -927,14 +927,14 @@ fun CaptureFormScreen(
                         ),
                     )
                 },
-                modifier = Modifier.fillMaxWidth().testTag(CaptureFormTags.SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(CaptureFormTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             // **Sized to its label, not the width of the screen.** D137: a
             // full width outlined bar is the way back and nothing else, and
             // under a full width filled action it is a second bar of which
             // only one leaves. #371 item 5, and it is retroactive per rule 14.
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier.testTag(CaptureFormTags.CANCEL),

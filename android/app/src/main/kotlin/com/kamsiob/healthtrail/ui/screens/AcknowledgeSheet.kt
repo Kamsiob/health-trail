@@ -22,13 +22,12 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -143,15 +142,15 @@ fun AcknowledgeSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["questions.answer.save"],
                 onClick = { onSave(how) },
-                modifier = Modifier.fillMaxWidth().testTag(AcknowledgeTags.SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(AcknowledgeTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth().testTag(AcknowledgeTags.CANCEL),
@@ -168,14 +167,14 @@ fun AcknowledgeSheet(
             // the order every other correctable record uses: fixing what it
             // says is the errand somebody arrives with.
             Spacer(Modifier.height(Space.l))
-            QuietButton(
+            Action(
                 label = strings["instructions.correct"],
                 onClick = onCorrect,
                 modifier = Modifier.testTag(AcknowledgeTags.CORRECT),
             )
 
             Spacer(Modifier.height(Space.s))
-            QuietButton(
+            Action(
                 label = strings["remove.action"],
                 onClick = onRemove,
                 modifier = Modifier.testTag(AcknowledgeTags.REMOVE),

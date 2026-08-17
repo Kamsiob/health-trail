@@ -4,6 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -82,8 +84,6 @@ import com.kamsiob.healthtrail.data.Backup
 import com.kamsiob.healthtrail.ui.screens.MoreScreen
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 import androidx.compose.foundation.background
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.screens.CaptureDraft
 import com.kamsiob.healthtrail.ui.screens.CaptureFormScreen
 import com.kamsiob.healthtrail.ui.screens.CaptureFormState
@@ -3164,7 +3164,7 @@ private fun CouldNotRead(onRetry: () -> Unit) {
             color = HealthTrail.colors.ink2,
         )
         Spacer(Modifier.height(Space.m))
-        FilledButton(label = strings["common.retry"], onClick = onRetry)
+        Action(label = strings["common.retry"], onClick = onRetry, emphasis = ActionEmphasis.Main)
     }
 }
 
@@ -3204,7 +3204,7 @@ internal fun NotBuiltYet(
         )
         if (onClose != null) {
             Spacer(Modifier.height(Space.l))
-            TextAction(label = strings["common.close"], onClick = onClose)
+            Action(label = strings["common.close"], onClick = onClose)
         }
     }
 }

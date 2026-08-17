@@ -17,8 +17,8 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Avatar
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -133,7 +133,7 @@ fun ProjectPeopleScreen(
                 // nothing, D42.
                 person.phone?.takeIf { it.isNotBlank() }?.let { number ->
                     Spacer(Modifier.height(Space.s))
-                    QuietButton(
+                    Action(
                         label = strings("person.call", "number" to number),
                         onClick = { onCall(number) },
                         modifier = Modifier.testTag(ProjectPeopleTags.call(person.id)),

@@ -24,11 +24,10 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -141,14 +140,14 @@ fun StepEditSheet(
                     horizontalArrangement = Arrangement.spacedBy(Space.s),
                 ) {
                     if (canMoveEarlier) {
-                        QuietButton(
+                        Action(
                             label = strings["project.step.earlier"],
                             onClick = { onMove(true) },
                             modifier = Modifier.weight(1f).testTag(StepEditTags.EARLIER),
                         )
                     }
                     if (canMoveLater) {
-                        QuietButton(
+                        Action(
                             label = strings["project.step.later"],
                             onClick = { onMove(false) },
                             modifier = Modifier.weight(1f).testTag(StepEditTags.LATER),
@@ -159,18 +158,18 @@ fun StepEditSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["common.save"],
                 // The one thing a step cannot be is nothing. Everything else
                 // about it, including the note, can wait or never happen.
                 enabled = text.isNotBlank(),
                 onClick = { onSave(text.trim(), note.trim().takeIf { it.isNotBlank() }) },
-                modifier = Modifier.fillMaxWidth().testTag(StepEditTags.SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(StepEditTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["project.step.remove"],
                 onClick = onRemove,
                 modifier = Modifier.fillMaxWidth().testTag(StepEditTags.REMOVE),
@@ -178,7 +177,7 @@ fun StepEditSheet(
 
             Spacer(Modifier.height(Space.xs))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth(),

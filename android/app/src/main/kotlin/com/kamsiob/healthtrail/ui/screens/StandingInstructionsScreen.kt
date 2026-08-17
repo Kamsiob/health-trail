@@ -16,14 +16,13 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.openableByTap
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object InstructionTags {
@@ -221,7 +220,7 @@ fun StandingInstructionsScreen(
 
         item {
             Spacer(Modifier.height(Space.s))
-            QuietButton(
+            Action(
                 label = strings["instructions.add"],
                 onClick = onAdd,
                 modifier = Modifier.testTag(InstructionTags.ADD),
@@ -475,7 +474,7 @@ private fun InstructionRow(
         // down should not scroll past all of them to reach the control that
         // writes the next one.
         Spacer(Modifier.height(Space.sectionGap))
-        TextAction(
+        Action(
             label = strings["instruction.violations.add"],
             onClick = onRecordViolation,
             modifier = Modifier.testTag(InstructionTags.violation(instruction.id)),

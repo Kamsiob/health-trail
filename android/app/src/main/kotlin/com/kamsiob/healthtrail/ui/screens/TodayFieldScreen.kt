@@ -26,8 +26,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.Radius
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -78,6 +76,8 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.i18n.formatMoney
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.v4.AvatarOverflow
 import com.kamsiob.healthtrail.time.Distance
@@ -87,7 +87,6 @@ import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.Plot
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.pressScale
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
@@ -611,12 +610,12 @@ fun TodayFieldScreen(
                                 horizontalArrangement = Arrangement.spacedBy(Space.s),
                                 verticalArrangement = Arrangement.spacedBy(Space.s),
                             ) {
-                                TextAction(
+                                Action(
                                     label = strings["today.add"],
                                     onClick = { onAddCard(draft) },
                                     modifier = Modifier.testTag(TodayFieldTags.ADD),
                                 )
-                                TextAction(
+                                Action(
                                     label = strings["today.edit.cancel"],
                                     onClick = { editing = false },
                                 )
@@ -633,13 +632,13 @@ fun TodayFieldScreen(
                                 // capture button stands down while Today is
                                 // being arranged, so this is still one filled
                                 // action on the screen.
-                                FilledButton(
+                                Action(
                                     label = strings["today.edit.done"],
                                     onClick = {
                                         onSave(draft)
                                         editing = false
                                     },
-                                    modifier = Modifier.testTag(TodayFieldTags.DONE),
+                                    modifier = Modifier.testTag(TodayFieldTags.DONE), emphasis = ActionEmphasis.Main,
                                 )
                             }
                         } else {
@@ -1850,7 +1849,7 @@ private fun MiniSpine(items: List<Repository.TodayItem>, hue: TabHue) {
 @Composable
 private fun DialPill(number: String, cardId: String, onDial: (String) -> Unit) {
     val strings = LocalStrings.current
-    QuietButton(
+    Action(
         label = Bidi.isolate(number),
         onClick = { onDial(number) },
         modifier = Modifier

@@ -15,7 +15,6 @@ import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.CircleAction
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -24,6 +23,7 @@ import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockIconAction
 import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Page
@@ -280,15 +280,14 @@ fun CareTeamScreen(
                         // `m3v4-3` draws on every row of the unit list. A reader
                         // still hears whose number it is: fifteen controls all
                         // called "Call" is the ambiguity 5.12 exists to prevent.
-                        CircleAction(
-                            symbol = Symbols.call,
+                        BlockIconAction(
+                            mark = Symbols.call,
+                            // Whose number it is, as the label: fifteen
+                            // controls all called "Call" is the ambiguity 5.12
+                            // exists to prevent.
+                            label = strings("careteam.call.number", "number" to it),
                             onClick = { onCall(person) },
-                            modifier = Modifier
-                                .semantics {
-                                    contentDescription =
-                                        strings("careteam.call.number", "number" to it)
-                                }
-                                .testTag(CareTeamTags.call(person.id)),
+                            modifier = Modifier.testTag(CareTeamTags.call(person.id)),
                         )
                     }
                 },

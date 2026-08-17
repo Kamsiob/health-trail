@@ -42,6 +42,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
 
 /**
  * Speaking into a field instead of typing into it.
@@ -191,18 +192,17 @@ fun DictateAction(
         // law 2 allows exactly one. What "biggest" buys here is width and a
         // real border at rest: it reads as a control somebody would press
         // rather than as a link beside a field.
-        QuietButton(
+        Action(
             label = strings["dictate.speak"],
             onClick = speak,
             enabled = enabled,
             modifier = modifier.fillMaxWidth(),
         )
     } else {
-        TextAction(
+        Action(
             label = strings["dictate.speak"],
             onClick = speak,
             enabled = enabled,
-            leading = { MicrophoneGlyph(tint = if (enabled) colors.blue else colors.ink2) },
             modifier = modifier,
         )
     }

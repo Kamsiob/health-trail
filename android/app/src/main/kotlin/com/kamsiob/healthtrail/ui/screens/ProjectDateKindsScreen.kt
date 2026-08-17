@@ -24,11 +24,10 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
@@ -124,7 +123,7 @@ fun ProjectDateKindsScreen(
                 fieldTestTag = ProjectKindsTags.ADD_FIELD,
             )
             Spacer(Modifier.height(Space.s))
-            QuietButton(
+            Action(
                 label = strings["project.kinds.add"],
                 enabled = pending.isNotBlank(),
                 onClick = {
@@ -215,16 +214,16 @@ fun DateKindEditSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["common.save"],
                 enabled = label.isNotBlank(),
                 onClick = { onSave(label.trim()) },
-                modifier = Modifier.fillMaxWidth().testTag(KindEditTags.SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(KindEditTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["project.kinds.remove"],
                 onClick = onRemove,
                 modifier = Modifier.fillMaxWidth().testTag(KindEditTags.REMOVE),
@@ -232,7 +231,7 @@ fun DateKindEditSheet(
 
             Spacer(Modifier.height(Space.xs))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth(),

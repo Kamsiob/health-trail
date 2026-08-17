@@ -19,10 +19,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.ExportContainer
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.ChoiceRow
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -148,11 +148,11 @@ fun RestoreScreen(
             // full width outlined pill, which is the treatment the scaffold
             // uses at the foot to mean the way back, so the screen opened and
             // closed with the same bar twice. #340 and D118.
-            FilledButton(
+            Action(
                 label = strings["restore.choose"],
                 onClick = onChoose,
                 enabled = !busy,
-                modifier = Modifier.fillMaxWidth().testTag(RestoreTags.CHOOSE),
+                modifier = Modifier.fillMaxWidth().testTag(RestoreTags.CHOOSE), emphasis = ActionEmphasis.Main,
             )
 
             when (state) {
@@ -190,11 +190,11 @@ fun RestoreScreen(
                         fieldTestTag = RestoreTags.PASSPHRASE,
                     )
                     Spacer(Modifier.height(Space.m))
-                    FilledButton(
+                    Action(
                         label = strings["restore.unlock"],
                         onClick = { onUnlock(passphrase) },
                         enabled = passphrase.isNotEmpty(),
-                        modifier = Modifier.fillMaxWidth().testTag(RestoreTags.UNLOCK),
+                        modifier = Modifier.fillMaxWidth().testTag(RestoreTags.UNLOCK), emphasis = ActionEmphasis.Main,
                     )
                 }
 
@@ -296,7 +296,7 @@ fun RestoreScreen(
                     }
 
                     Spacer(Modifier.height(Space.l))
-                    FilledButton(
+                    Action(
                         // The button says which of the two it will do, so the
                         // last thing read before the irreversible tap is the
                         // thing that is about to happen.
@@ -315,7 +315,7 @@ fun RestoreScreen(
                         },
                         onClick = { how?.let(onRestore) },
                         enabled = !busy && how != null,
-                        modifier = Modifier.fillMaxWidth().testTag(RestoreTags.CONFIRM),
+                        modifier = Modifier.fillMaxWidth().testTag(RestoreTags.CONFIRM), emphasis = ActionEmphasis.Main,
                     )
                 }
 

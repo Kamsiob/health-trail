@@ -30,10 +30,10 @@ import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.pressScale
 import com.kamsiob.healthtrail.ui.components.pressedSurface
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
@@ -162,7 +162,7 @@ fun CardOptionsSheet(
 
             onPickSource?.let { pick ->
                 OptionGroup(labelKey = "today.options.source") {
-                    QuietButton(
+                    Action(
                         label = strings["today.options.source.choose"],
                         onClick = pick,
                         modifier = Modifier.testTag(CardOptionsTags.WHO),
@@ -178,20 +178,20 @@ fun CardOptionsSheet(
                     modifier = Modifier.padding(bottom = Space.xs),
                 )
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
-                    QuietButton(
+                    Action(
                         label = strings["today.options.lead"],
                         onClick = onPromote,
                         modifier = Modifier.testTag(CardOptionsTags.LEAD),
                     )
                     onMoveUp?.let {
-                        QuietButton(
+                        Action(
                             label = strings["today.options.up"],
                             onClick = it,
                             modifier = Modifier.testTag(CardOptionsTags.UP),
                         )
                     }
                     onMoveDown?.let {
-                        QuietButton(
+                        Action(
                             label = strings["today.options.down"],
                             onClick = it,
                             modifier = Modifier.testTag(CardOptionsTags.DOWN),
@@ -201,7 +201,7 @@ fun CardOptionsSheet(
             }
 
             OptionGroup(labelKey = "today.options.keep") {
-                QuietButton(
+                Action(
                     label = strings["today.options.remove"],
                     onClick = onRemove,
                     modifier = Modifier.testTag(CardOptionsTags.REMOVE),
@@ -218,7 +218,7 @@ fun CardOptionsSheet(
             }
 
             Spacer(Modifier.height(Space.l))
-            QuietButton(
+            Action(
                 label = strings["today.options.done"],
                 onClick = onDismiss,
                 modifier = Modifier

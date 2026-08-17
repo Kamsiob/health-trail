@@ -36,18 +36,17 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.EdtfSaver
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import java.time.LocalDate
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FieldGroup
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
@@ -280,7 +279,7 @@ private fun PickWhatToTrack(
                     Spacer(Modifier.height(Space.sectionGap))
                     Eyebrow(text = strings["measurement.own"])
                     Spacer(Modifier.height(Space.headerGap))
-                    QuietButton(
+                    Action(
                         label = strings["measurement.own.action"],
                         onClick = onNameYourOwn,
                         modifier = Modifier.testTag(MeasurementTags.OWN),
@@ -292,7 +291,7 @@ private fun PickWhatToTrack(
 
             Spacer(Modifier.height(Space.m))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
@@ -502,7 +501,7 @@ private fun NameSomethingElse(
 
             Spacer(Modifier.height(Space.m))
 
-            FilledButton(
+            Action(
                 label = strings["measurement.own.start"],
                 onClick = {
                     onStart(
@@ -521,12 +520,12 @@ private fun NameSomethingElse(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
-                    .testTag(MeasurementTags.OWN_START),
+                    .testTag(MeasurementTags.OWN_START), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.sm))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
@@ -534,7 +533,7 @@ private fun NameSomethingElse(
             )
             onRemove?.let { takeOut ->
                 Spacer(Modifier.height(Space.cardGap))
-                QuietButton(
+                Action(
                     label = strings["remove.action"],
                     onClick = takeOut,
                     modifier = Modifier.testTag(MeasurementTags.REMOVE),
@@ -802,7 +801,7 @@ private fun RecordValue(
 
             Spacer(Modifier.height(Space.m))
 
-            FilledButton(
+            Action(
                 label = strings[saveKey ?: "capture.save"],
                 onClick = {
                     onSave(
@@ -816,7 +815,7 @@ private fun RecordValue(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
-                    .testTag(MeasurementTags.SAVE),
+                    .testTag(MeasurementTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
@@ -825,14 +824,14 @@ private fun RecordValue(
             // full width outlined bar is the way back and nothing else, and
             // under a full width filled action it is a second bar of which
             // only one leaves. #371 item 5, and it is retroactive per rule 14.
-            TextAction(
+            Action(
                 label = strings["common.back"],
                 onClick = onCancel,
                 modifier = Modifier.padding(horizontal = Space.screenHorizontal),
             )
             onRemove?.let { takeOut ->
                 Spacer(Modifier.height(Space.cardGap))
-                QuietButton(
+                Action(
                     label = strings["remove.action"],
                     onClick = takeOut,
                     modifier = Modifier.testTag(MeasurementTags.REMOVE),

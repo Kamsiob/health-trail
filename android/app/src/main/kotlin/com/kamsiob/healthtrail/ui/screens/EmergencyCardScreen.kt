@@ -22,11 +22,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.theme.hueFor
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -126,12 +125,12 @@ fun EmergencyCardScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(Space.s),
                 ) {
-                    QuietButton(
+                    Action(
                         label = strings["emergency.share"],
                         onClick = onShare,
                         modifier = Modifier.weight(1f).testTag(EmergencyTags.SHARE),
                     )
-                    QuietButton(
+                    Action(
                         label = strings["emergency.change"],
                         onClick = onEdit,
                         modifier = Modifier.weight(1f).testTag(EmergencyTags.CHANGE),
@@ -299,7 +298,7 @@ fun EmergencyCardScreen(
         // the third control opening one editor.
         if (!hasSomething) {
             item {
-                QuietButton(
+                Action(
                     label = strings["emergency.edit"],
                     onClick = onEdit,
                     modifier = Modifier.testTag(EmergencyTags.EDIT),
@@ -352,7 +351,7 @@ private fun ContactRow(
             },
             trailing = if (phone != null) {
                 {
-                    QuietButton(
+                    Action(
                         label = strings["careteam.call"],
                         onClick = onCall,
                         modifier = Modifier

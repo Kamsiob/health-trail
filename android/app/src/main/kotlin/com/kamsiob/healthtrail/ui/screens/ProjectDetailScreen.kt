@@ -43,19 +43,18 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.ConfirmRemoveSheet
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
@@ -366,7 +365,7 @@ fun ProjectDetailScreen(
             // data contract would carry but nobody should have to read.
             if (waitingOn.trim() != project.waitingOn.orEmpty().trim()) {
                 Spacer(Modifier.height(Space.s))
-                QuietButton(
+                Action(
                     label = strings["projects.waiting_save"],
                     onClick = { onSetWaitingOn(waitingOn.trim()) },
                     modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.SAVE_WAITING),
@@ -384,7 +383,7 @@ fun ProjectDetailScreen(
             // ragged against the left edge, with the rarer action wider than
             // the common one. Adding a step is what somebody does while they
             // are still learning the process, which is most of the time.
-            QuietButton(
+            Action(
                 label = strings["projects.add_step"],
                 onClick = { editing = Editing.New },
                 modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.ADD_STEP),
@@ -409,7 +408,7 @@ fun ProjectDetailScreen(
                         modifier = Modifier.testTag(ProjectDetailTags.SAVED_TEMPLATE),
                     )
                 } else {
-                    TextAction(
+                    Action(
                         label = strings["projects.save_as_template"],
                         onClick = onSaveAsTemplate,
                         modifier = Modifier.testTag(ProjectDetailTags.SAVE_TEMPLATE),
@@ -655,7 +654,7 @@ private fun StepSheet(
 
                 Spacer(Modifier.height(Space.m))
                 if (canMoveEarlier) {
-                    TextAction(
+                    Action(
                         label = strings["projects.step.up"],
                         onClick = { onMove(true) },
                         modifier = Modifier
@@ -664,7 +663,7 @@ private fun StepSheet(
                     )
                 }
                 if (canMoveLater) {
-                    TextAction(
+                    Action(
                         label = strings["projects.step.down"],
                         onClick = { onMove(false) },
                         modifier = Modifier
@@ -682,7 +681,7 @@ private fun StepSheet(
                 // It is a text action opening the confirmation rather than a
                 // destructive button resting on the sheet, per 5.4: the alert
                 // fill exists only inside the confirmation it belongs to.
-                TextAction(
+                Action(
                     label = strings["projects.step.remove"],
                     onClick = onRemove,
                     modifier = Modifier
@@ -693,10 +692,10 @@ private fun StepSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["common.save"],
                 onClick = { onSave(text.trim(), note.trim().ifBlank { null }) },
-                modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.STEP_SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(ProjectDetailTags.STEP_SAVE), emphasis = ActionEmphasis.Main,
             )
         }
     }

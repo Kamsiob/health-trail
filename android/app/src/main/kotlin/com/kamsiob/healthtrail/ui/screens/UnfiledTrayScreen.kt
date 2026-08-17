@@ -45,17 +45,16 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
@@ -204,7 +203,7 @@ fun UnfiledTrayScreen(
                         // Sized to its label, D137: this screen already ends
                         // in a full width outlined bar and that one is the way
                         // out. #371 item 5.
-                        TextAction(
+                        Action(
                             label = strings["unfiled.later"],
                             onClick = { passed = passed + current.id },
                             modifier = Modifier.testTag(UnfiledTags.LATER),
@@ -222,7 +221,7 @@ fun UnfiledTrayScreen(
                             color = colors.ink2,
                         )
                         Spacer(Modifier.height(Space.m))
-                        QuietButton(
+                        Action(
                             label = strings["unfiled.title"],
                             onClick = { passed = emptySet() },
                         )
@@ -286,7 +285,7 @@ fun UnfiledTrayScreen(
             // The pinned action footer, per 5.15, with its required gap.
             Spacer(Modifier.height(Space.m))
 
-            TextAction(
+            Action(
                 label = strings["common.close"],
                 onClick = onClose,
                 modifier = Modifier
@@ -460,7 +459,7 @@ private fun UnfiledRow(
             // answer rather than a way out of the question: it clears the entry
             // from the tray without a thread, because the tray is for things
             // nobody has looked at yet rather than for things without a thread.
-            TextAction(
+            Action(
                 label = strings["unfiled.choose"],
                 onClick = { pickerOpen = true },
                 modifier = Modifier.testTag(UnfiledTags.elsewhere(entry.id)),

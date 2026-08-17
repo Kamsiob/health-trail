@@ -23,13 +23,13 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
 import com.kamsiob.healthtrail.ui.components.RoadStrip
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
@@ -188,19 +188,19 @@ fun StartProjectPreviewSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["project.preview.create"],
                 // A project has to be called something, and the template
                 // already called it something, so this is only ever disabled by
                 // somebody deliberately emptying the field.
                 enabled = name.isNotBlank(),
                 onClick = { onCreate(name.trim()) },
-                modifier = Modifier.fillMaxWidth().testTag(StartPreviewTags.CREATE),
+                modifier = Modifier.fillMaxWidth().testTag(StartPreviewTags.CREATE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 // **Back, not cancel.** Dismissing this returns to the picker
                 // with nothing created, which is a step backward through a flow
                 // rather than abandoning one, and saying cancel would suggest

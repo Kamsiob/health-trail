@@ -20,7 +20,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine
@@ -30,6 +29,8 @@ import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
@@ -324,10 +325,10 @@ fun MonthReviewScreen(
             // month review exists to be told to somebody, per `MASTER_SPEC.md`
             // 4.2, and handing it to whatever the person already messages
             // people with is the act the rest of the screen is for.
-            FilledButton(
+            Action(
                 label = strings["review.share"],
                 onClick = onShare,
-                modifier = Modifier.fillMaxWidth().testTag(ReviewTags.SHARE),
+                modifier = Modifier.fillMaxWidth().testTag(ReviewTags.SHARE), emphasis = ActionEmphasis.Main,
             )
             Spacer(Modifier.height(Space.l))
         }

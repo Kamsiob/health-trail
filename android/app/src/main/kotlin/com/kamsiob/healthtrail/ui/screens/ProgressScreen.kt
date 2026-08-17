@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.data.Repository
@@ -28,10 +27,11 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChartCard
 import com.kamsiob.healthtrail.ui.components.ChartHeight
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.chartPoints
@@ -133,10 +133,10 @@ fun ProgressScreen(
                 )
             }
             item {
-                FilledButton(
+                Action(
                     label = strings["progress.add"],
                     onClick = onAddReading,
-                    modifier = Modifier.fillMaxWidth().testTag(ProgressTags.ADD),
+                    modifier = Modifier.fillMaxWidth().testTag(ProgressTags.ADD), emphasis = ActionEmphasis.Main,
                 )
             }
             return@SectionScaffold
@@ -186,7 +186,7 @@ fun ProgressScreen(
         // control that names what it does and sits beside something else is
         // worse than no control. A pill sized to its label, D118.
         item(key = "correct-measure") {
-            QuietButton(
+            Action(
                 // **A measure written down in words has no unit and never
                 // will**, so the button does not offer to correct one. "How she
                 // seemed" under a control promising a unit is the app not
@@ -257,10 +257,10 @@ fun ProgressScreen(
 
         item(key = "add") {
             Spacer(Modifier.height(Space.m))
-            FilledButton(
+            Action(
                 label = strings["progress.add"],
                 onClick = onAddReading,
-                modifier = Modifier.fillMaxWidth().testTag(ProgressTags.ADD),
+                modifier = Modifier.fillMaxWidth().testTag(ProgressTags.ADD), emphasis = ActionEmphasis.Main,
             )
         }
     }

@@ -28,7 +28,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.WaypointDot
 import com.kamsiob.healthtrail.ui.components.Waypoint
@@ -38,6 +37,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.Trail
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object EntryTags {
@@ -331,19 +331,19 @@ fun EntryScreen(
             // **First of the three, because it is the one somebody came for.**
             // Pinning and removing are decisions made a handful of times; a
             // typo is found the moment the entry is read.
-            QuietButton(
+            Action(
                 label = strings["entry.correct"],
                 onClick = onCorrect,
                 modifier = Modifier.testTag(EntryTags.CORRECT),
             )
             Spacer(Modifier.height(Space.cardGap))
-            QuietButton(
+            Action(
                 label = strings[if (entry.pinnedAt != null) "trail.unpin" else "trail.pin"],
                 onClick = { onSetPinned(entry.pinnedAt == null) },
                 modifier = Modifier.testTag(EntryTags.PIN),
             )
             Spacer(Modifier.height(Space.cardGap))
-            QuietButton(
+            Action(
                 label = strings["remove.action"],
                 onClick = onRemove,
                 modifier = Modifier.testTag(EntryTags.REMOVE),

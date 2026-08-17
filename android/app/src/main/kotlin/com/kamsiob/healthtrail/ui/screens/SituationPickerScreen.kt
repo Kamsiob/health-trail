@@ -31,12 +31,12 @@ import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
@@ -267,7 +267,7 @@ fun SituationPickerScreen(
             // full width outlined bar is the way back and nothing else, and
             // under a full width filled action it is a second bar of which
             // only one leaves. #371 item 5, and it is retroactive per rule 14.
-            TextAction(
+            Action(
                 label = strings["situation.skip"],
                 onClick = onSkip,
                 modifier = Modifier.testTag(SituationPickerTags.SKIP),

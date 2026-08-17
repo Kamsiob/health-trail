@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.rememberCoroutineScope
+import com.kamsiob.healthtrail.ui.v4.Action
 import kotlinx.coroutines.launch
 import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.TipsSheet
@@ -44,8 +45,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.TextAction
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.data.Repository
@@ -592,7 +591,7 @@ fun SectionEmpty(
         )
         if (actionLabel != null && onAction != null) {
             Spacer(Modifier.height(Space.l))
-            QuietButton(
+            Action(
                 label = actionLabel,
                 onClick = onAction,
                 modifier = Modifier.testTag(SectionTags.emptyAction(name)),

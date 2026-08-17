@@ -19,10 +19,10 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import java.time.LocalDate
 
 object MedEventTags {
@@ -162,7 +162,7 @@ fun MedicationEventScreen(
             )
 
             Spacer(Modifier.height(Space.sectionGap))
-            FilledButton(
+            Action(
                 label = strings["capture.save"],
                 onClick = {
                     onSave(
@@ -175,14 +175,14 @@ fun MedicationEventScreen(
                         ),
                     )
                 },
-                modifier = Modifier.fillMaxWidth().testTag(MedEventTags.SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(MedEventTags.SAVE), emphasis = ActionEmphasis.Main,
             )
             Spacer(Modifier.height(Space.cardGap))
             // **Sized to its label, not the width of the screen.** D137: a
             // full width outlined bar is the way back and nothing else, and
             // under a full width filled action it is a second bar of which
             // only one leaves. #371 item 5, and it is retroactive per rule 14.
-            QuietButton(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
             )

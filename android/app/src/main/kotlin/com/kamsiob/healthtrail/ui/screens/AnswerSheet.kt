@@ -22,13 +22,12 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -182,10 +181,10 @@ fun AnswerSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["questions.answer.save"],
                 onClick = { onSave(answer) },
-                modifier = Modifier.fillMaxWidth().testTag(AnswerTags.SAVE),
+                modifier = Modifier.fillMaxWidth().testTag(AnswerTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             // **Still offered on an open question**, because a question asked
@@ -193,7 +192,7 @@ fun AnswerSheet(
             // knew, and that is worth recording without inventing an answer.
             if (question.isOpen) {
                 Spacer(Modifier.height(Space.cardGap))
-                QuietButton(
+                Action(
                     label = strings["questions.mark_asked"],
                     onClick = onMarkAsked,
                     modifier = Modifier.testTag(AnswerTags.ASKED),
@@ -202,7 +201,7 @@ fun AnswerSheet(
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth().testTag(AnswerTags.CANCEL),
@@ -213,7 +212,7 @@ fun AnswerSheet(
             // errand somebody actually arrives with, and taking the question
             // away is the rare one.
             Spacer(Modifier.height(Space.l))
-            QuietButton(
+            Action(
                 label = strings["ask.correct"],
                 onClick = onCorrect,
                 modifier = Modifier.testTag(AnswerTags.CORRECT),
@@ -227,7 +226,7 @@ fun AnswerSheet(
             // its label everywhere in the app now, on a screen and in a sheet,
             // and the gap above it says it does not belong to the pair.
             Spacer(Modifier.height(Space.s))
-            QuietButton(
+            Action(
                 label = strings["remove.action"],
                 onClick = onRemove,
                 modifier = Modifier.testTag(AnswerTags.REMOVE),

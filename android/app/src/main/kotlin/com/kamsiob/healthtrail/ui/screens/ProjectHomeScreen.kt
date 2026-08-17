@@ -15,6 +15,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
@@ -36,7 +37,6 @@ import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.LatestWordCard
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RoadStrip
 import com.kamsiob.healthtrail.ui.components.StandingCard
 import androidx.compose.foundation.layout.Arrangement
@@ -265,7 +265,7 @@ fun ProjectHomeScreen(
                     since = returnLine(entries, standing, strings),
                     modifier = Modifier.testTag(ProjectHomeTags.RETURN),
                     actions = {
-                        QuietButton(
+                        Action(
                             label = strings["project.return.confirm"],
                             onClick = onUpdateStanding,
                         )
@@ -284,7 +284,7 @@ fun ProjectHomeScreen(
                     since = endedSpan(project, strings),
                     modifier = Modifier.testTag(ProjectHomeTags.ENDED),
                     actions = {
-                        QuietButton(
+                        Action(
                             label = strings["project.reopen"],
                             onClick = onReopen,
                             modifier = Modifier.testTag(ProjectHomeTags.REOPEN),
@@ -461,7 +461,7 @@ fun ProjectHomeScreen(
                                 )
                                 if (index == current && !project.isFinished) {
                                     Spacer(Modifier.height(Space.xs))
-                                    QuietButton(
+                                    Action(
                                         label = strings["project.stage.move.short"],
                                         onClick = onMoveStage,
                                         modifier = Modifier.testTag(ProjectHomeTags.MOVE_STAGE),
@@ -574,13 +574,13 @@ fun ProjectHomeScreen(
 
         // -- 6. Housekeeping, last, unchanged. --------------------------------
         item {
-            QuietButton(
+            Action(
                 label = strings["projects.rename"],
                 onClick = onRename,
                 modifier = Modifier.testTag(ProjectHomeTags.RENAME),
             )
             Spacer(Modifier.height(Space.cardGap))
-            QuietButton(
+            Action(
                 label = strings["remove.action"],
                 onClick = onRemove,
                 modifier = Modifier.testTag(ProjectHomeTags.REMOVE),

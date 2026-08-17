@@ -33,12 +33,12 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.R
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
-import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.SupportButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 
 object DisclaimerTags {
     const val ROOT = "disclaimer_root"
@@ -166,7 +166,7 @@ fun DisclaimerScreen(onAccept: () -> Unit) {
 
                 Spacer(Modifier.height(Space.sm))
 
-                SupportButton(
+                Action(
                     label = strings["disclaimer.support"],
                     onClick = {
                         // Leaves the app, which makes this the first outbound
@@ -191,12 +191,12 @@ fun DisclaimerScreen(onAccept: () -> Unit) {
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["disclaimer.accept"],
                 onClick = onAccept,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag(DisclaimerTags.ACCEPT),
+                    .testTag(DisclaimerTags.ACCEPT), emphasis = ActionEmphasis.Main,
             )
         }
     }

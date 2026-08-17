@@ -25,7 +25,6 @@ import com.kamsiob.healthtrail.data.DatabaseKeyLost
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.WelcomeSeen
 import androidx.compose.foundation.layout.fillMaxWidth
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.screens.RestoreFlow
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
@@ -38,6 +37,8 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.ui.components.Waiting
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 
 object AppRootTags {
     const val LOADING = "app_loading"
@@ -411,10 +412,10 @@ internal fun UnrecoverableScreen(onRestore: () -> Unit = {}) {
             // to install the app again and restore from their file, which is
             // work the app can do for them. Rule 20.
             Spacer(Modifier.height(Space.l))
-            FilledButton(
+            Action(
                 label = strings["unrecoverable.restore"],
                 onClick = onRestore,
-                modifier = Modifier.fillMaxWidth().testTag(AppRootTags.UNRECOVERABLE_RESTORE),
+                modifier = Modifier.fillMaxWidth().testTag(AppRootTags.UNRECOVERABLE_RESTORE), emphasis = ActionEmphasis.Main,
             )
         }
     }

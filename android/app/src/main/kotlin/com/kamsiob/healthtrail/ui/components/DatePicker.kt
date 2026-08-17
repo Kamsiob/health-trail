@@ -41,6 +41,8 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -254,7 +256,7 @@ fun DatePickerSheet(
 
             Spacer(Modifier.height(Space.l))
 
-            FilledButton(
+            Action(
                 label = strings["date.pick.confirm"],
                 onClick = {
                     onPick(
@@ -266,7 +268,7 @@ fun DatePickerSheet(
                         )
                     )
                 },
-                modifier = Modifier.fillMaxWidth().testTag(DatePickerTags.CONFIRM),
+                modifier = Modifier.fillMaxWidth().testTag(DatePickerTags.CONFIRM), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
@@ -274,7 +276,7 @@ fun DatePickerSheet(
             // **Every level has a way back to less precision.** Someone who
             // taps a day and then realizes they are not sure has to be able to
             // say so without leaving and starting again.
-            TextAction(
+            Action(
                 label = strings["date.pick.clear"],
                 onClick = { onPick(Edtf.unknown()) },
                 modifier = Modifier.fillMaxWidth().testTag(DatePickerTags.CLEAR),

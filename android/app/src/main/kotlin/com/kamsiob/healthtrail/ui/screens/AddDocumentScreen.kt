@@ -47,7 +47,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
@@ -63,12 +62,13 @@ import com.kamsiob.healthtrail.ui.components.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.StageDots
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.raisedSlightly
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 
@@ -603,7 +603,7 @@ fun AddDocumentScreen(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (stage > 0) {
-                            TextAction(
+                            Action(
                                 label = strings["capture.back"],
                                 onClick = { stage -= 1 },
                                 modifier = Modifier.testTag(AddDocTags.BACK),
@@ -615,7 +615,7 @@ fun AddDocumentScreen(
                                 0 -> draft.picked != null
                                 else -> draft.title.isNotBlank() || draft.received != null
                             }
-                            TextAction(
+                            Action(
                                 label = strings[
                                     if (filled) "capture.next" else "capture.skip",
                                 ],
@@ -632,18 +632,18 @@ fun AddDocumentScreen(
             // **Live from the first question.** Somebody who photographs a
             // letter and taps save never sees the other two, and what they
             // have is saved from wherever they are standing.
-            FilledButton(
+            Action(
                 label = strings["capture.save"],
                 onClick = { onSave(draft) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddDocTags.SAVE),
+                    .testTag(AddDocTags.SAVE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.s))
 
-            TextAction(
+            Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier

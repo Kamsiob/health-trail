@@ -23,12 +23,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FieldGroup
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.components.FieldGroupGap
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
-import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -234,7 +234,7 @@ fun SetupScreen(
             Spacer(Modifier.height(Space.m))
 
             Block {
-            FilledButton(
+            Action(
                 label = strings["setup.continue"],
                 onClick = {
                     onContinue(
@@ -249,7 +249,7 @@ fun SetupScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag(SetupTags.CONTINUE),
+                    .testTag(SetupTags.CONTINUE), emphasis = ActionEmphasis.Main,
             )
 
             Spacer(Modifier.height(Space.sm))
@@ -259,7 +259,7 @@ fun SetupScreen(
             // like giving up. **Sized to its label since #371 item 5**, which
             // is not a demotion: D137 gives the full width outlined bar to the
             // way back alone, and every form in the app now reads the same.
-            TextAction(
+            Action(
                 label = strings["setup.skip"],
                 onClick = onSkip,
                 modifier = Modifier.testTag(SetupTags.SKIP),

@@ -17,9 +17,9 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
@@ -161,7 +161,7 @@ fun ProjectStepsScreen(
                 fieldTestTag = ProjectStepsTags.ADD_FIELD,
             )
             Spacer(Modifier.height(Space.s))
-            QuietButton(
+            Action(
                 label = strings["projects.add_step"],
                 enabled = pending.isNotBlank(),
                 onClick = {

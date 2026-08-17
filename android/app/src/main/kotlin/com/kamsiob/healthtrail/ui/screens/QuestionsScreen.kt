@@ -11,13 +11,13 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.CircleAction
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockIconAction
 import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
@@ -215,17 +215,18 @@ private fun QuestionRow(
         // `DESIGN.md` 5.12 exists to prevent: a reader hears which question.
         trailing = onMarkAsked?.let {
             {
-                CircleAction(
-                    symbol = Symbols.check,
+                BlockIconAction(
+                    mark = Symbols.check,
+                    // The words are the label rather than a description laid
+                    // over the control, because twenty controls all called "I
+                    // asked this" is the ambiguity `DESIGN.md` 5.12 exists to
+                    // prevent: a reader hears which question.
+                    label = strings(
+                        "questions.mark_asked.what",
+                        "question" to question.text,
+                    ),
                     onClick = it,
-                    modifier = Modifier
-                        .semantics {
-                            contentDescription = strings(
-                                "questions.mark_asked.what",
-                                "question" to question.text,
-                            )
-                        }
-                        .testTag(QuestionTags.markAsked(question.id)),
+                    modifier = Modifier.testTag(QuestionTags.markAsked(question.id)),
                 )
             }
         },
