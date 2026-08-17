@@ -2016,6 +2016,54 @@ class ScreenReaderTest {
         assertEverythingIsLabeled("today")
     }
 
+    /**
+     * The permanent hero, with something ahead and questions saved for it.
+     *
+     * **Every control on it is a target and none of them carries a word**: two
+     * marks and a count in a disc. So this is exactly the shape the reader test
+     * exists for, and it is walked in both of its halves. D192.
+     */
+    @Test
+    fun theTodayHeroLabelsEverythingWithSomethingAhead() {
+        compose.show {
+            com.kamsiob.healthtrail.ui.screens.TodayHero(
+                appointment = Repository.Appointment(
+                    "a1", "Care plan meeting", "2026-08-18T10:15", 2L,
+                    "Conference room, 2nd floor", null,
+                ),
+                questionsReady = 2,
+                subjectName = "Ruth",
+                today = java.time.LocalDate.of(2026, 8, 17),
+                onOpenAppointment = {},
+                onOpenQuestions = {},
+                onAddAppointment = {},
+                onAddQuestion = {},
+            )
+        }
+        assertEverythingIsLabeled("today hero, something ahead")
+    }
+
+    /**
+     * The same hero with an empty calendar, which is a finished screen and not
+     * an absence: two quick ways to change that, and both are marks. Rule 13.
+     */
+    @Test
+    fun theTodayHeroLabelsEverythingWithNothingAhead() {
+        compose.show {
+            com.kamsiob.healthtrail.ui.screens.TodayHero(
+                appointment = null,
+                questionsReady = 0,
+                subjectName = "Ruth",
+                today = java.time.LocalDate.of(2026, 8, 17),
+                onOpenAppointment = {},
+                onOpenQuestions = {},
+                onAddAppointment = {},
+                onAddQuestion = {},
+            )
+        }
+        assertEverythingIsLabeled("today hero, nothing ahead")
+    }
+
     @Test
     fun exportLabelsEverything() {
         compose.show {

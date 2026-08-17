@@ -9,6 +9,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -82,31 +84,17 @@ fun Trace(
             y = inset + (1f - (point.value - lo) / span) * usable,
         )
 
-        // **Segments, never one path.** A silence longer than this measure's own
-        // rhythm breaks the line, and the two sides are never joined: a line
-        // drawn straight across four months somebody wrote nothing in would be
-        // the app filling in readings that were never taken.
-        val segments = buildList {
-            var current = mutableListOf<Offset>()
-            points.forEachIndexed { index, point ->
-                if (index != 0 && point.startsSegment) {
-                    add(current)
-                    current = mutableListOf()
-                }
-                current.add(at(point))
-            }
-            add(current)
-        }.filter { it.isNotEmpty() }
+        val spots = points.map { at(it) }
 
-        // The wash first, so the line sits on top of its own shadow rather than
-        // being cut in half by it. It fades to nothing at the foot of the card,
-        // which is what stops it reading as a filled area with a baseline: a
-        // baseline is a scale, and this app draws none.
-        segments.filter { it.size > 1 }.forEach { segment ->
+        // **One wash under the whole series**, so the card has a single shape
+        // rather than a row of islands. It fades to nothing at the foot, which
+        // is what stops it reading as a filled area with a baseline: a baseline
+        // is a scale, and this app draws none.
+        if (spots.size > 1) {
             val under = Path().apply {
-                moveTo(segment.first().x, size.height)
-                segment.forEach { lineTo(it.x, it.y) }
-                lineTo(segment.last().x, size.height)
+                moveTo(spots.first().x, size.height)
+                spots.forEach { lineTo(it.x, it.y) }
+                lineTo(spots.last().x, size.height)
                 close()
             }
             drawPath(
@@ -119,20 +107,62 @@ fun Trace(
             )
         }
 
-        segments.filter { it.size > 1 }.forEach { segment ->
-            val drawn = Path().apply {
-                moveTo(segment.first().x, segment.first().y)
-                segment.drop(1).forEach { lineTo(it.x, it.y) }
-            }
-            drawPath(drawn, color = line, style = Stroke(width = STROKE.toPx()))
+        // **One path the eye can follow, and a silence drawn as a silence.**
+        //
+        // The line used to stop dead at a gap and start again on the far side,
+        // which on a real notebook, where readings are irregular by nature,
+        // produced three disconnected fragments with a dot marooned in the
+        // corner. The owner: "it shouldn't be a broken graph... that just looks
+        // broken and weird." He is right, and a chart that reads as a rendering
+        // failure is worse than useless: it is the app looking unreliable about
+        // the person's own numbers.
+        //
+        // **The promise it has to keep is that no chart interpolates across a
+        // gap**, `TESTING-PERSONAS.md` 5.3 and rule 2. Interpolation is claiming
+        // a value that was never recorded. A dash claims nothing: it is the
+        // standard way a time series says "nothing was measured here", it is
+        // visibly not a measurement, and every actual reading still carries its
+        // own dot. So the path is continuous for the eye and honest about the
+        // record, which the fragments were not: they said the same thing by
+        // saying nothing, and nobody read it that way. D193.
+        points.zipWithNext().forEachIndexed { index, (_, next) ->
+            val from = spots[index]
+            val to = spots[index + 1]
+            drawLine(
+                color = line,
+                start = from,
+                end = to,
+                strokeWidth = STROKE.toPx(),
+                cap = StrokeCap.Round,
+                pathEffect = if (next.startsSegment) {
+                    PathEffect.dashPathEffect(
+                        floatArrayOf(DASH.toPx(), DASH_GAP.toPx()),
+                        0f,
+                    )
+                } else {
+                    null
+                },
+            )
         }
 
-        // **The newest reading, and only that one.** It is where the eye is
-        // meant to land, and it is the value printed above the card, so the ring
-        // is the drawing saying which point that number is. The ring itself is
-        // the card's own color, so a dot landing on the line stays countable.
-        val newest = points.maxByOrNull { it.position }?.let { at(it) }
-        newest?.let { spot ->
+        // **A dot on every reading, because the dots are the data.** The line
+        // between them is connective tissue; these are the values somebody
+        // actually wrote down, and a chart that draws only the last one hides
+        // how much is behind it. Each carries a hairline ring in the card's own
+        // color so two close together stay countable.
+        spots.forEach { spot ->
+            drawCircle(color = line, radius = DOT_RADIUS.toPx(), center = spot)
+            drawCircle(
+                color = surface,
+                radius = DOT_RADIUS.toPx(),
+                center = spot,
+                style = Stroke(width = RING_STROKE.toPx()),
+            )
+        }
+
+        // **The newest reading is raised**, because it is the figure printed
+        // above the card and the ring is the drawing saying which point that is.
+        spots.lastOrNull()?.let { spot ->
             drawCircle(color = line, radius = RING_RADIUS.toPx(), center = spot)
             drawCircle(
                 color = surface,
@@ -157,6 +187,13 @@ object TraceHeight {
 
 /** Measured off `m3v4-0`: the stroke is a little over two points. */
 private val STROKE = 2.2.dp
+
+/** A dot on a reading. Smaller than the ring, because the newest one leads. */
+private val DOT_RADIUS = 3.dp
+
+/** The dash that crosses a silence, and the space between dashes. */
+private val DASH = 4.dp
+private val DASH_GAP = 4.dp
 
 /** The ring on the newest reading, measured off the drawing at 7dp across. */
 private val RING_RADIUS = 7.dp

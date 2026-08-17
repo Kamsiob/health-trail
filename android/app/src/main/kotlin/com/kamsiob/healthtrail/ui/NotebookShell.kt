@@ -615,19 +615,55 @@ fun NotebookShell(
                         // that would come to it, and two copies of "which one is
                         // next" is how a screen comes to show one appointment
                         // and the questions for another.
+                        //
+                        // **The soonest one that has not happened, and the order
+                        // of those two steps is the whole of it.** This took the
+                        // soonest appointment of any date and then dropped it if
+                        // it was in the past, so a notebook in its second year,
+                        // which is every real one, resolved to its first ever
+                        // appointment and then to nothing at all. The hero said
+                        // there was nothing on the calendar with a meeting the
+                        // next morning. Invisible in the source and obvious on
+                        // the phone, rule 21.
+                        val startOfToday = LocalDate.now()
+                            .atStartOfDay(java.time.ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli()
                         val nextAppointment = appointments
-                            .filter { it.scheduledStart != null }
+                            .filter { it.scheduledStart != null && it.scheduledStart!! >= startOfToday }
                             .minByOrNull { it.scheduledStart!! }
-                            ?.takeIf {
-                                it.scheduledStart!! >= LocalDate.now()
-                                    .atStartOfDay(java.time.ZoneId.systemDefault())
-                                    .toInstant()
-                                    .toEpochMilli()
-                            }
                         todayLayout?.let { layout ->
                             TodayFieldScreen(
                                 layout = layout,
                                 answers = todayAnswers,
+                                // **The permanent hero**, D192. Not a card, not
+                                // in the layout, and untouched by arranging.
+                                nextAppointment = nextAppointment,
+                                // **A question waiting on nobody in particular
+                                // comes to every appointment**, which is the
+                                // commonest case and what `question.person_id`'s
+                                // own schema comment says. #371 item 2.
+                                questionsReady = nextAppointment?.let { appointment ->
+                                    questions.count { question ->
+                                        question.isOpen &&
+                                            (
+                                                question.personId == null ||
+                                                    question.personId == appointment.personId
+                                                )
+                                    }
+                                } ?: 0,
+                                onOpenAppointments = {
+                                    openSection = Repository.Section.APPOINTMENTS
+                                },
+                                onOpenQuestions = {
+                                    openSection = Repository.Section.ASK_NEXT_TIME
+                                },
+                                // **Straight to the form**, not through the
+                                // capture sheet: the hero already named what it
+                                // is adding, and a sheet asking again would be
+                                // the second tap rule 18 counts.
+                                onAddAppointment = { addingAppointment = true },
+                                onAddQuestion = { capturing = CaptureKind.QUESTION },
                                 // The capture button belongs to the shell and
                                 // the arranging belongs to Today, so Today says
                                 // when it starts and stops. See `ShellState`.
@@ -781,6 +817,8 @@ fun NotebookShell(
                                 },
                             onOpenProgress = { openSection = Repository.Section.PROGRESS },
                             onPeople = { subjectsOpen = true },
+                            onAddAppointment = { addingAppointment = true },
+                            onAddQuestion = { capturing = CaptureKind.QUESTION },
                             // **Opened over Today, not by switching to the
                             // notebook.** A section is an overlay, so changing the
                             // destination underneath it only decided where "back"

@@ -1613,6 +1613,8 @@
   "measurement.own.group": "ما الذي تتابعه",
   "today.next.description": "التالي: {title}، {when}.",
   "today.next.description.where": "التالي: {title}، {when}، في {where}.",
+  "today.next.none": "لا شيء في التقويم بعد",
+  "today.next.none.description": "لا شيء في التقويم بعد. أضف موعدًا، أو اكتب سؤالًا لطرحه.",
   "today.next.questions": "{count, plural, zero {لا أسئلة جاهزة للسؤال} one {سؤال واحد جاهز للسؤال} two {سؤالان جاهزان للسؤال} few {# أسئلة جاهزة للسؤال} many {# سؤالًا جاهزًا للسؤال} other {# سؤال جاهز للسؤال}}",
   "today.next.questions.short": "{count, plural, zero {أسئلة جاهزة للسؤال} one {سؤال جاهز للسؤال} two {سؤالان جاهزان للسؤال} few {أسئلة جاهزة للسؤال} many {سؤالًا جاهزًا للسؤال} other {سؤال جاهز للسؤال}}",
   "today.track.description": "{name}. آخر تسجيل هو {value}. {readings} مكتوبة. خط بسيط بلا مقياس وبلا حكم.",

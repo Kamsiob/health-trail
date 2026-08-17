@@ -28,10 +28,12 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.IconAction
 
 object HeaderActionTags {
     const val EDIT = "header_edit"
     const val ROW = "header_actions"
+    const val SEARCH = "header_search"
 }
 
 /**
@@ -57,6 +59,21 @@ object HeaderActionTags {
 @Composable
 fun HeaderActions(
     modifier: Modifier = Modifier,
+    /**
+     * Opens search. Null on a screen that is not a way into looking for things.
+     *
+     * **Furthest from the corner, so the order the rest of the app learned does
+     * not move.** Reading inward from the edge the row is now pencil, lamp,
+     * search, which leaves the pencil and the lamp exactly where D173 put them
+     * and adds the new one on the inside.
+     *
+     * **A mark, because the box was clutter.** The owner, on Today, 2026-08-17:
+     * the full width search field "clutters the screen", and search belongs as
+     * "a search button in the top right, like an icon that matches". A door that
+     * takes a whole row of the most valuable space on the phone to say one word
+     * is the same argument `docs/V4.md` 4 used to delete the back footer. D192.
+     */
+    onSearch: (() -> Unit)? = null,
     /** Opens what this page is for. Null on a screen with nothing to explain. */
     onTips: (() -> Unit)? = null,
     /** Goes back and changes what is already written here. Null where nothing is editable. */
@@ -74,7 +91,7 @@ fun HeaderActions(
      */
     editTag: String? = null,
 ) {
-    if (onTips == null && onEdit == null) return
+    if (onSearch == null && onTips == null && onEdit == null) return
     Row(
         modifier = modifier.testTag(HeaderActionTags.ROW),
         horizontalArrangement = Arrangement.spacedBy(Space.xs),
@@ -97,6 +114,15 @@ fun HeaderActions(
         // **The leading slot is still held**, because that is what keeps the
         // pencil in the corner rather than letting it slide out when the lamp
         // is absent.
+        onSearch?.let { open ->
+            IconAction(
+                symbol = Symbols.search,
+                label = LocalStrings.current["today.search"],
+                onClick = open,
+                modifier = Modifier.testTag(HeaderActionTags.SEARCH),
+                tint = HealthTrail.colors.ink2,
+            )
+        }
         if (onTips != null) TipsButton(onOpen = onTips) else if (onEdit != null) HeldSlot()
         if (onEdit != null) {
             EditAction(onClick = onEdit, label = editLabel, tag = editTag)

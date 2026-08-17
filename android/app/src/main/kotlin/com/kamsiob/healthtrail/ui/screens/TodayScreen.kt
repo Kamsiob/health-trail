@@ -162,6 +162,10 @@ fun TodayScreen(
     onOpenProgress: () -> Unit = {},
     /** Opens who this notebook is about, which is what the mark in the corner is. */
     onPeople: () -> Unit = {},
+    /** Puts something new on the calendar, straight from the hero. */
+    onAddAppointment: () -> Unit = {},
+    /** Writes down a question to ask, straight from the hero. */
+    onAddQuestion: () -> Unit = {},
     /** Opens search. `MASTER_SPEC.md` 4.8 puts universal search on this screen. */
     onSearch: () -> Unit = {},
 ) {
@@ -195,16 +199,21 @@ fun TodayScreen(
             // screen, and absent when there is no appointment ahead, because a
             // hero announcing that nothing is scheduled would be an empty frame
             // at the loudest weight on the screen. Rule 11.5.
-            nextAppointment?.let { appointment ->
-                NextAppointment(
-                    appointment = appointment,
-                    subjectName = subjectName,
-                    questionsReady = questionsReady,
-                    today = today,
-                    onOpen = onOpenAppointments,
-                    onOpenQuestions = onOpenQuestions,
-                )
-            }
+            // **The same permanent hero the arranged Today carries**, D192, so
+            // the two surfaces cannot say different things about the one line
+            // that matters most. It is drawn whether or not there is anything
+            // ahead: with nothing on the calendar it is the two quickest ways to
+            // put something there.
+            TodayHero(
+                appointment = nextAppointment,
+                questionsReady = questionsReady,
+                subjectName = subjectName,
+                today = today,
+                onOpenAppointment = onOpenAppointments,
+                onOpenQuestions = onOpenQuestions,
+                onAddAppointment = onAddAppointment,
+                onAddQuestion = onAddQuestion,
+            )
 
             // **What is still open, above what is merely tracked.** D191. Each
                 // row goes where the thing actually is, rule 18, and the order is
@@ -248,17 +257,6 @@ fun TodayScreen(
             // **What you track**, the second half of the drawing.
             tracked?.let { measure ->
                 WhatYouTrack(tracked = measure, onOpenProgress = onOpenProgress)
-            }
-
-            // **What changed since the last visit**, and only when there is a
-            // notebook to have changed. A first launch and a quiet week both
-            // land here and both correctly say what is true of them.
-            if (hasAnything) {
-                SinceLastHere(
-                    digest = digest,
-                    lastVisitMillis = lastVisitMillis,
-                    onOpenSection = onOpenSection,
-                )
             }
 
             if (coaching.isNotEmpty()) {
@@ -366,78 +364,6 @@ private fun Masthead(
 }
 
 /**
- * The next appointment, as the one saturated block on the screen.
- *
- * **The faces are whose appointment it is**, the person the notebook is about
- * and whoever it is with, which is what `m3v4-0` draws: two overlapped circles
- * opposite the pill saying when.
- *
- * **The questions card only when there are questions.** A white card inside the
- * block saying nothing is waiting would be a frame around an absence, and rule
- * 11.5 is explicit that announcing the absence of a problem is not information.
- */
-@Composable
-private fun NextAppointment(
-    appointment: Repository.Appointment,
-    subjectName: String?,
-    questionsReady: Int,
-    today: LocalDate,
-    onOpen: () -> Unit,
-    onOpenQuestions: () -> Unit,
-) {
-    val strings = LocalStrings.current
-    val hues = HealthTrail.colors.tabHues
-
-    // **"Tomorrow 10:15" where the date allows it and the full date where it
-    // does not.** A month is not a day, so it can be neither today nor
-    // tomorrow, and saying otherwise would be inventing a precision the person
-    // never gave. Rule 17.
-    val whenLabel = EventDateText.nearby(strings, appointment.scheduledEdtf, today)
-        ?: EventDateText.render(strings, appointment.scheduledEdtf)
-
-    val title = Bidi.isolate(appointment.title)
-    val where = appointment.locationNote?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) }
-
-    val faces = listOfNotNull(
-        subjectName?.takeIf { it.isNotBlank() }?.let { Face(it, hueForPerson(it, hues)) },
-        appointment.personName?.takeIf { it.isNotBlank() }?.let {
-            Face(it, hueForPerson(appointment.personId ?: it, hues))
-        },
-    )
-
-    NextBlock(
-        whenLabel = whenLabel,
-        title = title,
-        where = where,
-        faces = faces,
-        description = if (where == null) {
-            strings("today.next.description", "title" to title, "when" to whenLabel)
-        } else {
-            strings(
-                "today.next.description.where",
-                "title" to title,
-                "when" to whenLabel,
-                "where" to where,
-            )
-        },
-        onOpen = onOpen,
-        modifier = Modifier.testTag(TodayTags.NEXT_APPOINTMENT),
-        door = questionsReady.takeIf { it > 0 }?.let {
-            {
-                InsetDoor(
-                    count = it.toString(),
-                    label = strings("today.next.questions.short", "count" to it),
-                    description = strings("today.next.questions", "count" to it),
-                    hue = hueFor(Repository.Section.ASK_NEXT_TIME),
-                    onOpen = onOpenQuestions,
-                    modifier = Modifier.testTag(TodayTags.NEXT_QUESTIONS),
-                )
-            }
-        },
-    )
-}
-
-/**
  * One tracked measurement, under the heading the Progress section already uses.
  *
  * **The heading is a block's own title and the way in is beside it**, which is
@@ -510,85 +436,6 @@ private fun WhatYouTrack(
             onOpen = onOpenProgress,
             modifier = Modifier.testTag(TodayTags.TRACK),
         )
-    }
-}
-
-/**
- * What changed since the last visit, as a line and the rows behind it.
- *
- * **"Nothing new" is said in the same place and the same words as "3 new
- * things", and that is deliberate.** It is the answer to a question the person
- * asked, and putting the calm case in smaller type would make it read as the
- * failure case.
- */
-@Composable
-private fun SinceLastHere(
-    digest: Digest.Summary,
-    lastVisitMillis: Long?,
-    onOpenSection: (Repository.Section) -> Unit,
-) {
-    val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-
-    Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
-        Eyebrow(text = strings["today.digest.heading"])
-        Text(
-            text = if (digest.isEmpty) {
-                strings["today.digest.empty"]
-            } else {
-                strings("today.digest.total", "count" to digest.newThings)
-            },
-            style = HealthTrail.type.displayS,
-            color = colors.ink,
-            modifier = Modifier.testTag(TodayTags.DIGEST),
-        )
-
-        // **Only when it is genuinely a gap.** Below the threshold this is a
-        // line telling somebody who opens the app every morning that they
-        // opened it yesterday.
-        lastVisitMillis
-            ?.takeIf { millis ->
-                java.time.Duration.between(Instant.ofEpochMilli(millis), Instant.now())
-                    .toDays() >= AWAY_DAYS
-            }
-            ?.let { millis ->
-                Body(
-                    text = strings(
-                        "today.digest.lastvisit",
-                        "date" to EventDateText.render(
-                            strings,
-                            Instant.ofEpochMilli(millis)
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
-                                .toString(),
-                        ),
-                    ),
-                )
-            }
-
-        if (!digest.isEmpty) {
-            Block(padding = Space.none) {
-                digest.added.forEachIndexed { index, added ->
-                    ListRow(
-                        title = strings[labelKey(added.section)],
-                        value = strings("today.digest.new", "count" to added.count),
-                        isDoor = true,
-                        onClick = { onOpenSection(added.section) },
-                        modifier = Modifier.testTag(TodayTags.digestRow(added.section)),
-                    )
-                    if (index != digest.added.lastIndex) RowDivider(inset = false)
-                }
-            }
-
-            // One line each. They are not counts of new things and must not sit
-            // among the rows that are.
-            listOfNotNull(
-                digest.corrected.takeIf { it > 0 }
-                    ?.let { strings("today.digest.corrected", "count" to it) },
-                digest.removed.takeIf { it > 0 }
-                    ?.let { strings("today.digest.removed", "count" to it) },
-            ).forEach { aside -> Body(text = aside) }
-        }
     }
 }
 

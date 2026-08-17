@@ -111,6 +111,21 @@ fun TodayLead(
     onLongPress: (() -> Unit)? = null,
     /** What a reader calls the hold. Required whenever [onLongPress] is set. */
     longPressLabel: String? = null,
+    /**
+     * Whether the block is filled or tonal.
+     *
+     * **False since the hero became permanent**, D192. `docs/V4.md` 2.1 allows
+     * one saturated block per screen and Today now spends it on the appointment
+     * at the top, which is fixed and always there. Two filled blocks stacked
+     * gave the eye nowhere to land, which is the rainbow this treatment was
+     * introduced to fix, arrived at from the other direction.
+     *
+     * **The lead still leads the field**, at display scale in its section's own
+     * wash, which is what the rest of the app already does with a group that
+     * belongs to a section. It is quieter than the hero and louder than
+     * everything under it, which is the order the screen actually has.
+     */
+    saturated: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
@@ -131,16 +146,22 @@ fun TodayLead(
     // **One saturated block and everything below it quiet** is also what fixes
     // the rainbow. Six tinted cards of equal weight gave the eye nowhere to
     // land; the tint belongs to whichever card leads, and the rest are white.
-    val leadColors = colors.onHue(hue)
+    val leadColors = if (saturated) colors.onHue(hue) else colors
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(Radius.hero)
-            .background(hue.base)
+            .background(if (saturated) hue.base else hue.wash)
             .openableByTap(
                 label = openLabel,
                 onTap = onOpen,
-                resting = hue.base,
+                // **The resting surface is the block's own color, and it is
+                // the one that actually paints.** `background` above sits
+                // under it, so changing only that left a tonal block drawn in
+                // the saturated color with tonal ink on it: dark on dark, and
+                // the eyebrow gone entirely. Two places, one color. D192, seen
+                // on the phone and invisible in the source.
+                resting = if (saturated) hue.base else hue.wash,
                 shape = Radius.hero,
                 // long-press-twin: Today's Arrange action, per the parameter above.
                 onLongPress = onLongPress,

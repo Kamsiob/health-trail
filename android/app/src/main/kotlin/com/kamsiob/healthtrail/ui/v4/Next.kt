@@ -1,10 +1,14 @@
 package com.kamsiob.healthtrail.ui.v4
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -52,20 +56,40 @@ import com.kamsiob.healthtrail.ui.theme.TabHue
  * the door inside it is another, and merging them would announce a paragraph and
  * then offer no way to press only the part that is a separate destination.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NextBlock(
-    /** When it is, already said the way somebody standing in a kitchen needs it. */
-    whenLabel: String,
-    /** The thing itself, in the person's own words. */
+    /**
+     * The thing itself, in the person's own words, or the app's line when there
+     * is nothing ahead.
+     *
+     * **A calendar with nothing on it is a finished state**, rule 13, so the
+     * empty case keeps the block and says what is true in the same register.
+     * The block never reads as something the person failed to fill in.
+     */
     title: String,
-    /** What a reader hears for the appointment itself, as one sentence. */
+    /** What a reader hears for the block itself, as one sentence. */
     description: String,
-    onOpen: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * When it is, already said the way somebody standing in a kitchen needs it.
+     *
+     * Null when there is nothing ahead, and the pill is then absent rather than
+     * saying so: a label over an empty value is the blank area rule 11 bans.
+     */
+    whenLabel: String? = null,
     /** Where it is, when the person wrote it down. Absent is ordinary, rule 13. */
     where: String? = null,
     /** Whoever it is with, as their marks. Empty draws none. */
     faces: List<Face> = emptyList(),
+    /**
+     * Opens the thing itself. Null where there is nothing to open.
+     *
+     * **The words stop being a target when there is nothing behind them**, rule
+     * 16 read the other way: a press that does nothing reads as broken, so the
+     * empty block offers its actions and not itself.
+     */
+    onOpen: (() -> Unit)? = null,
     /**
      * The one thing worth doing before it, as a white card inside the block.
      *
@@ -73,6 +97,15 @@ fun NextBlock(
      * A card offering nothing to do would be an empty frame, rule 11.
      */
     door: (@Composable () -> Unit)? = null,
+    /**
+     * The quick ways to add what is missing, as white pills along the foot.
+     *
+     * **White is what a person can press inside this block**, which is the rule
+     * the inset card already set: the block is one saturated surface, the pill
+     * saying when is a piece of it, and everything drawn on `card` is a door.
+     * One vocabulary, learned once. [BlockAction] draws them.
+     */
+    actions: (@Composable FlowRowScope.() -> Unit)? = null,
 ) {
     val colors = HealthTrail.colors
 
@@ -87,42 +120,71 @@ fun NextBlock(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(role = Role.Button, onClick = onOpen)
+                .then(
+                    if (onOpen == null) {
+                        Modifier
+                    } else {
+                        Modifier.clickable(role = Role.Button, onClick = onOpen)
+                    },
+                )
                 .semantics(mergeDescendants = true) { contentDescription = description },
             verticalArrangement = Arrangement.spacedBy(Space.withinGroup),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                // **A pill of the block's own color lightened, not a second
-                // hue.** Measured off the drawing at white over blue at
-                // twenty-two percent, which reads as a quieter piece of the
-                // same surface rather than as another thing with its own
-                // meaning.
-                Text(
-                    text = whenLabel.uppercase(
-                        androidx.compose.ui.platform.LocalConfiguration.current.locales[0],
-                    ),
-                    style = HealthTrail.type.eyebrow,
-                    color = colors.onBlue,
-                    modifier = Modifier
-                        .clip(Radius.pill)
-                        .background(colors.onBlue.copy(alpha = PILL_ALPHA))
-                        .padding(horizontal = Space.sm, vertical = Space.s)
-                        // Capitals are for the eye. A reader gets the words as
-                        // they were written, D183.
-                        .semantics { contentDescription = whenLabel },
-                )
-                Box(modifier = Modifier.weight(1f))
-                if (faces.isNotEmpty()) {
-                    // **Overlapped, because they are one group.** Measured off
-                    // the drawing: two marks across 52dp, so 32dp circles with
-                    // twelve of overlap. They are decorative here, and the names
-                    // are in the sentence a reader hears.
-                    Row(horizontalArrangement = Arrangement.spacedBy(-FACE_OVERLAP)) {
-                        faces.forEach { face ->
-                            Avatar(name = face.name, hue = face.hue, size = FACE)
+            if (whenLabel != null || faces.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // **A pill of the block's own color lightened, not a second
+                    // hue.** Measured off the drawing at white over blue at
+                    // twenty-two percent, which reads as a quieter piece of the
+                    // same surface rather than as another thing with its own
+                    // meaning. **And never white**, because white inside this
+                    // block means a door, and this pill is not one.
+                    whenLabel?.let { label ->
+                        Text(
+                            text = label.uppercase(
+                                androidx.compose.ui.platform.LocalConfiguration
+                                    .current.locales[0],
+                            ),
+                            style = HealthTrail.type.eyebrow,
+                            color = colors.onBlue,
+                            modifier = Modifier
+                                .clip(Radius.pill)
+                                .background(colors.onBlue.copy(alpha = PILL_ALPHA))
+                                .padding(horizontal = Space.sm, vertical = Space.s)
+                                // Capitals are for the eye. A reader gets the
+                                // words as they were written, D183.
+                                .semantics { contentDescription = label },
+                        )
+                    }
+                    Box(modifier = Modifier.weight(1f))
+                    if (faces.isNotEmpty()) {
+                        // **Overlapped, because they are one group**, measured
+                        // off the drawing at two marks across 52dp. They are
+                        // decorative here, and the names are in the sentence a
+                        // reader hears.
+                        //
+                        // **Each one carries a ring in the block's own color,
+                        // and the overlap eats the ring rather than the
+                        // letters.** Without it the second circle sat directly
+                        // on the first and cut its initials in half: the phone
+                        // showed "MI" clipped to "M" beside "WO", which is two
+                        // people rendered as one smudge. The ring is what makes
+                        // a stack countable, and the overlap is measured from
+                        // the outside of it so the text is never touched. Rule
+                        // 21, and invisible in the source.
+                        Row(horizontalArrangement = Arrangement.spacedBy(-FACE_OVERLAP)) {
+                            faces.forEach { face ->
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(colors.blue)
+                                        .padding(FACE_RING),
+                                ) {
+                                    Avatar(name = face.name, hue = face.hue, size = FACE)
+                                }
+                            }
                         }
                     }
                 }
@@ -130,7 +192,7 @@ fun NextBlock(
 
             Text(
                 // bidi-ok: the caller isolates. An appointment's name is always
-                // somebody's own words.
+                // somebody's own words, and the empty line is always the app's.
                 text = title,
                 style = HealthTrail.type.displayM,
                 color = colors.onBlue,
@@ -152,6 +214,69 @@ fun NextBlock(
         }
 
         door?.invoke()
+
+        actions?.let { row ->
+            // **A flow row, because two pills do not fit on one line.** Both
+            // are sized to their labels, `docs/V4.md` 2.1, and "Add an
+            // appointment" beside "Write down a question" is wider than a
+            // phone: as a plain row the second was crushed to one character per
+            // line and read as a broken control. They wrap now, and at font
+            // scale 2.0 each takes its own line. Seen on the phone, rule 21.
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Space.s),
+                verticalArrangement = Arrangement.spacedBy(Space.s),
+                content = row,
+            )
+        }
+    }
+}
+
+/**
+ * One quick way to add what is missing, inside a saturated block.
+ *
+ * **White, because white inside the block is what a person can press.** The
+ * inset card set that rule and this keeps it: the block is one surface, the
+ * pill saying when is a piece of that surface, and anything on `card` is a
+ * door. A tonal pill for an action would look exactly like the pill that does
+ * nothing, which is the confusion rule 16 exists to prevent.
+ *
+ * **Sized to its label**, `docs/V4.md` 2.1, so two of them sit side by side and
+ * neither claims the row. The mark is never announced: it draws the same word
+ * the label already says.
+ */
+@Composable
+fun BlockAction(
+    @DrawableRes mark: Int,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HealthTrail.colors
+    Row(
+        modifier = modifier
+            .clip(Radius.pill)
+            .background(colors.card)
+            .clickable(role = Role.Button, onClick = onClick)
+            // The same floor the inset card keeps, and the same reason.
+            .sizeIn(minHeight = Space.touchTarget)
+            .padding(horizontal = Space.sm, vertical = Space.xs)
+            .semantics(mergeDescendants = true) { },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.s),
+    ) {
+        Symbol(
+            symbol = mark,
+            contentDescription = null,
+            tint = colors.blue,
+            modifier = Modifier.size(Space.markInline),
+        )
+        Text(
+            // bidi-ok: the app's own name for what pressing this does.
+            text = label,
+            style = HealthTrail.type.bodyL,
+            color = colors.ink,
+        )
     }
 }
 
@@ -196,10 +321,17 @@ fun InsetDoor(
             .background(colors.card)
             .clickable(role = Role.Button, onClick = onOpen)
             .semantics(mergeDescendants = true) { contentDescription = description }
+            // **48dp and not a point less.** The owner, 2026-08-17: the cards
+            // inside the hero "are too big. they don't look elegant". What was
+            // making them big was the furniture, a 32dp disc and a 44dp circle
+            // inside 8dp of padding, so the card measured about sixty. The
+            // furniture came down and the target did not: 48 is Material's
+            // minimum and rule 19's gate, and a beautiful control nobody with
+            // shaky hands can hit is not a control. D192.
             .sizeIn(minHeight = Space.touchTarget)
-            .padding(Space.s),
+            .padding(horizontal = Space.s, vertical = Space.xs),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        horizontalArrangement = Arrangement.spacedBy(Space.s),
     ) {
         Box(
             modifier = Modifier
@@ -211,26 +343,23 @@ fun InsetDoor(
             Text(
                 // bidi-ok: a figure the app counted.
                 text = count,
-                style = HealthTrail.type.rowTitle,
+                style = HealthTrail.type.bodyL,
                 color = hue.ink,
             )
         }
         Text(
             // bidi-ok: the app's own words for what it counted.
             text = label,
-            style = HealthTrail.type.rowTitle,
+            style = HealthTrail.type.bodyL,
             color = colors.ink,
             modifier = Modifier.weight(1f),
         )
-        Box(
-            modifier = Modifier
-                .size(Space.markTile)
-                .clip(CircleShape)
-                .background(colors.blueWash),
-            contentAlignment = Alignment.Center,
-        ) {
-            Symbol(symbol = Symbols.forward, contentDescription = null, tint = colors.blue)
-        }
+        Symbol(
+            symbol = Symbols.forward,
+            contentDescription = null,
+            tint = colors.blue,
+            modifier = Modifier.size(Space.markInline),
+        )
     }
 }
 
@@ -243,9 +372,20 @@ private val FACE = Space.xl
 /**
  * How much of the circle behind is covered, so the pair reads as one group.
  *
- * The drawing's two marks span 52dp, which at 32dp each is twelve of overlap.
+ * **Measured from the outside of the ring**, so what the overlap covers is the
+ * ring and not the letters under it. The drawing's two marks span 52dp; at 32dp
+ * each plus two rings of two that is eight of overlap.
  */
-private val FACE_OVERLAP = Space.sm
+private val FACE_OVERLAP = Space.s
 
-/** The count's disc, measured off `m3v4-0` at 29.7dp. */
-private val DISC = Space.xl
+/** The block's own color around each mark, so a stack of them stays countable. */
+private val FACE_RING = Space.xs
+
+/**
+ * The count's disc.
+ *
+ * Measured off `m3v4-0` at 29.7dp and brought in to 24 when the owner said the
+ * cards inside the hero were too big. The figure on it is `bodyL` rather than a
+ * row title, so it still reads at a glance without setting the card's height.
+ */
+private val DISC = Space.l

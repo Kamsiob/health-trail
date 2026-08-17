@@ -1613,6 +1613,8 @@
   "measurement.own.group": "你在追踪的内容",
   "today.next.description": "接下来：{title}，{when}。",
   "today.next.description.where": "接下来：{title}，{when}，在{where}。",
+  "today.next.none": "日历上还没有安排",
+  "today.next.none.description": "日历上还没有安排。可以添加预约，或者记下一个想问的问题。",
   "today.next.questions": "{count, plural, other {# 个可以问的问题}}",
   "today.next.questions.short": "{count, plural, other {个可以问的问题}}",
   "today.track.description": "{name}。最新记录是 {value}。已记录 {readings}。一条普通的线，没有刻度，也没有判断。",

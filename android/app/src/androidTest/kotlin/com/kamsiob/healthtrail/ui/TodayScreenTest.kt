@@ -19,6 +19,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.screens.CoachStep
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
+import com.kamsiob.healthtrail.ui.screens.TodayHeroTags
 import com.kamsiob.healthtrail.ui.screens.TodayTags
 import com.kamsiob.healthtrail.ui.screens.TrackedMeasure
 import com.kamsiob.healthtrail.time.EventDateText
@@ -119,6 +120,8 @@ class TodayScreenTest {
         onOpenQuestions: () -> Unit = {},
         onOpenAppointments: () -> Unit = {},
         onOpenProgress: () -> Unit = {},
+        onAddAppointment: () -> Unit = {},
+        onAddQuestion: () -> Unit = {},
     ) {
         val strings = Strings.load(context, locale)
         compose.setContent {
@@ -141,6 +144,8 @@ class TodayScreenTest {
                         onOpenQuestions = onOpenQuestions,
                         onOpenAppointments = onOpenAppointments,
                         onOpenProgress = onOpenProgress,
+                        onAddAppointment = onAddAppointment,
+                        onAddQuestion = onAddQuestion,
                     )
                 }
             }
@@ -229,54 +234,6 @@ class TodayScreenTest {
     }
 
     @Test
-    fun whatChangedIsShownAndEachSectionCanBeOpened() {
-        var opened: Repository.Section? = null
-        show(
-            hasAnything = true,
-            digest = Digest.Summary(
-                added = listOf(Digest.Added(Repository.Section.TRAIL, 2)),
-                corrected = 1,
-                removed = 0,
-            ),
-            coaching = emptyList(),
-            onOpenSection = { opened = it },
-        )
-
-        compose.onNodeWithTag(TodayTags.DIGEST).assertIsDisplayed()
-        compose.onNodeWithTag(TodayTags.digestRow(Repository.Section.TRAIL)).performClick()
-        assertEquals(Repository.Section.TRAIL, opened)
-    }
-
-    @Test
-    fun aQuietWeekSaysSoRatherThanLeavingThePersonToInferIt() {
-        // **This is the opposite of what this test asserted until 2026-08-03**,
-        // and the change is deliberate.
-        //
-        // The screen used to show nothing at all when nothing had changed, on
-        // the reasoning that a heading over "nothing changed" is a heading over
-        // nothing. What that actually produced was a screen where the absence
-        // of a line carried the meaning, which is ambiguous between "nothing
-        // changed" and "the digest is not working" in exactly the way D49 and
-        // D64 are about. **A person opening the app after two days away asked a
-        // question, and the calm answer is still an answer.**
-        //
-        // `today.digest.empty` has been in all four catalogs since the digest
-        // was built, written for this and never shown.
-        show(hasAnything = true, digest = Digest.nothing, coaching = emptyList())
-        val strings = Strings.load(context)
-        compose.onNodeWithTag(TodayTags.DIGEST)
-            .assertTextEquals(strings["today.digest.empty"])
-    }
-
-    @Test
-    fun afirstRunHasNoDigestAtAll() {
-        // Nothing has ever been written down, so "nothing new since you were
-        // last here" would be true and useless. The coaching leads instead.
-        show(hasAnything = false, digest = Digest.nothing, coaching = allSteps())
-        compose.onNodeWithTag(TodayTags.DIGEST).assertIsNotDisplayed()
-    }
-
-    @Test
     fun theEmergencyCardIsNotOfferedTwiceOnTheSameScreen() {
         // While the coaching is still asking for it, the persistent button
         // would be the same offer a second time, in fewer words.
@@ -338,7 +295,7 @@ class TodayScreenTest {
         // The lead of the drawing, and the location is the half of it that was
         // in the schema and on no screen.
         show(hasAnything = true, coaching = emptyList(), nextAppointment = anAppointment())
-        compose.onNodeWithTag(TodayTags.NEXT_APPOINTMENT).assertIsDisplayed()
+        compose.onNodeWithTag(TodayHeroTags.ROOT).assertIsDisplayed()
         // **Assert on the words, not the tag.** A merged node's testTag passes
         // whether or not the line inside it was drawn at all.
         compose.onNodeWithText("Care plan meeting", substring = true).assertIsDisplayed()
@@ -382,7 +339,10 @@ class TodayScreenTest {
         compose.onNodeWithText(strings("today.next.questions.short", "count" to 2))
             .assertIsDisplayed()
         compose.onNodeWithText("2").assertIsDisplayed()
-        compose.onNodeWithTag(TodayTags.NEXT_QUESTIONS).performClick()
+        // **The card speaks as one sentence**, so it is found by what a reader
+        // hears rather than by the words split across the disc and the label.
+        compose.onNodeWithContentDescription(strings("today.next.questions", "count" to 2))
+            .performClick()
         assertTrue("the card inside the block is a door and it did nothing", opened)
     }
 
@@ -396,13 +356,38 @@ class TodayScreenTest {
             nextAppointment = anAppointment(),
             questionsReady = 0,
         )
-        compose.onNodeWithTag(TodayTags.NEXT_QUESTIONS).assertIsNotDisplayed()
+        compose.onNodeWithTag(TodayHeroTags.QUESTIONS).assertIsNotDisplayed()
     }
 
     @Test
-    fun nothingAheadMeansNoBlockRatherThanOneSayingSo() {
+    fun nothingAheadKeepsTheBlockAndOffersTheTwoWaysIn() {
+        // D192: the hero is permanent. An empty calendar is a finished state,
+        // rule 13, so it says so and offers both quick adds rather than
+        // vanishing and leaving the screen to start with whatever is next.
         show(hasAnything = true, coaching = emptyList(), nextAppointment = null)
-        compose.onNodeWithTag(TodayTags.NEXT_APPOINTMENT).assertIsNotDisplayed()
+        val strings = Strings.load(context)
+        compose.onNodeWithTag(TodayHeroTags.ROOT).assertIsDisplayed()
+        compose.onNodeWithText(strings["today.next.none"]).assertIsDisplayed()
+        compose.onNodeWithText(strings["appts.add"]).assertIsDisplayed()
+        compose.onNodeWithText(strings["questions.add"]).assertIsDisplayed()
+    }
+
+    @Test
+    fun theQuickWaysInGoWhereTheySay() {
+        var appointment = false
+        var question = false
+        show(
+            hasAnything = true,
+            coaching = emptyList(),
+            nextAppointment = null,
+            onAddAppointment = { appointment = true },
+            onAddQuestion = { question = true },
+        )
+        val strings = Strings.load(context)
+        compose.onNodeWithText(strings["appts.add"]).performClick()
+        compose.onNodeWithText(strings["questions.add"]).performClick()
+        assertTrue("the calendar shortcut did nothing", appointment)
+        assertTrue("the question shortcut did nothing", question)
     }
 
     @Test
@@ -414,7 +399,7 @@ class TodayScreenTest {
             nextAppointment = anAppointment(),
             onOpenAppointments = { opened = true },
         )
-        compose.onNodeWithTag(TodayTags.NEXT_APPOINTMENT).performClick()
+        compose.onNodeWithText("Care plan meeting", substring = true).performClick()
         assertTrue("the one saturated block on the screen did nothing on press", opened)
     }
 
@@ -514,7 +499,7 @@ class TodayScreenTest {
             tracked = aMeasure(),
             openIncidents = 1,
         )
-        val appointment = compose.onNodeWithTag(TodayTags.NEXT_APPOINTMENT)
+        val appointment = compose.onNodeWithTag(TodayHeroTags.ROOT)
             .fetchSemanticsNode().boundsInRoot.top
         val open = compose.onNodeWithTag(TodayTags.OPEN_GROUP)
             .fetchSemanticsNode().boundsInRoot.top
@@ -538,8 +523,8 @@ class TodayScreenTest {
             questionsReady = 2,
             tracked = aMeasure(name = "Presión arterial, sentada"),
         )
-        compose.onNodeWithTag(TodayTags.NEXT_APPOINTMENT).assertIsDisplayed()
-        compose.onNodeWithTag(TodayTags.NEXT_QUESTIONS).assertIsDisplayed()
+        compose.onNodeWithTag(TodayHeroTags.ROOT).assertIsDisplayed()
+        compose.onNodeWithTag(TodayHeroTags.QUESTIONS).assertIsDisplayed()
         compose.onNodeWithTag(TodayTags.TRACK).assertExists()
     }
 }

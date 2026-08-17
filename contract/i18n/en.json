@@ -1613,6 +1613,8 @@
   "measurement.own.group": "What you are tracking",
   "today.next.description": "Coming up: {title}, {when}.",
   "today.next.description.where": "Coming up: {title}, {when}, at {where}.",
+  "today.next.none": "Nothing on the calendar yet",
+  "today.next.none.description": "Nothing on the calendar yet. Add an appointment, or write down a question to ask.",
   "today.next.questions": "{count, plural, one {1 question ready to ask} other {# questions ready to ask}}",
   "today.next.questions.short": "{count, plural, one {question ready to ask} other {questions ready to ask}}",
   "today.track.description": "{name}. The latest reading is {value}. {readings} written down. A plain line with no scale and no judgment.",

@@ -110,6 +110,37 @@ import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import java.time.LocalDate
 
+/**
+ * The card type the hero replaced.
+ *
+ * **Named once, because it is matched rather than drawn now.** D192: the
+ * appointment is a permanent fixture of this screen, so a stored `next_up` card
+ * is skipped instead of being drawn a second time. The string is the stored
+ * value in `today_card.card_type` and in the archive vocabulary, so it is not
+ * something this screen may rename.
+ */
+private const val NEXT_UP = "next_up"
+
+/**
+ * The card type that told the person what they had just typed in themselves.
+ *
+ * **Owner ruling, 2026-08-17, and it is a content decision rather than a layout
+ * one:** "get rid of the nothing new since you were last here widget. that's
+ * redundant and useless since nothing new gets put into the app without the
+ * user doing it given that it's not connected to the internet."
+ *
+ * He is right, and the reason is the whole shape of this app. A digest is what
+ * a networked product owes you, because things happened while you were away. In
+ * a local-first notebook with no account and no cloud, **the only thing that can
+ * have changed is what the person wrote**, so the screen's loudest line was
+ * reading their own morning back to them, and on a quiet week it was a display
+ * scale sentence announcing that nothing had happened. D193.
+ *
+ * **Skipped rather than deleted**, exactly as [NEXT_UP] is: the row stays in the
+ * layout and in the archive vocabulary, which rule 3 puts behind the owner.
+ */
+private const val DIGEST = "digest"
+
 object TodayFieldTags {
     const val ROOT = "today-field"
     const val LEAD = "today-lead"
@@ -195,6 +226,25 @@ fun TodayFieldScreen(
      * a real notebook there was no way to search from the front door.
      */
     onSearch: () -> Unit = {},
+    /**
+     * The soonest appointment still ahead, for the permanent hero.
+     *
+     * **Not a card and not in the layout.** Owner ruling, 2026-08-17: the hero
+     * is a fixture of this screen, independent of the field and of arranging
+     * it. A front door whose most important line was optional was sometimes
+     * simply wrong, which is what this fixes. D192.
+     */
+    nextAppointment: Repository.Appointment? = null,
+    /** How many saved questions would come to that appointment. */
+    questionsReady: Int = 0,
+    /** Opens the appointment the hero is showing. */
+    onOpenAppointments: () -> Unit = {},
+    /** Opens the questions saved to ask. */
+    onOpenQuestions: () -> Unit = {},
+    /** Puts something new on the calendar, straight from the hero. */
+    onAddAppointment: () -> Unit = {},
+    /** Writes down a question to ask, straight from the hero. */
+    onAddQuestion: () -> Unit = {},
     /**
      * Saves a rearranged layout, in the order given, the first card leading.
      *
@@ -525,13 +575,25 @@ fun TodayFieldScreen(
                             // between the date and the name. Four made them one
                             // block, which is most of why this masthead read as
                             // cramped.
-                            Spacer(Modifier.height(Space.m))
+                            // **Eight, not sixteen, and one size down.** The
+                            // owner, 2026-08-17: reduce the top left header of
+                            // Today. The date and the name are one group and
+                            // `withinGroup` is what a group's own air is, D188;
+                            // sixteen was set when the name was the only thing
+                            // above the fold and the block below it is now the
+                            // permanent hero. `displayM` rather than `displayL`
+                            // for the same reason: the hero under it carries the
+                            // screen's one display-scale answer, and a masthead
+                            // at 40sp two lines above it gave the screen two
+                            // first things. A long name wrapped to two lines at
+                            // 40 and fits on one at 32. D192.
+                            Spacer(Modifier.height(Space.withinGroup))
                             Text(
                                 text = subjectName
                                     ?.takeIf { it.isNotBlank() }
                                     ?.let { strings("today.masthead", "name" to Bidi.isolate(it)) }
                                     ?: strings["today.masthead.noname"],
-                                style = HealthTrail.type.displayL,
+                                style = HealthTrail.type.displayM,
                                 color = HealthTrail.colors.ink,
                             )
                         }
@@ -593,6 +655,9 @@ fun TodayFieldScreen(
                             // written and translated four ways and there was
                             // nothing on the screen to open it.
                             HeaderActions(
+                                // **The mark, not the box.** D192, and the door
+                                // it replaces is deleted below.
+                                onSearch = onSearch,
                                 onTips = { showTips = true },
                                 onEdit = { editing = true },
                                 editLabel = strings["today.arrange.action"],
@@ -615,10 +680,46 @@ fun TodayFieldScreen(
                 }
             }
 
-            val shown = if (editing) draft else layout.all
-            val lead = shown.first()
+            // **The hero, and it is not a card.** Owner ruling, 2026-08-17:
+            // this section is a permanent fixture of Today, independent of the
+            // field below it and of arranging that field. It is not in the
+            // layout, so it cannot be moved, resized or taken off, and it is
+            // drawn while editing too, which is what says it is not part of the
+            // draft. D192.
+            item(span = { fullWidth }, key = "today-hero") {
+                TodayHero(
+                    appointment = nextAppointment,
+                    questionsReady = questionsReady,
+                    subjectName = subjectName,
+                    today = today,
+                    onOpenAppointment = onOpenAppointments,
+                    onOpenQuestions = onOpenQuestions,
+                    onAddAppointment = onAddAppointment,
+                    onAddQuestion = onAddQuestion,
+                )
+            }
+
+            // **The appointment card is not drawn, because the hero above
+            // says the same thing permanently.** Two blocks about one meeting on
+            // one screen is the screen contradicting itself about what leads.
+            //
+            // **Not drawn rather than deleted.** The row stays in the layout and
+            // in the archive: `contract/readable-vocabularies.json` carries the
+            // type and rule 3 puts that behind the owner, and three situation
+            // starting hands deal one. So nothing of the person's arrangement is
+            // thrown away, and a build that changed its mind would put it back
+            // where they had it. D192.
+            //
+            // **Every move works on the stored list by id, never by what is on
+            // screen.** With one card drawn out, a display index and a draft
+            // index are two different numbers, and the remove that used the
+            // first would have taken away whatever was next to it.
+            val shown = (if (editing) draft else layout.all)
+                .filterNot { it.type == NEXT_UP || it.type == DIGEST }
+            val lead = shown.firstOrNull()
             val field = shown.drop(1)
 
+            if (lead != null) {
             item(span = { fullWidth }, key = "today-lead-slot") {
                 LeadSlot(
                     card = lead,
@@ -635,24 +736,26 @@ fun TodayFieldScreen(
                     // person chose while it is leading.
                     canMoveDown = field.isNotEmpty(),
                     onMoveDown = {
-                        draft = draft.toMutableList().apply { add(1, removeAt(0)) }
+                        val at = draft.indexOfFirst { it.id == lead.id }
+                        if (at >= 0) {
+                            draft = draft.toMutableList().apply { add(at + 1, removeAt(at)) }
+                        }
                     },
                     onArrange = { editing = true },
                 )
             }
-
-            // **Under the lead and above the field, always in that place.**
-            // 21.1. Hidden only while editing, per grid screen 05, because
-            // leaving for search mid-edit would throw away an unsaved draft and
-            // a door that costs you your work is worse than no door.
-            if (!editing) {
-                item(span = { fullWidth }, key = "today-search") {
-                    UniversalSearchDoor(
-                        onOpen = onSearch,
-                        modifier = Modifier.testTag(TodayFieldTags.SEARCH),
-                    )
-                }
             }
+
+            // **The search door is gone and search is a mark in the corner.**
+            // The owner, 2026-08-17: the box "clutters the screen". It took a
+            // full row under the lead to say one word, and the corner already
+            // holds the app's two other page-level controls. D192.
+            //
+            // **It is not hidden while editing any more, and does not need to
+            // be.** The reason it was is that leaving for search mid-edit threw
+            // away an unsaved draft; the corner control is outside the field for
+            // the same reason the hero is, and the header row is where Done and
+            // Cancel already live, so the whole row swaps in edit mode.
 
             items(
                 count = field.size,
@@ -663,9 +766,9 @@ fun TodayFieldScreen(
                 },
             ) { index ->
                 val card = field[index]
-                // Its place in the whole surface, which is what a move has to
-                // act on: the field is the layout with the lead taken off.
-                val position = index + 1
+                // **Its place in the stored list, found by id.** It was the
+                // display index plus one, which was the same number only while
+                // everything stored was also drawn. D192.
                 CardFor(
                     card = card,
                     answer = answerFor(card),
@@ -752,7 +855,10 @@ fun TodayFieldScreen(
                     editing = editing,
                     onOptions = { options = card.id },
                     onRemove = {
-                        draft = draft.toMutableList().apply { removeAt(position) }
+                        val at = draft.indexOfFirst { it.id == card.id }
+                        if (at >= 0) {
+                            draft = draft.toMutableList().apply { removeAt(at) }
+                        }
                     },
                     onArrange = { editing = true },
                     ordinal = index,
@@ -956,6 +1062,11 @@ private fun LeadSlot(
         action = shown?.phone
             ?.takeIf { dialable(card, shown, CardSize.WIDE) }
             ?.let { number -> { DialPill(number, card.id, onDial) } },
+        // **Tonal, because the hero above it is the screen's one filled block.**
+        // D192 and `docs/V4.md` 2.1. Two saturated blocks stacked is the
+        // rainbow the filled lead was introduced to fix, reached from the other
+        // side. Seen on the phone, rule 21.
+        saturated = false,
     ) {
         AnswerBody(
             answer = shown,

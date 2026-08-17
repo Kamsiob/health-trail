@@ -59,7 +59,10 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # no token that would mean anything if they were one. The old `ChartCard` types
 # five of the same kind and goes when its last caller does, so the number falls
 # again there rather than here. #386.
-BASELINE = 117
+# 120, up three, for the trace's dot radius and the two halves of the dash it
+# draws across a silence. Same category as the four above: geometry, not
+# spacing. D193.
+BASELINE = 120
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

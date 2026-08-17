@@ -74,6 +74,18 @@ object Symbols {
     @DrawableRes val fullSize = R.drawable.ic_zoom_in
 
     /**
+     * Put something on the calendar, and save a question to ask.
+     *
+     * **Google's own symbols rather than a plus beside an existing mark.** The
+     * owner asked for the official Material 3 Expressive assets where they
+     * exist, and both of these do: `calendar_add_on` and `add_comment` are
+     * drawn on the same grid as every other mark here, so the pair reads as
+     * part of the alphabet instead of as two marks stuck together. #386.
+     */
+    @DrawableRes val addToCalendar = R.drawable.ic_calendar_add_on
+    @DrawableRes val addQuestion = R.drawable.ic_add_comment
+
+    /**
      * The mark for one notebook section, so a screen never maps this itself.
      *
      * **Exhaustive with no `else`**, so a section added to the repository stops
