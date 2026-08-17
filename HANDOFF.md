@@ -10,7 +10,8 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 ## 1. State
 
-- **735 instrumented tests green**, 218 unit, 29 repo checks, lint. 2026-08-16.
+- **735 instrumented tests green**, 218 unit, 29 repo checks, lint. 2026-08-16, after the v4 pass.
+- **Read the test numbers, never the exit code.** `./gradlew ... | tail` reports the tail's status, so a run that failed seven tests exited zero and was reported green. The honest read is `BUILD SUCCESSFUL` in the output plus the counts in `androidTest-results/connected/debug/TEST-*.xml`.
 - Tree clean, all on `origin/main`. CI green at tip: `gh run list --branch main --limit 3`.
 - **Do not build a release APK or AAB.** Owner holds delivery until he approves the design. The debug install is the rule 21 loop and is not what he is holding.
 - **The v4 overhaul is the work.** `docs/V4.md` is the plan and has authority over `DESIGN.md`. Progress is a command: `python3 tools/checks/check_v4.py`.
@@ -42,6 +43,11 @@ Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` >
 **#384 is done and closed. The work is layer 3 onward in `docs/V4.md` section 4.**
 
 **What the mockup comparison found, and it is the method that matters.** Install, seed, capture, open the approved mockup beside it. Three defects on the notebook alone that no check could see: the app's own eyebrow was set in the same style as the row subtitles under it, its heading sat equidistant between its own group and the one above, and the table of contents had no way into search while Today, Today's field and More all did. **The eyebrow one had a KDoc describing uppercasing that the code never did.**
+
+**Two regressions were written this session and both were caught by tests that carried their reasons in a comment.** Worth reading before touching either component again.
+
+- **`GroupHeader`'s uppercase.** D171 removed it deliberately, because `GroupHeaderText` is handed the person's own words for their own groups. It was restored on the strength of a stale KDoc that still claimed the component uppercased, and `ProjectStepsScreenTest` failed with the reason sitting above the assertion. **The catalog-key overload shouts, the free-text one does not**, and the `shout` parameter now says so.
+- **The field label's semantics.** Silenced on the reasoning that the field already carries the string, so a reader says it twice. That is reasoning rather than something anybody heard, and rule 19 says the gate clears with the reader on. It also took the words out of the tree, which five `AddDocumentScreenTest` cases found at once. **The double announcement is still an open question and needs TalkBack, not an argument.**
 
 **Three things this file called open were not defects, and the correction is the lesson.** They were written by comparing a screenshot to a mockup without reading the reasons already in the code. That is D172's failure with the sides swapped: reasoning from the mockup instead of from the artifact.
 
