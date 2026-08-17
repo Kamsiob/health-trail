@@ -11,6 +11,7 @@ import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.BlockAction
+import com.kamsiob.healthtrail.ui.v4.BlockIconAction
 import com.kamsiob.healthtrail.ui.v4.Face
 import com.kamsiob.healthtrail.ui.v4.InsetDoor
 import com.kamsiob.healthtrail.ui.v4.NextBlock
@@ -34,12 +35,12 @@ import java.time.LocalDate
  *
  * **Four states, and all four are finished screens.** Rule 11 and rule 13:
  *
- * | Ahead | Saved to ask | What it draws |
+ * | Ahead | Saved to ask | What the foot offers |
  * |---|---|---|
- * | An appointment | Some | When, who, what, where, the count as a door, and a way to add another |
- * | An appointment | None | The same, without the count, and a way to save the first |
- * | Nothing | Some | The invitation, the count as a door, and both ways in |
- * | Nothing | None | The invitation and both ways in |
+ * | An appointment | Some | The count as a door, and a mark to save another |
+ * | An appointment | None | Save a question |
+ * | Nothing | Some | The count as a door, and marks for both ways in |
+ * | Nothing | None | Put it on the calendar, and a mark to save a question |
  *
  * **The empty state is an invitation, never an absence**, rule 13. "Nothing on
  * the calendar yet" with two ways to change that is a finished state; a blank
@@ -124,36 +125,65 @@ fun TodayHero(
         // never itself.
         onOpen = appointment?.let { { onOpenAppointment() } },
         modifier = modifier.testTag(TodayHeroTags.ROOT),
-        door = questionsReady.takeIf { it > 0 }?.let { count ->
-            {
+        // **One row: one wide thing, and up to two marks beside it.** Owner
+        // ruling, 2026-08-17. Which is which follows from what the block
+        // already knows, and the rule is one sentence: **the wide slot is the
+        // most useful thing that is not already on the screen above it.**
+        //
+        // | Ahead | Saved to ask | Wide | Marks |
+        // |---|---|---|---|
+        // | An appointment | Some | The count, as a door | Save a question |
+        // | An appointment | None | Save a question | none |
+        // | Nothing | Some | The count, as a door | Put it on the calendar, save a question |
+        // | Nothing | None | Put it on the calendar | Save a question |
+        //
+        // **A count always takes the wide slot when there is one**, because it
+        // is the only thing here carrying a number somebody needs before they
+        // walk into a room. **Adding is never offered twice**: whatever takes
+        // the wide slot loses its mark.
+        footer = {
+            val counted = questionsReady > 0
+            if (counted) {
                 InsetDoor(
-                    count = count.toString(),
-                    label = strings("today.next.questions.short", "count" to count),
-                    description = strings("today.next.questions", "count" to count),
+                    count = questionsReady.toString(),
+                    label = strings("today.next.questions.short", "count" to questionsReady),
+                    description = strings("today.next.questions", "count" to questionsReady),
                     hue = hueFor(Repository.Section.ASK_NEXT_TIME),
                     onOpen = onOpenQuestions,
-                    modifier = Modifier.testTag(TodayHeroTags.QUESTIONS),
+                    modifier = Modifier.weight(1f).testTag(TodayHeroTags.QUESTIONS),
+                )
+            } else if (appointment == null) {
+                BlockAction(
+                    mark = Symbols.addToCalendar,
+                    label = strings["appts.add"],
+                    onClick = onAddAppointment,
+                    modifier = Modifier.weight(1f).testTag(TodayHeroTags.ADD_APPOINTMENT),
+                )
+            } else {
+                BlockAction(
+                    mark = Symbols.addQuestion,
+                    label = strings["questions.add"],
+                    onClick = onAddQuestion,
+                    modifier = Modifier.weight(1f).testTag(TodayHeroTags.ADD_QUESTION),
                 )
             }
-        },
-        actions = {
-            // **The calendar first, because it is the thing that is missing.**
-            // Once something is on it, saving a question is the only quick add
-            // the block still owes: what to ask at the appointment it is showing.
-            if (appointment == null) {
-                BlockAction(
+
+            if (appointment == null && counted) {
+                BlockIconAction(
                     mark = Symbols.addToCalendar,
                     label = strings["appts.add"],
                     onClick = onAddAppointment,
                     modifier = Modifier.testTag(TodayHeroTags.ADD_APPOINTMENT),
                 )
             }
-            BlockAction(
-                mark = Symbols.addQuestion,
-                label = strings["questions.add"],
-                onClick = onAddQuestion,
-                modifier = Modifier.testTag(TodayHeroTags.ADD_QUESTION),
-            )
+            if (counted || appointment == null) {
+                BlockIconAction(
+                    mark = Symbols.addQuestion,
+                    label = strings["questions.add"],
+                    onClick = onAddQuestion,
+                    modifier = Modifier.testTag(TodayHeroTags.ADD_QUESTION),
+                )
+            }
         },
     )
 }

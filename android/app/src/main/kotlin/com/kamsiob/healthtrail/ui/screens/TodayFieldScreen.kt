@@ -106,6 +106,7 @@ import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Trace
 import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import java.time.LocalDate
@@ -1362,8 +1363,13 @@ private fun AnswerBody(
     val count = answer?.count?.takeIf { it > 0 }
     if (count != null && answer.title == null) {
         Text(
+            // **The reading face, not the mono one.** `docs/V4.md` 2.1 and
+            // D173: mono is for figures that line up in a column, and a number
+            // a card leads with is a headline. It was set in `monoL`, which put
+            // a typewriter figure directly under a sans label and above a sans
+            // line, so the smallest surface in the app carried three voices.
             text = Bidi.isolate(count.toString()),
-            style = if (lead) type.hero else type.monoL,
+            style = type.displayM,
             color = colors.ink,
         )
         // **A number with no noun is not an answer.** 21.3 gives every size one
@@ -1445,15 +1451,19 @@ private fun AnswerBody(
     val drewChart = tall && answer != null && answer.series.size > 1
     if (drewChart) {
         Spacer(Modifier.height(Space.xs))
-        Plot(
-            readings = chartPoints(answer.series),
+        // **The `ui/v4` trace, not the old plot.** D193, the owner: "the weight
+        // graph has missing sections in it... that just looks broken and
+        // weird." The old drawing stopped the line dead at every gap, so an
+        // ordinary irregular series came out as disconnected pieces. The trace
+        // draws one path, dashes it across a silence, and puts a dot on every
+        // reading. It takes the readings themselves and owns the gap rule.
+        Trace(
+            readings = answer.series,
             // A mark cannot be drawn in the color of the thing it is drawn on.
-            // This rung renders inside the saturated lead as well as on a white
-            // card, and in the lead the paper is this very hue, so the line was
-            // painted in exactly the background and the chart became a scatter
-            // of rings. Same test and same reason as `ChartCard`.
+            // This rung renders inside the tonal lead as well as on a card, and
+            // there the paper can be this very hue, so the line would be
+            // painted in exactly the background.
             line = if (colors.paper == hue.base) colors.ink else hue.base,
-            height = ChartHeight.standard,
         )
     }
 
@@ -1524,11 +1534,11 @@ private fun AnswerBody(
             // medications is text and reads as a block; three thumbnails
             // touching each other read as one strip of paper rather than three
             // documents. Everything else keeps the tighter rhythm it had.
-            verticalArrangement = if (cardType == "recent_documents") {
-                Arrangement.spacedBy(Space.xs)
-            } else {
-                Arrangement.Top
-            },
+            // **Air between items, because an item is two lines now.** Packed
+            // tight, a name and its dose ran into the next name and the list
+            // read as one paragraph. `withinGroup` is what a group's own air
+            // is, D188.
+            verticalArrangement = Arrangement.spacedBy(Space.withinGroup),
         ) {
             // **The trail card's newest entry is already the answer above it**,
             // so the list starts at the second. Every other card lists all of
@@ -1564,23 +1574,43 @@ private fun AnswerBody(
                         )
                         Spacer(Modifier.width(Space.s))
                     }
-                    Text(
+                    // **The name leads and its detail recedes.** Rule 15, and
+                    // the owner on this card: "the medication widget is still
+                    // ugly." It was one joined line per item at one size and
+                    // one ink, so five medications read as five identical gray
+                    // lines and the eye had to read every word to find a name.
+                    // The name is what somebody scans for, so it takes the
+                    // weight and the dose sits under it, quiet. D193.
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            // bidi-ok: isolated here, because this is the
+                            // person's own word for the thing.
+                            text = Bidi.isolate(
+                                item.label.ifBlank { strings["project.steps.ungrouped"] },
+                            ),
+                            style = type.rowTitle,
+                            color = colors.ink,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                         // The parts joined here rather than in the query,
                         // because joining is wording. `Bidi.join` isolates each
-                        // part, so a medication somebody typed in Arabic keeps
-                        // its own direction beside a dose typed in English, and
-                        // a date never renders as the EDTF it is stored as.
-                        text = Bidi.join(
-                            item.label.ifBlank { strings["project.steps.ungrouped"] },
+                        // part, so a dose typed in Arabic keeps its own
+                        // direction beside one typed in English, and a date
+                        // never renders as the EDTF it is stored as.
+                        Bidi.join(
                             item.note,
                             item.noteEdtf?.let { EventDateText.render(strings, it) },
-                        ),
-                        style = type.bodyS,
-                        color = colors.ink,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
+                        ).takeIf { it.isNotBlank() }?.let { detail ->
+                            Text(
+                                text = detail,
+                                style = type.bodyM,
+                                color = colors.ink2,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
                     // **Amounts at the end edge, in tabular mono.** 21.7 says
                     // amounts only at wide and right aligned, and section 7
                     // puts every amount in the mono face so a column of them
@@ -1594,7 +1624,9 @@ private fun AnswerBody(
                             ),
                             style = type.mono,
                             color = colors.ink,
-                            maxLines = 1,
+                            // **No cap.** A cropped amount is a different
+                            // amount, and rule 11 bans truncation. If a figure
+                            // needs two lines it takes two lines.
                         )
                     }
                 }
@@ -1611,7 +1643,7 @@ private fun AnswerBody(
             if (hidden > 0) {
                 Text(
                     text = strings("today.card.more", "count" to hidden),
-                    style = type.bodyS,
+                    style = type.bodyM,
                     color = colors.ink2,
                 )
             }

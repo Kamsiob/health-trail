@@ -6,10 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -56,7 +54,6 @@ import com.kamsiob.healthtrail.ui.theme.TabHue
  * the door inside it is another, and merging them would announce a paragraph and
  * then offer no way to press only the part that is a separate destination.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NextBlock(
     /**
@@ -91,21 +88,19 @@ fun NextBlock(
      */
     onOpen: (() -> Unit)? = null,
     /**
-     * The one thing worth doing before it, as a white card inside the block.
+     * The foot of the block: one wide thing and up to two marks, on one row.
      *
-     * Null when there is nothing, and the block is then simply the appointment.
-     * A card offering nothing to do would be an empty frame, rule 11.
-     */
-    door: (@Composable () -> Unit)? = null,
-    /**
-     * The quick ways to add what is missing, as white pills along the foot.
+     * **One row, owner ruling 2026-08-17**: the actions "should be streamlined
+     * and on the same row". Stacked full width pills made the block tall and
+     * read as a menu rather than as one answer with a couple of ways to act on
+     * it. [InsetDoor] is the wide one and [BlockIconAction] the marks.
      *
      * **White is what a person can press inside this block**, which is the rule
-     * the inset card already set: the block is one saturated surface, the pill
-     * saying when is a piece of it, and everything drawn on `card` is a door.
-     * One vocabulary, learned once. [BlockAction] draws them.
+     * the inset card set: the block is one saturated surface, the pill saying
+     * when is a piece of it, and everything drawn on `card` is a door. One
+     * vocabulary, learned once.
      */
-    actions: (@Composable FlowRowScope.() -> Unit)? = null,
+    footer: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val colors = HealthTrail.colors
 
@@ -213,19 +208,11 @@ fun NextBlock(
             }
         }
 
-        door?.invoke()
-
-        actions?.let { row ->
-            // **A flow row, because two pills do not fit on one line.** Both
-            // are sized to their labels, `docs/V4.md` 2.1, and "Add an
-            // appointment" beside "Write down a question" is wider than a
-            // phone: as a plain row the second was crushed to one character per
-            // line and read as a broken control. They wrap now, and at font
-            // scale 2.0 each takes its own line. Seen on the phone, rule 21.
-            FlowRow(
+        footer?.let { row ->
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Space.s),
-                verticalArrangement = Arrangement.spacedBy(Space.s),
+                verticalAlignment = Alignment.CenterVertically,
                 content = row,
             )
         }
@@ -233,17 +220,52 @@ fun NextBlock(
 }
 
 /**
- * One quick way to add what is missing, inside a saturated block.
+ * A quick add inside the block, as a mark alone.
  *
- * **White, because white inside the block is what a person can press.** The
- * inset card set that rule and this keeps it: the block is one surface, the
- * pill saying when is a piece of that surface, and anything on `card` is a
- * door. A tonal pill for an action would look exactly like the pill that does
- * nothing, which is the confusion rule 16 exists to prevent.
+ * **The compact half of the foot's grammar.** The row has one wide thing that
+ * says what it does in words and up to two of these beside it, which is what
+ * keeps the block one answer rather than a stack of buttons. Owner, 2026-08-17.
  *
- * **Sized to its label**, `docs/V4.md` 2.1, so two of them sit side by side and
- * neither claims the row. The mark is never announced: it draws the same word
- * the label already says.
+ * **The label is required and is the only thing naming it**, so a reader gets a
+ * verb where the eye gets a symbol. Circular and 48dp, which is the target rule
+ * 19 gates on, drawn on `card` because white inside this block means a door.
+ */
+@Composable
+fun BlockIconAction(
+    @DrawableRes mark: Int,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HealthTrail.colors
+    Box(
+        modifier = modifier
+            .size(Space.touchTarget)
+            .clip(CircleShape)
+            .background(colors.card)
+            .clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        Symbol(
+            symbol = mark,
+            contentDescription = null,
+            tint = colors.blue,
+            modifier = Modifier.size(Space.markInline),
+        )
+    }
+}
+
+/**
+ * One quick way to add what is missing, inside a saturated block, in words.
+ *
+ * **The wide half of the foot's grammar**, used where there is no count to
+ * offer as a door: it says what it does rather than leaving a bare mark to
+ * carry the whole meaning.
+ *
+ * **White, because white inside the block is what a person can press.** A tonal
+ * pill for an action would look exactly like the pill that does nothing, which
+ * is the confusion rule 16 exists to prevent.
  */
 @Composable
 fun BlockAction(

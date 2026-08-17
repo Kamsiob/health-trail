@@ -297,7 +297,11 @@ fun TodayCard(
             // 15dp while the token was 17 and both grids draw 18, so the most
             // looked at surface in the app was three off the drawing and
             // nothing pointed at it. D142.
-            .raisedCard(Radius.cardLarge)
+            // **Flat, because depth here is `paper` against the block and never
+            // elevation.** `docs/V4.md` 2.1, and the only shadow in the app is
+            // under the person's own paper, which casts one. A field of raised
+            // white rectangles is what made this surface read as unfinished
+            // beside the hero above it. D193.
             .clip(Radius.cardLarge)
             // **The card is quiet and the screen has one colored thing.**
             // D171. Tinting every card turned Today into a rainbow: six
@@ -306,11 +310,18 @@ fun TodayCard(
             // here: the lead carries the color, the cards carry the content,
             // and the section's hue appears as one small mark rather than as
             // a field.
-            .background(colors.card)
+            // **`sand`, the language's ordinary group.** White is reserved for
+            // the person's own paper, a form's action band and a tracked
+            // measure, D190, and a card counting what is on a list is none of
+            // those. On `paper` a white card has no edge at all, which is why
+            // the field needed a shadow to be visible: the tonal block needs
+            // neither. **Two places, because the resting surface is the one
+            // that paints.**
+            .background(colors.sand)
             .openableByTap(
                 label = openLabel,
                 onTap = onOpen,
-                resting = colors.card,
+                resting = colors.sand,
                 shape = Radius.cardLarge,
                 // long-press-twin: Today's Arrange action, per the parameter above.
                 onLongPress = onLongPress,

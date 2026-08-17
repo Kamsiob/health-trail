@@ -368,8 +368,12 @@ class TodayScreenTest {
         val strings = Strings.load(context)
         compose.onNodeWithTag(TodayHeroTags.ROOT).assertIsDisplayed()
         compose.onNodeWithText(strings["today.next.none"]).assertIsDisplayed()
+        // **One wide thing and a mark beside it**, D193. With nothing ahead and
+        // nothing saved to ask, the calendar takes the wide slot in words and
+        // saving a question is the mark, so a reader finds it by its label
+        // rather than by text on the screen.
         compose.onNodeWithText(strings["appts.add"]).assertIsDisplayed()
-        compose.onNodeWithText(strings["questions.add"]).assertIsDisplayed()
+        compose.onNodeWithContentDescription(strings["questions.add"]).assertIsDisplayed()
     }
 
     @Test
@@ -385,7 +389,7 @@ class TodayScreenTest {
         )
         val strings = Strings.load(context)
         compose.onNodeWithText(strings["appts.add"]).performClick()
-        compose.onNodeWithText(strings["questions.add"]).performClick()
+        compose.onNodeWithContentDescription(strings["questions.add"]).performClick()
         assertTrue("the calendar shortcut did nothing", appointment)
         assertTrue("the question shortcut did nothing", question)
     }

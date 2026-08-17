@@ -289,9 +289,12 @@ fun chartPoints(readings: List<Repository.Reading>): List<Reading> {
 /**
  * How much longer than usual a silence has to be before the line breaks.
  *
- * Three, which is loose enough that an ordinary irregular week does not shatter
- * a chart into fragments and tight enough that a season with nothing in it is
- * visible as one. It is a drawing rule and not a judgment: the app is deciding
+ * Six. It was three, which on a real notebook marked most of the line: readings
+ * are irregular by nature, so half the intervals beat three times the median and
+ * the drawing said "nothing was measured here" between almost every pair. A rule
+ * that fires constantly says nothing at all. Six is a silence somebody would
+ * actually notice, and it is what the owner was looking at when he said the
+ * chart looked broken. D193. It is a drawing rule and not a judgment: the app is deciding
  * where to lift the pen, never what the silence meant.
  */
-private const val GAP_MULTIPLE = 3
+private const val GAP_MULTIPLE = 6
