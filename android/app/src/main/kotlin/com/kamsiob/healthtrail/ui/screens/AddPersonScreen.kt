@@ -40,6 +40,7 @@ import com.kamsiob.healthtrail.ui.components.AvatarSize
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.components.FieldRow
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
@@ -202,9 +203,14 @@ fun AddPersonScreen(
                     } else {
                         strings["careteam.edit.title"]
                     },
-                    lead = strings["careteam.add.lead"],
+                    // The lead is an Aside now, on the section's wash with
+                    // its own icon, rather than the smallest gray line under the
+                    // title. D172, and the approved medication mockup.
+                    lead = null,
                     section = Repository.Section.CARE_TEAM,
                 )
+                    Spacer(Modifier.height(Space.m))
+                    Aside(text = strings["careteam.add.lead"], section = Repository.Section.CARE_TEAM)
 
                 // **The face the row will wear, filling in as they type.** It
                 // is the same avatar the care team draws, so somebody sees what

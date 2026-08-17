@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -91,9 +92,14 @@ fun AddInstructionScreen(
                 item {
                     FormHeader(
                         title = strings["instructions.add"],
-                        lead = strings["instructions.add.lead"],
+                        // The lead is an Aside now, on the section's wash with
+                        // its own icon, rather than the smallest gray line under the
+                        // title. D172, and the approved medication mockup.
+                        lead = null,
                         section = Repository.Section.STANDING_INSTRUCTIONS,
                     )
+                        Spacer(Modifier.height(Space.m))
+                        Aside(text = strings["instructions.add.lead"], section = Repository.Section.STANDING_INSTRUCTIONS)
                     Spacer(Modifier.height(Space.l))
                 }
 

@@ -34,6 +34,7 @@ import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.MoreChip
@@ -142,9 +143,14 @@ fun AddAppointmentScreen(
             ) {
                 FormHeader(
                     title = if (existing == null) strings["appts.add"] else strings["appts.edit.title"],
-                    lead = strings["appts.add.lead"],
+                    // The lead is an Aside now, on the section's wash with
+                    // its own icon, rather than the smallest gray line under the
+                    // title. D172, and the approved medication mockup.
+                    lead = null,
                     section = Repository.Section.APPOINTMENTS,
                 )
+                    Spacer(Modifier.height(Space.m))
+                    Aside(text = strings["appts.add.lead"], section = Repository.Section.APPOINTMENTS)
                 Spacer(Modifier.height(Space.l))
 
                 HealthTrailTextField(

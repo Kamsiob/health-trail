@@ -30,6 +30,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -108,9 +109,14 @@ fun AddBillScreen(
             ) {
                 FormHeader(
                     title = if (existing == null) strings["money.add"] else strings["money.edit.title"],
-                    lead = strings["money.add.lead"],
+                    // The lead is an Aside now, on the section's wash with
+                    // its own icon, rather than the smallest gray line under the
+                    // title. D172, and the approved medication mockup.
+                    lead = null,
                     section = Repository.Section.MONEY,
                 )
+                    Spacer(Modifier.height(Space.m))
+                    Aside(text = strings["money.add.lead"], section = Repository.Section.MONEY)
                 Spacer(Modifier.height(Space.l))
 
                 HealthTrailTextField(

@@ -35,6 +35,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
@@ -361,9 +362,14 @@ fun CaptureFormScreen(
                 // does more of the work than a label does.
                 FormHeader(
                     title = strings[key(kind, "title")],
-                    lead = strings["capture.sub"],
+                    // The lead is an Aside now, on the section's wash with
+                    // its own icon, rather than the smallest gray line under the
+                    // title. D172, and the approved medication mockup.
+                    lead = null,
                     section = Repository.Section.TRAIL,
                 )
+                    Spacer(Modifier.height(Space.m))
+                    Aside(text = strings["capture.sub"], section = Repository.Section.TRAIL)
 
                 Spacer(Modifier.height(Space.l))
 

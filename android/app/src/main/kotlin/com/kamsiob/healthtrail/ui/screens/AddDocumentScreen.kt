@@ -49,6 +49,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import androidx.compose.foundation.layout.Arrangement
@@ -277,9 +278,14 @@ fun AddDocumentScreen(
             ) {
                 FormHeader(
                     title = if (existing == null) strings["docs.add"] else strings["docs.edit.title"],
-                    lead = strings["docs.add.lead"],
+                    // The lead is an Aside now, on the section's wash with
+                    // its own icon, rather than the smallest gray line under the
+                    // title. D172, and the approved medication mockup.
+                    lead = null,
                     section = Repository.Section.DOCUMENTS,
                 )
+                    Spacer(Modifier.height(Space.m))
+                    Aside(text = strings["docs.add.lead"], section = Repository.Section.DOCUMENTS)
 
                 // Said only when it happened, and it says plainly that nothing
                 // was saved, because the worst version of this is somebody

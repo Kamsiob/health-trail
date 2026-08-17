@@ -45,6 +45,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FoldRow
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -133,9 +134,14 @@ fun UnfiledTrayScreen(
                     // which is the promise underneath this whole screen.
                     FormHeader(
                         title = strings["unfiled.title"],
-                        lead = strings["unfiled.subtitle"],
+                        // The lead is an Aside now, on the section's wash with
+                        // its own icon, rather than the smallest gray line under the
+                        // title. D172, and the approved medication mockup.
+                        lead = null,
                         section = Repository.Section.TRAIL,
                     )
+                        Spacer(Modifier.height(Space.m))
+                        Aside(text = strings["unfiled.subtitle"], section = Repository.Section.TRAIL)
                     Spacer(Modifier.height(Space.l))
                 }
 

@@ -31,6 +31,7 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -113,9 +114,14 @@ fun CorrectIncidentScreen(
             ) {
                 FormHeader(
                     title = strings["incident.correct.title"],
-                    lead = strings["incident.correct.lead"],
+                    // The lead is an Aside now, on the section's wash with
+                    // its own icon, rather than the smallest gray line under the
+                    // title. D172, and the approved medication mockup.
+                    lead = null,
                     section = Repository.Section.THREADS,
                 )
+                    Spacer(Modifier.height(Space.m))
+                    Aside(text = strings["incident.correct.lead"], section = Repository.Section.THREADS)
                 Spacer(Modifier.height(Space.l))
 
                 HealthTrailTextField(

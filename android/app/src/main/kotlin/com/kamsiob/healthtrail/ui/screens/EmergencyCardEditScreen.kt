@@ -29,6 +29,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.MoreChip
 import com.kamsiob.healthtrail.ui.components.cappedChips
@@ -129,9 +130,14 @@ fun EmergencyCardEditScreen(
             ) {
                 FormHeader(
                     title = strings["emergency.edit.title"],
-                    lead = strings["emergency.edit.lead"],
+                    // The lead is an Aside now, on the section's wash with
+                    // its own icon, rather than the smallest gray line under the
+                    // title. D172, and the approved medication mockup.
+                    lead = null,
                     section = Repository.Section.EMERGENCY_CARD,
                 )
+                    Spacer(Modifier.height(Space.m))
+                    Aside(text = strings["emergency.edit.lead"], section = Repository.Section.EMERGENCY_CARD)
 
                 // **Who to call is chosen, never typed again.** Everybody on
                 // the care team already has a name and a number in this

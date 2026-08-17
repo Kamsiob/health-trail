@@ -33,6 +33,7 @@ import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -132,9 +133,14 @@ fun AddMilestoneScreen(
             ) {
                 FormHeader(
                     title = strings[ if (existing == null) "milestones.add" else "milestones.edit.title" ],
-                    lead = strings["milestones.add.lead"],
+                    // The lead is an Aside now, on the section's wash with
+                    // its own icon, rather than the smallest gray line under the
+                    // title. D172, and the approved medication mockup.
+                    lead = null,
                     section = Repository.Section.CHAPTERS,
                 )
+                    Spacer(Modifier.height(Space.m))
+                    Aside(text = strings["milestones.add.lead"], section = Repository.Section.CHAPTERS)
                 Spacer(Modifier.height(Space.l))
 
                 HealthTrailTextField(

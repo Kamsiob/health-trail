@@ -27,6 +27,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupedSurface
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -103,9 +104,14 @@ fun CorrectEntryScreen(
             ) {
                 FormHeader(
                     title = strings["entry.correct"],
-                    lead = strings["entry.correct.lead"],
+                    // The lead is an Aside now, on the section's wash with
+                    // its own icon, rather than the smallest gray line under the
+                    // title. D172, and the approved medication mockup.
+                    lead = null,
                     section = Repository.Section.TRAIL,
                 )
+                    Spacer(Modifier.height(Space.m))
+                    Aside(text = strings["entry.correct.lead"], section = Repository.Section.TRAIL)
 
                 Spacer(Modifier.height(Space.l))
 

@@ -28,6 +28,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRowText
+import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.GroupHeaderText
@@ -167,9 +168,14 @@ fun StartProjectScreen(
                     Spacer(Modifier.height(Space.l))
                     FormHeader(
                         title = strings["projects.start.title"],
-                        lead = strings["projects.start.lead"],
+                        // The lead is an Aside now, on the section's wash with
+                        // its own icon, rather than the smallest gray line under the
+                        // title. D172, and the approved medication mockup.
+                        lead = null,
                         section = Repository.Section.PROJECTS,
                     )
+                        Spacer(Modifier.height(Space.m))
+                        Aside(text = strings["projects.start.lead"], section = Repository.Section.PROJECTS)
                     Spacer(Modifier.height(Space.xs))
                     // **Where they are in the flow**, 20.5 screens 03 and 04.
                     // The preview said "2 of 2" while this said nothing, so
