@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.ui.components.Symbol
@@ -43,6 +44,14 @@ fun ListRow(
     title: String,
     modifier: Modifier = Modifier,
     support: String? = null,
+    /**
+     * A tag on the support line itself, for a caller whose second line is a
+     * fact something asserts on.
+     *
+     * The notebook's counts are the case: they are what its tests read, and a
+     * tag on the whole row would make the assertion pass on the title.
+     */
+    supportTestTag: String? = null,
     @DrawableRes mark: Int? = null,
     markTint: Color = HealthTrail.colors.ink2,
     markWash: Color = HealthTrail.colors.card,
@@ -89,6 +98,11 @@ fun ListRow(
                     text = support,
                     style = HealthTrail.type.bodyM,
                     color = HealthTrail.colors.ink2,
+                    modifier = if (supportTestTag == null) {
+                        Modifier
+                    } else {
+                        Modifier.testTag(supportTestTag)
+                    },
                 )
             }
         }
@@ -120,3 +134,40 @@ fun RowDivider(modifier: Modifier = Modifier, inset: Boolean = true) {
 
 /** The squircle a row's mark sits in, measured off `m3v4-1`. */
 private val MARK_TILE = Space.markTile
+
+/**
+ * The door into search, as `m3v4-1` draws it directly under the title.
+ *
+ * **A tonal pill with the mark and the invitation**, not a field. Tapping it
+ * opens the search screen, which is where typing happens: a field that looks
+ * live but is not is the thing law 2 calls a costume lying about what it does.
+ */
+@Composable
+fun SearchDoor(
+    label: String,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = Space.touchTarget)
+            .clip(Radius.pill)
+            .background(HealthTrail.colors.sand)
+            .clickable(role = Role.Button, onClickLabel = label, onClick = onOpen)
+            .padding(horizontal = Space.ml, vertical = Space.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        Symbol(
+            symbol = com.kamsiob.healthtrail.ui.components.Symbols.search,
+            contentDescription = null,
+            tint = HealthTrail.colors.ink2,
+        )
+        Text(
+            text = label,
+            style = HealthTrail.type.bodyM,
+            color = HealthTrail.colors.ink2,
+        )
+    }
+}

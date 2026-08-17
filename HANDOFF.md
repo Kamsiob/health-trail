@@ -29,6 +29,8 @@ Step 2, #386, done so far: **the face, the icons, the navigation bar, the group 
 
 **The field was already right.** `m3v4-4` draws a notched outline with a floating label and the app already did.
 
+**The method changed on 2026-08-17 and `docs/ACCEPTANCE.md` is the authority on it.** The owner: "no old design language at all. get rid of it so it doesn't influence." **Nothing old is edited any more.** The new set is written from scratch in `ui/v4`, a screen is rewritten onto it rather than adapted, and an old component is deleted the moment its last caller goes. **The old package being empty is the test.**
+
 **Step 2 still to do: the sheet and the sand accordion.** `rememberModalBottomSheetState` is also deprecated in the alpha at 18 sites and gets fixed with them. Then step 3, the screens.
 
 **Step 3 starts with the project screen, and the owner has already ruled on it:** "it's absolutely horrid and so far away from the mock-ups." Against `m3v4-2` it needs a gold "decision expected" tonal block where a white date row is now, a status pill in the top corner, one filled action beside two tonal ones with their icons above the labels rather than three white tiles, and a "The road" heading over the spine. Today's card grid is the other one he has named: a lone small card leaves half a row empty beside it.

@@ -19,6 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Lead
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
+import com.kamsiob.healthtrail.ui.v4.SearchDoor
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.GroupHeader
@@ -178,28 +185,22 @@ enum class NotebookGroup(val labelKey: String, val sections: List<Repository.Sec
 }
 
 /**
- * The table of contents, with live counts.
+ * The notebook: the table of contents for everything written down.
  *
- * **The sections never move.** Their order is fixed, none is ever hidden, and
- * none changes group, because the whole value of a table of contents is that a
- * person who learned where something was finds it in the same place next month.
- * What the situation template decides is weight: a section it puts forward gets
- * the fullest row, a section it folds collapses to a single line, and a folded
- * section is still right there in its own place, one tap away.
+ * **Rewritten from scratch onto `ui/v4`**, #386, not converted. The owner: "no
+ * old design language at all. get rid of it so it doesn't influence." What this
+ * screen draws is `m3v4-1`, measured: a lead at display size, the door into
+ * search directly under it, and quiet tonal blocks of rows with a small colored
+ * label naming each group.
  *
- * **A count of zero is shown as words, not as a zero.** "Nothing yet" invites,
- * where a column of zeros reads as a scorecard of what the person has failed to
- * fill in. That is the same reason there are no progress rings here and no
- * percentage anywhere: the app never keeps score of someone's diligence. The
- * count is one style in one color at every weight, so the row's emphasis is
- * never mistaken for a judgment about how full the section is.
+ * **The fold is gone and so is the wall it managed.** Every section is on the
+ * screen under the name of the group it belongs to, which is what D163 decided
+ * after the owner watched a stranger face this screen: "a gigantic wall of
+ * options, there's no categories, nothing makes sense".
  *
- * **The empty state is the resting state.** A new notebook is twelve rows each
- * saying "Nothing yet", which is a complete screen rather than a blank one, so
- * there is no separate empty layout to fall into and no way to reach one.
- *
- * Composed from the icon tile 5.12, the group header 5.13, cards 5.3, Display L,
- * Display S, Label, Body M, and the Mono count style. Nothing new was invented.
+ * **What needs the person sits in its own block at the top**, and is absent
+ * when there is nothing, per rule 11.5: announcing the absence of a problem is
+ * not information.
  */
 @Composable
 fun NotebookScreen(
@@ -218,30 +219,10 @@ fun NotebookScreen(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
     val bySection = sections.associateBy { it.section }
-    // **Open where the screen has room for it, closed where it does not.**
-    // The fold exists so twelve rows do not overwhelm a short screen, and on a
-    // tall one it was buying nothing and costing a tap: the notebook ended
-    // above the halfway mark with the rest of the screen empty. **The fold is
-    // still a fold**, so somebody who closes it on a tall phone keeps it
-    // closed, and the order never changes either way. Rule 23.
-
-    // **Measured against the closed notebook rather than the open one.**
-    // Twelve rows do not fit on any phone, so asking whether everything fits
-    // would keep the fold shut forever. The question worth asking is whether
-    // closing it leaves the screen half empty, which it does on anything taller
-    // than the closed content.
-    //
-    // **Asked of the window rather than of the layout.** A
-    // `BoxWithConstraints` answers the same question and does it during
-    // measurement, which made a journey test die with "performMeasureAndLayout
-    // called during measure layout" when three classes ran together. The
-    // window's size is known before anything is measured, and it is what lint
-    // asks for in place of the configuration's own height.
-    // **Compared in pixels, because that is what the window reports.** The
-    // first version converted the window's height to dp and the fold stayed
-    // shut on a screen with room: the conversion was going the wrong way, and
-    // the only way to tell was to look at the phone rather than at the code.
-    val density = LocalDensity.current
+    var showTips by remember { mutableStateOf(false) }
+    if (showTips) {
+        TipsSheet(tip = tipForDestination("notebook"), onDismiss = { showTips = false })
+    }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         Column(
@@ -250,79 +231,45 @@ fun NotebookScreen(
                 .verticalScroll(rememberScrollState())
                 .testTag(NotebookTags.ROOT)
                 .padding(horizontal = Space.screenHorizontal),
-            verticalArrangement = Arrangement.spacedBy(Space.cardGap),
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
             Spacer(Modifier.height(Space.sm))
 
-            // **No eyebrow chip on a tab root.** The bottom bar already says
-            // where you are, and this screen wore a second name, "The binder",
-            // over its first. Two names for one place is what the stranger
-            // test failed on: the chip taught vocabulary nobody needed. The
-            // chip stays on interior screens, where it is the way back. #376.
-            // **The tab root gets its own page onboarding**, #379, beside the
-            // title rather than under it, so the heading still leads.
-            var showTips by remember { mutableStateOf(false) }
-            if (showTips) {
-                TipsSheet(
-                    tip = tipForDestination("notebook"),
-                    onDismiss = { showTips = false },
-                )
-            }
+            // **No eyebrow on a tab root.** The bottom bar already says where
+            // you are, and this screen used to wear a second name over its
+            // first, which is the vocabulary the stranger test failed on. #376.
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = strings["notebook.title"],
-                    style = HealthTrail.type.displayM,
-                    color = colors.ink,
-                )
+                Lead(text = strings["notebook.title"], modifier = Modifier.weight(1f))
                 HeaderActions(onTips = { showTips = true })
             }
 
-            // **The door to everything, on the screen that is about
-            // everything.** The approved v4 mockup puts it directly under the
-            // title, `m3v4-1`, and the built screen had no way into search at
-            // all: it was reachable from Today, Today's field and More, and
-            // not from the table of contents.
-            //
-            // **This is the surface [UniversalSearchDoor] is for.** Its own
-            // note rules it out inside a section, where a universal field
-            // brings eleven other sections to answer a question about one.
-            // The notebook is not a section, it is the way to all of them.
-            UniversalSearchDoor(
+            SearchDoor(
+                label = strings["today.search.everything"],
                 onOpen = onSearch,
                 modifier = Modifier.testTag(NotebookTags.SEARCH),
             )
 
-            // **What needs the person, as one row rather than a hero.**
-            //
-            // The grid draws it as a single grouped row with an open marker, and
-            // that is right for this screen: the notebook's job is to be a table
-            // of contents, so the one thing at the top is a door to whatever is
-            // wrong rather than a display-size statement of it. Today is the
-            // screen that says it large, and saying it twice at two sizes would
-            // be the app raising its voice about the same fact.
-            //
-            // **Absent when there is nothing**, per 11.5. Announcing the absence
-            // of a problem is not information.
             if (waiting > 0 || openIncidents > 0) {
-                GroupedSurface {
+                Block(padding = Space.none) {
                     if (openIncidents > 0) {
-                        DenseRow(
+                        ListRow(
                             title = strings("today.open.incidents", "count" to openIncidents),
-                            leading = {
-                                WaypointDot(color = colors.alert, state = Waypoint.OPEN)
-                            },
-                            chevron = true,
-                            divider = waiting > 0,
+                            mark = Symbols.incidents,
+                            markTint = colors.alertInk,
+                            markWash = colors.alertWash,
+                            isDoor = true,
                             onClick = onOpenIncidents,
                             modifier = Modifier.testTag(NotebookTags.OPEN_INCIDENTS),
                         )
+                        if (waiting > 0) RowDivider()
                     }
                     if (waiting > 0) {
-                        DenseRow(
+                        ListRow(
                             title = strings("unfiled.waiting", "count" to waiting),
-                            chevron = true,
-                            divider = false,
+                            mark = Symbols.noteStack,
+                            markTint = colors.goldInk,
+                            markWash = colors.goldWash,
+                            isDoor = true,
                             onClick = onOpenUnfiled,
                             modifier = Modifier.testTag(NotebookTags.WAITING),
                         )
@@ -330,44 +277,24 @@ fun NotebookScreen(
                 }
             }
 
-            // **Four named clusters, not a wall and not a fold.** The owner
-            // watched a stranger face this screen and then faced it himself:
-            // "a gigantic wall of options. there's no categories. nothing
-            // makes sense. I don't know where to look." The group model below
-            // had existed for months and the render only ever used it to
-            // compute order: the headers were designed and never drawn. Now
-            // they are drawn, which is rule 15 doing its actual job, and the
-            // "More sections" fold is gone with the wall it managed: eight
-            // rows behind an unnamed count was hiding, not hierarchy.
-            //
-            // **Grid screen 03 draws four lead sections and a fold.** This
-            // departs from it, on the owner's live direction, 2026-08-16, and
-            // D163 records the departure so D142 stays honest.
-            //
-            // **The order inside each group never changes**, so a person who
-            // learned where documents live finds them in the same place, only
-            // now under a name that says why they live there.
+            // **Every section, under the name of the group it belongs to**, in
+            // an order that never changes, so somebody who learned where the
+            // documents live finds them there next month. D163.
             for ((groupIndex, group) in NotebookGroup.entries.withIndex()) {
                 val rows = group.sections.mapNotNull { bySection[it] }
                 if (rows.isEmpty()) continue
-                // **The headers arrive with their groups**, D168, so the four
-                // clusters land in reading order rather than the whole screen
-                // appearing at once.
+                Spacer(Modifier.height(Space.s))
+                // The label belongs to the block under it, so it arrives with
+                // it rather than floating between two groups. D168.
                 Box(modifier = Modifier.arrivesInOrder(groupIndex * 2)) {
-                    GroupHeader(labelKey = group.labelKey)
+                    Eyebrow(text = strings[group.labelKey])
                 }
-                // **No gap here, because the column already spaces its
-                // children.** With `headerGap` on top of that the eyebrow sat
-                // 30dp from the group it names and 40dp from the one above,
-                // which is almost the same distance: on the phone it read as
-                // floating between the two rather than belonging to either.
-                // Rule 15 asks that what belongs together be grouped, and a
-                // heading that is not attached to its own rows is the one
-                // thing a heading has to get right.
-                GroupedRows(items = rows) { row, isLast ->
-                    SectionRow(row = row, isLast = isLast, onOpen = onOpen)
+                Block(padding = Space.none) {
+                    rows.forEachIndexed { index, row ->
+                        SectionRow(row = row, onOpen = onOpen)
+                        if (index != rows.lastIndex) RowDivider()
+                    }
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
 
             Spacer(Modifier.height(fabScrollClearance))
@@ -376,56 +303,36 @@ fun NotebookScreen(
 }
 
 
-
 /**
- * One section, as a row in a grouped surface.
+ * One section, as a row in a block.
  *
- * **Its icon sits in its own section's wash**, per `DESIGN.md` 4.3, which is
- * what lets a person find documents by color before reading a word. The mapping
+ * **Its mark sits in its own section's wash**, `DESIGN.md` 4.3, which is what
+ * lets a person find the documents by color before reading a word. The mapping
  * is the owner's and lives in `hueFor` alone.
  *
- * **The count is Mono and a count of zero reads as words.** "Nothing yet"
- * invites, where a column of zeros reads as a scorecard of what the person has
- * failed to fill in. One style at one weight for every section, so a row's
- * emphasis is never mistaken for a judgment about how full it is.
+ * **Each section counts in its own units**, which is what `m3v4-1` draws: "9
+ * people", "6 on the list", "231 entries". It said "N items" for all twelve
+ * once, and "Money, 6 items" tells somebody nothing they came for. #347. The
+ * key is derived from the section, so a section added later fails loudly at a
+ * missing key rather than falling back to a generic word. D133.
  */
 @Composable
 private fun SectionRow(
     row: SectionCount,
-    isLast: Boolean,
     onOpen: (Repository.Section) -> Unit,
 ) {
     val strings = LocalStrings.current
     val hue = hueFor(row.section)
-    // **Each section counts in its own units**, which is what the grid
-    // draws: "9 people", "3 current", "1,630 entries". It said "N items"
-    // for all twelve, and **"Money: 6 items" tells somebody nothing they
-    // came for.** #347.
-    //
-    // **The key is derived from the section rather than listed here**, so a
-    // section added later fails loudly at its missing key instead of
-    // quietly falling back to a generic word. D133.
     val countKey = "notebook.count.${row.section.name.lowercase()}"
-
-    DenseRow(
+    ListRow(
         title = strings[labelKey(row.section)],
-        // **The count is the row's second line, not a trailing value.** The grid
-        // draws it that way and it is right for a table of contents: "Care team,
-        // 9 people" reads as one fact about one section, where a number pushed to
-        // the far edge reads as a column in a table and invites comparing
-        // sections against each other, which says nothing.
-        subtitle = row.amount?.let { strings("notebook.count.money.unsettled", "amount" to it) }
+        support = row.amount?.let { strings("notebook.count.money.unsettled", "amount" to it) }
             ?: strings(countKey, "count" to row.count),
-        subtitleTestTag = NotebookTags.count(row.section),
-        leading = {
-            IconTile(
-                section = row.section,
-                tint = hue.ink,
-                background = hue.wash,
-            )
-        },
-        chevron = true,
-        divider = !isLast,
+        supportTestTag = NotebookTags.count(row.section),
+        mark = Symbols.of(row.section),
+        markTint = hue.ink,
+        markWash = hue.wash,
+        isDoor = true,
         onClick = { onOpen(row.section) },
         modifier = Modifier.testTag(NotebookTags.row(row.section)),
     )
