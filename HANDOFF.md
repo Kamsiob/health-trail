@@ -4,7 +4,7 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Written for a machine: fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-17, for the interface rebuild.
+**Last rewritten:** 2026-08-17, during the retirement pass.
 
 ---
 
@@ -12,6 +12,8 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 - Tree clean, all on `origin/main`. CI green at tip: `gh run list --branch main --limit 3`.
 - 218 unit, 29 repo checks, lint, all green. **The instrumented suite has not been run clean end to end since the Today work**: it died at 430 on the Compose alpha, and the class that failed passes alone. Run it and read the counts before believing anything about it.
+- **Twelve retirement passes landed 2026-08-17.** `ui/components` is at 43 files from 57. Every one verified with `tools/verify.sh` and pushed on its own commit.
+- **The app was swept on the phone after the eleventh** and the captures are in `docs/screenshots/audit-*`. One defect came out of it and is fixed: a long value in a `ListRow` now sits under the title.
 - **The APK is the last thing, not the next thing.** Owner, 2026-08-17: "the APK is after the full app is complete. all surfaces and widgets and buttons and text and styling and spacing and everything is updated to the material 3 expressive."
 - Phone at baseline, stays plugged in: font scale 1.0, animator 1.0, no reader, night mode `no`.
 
@@ -25,23 +27,36 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 ### Where it stands
 
-- **Step 1, the theme: done.** #385. `MaterialExpressiveTheme`, 48 color roles, the type ladder, five corners, reduced motion through `StillMotionScheme`.
-- **Step 2, the shared surfaces: done.** #386. Face, icons, nav bar, blocks, rows, buttons, switch, sheet, forms. The accordion was closed rather than replaced, D185.
-- **Phase 4.** Counting screens was the wrong measure and it made the job look bigger than it is: what is left is a component retirement, `gh issue view 387`. Today is part done: the permanent hero, the header, the card surfaces, the sizing rule and the measure card are in; the per-type card bodies, arrange mode and the card gallery are not.
+- **Step 1, the theme: done.** #385.
+- **Step 2, the shared surfaces: done.** #386.
+- **Phase 4, the retirements: twelve of them done**, in this order, one commit each:
+  `GroupedSurface`, `DenseRow` (+ the old `ChoiceRow` and `Hairline`), `GroupHeader`,
+  `Aside`, `Avatar` (+ `initialsOf`, `AvatarSize`), `Buttons`, `Chips`, the fields
+  (`TextFields`, `FieldRow`, `FieldGroup`, `DictatableField`), the folds
+  (`FoldRow`, `Disclosure`), `SectionScaffold`, `FormHeader`.
+- **`ui/v4` grew what the retirements needed**: a selectable `ChoiceChip` and
+  `MoreChip`, `Field` on Material's outlined field, `Page` with the band, the
+  rail, pull to refresh, the tips lamp, the edit pencil and the arrival spring.
 
-**`ui/v4` holds:** `Page` + `labeledBlock`, `Block`/`BlockTone`, `FactBlock`, `Eyebrow`, `Lead`, `BigNumber`, `Body`, `ListRow`/`RowDivider`/`ChoiceRow`, `SearchDoor`, `PaperCard`, `Action`/`ActionEmphasis`/`IconAction`, `Sheet`/`SheetBody`/`rememberSheet`, `Avatar`/`PersonHero`/`PersonRow`, `Segments`, `Road`/`Stop`/`RouteMark`, `FieldBlock`.
+**What is left in `ui/components`, measured 2026-08-17 by caller count:**
 
-**Also in `ui/v4` now:** `Trace` (+ `TraceHeight`), `Chip`, `StatBlock`, `NextBlock`/`InsetDoor`/`Face`/`BlockAction`/`BlockIconAction`. Fourteen files.
+| Calls | What | Becomes |
+|---|---|---|
+| 101 | `Symbols` | **stays.** It is the Material Symbols catalog |
+| 41 | `Spine` (`Waypoint`, `SpineRow`, `WaypointDot`, `RouteSwatch`) | `Road`/`Stop`, D187 |
+| 36 | `BottomNav` (`Destination`) | a navigation type, not a drawing. Move, do not redraw |
+| 34 | `Dictate` | needs the Material mic symbol fetched; the app authors no glyphs |
+| 27 | `Press` (`openableByTap`, `pressedSurface`, `focusRingAlpha`) | infrastructure. Move into `ui/v4` |
+| 14 | `TodayCard`, `TodayLead`, `ChartCard` | with Today, D191 to D193 |
+| 11 | `DatePicker` | Material's own date picker |
+| 10 | `Tips` | keeps its job, moves |
+| 6 each | `Thumbnail`, `RoadStrip`, `HeaderAction`, `Share` | `PaperCard`, `Road`, the page's corner |
+| 4 or less | `SectionIcon`, `EmptyDrawing`, `Waiting`, `Tile`, `Hero`, `StepRow`, `TabChip`, `Confirm`, `Stages`, `ViewToggle`, `ViewPreference`, `StandingCard`, `EdgeScrubber`, `ScopedSearch`, `PinnedGroup`, `CaptureFab`, `MonthGrid`, `CalendarHandoff`, `DateRow`, `LatestWordCard`, `StickyHeader`, `ToggleRow` | one at a time |
+| 0 | `Chevron`, `DraftSavers`, `FabClearance`, `ReferenceLine`, `RoundCard`, `UniversalSearch`, `WashBand` | **nothing outside the package calls these.** Check and delete |
 
-**Still to write:** the switch row, and a grid cell for the documents pictures view. **Everything else a retirement needs already exists.**
-
-### Next
-
-**`gh issue view 321` is the order, and `gh issue view 387` is the checklist.** Not repeated here.
-
-**The short version: the work left is retiring about ten components out of `ui/components` onto `ui/v4`, not rewriting screens.** Measured 2026-08-17. Six of them are renames, `GroupedSurface` and `DenseRow` are already drawing v4. The largest real design debt is the folds: `FoldRow` and `Disclosure` across 22 screens, which D185 bans.
-
-**The test is that `ui/components` empties.**
+**Then Today** (the per-type card bodies, arrange mode, the card gallery), then
+**more than one person in one notebook**, then the full instrumented suite and
+the phases of `docs/ACCEPTANCE.md`.
 
 ### The card grammar, owner 2026-08-17, and it is not negotiable
 
@@ -65,6 +80,10 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 - **An eyebrow's words are capitals on screen and natural in the description.** Assert on the description.
 - **A name inside a sentence is isolated, so the test expectation carries the marks too.** `today.masthead` renders `⁨Ruth⁩'s day`, and asserting on "Ruth's day" fails on a screen that is drawing it correctly.
 - **A screen's own file name is not evidence of which screen ships.** Two Todays, one board entry, and the shell comment naming the live one was a year out of date. D191.
+- **A retirement is a script plus a diff read, not fifty hand edits.** Every pass here was: measure the call sites, extend the v4 component once if it is missing something, convert with a small Python pass, compile, read the diff, `tools/verify.sh`, commit. The scripts are in the session scratchpad and each one is twenty lines.
+- **The compiler catches the rename and never the drawing.** `ListRow`'s mono value looked identical in the source and wrong on the phone. Sweep after a batch, not after each one.
+- **`ui/v4` files must not import their own package.** An import fixer that does not check the file's own package writes `import ...ui.v4.BlockTone` into `ui/v4/Surfaces.kt`, which compiles and is noise.
+- **A `git rm` of a file you are still reading loses it.** `git show HEAD:<path> > <path>` brings it back; there is no need for a destructive command, rule 6.
 
 ## 3. Reading ladder
 
