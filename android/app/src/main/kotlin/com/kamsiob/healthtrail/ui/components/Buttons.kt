@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.animation.core.animateFloatAsState
@@ -65,44 +69,36 @@ fun FilledButton(
     enabled: Boolean = true,
 ) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, if (enabled) colors.blue else colors.sand)
-    val ring by focusRingAlpha(interaction)
-    val scale by pressScale(interaction)
     val haptics = LocalHapticFeedback.current
-
-    Box(
-        modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            // The touch target is 48dp regardless of how tall the button looks,
-            // which is the floor for everything in this app.
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.pill)
-            .background(surface)
-            .border(Space.focusRing, colors.blueDeep.copy(alpha = ring), Radius.pill)
-            .clickable(
-                enabled = enabled,
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = {
-                    // **The filled button is the commit**, D168: saving,
-                    // starting, confirming. A tick under the thumb at the
-                    // moment something is written down is the difference
-                    // between an interface that responded and one that felt
-                    // like it did. Quiet buttons stay silent, because a
-                    // secondary action that buzzes is noise.
-                    haptics.performHapticFeedback(HapticFeedbackType.Confirm)
-                    onClick()
-                },
-            )
-            .padding(horizontal = Space.l, vertical = Space.sm),
-        contentAlignment = Alignment.Center,
+    Button(
+        onClick = {
+            // **The filled button is the commit**, D168: saving, starting,
+            // confirming. A tick under the thumb at the moment something is
+            // written down is the difference between an interface that
+            // responded and one that felt like it did. Quiet buttons stay
+            // silent, because a secondary action that buzzes is noise.
+            haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+            onClick()
+        },
+        modifier = modifier.sizeIn(minHeight = Space.touchTarget),
+        enabled = enabled,
+        // **A corner of its own, not a pill.** `m3v4-2` draws its three
+        // actions as rounded rectangles and `m3v4-4` draws Save the same way.
+        // D167: shape variety is the loudest expressive signal, and an action
+        // that wears the card's corner is one more thing that looks like
+        // everything else.
+        shape = Radius.button,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = colors.blue,
+            contentColor = colors.onBlue,
+            disabledContainerColor = colors.sand,
+            disabledContentColor = colors.ink2,
+        ),
+        contentPadding = PaddingValues(horizontal = Space.l, vertical = Space.sm),
     ) {
         Text(
             text = label,
             style = HealthTrail.type.label,
-            color = if (enabled) colors.onBlue else colors.ink2,
             textAlign = TextAlign.Center,
             modifier = Modifier.defaultMinSize(minHeight = 0.dp),
         )
@@ -160,44 +156,29 @@ fun QuietButton(
     enabled: Boolean = true,
 ) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-    val ring by focusRingAlpha(interaction)
-    val scale by pressScale(interaction)
-
-    Box(
-        modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.pill)
-            .background(surface)
-            // **A visible border at rest, which is the v4 change.** Before, this
-            // drew its border only when focused, so at rest it was a pale
-            // surface with no edge: readable as a button on `paper`, invisible
-            // as one on `card`. Law 2 requires a costume be recognizable without
-            // context, so the outlined pill is outlined all the time. The focus
-            // ring thickens the same border rather than adding a second one, so
-            // a focused control is not two rings.
-            .border(
-                width = if (ring > 0f) 2.dp else 1.5.dp,
-                color = if (ring > 0f) colors.blue else colors.blue.copy(alpha = OUTLINE_ALPHA),
-                shape = Radius.pill,
-            )
-            .clickable(
-                enabled = enabled,
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .padding(horizontal = Space.m, vertical = Space.s),
-        contentAlignment = Alignment.Center,
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier.sizeIn(minHeight = Space.touchTarget),
+        enabled = enabled,
+        shape = Radius.button,
+        // **Tonal rather than outlined, which is the v4 change.** `docs/V4.md`
+        // 4 lists "the outlined pill button" as the thing being removed, and
+        // `m3v4-2` draws the two secondary actions beside the filled one as
+        // quiet filled blocks with no border at all. A container is a stronger
+        // "this is tappable" than an outline and it does not add a second edge
+        // to a screen already made of edges.
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = colors.sand,
+            // **Blue, because this is an action**, and blue is what this app
+            // spends on actions and only on actions.
+            contentColor = colors.blue,
+            disabledContainerColor = colors.sand,
+            disabledContentColor = colors.ink2,
+        ),
+        contentPadding = PaddingValues(horizontal = Space.m, vertical = Space.s),
     ) {
         Text(
             text = label,
-            // **Blue, not ink.** The outlined pill is an action, and blue is
-            // what this app spends on actions and only on actions.
-            color = if (enabled) colors.blue else colors.ink2,
             style = HealthTrail.type.label,
             textAlign = TextAlign.Center,
             modifier = Modifier.defaultMinSize(minHeight = 0.dp),

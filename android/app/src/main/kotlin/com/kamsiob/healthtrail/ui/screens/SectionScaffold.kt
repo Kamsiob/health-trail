@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -53,6 +54,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.components.TabChipText
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.components.Symbol
 import com.kamsiob.healthtrail.ui.components.railWidth
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -348,11 +351,22 @@ fun SectionScaffold(
                     // what this place is for. It sits with the tab rather than
                     // beside the heading so it never competes with the one
                     // thing the screen leads with.
+                    // **A back arrow where the drawing puts one**, #386.
+                    // `m3v4-2` and `m3v4-5` both open with an arrow in the top
+                    // corner and no tab. The gold underlined chip that used to
+                    // sit here said which section you were in, which the
+                    // heading directly under it already says.
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        TabChipText(
-                            hue = section?.let { hueFor(it) } ?: wholeAppHue(),
-                            label = title,
-                        )
+                        IconButton(
+                            onClick = onBack,
+                            modifier = Modifier.testTag(SectionTags.BACK),
+                        ) {
+                            Symbol(
+                                symbol = Symbols.back,
+                                contentDescription = strings[backLabelKey],
+                                tint = colors.ink,
+                            )
+                        }
                         Spacer(Modifier.weight(1f))
                         // **The same corner as every other screen**, D173, and
                         // routed through the one component so it cannot drift
@@ -440,19 +454,12 @@ fun SectionScaffold(
                 }
             }
 
-            // The pinned action footer, per DESIGN.md 5.15, with its required gap.
-            Spacer(Modifier.height(Space.m))
-
-            TextAction(
-                label = strings[backLabelKey],
-                onClick = onBack,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(SectionTags.BACK),
-            )
-
-            Spacer(Modifier.height(Space.l))
+            // **The full width back footer is gone**, `docs/V4.md` 4. It sat
+            // at the bottom of every section screen taking a full row of the
+            // most valuable space on the phone to repeat what the platform's
+            // own back gesture and the arrow at the top already do. The tag
+            // moved to that arrow, so every test that pressed back still
+            // presses back.
         }
     }
 }

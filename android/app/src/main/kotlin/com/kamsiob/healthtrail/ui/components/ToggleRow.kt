@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -122,70 +123,40 @@ fun ToggleRow(
 }
 
 /**
- * The track and the thumb, and nothing else: the row above owns the gesture and
- * the semantics, so this draws the state and never reports it. A second
- * announcement from in here is how a control ends up read out twice.
+ * The state, drawn by Material. `docs/V4.md` 4, #386.
+ *
+ * **The app drew this one itself and no longer does.** V4's replace table lists
+ * "the app's hand-drawn switch, chevron and controls" under what disappears,
+ * and this was a track, a thumb, a spring, a travel distance and a border rule
+ * maintained by hand. Material's switch carries all of it, plus a state layer,
+ * the platform's own gesture and the shape change the expressive motion scheme
+ * animates.
+ *
+ * **The row above still owns the gesture and the semantics**, which is why the
+ * switch itself takes a null handler: a second announcement from in here is how
+ * a control ends up read out twice.
+ *
+ * The colors are named rather than defaulted, for the same reason the theme
+ * names all 48: an unnamed role is Material's baseline, not this app's.
  */
 @Composable
 private fun Switch(checked: Boolean) {
     val colors = HealthTrail.colors
-    val motion = LocalMotion.current
-
-    val track by animateColorAsState(
-        targetValue = if (checked) colors.blue else colors.sand,
-        animationSpec = motion.quick(),
-        label = "switchTrack",
+    androidx.compose.material3.Switch(
+        checked = checked,
+        onCheckedChange = null,
+        colors = SwitchDefaults.colors(
+            checkedTrackColor = colors.blue,
+            checkedThumbColor = colors.paper,
+            checkedBorderColor = colors.blue,
+            uncheckedTrackColor = colors.sand,
+            uncheckedThumbColor = colors.paper,
+            // **The off state keeps its edge.** Section 12 holds a control's
+            // own boundary to the non-text 3:1 ratio, and sand on a wash is
+            // faint: this is the state that has to survive a grayscale
+            // screenshot and every color vision difference.
+            uncheckedBorderColor = colors.ink3,
+        ),
     )
-    // **The thumb springs and the color fades**, which is the same pair every
-    // other control in this app uses: physics for the thing that moves, a
-    // quick fade for the thing that changes color. D167.
-    // A fraction of the travel rather than two dp values, so the distance is
-    // stated once and the resting position is the absence of travel.
-    val traveled by animateFloatAsState(
-        targetValue = if (checked) 1f else 0f,
-        animationSpec = motion.springy(),
-        label = "switchThumb",
-    )
-
-    val thumbTravelPx = with(LocalDensity.current) { thumbTravel.toPx() }
-
-    Box(
-        modifier = Modifier
-            .width(Space.switchTrackWidth)
-            .height(Space.switchTrackHeight)
-            .clip(Radius.pill)
-            .background(track)
-            // **A border in the off state, because sand on a wash is faint.**
-            // Section 12 holds a control's own boundary to the non-text 3:1
-            // ratio, and the off state is the one that has to survive a
-            // grayscale screenshot and every color vision difference. Drawn
-            // only when it is off, rather than drawn at zero width, so the
-            // filled state carries no invisible edge.
-            .then(
-                if (checked) {
-                    Modifier
-                } else {
-                    Modifier.border(Space.hairlineWidth, colors.ink3, Radius.pill)
-                },
-            )
-            .padding(Space.switchThumbInset),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Box(
-            modifier = Modifier
-                // **The lambda overload, so the thumb moves without
-                // recomposing.** An animated value read here rather than in a
-                // lambda re-runs composition on every frame of the spring, on
-                // a control whose whole job is to move. Lint names this one by
-                // itself, `UseOfNonLambdaOffsetOverload`.
-                .offset { IntOffset(x = (thumbTravelPx * traveled).toInt(), y = 0) }
-                .size(Space.switchThumb)
-                .clip(CircleShape)
-                .background(colors.paper),
-        )
-    }
 }
 
-/** How far the thumb travels: the track, less the thumb and both insets. */
-private val thumbTravel =
-    Space.switchTrackWidth - Space.switchThumb - Space.switchThumbInset * 2
