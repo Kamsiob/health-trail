@@ -11,7 +11,7 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 ## 1. State
 
 - Tree clean, all on `origin/main`. CI green at tip: `gh run list --branch main --limit 3`.
-- **735 instrumented tests green**, 218 unit, 29 repo checks, lint. Last device run: 128 across `ScreenReaderTest`, `PaperViewerTest` and `RemovalIsVisibleTest`, 0 failed.
+- **735 instrumented tests green**, 218 unit, 29 repo checks, lint. Full suite run on the phone 2026-08-17 after the sheet went app wide: 735 run, 0 failed, read from the counts.
 - **Do not build a release APK or AAB.** Owner holds delivery until he approves the design. The debug install is the rule 21 loop and is not what he is holding.
 - Phone at baseline, stays plugged in: font scale 1.0, animator 1.0, no reader, night mode `no`.
 
