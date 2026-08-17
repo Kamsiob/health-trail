@@ -47,9 +47,9 @@
 
 | Phase | State |
 |---|---|
-| 1. The drawn screens | in progress: Today, the notebook and a project partly converted |
-| 2. Extract the language | not started |
-| 3. Every component | not started |
+| 1. The drawn screens | Today, the notebook and the project screen converted. The care team, the form and the document screen remain |
+| 2. Extract the language | done: `docs/V4.md` 2.1, every rule measured off the drawings |
+| 3. Every component | inventory under way: 58 components, 85 screens |
 | 4. Every screen | not started |
 | 5. Verify everything was touched | not started |
 | 6. Expert review | not started |
