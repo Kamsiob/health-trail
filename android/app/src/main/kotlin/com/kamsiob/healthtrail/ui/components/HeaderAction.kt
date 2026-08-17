@@ -80,17 +80,26 @@ fun HeaderActions(
         horizontalArrangement = Arrangement.spacedBy(Space.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // **Both slots are held open whichever control is missing**, which is
-        // the whole point. Seen on the phone: Today had a lamp and a pencil, so
-        // the lamp sat one place in from the corner; More had a lamp alone, so
-        // the lamp sat in the corner. Same control, two positions, and the
-        // person has to look for it again on every screen. Reserving the empty
-        // slot costs one invisible box and makes the corner learnable once.
-        if (onTips != null) TipsButton(onOpen = onTips) else HeldSlot()
+        // **The trailing slot is not held open, and the owner's instruction is
+        // why.** D173 reserved an empty box wherever a control was missing, so
+        // that the lamp sat in one position on every screen. On a screen with a
+        // lamp and no pencil that put the only visible control a slot in from
+        // the corner, floating in space with nothing beside it. The owner,
+        // 2026-08-16: it "should be aligned to the right side to mirror the
+        // alignment of the header on the left side".
+        //
+        // **A margin is a stronger alignment than a slot.** The header's title
+        // starts at the screen margin and the corner action now ends at it, so
+        // the two ends of the row agree. The learnability D173 was buying is
+        // still there in the order, which never changes: the pencil takes the
+        // corner when there is one, the lamp sits inside it.
+        //
+        // **The leading slot is still held**, because that is what keeps the
+        // pencil in the corner rather than letting it slide out when the lamp
+        // is absent.
+        if (onTips != null) TipsButton(onOpen = onTips) else if (onEdit != null) HeldSlot()
         if (onEdit != null) {
             EditAction(onClick = onEdit, label = editLabel, tag = editTag)
-        } else {
-            HeldSlot()
         }
     }
 }
