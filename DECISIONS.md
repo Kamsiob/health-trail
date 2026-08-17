@@ -2990,6 +2990,38 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D184. Material's own controls replace the hand-drawn ones, and the back footer is deleted
+
+**Date:** 2026-08-17. **Step 2, #386.** `docs/V4.md` 4's replace table, worked through.
+
+**The button.** It was a `Box` with its own clip, background, border, press scale and focus ring, in two variants. It is Material's `Button` and `FilledTonalButton` now, **at `Radius.button` rather than a pill**, which is what `m3v4-2` draws for its three actions and `m3v4-4` for Save. **The quiet one is tonal with no border at all**: V4 4 lists "the outlined pill button" as the thing being removed, a container says "tappable" more clearly than an outline, and one less edge on a screen made of edges. The commit haptic stays on the filled button, D168, and the quiet one stays silent, because a secondary action that buzzes is noise.
+
+**The switch.** A track, a thumb, a spring, a travel distance and a border rule, all maintained by hand. Material's now, with every color named for the same reason the theme names all 48. **The row above still owns the gesture and the semantics**, so the switch takes a null handler and cannot be announced twice.
+
+**The full width back footer is deleted from every section screen.** It took a full row of the most valuable space on the phone to repeat what the platform's back gesture already does, and V4 4 names it. **A back arrow sits in the top corner instead**, where `m3v4-2` and `m3v4-5` both draw one, and **`SectionTags.BACK` moved onto it**, so every test that pressed back still presses back rather than being rewritten to match.
+
+**The gold underlined tab chip went with it**, because it named the section immediately above a heading that names the section.
+
+**What this does not do.** The project screen still has its own arrangement: a white date row where `m3v4-2` draws a gold "decision expected" block, no status pill, and three white tiles where the drawing has one filled action beside two tonal ones with their icons above the labels. **That is the screen's own rewrite, step 3**, and the owner has already named it: "it's absolutely horrid and so far away from the mock-ups."
+
+---
+
+### D183. The drawing's measurements, taken rather than judged: the margin, the air, the ladder
+
+**Date:** 2026-08-16 and 17. **Three separate impressions from the owner, each of which turned out to be a number.**
+
+**"It breathes."** The icon tiles in `m3v4-1` sit on a 64dp pitch and the built rows sat on 54, with tiles the same 38.7dp in both. Eight points of row padding against thirteen. `Space.rowVertical`.
+
+**"Look how cluttered it looks."** The screen margin was 13dp; the drawing puts its notebook containers 16.0dp from the edge and Today's hero 17.7dp. `Space.screenHorizontal` is 16 now. **The v4 grid file that 13 came from was drawn tighter to the edge than the mockups that superseded it**, which is the kind of contradiction that survives because nobody measures both. The Today card had 12dp of padding where the drawing has 21.3.
+
+**"The font and font colors and font spacing are nicer and easier to read."** **The colors were identical**, `#233240`, `#576873` and `#895D10`, byte for byte. What differed was the jump: a screen title over a row title is 2.3 in the drawing and was 1.5 in the app, and rule 15 says hierarchy fails when sizes are close. **The display end went up and nothing else moved**, because [D154] lifted the body end after the owner said the text was hard to read and shrinking it back would undo that. Display L 34 to 40, Display M 26 to 32, Hero 28 to 30, Display S 20 to 22.
+
+**Today's masthead date was `bodyS` in sentence case with 4dp under it.** It is the eyebrow token, uppercase, with 16, which is what `m3v4-0` draws. **The same treatment failed on the Today card and that failure is the useful half**: the card's label is written by the person, "Project, Medicaid application", and capitals cost about fifteen percent of the width while the eyebrow's 0.14em tracking costs about fifty points on a thirty character string. It ellipsized twice on the phone before landing on the eyebrow's size, weight and ink **without its tracking**. Every label the mockups set in capitals is short: WEIGHT, PART OF, DECISION EXPECTED.
+
+**The method, which is the reusable part.** Crop the approved PNG, magnify it, measure it in pixels, and compare against a capture off the phone. The captures are 1080 at 3x, so dp is px/3. **Every one of these was invisible to judgment and obvious to a measurement**, and two of them had been shipping for months under a document that said the app matched the drawing.
+
+---
+
 ### D182. The icons are Material Symbols, the group is a tonal block, and the row breathes
 
 **Date:** 2026-08-16. **Step 2 of the rebuild, #386**, on the three surfaces the owner compared against the mockups.

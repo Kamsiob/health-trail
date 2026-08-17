@@ -25,11 +25,15 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 Step 1, #385. `Theme.kt` is `MaterialExpressiveTheme`, with all 48 Material color roles named in both themes, all 15 type roles, five different corners on the shape scale, and reduced motion reaching Material's own components through `StillMotionScheme`.
 
-Step 2, #386, done so far: **the face, the icons, the navigation bar, the group container, the icon tile, and the row's air.** Roboto replaces Atkinson (D181). 34 Material Symbols replace the hand-drawn marks (D182). The nav bar is Material's `ShortNavigationBar`, and its gold indicator came free from the theme. `GroupedSurface` is a flat tonal block instead of a raised white card. `DenseRow` has the drawing's 13dp of air.
+Step 2, #386, done so far: **the face, the icons, the navigation bar, the group container, the icon tile, the row's air, the button, the switch, the section furniture, and the type ladder.** Roboto replaces Atkinson (D181). 34 Material Symbols replace the hand-drawn marks (D182). The nav bar is Material's `ShortNavigationBar`, its gold indicator free from the theme. `GroupedSurface` is a flat tonal block. Buttons and the switch are Material's (D184). The full width back footer is deleted app wide and `SectionTags.BACK` moved to a back arrow in the top corner. The measurements came off the drawing (D183): row air 13dp, screen margin 16dp, Today card padding 20dp, and the display end of the ladder raised so the title to row jump is the drawing's 2.3 rather than 1.5.
 
-**Step 2 still to do: the action, the field, the sheet.** Buttons are still the outlined pill; fields, sheets and the accordion are untouched. Then step 3, the screens.
+**The field was already right.** `m3v4-4` draws a notched outline with a floating label and the app already did.
 
-**Three of today's fixes were found by measuring the approved PNG in pixels** and comparing it against a capture off the phone: the face, the tile's near-circle corner, and the 54dp row pitch against the drawing's 64. **Do that before forming an impression**, `docs/V4.md` 6.
+**Step 2 still to do: the sheet and the sand accordion.** `rememberModalBottomSheetState` is also deprecated in the alpha at 18 sites and gets fixed with them. Then step 3, the screens.
+
+**Step 3 starts with the project screen, and the owner has already ruled on it:** "it's absolutely horrid and so far away from the mock-ups." Against `m3v4-2` it needs a gold "decision expected" tonal block where a white date row is now, a status pill in the top corner, one filled action beside two tonal ones with their icons above the labels rather than three white tiles, and a "The road" heading over the spine. Today's card grid is the other one he has named: a lone small card leaves half a row empty beside it.
+
+**Six of today's fixes were found by measuring the approved PNG in pixels** and comparing it against a capture off the phone: the typeface, the tile's near-circle corner, the 54dp row pitch against the drawing's 64, the 13dp screen margin against 16, the card's 12dp padding against 21, and a type ladder whose jump was 1.5 where the drawing's is 2.3. **Do that before forming an impression**, `docs/V4.md` 6. D183.
 
 **The foundation was not on the classpath, whatever three documents said. D179.** In stable material3 1.4.0 the expressive theme and the motion scheme are `internal` and the expressive components do not exist. The build now pins **material3 1.5.0-alpha26**, past the bom, and the bom is **2026.08.00** so Compose UI stays 1.12.0 stable rather than being dragged to a beta. **One artifact off the stable channel, deliberately.** Check the pin against what is stable before any release build.
 
