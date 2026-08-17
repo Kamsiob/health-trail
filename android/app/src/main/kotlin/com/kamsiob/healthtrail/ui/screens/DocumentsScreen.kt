@@ -30,7 +30,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.CARD_SIZE
 import com.kamsiob.healthtrail.ui.components.FILL
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE

@@ -18,9 +18,9 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.CardSize
 import com.kamsiob.healthtrail.ui.components.TodayCard
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import java.time.LocalDate
 
 object AddCardTags {
@@ -134,8 +134,8 @@ fun AddCardSheet(
         // catalog's, and nothing is ranked by what the app thinks matters.
         for ((groupKey, group) in offers.groupedForGallery()) {
             item(key = "add-card-group-$groupKey") {
-                GroupHeader(
-                    labelKey = groupKey,
+                Eyebrow(
+                    text = strings[groupKey],
                     modifier = Modifier.padding(top = Space.m, bottom = Space.xs),
                 )
             }

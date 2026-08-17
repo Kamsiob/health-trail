@@ -33,12 +33,12 @@ import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.MoreChip
 import com.kamsiob.healthtrail.ui.components.cappedChips
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object EmergencyEditTags {
     const val ROOT = "emergency_edit_root"
@@ -146,7 +146,7 @@ fun EmergencyCardEditScreen(
                 // 20 forbids. One tap puts somebody on the card, one tap takes
                 // them off.
                 Spacer(Modifier.height(Space.l))
-                GroupHeader(labelKey = "emergency.group.who")
+                Eyebrow(text = strings["emergency.group.who"])
                 Spacer(Modifier.height(Space.headerGap))
 
                 if (people.isEmpty()) {
@@ -217,7 +217,7 @@ fun EmergencyCardEditScreen(
                 }
 
                 Spacer(Modifier.height(Space.m))
-                GroupHeader(labelKey = "emergency.group.medical")
+                Eyebrow(text = strings["emergency.group.medical"])
                 Spacer(Modifier.height(Space.headerGap))
 
                 Field(
@@ -243,7 +243,7 @@ fun EmergencyCardEditScreen(
                 )
 
                 Spacer(Modifier.height(Space.m))
-                GroupHeader(labelKey = "emergency.group.paperwork")
+                Eyebrow(text = strings["emergency.group.paperwork"])
                 Spacer(Modifier.height(Space.headerGap))
 
                 Field(

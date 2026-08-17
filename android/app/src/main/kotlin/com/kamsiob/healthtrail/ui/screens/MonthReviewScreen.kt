@@ -22,7 +22,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -32,6 +31,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
@@ -346,7 +346,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.group(
     content: @Composable () -> Unit,
 ) {
     item(key = key) {
-        GroupHeader(labelKey = headingKey)
+        Eyebrow(text = LocalStrings.current[headingKey])
         Spacer(Modifier.height(Space.headerGap))
         content()
         Spacer(Modifier.height(Space.sectionGap))

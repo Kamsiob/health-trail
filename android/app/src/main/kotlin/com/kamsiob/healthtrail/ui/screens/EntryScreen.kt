@@ -28,7 +28,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.WaypointDot
@@ -39,6 +38,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.Trail
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object EntryTags {
     const val NAME = "entry"
@@ -172,7 +172,7 @@ fun EntryScreen(
 
         if (hasLinks) {
             item {
-                GroupHeader(labelKey = "entry.belongs")
+                Eyebrow(text = strings["entry.belongs"])
                 Spacer(Modifier.height(Space.headerGap))
             }
 

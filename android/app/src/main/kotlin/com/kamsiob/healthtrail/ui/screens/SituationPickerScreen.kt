@@ -31,7 +31,6 @@ import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
@@ -39,6 +38,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -171,8 +171,8 @@ fun SituationPickerScreen(
 
                     item(key = "group_$id") {
                         Spacer(Modifier.height(Space.sectionGap))
-                        GroupHeader(
-                            labelKey = labelKey,
+                        Eyebrow(
+                            text = strings[labelKey],
                             modifier = Modifier.testTag(SituationPickerTags.group(id)),
                         )
                         Spacer(Modifier.height(Space.headerGap))

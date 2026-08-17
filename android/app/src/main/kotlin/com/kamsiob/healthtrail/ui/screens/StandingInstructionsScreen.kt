@@ -16,7 +16,6 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.openableByTap
@@ -25,6 +24,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object InstructionTags {
     fun violation(id: String) = "instruction_violation_$id"
@@ -171,14 +171,10 @@ fun StandingInstructionsScreen(
             // the acknowledgment sheet. Out here each time is its own node.
             if (times.isNotEmpty()) {
                 item(key = "${instruction.id}_times") {
-                    GroupHeaderText(
-                        label = strings["instruction.violations.group"],
-                        count = times.size.toString(),
-                        // **The reader hears the sentence, not the digit.**
-                        // "Times it was not followed 5" is not what the count
-                        // means, and section 9 says what is read aloud says
-                        // the same thing the screen says.
-                        countDescription = strings(
+                    Eyebrow(
+                        text = Bidi.join(strings["instruction.violations.group"], times.size.toString()),
+                        fixed = false,
+                        description = strings(
                             "instruction.violations.count",
                             "count" to times.size,
                         ),

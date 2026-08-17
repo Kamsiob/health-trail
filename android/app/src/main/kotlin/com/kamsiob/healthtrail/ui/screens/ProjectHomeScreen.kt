@@ -15,6 +15,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
@@ -32,7 +33,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.PaddingValues
 import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.LatestWordCard
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
@@ -45,7 +45,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Tile
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.IconTile
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.components.Waypoint
@@ -295,7 +294,7 @@ fun ProjectHomeScreen(
                 Spacer(Modifier.height(Space.sectionGap))
             }
             item {
-                GroupHeaderText(label = strings["project.story"])
+                Eyebrow(text = strings["project.story"], fixed = false)
                 Column {
                     ListRow(
                         title = strings["project.story.line"],
@@ -526,7 +525,7 @@ fun ProjectHomeScreen(
         // under one header: every one navigates, every one says what it
         // holds, none of them moves.
         item {
-            GroupHeader(labelKey = "project.file")
+            Eyebrow(text = strings["project.file"])
             Spacer(Modifier.height(Space.headerGap))
             Block(padding = Space.none) {
                 ListRow(

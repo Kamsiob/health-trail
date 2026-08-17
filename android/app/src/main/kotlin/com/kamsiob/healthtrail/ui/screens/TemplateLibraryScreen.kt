@@ -23,12 +23,11 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.components.FoldRowText
-import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
@@ -119,7 +118,7 @@ fun TemplateLibraryScreen(
         // start" but "what did I start, and where did it go".
         if (ownUsed.isNotEmpty() || shippedUsed.isNotEmpty()) {
             item(key = "used_head") {
-                GroupHeader(labelKey = "library.used")
+                Eyebrow(text = strings["library.used"])
                 Spacer(Modifier.height(Space.headerGap))
             }
             ownUsed.forEach { template ->
@@ -165,7 +164,7 @@ fun TemplateLibraryScreen(
         // is 13.5. It is the one place in the app that says so.
         if (own.isEmpty()) {
             item(key = "own_empty") {
-                GroupHeader(labelKey = "library.own")
+                Eyebrow(text = strings["library.own"])
                 Spacer(Modifier.height(Space.headerGap))
                 Text(
                     text = strings["library.empty"],
@@ -177,7 +176,7 @@ fun TemplateLibraryScreen(
             }
         } else if (ownUnused.isNotEmpty()) {
             item(key = "own_unused") {
-                GroupHeader(labelKey = "library.own")
+                Eyebrow(text = strings["library.own"])
                 Spacer(Modifier.height(Space.headerGap))
                 FoldRowText(
                     label = strings["library.unused"],
@@ -210,7 +209,7 @@ fun TemplateLibraryScreen(
         // **The sixteen, folded by the same four kinds the picker uses**, each
         // named and counted. Nothing is hidden and nothing is a wall.
         item(key = "shipped_head") {
-            GroupHeader(labelKey = "library.shipped")
+            Eyebrow(text = strings["library.shipped"])
             Spacer(Modifier.height(Space.headerGap))
         }
 

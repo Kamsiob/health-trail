@@ -152,6 +152,15 @@ fun Eyebrow(
     modifier: Modifier = Modifier,
     color: Color = HealthTrail.colors.ink2,
     fixed: Boolean = true,
+    /**
+     * What a reader hears instead of the words on screen.
+     *
+     * **For a label carrying a count.** "Equipment 3" is not what the screen
+     * means, and `DESIGN.md` 12 asks that what is read aloud say the same thing
+     * the screen says: the label passes the sentence, "Equipment, 3 things",
+     * and the eye keeps the digit.
+     */
+    description: String? = null,
 ) {
     val shown = if (fixed) text.uppercase(LocalConfiguration.current.locales[0]) else text
     Text(
@@ -162,7 +171,7 @@ fun Eyebrow(
             HealthTrail.type.eyebrow.copy(letterSpacing = TextUnit.Unspecified)
         },
         color = color,
-        modifier = modifier.semantics { contentDescription = text },
+        modifier = modifier.semantics { contentDescription = description ?: text },
     )
 }
 

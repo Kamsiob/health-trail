@@ -28,7 +28,6 @@ import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.SearchDoor
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.UniversalSearchDoor
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine

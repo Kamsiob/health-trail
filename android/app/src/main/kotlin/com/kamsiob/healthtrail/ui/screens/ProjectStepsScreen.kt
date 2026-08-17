@@ -17,11 +17,11 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictatableField
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -100,10 +100,10 @@ fun ProjectStepsScreen(
             val (area, inArea) = entry
             item {
                 if (position > 0) Spacer(Modifier.height(Space.m))
-                GroupHeaderText(
-                    label = area.orEmpty(),
-                    count = inArea.size.toString(),
-                    countDescription = strings("projects.step_count", "count" to inArea.size),
+                Eyebrow(
+                    text = Bidi.join(area.orEmpty(), inArea.size.toString()),
+                    fixed = false,
+                    description = strings("projects.step_count", "count" to inArea.size),
                 )
                 Spacer(Modifier.height(Space.xs))
                 Block(padding = Space.none) {

@@ -28,13 +28,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.pressScale
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -240,7 +240,10 @@ private fun OptionGroup(labelKey: String, content: @Composable () -> Unit) {
     Column(modifier = Modifier.padding(top = Space.l)) {
         // **The app's own group header**, per rule 22, rather than a second one
         // that would drift the moment either was touched. 5.13.
-        GroupHeader(labelKey = labelKey, modifier = Modifier.padding(bottom = Space.s))
+        Eyebrow(
+            text = LocalStrings.current[labelKey],
+            modifier = Modifier.padding(bottom = Space.s),
+        )
         content()
     }
 }

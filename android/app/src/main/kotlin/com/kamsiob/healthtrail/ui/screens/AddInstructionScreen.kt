@@ -27,12 +27,12 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object AddInstructionTags {
     const val ROOT = "add_instruction_root"
@@ -107,7 +107,7 @@ fun AddInstructionScreen(
                     val tag = catalog.tags[tagKey]
                     item(key = "tag_$tagKey") {
                         // bidi-ok: a catalog label, in the app's own words rather than the person's.
-                        GroupHeaderText(label = tag?.label ?: tagKey)
+                        Eyebrow(text = tag?.label ?: tagKey, fixed = false)
                         Spacer(Modifier.height(Space.xs))
                         if (tag != null) {
                             Text(

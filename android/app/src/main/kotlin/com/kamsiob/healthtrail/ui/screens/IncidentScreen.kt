@@ -26,7 +26,6 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.Avatar
 import com.kamsiob.healthtrail.ui.theme.hueFor
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
@@ -37,6 +36,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -117,7 +117,7 @@ fun IncidentsScreen(
 
         if (open.isNotEmpty()) {
             item {
-                GroupHeader(labelKey = "incidents.open")
+                Eyebrow(text = strings["incidents.open"])
                 Spacer(Modifier.height(Space.headerGap))
             }
             open.forEachIndexed { index, incident ->
@@ -135,7 +135,7 @@ fun IncidentsScreen(
         if (settled.isNotEmpty()) {
             item {
                 Spacer(Modifier.height(Space.s))
-                GroupHeader(labelKey = "incidents.settled")
+                Eyebrow(text = strings["incidents.settled"])
                 Spacer(Modifier.height(Space.headerGap))
             }
             settled.forEachIndexed { index, incident ->
@@ -374,7 +374,7 @@ fun IncidentScreen(
         // the answer was buried in four call titles they would have to read.
         if (people.isNotEmpty()) {
             item {
-                GroupHeader(labelKey = "incident.people")
+                Eyebrow(text = strings["incident.people"])
                 Spacer(Modifier.height(Space.headerGap))
             }
             // **Dense rows in one surface, and they were three cards.** Rule
@@ -415,7 +415,7 @@ fun IncidentScreen(
         // they were reachable only by scrolling the documents section.
         if (documents.isNotEmpty()) {
             item {
-                GroupHeader(labelKey = "incident.documents")
+                Eyebrow(text = strings["incident.documents"])
                 Spacer(Modifier.height(Space.headerGap))
             }
             documents.forEach { document ->
@@ -453,7 +453,7 @@ fun IncidentScreen(
 
         if (violations.isNotEmpty()) {
             item {
-                GroupHeader(labelKey = "instruction.violations.linked")
+                Eyebrow(text = strings["instruction.violations.linked"])
                 Spacer(Modifier.height(Space.headerGap))
             }
             // One surface of dense rows, the same shape the people above use,
@@ -485,7 +485,7 @@ fun IncidentScreen(
         }
 
         item {
-            GroupHeader(labelKey = "incident.thread")
+            Eyebrow(text = strings["incident.thread"])
             Spacer(Modifier.height(Space.headerGap))
         }
 
@@ -568,7 +568,7 @@ fun IncidentScreen(
         incident.resolutionNote?.takeIf { it.isNotBlank() }?.let {
             item {
                 Spacer(Modifier.height(Space.s))
-                GroupHeader(labelKey = "incident.resolution")
+                Eyebrow(text = strings["incident.resolution"])
                 Spacer(Modifier.height(Space.headerGap))
                 Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
             }

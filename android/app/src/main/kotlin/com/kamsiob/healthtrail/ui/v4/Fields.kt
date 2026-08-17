@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 /**
  * A group of fields under the quiet label that names it. #386.

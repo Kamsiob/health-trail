@@ -45,7 +45,6 @@ import com.kamsiob.healthtrail.ui.components.ConfirmRemoveSheet
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -57,6 +56,7 @@ import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -250,7 +250,7 @@ fun ProjectDetailScreen(
         // screen read as though one section had slipped.
         if (remaining.isNotEmpty()) {
             item {
-                GroupHeader(labelKey = "projects.next.label")
+                Eyebrow(text = strings["projects.next.label"])
                 Spacer(Modifier.height(Space.headerGap))
             }
         }

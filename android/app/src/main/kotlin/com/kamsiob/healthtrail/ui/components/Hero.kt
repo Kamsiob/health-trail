@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 /**
  * The single thing the person came for, at the top of the screen.
@@ -58,7 +60,7 @@ fun Hero(
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Spacer(Modifier.height(Space.l))
-        GroupHeader(labelKey = eyebrowKey)
+        Eyebrow(text = LocalStrings.current[eyebrowKey])
         Spacer(Modifier.height(Space.sm))
         content()
         Spacer(Modifier.height(Space.xl))

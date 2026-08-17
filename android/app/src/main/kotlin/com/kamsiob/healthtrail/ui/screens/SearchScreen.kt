@@ -33,7 +33,6 @@ import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow

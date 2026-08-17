@@ -45,12 +45,12 @@ import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FieldGroup
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -241,7 +241,7 @@ private fun PickWhatToTrack(
                 if (measures.isNotEmpty()) {
                     item {
                         Spacer(Modifier.height(Space.sectionGap))
-                        GroupHeader("measurement.tracked")
+                        Eyebrow(text = strings["measurement.tracked"])
                         Spacer(Modifier.height(Space.headerGap))
                         ChoiceChipGroup(label = "") {
                             measures.forEach { measure ->
@@ -260,7 +260,7 @@ private fun PickWhatToTrack(
 
                 item {
                     Spacer(Modifier.height(Space.sectionGap))
-                    GroupHeader("measurement.presets")
+                    Eyebrow(text = strings["measurement.presets"])
                     Spacer(Modifier.height(Space.headerGap))
                 }
 
@@ -278,7 +278,7 @@ private fun PickWhatToTrack(
                 // presets with no way past them was exactly that.
                 item {
                     Spacer(Modifier.height(Space.sectionGap))
-                    GroupHeader("measurement.own")
+                    Eyebrow(text = strings["measurement.own"])
                     Spacer(Modifier.height(Space.headerGap))
                     QuietButton(
                         label = strings["measurement.own.action"],

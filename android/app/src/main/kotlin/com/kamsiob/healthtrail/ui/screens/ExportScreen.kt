@@ -16,12 +16,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object ExportTags {
     const val NAME = "export"
@@ -178,7 +178,7 @@ fun ExportScreen(
                 // with no archive at all.
                 if (missingAttachments > 0) {
                     Spacer(Modifier.height(Space.sectionGap))
-                    GroupHeader(labelKey = "export.done.missing.header")
+                    Eyebrow(text = strings["export.done.missing.header"])
                     Spacer(Modifier.height(Space.headerGap))
                     Text(
                         text = strings("export.done.missing", "count" to missingAttachments),
@@ -221,7 +221,7 @@ fun ExportScreen(
             )
             Spacer(Modifier.height(Space.sectionGap))
 
-            GroupHeader(labelKey = "export.passphrase")
+            Eyebrow(text = strings["export.passphrase"])
             Spacer(Modifier.height(Space.headerGap))
 
             HealthTrailTextField(

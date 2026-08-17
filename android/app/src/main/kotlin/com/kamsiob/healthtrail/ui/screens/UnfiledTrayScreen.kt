@@ -47,7 +47,6 @@ import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -57,6 +56,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -385,7 +385,7 @@ private fun UnfiledRow(
             Spacer(Modifier.height(Space.sm))
 
             if (suggested != null) {
-                GroupHeader(labelKey = "unfiled.suggested")
+                Eyebrow(text = strings["unfiled.suggested"])
                 Spacer(Modifier.height(Space.s))
                 FileHere(
                     thread = suggested,

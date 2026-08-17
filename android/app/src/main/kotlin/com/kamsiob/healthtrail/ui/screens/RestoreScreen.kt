@@ -20,7 +20,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.ExportContainer
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.v4.ChoiceRow
 import com.kamsiob.healthtrail.ui.components.QuietButton
@@ -28,6 +27,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.Instant
 import java.time.ZoneId
@@ -213,7 +213,7 @@ fun RestoreScreen(
 
                 is RestoreState.Ready -> {
                     Spacer(Modifier.height(Space.sectionGap))
-                    GroupHeader(labelKey = "restore.found")
+                    Eyebrow(text = strings["restore.found"])
                     Spacer(Modifier.height(Space.headerGap))
 
                     Column(
@@ -243,7 +243,7 @@ fun RestoreScreen(
                     }
 
                     Spacer(Modifier.height(Space.sectionGap))
-                    GroupHeader(labelKey = "restore.how.group")
+                    Eyebrow(text = strings["restore.how.group"])
                     Spacer(Modifier.height(Space.m))
 
                     // One grouped surface rather than two cards: it is one

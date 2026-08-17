@@ -29,8 +29,6 @@ import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
@@ -41,6 +39,7 @@ import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -258,7 +257,7 @@ fun StartProjectScreen(
                     // the sixteen shipped ones above it would say the opposite.
                     if (own.isNotEmpty()) {
                         item(key = "own") {
-                            GroupHeader(labelKey = "library.own")
+                            Eyebrow(text = strings["library.own"])
                             Spacer(Modifier.height(Space.headerGap))
                             OwnTemplates(own = own, onChoose = onChooseOwn)
                             Spacer(Modifier.height(Space.sectionGap))
@@ -273,7 +272,7 @@ fun StartProjectScreen(
 
                         item(key = "cat_$key") {
                             if (leads) {
-                                GroupHeaderText(label = strings["projects.category.$key"])
+                                Eyebrow(text = strings["projects.category.$key"], fixed = false)
                                 Spacer(Modifier.height(Space.headerGap))
                             } else {
                                 FoldRowText(

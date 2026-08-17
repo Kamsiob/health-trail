@@ -42,12 +42,12 @@ import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object AddPersonTags {
     const val EMAIL = "add_person_email"
@@ -309,7 +309,7 @@ fun AddPersonScreen(
                     // sentence at the top of the form already promises. On the
                     // phone those two lines plus six chips pushed "Add more"
                     // off the bottom of the screen.
-                    GroupHeaderText(label = strings["careteam.add.role.suggestions"])
+                    Eyebrow(text = strings["careteam.add.role.suggestions"], fixed = false)
                     Spacer(Modifier.height(Space.headerGap))
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(Space.s),
@@ -426,7 +426,7 @@ fun AddPersonScreen(
                 // filled can be edited or cleared like anything else typed.
                 if (organizations.isNotEmpty()) {
                     Spacer(Modifier.height(Space.sectionGap))
-                    GroupHeaderText(label = strings["careteam.add.where.known"])
+                    Eyebrow(text = strings["careteam.add.where.known"], fixed = false)
                     Spacer(Modifier.height(Space.headerGap))
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(Space.s),

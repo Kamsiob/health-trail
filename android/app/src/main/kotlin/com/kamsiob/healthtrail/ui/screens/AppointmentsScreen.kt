@@ -33,7 +33,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.temporal.WeekFields
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue

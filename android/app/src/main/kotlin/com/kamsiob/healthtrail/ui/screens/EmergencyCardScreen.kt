@@ -24,7 +24,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.kamsiob.healthtrail.ui.components.Avatar
 import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -32,6 +31,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -148,7 +148,7 @@ fun EmergencyCardScreen(
         // the call.
         if (contacts.isNotEmpty()) {
             item {
-                GroupHeader(labelKey = "emergency.group.who")
+                Eyebrow(text = strings["emergency.group.who"])
                 Spacer(Modifier.height(Space.headerGap))
                 // **One group of rows, not one card each**, per grid screen 17
                 // and rule 22. Three cards three lines tall pushed the blood
@@ -267,7 +267,7 @@ fun EmergencyCardScreen(
             // the card never shows a heading over nothing.
             if (inAHurry.isNotEmpty()) {
                 item {
-                    GroupHeader(labelKey = "emergency.group.medical")
+                    Eyebrow(text = strings["emergency.group.medical"])
                     Spacer(Modifier.height(Space.headerGap))
                     Block(padding = Space.none) {
                         inAHurry.forEachIndexed { index, entry ->
@@ -281,7 +281,7 @@ fun EmergencyCardScreen(
             if (paperwork.isNotEmpty()) {
                 item {
                     Spacer(Modifier.height(Space.s))
-                    GroupHeader(labelKey = "emergency.group.paperwork")
+                    Eyebrow(text = strings["emergency.group.paperwork"])
                     Spacer(Modifier.height(Space.headerGap))
                     Block(padding = Space.none) {
                         paperwork.forEachIndexed { index, entry ->

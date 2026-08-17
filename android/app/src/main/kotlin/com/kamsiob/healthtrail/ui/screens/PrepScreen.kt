@@ -28,8 +28,6 @@ import com.kamsiob.healthtrail.ui.components.CalendarHandoff
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.FoldRowText
-import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
@@ -39,6 +37,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -231,7 +230,7 @@ fun PrepScreen(
         // about, so the roles can carry it from there.
         if (prep.questions.isEmpty()) {
             item {
-                GroupHeader(labelKey = "prep.questions")
+                Eyebrow(text = strings["prep.questions"])
                 Spacer(Modifier.height(Space.headerGap))
                 Text(
                     text = strings["prep.questions.empty"],
@@ -297,7 +296,7 @@ fun PrepScreen(
                 if (leads || openRoles.contains(label)) {
                     item(key = "prep_group_${role ?: "anyone"}") {
                         if (leads) {
-                            GroupHeaderText(label = Bidi.isolate(label))
+                            Eyebrow(text = Bidi.isolate(label), fixed = false)
                             Spacer(Modifier.height(Space.s))
                         }
                         Block(padding = Space.none) {
@@ -400,7 +399,7 @@ fun PrepScreen(
         // the screen. One tap, and the count says whether the tap is worth it.
         if (prep.changes.isEmpty()) {
             item {
-                GroupHeader(labelKey = "prep.changes")
+                Eyebrow(text = strings["prep.changes"])
                 Spacer(Modifier.height(Space.headerGap))
                 Text(
                     text = strings["prep.changes.empty"],

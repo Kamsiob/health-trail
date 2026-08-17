@@ -16,11 +16,11 @@ import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.GroupHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object ChangeSituationTags {
     const val NAME = "change_situation"
@@ -95,7 +95,7 @@ fun ChangeSituationScreen(
             // is a label carrying nothing, which is what section 5.13 warns
             // the heading itself against. This one adds the fact that matters:
             // it is the current answer and it is meant to change.
-            GroupHeader(labelKey = "situation.change.current")
+            Eyebrow(text = strings["situation.change.current"])
             Spacer(Modifier.height(Space.headerGap))
             if (current == null) {
                 // **Not an empty state and not a prompt to finish setting up.**
@@ -135,7 +135,7 @@ fun ChangeSituationScreen(
         // it is exactly the kind of thing that reads as correct in a demo.
         chosen?.let { next ->
             item(key = "chosen") {
-                GroupHeader(labelKey = "situation.change.to")
+                Eyebrow(text = strings["situation.change.to"])
                 Spacer(Modifier.height(Space.headerGap))
                 Text(
                     text = Bidi.isolate(next.name),
@@ -164,7 +164,7 @@ fun ChangeSituationScreen(
         // is the sentence #202 asks for, and it is where somebody hesitating is
         // looking: immediately above the thing they are hesitating over.
         item(key = "boundary") {
-            GroupHeader(labelKey = "situation.change.boundary")
+            Eyebrow(text = strings["situation.change.boundary"])
             Spacer(Modifier.height(Space.headerGap))
             Text(
                 text = strings["situation.change.boundary.body"],
