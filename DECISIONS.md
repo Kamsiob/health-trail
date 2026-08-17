@@ -182,7 +182,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | B4 | The emulator. Resolved by dropping it, 2026-07-31 |
 | D146 | The welcome is remembered by the phone as well as by the notebook |
 
-**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field, **D190** white is the third reserved surface and the only one with an edge, **D191** `m3v4-0` draws the arranged Today and there are two of them.
+**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field, **D190** white is the third reserved surface and the only one with an edge, **D191** `m3v4-0` draws the arranged Today and there are two of them, **D194** the retirements are scripted and three of them were not renames.
 
 ---
 
@@ -2989,6 +2989,34 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **There was a third record, found after the fix, and it changes nothing but is worth the paragraph.** `DESIGN.md` section 14's row for this screen also said the role belongs behind "Add more", **and it gave the reason**: the role and up to six chips sat *between* the name and the number, so the number, which is why anybody adds a person, was the field furthest down. **That is a layout complaint, not an argument for hiding the role**, and putting the three fields in one group with the chips underneath answers it without hiding anything. So two records asked for the role to be folded, one recorded folding it being reverted, and the built screen now satisfies all three. Section 14 is corrected to say so.
 
 **Three records, one screen, and the only way to see it was to read all three.** The check that would have caught it does not exist and probably cannot: they were not contradictory statements, they were one statement, one reason, and one exception, written months apart in three files.
+
+---
+
+### D194. The retirements are scripted and read as a diff, and three of them were not renames
+
+**Date:** 2026-08-17. **Phase 4, #387.** Fourteen passes in one session, one commit each.
+
+**The decision.** A component retirement here is: measure the call sites, extend the v4 component **once** if it is missing something the old one carried, convert the call sites with a twenty line Python pass, compile, read the whole diff, `tools/verify.sh`, commit, push. **Not fifty hand edits**, which is how the earlier framing priced this work and why it looked bigger than it is.
+
+**Three of the ten were not renames and the board said they were.**
+
+1. **The chips.** `ui/v4`'s `Chip` is documented as a counted fact that reports and cannot be touched, so it could never take a control's job. The selectable chip did not exist in the new language and was **written** from `docs/V4.md` 2.1: tonal when open, filled when chosen, no outline, selection carried by fill, weight and inverted ink rather than by hue.
+2. **The fields.** `HealthTrailTextField` drew its own notched outline, measured its own label and painted the page's color over the border to make a gap for the words. That is a lot of geometry to maintain in order to arrive at `OutlinedTextField`. **`FieldRow` is deleted rather than moved**: 2.1 says a field sits on the canvas, because a field is already a container and a second one around it is two edges on one thing.
+3. **The page frames.** `SectionScaffold` and `Page` were drawing the same header from two packages. `Page` absorbed what the scaffold had that the design keeps, and the parameters were renamed to say what they mean: the old frame called the section name `title` and the page's own name `headingKey`.
+
+**Three rulings inside those passes, each made under rule 10 rather than asked about.**
+
+**One supporting line under a field, never two**, which is 2.1 and which the old field broke by carrying a hint and a note at once. Where a warning applies it **takes the line from the example** rather than stacking under it. One catalog key was retired from all four catalogs rather than left to rot.
+
+**A form's cancel action goes when the page's back arrow arrives.** The old forms had no arrow, so the full width cancel was the way back; with both there were two controls that leave, one repeating the other. Twelve orphaned tags went with it.
+
+**A `ListRow` value longer than sixteen characters is a line of its own under the title.** `DenseRow` set its trailing value in the quiet ink at body size and `ListRow` sets it in mono, which is right for "500 mg" and wrong for "August 18, 2026 at 10:15 AM": every appointment row gave half its width to a date that then broke mid-phrase. **The row absorbs it** rather than each screen knowing, rule 20, and sixteen is measured off the two screens where it was seen rather than chosen.
+
+**What this cost and what it bought.** `ui/components` went from 57 files to 38 and the replace table in `docs/V4.md` 4 is finished, all six rows. Token drift fell from 119 to 96, and the prediction that check made about itself came true: the measurements typed into screens were mostly furniture the rebuild deletes.
+
+**The thing that does not generalize.** The compiler catches a rename and never a drawing. Sweep after a batch, look at the captures, and expect one defect per batch that was invisible in the source.
+
+**Revisit if.** A drawing arrives that contradicts one of the three rulings above. The sixteen character bound is the most likely to move, and it moves by being measured again rather than argued.
 
 ---
 
