@@ -3,6 +3,8 @@ package com.kamsiob.healthtrail.ui
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -88,7 +90,10 @@ class ChaptersScreenTest {
         // assertion on it passes when it is absent and fails when it is there,
         // which is a test that proves the opposite of what it says. Two runs
         // went into finding that out.
-        compose.onNodeWithText("What is in this chapter", substring = true)
+        // **The label is an eyebrow now**, so the words on the screen are
+        // capitals and the natural ones are the node's description, which is
+        // what a reader is handed. D183, #386.
+        compose.onNodeWithContentDescription("What is in this chapter")
             .assertIsDisplayed()
         compose.onNodeWithText("23 entries", substring = true).assertIsDisplayed()
         compose.onNodeWithText("7 documents", substring = true).assertIsDisplayed()
@@ -163,7 +168,9 @@ class ChaptersScreenTest {
         var moved = 0
         showChapters(emptyList()) { moved += 1 }
 
-        compose.onNodeWithTag(SectionTags.emptyAction(ChapterTags.NAME)).performClick()
+        // **The empty state's action is the move itself**, tagged as the move,
+        // rather than a generic empty-state slot. #386.
+        compose.onNodeWithTag(ChapterTags.MOVED).performClick()
 
         assertEquals("the empty state did not reach the move", 1, moved)
     }
@@ -192,6 +199,15 @@ class ChaptersScreenTest {
     fun theEmptyScreenDoesNotOfferItTwice() {
         showChapters(emptyList()) {}
 
-        compose.onNodeWithTag(ChapterTags.MOVED).assertDoesNotExist()
+        // **Once, not never.** The empty screen carries the move and the list
+        // under it does not exist yet, so exactly one node offers it. Asserting
+        // it was absent described a screen where the empty state owned a
+        // different tag, and it would pass just as well on a screen that
+        // offered nothing at all. #386.
+        assertEquals(
+            "the empty screen should offer the move exactly once",
+            1,
+            compose.onAllNodesWithTag(ChapterTags.MOVED).fetchSemanticsNodes().size,
+        )
     }
 }

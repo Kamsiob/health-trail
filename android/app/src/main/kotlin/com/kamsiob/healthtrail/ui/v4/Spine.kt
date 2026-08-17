@@ -51,6 +51,19 @@ fun Road(
     continuesAbove: Boolean = true,
     /** Whether it continues below, which the last one ends. */
     continuesBelow: Boolean = true,
+    /**
+     * Whether the half above this stop has been travelled.
+     *
+     * **The road does not know which way time runs on a screen.** `m3v4-2`'s
+     * project reads forward, so what is above a stop is behind you; the
+     * chapters read backward, current place first, so what is *below* a stop is
+     * behind you. Defaulting from the stop alone drew the road already walked
+     * in the pale color of a road ahead, on the one screen that reads the other
+     * way. Seen on the phone, rule 21.
+     */
+    travelledAbove: Boolean = stop != Stop.Ahead,
+    /** Whether the half below has been travelled. */
+    travelledBelow: Boolean = stop == Stop.Done,
     content: @Composable () -> Unit,
 ) {
     val colors = HealthTrail.colors
@@ -81,7 +94,7 @@ fun Road(
             // per stop means the joint between two rows always agrees.
             if (continuesAbove) {
                 drawLine(
-                    color = if (stop == Stop.Ahead) ahead else done,
+                    color = if (travelledAbove) done else ahead,
                     start = Offset(x, 0f),
                     end = Offset(x, centerY),
                     strokeWidth = stroke,
@@ -89,7 +102,7 @@ fun Road(
             }
             if (continuesBelow) {
                 drawLine(
-                    color = if (stop == Stop.Done) done else ahead,
+                    color = if (travelledBelow) done else ahead,
                     start = Offset(x, centerY),
                     end = Offset(x, size.height),
                     strokeWidth = stroke,
