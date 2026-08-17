@@ -18,18 +18,24 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -55,22 +61,38 @@ import com.kamsiob.healthtrail.ui.theme.Space
  * a form reads as writing on the page rather than as boxes stacked on it. **One
  * component, 64 sites, every form in the app.**
  *
- * **The label stays above the field, and the mockup's notch was tried and
- * rejected on the copy.** D177. The mockup draws the label sitting in a gap in
- * the top border, which is correct for the labels drawn in it: "The dose", "What
- * it is called". The catalog's real labels are sentences, "The dose, as you were
- * told it" and "Anything worth remembering", and a notch holds one line. At font
- * scale 2.0, which rule 19 verifies at, that line either truncates, which rule 11
- * forbids, or wraps and punches a two line hole through the outline.
+ * **The label sits in a gap in the top border**, which is what the mockup
+ * draws. D177, revised: the owner's answer to the label being a sentence was
+ * "just the dose", so the copy shortened and the notch is the shape.
  *
- * **`check_silent_clip.py` caught it the moment the cap went in**, which is the
- * check working exactly as intended: a `maxLines = 1` with nothing said about
- * the rest is a layout that holds only with tidy sample data.
+ * **The nuance moved to the hint, where it already was.** "The dose, as you
+ * were told it" became "The dose", and the hint under the caret still says
+ * "However it was said. 50 mcg, half a tablet, whatever fits." Eleven labels
+ * shortened that way and not one of them lost a thing, because every one had a
+ * hint carrying the same permission.
  *
- * The reason the label was above the field in the first place still holds: a
- * floating label disappears exactly when someone interrupted mid sentence needs
- * it most. The outline is the half of the mockup that survives contact with the
- * app's own words, and it is the half that was doing the work.
+ * **The notch falls back to a label above the field when one line will not
+ * hold it**, and that is what makes it safe rather than lucky. Copy is not a
+ * guarantee: a longer language, a font scale of 2.0, or one careless catalog
+ * edit puts the label onto a second line, and a two line label punches a two
+ * line hole through the outline. So the label reports its own line count and
+ * the layout answers. Nothing truncates, at any size, in any language, which
+ * is rule 11 and the reason the first attempt at this was taken back out.
+ *
+ * **The notch is measured rather than guessed.** How far the label rises is
+ * half its own height, and its height is a function of the font scale.
+ * Measuring it is the only version that holds at 2.0.
+ *
+ * The old reason for a label above the field is not lost either: it said a
+ * floating label "disappears exactly when someone interrupted mid sentence
+ * needs it most", which is true of the Material 1 filled field whose label
+ * dissolves into the placeholder. This one is in the border at rest, while
+ * typing, and when the field is full.
+ *
+ * @param labelBackground what the notch punches through to. Defaults to the
+ *   paper every form in this app is drawn on. **A caller putting a field on a
+ *   card has to say so**, or the gap in the outline is the wrong color, which
+ *   is the one way this component can look broken.
  */
 @Composable
 fun HealthTrailTextField(
@@ -117,29 +139,58 @@ fun HealthTrailTextField(
      * **The field reserves room for it rather than drawing it over the words.**
      */
     trailing: (@Composable () -> Unit)? = null,
+    labelBackground: Color = HealthTrail.colors.paper,
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        // **Above the field and never in the border.** D177: the notch the
-        // mockup draws holds one short line, and these labels are sentences.
-        // It turns blue with focus, which is the one thing the notch was
-        // buying that is worth keeping: the label and its field agree about
-        // where you are.
+    // **The label decides where it goes by measuring itself.** One line rides
+    // the border; two or more sit above the field, because a notch is a gap in
+    // a line and a gap cannot be two lines tall. Starts true so the first
+    // frame, before any measurement exists, is the safe arrangement rather
+    // than a label overlapping an outline.
+    var labelWraps by remember { mutableStateOf(true) }
+    var labelHeight by remember { mutableIntStateOf(0) }
+    val labelRise = with(LocalDensity.current) { (labelHeight / 2).toDp() }
+
+    // **One label, composed once, always at the same width.** Two copies at two
+    // widths is an infinite recomposition: the narrow one wraps and asks to go
+    // above the field, the wide one fits and asks to come back, forever. So the
+    // insets that make room for the notch are applied in both arrangements,
+    // whether or not the label is sitting on the line.
+    val labelText: @Composable (Modifier) -> Unit = { mod ->
         Text(
             text = label,
-            style = type.bodyM,
+            style = type.bodyS,
             color = if (focused) colors.blue else colors.ink2,
+            onTextLayout = { result ->
+                labelWraps = result.lineCount > 1
+                labelHeight = result.size.height
+            },
+            // Silenced, because the field below carries this same string as its
+            // content description. Spoken from both, every field is read twice.
+            modifier = mod
+                .padding(start = Space.sm)
+                .padding(horizontal = Space.xs)
+                .clearAndSetSemantics { },
         )
+    }
 
-        Spacer(Modifier.height(Space.s))
+    Column(modifier = modifier.fillMaxWidth()) {
+        if (labelWraps) {
+            labelText(Modifier)
+            Spacer(Modifier.height(Space.s))
+        }
 
+        Box(modifier = Modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                // Room for the label to sit on the line, and none when the
+                // label is above the field instead.
+                .padding(top = if (labelWraps) Space.none else labelRise)
                 .clip(Radius.cardLarge)
                 .border(
                     // The same focus treatment as every other focusable thing:
@@ -201,6 +252,16 @@ fun HealthTrailTextField(
                     Spacer(Modifier.width(Space.s))
                     trailing()
                 }
+            }
+        }
+
+            // **Drawn after the box so it paints over the line**, carrying the
+            // page's own color so the outline stops on either side of the
+            // words rather than running through them. Composed only in the
+            // arrangement it belongs to, so there is one measurement and no
+            // argument between two copies about whether it fits.
+            if (!labelWraps) {
+                labelText(Modifier.background(labelBackground))
             }
         }
 

@@ -3,8 +3,12 @@ package com.kamsiob.healthtrail.ui.components
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -13,12 +17,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
+import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -69,21 +77,55 @@ fun Disclosure(
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (!open) {
-            TextAction(
-                label = strings[labelKey],
-                onClick = { open = true },
-                modifier = if (testTag == null) {
-                    Modifier
-                } else {
-                    Modifier.testTag(testTag)
-                },
-            )
-            if (asideKey != null) {
-                Text(
-                    text = strings[asideKey],
-                    style = HealthTrail.type.bodyS,
-                    color = colors.ink2,
-                )
+            // **A container, not a link.** The approved mockup draws this as a
+            // full width surface carrying a plus, the words, and a chevron,
+            // `m3v4-4`, and it was a small outlined pill with a sentence
+            // underneath it. On a form made of full width fields, a pill is
+            // the one thing that does not line up with anything, and the
+            // aside under it read as a footnote about a control rather than
+            // as part of it.
+            //
+            // **The chevron points down, which is the app's own fold
+            // vocabulary.** `FoldRow` rotates the same mark ninety degrees to
+            // say a thing opens downward, so this reads as the gesture it
+            // already is rather than as a new one. The mockup also carries a
+            // plus; there is no plus glyph in the library and the chevron is
+            // not ambiguous without it, so none was invented for this.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(Radius.cardLarge)
+                    .openableByTap(
+                        label = strings[labelKey],
+                        onTap = { open = true },
+                        resting = colors.sand,
+                        shape = Radius.cardLarge,
+                    )
+                    .defaultMinSize(minHeight = Space.touchTarget)
+                    .padding(Space.cardPadding)
+                    .then(if (testTag == null) Modifier else Modifier.testTag(testTag)),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = strings[labelKey],
+                        style = HealthTrail.type.bodyL,
+                        color = colors.ink,
+                    )
+                    // **Inside the container now**, because it is what the
+                    // control promises rather than a remark about it. Rule 13:
+                    // it says nothing here is needed, which is the whole point
+                    // of putting it behind a control nobody has to touch.
+                    if (asideKey != null) {
+                        Text(
+                            text = strings[asideKey],
+                            style = HealthTrail.type.bodyS,
+                            color = colors.ink2,
+                        )
+                    }
+                }
+                Chevron(modifier = Modifier.rotate(DOWN))
             }
         }
 
@@ -104,3 +146,6 @@ fun Disclosure(
         }
     }
 }
+
+/** A chevron turned to point down, the way `FoldRow` says a thing opens. */
+private const val DOWN = 90f
