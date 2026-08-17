@@ -20,13 +20,18 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
+import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Body
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
-import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.MoreChip
 import com.kamsiob.healthtrail.ui.components.PickerOption
-import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -34,6 +39,9 @@ import java.time.LocalDate
 
 object ViolationTags {
     const val NAME = "violation"
+
+    /** The tag the old scaffold produced, kept so a journey still finds this screen. */
+    const val ROOT = "section_root_violation"
     const val NOTE = "violation_note"
     const val SAVE = "violation_save"
     const val ABOUT = "violation_about"
@@ -142,33 +150,41 @@ fun ViolationScreen(
     }
     val occurred = Edtf.parse(occurredEdtf) ?: Edtf.day(today)
 
-    SectionScaffold(
-        name = ViolationTags.NAME,
-        // **The chip says which section, the heading says what you came for.**
-        // "A time it was not followed" was in both slots, once at 11sp in mono
-        // and once at display weight. The instruction's own name is the
-        // subtitle, so the three lines are now where you are, what you are
-        // doing, and which request it is about. #341.
-        title = strings["notebook.section.standing_instructions"],
-        headingKey = if (existing == null) "violation.title" else "violation.correct.title",
+    // **The eyebrow says which section, the title says what you came for.**
+    // "A time it was not followed" used to be in both slots, once in an 11sp
+    // chip and once at display weight. The instruction's own name is the line
+    // under it, so the three are where you are, what you are doing, and which
+    // request it is about. #341.
+    //
+    // **The way back is the cancel**, which is why this screen draws no second
+    // one: it used to carry a full width "Cancel" directly above a full width
+    // "Back to what you have asked for", two identical bars under two
+    // different words. #340.
+    Page(
+        eyebrow = strings["notebook.section.standing_instructions"],
+        eyebrowColor = hueFor(Repository.Section.STANDING_INSTRUCTIONS).ink,
+        title = strings[if (existing == null) "violation.title" else "violation.correct.title"],
         subtitle = Bidi.isolate(instruction.name),
-        // **The way back is the cancel**, which is why this screen draws no
-        // second one. It used to carry a full width outlined "Cancel" directly
-        // above a full width outlined "Back to what you have asked for", two
-        // identical bars doing the identical thing under two different words.
-        // #340, and the same reasoning 15.1 records for the emergency card's
-        // four Change pills.
         onBack = onCancel,
-        backLabelKey = "section.back.instructions",
-        modifier = modifier,
+        backLabel = strings["section.back.instructions"],
+        modifier = modifier.testTag(ViolationTags.ROOT),
     ) {
         item {
             // The instruction in its own words, so somebody writing this down
             // is looking at what they actually asked for rather than at a
             // paraphrase of it.
+            // The instruction in its own words, on a block of its own, so
+            // somebody writing this down is looking at what they actually
+            // asked for rather than at a paraphrase of it.
             instruction.wording.takeIf { it.isNotBlank() }?.let {
-                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
-                Spacer(Modifier.height(Space.sectionGap))
+                Block {
+                    Body(
+                        text = Bidi.isolate(it),
+                        color = colors.ink,
+                        style = HealthTrail.type.bodyL,
+                    )
+                }
+                Spacer(Modifier.height(Space.betweenGroups))
             }
 
             DictatableField(
@@ -281,8 +297,10 @@ fun ViolationScreen(
                 }
             }
 
-            Spacer(Modifier.height(Space.sectionGap))
-            FilledButton(
+            Spacer(Modifier.height(Space.betweenZones))
+            Action(
+                emphasis = ActionEmphasis.Main,
+                mark = Symbols.check,
                 label = strings["capture.save"],
                 onClick = {
                     onSave(
@@ -304,8 +322,8 @@ fun ViolationScreen(
             // here to do, and it opens the confirmation rather than doing
             // anything itself.
             if (onRemove != null) {
-                Spacer(Modifier.height(Space.sectionGap))
-                QuietButton(
+                Spacer(Modifier.height(Space.betweenGroups))
+                Action(
                     label = strings["remove.action"],
                     onClick = onRemove,
                     modifier = Modifier.testTag(ViolationTags.REMOVE),
