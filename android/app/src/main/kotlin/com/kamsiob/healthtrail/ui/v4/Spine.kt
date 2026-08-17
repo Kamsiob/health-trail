@@ -12,11 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.LayoutDirection
+import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Trail
@@ -169,3 +173,42 @@ enum class Stop {
  * over half, so the disc still reads as a disc.
  */
 private const val DONE_MARK = 0.58f
+
+/**
+ * A thread's own route, drawn as a swatch beside its name. #386.
+ *
+ * **A route is a color and a dash pattern together, never a color alone**,
+ * `DESIGN.md` 5.2.2: two threads that land on similar colors are otherwise
+ * indistinguishable in grayscale, to a colorblind reader, and on a phone in
+ * sunlight. The dash is assigned by creation order and travels with the thread
+ * everywhere it appears.
+ *
+ * **Wide enough to read as a pattern rather than as a mark.** At a node's width
+ * only two dashes fit, and two dashes is a dash pair, not a route.
+ *
+ * **Decorative**, because the name is always beside it.
+ */
+@Composable
+fun RouteMark(
+    color: Color,
+    /** The thread's creation order, which is what picks its dash. */
+    index: Int,
+    modifier: Modifier = Modifier,
+) {
+    val dash = RouteDash.forIndex(index)
+    Canvas(
+        modifier = modifier
+            .width(Trail.swatchWidth)
+            .height(Trail.nodeSize)
+            .clearAndSetSemantics { },
+    ) {
+        drawLine(
+            color = color,
+            start = Offset(0f, size.height / 2f),
+            end = Offset(size.width, size.height / 2f),
+            strokeWidth = Trail.strokeWidth.toPx(),
+            cap = dash.cap,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash.on.toPx(), dash.off.toPx())),
+        )
+    }
+}
