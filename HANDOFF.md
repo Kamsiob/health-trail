@@ -149,6 +149,19 @@ Fixture variants:
 
 ## 8. Commands
 
+**Look at the whole app in one command**, and do this before deciding what to fix:
+
+    tools/sweep.sh audit            # seed once, walk every screen, capture each
+    tools/sweep.sh --no-seed audit  # reuse what is already on the phone
+
+**Written because the loop was the bottleneck.** Change one thing, reinstall,
+reseed through the restore screen, tap back to the screen, capture, look:
+ninety seconds per screen, so nobody ever did a pass and defects were found one
+at a time in whatever order they were stumbled on. **Seed once, walk once.**
+
+**`adb install -r` does not keep the notebook** on this build. It lands on the
+first run screen, so a sweep that needs data seeds.
+
     python3 tools/checks/run_all.py     # 29 checks, seconds
     tools/verify.sh                     # honest runner, includes lintDebug
     cd android && ./gradlew :app:connectedDebugAndroidTest    # ~16 min
