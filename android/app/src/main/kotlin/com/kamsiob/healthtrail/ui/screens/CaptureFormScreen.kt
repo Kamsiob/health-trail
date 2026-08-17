@@ -39,8 +39,11 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
@@ -385,7 +388,13 @@ fun CaptureFormScreen(
                     // The title and the terms are one thing: what this screen
                     // is. They sit at the within value.
                     Spacer(Modifier.height(Space.withinGroup))
-                    Aside(text = strings["capture.sub"], section = Repository.Section.TRAIL)
+                    FactBlock(
+                        label = null,
+                        text = strings["capture.sub"],
+                        tone = BlockTone.Section,
+                        mark = Symbols.of(Repository.Section.TRAIL),
+                        hue = hueFor(Repository.Section.TRAIL),
+                    )
 
                 // **The terms, then the question**, one group to the next.
                 Spacer(Modifier.height(Space.betweenGroups))

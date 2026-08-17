@@ -34,15 +34,18 @@ import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.MoreChip
 import com.kamsiob.healthtrail.ui.components.PickerOption
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.cappedChips
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 import java.time.LocalDate
 
 object AddApptTags {
@@ -150,7 +153,13 @@ fun AddAppointmentScreen(
                     section = Repository.Section.APPOINTMENTS,
                 )
                     Spacer(Modifier.height(Space.m))
-                    Aside(text = strings["appts.add.lead"], section = Repository.Section.APPOINTMENTS)
+                    FactBlock(
+                        label = null,
+                        text = strings["appts.add.lead"],
+                        tone = BlockTone.Section,
+                        mark = Symbols.of(Repository.Section.APPOINTMENTS),
+                        hue = hueFor(Repository.Section.APPOINTMENTS),
+                    )
                 Spacer(Modifier.height(Space.l))
 
                 HealthTrailTextField(

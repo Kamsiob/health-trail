@@ -33,12 +33,15 @@ import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 import java.time.LocalDate
 
 object AddMilestoneTags {
@@ -140,7 +143,13 @@ fun AddMilestoneScreen(
                     section = Repository.Section.CHAPTERS,
                 )
                     Spacer(Modifier.height(Space.m))
-                    Aside(text = strings["milestones.add.lead"], section = Repository.Section.CHAPTERS)
+                    FactBlock(
+                        label = null,
+                        text = strings["milestones.add.lead"],
+                        tone = BlockTone.Section,
+                        mark = Symbols.of(Repository.Section.CHAPTERS),
+                        hue = hueFor(Repository.Section.CHAPTERS),
+                    )
                 Spacer(Modifier.height(Space.l))
 
                 HealthTrailTextField(

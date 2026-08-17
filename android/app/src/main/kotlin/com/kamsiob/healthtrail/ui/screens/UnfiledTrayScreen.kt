@@ -44,19 +44,22 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -142,7 +145,13 @@ fun UnfiledTrayScreen(
                         section = Repository.Section.TRAIL,
                     )
                         Spacer(Modifier.height(Space.m))
-                        Aside(text = strings["unfiled.subtitle"], section = Repository.Section.TRAIL)
+                        FactBlock(
+                            label = null,
+                            text = strings["unfiled.subtitle"],
+                            tone = BlockTone.Section,
+                            mark = Symbols.of(Repository.Section.TRAIL),
+                            hue = hueFor(Repository.Section.TRAIL),
+                        )
                     Spacer(Modifier.height(Space.l))
                 }
 

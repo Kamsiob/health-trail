@@ -22,12 +22,15 @@ import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 
 object AddThreadTags {
     const val STAGE = "add_thread"
@@ -151,7 +154,13 @@ fun AddThreadScreen(
                     section = section,
                 )
                     Spacer(Modifier.height(Space.m))
-                    Aside(text = strings[leadKey], section = section)
+                    FactBlock(
+                        label = null,
+                        text = strings[leadKey],
+                        tone = BlockTone.Section,
+                        mark = Symbols.of(section),
+                        hue = hueFor(section),
+                    )
 
                 Spacer(Modifier.height(Space.l))
                 // **The field's label is not the heading again**, which is the

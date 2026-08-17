@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -40,14 +41,15 @@ import com.kamsiob.healthtrail.ui.components.AvatarSize
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.components.FieldRow
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 
 object AddPersonTags {
     const val EMAIL = "add_person_email"
@@ -210,7 +212,13 @@ fun AddPersonScreen(
                     section = Repository.Section.CARE_TEAM,
                 )
                     Spacer(Modifier.height(Space.m))
-                    Aside(text = strings["careteam.add.lead"], section = Repository.Section.CARE_TEAM)
+                    FactBlock(
+                        label = null,
+                        text = strings["careteam.add.lead"],
+                        tone = BlockTone.Section,
+                        mark = Symbols.of(Repository.Section.CARE_TEAM),
+                        hue = hueFor(Repository.Section.CARE_TEAM),
+                    )
 
                 // **The face the row will wear, filling in as they type.** It
                 // is the same avatar the care team draws, so somebody sees what

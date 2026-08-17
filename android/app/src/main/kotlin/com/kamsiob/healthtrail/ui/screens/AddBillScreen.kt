@@ -30,12 +30,15 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.Disclosure
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 
 object AddBillTags {
     const val ROOT = "add_bill_root"
@@ -116,7 +119,13 @@ fun AddBillScreen(
                     section = Repository.Section.MONEY,
                 )
                     Spacer(Modifier.height(Space.m))
-                    Aside(text = strings["money.add.lead"], section = Repository.Section.MONEY)
+                    FactBlock(
+                        label = null,
+                        text = strings["money.add.lead"],
+                        tone = BlockTone.Section,
+                        mark = Symbols.of(Repository.Section.MONEY),
+                        hue = hueFor(Repository.Section.MONEY),
+                    )
                 Spacer(Modifier.height(Space.l))
 
                 HealthTrailTextField(

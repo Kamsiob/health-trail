@@ -31,12 +31,15 @@ import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.DictatableField
 import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 import java.time.LocalDate
 
 object CorrectIncidentTags {
@@ -121,7 +124,13 @@ fun CorrectIncidentScreen(
                     section = Repository.Section.THREADS,
                 )
                     Spacer(Modifier.height(Space.m))
-                    Aside(text = strings["incident.correct.lead"], section = Repository.Section.THREADS)
+                    FactBlock(
+                        label = null,
+                        text = strings["incident.correct.lead"],
+                        tone = BlockTone.Section,
+                        mark = Symbols.of(Repository.Section.THREADS),
+                        hue = hueFor(Repository.Section.THREADS),
+                    )
                 Spacer(Modifier.height(Space.l))
 
                 HealthTrailTextField(

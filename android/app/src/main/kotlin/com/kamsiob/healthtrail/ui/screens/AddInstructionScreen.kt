@@ -25,14 +25,17 @@ import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 
 object AddInstructionTags {
     const val ROOT = "add_instruction_root"
@@ -99,7 +102,13 @@ fun AddInstructionScreen(
                         section = Repository.Section.STANDING_INSTRUCTIONS,
                     )
                         Spacer(Modifier.height(Space.m))
-                        Aside(text = strings["instructions.add.lead"], section = Repository.Section.STANDING_INSTRUCTIONS)
+                        FactBlock(
+                            label = null,
+                            text = strings["instructions.add.lead"],
+                            tone = BlockTone.Section,
+                            mark = Symbols.of(Repository.Section.STANDING_INSTRUCTIONS),
+                            hue = hueFor(Repository.Section.STANDING_INSTRUCTIONS),
+                        )
                     Spacer(Modifier.height(Space.l))
                 }
 

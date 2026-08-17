@@ -23,7 +23,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.Aside
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.ToggleRow
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FilledButton
@@ -33,6 +33,9 @@ import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 
 object AddMedTags {
     const val ROOT = "add_med_root"
@@ -134,9 +137,12 @@ fun AddMedicationScreen(
                 )
                 Spacer(Modifier.height(Space.m))
 
-                Aside(
+                FactBlock(
+                    label = null,
                     text = strings["meds.add.lead"],
-                    section = Repository.Section.MEDICATIONS,
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.MEDICATIONS),
+                    hue = hueFor(Repository.Section.MEDICATIONS),
                 )
                 Spacer(Modifier.height(Space.l))
 

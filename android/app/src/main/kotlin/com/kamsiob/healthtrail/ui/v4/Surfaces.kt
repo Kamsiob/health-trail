@@ -242,24 +242,38 @@ fun BigNumber(
  */
 @Composable
 fun FactBlock(
-    label: String,
+    label: String?,
     text: String,
     modifier: Modifier = Modifier,
     tone: BlockTone = BlockTone.Gold,
     @DrawableRes mark: Int? = null,
+    /**
+     * Which section this block belongs to, where [tone] is
+     * [BlockTone.Section].
+     *
+     * **The note a form opens with is this shape**: the section's wash, its own
+     * mark, and the sentence setting the terms for everything under it. Two of
+     * the six approved drawings carry one, and the block does not know which
+     * screen it is on, so the hue is passed rather than guessed.
+     */
+    hue: TabHue? = null,
 ) {
-    Block(modifier = modifier, tone = tone) {
+    Block(modifier = modifier, tone = tone, hue = hue) {
         Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
             mark?.let {
                 // At the symbol's own 24dp, because this one is a mark on a
                 // block rather than a glyph on a line of type.
-                Symbol(symbol = it, contentDescription = null, tint = tone.label())
+                Symbol(symbol = it, contentDescription = null, tint = tone.label(hue))
             }
             Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                 // bidi-ok: the label is fixed app copy naming what the block
                 // holds, never the person's words. The sentence below it is
                 // theirs and the caller isolates it.
-                Eyebrow(text = label, color = tone.label())
+                //
+                // **Null where the sentence names itself**, which is every note
+                // a form opens with: a label over one line saying the same
+                // thing twice is furniture, not hierarchy.
+                label?.let { Eyebrow(text = it, color = tone.label(hue)) }
                 Body(
                     // bidi-ok: the caller isolates, because the sentence here is
                     // usually somebody's own words and only the caller knows.

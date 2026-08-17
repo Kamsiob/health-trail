@@ -27,19 +27,22 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FoldRowText
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
+import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -175,7 +178,13 @@ fun StartProjectScreen(
                         section = Repository.Section.PROJECTS,
                     )
                         Spacer(Modifier.height(Space.m))
-                        Aside(text = strings["projects.start.lead"], section = Repository.Section.PROJECTS)
+                        FactBlock(
+                            label = null,
+                            text = strings["projects.start.lead"],
+                            tone = BlockTone.Section,
+                            mark = Symbols.of(Repository.Section.PROJECTS),
+                            hue = hueFor(Repository.Section.PROJECTS),
+                        )
                     Spacer(Modifier.height(Space.xs))
                     // **Where they are in the flow**, 20.5 screens 03 and 04.
                     // The preview said "2 of 2" while this said nothing, so

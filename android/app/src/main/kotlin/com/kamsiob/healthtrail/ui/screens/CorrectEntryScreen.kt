@@ -27,12 +27,15 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictateAction
 import com.kamsiob.healthtrail.ui.components.FieldRow
 import com.kamsiob.healthtrail.ui.components.FilledButton
-import com.kamsiob.healthtrail.ui.components.Aside
 import com.kamsiob.healthtrail.ui.components.FormHeader
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.TextAction
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.FactBlock
 
 object CorrectEntryTags {
     const val ROOT = "correct_entry"
@@ -111,7 +114,13 @@ fun CorrectEntryScreen(
                     section = Repository.Section.TRAIL,
                 )
                     Spacer(Modifier.height(Space.m))
-                    Aside(text = strings["entry.correct.lead"], section = Repository.Section.TRAIL)
+                    FactBlock(
+                        label = null,
+                        text = strings["entry.correct.lead"],
+                        tone = BlockTone.Section,
+                        mark = Symbols.of(Repository.Section.TRAIL),
+                        hue = hueFor(Repository.Section.TRAIL),
+                    )
 
                 Spacer(Modifier.height(Space.l))
 
