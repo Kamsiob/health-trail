@@ -182,6 +182,8 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | B4 | The emulator. Resolved by dropping it, 2026-07-31 |
 | D146 | The welcome is remembered by the phone as well as by the notebook |
 
+**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field.
+
 ---
 
 ## 2026-07-31
