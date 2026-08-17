@@ -2990,6 +2990,30 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D182. The icons are Material Symbols, the group is a tonal block, and the row breathes
+
+**Date:** 2026-08-16. **Step 2 of the rebuild, #386**, on the three surfaces the owner compared against the mockups.
+
+**The icons.** Twelve hand-authored line drawings on a 24 unit grid became Material Symbols Rounded, filled. The owner: "the icons are different", and every mark in `docs/screenshots/m3v4-*.png` is a Material Symbol. They are **vector drawables rather than an icon font**, which keeps `SectionIcon`'s original reason for refusing a font: a font falls back to a box glyph on a device that lacks it and a path does not. Apache License 2.0, fetched from `google/material-design-icons` and verified the same day; the license line travels inside every one of the 34 files.
+
+**`Symbols` names them by role rather than by drawing**, so a section changing its mark is one line rather than eleven call sites, and the section and capture mappings are **exhaustive with no `else`**, so a new one stops the compiler.
+
+**The capture sheet moved with the notebook rather than after it.** `docs/V4.md` 3 says the build never carries two design languages at once, and hand-stroked marks in one sheet beside Material Symbols everywhere else is exactly that. `SectionIconPaths` survives because `EmptyDrawing` still draws them and that screen is not in this pass.
+
+**The tile's shape, which was the quiet half.** At a 16dp corner on a 36dp box the tile was within two points of a circle, so every section row in the app read as a bubble. `Radius.iconTile` is its own token at 14dp on a 44dp tile, which is the rounded square `m3v4-1` and `m3v4-3` draw. The notebook had also been sizing the tile itself at 32dp, overriding the component, and those literals are gone.
+
+**The group.** `GroupedSurface` was a raised white card with a two layer shadow. It is a flat tonal block, `sand` on `paper`. **The shadow is deleted rather than softened**: elevation was doing the job the container's own color now does, and two separations at once is most of what made the old screens feel busy. `docs/V4.md` 4 names "the hairline-divided white monolith" as the thing being removed, and this was it.
+
+**The air, and it was measured rather than adjusted by eye.** The owner: "the mockup is much nicer. it breathes. it's more clear and user friendly." The icon tiles in `m3v4-1` sit on a **64dp pitch**; the built rows sat on **54**, with the tile the same 38.7dp in both. **The entire difference was the row's own vertical padding, 8dp against the drawing's 13.** `Space.rowVertical` is a token and `DenseRow` takes it; rebuilt and measured off the phone at 62.3dp.
+
+**Why a token rather than a value on the notebook.** `DenseRow` is the most used row in this app. One list that breathes beside forty that do not is worse than either, and rule 14 makes the bar retroactive anyway.
+
+**The method is the reusable part.** Three of these were found by measuring the approved PNG in pixels and comparing it with a capture off the phone, not by looking at both and forming an impression. **"It breathes" is a measurement once somebody takes it.**
+
+**What would reopen it:** a mark that turns out to name something wrong on its own screen. Every one of these is decoration beside a word, per `DESIGN.md` 4.4, so none of them carries meaning alone.
+
+---
+
 ### D181. The app is set in Roboto, because the approved mockups are and it was not
 
 **Date:** 2026-08-16. **The owner, on the first captures off the rebuilt theme:** "neither of those that you just showed me looks remotely similar to the V4 material 3 expressive shots ... the style and the font and the icons are different and the overall feel and design are different."

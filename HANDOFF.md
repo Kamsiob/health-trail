@@ -21,7 +21,15 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 **The back end does not change.** Repository, schema, change log, export container, decryptor, fixtures, `contract/DATA-CONTRACT.md`: all stay. This is a user interface replacement. Anything needing a schema change is out of scope and goes to the owner.
 
-**Where it stands: step 1 is done, #385.** `Theme.kt` is `MaterialExpressiveTheme`, with all 48 Material color roles named in both themes, all 15 type roles, five different corners on the shape scale, and reduced motion reaching Material's own components through `StillMotionScheme`. Step 2, the shared surfaces, is #386 and has not started.
+**Where it stands: step 1 is done and step 2 is under way.**
+
+Step 1, #385. `Theme.kt` is `MaterialExpressiveTheme`, with all 48 Material color roles named in both themes, all 15 type roles, five different corners on the shape scale, and reduced motion reaching Material's own components through `StillMotionScheme`.
+
+Step 2, #386, done so far: **the face, the icons, the navigation bar, the group container, the icon tile, and the row's air.** Roboto replaces Atkinson (D181). 34 Material Symbols replace the hand-drawn marks (D182). The nav bar is Material's `ShortNavigationBar`, and its gold indicator came free from the theme. `GroupedSurface` is a flat tonal block instead of a raised white card. `DenseRow` has the drawing's 13dp of air.
+
+**Step 2 still to do: the action, the field, the sheet.** Buttons are still the outlined pill; fields, sheets and the accordion are untouched. Then step 3, the screens.
+
+**Three of today's fixes were found by measuring the approved PNG in pixels** and comparing it against a capture off the phone: the face, the tile's near-circle corner, and the 54dp row pitch against the drawing's 64. **Do that before forming an impression**, `docs/V4.md` 6.
 
 **The foundation was not on the classpath, whatever three documents said. D179.** In stable material3 1.4.0 the expressive theme and the motion scheme are `internal` and the expressive components do not exist. The build now pins **material3 1.5.0-alpha26**, past the bom, and the bom is **2026.08.00** so Compose UI stays 1.12.0 stable rather than being dragged to a beta. **One artifact off the stable channel, deliberately.** Check the pin against what is stable before any release build.
 
