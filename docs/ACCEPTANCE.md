@@ -62,7 +62,7 @@
 |---|---|
 | 1. The drawn screens | Today, the notebook, the project and the care team carry the drawing. The form was already right. The document screen remains |
 | 2. Extract the language | done: `docs/V4.md` 2.1, every rule measured off the drawings |
-| 3. Every component | `ui/v4` has `Block`, `BlockTone`, `Eyebrow`, `Lead`, `BigNumber`, `Body`, `ListRow`, `RowDivider`, `SearchDoor`. Still to write: the screen scaffold, the hero, the stat block, the actions, the field, the sheet, the chips, the toggle, the spine, the chart |
+| 3. Every component | `ui/v4` has `Block`, `BlockTone`, `Eyebrow`, `Lead`, `BigNumber`, `Body`, `ListRow`, `RowDivider`, `SearchDoor`. `Page` and `labeledBlock` are the interior scaffold, carrying the same back tag the old footer had so tests press back unchanged. Still to write: the hero, the stat block, the actions, the field, the sheet, the chips, the toggle, the spine, the chart |
 | 4. Every screen | **1 of 85 rewritten onto `ui/v4`: the notebook.** The old set is still standing because it still has callers: `GroupedSurface` 110, `GroupHeader` 57, `DenseRow`, `Tile`, `RoundCard`, `Hero`. Each is deleted as its last caller goes |
 | 5. Verify everything was touched | not started |
 | 6. Expert review | not started |
