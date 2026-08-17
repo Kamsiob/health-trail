@@ -30,6 +30,7 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
@@ -70,14 +71,13 @@ fun ProjectPapersScreen(
 
     var pending by rememberSaveable { mutableStateOf("") }
 
-    SectionScaffold(
-        name = ProjectPapersTags.NAME,
-        title = strings["notebook.section.projects"],
-        headingKey = "project.papers.title",
-        subtitle = Bidi.isolate(projectName),
+    Page(
+        title = strings["project.papers.title"],
         onBack = onBack,
-        backLabelKey = "section.back.setup",
-        modifier = modifier,
+        backLabel = strings["section.back.setup"],
+        modifier = modifier.testTag(SectionTags.root(ProjectPapersTags.NAME)),
+        eyebrow = strings["notebook.section.projects"],
+        subtitle = Bidi.isolate(projectName),
     ) {
         item {
             Text(
@@ -85,7 +85,6 @@ fun ProjectPapersScreen(
                 style = type.bodyM,
                 color = colors.ink2,
             )
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         if (papers.isEmpty()) {
@@ -145,7 +144,6 @@ fun ProjectPapersScreen(
                 },
                 modifier = Modifier.testTag(ProjectPapersTags.ADD),
             )
-            Spacer(Modifier.height(Space.xxl))
         }
     }
 }

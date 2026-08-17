@@ -29,6 +29,7 @@ import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.Instant
 import java.time.LocalDate
@@ -121,19 +122,18 @@ fun AppointmentsScreen(
         it.scheduledStart != null && it.scheduledStart < todayMillis
     }
 
-    SectionScaffold(
-        name = ApptTags.NAME,
-        title = strings["notebook.section.appointments"],
-        subtitle = strings["appts.subtitle"],
+    Page(
+        title = strings["appointments.heading"],
         onBack = onBack,
-        modifier = modifier,
+        backLabel = strings[LocalSectionBackKey.current],
+        modifier = modifier.testTag(SectionTags.root(ApptTags.NAME)),
+        eyebrow = strings["notebook.section.appointments"],
+        subtitle = strings["appts.subtitle"],
         section = Repository.Section.APPOINTMENTS,
-        headingKey = "appointments.heading",
     ) {
         if (appointments.isEmpty()) {
             item {
                 SectionEmpty(name = ApptTags.NAME, text = strings["appts.empty"], section = Repository.Section.APPOINTMENTS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
-                Spacer(Modifier.height(Space.l))
             }
         }
 
@@ -156,7 +156,6 @@ fun AppointmentsScreen(
                         modifier = Modifier.testTag(ApptTags.TOGGLE),
                     )
                 }
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
@@ -170,7 +169,6 @@ fun AppointmentsScreen(
                     onStep = { monthOffset += it },
                     onOpen = onOpen,
                 )
-                Spacer(Modifier.height(Space.cardGap))
             }
             item {
                 Spacer(Modifier.height(Space.s))
@@ -180,7 +178,7 @@ fun AppointmentsScreen(
                     modifier = Modifier.testTag(ApptTags.ADD),
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         // **The next one leads and what has happened folds.** Grid screen 22
@@ -198,14 +196,12 @@ fun AppointmentsScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
         if (past.isNotEmpty()) {
             item {
                 Eyebrow(text = Bidi.join(strings["appts.group.past"], past.size.toString()), modifier = Modifier.testTag(ApptTags.PAST_FOLD))
-                Spacer(Modifier.height(Space.cardGap))
             }
             item {
                 Block(padding = Space.none) {
@@ -220,7 +216,6 @@ fun AppointmentsScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 

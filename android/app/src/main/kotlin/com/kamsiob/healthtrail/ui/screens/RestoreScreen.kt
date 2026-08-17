@@ -28,6 +28,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.Instant
 import java.time.ZoneId
@@ -131,15 +132,13 @@ fun RestoreScreen(
     var how by remember(state) { mutableStateOf<RestoreHow?>(null) }
     val busy = state is RestoreState.Working
 
-    SectionScaffold(
-        name = RestoreTags.NAME,
-        // The chip says where you are, the heading says what you came for.
-        title = strings["nav.more"],
-        headingKey = "restore.title",
-        subtitle = strings["restore.lead"],
+    Page(
+        title = strings["restore.title"],
         onBack = onBack,
-        backLabelKey = "section.back.more",
-        modifier = modifier,
+        backLabel = strings["section.back.more"],
+        modifier = modifier.testTag(SectionTags.root(RestoreTags.NAME)),
+        eyebrow = strings["nav.more"],
+        subtitle = strings["restore.lead"],
     ) {
         item {
             // **Filled, because it is the one thing this screen is for.**
@@ -330,7 +329,6 @@ fun RestoreScreen(
                 }
             }
 
-            Spacer(Modifier.height(Space.l))
         }
     }
 }

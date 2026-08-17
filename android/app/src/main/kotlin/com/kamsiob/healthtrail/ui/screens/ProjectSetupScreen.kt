@@ -25,6 +25,7 @@ import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object ProjectSetupTags {
@@ -96,21 +97,17 @@ fun ProjectSetupScreen(
         mutableStateOf(project.waitingOn.orEmpty())
     }
 
-    SectionScaffold(
-        name = ProjectSetupTags.NAME,
-        title = strings["notebook.section.projects"],
-        headingKey = "project.setup",
+    Page(
+        title = strings["project.setup"],
+        onBack = onBack,
+        backLabel = strings["section.back.project"],
+        modifier = modifier.testTag(SectionTags.root(ProjectSetupTags.NAME)),
+        eyebrow = strings["notebook.section.projects"],
         subtitle = Bidi.join(
             project.name,
             templateName?.let { strings("project.setup.from_template", "name" to it) }
                 ?: strings["project.setup.from_nothing"].takeIf { project.templateId == null },
         ),
-        onBack = onBack,
-        // **The project, not the projects list.** Setup sits on top of one
-        // project and back returns to it. A way back that names the wrong
-        // destination is a small lie somebody only notices by being surprised.
-        backLabelKey = "section.back.project",
-        modifier = modifier,
     ) {
         // **The shape, as three chips.** 20.3: the shape is a default and never
         // a cage, and this is the one control that changes it.
@@ -145,7 +142,6 @@ fun ProjectSetupScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **What the template decided, each with what it has become.** The
@@ -219,7 +215,6 @@ fun ProjectSetupScreen(
                 style = type.bodyS,
                 color = colors.ink2,
             )
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **Where the project is, and it is not a verdict.** A long process
@@ -288,7 +283,6 @@ fun ProjectSetupScreen(
                     modifier = Modifier.testTag(ProjectSetupTags.SAVE_WAITING),
                 )
             }
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **Keeping what this project turned into, for the next one like it.**
@@ -341,7 +335,6 @@ fun ProjectSetupScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(Space.xxl))
         }
     }
 }

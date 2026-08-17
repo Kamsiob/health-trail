@@ -36,6 +36,7 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object PrepTags {
@@ -151,21 +152,14 @@ fun PrepScreen(
         )?.takeIf { context.packageManager.resolveActivity(it, 0) != null }
     }
 
-    SectionScaffold(
-        name = PrepTags.NAME,
-        title = strings["notebook.section.appointments"],
-        heading = Bidi.isolate(appointment.title.ifBlank { strings["prep.untitled"] }),
-        section = Repository.Section.APPOINTMENTS,
-        // **The other half of the one thing.** Law 1 for this screen is when it
-        // is and whether the prep is ready, so the count of what there is to
-        // ask sits with the name and the date carries the weight. It is a count
-        // of what is written down and never of how far along the person is,
-        // which rule 13 rules out, and at zero it says nothing is saved yet
-        // rather than treating an empty list as a failing.
-        subtitle = strings("prep.ready", "count" to prep.questions.size),
+    Page(
+        title = Bidi.isolate(appointment.title.ifBlank { strings["prep.untitled"] }),
         onBack = onBack,
-        backLabelKey = backLabelKey,
-        modifier = modifier,
+        backLabel = strings[backLabelKey],
+        modifier = modifier.testTag(SectionTags.root(PrepTags.NAME)),
+        eyebrow = strings["notebook.section.appointments"],
+        subtitle = strings("prep.ready", "count" to prep.questions.size),
+        section = Repository.Section.APPOINTMENTS,
     ) {
         item {
             // **The date at hero weight**, at exactly the precision somebody
@@ -210,7 +204,6 @@ fun PrepScreen(
                 Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyM, color = colors.ink2)
             }
 
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **The questions come first and do not fold.** They are the reason to
@@ -230,7 +223,6 @@ fun PrepScreen(
                     style = HealthTrail.type.bodyM,
                     color = colors.ink2,
                 )
-                Spacer(Modifier.height(Space.sectionGap))
             }
         } else {
             // **Grouped by who answers it, which is how the room works.** These
@@ -267,14 +259,12 @@ fun PrepScreen(
                 if (!leads) {
                     item(key = "prep_fold_${role ?: "anyone"}") {
                         Eyebrow(text = Bidi.join(Bidi.isolate(label), inRole.size.toString()), modifier = Modifier.testTag(PrepTags.roleFold(label)), fixed = false)
-                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
 
                 item(key = "prep_group_${role ?: "anyone"}") {
                     if (leads) {
                         Eyebrow(text = Bidi.isolate(label), fixed = false)
-                        Spacer(Modifier.height(Space.s))
                     }
                     Block(padding = Space.none) {
                         inRole.forEachIndexed { row, question ->
@@ -301,7 +291,6 @@ fun PrepScreen(
                             if (row < inRole.lastIndex) RowDivider(inset = false)
                         }
                     }
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
 
@@ -324,7 +313,6 @@ fun PrepScreen(
         if (prep.asked.isNotEmpty()) {
             item(key = "asked_here") {
                 Eyebrow(text = Bidi.join(strings["prep.asked.here"], prep.asked.size.toString()), modifier = Modifier.testTag(PrepTags.ASKED_FOLD))
-                Spacer(Modifier.height(Space.cardGap))
             }
             item(key = "asked_here_rows") {
                 Block(padding = Space.none) {
@@ -345,7 +333,6 @@ fun PrepScreen(
                         if (row < prep.asked.lastIndex) RowDivider(inset = false)
                     }
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -358,7 +345,6 @@ fun PrepScreen(
                 onClick = onAsk,
                 modifier = Modifier.testTag(PrepTags.ASK),
             )
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **What has happened folds and is counted.** In year three this is
@@ -378,7 +364,6 @@ fun PrepScreen(
         } else {
             item {
                 Eyebrow(text = Bidi.join(strings["prep.changes"], prep.changes.size.toString()), modifier = Modifier.testTag(PrepTags.CHANGES_FOLD))
-                Spacer(Modifier.height(Space.cardGap))
             }
 
             item {
@@ -396,7 +381,6 @@ fun PrepScreen(
                     style = HealthTrail.type.bodyM,
                     color = colors.ink2,
                 )
-                Spacer(Modifier.height(Space.m))
             }
 
             prep.changes.forEachIndexed { index, entry ->
@@ -435,7 +419,6 @@ fun PrepScreen(
                                         style = HealthTrail.type.bodyS,
                                         color = colors.ink2,
                                     )
-                                    Spacer(Modifier.height(Space.xs))
                                 }
                                 Text(
                                     text = entry.title?.takeIf { it.isNotBlank() }
@@ -455,7 +438,6 @@ fun PrepScreen(
                                     )
                                 }
                             }
-                            Spacer(Modifier.height(Space.cardGap))
                         }
                     }
                 }
@@ -523,7 +505,6 @@ fun PrepScreen(
                 onClick = onRemove,
                 modifier = Modifier.testTag(PrepTags.REMOVE),
             )
-            Spacer(Modifier.height(Space.l))
         }
     }
 }

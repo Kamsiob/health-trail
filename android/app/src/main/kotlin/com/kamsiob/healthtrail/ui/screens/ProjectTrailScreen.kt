@@ -39,6 +39,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
+import com.kamsiob.healthtrail.ui.v4.Page
 import java.time.ZoneId
 
 object ProjectTrailTags {
@@ -107,14 +108,13 @@ fun ProjectTrailScreen(
         if (active == FILTER_ALL) items else items.filter { filterKeyFor(it) == active }
     }
 
-    SectionScaffold(
-        name = ProjectTrailTags.NAME,
-        title = strings["notebook.section.projects"],
-        headingKey = "project.trail",
-        subtitle = Bidi.isolate(projectName),
+    Page(
+        title = strings["project.trail"],
         onBack = onBack,
-        backLabelKey = "section.back.project",
-        modifier = modifier,
+        backLabel = strings["section.back.project"],
+        modifier = modifier.testTag(SectionTags.root(ProjectTrailTags.NAME)),
+        eyebrow = strings["notebook.section.projects"],
+        subtitle = Bidi.isolate(projectName),
     ) {
         if (items.isEmpty()) {
             item {
@@ -140,7 +140,7 @@ fun ProjectTrailScreen(
                     modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_TALL),
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         // **Only when there is more than one kind to choose between.** One chip
@@ -171,7 +171,6 @@ fun ProjectTrailScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -205,7 +204,6 @@ fun ProjectTrailScreen(
                 Column {
                     gap?.let {
                         DistanceMarker(strings(passedKey(it.key), "count" to it.count))
-                        Spacer(Modifier.height(Space.s))
                     }
                     TrailItemRow(
                         item = item,

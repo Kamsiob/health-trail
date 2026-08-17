@@ -23,6 +23,7 @@ import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object ProjectStepsTags {
@@ -68,17 +69,13 @@ fun ProjectStepsScreen(
 
     var pending by rememberSaveable { mutableStateOf("") }
 
-    SectionScaffold(
-        name = ProjectStepsTags.NAME,
-        title = strings["notebook.section.projects"],
-        headingKey = "project.steps.title",
-        subtitle = Bidi.isolate(projectName),
+    Page(
+        title = strings["project.steps.title"],
         onBack = onBack,
-        // **Where it actually goes.** This is reached from setup and returns
-        // there, and a way back naming the project is the small lie the
-        // scaffold's own comment warns about.
-        backLabelKey = "section.back.setup",
-        modifier = modifier,
+        backLabel = strings["section.back.setup"],
+        modifier = modifier.testTag(SectionTags.root(ProjectStepsTags.NAME)),
+        eyebrow = strings["notebook.section.projects"],
+        subtitle = Bidi.isolate(projectName),
     ) {
         item {
             Text(
@@ -86,7 +83,6 @@ fun ProjectStepsScreen(
                 style = type.bodyM,
                 color = colors.ink2,
             )
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **Clustered here too where the steps carry areas**, so the list a
@@ -170,7 +166,6 @@ fun ProjectStepsScreen(
                 },
                 modifier = Modifier.testTag(ProjectStepsTags.ADD),
             )
-            Spacer(Modifier.height(Space.xxl))
         }
     }
 }

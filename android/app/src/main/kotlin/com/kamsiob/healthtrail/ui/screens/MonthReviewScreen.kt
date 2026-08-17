@@ -33,6 +33,7 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
 
@@ -108,21 +109,14 @@ fun MonthReviewScreen(
     val colors = HealthTrail.colors
     val month = EventDateText.monthHeading(strings, review.monthStart, zone)
 
-    SectionScaffold(
-        name = ReviewTags.NAME,
-        title = strings["notebook.section.trail"],
-        // **The month is the heading, in the locale's own words.** It is
-        // composed from the month's own first instant rather than passed in as
-        // a string, so Arabic gets Arabic and nothing is a rendered English
-        // month wearing another script.
-        heading = month,
-        subtitle = strings["review.subtitle"],
-        // The trail belongs to no section and wears gold with the base ladder,
-        // per 4.3's rule for whole-app surfaces.
-        section = null,
+    Page(
+        title = month,
         onBack = onBack,
-        backLabelKey = "section.back.trail",
-        modifier = modifier,
+        backLabel = strings["section.back.trail"],
+        modifier = modifier.testTag(SectionTags.root(ReviewTags.NAME)),
+        eyebrow = strings["notebook.section.trail"],
+        subtitle = strings["review.subtitle"],
+        section = null,
     ) {
         if (review.isEmpty) {
             item {
@@ -133,7 +127,7 @@ fun MonthReviewScreen(
                     modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         // **The one thing, when the person marked one.** Two at most, per the
@@ -283,7 +277,6 @@ fun MonthReviewScreen(
         if (review.entries.isNotEmpty()) {
             item(key = "entries_fold") {
                 Eyebrow(text = Bidi.join(strings["review.entries"], review.entries.size.toString()), modifier = Modifier.testTag(ReviewTags.ENTRIES_FOLD))
-                Spacer(Modifier.height(Space.cardGap))
             }
 
             // On the trail's own spine, so a month opened from the trail
@@ -301,7 +294,6 @@ fun MonthReviewScreen(
                     ) {
                         Column {
                             EntryLine(entry = entry, onOpen = { onOpenEntry(entry) })
-                            Spacer(Modifier.height(Space.cardGap))
                         }
                     }
                 }
@@ -319,7 +311,6 @@ fun MonthReviewScreen(
                 onClick = onShare,
                 modifier = Modifier.fillMaxWidth().testTag(ReviewTags.SHARE), emphasis = ActionEmphasis.Main,
             )
-            Spacer(Modifier.height(Space.l))
         }
     }
 }
@@ -339,7 +330,6 @@ private fun androidx.compose.foundation.lazy.LazyListScope.group(
         Eyebrow(text = LocalStrings.current[headingKey])
         Spacer(Modifier.height(Space.headerGap))
         content()
-        Spacer(Modifier.height(Space.sectionGap))
     }
 }
 
@@ -404,7 +394,6 @@ private fun EntryLine(entry: Repository.TrailEntry, onOpen: () -> Unit) {
                 style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
-            Spacer(Modifier.height(Space.xs))
         }
         Text(
             text = entry.title?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) }

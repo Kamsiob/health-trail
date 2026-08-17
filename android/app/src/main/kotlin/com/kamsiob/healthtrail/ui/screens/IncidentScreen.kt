@@ -38,6 +38,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object IncidentTags {
@@ -91,18 +92,13 @@ fun IncidentsScreen(
     val open = incidents.filter { it.isOpen }
     val settled = incidents.filterNot { it.isOpen }
 
-    SectionScaffold(
-        name = IncidentTags.LIST_NAME,
-        // **The chip says where you are and the heading says what you came
-        // for**, and this screen said "Incidents" in both slots. The heading
-        // names the person's own act rather than the app's judgment about a
-        // facility, which is the same choice "What you have asked for" makes
-        // on the standing instructions. #341.
-        title = strings["incidents.title"],
-        headingKey = "incidents.heading",
-        subtitle = strings["incidents.subtitle"],
+    Page(
+        title = strings["incidents.heading"],
         onBack = onBack,
-        modifier = modifier,
+        backLabel = strings[LocalSectionBackKey.current],
+        modifier = modifier.testTag(SectionTags.root(IncidentTags.LIST_NAME)),
+        eyebrow = strings["incidents.title"],
+        subtitle = strings["incidents.subtitle"],
     ) {
         if (incidents.isEmpty()) {
             item {
@@ -112,13 +108,12 @@ fun IncidentsScreen(
                     modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         if (open.isNotEmpty()) {
             item {
                 Eyebrow(text = strings["incidents.open"])
-                Spacer(Modifier.height(Space.headerGap))
             }
             open.forEachIndexed { index, incident ->
                 item(key = incident.id) {
@@ -136,7 +131,6 @@ fun IncidentsScreen(
             item {
                 Spacer(Modifier.height(Space.s))
                 Eyebrow(text = strings["incidents.settled"])
-                Spacer(Modifier.height(Space.headerGap))
             }
             settled.forEachIndexed { index, incident ->
                 item(key = incident.id) {
@@ -204,7 +198,6 @@ private fun IncidentSpineRow(
                 val eyebrow = Bidi.join(listOfNotNull(date, incident.chapterName))
                 if (eyebrow.isNotEmpty()) {
                     Text(eyebrow, style = HealthTrail.type.bodyS, color = colors.ink2)
-                    Spacer(Modifier.height(Space.xs))
                 }
 
                 Text(
@@ -226,7 +219,6 @@ private fun IncidentSpineRow(
                     color = colors.ink2,
                 )
             }
-            Spacer(Modifier.height(Space.cardGap))
         }
     }
 }
@@ -344,28 +336,21 @@ fun IncidentScreen(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    SectionScaffold(
-        name = IncidentTags.NAME,
-        // **The chip says where you are, the heading says what you came for.**
-        // This passed the record's own words as the title, which put them in an
-        // 11sp mono chip and again underneath at display weight: the same label
-        // in two slots, which section 1 bans. #189 gave the scaffold a heading
-        // for exactly this, and every detail screen inherits it.
-        title = strings["incidents.title"],
-        heading = Bidi.isolate(incident.title.ifBlank { strings["incidents.untitled"] }),
+    Page(
+        title = Bidi.isolate(incident.title.ifBlank { strings["incidents.untitled"] }),
+        onBack = onBack,
+        backLabel = strings["incident.back"],
+        modifier = modifier.testTag(SectionTags.root(IncidentTags.NAME)),
+        eyebrow = strings["incidents.title"],
         subtitle = if (incident.isOpen) {
             strings["incident.open.lead"]
         } else {
             strings["incident.settled.lead"]
         },
-        onBack = onBack,
-        backLabelKey = "incident.back",
-        modifier = modifier,
     ) {
         incident.description?.takeIf { it.isNotBlank() }?.let {
             item {
                 Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -375,7 +360,6 @@ fun IncidentScreen(
         if (people.isNotEmpty()) {
             item {
                 Eyebrow(text = strings["incident.people"])
-                Spacer(Modifier.height(Space.headerGap))
             }
             // **Dense rows in one surface, and they were three cards.** Rule
             // 22: a card is for something with three or more lines somebody
@@ -405,7 +389,6 @@ fun IncidentScreen(
                         if (index < people.size - 1) RowDivider()
                     }
                 }
-                Spacer(Modifier.height(Space.cardGap))
             }
             item { Spacer(Modifier.height(Space.s)) }
         }
@@ -416,7 +399,6 @@ fun IncidentScreen(
         if (documents.isNotEmpty()) {
             item {
                 Eyebrow(text = strings["incident.documents"])
-                Spacer(Modifier.height(Space.headerGap))
             }
             documents.forEach { document ->
                 item(key = "d_${document.id}") {
@@ -445,7 +427,6 @@ fun IncidentScreen(
                             Text(it, style = HealthTrail.type.bodyM, color = colors.ink2)
                         }
                     }
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
             item { Spacer(Modifier.height(Space.s)) }
@@ -454,7 +435,6 @@ fun IncidentScreen(
         if (violations.isNotEmpty()) {
             item {
                 Eyebrow(text = strings["instruction.violations.linked"])
-                Spacer(Modifier.height(Space.headerGap))
             }
             // One surface of dense rows, the same shape the people above use,
             // because a request and a note is two lines somebody scans rather
@@ -479,14 +459,12 @@ fun IncidentScreen(
                         if (index < violations.size - 1) RowDivider(inset = false)
                     }
                 }
-                Spacer(Modifier.height(Space.cardGap))
             }
             item { Spacer(Modifier.height(Space.s)) }
         }
 
         item {
             Eyebrow(text = strings["incident.thread"])
-            Spacer(Modifier.height(Space.headerGap))
         }
 
         entries.forEachIndexed { index, entry ->
@@ -524,7 +502,6 @@ fun IncidentScreen(
                                 ?.let { EventDateText.render(strings, it) }
                             if (date != null) {
                                 Text(date, style = HealthTrail.type.bodyS, color = colors.ink2)
-                                Spacer(Modifier.height(Space.xs))
                             }
                             entry.title?.takeIf { it.isNotBlank() }?.let {
                                 Text(it, style = HealthTrail.type.displayS, color = colors.ink)
@@ -534,7 +511,6 @@ fun IncidentScreen(
                                 Text(it, style = HealthTrail.type.bodyM, color = colors.ink2)
                             }
                         }
-                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
             }
@@ -559,7 +535,6 @@ fun IncidentScreen(
                             style = HealthTrail.type.bodyM,
                             color = colors.ink2,
                         )
-                        Spacer(Modifier.height(Space.l))
                     }
                 }
             }
@@ -641,7 +616,6 @@ fun IncidentScreen(
                 onClick = onRemove,
                 modifier = Modifier.testTag(IncidentTags.REMOVE),
             )
-            Spacer(Modifier.height(Space.l))
         }
     }
 }

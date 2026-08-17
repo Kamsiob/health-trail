@@ -23,6 +23,7 @@ import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 import java.time.LocalDate
 
 object MedEventTags {
@@ -109,19 +110,13 @@ fun MedicationEventScreen(
     var dose by rememberSaveable { mutableStateOf("") }
     var note by rememberSaveable { mutableStateOf("") }
 
-    SectionScaffold(
-        name = MedEventTags.NAME,
-        // **The chip says which section, the heading says what you came for.**
-        // This put "What changed with Donepezil" in the 11sp mono chip and
-        // again at display weight underneath. The sentence is already a
-        // heading; what it needed was a chip that is not the same sentence.
-        // #341.
-        title = strings["notebook.section.medications"],
-        heading = strings("medevent.title", "name" to medicationName),
-        subtitle = strings["medevent.lead"],
+    Page(
+        title = strings("medevent.title", "name" to medicationName),
         onBack = onCancel,
-        backLabelKey = "section.back.medications",
-        modifier = modifier,
+        backLabel = strings["section.back.medications"],
+        modifier = modifier.testTag(SectionTags.root(MedEventTags.NAME)),
+        eyebrow = strings["notebook.section.medications"],
+        subtitle = strings["medevent.lead"],
     ) {
         item {
             ChoiceChipGroup(label = strings["medevent.what"]) {
@@ -190,7 +185,6 @@ fun MedicationEventScreen(
                 label = strings["common.cancel"],
                 onClick = onCancel,
             )
-            Spacer(Modifier.height(Space.l))
         }
     }
 }

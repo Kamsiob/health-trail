@@ -36,6 +36,7 @@ import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.chartPoints
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object ProgressTags {
@@ -113,14 +114,14 @@ fun ProgressScreen(
     var chosen by rememberSaveable { mutableStateOf<String?>(null) }
     val hero = ordered.firstOrNull { it.id == chosen } ?: ordered.firstOrNull()
 
-    SectionScaffold(
-        name = ProgressTags.NAME,
-        title = strings["notebook.section.progress"],
-        subtitle = strings["progress.subtitle"],
+    Page(
+        title = strings["progress.heading"],
         onBack = onBack,
-        modifier = modifier,
+        backLabel = strings[LocalSectionBackKey.current],
+        modifier = modifier.testTag(SectionTags.root(ProgressTags.NAME)),
+        eyebrow = strings["notebook.section.progress"],
+        subtitle = strings["progress.subtitle"],
         section = Repository.Section.PROGRESS,
-        headingKey = "progress.heading",
     ) {
         if (hero == null) {
             item {
@@ -138,7 +139,7 @@ fun ProgressScreen(
                     modifier = Modifier.fillMaxWidth().testTag(ProgressTags.ADD), emphasis = ActionEmphasis.Main,
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         // Oldest first for the plot, since a chart reads left to right in time
@@ -170,7 +171,6 @@ fun ProgressScreen(
                     modifier = Modifier.testTag(ProgressTags.measure(hero.id)),
                 )
             }
-            Spacer(Modifier.height(Space.cardGap))
         }
         // **Correcting what the measure on screen is called**, #374 and the
         // last of its six. A measure's name is on every reading of it, on its
@@ -196,7 +196,6 @@ fun ProgressScreen(
                 onClick = { onCorrectMeasure(hero) },
                 modifier = Modifier.testTag(ProgressTags.CORRECT_MEASURE),
             )
-            Spacer(Modifier.height(Space.cardGap))
         }
 
 
@@ -219,7 +218,6 @@ fun ProgressScreen(
                         if (index < others.size - 1) RowDivider(inset = false)
                     }
                 }
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
@@ -227,7 +225,6 @@ fun ProgressScreen(
         // chart says shape and the list says what was actually written down.
         item(key = "every") {
             Eyebrow(text = Bidi.join(strings["progress.every"], heroReadings.size.toString()))
-            Spacer(Modifier.height(Space.cardGap))
         }
 
         // Newest first here, unlike the plot. A list of what happened reads
@@ -240,7 +237,6 @@ fun ProgressScreen(
                     measure = hero,
                     onCorrect = { onCorrectReading(reading) },
                 )
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 

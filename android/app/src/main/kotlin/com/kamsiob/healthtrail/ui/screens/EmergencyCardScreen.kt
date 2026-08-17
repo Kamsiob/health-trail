@@ -31,6 +31,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object EmergencyTags {
@@ -88,14 +89,14 @@ fun EmergencyCardScreen(
 ) {
     val strings = LocalStrings.current
 
-    SectionScaffold(
-        name = EmergencyTags.NAME,
-        title = strings["notebook.section.emergency_card"],
-        subtitle = strings["emergency.subtitle"],
+    Page(
+        title = strings["emergency.heading"],
         onBack = onBack,
-        modifier = modifier,
+        backLabel = strings[LocalSectionBackKey.current],
+        modifier = modifier.testTag(SectionTags.root(EmergencyTags.NAME)),
+        eyebrow = strings["notebook.section.emergency_card"],
+        subtitle = strings["emergency.subtitle"],
         section = Repository.Section.EMERGENCY_CARD,
-        headingKey = "emergency.heading",
     ) {
         // Computed before anything draws, because the header at the top of the
         // screen depends on it as much as the body below does.
@@ -134,7 +135,6 @@ fun EmergencyCardScreen(
                         modifier = Modifier.weight(1f).testTag(EmergencyTags.CHANGE),
                     )
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -161,7 +161,6 @@ fun EmergencyCardScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(Space.s))
             }
         }
 
@@ -178,7 +177,6 @@ fun EmergencyCardScreen(
             // own flag and somebody correcting it should know where to go.
             item {
                 Eyebrow(text = Bidi.join(strings["emergency.group.meds"], medications.size.toString()), modifier = Modifier.testTag(EmergencyTags.MEDS_FOLD))
-                Spacer(Modifier.height(Space.cardGap))
             }
             item {
                 // **Where the list comes from, said once, when it is
@@ -200,7 +198,6 @@ fun EmergencyCardScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(Space.s))
             }
         }
 
@@ -213,7 +210,6 @@ fun EmergencyCardScreen(
         if (!hasSomething) {
             item {
                 SectionEmpty(name = EmergencyTags.NAME, text = strings["emergency.empty"], section = Repository.Section.EMERGENCY_CARD, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
-                Spacer(Modifier.height(Space.l))
             }
         } else {
             // Null throughout when no card row exists yet, which is the state a
@@ -256,7 +252,6 @@ fun EmergencyCardScreen(
                             CardField(entry = entry, isLast = index == inAHurry.lastIndex)
                         }
                     }
-                    Spacer(Modifier.height(Space.s))
                 }
             }
 

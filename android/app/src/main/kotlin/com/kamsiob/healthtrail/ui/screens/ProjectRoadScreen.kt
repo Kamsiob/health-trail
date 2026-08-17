@@ -35,6 +35,7 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
@@ -76,14 +77,13 @@ fun ProjectRoadScreen(
 
     var pending by rememberSaveable { mutableStateOf("") }
 
-    SectionScaffold(
-        name = ProjectRoadTags.NAME,
-        title = strings["notebook.section.projects"],
-        headingKey = "project.road.title",
-        subtitle = Bidi.isolate(projectName),
+    Page(
+        title = strings["project.road.title"],
         onBack = onBack,
-        backLabelKey = "section.back.setup",
-        modifier = modifier,
+        backLabel = strings["section.back.setup"],
+        modifier = modifier.testTag(SectionTags.root(ProjectRoadTags.NAME)),
+        eyebrow = strings["notebook.section.projects"],
+        subtitle = Bidi.isolate(projectName),
     ) {
         item {
             Text(
@@ -91,7 +91,6 @@ fun ProjectRoadScreen(
                 style = type.bodyM,
                 color = colors.ink2,
             )
-            Spacer(Modifier.height(Space.l))
         }
 
         // **Two stages is the least a road can be**, which is what `RoadStrip`
@@ -112,7 +111,6 @@ fun ProjectRoadScreen(
                     size = RoadSize.FULL,
                     modifier = Modifier.testTag(ProjectRoadTags.STRIP),
                 )
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -167,7 +165,6 @@ fun ProjectRoadScreen(
                 },
                 modifier = Modifier.testTag(ProjectRoadTags.ADD),
             )
-            Spacer(Modifier.height(Space.xxl))
         }
     }
 }

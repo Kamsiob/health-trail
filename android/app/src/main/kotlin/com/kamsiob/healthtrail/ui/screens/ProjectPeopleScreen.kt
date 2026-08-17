@@ -25,6 +25,7 @@ import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object ProjectPeopleTags {
     const val NAME = "project-people"
@@ -73,14 +74,13 @@ fun ProjectPeopleScreen(
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
-    SectionScaffold(
-        name = ProjectPeopleTags.NAME,
-        title = strings["notebook.section.projects"],
-        headingKey = "project.people",
-        subtitle = Bidi.isolate(projectName),
+    Page(
+        title = strings["project.people"],
         onBack = onBack,
-        backLabelKey = "section.back.project",
-        modifier = modifier,
+        backLabel = strings["section.back.project"],
+        modifier = modifier.testTag(SectionTags.root(ProjectPeopleTags.NAME)),
+        eyebrow = strings["notebook.section.projects"],
+        subtitle = Bidi.isolate(projectName),
     ) {
         if (people.isEmpty()) {
             item {
@@ -166,7 +166,6 @@ fun ProjectPeopleScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -195,7 +194,6 @@ fun ProjectPeopleScreen(
                     modifier = Modifier.testTag(ProjectPeopleTags.CARE_TEAM),
                 )
             }
-            Spacer(Modifier.height(Space.xxl))
         }
     }
 }

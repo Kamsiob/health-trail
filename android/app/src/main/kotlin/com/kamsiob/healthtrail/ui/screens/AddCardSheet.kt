@@ -21,6 +21,7 @@ import com.kamsiob.healthtrail.ui.components.TodayCard
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Page
 import java.time.LocalDate
 
 object AddCardTags {
@@ -100,14 +101,13 @@ fun AddCardSheet(
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
-    SectionScaffold(
-        name = AddCardTags.ROOT,
-        title = strings["today.tab"],
-        headingKey = "today.add.title",
-        subtitle = strings["today.add.lead"],
+    Page(
+        title = strings["today.add.title"],
         onBack = onBack,
-        backLabelKey = "today.add.back",
-        modifier = modifier,
+        backLabel = strings["today.add.back"],
+        modifier = modifier.testTag(SectionTags.root(AddCardTags.ROOT)),
+        eyebrow = strings["today.tab"],
+        subtitle = strings["today.add.lead"],
     ) {
         if (offers.isEmpty()) {
             // **A real state and a calm one.** Somebody who has added every
@@ -121,7 +121,7 @@ fun AddCardSheet(
                     modifier = Modifier.padding(vertical = Space.m),
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         // **Grouped under the binder's own section names**, 21.6 screen 6, with

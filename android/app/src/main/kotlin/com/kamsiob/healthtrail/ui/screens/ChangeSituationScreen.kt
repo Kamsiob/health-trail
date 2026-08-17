@@ -21,6 +21,7 @@ import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object ChangeSituationTags {
     const val NAME = "change_situation"
@@ -79,15 +80,14 @@ fun ChangeSituationScreen(
 
     var chapterName by rememberSaveable { mutableStateOf("") }
 
-    SectionScaffold(
-        name = ChangeSituationTags.NAME,
-        title = strings["nav.more"],
-        headingKey = "situation.change.title",
+    Page(
+        title = strings["situation.change.title"],
+        onBack = onBack,
+        backLabel = strings["section.back.more"],
+        modifier = modifier.testTag(SectionTags.root(ChangeSituationTags.NAME)),
+        eyebrow = strings["nav.more"],
         subtitle = strings["situation.change.lead"],
         section = null,
-        onBack = onBack,
-        backLabelKey = "section.back.more",
-        modifier = modifier,
     ) {
         item(key = "current") {
             // **"Right now" rather than "set up for".** The heading already
@@ -124,7 +124,6 @@ fun ChangeSituationScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **What it will become, under its own heading, and only once they have
@@ -156,7 +155,6 @@ fun ChangeSituationScreen(
                         color = colors.ink,
                     )
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -171,7 +169,6 @@ fun ChangeSituationScreen(
                 style = HealthTrail.type.bodyM,
                 color = colors.ink2,
             )
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **The chapter is offered only once a different setting is chosen**,
@@ -200,7 +197,6 @@ fun ChangeSituationScreen(
                     style = HealthTrail.type.bodyS,
                     color = colors.ink2,
                 )
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -226,7 +222,6 @@ fun ChangeSituationScreen(
                     modifier = Modifier.testTag(ChangeSituationTags.SKIP),
                 )
             }
-            Spacer(Modifier.height(Space.l))
         }
     }
 }

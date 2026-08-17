@@ -57,6 +57,7 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
+import com.kamsiob.healthtrail.ui.v4.Page
 import java.time.Instant
 import java.time.ZoneId
 
@@ -257,18 +258,16 @@ fun TrailScreen(
         label = "trailDraw",
     )
 
-    SectionScaffold(
-        name = TrailTags.NAME,
-        title = strings["notebook.section.trail"],
-        subtitle = strings["trail.subtitle"],
-        onBack = onBack,
-        modifier = modifier,
-        section = Repository.Section.TRAIL,
+    Page(
         // **A filtered trail says so in its own heading.** Otherwise it reads
-        // as a notebook that has lost its history, which is a far worse
-        // impression than a narrower list. D169.
-        heading = if (since != null) strings["trail.since.title"] else null,
-        headingKey = "trail.heading",
+        // as the whole trail with most of it missing.
+        title = if (since != null) strings["trail.since.title"] else strings["trail.heading"],
+        onBack = onBack,
+        backLabel = strings[LocalSectionBackKey.current],
+        modifier = modifier.testTag(SectionTags.root(TrailTags.NAME)),
+        eyebrow = strings["notebook.section.trail"],
+        subtitle = strings["trail.subtitle"],
+        section = Repository.Section.TRAIL,
         listState = listState,
         rail = if (plan.years.size >= MIN_SCRUB_YEARS && query.isBlank()) {
             {
@@ -297,7 +296,6 @@ fun TrailScreen(
                     onClick = { onSeeAll?.invoke() },
                     modifier = Modifier.testTag(TrailTags.SEE_ALL),
                 )
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
@@ -308,7 +306,6 @@ fun TrailScreen(
                     onClick = { onSeeAll?.invoke() },
                     modifier = Modifier.testTag(TrailTags.SEE_ALL),
                 )
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
@@ -321,7 +318,7 @@ fun TrailScreen(
                     modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         // The search sits above everything including the pins, because it is the
@@ -345,7 +342,6 @@ fun TrailScreen(
                     clearLabel = strings["trail.search.clear"],
                     testTag = TrailTags.SEARCH,
                 )
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
@@ -376,7 +372,6 @@ fun TrailScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
@@ -438,7 +433,6 @@ fun TrailScreen(
                             }
                         }
                     }
-                    Spacer(Modifier.height(Space.cardGap))
                 }
 
                 is TrailRowSpec.Month -> stickyHeader(key = "month_${row.label}") {
@@ -482,7 +476,6 @@ fun TrailScreen(
                         Column {
                             row.gap?.let { gap ->
                                 DistanceMarker(strings(gap.key, "count" to gap.count))
-                                Spacer(Modifier.height(Space.s))
                             }
                             TrailRow(
                                 entry = row.entry,
@@ -921,7 +914,6 @@ private fun TrailRow(
         }
     }
 
-    Spacer(Modifier.height(Space.cardGap))
 }
 
 /**

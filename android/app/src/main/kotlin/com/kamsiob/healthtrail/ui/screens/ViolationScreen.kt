@@ -184,7 +184,6 @@ fun ViolationScreen(
                         style = HealthTrail.type.bodyL,
                     )
                 }
-                Spacer(Modifier.height(Space.betweenGroups))
             }
 
             DictatableField(
@@ -268,7 +267,6 @@ fun ViolationScreen(
                     }
 
                     if (incidents.isNotEmpty() && bills.isNotEmpty()) {
-                        Spacer(Modifier.height(Space.sectionGap))
                     }
 
                     if (bills.isNotEmpty()) {
@@ -328,7 +326,6 @@ fun ViolationScreen(
                     modifier = Modifier.testTag(ViolationTags.REMOVE),
                 )
             }
-            Spacer(Modifier.height(Space.l))
         }
     }
 

@@ -37,6 +37,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object ProjectPaperworkTags {
@@ -119,14 +120,13 @@ fun ProjectPaperworkScreen(
     // the table that issue is about.
     var grid by rememberSaveable(projectName) { mutableStateOf(true) }
 
-    SectionScaffold(
-        name = ProjectPaperworkTags.NAME,
-        title = strings["notebook.section.projects"],
-        headingKey = "project.paperwork",
-        subtitle = Bidi.isolate(projectName),
+    Page(
+        title = strings["project.paperwork"],
         onBack = onBack,
-        backLabelKey = "section.back.project",
-        modifier = modifier,
+        backLabel = strings["section.back.project"],
+        modifier = modifier.testTag(SectionTags.root(ProjectPaperworkTags.NAME)),
+        eyebrow = strings["notebook.section.projects"],
+        subtitle = Bidi.isolate(projectName),
     ) {
         if (papers.isEmpty()) {
             item {
@@ -138,7 +138,7 @@ fun ProjectPaperworkScreen(
                     modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_TALL),
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         item {
@@ -160,7 +160,6 @@ fun ProjectPaperworkScreen(
                     modifier = Modifier.testTag(ProjectPaperworkTags.VIEW),
                 )
             }
-            Spacer(Modifier.height(Space.m))
         }
 
         if (counts.keys.count { it != UNSAID } > 1) {
@@ -190,7 +189,6 @@ fun ProjectPaperworkScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -217,7 +215,6 @@ fun ProjectPaperworkScreen(
                     // row's rather than stretching two across the screen.
                     repeat(3 - rows[rowIndex].size) { Spacer(Modifier.weight(1f)) }
                 }
-                Spacer(Modifier.height(Space.m))
             }
         } else {
             item {

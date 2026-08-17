@@ -55,6 +55,7 @@ import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
 
@@ -136,34 +137,12 @@ fun ProjectDetailScreen(
     val done = steps.filter { it.isDone }
     val remaining = steps.filterNot { it.isDone }
 
-    SectionScaffold(
-        name = ProjectDetailTags.NAME,
-        // **The chip says where you are, the heading says what you came for.**
-        // This passed the record's own words as the title, which put them in an
-        // 11sp mono chip and again underneath at display weight: the same label
-        // in two slots, which section 1 bans. #189 gave the scaffold a heading
-        // for exactly this, and every detail screen inherits it.
-        title = strings["notebook.section.projects"],
-        heading = Bidi.isolate(project.name),
-        // **The provenance, and it used to say "2 of 5 steps done".**
-        //
-        // That is a completion count on the person's own work, which rule 13
-        // rules out, and it was the loudest supporting line on the screen. What
-        // belongs here instead is where this came from: that the steps were a
-        // starting point somebody else wrote, and that the project is theirs
-        // now. A project that does not say it came from a template reads as a
-        // checklist somebody handed them, which is exactly how it read.
-        //
-        // **Position is shown by the spine, not by a score.** Filled waypoints
-        // above, hollow ones below, and the person can see where they are
-        // without the app grading them.
-        // **Three cases, because two would lie.** A project whose template is
-        // not in this build's catalog, which an export written by a later
-        // version produces, is still a project that came from one, and telling
-        // its owner they started it from nothing is a false statement about
-        // their own record. Found on the phone: the year five fixture's
-        // template ids are not the catalog's, and every project claimed to have
-        // been made from scratch.
+    Page(
+        title = Bidi.isolate(project.name),
+        onBack = onBack,
+        backLabel = strings["section.back.projects"],
+        modifier = modifier.testTag(SectionTags.root(ProjectDetailTags.NAME)),
+        eyebrow = strings["notebook.section.projects"],
         subtitle = when {
             // **Not when the name would be said twice.** A project keeps its
             // template's name until somebody renames it, so naming the
@@ -176,9 +155,6 @@ fun ProjectDetailScreen(
             project.templateId != null -> strings["projects.from_a_template"]
             else -> strings["projects.own"]
         },
-        onBack = onBack,
-        backLabelKey = "section.back.projects",
-        modifier = modifier,
     ) {
         // **A spine, because a project is a sequence.** 11.11 and 11.12: a
         // chapter list, an incident thread, a milestone arc and a project's
@@ -200,7 +176,6 @@ fun ProjectDetailScreen(
         if (done.isNotEmpty()) {
             item {
                 Eyebrow(text = Bidi.join(strings["projects.done_fold"], done.size.toString()), modifier = Modifier.testTag(ProjectDetailTags.DONE_FOLD))
-                Spacer(Modifier.height(Space.cardGap))
             }
 
             itemsIndexed(done, key = { _, step -> "done_${step.id}" }) { index, step ->
@@ -241,7 +216,6 @@ fun ProjectDetailScreen(
         if (remaining.isNotEmpty()) {
             item {
                 Eyebrow(text = strings["projects.next.label"])
-                Spacer(Modifier.height(Space.headerGap))
             }
         }
 
@@ -412,7 +386,6 @@ fun ProjectDetailScreen(
                 }
             }
 
-            Spacer(Modifier.height(Space.l))
         }
     }
 

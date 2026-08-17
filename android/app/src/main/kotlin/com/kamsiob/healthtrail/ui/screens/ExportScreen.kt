@@ -21,6 +21,7 @@ import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object ExportTags {
     const val NAME = "export"
@@ -133,15 +134,13 @@ fun ExportScreen(
         }
     }
 
-    SectionScaffold(
-        name = ExportTags.NAME,
-        // The chip says where you are, the heading says what you came for.
-        title = strings["nav.more"],
-        headingKey = "export.title",
-        subtitle = strings["export.lead"],
+    Page(
+        title = strings["export.title"],
         onBack = onBack,
-        backLabelKey = "section.back.more",
-        modifier = modifier,
+        backLabel = strings["section.back.more"],
+        modifier = modifier.testTag(SectionTags.root(ExportTags.NAME)),
+        eyebrow = strings["nav.more"],
+        subtitle = strings["export.lead"],
     ) {
         // **The result replaces the form rather than sitting under it.** Left
         // in place, the screen said "Saved" in body text below two live buttons
@@ -207,9 +206,8 @@ fun ExportScreen(
                     onClick = { onAgain() },
                     modifier = Modifier.testTag(ExportTags.AGAIN_ACTION),
                 )
-                Spacer(Modifier.height(Space.l))
             }
-            return@SectionScaffold
+            return@Page
         }
 
         item {
@@ -349,7 +347,6 @@ fun ExportScreen(
                 )
             }
 
-            Spacer(Modifier.height(Space.l))
         }
     }
 }

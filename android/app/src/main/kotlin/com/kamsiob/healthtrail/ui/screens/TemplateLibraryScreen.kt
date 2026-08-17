@@ -28,6 +28,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
 import java.time.Instant
@@ -99,15 +100,13 @@ fun TemplateLibraryScreen(
     val shippedUsed = shipped.filter { startedFrom(it.id).isNotEmpty() }
     val shippedUnused = shipped.filter { startedFrom(it.id).isEmpty() }
 
-    SectionScaffold(
-        name = LibraryTags.NAME,
-        // The chip says where you are, the heading says what you came for.
-        title = strings["nav.more"],
-        headingKey = "library.title",
-        subtitle = strings["library.subtitle"],
+    Page(
+        title = strings["library.title"],
         onBack = onBack,
-        backLabelKey = "section.back.more",
-        modifier = modifier,
+        backLabel = strings["section.back.more"],
+        modifier = modifier.testTag(SectionTags.root(LibraryTags.NAME)),
+        eyebrow = strings["nav.more"],
+        subtitle = strings["library.subtitle"],
     ) {
         // **What is in use, at the top, as cards.** This is the answer to why
         // somebody opens a library rather than the picker: not "what could I
@@ -115,7 +114,6 @@ fun TemplateLibraryScreen(
         if (ownUsed.isNotEmpty() || shippedUsed.isNotEmpty()) {
             item(key = "used_head") {
                 Eyebrow(text = strings["library.used"])
-                Spacer(Modifier.height(Space.headerGap))
             }
             ownUsed.forEach { template ->
                 item(key = "u_${template.id}") {
@@ -131,7 +129,6 @@ fun TemplateLibraryScreen(
                         onOpenProject = onOpenProject,
                         modifier = Modifier.testTag(LibraryTags.own(template.id)),
                     )
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
             shippedUsed.forEach { template ->
@@ -144,7 +141,6 @@ fun TemplateLibraryScreen(
                         onOpenProject = onOpenProject,
                         modifier = Modifier.testTag(LibraryTags.shipped(template.id)),
                     )
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
             item(key = "used_gap") { Spacer(Modifier.height(Space.sectionGap)) }
@@ -168,7 +164,6 @@ fun TemplateLibraryScreen(
                     color = colors.ink2,
                     modifier = Modifier.testTag(LibraryTags.EMPTY_OWN),
                 )
-                Spacer(Modifier.height(Space.sectionGap))
             }
         } else if (ownUnused.isNotEmpty()) {
             item(key = "own_unused") {
@@ -190,7 +185,6 @@ fun TemplateLibraryScreen(
                         if (index < ownUnused.lastIndex) RowDivider(inset = false)
                     }
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -198,7 +192,6 @@ fun TemplateLibraryScreen(
         // named and counted. Nothing is hidden and nothing is a wall.
         item(key = "shipped_head") {
             Eyebrow(text = strings["library.shipped"])
-            Spacer(Modifier.height(Space.headerGap))
         }
 
         CATEGORY_ORDER.forEach { key ->
@@ -237,7 +230,6 @@ fun TemplateLibraryScreen(
                             if (index < inCategory.lastIndex) RowDivider(inset = false)
                         }
                     }
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
         }

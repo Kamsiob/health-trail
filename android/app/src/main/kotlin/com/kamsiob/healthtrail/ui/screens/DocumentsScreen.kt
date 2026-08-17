@@ -45,6 +45,7 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object DocTags {
@@ -108,14 +109,14 @@ fun DocumentsScreen(
     val recent = documents.take(HERO_COUNT)
     val rest = documents.drop(HERO_COUNT)
 
-    SectionScaffold(
-        name = DocTags.NAME,
-        title = strings["notebook.section.documents"],
-        subtitle = strings["docs.subtitle"],
+    Page(
+        title = strings["documents.heading"],
         onBack = onBack,
-        modifier = modifier,
+        backLabel = strings[LocalSectionBackKey.current],
+        modifier = modifier.testTag(SectionTags.root(DocTags.NAME)),
+        eyebrow = strings["notebook.section.documents"],
+        subtitle = strings["docs.subtitle"],
         section = Repository.Section.DOCUMENTS,
-        headingKey = "documents.heading",
     ) {
         if (documents.isEmpty()) {
             item {
@@ -132,7 +133,7 @@ fun DocumentsScreen(
                     modifier = Modifier.fillMaxWidth().testTag(DocTags.ADD), emphasis = ActionEmphasis.Main,
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         item(key = "toggle") {
@@ -150,7 +151,6 @@ fun DocumentsScreen(
                     modifier = Modifier.testTag(DocTags.TOGGLE),
                 )
             }
-            Spacer(Modifier.height(Space.cardGap))
         }
 
         // **Her actual papers, at a size somebody recognizes them at.** A
@@ -216,7 +216,6 @@ fun DocumentsScreen(
                     if (recent.size == 1) Spacer(Modifier.weight(1f))
                 }
             }
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // **Folders as folds, named and counted.** The category is the person's
@@ -239,7 +238,6 @@ fun DocumentsScreen(
                     text = Bidi.join(label, inFolder.size.toString()),
                     fixed = false,
                 )
-                Spacer(Modifier.height(Space.cardGap))
             }
 
             if (view.value == VIEW_LIST) {
@@ -254,7 +252,6 @@ fun DocumentsScreen(
                             )
                         }
                     }
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             } else {
                 inFolder.chunked(columns).forEachIndexed { rowIndex, row ->
@@ -274,7 +271,6 @@ fun DocumentsScreen(
                             }
                             repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
                         }
-                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
             }

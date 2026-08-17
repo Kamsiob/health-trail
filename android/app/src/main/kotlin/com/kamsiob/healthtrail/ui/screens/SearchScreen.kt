@@ -41,6 +41,7 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object SearchTags {
     const val NAME = "search"
@@ -108,19 +109,13 @@ fun SearchScreen(
     // section order already and grouping is a presentation question.
     val grouped = remember(results) { results.groupBy { it.section } }
 
-    SectionScaffold(
-        name = SearchTags.NAME,
-        // **The chip stays "Search" rather than saying where you came from**,
-        // because this screen has two doors: More and Today's search door.
-        // A chip reading "More" would be a lie half the time, which is the
-        // reason the other four could take that fix and this one could not.
-        // #341.
-        title = strings["search.title"],
-        headingKey = "search.heading",
-        subtitle = strings["search.subtitle"],
+    Page(
+        title = strings["search.heading"],
         onBack = onBack,
-        backLabelKey = backLabelKey,
-        modifier = modifier.testTag(SearchTags.ROOT),
+        backLabel = strings[backLabelKey],
+        modifier = Modifier.testTag(SectionTags.root(SearchTags.NAME)),
+        eyebrow = strings["search.title"],
+        subtitle = strings["search.subtitle"],
     ) {
         item {
             Field(
@@ -132,7 +127,6 @@ fun SearchScreen(
                 imeAction = androidx.compose.ui.text.input.ImeAction.Search,
                 support = strings["search.hint"],
             )
-            Spacer(Modifier.height(Space.l))
         }
 
         // **Nothing typed yet.** Not an error and not empty: it is the resting
@@ -145,7 +139,7 @@ fun SearchScreen(
                     modifier = Modifier.fillParentMaxHeight(0.5f),
                 )
             }
-            return@SectionScaffold
+            return@Page
         }
 
         // **A failed read is not an empty result**, and saying "nothing
@@ -179,7 +173,7 @@ fun SearchScreen(
                     )
                 }
             }
-            return@SectionScaffold
+            return@Page
         }
 
         // **Nothing found, written as a next step.** A dead end here is the
@@ -212,7 +206,7 @@ fun SearchScreen(
                     )
                 }
             }
-            return@SectionScaffold
+            return@Page
         }
 
         // **The best answer first and large, per law 1.** A list of forty
@@ -232,7 +226,6 @@ fun SearchScreen(
                 )
                 Spacer(Modifier.height(Space.xs))
                 ResultRow(hit = best, onOpen = { onOpen(best) }, lead = true)
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -250,7 +243,6 @@ fun SearchScreen(
                     text = Bidi.join(strings[sectionKey(section)], hits.size.toString()),
                     modifier = Modifier.testTag(SearchTags.group(section)),
                 )
-                Spacer(Modifier.height(Space.cardGap))
             }
 
             hits.forEachIndexed { index, hit ->
@@ -266,7 +258,6 @@ fun SearchScreen(
                     ) {
                         Column {
                             ResultRow(hit = hit, onOpen = { onOpen(hit) })
-                            Spacer(Modifier.height(Space.cardGap))
                         }
                     }
                 }
@@ -321,7 +312,6 @@ private fun ResultRow(
         if (eyebrow.isNotEmpty()) {
             // bidi-ok: joined by Bidi.join two lines above, which isolates every part.
             Text(text = eyebrow, style = HealthTrail.type.bodyS, color = colors.ink2)
-            Spacer(Modifier.height(Space.xs))
         }
 
         // **The kind, not "No title".** An entry with no title is ordinary,

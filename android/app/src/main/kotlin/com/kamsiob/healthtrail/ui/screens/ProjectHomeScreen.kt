@@ -18,6 +18,7 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
 import com.kamsiob.healthtrail.time.EventDateText
@@ -179,24 +180,17 @@ fun ProjectHomeScreen(
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
-    SectionScaffold(
-        name = ProjectHomeTags.NAME,
-        title = strings["notebook.section.projects"],
-        heading = Bidi.isolate(project.name),
-        // The provenance line the old screen already got right, kept: what this
-        // came from, never how far through it somebody is.
+    Page(
+        title = Bidi.isolate(project.name),
+        onBack = onBack,
+        backLabel = strings["section.back.projects"],
+        modifier = modifier.testTag(SectionTags.root(ProjectHomeTags.NAME)),
+        eyebrow = strings["notebook.section.projects"],
         subtitle = when {
             project.templateId != null -> strings["projects.from_a_template"]
             else -> strings["projects.own"]
         },
-        // **The state, in the corner the drawing puts it.** The stage the
-        // project is standing at, which is the answer to "is this moving" and
-        // is otherwise only readable by finding the ringed waypoint on the
-        // road further down.
         badge = stages.lastOrNull { it.isReached }?.name?.takeIf { !project.isFinished },
-        onBack = onBack,
-        backLabelKey = "section.back.projects",
-        modifier = modifier,
     ) {
         // == The redesign, 2026-08-16, D164. ==================================
         //
@@ -270,7 +264,6 @@ fun ProjectHomeScreen(
                         )
                     },
                 )
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -290,7 +283,6 @@ fun ProjectHomeScreen(
                         )
                     },
                 )
-                Spacer(Modifier.height(Space.sectionGap))
             }
             item {
                 Eyebrow(text = strings["project.story"], fixed = false)
@@ -308,7 +300,6 @@ fun ProjectHomeScreen(
                     color = colors.ink2,
                     modifier = Modifier.padding(top = Space.xs),
                 )
-                Spacer(Modifier.height(Space.sectionGap))
             }
         } else {
             item {
@@ -338,7 +329,6 @@ fun ProjectHomeScreen(
                             Text(text = it, style = type.bodyM, color = colors.ink2)
                         }
                 }
-                Spacer(Modifier.height(Space.cardGap))
             }
 
 
@@ -388,7 +378,6 @@ fun ProjectHomeScreen(
                             .testTag(ProjectHomeTags.UPDATE_STANDING),
                     )
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -471,7 +460,6 @@ fun ProjectHomeScreen(
                     }
                 }
                 }
-                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -512,7 +500,6 @@ fun ProjectHomeScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // -- 5. The file: everything else, as five doors that look like doors.
@@ -568,7 +555,6 @@ fun ProjectHomeScreen(
                     modifier = Modifier.testTag(ProjectHomeTags.SETUP),
                 )
             }
-            Spacer(Modifier.height(Space.sectionGap))
         }
 
         // -- 6. Housekeeping, last, unchanged. --------------------------------
@@ -584,7 +570,6 @@ fun ProjectHomeScreen(
                 onClick = onRemove,
                 modifier = Modifier.testTag(ProjectHomeTags.REMOVE),
             )
-            Spacer(Modifier.height(Space.sectionGap))
         }
     }
 }

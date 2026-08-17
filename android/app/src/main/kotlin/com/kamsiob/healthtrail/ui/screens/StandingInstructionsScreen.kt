@@ -24,6 +24,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object InstructionTags {
     fun violation(id: String) = "instruction_violation_$id"
@@ -101,19 +102,18 @@ fun StandingInstructionsScreen(
 ) {
     val strings = LocalStrings.current
 
-    SectionScaffold(
-        name = InstructionTags.NAME,
-        title = strings["notebook.section.standing_instructions"],
-        subtitle = strings["instructions.subtitle"],
+    Page(
+        title = strings["instructions.heading"],
         onBack = onBack,
-        modifier = modifier,
+        backLabel = strings[LocalSectionBackKey.current],
+        modifier = modifier.testTag(SectionTags.root(InstructionTags.NAME)),
+        eyebrow = strings["notebook.section.standing_instructions"],
+        subtitle = strings["instructions.subtitle"],
         section = Repository.Section.STANDING_INSTRUCTIONS,
-        headingKey = "instructions.heading",
     ) {
         if (instructions.isEmpty()) {
             item {
                 SectionEmpty(name = InstructionTags.NAME, text = strings["instructions.empty"], section = Repository.Section.STANDING_INSTRUCTIONS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
-                Spacer(Modifier.height(Space.l))
             }
         }
 
@@ -178,7 +178,6 @@ fun StandingInstructionsScreen(
                             "count" to times.size,
                         ),
                     )
-                    Spacer(Modifier.height(Space.headerGap))
                 }
                 times.forEachIndexed { index, violation ->
                     item(key = violation.id) {
@@ -191,7 +190,6 @@ fun StandingInstructionsScreen(
                     }
                 }
                 item(key = "${instruction.id}_times_end") {
-                    Spacer(Modifier.height(Space.sectionGap))
                 }
             }
         }
@@ -214,7 +212,6 @@ fun StandingInstructionsScreen(
                     color = HealthTrail.colors.ink2,
                     modifier = Modifier.testTag(InstructionTags.MEANING),
                 )
-                Spacer(Modifier.height(Space.cardGap))
             }
         }
 
@@ -334,7 +331,6 @@ private fun ViolationRow(
                     )
                 }
             }
-            Spacer(Modifier.height(Space.cardGap))
         }
     }
 }
@@ -375,7 +371,6 @@ private fun InstructionRow(
                 style = HealthTrail.type.bodyS,
                 color = colors.ink2,
             )
-            Spacer(Modifier.height(Space.xs))
         }
 
         Text(
@@ -445,7 +440,6 @@ private fun InstructionRow(
                 style = HealthTrail.type.bodyS,
                 color = colors.leafInk,
             )
-            Spacer(Modifier.height(Space.xs))
         }
         Text(
             text = instruction.acknowledgedHow?.takeIf { it.isNotBlank() }

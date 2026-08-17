@@ -56,8 +56,11 @@ DECLARED = re.compile(r"^fun ([A-Z]\w+)\(", re.MULTILINE)
 # with the thing rather than with the check.
 EXEMPT = {
     # Furniture. Every section screen composes it, so it is walked by all of
-    # them and has no states of its own to check.
-    "SectionScaffold",
+    # them and has no states of its own to check. The scaffold itself was
+    # retired onto `ui/v4`'s `Page` in the rebuild; what is left in this file is
+    # the empty state and the tags, and the empty state is walked by every
+    # screen that can be empty. #387.
+    "SectionParts",
     # **Plumbing rather than a screen.** It owns the file, the passphrase and
     # the two guards, and everything it draws is `RestoreScreen`, which has its
     # own case in the sweep. A case here would compose the same nodes through

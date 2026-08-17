@@ -39,6 +39,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.Trail
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object EntryTags {
     const val NAME = "entry"
@@ -115,25 +116,14 @@ fun EntryScreen(
     val entry = detail.entry
     val heading = headingFor(entry, strings["entry.untitled"])
 
-    SectionScaffold(
-        name = EntryTags.NAME,
-        // **The chip says where you are and the heading says what you came
-        // for.** This passed the entry's own words as the title, so the whole
-        // sentence appeared in the tab chip in 11sp mono and again underneath at
-        // display weight. One entry belongs to the trail, so the chip says the
-        // trail, and it wears the trail's own hue like every other screen there.
-        title = strings["notebook.section.trail"],
-        heading = Bidi.isolate(heading.text),
-        section = Repository.Section.TRAIL,
-        // **What kind of thing this is, and not when.** The date belongs to the
-        // control below that changes it, and putting it here as well was the
-        // same value in two slots: the screenshot showed "A call, June 17, 2026"
-        // above a row reading "June 17, 2026, Change". The grid draws both; the
-        // ban on saying one thing twice is older and wins.
-        subtitle = strings[kindKey(entry.kind)],
+    Page(
+        title = Bidi.isolate(heading.text),
         onBack = onBack,
-        backLabelKey = backLabelKey,
-        modifier = modifier,
+        backLabel = strings[backLabelKey],
+        modifier = modifier.testTag(SectionTags.root(EntryTags.NAME)),
+        eyebrow = strings["notebook.section.trail"],
+        subtitle = strings[kindKey(entry.kind)],
+        section = Repository.Section.TRAIL,
     ) {
         item {
             // **The date first, and it is a control.** Rule 17 makes every date
@@ -145,7 +135,6 @@ fun EntryScreen(
                 testTag = EntryTags.DATE,
                 onClick = onEditDate,
             )
-            Spacer(Modifier.height(Space.l))
         }
 
         // **Not repeated when the heading is already the whole of it.** Saying
@@ -155,7 +144,6 @@ fun EntryScreen(
             entry.body?.takeIf { it.isNotBlank() }?.let {
                 item {
                     Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
-                    Spacer(Modifier.height(Space.sectionGap))
                 }
             }
         } else {
@@ -173,7 +161,6 @@ fun EntryScreen(
         if (hasLinks) {
             item {
                 Eyebrow(text = strings["entry.belongs"])
-                Spacer(Modifier.height(Space.headerGap))
             }
 
             detail.incidentTitle?.let { title ->
@@ -198,7 +185,6 @@ fun EntryScreen(
                             strings["readable.state.answered"]
                         },
                     )
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
 
@@ -215,7 +201,6 @@ fun EntryScreen(
                         note = person.roleLabel?.takeIf { it.isNotBlank() }
                             ?: strings["entry.person"],
                     )
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
 
@@ -247,7 +232,6 @@ fun EntryScreen(
                             )
                         } ?: strings["entry.thread"],
                     )
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
 
@@ -279,7 +263,6 @@ fun EntryScreen(
                             strings["projects.status.${project.status}"],
                         ),
                     )
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
 
@@ -294,7 +277,6 @@ fun EntryScreen(
                         label = Bidi.isolate(name),
                         note = strings["entry.medication"],
                     )
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
 
@@ -309,7 +291,6 @@ fun EntryScreen(
                         label = Bidi.isolate(name),
                         note = strings["entry.chapter"],
                     )
-                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
         }
@@ -348,7 +329,6 @@ fun EntryScreen(
                 onClick = onRemove,
                 modifier = Modifier.testTag(EntryTags.REMOVE),
             )
-            Spacer(Modifier.height(Space.l))
         }
     }
 }

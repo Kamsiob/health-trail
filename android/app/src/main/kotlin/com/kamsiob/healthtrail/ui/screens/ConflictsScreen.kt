@@ -21,6 +21,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.Instant
 import java.time.ZoneId
@@ -68,15 +69,13 @@ fun ConflictsScreen(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    SectionScaffold(
-        name = ConflictsTags.NAME,
-        // The chip says where you are, the heading says what you came for.
-        title = strings["nav.more"],
-        headingKey = "conflicts.title",
-        subtitle = strings["conflicts.lead"],
+    Page(
+        title = strings["conflicts.title"],
         onBack = onBack,
-        backLabelKey = "section.back.conflicts",
-        modifier = modifier,
+        backLabel = strings["section.back.conflicts"],
+        modifier = modifier.testTag(SectionTags.root(ConflictsTags.NAME)),
+        eyebrow = strings["nav.more"],
+        subtitle = strings["conflicts.lead"],
     ) {
         if (resolutions.isEmpty()) {
             item {
@@ -105,13 +104,12 @@ fun ConflictsScreen(
                     )
                 }
             }
-            return@SectionScaffold
+            return@Page
         }
 
         item {
             Spacer(Modifier.height(Space.sectionGap))
             Eyebrow(text = strings["conflicts.group"])
-            Spacer(Modifier.height(Space.headerGap))
         }
 
         items(resolutions.size) { index ->
@@ -200,7 +198,6 @@ fun ConflictsScreen(
                     }
                 }
             }
-            Spacer(Modifier.height(Space.m))
         }
 
         item { Spacer(Modifier.height(Space.l)) }
