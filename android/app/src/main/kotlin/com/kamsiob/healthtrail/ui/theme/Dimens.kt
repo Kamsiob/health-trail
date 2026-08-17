@@ -307,6 +307,21 @@ object Radius {
     val tabChip = RoundedCornerShape(topStart = 7.dp, topEnd = 7.dp)
 
     /** Pills, buttons, and chips are fully rounded. */
+    /**
+     * A button, and **a corner of its own on purpose.**
+     *
+     * D167: shape variety is the loudest signal of Material 3 Expressive, and
+     * one radius on every surface is what made this app read as clean rather
+     * than as designed. The v4 pass then deleted the 22dp card corner and put
+     * 58 surfaces on 26dp, which made it more uniform rather than less. This is
+     * the beginning of undoing that: an action is not a card and does not wear
+     * a card's corner.
+     *
+     * The approved mockups draw it. `m3v4-2`'s three actions under the hero are
+     * rounded rectangles at roughly this radius, not pills and not cards.
+     */
+    val button = RoundedCornerShape(18.dp)
+
     val pill = RoundedCornerShape(percent = 50)
 }
 
