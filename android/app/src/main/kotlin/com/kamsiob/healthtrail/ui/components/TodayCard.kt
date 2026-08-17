@@ -17,6 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,22 +75,33 @@ private val CORNER_ROOM: Dp = 48.dp + 8.dp
  * tonight keeps every row it had. A `tall` card reads as wide, which is what it
  * always looked like: full width, as tall as what it has to say.
  */
+/**
+ * Where a large system font stops being a font size and starts being a layout.
+ *
+ * At and above this the Today field reflows to one column and a card's height
+ * becomes a floor rather than a fixed value. **One number, read by the grid and
+ * by the card**, because two copies of it is a wide card holding a fixed height
+ * in a field that has already reflowed.
+ */
+const val WIDE_TYPE_SCALE = 1.5f
+
 enum class CardSize {
     /**
-     * Square. One answer and one line of context, in a cell as tall as it is
-     * wide.
+     * Square, half the width. One answer and one line of context.
      *
-     * **Square is a floor rather than a cage.** The cell is as tall as it is
-     * wide and grows past that when the words need it, which is what happens at
-     * a large system font before the field reflows to one column. A square that
-     * clipped its own answer to stay square would be rule 11's truncation with
-     * a tidy excuse.
+     * **The height is the same as [WIDE]'s and comes from this one**: the
+     * square's side is the field's only card height. Owner, 2026-08-17.
      */
     SMALL,
 
     /**
      * Full width, and the card's whole rendering: the answer, its detail, and
      * the chart or mini spine where the card has one.
+     *
+     * **Exactly as tall as [SMALL]**, owner 2026-08-17: two widths, one height,
+     * and nothing in between. A wide card that grew with its content was
+     * inventing a third size, and a field of five different heights has no
+     * rhythm for the eye to follow.
      *
      * **This absorbed what used to be a third size.** Wide and tall differed
      * only in whether the rich body was drawn, which made the person choose
@@ -265,16 +280,32 @@ fun TodayCard(
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
-    // **Wide earns its height from content.** It reserved 168dp once, so a card
-    // whose record had nothing more to show, a measure with one reading and no
-    // line to draw, rendered as a hundred points of empty box. Rule 11: no
-    // blank area, and a reserved height is a blank area with a reason.
+    // **One height, two widths, and nothing in between.** Owner ruling,
+    // 2026-08-17: "all widgets are either small (square) which takes up half
+    // width or a large rectangle which fills the width, height is the same
+    // regardless. don't invent new sizes."
     //
-    // **Nothing is hidden by not padding it.** 21.3: shrinking never hides the
-    // existence of something open, only its detail, and there is no detail here
-    // to hide. A chart or a short list makes a wide card tall; an empty record
-    // makes it the size of what it has to say, which is honest.
-    val minHeight: Dp = 96.dp
+    // So the height is the square's side, worked out from the grid the field
+    // actually uses: the screen less its two margins less the gap between two
+    // columns, halved. A wide card is that height and the full width. Cards
+    // that grew with their content, the medication list and the measure with a
+    // chart, were inventing sizes between the two, and a field of five
+    // different heights is a field with no rhythm.
+    // **The window's own width, not the configuration's.** Lint is right that
+    // `Configuration.screenWidthDp` is the wrong question in a windowed world:
+    // it answers about the display rather than about the space this composable
+    // was actually given.
+    val width = with(LocalDensity.current) {
+        LocalWindowInfo.current.containerSize.width.toDp()
+    }
+    val cardHeight: Dp = (width - Space.screenHorizontal * 2 - Space.cardGap) / 2
+
+    // **Except at a large system font, where it is a floor.** There the field
+    // has already reflowed to one column and the words need the room: a fixed
+    // height would clip somebody's own medication name, which is rule 11's
+    // truncation wearing a tidy shape. The two rules do not conflict, because
+    // nobody sees a two column grid and a clipped card at the same time.
+    val fixed = LocalDensity.current.fontScale < WIDE_TYPE_SCALE
 
     Box(
         // **The square has to reach the content or it is just a tall box.**
@@ -289,8 +320,9 @@ fun TodayCard(
         propagateMinConstraints = true,
         modifier = modifier
             .fillMaxWidth()
-            .then(if (size == CardSize.SMALL) Modifier.atLeastSquare() else Modifier)
-            .defaultMinSize(minHeight = minHeight)
+            .then(
+                if (fixed) Modifier.height(cardHeight) else Modifier.heightIn(min = cardHeight),
+            )
             // #324. The card is a thing on a desk, and the desk is the
             // whole metaphor of the surface.
             // **The card token, not a number typed here.** This drew its own

@@ -29,6 +29,7 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.screens.CardOptionsTags
 import com.kamsiob.healthtrail.ui.screens.TodayFieldScreen
+import com.kamsiob.healthtrail.ui.components.HeaderActionTags
 import com.kamsiob.healthtrail.ui.screens.TodayFieldTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import androidx.compose.ui.unit.Density
@@ -83,9 +84,9 @@ class TodayFieldScreenTest {
 
     /** The default starting hand, which is what most people will ever see. */
     private fun startingHand() = Repository.TodayLayout(
-        lead = card("c-digest", "digest", size = "wide", isLead = true),
+        lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
         field = listOf(
-            card("c-next", "next_up"),
+            card("c-next", "milestones"),
             card("c-meds", "medications"),
             card("c-ask", "ask_next_time"),
             card("c-emerg", "emergency_card"),
@@ -244,33 +245,9 @@ class TodayFieldScreenTest {
         // arrived without a way into search at all, on every seeded notebook.
         var opened = false
         show(onSearch = { opened = true })
-        compose.onNodeWithTag(TodayFieldTags.SEARCH).assertIsDisplayed()
-        compose.onNodeWithTag(TodayFieldTags.SEARCH).performClick()
+        compose.onNodeWithTag(HeaderActionTags.SEARCH).assertIsDisplayed()
+        compose.onNodeWithTag(HeaderActionTags.SEARCH).performClick()
         assertTrue("the search door does not open search", opened)
-    }
-
-    @Test
-    fun searchKeepsItsPlaceWhicheverCardLeads() {
-        // 21.1: finding and recording are the two acts that must never move. A
-        // door that moves with the cards is a door somebody has to find first.
-        val promoted = Repository.TodayLayout(
-            lead = card("c-meds", "medications", size = "wide", isLead = true),
-            field = listOf(
-                card("c-digest", "digest", size = "wide"),
-                card("c-next", "next_up"),
-            ),
-        )
-        show(promoted)
-
-        val leadBottom = compose.onNodeWithTag(TodayFieldTags.LEAD)
-            .fetchSemanticsNode().boundsInRoot.bottom
-        val searchTop = compose.onNodeWithTag(TodayFieldTags.SEARCH)
-            .fetchSemanticsNode().boundsInRoot.top
-        val firstCardTop = compose.onNodeWithTag(TodayFieldTags.card("c-digest"))
-            .fetchSemanticsNode().boundsInRoot.top
-
-        assertTrue("search is not under the lead", searchTop >= leadBottom)
-        assertTrue("search is not above the field", searchTop < firstCardTop)
     }
 
     @Test
@@ -379,7 +356,7 @@ class TodayFieldScreenTest {
         // they are looking at all of it.
         val strings = Strings.load(context)
         val wide = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
             field = listOf(card("c-meds", "medications", size = "wide")),
         )
         show(
@@ -412,7 +389,7 @@ class TodayFieldScreenTest {
         // though that were a date anybody writes.
         val strings = Strings.load(context)
         val wide = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
             field = listOf(card("c-trail", "trail_lately", size = "wide")),
         )
         show(
@@ -449,7 +426,7 @@ class TodayFieldScreenTest {
         // quiet line under it. The name belongs on the tab, which is where 21.2
         // puts identity and what lets two measure cards be told apart.
         val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
             field = listOf(card("c-weight", "measure")),
         )
         show(
@@ -473,7 +450,7 @@ class TodayFieldScreenTest {
         // plain words, with no urgency color and no alarm.
         val strings = Strings.load(context)
         val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
             field = listOf(card("c-due", "project_date"), card("c-gone", "project_date")),
         )
         show(
@@ -508,7 +485,7 @@ class TodayFieldScreenTest {
         // counting from a month the person gave loosely would invent exactly
         // the precision the date model exists to protect.
         val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
             field = listOf(card("c-due", "project_date")),
         )
         show(
@@ -532,7 +509,7 @@ class TodayFieldScreenTest {
         // the county, not the word Waiting.
         val strings = Strings.load(context)
         val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
             field = listOf(card("c-proj", "project_standing", size = "wide")),
         )
         show(
@@ -587,7 +564,7 @@ class TodayFieldScreenTest {
             )
         }
         val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
             field = listOf(
                 card("c-tall", "measure", size = "tall"),
                 card("c-small", "measure", size = "small"),
@@ -662,7 +639,7 @@ class TodayFieldScreenTest {
         // room, and the card never answered it.
         val strings = Strings.load(context)
         val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
             field = listOf(card("c-si", "standing_instructions", size = "wide")),
         )
         show(
@@ -688,7 +665,7 @@ class TodayFieldScreenTest {
         // without announcing itself. Rule 2 as well: the app counts, and a
         // count of nothing is not a finding.
         val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
             field = listOf(card("c-si", "standing_instructions", size = "wide")),
         )
         show(
@@ -703,50 +680,13 @@ class TodayFieldScreenTest {
     }
 
     @Test
-    fun theNextDatedThingSaysTodayAndTomorrowInWords() {
-        // The grid draws "Tomorrow 10:15" and the card rendered "April 5, 2026
-        // at 10:15 AM", which is correct and makes the person do arithmetic in
-        // a kitchen. Anything further out keeps its full date.
-        val strings = Strings.load(context)
-        val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
-            field = listOf(
-                card("c-soon", "next_up", size = "wide"),
-                card("c-later", "next_up", size = "wide"),
-            ),
-        )
-        show(
-            layout,
-            answers = mapOf(
-                // today is April 4th.
-                "c-soon" to Repository.TodayAnswer(
-                    title = "Dr. Okafor",
-                    whenEdtf = "2026-04-05T10:15",
-                ),
-                "c-later" to Repository.TodayAnswer(
-                    title = "Home nurse",
-                    whenEdtf = "2026-05-20",
-                ),
-            ),
-        )
-        assertTrue(
-            "tomorrow is not said in words: ${spokenByCard("c-soon")}",
-            strings["date.tomorrow"] in spokenByCard("c-soon"),
-        )
-        assertTrue(
-            "a date further out lost its date: ${spokenByCard("c-later")}",
-            EventDateText.render(strings, "2026-05-20") in spokenByCard("c-later"),
-        )
-    }
-
-    @Test
     fun aCoarseDateIsNeverCalledTodayOrTomorrow() {
         // Rule 17. A month is not a day, so it can be neither, and saying so
         // would be the fabrication the date model exists to prevent.
         val strings = Strings.load(context)
         val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
-            field = listOf(card("c-vague", "next_up", size = "wide")),
+            lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
+            field = listOf(card("c-vague", "milestones", size = "wide")),
         )
         show(
             layout,
@@ -764,99 +704,6 @@ class TodayFieldScreenTest {
         assertTrue(
             "the month is not rendered: $said",
             EventDateText.render(strings, "2026-04") in said,
-        )
-    }
-
-    @Test
-    fun aBrandNewNotebookIsNotToldWhatChangedSinceAVisitItNeverHad() {
-        // **The first screen anybody sees after onboarding.** It read "Nothing
-        // new since you were last here" on a notebook made thirty seconds ago.
-        // The previous Today showed no digest at all on a first run and was
-        // right to; this surface cannot, because 21.1 says the lead is never
-        // empty, so it says what is true on day one instead.
-        val strings = Strings.load(context)
-        compose.setContent {
-            HealthTrailTheme {
-                CompositionLocalProvider(LocalStrings provides strings) {
-                    TodayFieldScreen(
-                        layout = startingHand(),
-                        answers = emptyMap(),
-                        onOpen = {},
-                        today = today,
-                        hasAnything = false,
-                    )
-                }
-            }
-        }
-        val said = spoken(TodayFieldTags.LEAD)
-        assertTrue(
-            "a new notebook is told about a visit that never happened: $said",
-            strings["today.card.digest.quiet"] !in said,
-        )
-        assertTrue(
-            "the first run says nothing of its own: $said",
-            strings["today.card.digest.first"] in said,
-        )
-        // **And it does not turn into a task list.** Rule 13: an unfilled slot
-        // reads as not yet, never as something the person has failed to do.
-        for (banned in listOf("should", "need to", "must", "finish", "complete")) {
-            assertTrue(
-                "the first run nags: $banned is in \"$said\"",
-                banned !in said.lowercase(),
-            )
-        }
-    }
-
-    @Test
-    fun twoAppointmentsOnOneDayBecomeTwoLinesAndNextWeekDoesNot() {
-        // 21.7. A card listing next week as well has stopped answering "what is
-        // the next dated thing" and started being an agenda, which the app
-        // already has a screen for.
-        val strings = Strings.load(context)
-        val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
-            field = listOf(card("c-next", "next_up", size = "wide")),
-        )
-        show(
-            layout,
-            answers = mapOf(
-                "c-next" to Repository.TodayAnswer(
-                    title = "Dr. Okafor",
-                    whenEdtf = "2026-04-09T10:15",
-                    items = listOf(
-                        Repository.TodayItem("Blood draw", noteEdtf = "2026-04-09T14:00"),
-                        Repository.TodayItem("Care plan meeting", noteEdtf = "2026-04-16"),
-                    ),
-                ),
-            ),
-        )
-        val said = spokenByCard("c-next")
-        assertTrue("the second thing that day is missing: $said", "Blood draw" in said)
-        assertTrue("a later day is being listed: $said", "Care plan meeting" !in said)
-    }
-
-    @Test
-    fun aCoarseDateSharesItsDayWithNothing() {
-        // Rule 17. "Sometime in April" is not on any particular day, so it
-        // cannot be the same day as anything, and saying it is would invent the
-        // precision the date model exists to protect.
-        val layout = Repository.TodayLayout(
-            lead = card("c-digest", "digest", size = "wide", isLead = true),
-            field = listOf(card("c-next", "next_up", size = "wide")),
-        )
-        show(
-            layout,
-            answers = mapOf(
-                "c-next" to Repository.TodayAnswer(
-                    title = "The review meeting",
-                    whenEdtf = "2026-04",
-                    items = listOf(Repository.TodayItem("Blood draw", noteEdtf = "2026-04")),
-                ),
-            ),
-        )
-        assertTrue(
-            "two month precise dates were treated as the same day",
-            "Blood draw" !in spokenByCard("c-next"),
         )
     }
 
@@ -936,20 +783,6 @@ class TodayFieldScreenTest {
     }
 
     @Test
-    fun aQuietLeadIsStillTheLead() {
-        // 21.4's "none yet" rung, at the top of the screen. Quiet is allowed to
-        // be good news and the answer to the question the person opened the app
-        // to ask is still the answer when it is a calm one.
-        val strings = Strings.load(context)
-        show(digest = Digest.nothing)
-        compose.onNodeWithTag(TodayFieldTags.LEAD).assertIsDisplayed()
-        assertTrue(
-            "a quiet day does not say so: ${spoken(TodayFieldTags.LEAD)}",
-            strings["today.card.digest.quiet"] in spoken(TodayFieldTags.LEAD),
-        )
-    }
-
-    @Test
     fun everyCardIsADoorIncludingTheLead() {
         // 21.2, and rule 18. A card is a door to where its answer lives, and
         // the lead is a card that happens to be at the top.
@@ -969,7 +802,7 @@ class TodayFieldScreenTest {
         // Spanish is the longest of the four that ship in v1.
         show(locale = Locale("es"))
         compose.onNodeWithTag(TodayFieldTags.LEAD).assertIsDisplayed()
-        compose.onNodeWithTag(TodayFieldTags.SEARCH).assertIsDisplayed()
+        compose.onNodeWithTag(HeaderActionTags.SEARCH).assertIsDisplayed()
     }
 
     @Test
@@ -980,7 +813,7 @@ class TodayFieldScreenTest {
         // family of defect is visible in English at font scale 1.0.
         show(locale = Locale("ar"), direction = LayoutDirection.Rtl)
         compose.onNodeWithTag(TodayFieldTags.LEAD).assertIsDisplayed()
-        compose.onNodeWithTag(TodayFieldTags.SEARCH).assertIsDisplayed()
+        compose.onNodeWithTag(HeaderActionTags.SEARCH).assertIsDisplayed()
         compose.onNodeWithTag(TodayFieldTags.card("c-meds")).assertIsDisplayed()
     }
 
@@ -1251,7 +1084,7 @@ class TodayFieldScreenTest {
     )
 
     private fun trailCard(size: String = "tall") = Repository.TodayLayout(
-        lead = card("c-digest", "digest", size = "wide", isLead = true),
+        lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
         field = listOf(card("c-trail", "trail_lately", size = size)),
     )
 
@@ -1380,7 +1213,7 @@ class TodayFieldScreenTest {
         size: String = "wide",
         sourceId: String? = null,
     ) = Repository.TodayLayout(
-        lead = card("c-digest", "digest", size = "wide", isLead = true),
+        lead = card("c-digest", "emergency_card", size = "wide", isLead = true),
         field = listOf(
             card(
                 "c-team",

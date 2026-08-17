@@ -70,6 +70,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import com.kamsiob.healthtrail.data.Attachments
 import com.kamsiob.healthtrail.ui.components.Thumbnail
+import com.kamsiob.healthtrail.ui.components.WIDE_TYPE_SCALE
 import androidx.compose.ui.platform.LocalContext
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
@@ -1534,22 +1535,27 @@ private fun AnswerBody(
             // medications is text and reads as a block; three thumbnails
             // touching each other read as one strip of paper rather than three
             // documents. Everything else keeps the tighter rhythm it had.
-            // **Air between items, because an item is two lines now.** Packed
-            // tight, a name and its dose ran into the next name and the list
-            // read as one paragraph. `withinGroup` is what a group's own air
-            // is, D188.
-            verticalArrangement = Arrangement.spacedBy(Space.withinGroup),
+            // **A little air, so a run of items is a list rather than a
+            // paragraph**, and no more than that, because the card holds one
+            // fixed height.
+            verticalArrangement = Arrangement.spacedBy(Space.xs),
         ) {
             // **The trail card's newest entry is already the answer above it**,
             // so the list starts at the second. Every other card lists all of
             // what it has. Dropped here rather than in the query, because at
             // tall all three are waypoints on the spine and a query that had
             // skipped one would have left the spine without its head.
-            val listed = if (cardType == "trail_lately") {
-                answer.items.drop(1)
-            } else {
-                answer.items
-            }
+            val listed = (
+                if (cardType == "trail_lately") answer.items.drop(1) else answer.items
+                )
+                // **As many as the card's one height holds, and no more.**
+                // Owner, 2026-08-17: a widget is a square or a full width
+                // rectangle and the height is the same either way, so a list
+                // that grew the card was inventing a third size. Two is what
+                // fits under an eyebrow, a count and its line of context.
+                // **What is left is said rather than cropped**, on the line
+                // below, so a card showing two of five says five.
+                .take(LISTED_ON_A_CARD)
             for (item in listed) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // **The person's own paper, at thumbnail size and no
@@ -1574,42 +1580,47 @@ private fun AnswerBody(
                         )
                         Spacer(Modifier.width(Space.s))
                     }
-                    // **The name leads and its detail recedes.** Rule 15, and
-                    // the owner on this card: "the medication widget is still
-                    // ugly." It was one joined line per item at one size and
-                    // one ink, so five medications read as five identical gray
-                    // lines and the eye had to read every word to find a name.
-                    // The name is what somebody scans for, so it takes the
-                    // weight and the dose sits under it, quiet. D193.
-                    Column(modifier = Modifier.weight(1f)) {
+                    // **The name leads and its detail recedes, on one line.**
+                    // Rule 15, and the owner on this card: "the medication
+                    // widget is still ugly." It was one joined line per item at
+                    // one size and one ink, so five medications read as five
+                    // identical gray lines and the eye had to read every word
+                    // to find a name. The name takes the weight and the ink;
+                    // the dose sits beside it, quiet.
+                    //
+                    // **Beside it rather than under it**, because the card has
+                    // one fixed height and stacking the two doubled every item:
+                    // two medications then ran past the edge and the third was
+                    // clipped mid word, which is the truncation rule 11 bans.
+                    // Weight and ink carry the hierarchy at no cost in height.
+                    // D193.
+                    Text(
+                        text = Bidi.isolate(
+                            item.label.ifBlank { strings["project.steps.ungrouped"] },
+                        ),
+                        style = type.rowTitle,
+                        color = colors.ink,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    // The parts joined here rather than in the query, because
+                    // joining is wording. `Bidi.join` isolates each part, so a
+                    // dose typed in Arabic keeps its own direction beside one
+                    // typed in English, and a date never renders as the EDTF it
+                    // is stored as.
+                    Bidi.join(
+                        item.note,
+                        item.noteEdtf?.let { EventDateText.render(strings, it) },
+                    ).takeIf { it.isNotBlank() }?.let { detail ->
+                        Spacer(Modifier.width(Space.s))
                         Text(
-                            // bidi-ok: isolated here, because this is the
-                            // person's own word for the thing.
-                            text = Bidi.isolate(
-                                item.label.ifBlank { strings["project.steps.ungrouped"] },
-                            ),
-                            style = type.rowTitle,
-                            color = colors.ink,
+                            text = detail,
+                            style = type.bodyM,
+                            color = colors.ink2,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
                         )
-                        // The parts joined here rather than in the query,
-                        // because joining is wording. `Bidi.join` isolates each
-                        // part, so a dose typed in Arabic keeps its own
-                        // direction beside one typed in English, and a date
-                        // never renders as the EDTF it is stored as.
-                        Bidi.join(
-                            item.note,
-                            item.noteEdtf?.let { EventDateText.render(strings, it) },
-                        ).takeIf { it.isNotBlank() }?.let { detail ->
-                            Text(
-                                text = detail,
-                                style = type.bodyM,
-                                color = colors.ink2,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
                     }
                     // **Amounts at the end edge, in tabular mono.** 21.7 says
                     // amounts only at wide and right aligned, and section 7
@@ -1632,13 +1643,18 @@ private fun AnswerBody(
                 }
             }
             // **What is not here, said rather than cropped.** The count is the
-            // true total, so a card showing three of eleven says so. Silently
-            // showing the first three would be the app deciding which
-            // medications matter, which is exactly what it must not do.
+            // true total, so a card showing two of eleven says so. Silently
+            // showing the first two would be the app deciding which medications
+            // matter, which is exactly what it must not do.
+            //
+            // **Counted against what is drawn**, not against what the query
+            // returned: the card now takes fewer than it is handed, and
+            // subtracting the handful would have said "and 2 more" while three
+            // it never drew were also missing.
             val hidden = if (answer.itemsSampleTheCount) {
-                (answer.count ?: 0) - answer.items.size
+                (answer.count ?: 0) - listed.size
             } else {
-                0
+                (answer.items.size - listed.size).coerceAtLeast(0)
             }
             if (hidden > 0) {
                 Text(
@@ -2707,7 +2723,10 @@ private fun EditAction(
  * same half width card as somebody at 2.0, and making them go further to get a
  * readable screen is the opposite of designing for it.
  */
-private const val WIDE_TYPE_SCALE = 1.5f
+// Moved to `TodayCard`, so the grid and the card decide "is the font large"
+// from one number. They disagreed for one build and a wide card kept a fixed
+// height in a one column field.
+
 
 /**
  * The dot that takes a card off Today. `DESIGN.md` 21.6 screen 5.
@@ -2784,3 +2803,12 @@ private fun optionsName(
  * so much that the grid under it is obscured by the thing being moved.
  */
 private const val LIFT_SCALE = 1.04f
+
+/**
+ * How many items a card draws before it says how many it did not.
+ *
+ * Two, which is what fits inside the field's one card height under an eyebrow,
+ * a count and its line of context. Owner, 2026-08-17: two widths, one height,
+ * and no third size.
+ */
+private const val LISTED_ON_A_CARD = 2

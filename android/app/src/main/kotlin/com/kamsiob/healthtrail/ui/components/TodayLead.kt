@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -147,9 +151,29 @@ fun TodayLead(
     // the rainbow. Six tinted cards of equal weight gave the eye nowhere to
     // land; the tint belongs to whichever card leads, and the rest are white.
     val leadColors = if (saturated) colors.onHue(hue) else colors
+
+    // **The same one height every other widget has.** Owner, 2026-08-17: apart
+    // from the hero, a widget is a half width square or a full width rectangle
+    // and the height is the same either way. The lead is a widget, so it is a
+    // full width rectangle at the field's own card height rather than a block
+    // that grows with whatever was promoted into it. `TodayCard` derives the
+    // number the same way and from the same grid.
+    // **The window's own width, not the configuration's.** Lint is right that
+    // `Configuration.screenWidthDp` is the wrong question in a windowed world:
+    // it answers about the display rather than about the space this composable
+    // was actually given.
+    val width = with(LocalDensity.current) {
+        LocalWindowInfo.current.containerSize.width.toDp()
+    }
+    val cardHeight = (width - Space.screenHorizontal * 2 - Space.cardGap) / 2
+    val fixed = LocalDensity.current.fontScale < WIDE_TYPE_SCALE
+
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .then(
+                if (fixed) Modifier.height(cardHeight) else Modifier.heightIn(min = cardHeight),
+            )
             .clip(Radius.hero)
             .background(if (saturated) hue.base else hue.wash)
             .openableByTap(

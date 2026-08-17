@@ -314,6 +314,25 @@ class TodayScreenTest {
     }
 
     @Test
+    fun aCoarseDateIsNeverCalledTomorrow() {
+        // **Rule 17.** A month is not a day, so it can be neither today nor
+        // tomorrow, and answering "sometime in April" with "Tomorrow" would be
+        // inventing a precision the person never gave. This moved here from the
+        // field's own tests when the appointment became the permanent hero,
+        // D192: the wording is the hero's job now.
+        show(
+            hasAnything = true,
+            coaching = emptyList(),
+            nextAppointment = anAppointment().copy(scheduledEdtf = "2026-08"),
+        )
+        val strings = Strings.load(context)
+        compose.onNodeWithContentDescription(strings["date.tomorrow"], substring = true)
+            .assertDoesNotExist()
+        compose.onNodeWithContentDescription(strings["date.today"], substring = true)
+            .assertDoesNotExist()
+    }
+
+    @Test
     fun anAppointmentWithNoPlaceWrittenDownIsStillAWholeAppointment() {
         // Rule 13: an unfilled slot reads as "not yet" and never as an error.
         // Nothing appears where the place would be, and nothing scolds.

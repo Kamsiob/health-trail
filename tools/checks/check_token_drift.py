@@ -62,7 +62,10 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # 120, up three, for the trace's dot radius and the two halves of the dash it
 # draws across a silence. Same category as the four above: geometry, not
 # spacing. D193.
-BASELINE = 120
+# 119 once the Today card stopped typing its own minimum height and took the
+# field's one card height from the grid instead. Owner, 2026-08-17: two widths,
+# one height, no third size.
+BASELINE = 119
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 
