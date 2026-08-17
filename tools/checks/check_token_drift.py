@@ -52,7 +52,14 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # hand-drawn glyphs went with it. **The rebuild is expected to keep pushing
 # this down**: a measurement typed into a screen is usually a component this
 # app drew for itself, and step 2 is replacing those with Material's. #386.
-BASELINE = 113
+# 117, up four, for `ui/v4/Trace.kt`: a stroke width, the radius of the ring on
+# the newest reading, the width of that ring, and the height the line is given
+# inside a card. **These are the geometry constants this file's own note sets
+# aside**, not spacing: none of them is a gap between two things, and there is
+# no token that would mean anything if they were one. The old `ChartCard` types
+# five of the same kind and goes when its last caller does, so the number falls
+# again there rather than here. #386.
+BASELINE = 117
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

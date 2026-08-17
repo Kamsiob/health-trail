@@ -172,6 +172,7 @@ import com.kamsiob.healthtrail.ui.screens.AddCardSheet
 import com.kamsiob.healthtrail.ui.screens.CardOffer
 import com.kamsiob.healthtrail.ui.screens.TodayFieldScreen
 import com.kamsiob.healthtrail.ui.screens.TodayScreen
+import com.kamsiob.healthtrail.ui.screens.TrackedMeasure
 import com.kamsiob.healthtrail.ui.screens.UnfiledTrayScreen
 import com.kamsiob.healthtrail.ui.components.Waiting
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -608,7 +609,22 @@ fun NotebookShell(
                         //
                         // **The old screen is not extended while it is here**, per
                         // the freeze rule. It is called and nothing more.
-                        Destination.TODAY -> todayLayout?.let { layout ->
+                        Destination.TODAY -> {
+                        // **The soonest appointment still ahead**, worked out
+                        // once because Today needs both it and the questions
+                        // that would come to it, and two copies of "which one is
+                        // next" is how a screen comes to show one appointment
+                        // and the questions for another.
+                        val nextAppointment = appointments
+                            .filter { it.scheduledStart != null }
+                            .minByOrNull { it.scheduledStart!! }
+                            ?.takeIf {
+                                it.scheduledStart!! >= LocalDate.now()
+                                    .atStartOfDay(java.time.ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli()
+                            }
+                        todayLayout?.let { layout ->
                             TodayFieldScreen(
                                 layout = layout,
                                 answers = todayAnswers,
@@ -713,6 +729,8 @@ fun NotebookShell(
                                 },
                             )
                         } ?: TodayScreen(
+                            // Whose day it is, for the masthead. D170.
+                            subjectName = activeSubjectName,
                             openQuestions = questions.count { it.isOpen },
                             // Projects sitting on somebody else. The status and the
                             // named person are separate answers, so either counts.
@@ -725,15 +743,44 @@ fun NotebookShell(
                             // date is not "next", because nothing about it says
                             // when, and putting it here would be the app inventing
                             // an order the person never gave.
-                            nextAppointment = appointments
-                                .filter { it.scheduledStart != null }
-                                .minByOrNull { it.scheduledStart!! }
-                                ?.takeIf {
-                                    it.scheduledStart!! >= LocalDate.now()
-                                        .atStartOfDay(java.time.ZoneId.systemDefault())
-                                        .toInstant()
-                                        .toEpochMilli()
+                            nextAppointment = nextAppointment,
+                            // **How many saved questions would come to that
+                            // appointment.** A question waiting on nobody in
+                            // particular comes to every one of them, which is the
+                            // commonest case and what `question.person_id`'s own
+                            // schema comment says: a question for the wound nurse
+                            // should not turn up on the prep for a billing
+                            // meeting. #371 item 2.
+                            questionsReady = nextAppointment?.let { appointment ->
+                                questions.count { question ->
+                                    question.isOpen &&
+                                        (
+                                            question.personId == null ||
+                                                question.personId == appointment.personId
+                                            )
+                                }
+                            } ?: 0,
+                            // **One measurement on the front door**, which is what
+                            // `m3v4-0` draws. The first one that has anything in it,
+                            // in the order the person set them up, so the card is
+                            // never a chart of nothing while a full measure sits
+                            // behind it. Progress holds all of them.
+                            tracked = measures
+                                .map { measure ->
+                                    measure to readings.filter { it.measureId == measure.id }
+                                }
+                                .let { pairs ->
+                                    pairs.firstOrNull { it.second.isNotEmpty() } ?: pairs.firstOrNull()
+                                }
+                                ?.let { (measure, forMeasure) ->
+                                    TrackedMeasure(
+                                        name = measure.name,
+                                        unit = measure.unit,
+                                        readings = forMeasure,
+                                    )
                                 },
+                            onOpenProgress = { openSection = Repository.Section.PROGRESS },
+                            onPeople = { subjectsOpen = true },
                             // **Opened over Today, not by switching to the
                             // notebook.** A section is an overlay, so changing the
                             // destination underneath it only decided where "back"
@@ -773,6 +820,7 @@ fun NotebookShell(
                             openIncidents = incidents.count { it.isOpen },
                             onOpenIncidents = { incidentsOpen = true },
                         )
+                        }
                         Destination.PROJECTS -> ProjectsScreen(
                             projects = projects,
                             onOpen = { openProject = it; setupOpen = false; revision += 1 },

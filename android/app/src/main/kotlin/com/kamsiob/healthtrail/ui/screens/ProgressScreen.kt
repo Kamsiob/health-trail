@@ -286,7 +286,7 @@ private fun latestOf(
     val latest = readings.maxByOrNull { it.occurredStart ?: Long.MIN_VALUE } ?: return null
     val date = EventDateText.render(strings, latest.occurredEdtf)
     if (brief && measure.isText) return date
-    val value = valueOf(latest) ?: return date
+    val value = readingValue(latest) ?: return date
     val unit = latest.unit?.takeIf { it.isNotBlank() } ?: measure.unit?.takeIf { it.isNotBlank() }
     // **Isolated, because this line mixes directions.** A number, a Latin unit
     // and an Arabic month in one string are three bidirectional runs, and
@@ -321,7 +321,19 @@ private fun spread(
 private fun format(number: Double): String =
     if (number % 1.0 == 0.0) number.toLong().toString() else number.toString()
 
-private fun valueOf(reading: Repository.Reading): String? = when {
+/**
+ * One reading, as the person wrote it: their words where they used words, and
+ * the number otherwise.
+ *
+ * **Internal rather than private, and borrowed rather than copied.** Today's
+ * tracked card shows the latest reading of the same measure this screen plots,
+ * and a second copy of [format] is how the two come to disagree about whether a
+ * whole number keeps its trailing zero. This is a rule about numbers somebody
+ * gave, not a piece of the old design language, so the v4 screen calls it the
+ * way `ui/v4` borrows `initialsOf` and `chartPoints`. It moves with the Progress
+ * screen when that screen is rewritten. #386.
+ */
+internal fun readingValue(reading: Repository.Reading): String? = when {
     reading.text?.isNotBlank() == true -> reading.text
     reading.number != null -> format(reading.number)
     else -> null
@@ -350,7 +362,7 @@ private fun TextMeasureHero(
         Text(text = Bidi.isolate(measure.name), style = HealthTrail.type.bodyM, color = colors.ink2)
         Spacer(Modifier.height(Space.xs))
         Text(
-            text = latest?.let { valueOf(it) } ?: strings("progress.readings", "count" to 0),
+            text = latest?.let { readingValue(it) } ?: strings("progress.readings", "count" to 0),
             style = HealthTrail.type.hero,
             color = colors.ink,
         )
@@ -387,7 +399,7 @@ private fun ReadingRow(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val value = valueOf(reading)
+    val value = readingValue(reading)
 
     // **The row is the door to correcting it.** #374, and it is the shape rule
     // 17 asks for: a date editable forever *from the entry itself* rather than

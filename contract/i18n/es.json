@@ -1608,6 +1608,14 @@
   "today.masthead": "El día de {name}",
   "today.masthead.noname": "Hoy",
   "action.edit": "Editar",
+  "date.format.month_short": "MMM",
   "today.arrange.action": "Organizar las tarjetas",
-  "measurement.own.group": "Lo que estás siguiendo"
+  "measurement.own.group": "Lo que estás siguiendo",
+  "today.next.description": "Próximamente: {title}, {when}.",
+  "today.next.description.where": "Próximamente: {title}, {when}, en {where}.",
+  "today.next.questions": "{count, plural, one {1 pregunta lista para hacer} other {# preguntas listas para hacer}}",
+  "today.next.questions.short": "{count, plural, one {pregunta lista para hacer} other {preguntas listas para hacer}}",
+  "today.track.description": "{name}. La última lectura es {value}. {readings} anotadas. Una línea simple, sin escala y sin juicio.",
+  "today.track.description.empty": "{name}. Sin registros todavía.",
+  "today.track.value": "{value} {unit}"
 }
