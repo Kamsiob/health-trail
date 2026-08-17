@@ -429,6 +429,44 @@ object Trail {
     val milestoneGap: Dp = 4.dp
 
     /**
+     * The road, measured off `m3v4-2`, which is the one drawing that has a
+     * spine on it. D183, and every number here is px/3 off the 1080 capture.
+     *
+     * **Nothing like the old spine's geometry**, which is why these are their
+     * own tokens rather than edits to the ones above: the drawing's node is
+     * 24dp where the old one is 12, its line is 4dp where the old one is 2, and
+     * its gutter is 56dp where the old one is 28. Twice the size, and it is the
+     * difference between a decoration beside a list and a road the list is
+     * standing on.
+     */
+    val roadGutter: Dp = 56.dp
+
+    /** Where the line runs inside the gutter, from the content's leading edge. */
+    val roadLineCenter: Dp = 22.dp
+    val roadLine: Dp = 4.dp
+
+    /** Arrived: a filled disc carrying a check. */
+    val roadNodeDone: Dp = 24.dp
+
+    /** Where it is now: a disc in a halo, so the eye lands on it first. */
+    val roadNodeNow: Dp = 20.dp
+    val roadNodeNowHalo: Dp = 28.dp
+
+    /** Ahead: an outline, the same size as the disc it will become. */
+    val roadNodeAhead: Dp = 18.dp
+    val roadNodeAheadStroke: Dp = 2.dp
+
+    /**
+     * How far down a row the node sits, at most.
+     *
+     * It lands on the row's first line rather than in its vertical middle, so a
+     * long stop does not push its own node away from the words it marks, and it
+     * is clamped to half the row so a short one still centers. The same rule the
+     * old spine learned the hard way.
+     */
+    val roadNodeCenterY: Dp = 26.dp
+
+    /**
      * The spine's geometry, shared by every screen that draws one.
      *
      * These lived as private constants on the trail screen, which is exactly
