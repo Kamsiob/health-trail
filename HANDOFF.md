@@ -55,6 +55,12 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 - **The spine is a path, never a filter.** D187.
 - **Nothing behind a fold** that a label and a scroll can carry. D185.
 
+### The card grammar, owner 2026-08-17, and it is not negotiable
+
+**Apart from the hero, every widget is a half width square or a full width rectangle, and the height is the same either way.** The height is the square's side, derived in `TodayCard` and `TodayLead` from the grid: window width less two margins less one gap, halved. **Do not invent a size between them.** A card whose content does not fit shows less content and says what it is not showing; it does not grow. At `WIDE_TYPE_SCALE` and above the height becomes a floor, because the field has already reflowed to one column and clipping somebody's own words is rule 11's truncation.
+
+**The hero is the exception and is a fixture**, not a card: not in the layout, not arrangeable, always drawn. Its foot is one row, one wide thing and up to two marks. D192.
+
 ### Traps this work has already paid for
 
 - **A tonal surface is set in two places.** `TodayLead` and `TodayCard` both paint a `background` and then an `openableByTap(resting = ...)` over it. Changing only the first gives a block drawn in the old color with the new ink on it: dark on dark. D192.
