@@ -2990,6 +2990,26 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D178. The interface is replaced on Material 3 Expressive, and the back end is not touched
+
+**Date:** 2026-08-16. **The owner, after looking at the materials pass:** "this is like 60 percent the old design ... old headers, old page titles, old accordions, old buttons, old projects, and the list goes on." Then: "at the foundation of the design is using Google's Material 3 Expressive design elements and assets. from there we enhance it. we're not tweaking what we have now or updating what the old code is. we are replacing completely. that means all of the old user interface disappears and is gone and is written from the ground up." And: "the underlying back end is not changing."
+
+**The decision.** Every screen and every shared surface is rewritten from the ground up against Google's Material 3 Expressive components. **The back end is out of scope**: repository, schema, change log, export container, decryptor, fixtures and `contract/DATA-CONTRACT.md` all stay exactly as they are. A change that would need a schema change is not made.
+
+**This supersedes the app's own-vocabulary habit.** Until now the app imported almost nothing from Material beyond `Text` and drew its own switch, chevron and buttons. That was a defensible position and it is not the one wanted. Google's components are the foundation and this app's character sits on top of them. **D175's no-ripple rule and the hand-drawn controls it protected are superseded where they conflict**, because they were arguments for a vocabulary that is being replaced.
+
+**The foundation is already on the classpath and was never used.** `compose-bom 2026.06.01` resolves material3 to 1.4.0, which carries `MaterialExpressiveTheme`, `ExperimentalMaterial3ExpressiveApi`, `MotionScheme` with the expressive scheme, `ShapeDefaults`, and tokens for `ButtonGroup`, `ConnectedButtonGroup`, `SplitButton`, `FloatingToolbar` and `LoadingIndicator`. `Theme.kt` still wraps the app in plain `MaterialTheme`. **Verified against the resolved artifact rather than assumed**, because the whole plan rests on it. `MaterialShapes` is the one thing not in there and comes from `androidx.graphics:graphics-shapes`.
+
+**Why the previous attempt produced this.** It converted materials: press states, one radius, the typeface, the field, the eyebrow. **D170 had already written the reason that could not work**, in its own words, that a token layer cannot produce a masthead, a saturated hero or a tinted grid, because those are arrangements. The attempt repeated exactly the failure D170 describes and then reported it as finished.
+
+**Two things made "finished" believable and both are corrected.** `check_v4.py` measured four mechanical tells, reported zero, and was read as the overhaul being done; it is retired rather than left to mislead again. And deleting the 22dp corner to put 58 surfaces on one radius was argued as removing a token doing no job: **the job it was doing was being different**, which D167 names as the loudest expressive signal.
+
+**The order, and it is the operative part.** Theme, then the shared surfaces, then screens one at a time. **A screen is rewritten or it is left alone.** The build never carries two design languages at once, which is the state that made this one unusable.
+
+**What would reopen it:** nothing about the direction. The open judgment inside it is how much of this app's character survives contact with Material's defaults, and that is settled screen by screen on the phone.
+
+---
+
 ### D176. The eyebrow keeps its job and loses the typeface, and mono is figures only
 
 **Date:** 2026-08-16. **Decided under rule 10**, working #384. **Settles a conflict between rule 15 and `docs/V4.md` section 3**, and changes no copy, no schema and no saved value.

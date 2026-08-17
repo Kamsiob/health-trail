@@ -22,7 +22,7 @@ HERE = Path(__file__).resolve().parent
 
 CHECKS = [
     ("check_copy.py", "House style: no em dashes, American English"),
-    ("check_v4.py", "every component in the v4 language, docs/V4.md"),
+    ("check_v4.py", "retired, D178: it measured four tells and was read as done"),
     ("check_templates.py", "The 57 templates against their schema and content rules"),
     ("check_contract_isolation.py", "/contract stays platform neutral, no second schema"),
     ("check_schema.py", "schema.sql against the data contract, shape and behavior"),
