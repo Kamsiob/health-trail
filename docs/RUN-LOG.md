@@ -2367,3 +2367,52 @@ Every one of these was built from the existing components, logged in all three p
 **None.** Verified with `git status --porcelain` returning nothing and the push confirmed against `origin/main`, rather than assumed.
 
 **Nothing on `main` is unverified.** #260 was the last one and it has been walked. Section 6 has what the screen showed that the code did not.
+
+---
+
+## 14. The retirement session, 2026-08-17
+
+**Fourteen component retirements in one session, one commit each**, every one
+verified with `tools/verify.sh` before it was pushed. `ui/components` went from
+57 files to 38 and the replace table in `docs/V4.md` 4 finished, all six rows.
+
+**The method, which is the part worth keeping.** Measure the call sites with a
+script rather than guessing. Extend the v4 component **once** where the old one
+carried something it lacks. Convert the call sites with a twenty line Python
+pass. Compile. **Read the whole diff.** `tools/verify.sh`. Commit, push. The
+earlier framing of this work priced it as fifty hand edits per component, which
+is why it looked bigger than it was.
+
+**In order:** `GroupedSurface` 28 sites; `DenseRow` 45, taking the old
+`ChoiceRow` and `Hairline` with it; `GroupHeader` and `GroupHeaderText` 48;
+`Aside` 14; `Avatar` with `initialsOf` and its thirteen tests; the four buttons
+176 sites across 60 files; the chips, where the selectable one had to be written;
+the fields 78 sites, onto Material's `OutlinedTextField`; the folds, 23 across
+20 screens, D185; `SectionScaffold` 29 screens onto `Page`; `FormHeader` 14
+forms onto `Page` with a band; `Waiting` and three files nothing called;
+`ToggleRow` onto a written `SwitchRow`.
+
+**What the sweep found that the source could not.** After the eleventh pass the
+app was seeded and walked on the phone, rule 21. `DenseRow` set its trailing
+value in the quiet ink at body size and `ListRow` sets it in mono: right for
+"500 mg", wrong for "August 18, 2026 at 10:15 AM". Every appointment row was
+giving half its width to a date that broke mid-phrase. The row absorbs it now.
+**One defect per batch, invisible in the diff and obvious in the capture**, is
+the rate this session ran at.
+
+**What was decided rather than asked**, all under rule 10 and all in D194: one
+supporting line under a field and a warning takes the line from the example; a
+form's cancel action goes when the page's back arrow arrives; `FieldRow` is
+deleted because a field sits on the canvas; a row's long value is a line of its
+own.
+
+**Verification.** 218 unit tests and 29 checks green after every pass. Lint
+green. The instrumented suite was run at the end of the session against the
+whole batch rather than after each pass, because it uninstalls the app and
+takes the phone for an hour.
+
+**What this left for the next session**, in order: Today, which D191 says is
+rewritten whole rather than edited; the spine onto `Road` and `Stop`; the tail
+of `ui/components`, which is twenty small files plus three that are
+infrastructure rather than drawing; and `Dictate`, which is blocked on fetching
+the Material mic symbol because this app authors no glyphs.
