@@ -49,6 +49,15 @@ fun FieldBlock(
     modifier: Modifier = Modifier,
     /** The ink the label takes, where a form belongs to a section. */
     labelColor: Color = HealthTrail.colors.ink2,
+    /**
+     * One line under the label, saying what the group is for.
+     *
+     * **This is where "none of this is needed to save" goes**, which is what
+     * the old disclosure said as it hid the fields. Rule 13: the sentence is
+     * what makes a group an invitation rather than a queue of things somebody
+     * has not done yet, and it stays whether or not the fields are filled in.
+     */
+    aside: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
@@ -56,6 +65,8 @@ fun FieldBlock(
         verticalArrangement = Arrangement.spacedBy(Space.withinGroup),
     ) {
         Eyebrow(text = label, color = labelColor)
+        // bidi-ok: the app's own sentence about what this group is for.
+        aside?.let { Body(text = it, style = HealthTrail.type.support) }
         content()
     }
 }

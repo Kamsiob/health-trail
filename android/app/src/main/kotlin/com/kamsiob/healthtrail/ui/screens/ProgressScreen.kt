@@ -27,7 +27,6 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChartCard
 import com.kamsiob.healthtrail.ui.components.ChartHeight
-import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -35,6 +34,7 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.components.chartPoints
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -112,7 +112,6 @@ fun ProgressScreen(
 
     var chosen by rememberSaveable { mutableStateOf<String?>(null) }
     val hero = ordered.firstOrNull { it.id == chosen } ?: ordered.firstOrNull()
-    var everyReading by rememberSaveable { mutableStateOf(false) }
 
     SectionScaffold(
         name = ProgressTags.NAME,
@@ -214,10 +213,7 @@ fun ProgressScreen(
                             title = Bidi.isolate(measure.name),
                             value = latestOf(strings, measure, forMeasure, brief = true)
                                 ?: strings("progress.readings", "count" to 0),
-                            onClick = {
-                                chosen = measure.id
-                                everyReading = false
-                            },
+                            onClick = { chosen = measure.id },
                             modifier = Modifier.testTag(ProgressTags.measure(measure.id)),
                         )
                         if (index < others.size - 1) RowDivider(inset = false)
@@ -230,28 +226,21 @@ fun ProgressScreen(
         // Every reading for what is on screen, folded and counted, because the
         // chart says shape and the list says what was actually written down.
         item(key = "every") {
-            FoldRow(
-                labelKey = "progress.every",
-                expanded = everyReading,
-                onToggle = { everyReading = !everyReading },
-                count = heroReadings.size.toString(),
-            )
+            Eyebrow(text = Bidi.join(strings["progress.every"], heroReadings.size.toString()))
             Spacer(Modifier.height(Space.cardGap))
         }
 
-        if (everyReading) {
-            // Newest first here, unlike the plot. A list of what happened reads
-            // most recent first everywhere else in this app, and a chart reads
-            // left to right in time. They are two different jobs.
-            for (reading in heroReadings.reversed()) {
-                item(key = reading.id) {
-                    ReadingRow(
-                        reading = reading,
-                        measure = hero,
-                        onCorrect = { onCorrectReading(reading) },
-                    )
-                    Spacer(Modifier.height(Space.cardGap))
-                }
+        // Newest first here, unlike the plot. A list of what happened reads
+        // most recent first everywhere else in this app, and a chart reads
+        // left to right in time. They are two different jobs.
+        for (reading in heroReadings.reversed()) {
+            item(key = reading.id) {
+                ReadingRow(
+                    reading = reading,
+                    measure = hero,
+                    onCorrect = { onCorrectReading(reading) },
+                )
+                Spacer(Modifier.height(Space.cardGap))
             }
         }
 

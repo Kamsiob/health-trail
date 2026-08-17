@@ -25,7 +25,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
 import com.kamsiob.healthtrail.ui.components.Symbols
@@ -130,7 +129,6 @@ fun StartProjectScreen(
     val colors = HealthTrail.colors
 
     var query by rememberSaveable { mutableStateOf("") }
-    var openCategories by rememberSaveable { mutableStateOf(emptySet<String>()) }
 
     val term = query.trim().lowercase()
     val matching = remember(templates, term) {
@@ -276,34 +274,23 @@ fun StartProjectScreen(
                     CATEGORY_ORDER.forEach { key ->
                         val inCategory = byCategory[key].orEmpty()
                         if (inCategory.isEmpty()) return@forEach
-                        val leads = own.isEmpty() && key == leadCategory
-                        val open = leads || key in openCategories
-
                         item(key = "cat_$key") {
-                            if (leads) {
-                                Eyebrow(text = strings["projects.category.$key"], fixed = false)
-                                Spacer(Modifier.height(Space.headerGap))
-                            } else {
-                                FoldRowText(
-                                    label = strings["projects.category.$key"],
-                                    expanded = open,
-                                    onToggle = {
-                                        openCategories = if (key in openCategories) {
-                                            openCategories - key
-                                        } else {
-                                            openCategories + key
-                                        }
-                                    },
-                                    count = inCategory.size.toString(),
-                                    modifier = Modifier.testTag(StartProjectTags.category(key)),
-                                )
-                                Spacer(Modifier.height(Space.cardGap))
-                            }
-
-                            if (open) {
-                                Templates(templates = inCategory, onChoose = onChoose)
-                                Spacer(Modifier.height(Space.sectionGap))
-                            }
+                            // **Every category is open, and the label is what
+                            // tells them apart.** D185: somebody choosing a
+                            // template is comparing them, and a comparison
+                            // behind eight taps is not one. The count says how
+                            // many are under each name.
+                            Eyebrow(
+                                text = Bidi.join(
+                                    strings["projects.category.$key"],
+                                    inCategory.size.toString(),
+                                ),
+                                modifier = Modifier.testTag(StartProjectTags.category(key)),
+                                fixed = false,
+                            )
+                            Spacer(Modifier.height(Space.headerGap))
+                            Templates(templates = inCategory, onChoose = onChoose)
+                            Spacer(Modifier.height(Space.sectionGap))
                         }
                     }
                 }

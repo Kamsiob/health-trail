@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import com.kamsiob.healthtrail.ui.components.fabSafeActionBar
 import com.kamsiob.healthtrail.ui.components.fabScrollClearance
-import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
 import com.kamsiob.healthtrail.ui.components.RoadStrip
@@ -38,6 +37,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 
 object ProjectTags {
     const val ROOT = "projects_root"
@@ -94,7 +94,6 @@ fun ProjectsScreen(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    var finishedOpen by rememberSaveable { mutableStateOf(false) }
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
         LazyColumn(
@@ -212,26 +211,18 @@ fun ProjectsScreen(
 
             if (finished.isNotEmpty()) {
                 item {
-                    FoldRow(
-                        labelKey = "projects.finished",
-                        expanded = finishedOpen,
-                        onToggle = { finishedOpen = !finishedOpen },
-                        count = finished.size.toString(),
-                        modifier = Modifier.testTag(ProjectTags.FINISHED_FOLD),
-                    )
+                    Eyebrow(text = Bidi.join(strings["projects.finished"], finished.size.toString()), modifier = Modifier.testTag(ProjectTags.FINISHED_FOLD))
                     Spacer(Modifier.height(Space.cardGap))
                 }
-                if (finishedOpen) {
-                    for (project in finished) {
-                        item(key = project.id) {
-                            ProjectRow(
-                                project = project,
-                                card = cards[project.id],
-                                countdown = countdown(project),
-                                onOpen = { onOpen(project) },
-                            )
-                            Spacer(Modifier.height(Space.cardGap))
-                        }
+                for (project in finished) {
+                    item(key = project.id) {
+                        ProjectRow(
+                            project = project,
+                            card = cards[project.id],
+                            countdown = countdown(project),
+                            onOpen = { onOpen(project) },
+                        )
+                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
             }

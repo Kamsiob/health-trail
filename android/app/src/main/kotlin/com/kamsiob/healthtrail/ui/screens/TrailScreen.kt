@@ -41,7 +41,6 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
 import com.kamsiob.healthtrail.ui.components.EdgeScrubber
-import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.PinMark
 import com.kamsiob.healthtrail.ui.components.PinnedGroupText
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -168,8 +167,6 @@ fun TrailScreen(
     }
 
     var query by rememberSaveable { mutableStateOf("") }
-    var openMonths by rememberSaveable { mutableStateOf(emptySet<String>()) }
-    var earlierOpen by rememberSaveable { mutableStateOf(false) }
     // Which month the scrubber asked for, held until the plan that contains it
     // has been built. A scrub can open several folds, and the row it wants does
     // not exist in the list until the next composition.
@@ -211,14 +208,12 @@ fun TrailScreen(
             .map { (key, kinds) -> key to kinds.toSet() }
     }
 
-    val plan = remember(entries, strings, zone, query, kinds, openMonths, earlierOpen) {
+    val plan = remember(entries, strings, zone, query, kinds) {
         planTrail(
             entries = entries.filter { kinds.isEmpty() || it.kind in kinds },
             strings = strings,
             zone = zone,
             query = query,
-            openMonths = openMonths,
-            earlierOpen = earlierOpen,
         )
     }
 
@@ -282,11 +277,9 @@ fun TrailScreen(
                     currentIndex = currentYear,
                     onScrub = { index ->
                         val year = plan.years.getOrNull(index) ?: return@EdgeScrubber
-                        // **Scrubbing opens what it lands in.** Dropping somebody
-                        // onto a closed fold for the year they asked for would be
-                        // the app hearing the request and answering with a door.
-                        openMonths = openMonths + year.months
-                        earlierOpen = true
+                        // **Scrubbing scrolls, and there is nothing to open.**
+                        // Every month is on the list now, so the year somebody
+                        // asked for is a position rather than a door. D185.
                         scrollWanted = year.firstMonth
                     },
                     description = strings["trail.scrubber"],
@@ -478,21 +471,6 @@ fun TrailScreen(
                     )
                 }
 
-                is TrailRowSpec.Fold -> item(key = "fold_${row.label}") {
-                    FoldRowText(
-                        // bidi-ok: the app formats this itself, so it is never somebody's own words.
-                        label = row.label,
-                        expanded = false,
-                        onToggle = {
-                            if (row.isEarlier) earlierOpen = true
-                            else openMonths = openMonths + row.label
-                        },
-                        count = row.count.toString(),
-                        modifier = Modifier.testTag(TrailTags.month(row.label)),
-                    )
-                    Spacer(Modifier.height(Space.cardGap))
-                }
-
                 is TrailRowSpec.Entry -> item(key = row.entry.id) {
                     RouteRow(
                         draw = draw,
@@ -549,7 +527,6 @@ private const val MIN_SCRUB_YEARS = 2
  * months is a wall of doors, and a person who wants March of last year reaches
  * it with the scrubber rather than by reading a list of months.
  */
-private const val NAMED_MONTHS = 3
 
 /** What the trail draws, in order, once the folding has been worked out. */
 private sealed interface TrailRowSpec {
@@ -565,9 +542,6 @@ private sealed interface TrailRowSpec {
      * door.
      */
     data class Month(val label: String, val count: Int, val firstMillis: Long?) : TrailRowSpec
-
-    /** A closed month, or the single door to everything older. */
-    data class Fold(val label: String, val count: Int, val isEarlier: Boolean) : TrailRowSpec
 
     /** One entry on the route. */
     data class Entry(
@@ -636,8 +610,6 @@ private fun planTrail(
     strings: Strings,
     zone: ZoneId,
     query: String,
-    openMonths: Set<String>,
-    earlierOpen: Boolean,
 ): TrailPlan {
     val rows = mutableListOf<TrailRowSpec>()
     val rowYears = mutableListOf<String?>()
@@ -693,29 +665,14 @@ private fun planTrail(
         for (year in years) for (label in year.months) put(label, year.label)
     }
 
-    months.forEachIndexed { monthIndex, label ->
+    // **Every month is open, and the band is the label.** D185: nothing sits
+    // behind a fold that a label and a scroll can carry, and this list is the
+    // case that proves it. It used to name three months and put five years
+    // behind a door called "Earlier", so the trail's own promise, that a year
+    // of somebody's care is one scroll, was a door. The month bands stick, the
+    // scrubber jumps by year, and a lazy list costs what is on the screen.
+    months.forEach { label ->
         val inMonth = byMonth.getValue(label)
-        // The newest month is always open. Everything else opens because the
-        // person opened it, or because the scrubber landed in it.
-        val open = monthIndex == 0 || label in openMonths
-        val beyondNamed = monthIndex > NAMED_MONTHS
-
-        if (beyondNamed && !earlierOpen) {
-            if (months.getOrNull(monthIndex - 1) != null && rows.none { it is TrailRowSpec.Fold && it.isEarlier }) {
-                val remaining = months.drop(monthIndex).sumOf { byMonth.getValue(it).size }
-                add(
-                    TrailRowSpec.Fold(strings["trail.earlier"], remaining, isEarlier = true),
-                    yearOfMonth[label],
-                )
-            }
-            return@forEachIndexed
-        }
-
-        if (!open) {
-            add(TrailRowSpec.Fold(label, inMonth.size, isEarlier = false), yearOfMonth[label])
-            return@forEachIndexed
-        }
-
         add(
             TrailRowSpec.Month(
                 label = label,

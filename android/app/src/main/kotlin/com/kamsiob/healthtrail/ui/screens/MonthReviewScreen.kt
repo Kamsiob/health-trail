@@ -20,7 +20,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.Hero
 import com.kamsiob.healthtrail.ui.components.HeroLine
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -107,8 +106,6 @@ fun MonthReviewScreen(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-
-    var entriesOpen by rememberSaveable { mutableStateOf(false) }
     val month = EventDateText.monthHeading(strings, review.monthStart, zone)
 
     SectionScaffold(
@@ -285,34 +282,26 @@ fun MonthReviewScreen(
         // it, which is what a fold is for.
         if (review.entries.isNotEmpty()) {
             item(key = "entries_fold") {
-                FoldRow(
-                    labelKey = "review.entries",
-                    expanded = entriesOpen,
-                    onToggle = { entriesOpen = !entriesOpen },
-                    count = review.entries.size.toString(),
-                    modifier = Modifier.testTag(ReviewTags.ENTRIES_FOLD),
-                )
+                Eyebrow(text = Bidi.join(strings["review.entries"], review.entries.size.toString()), modifier = Modifier.testTag(ReviewTags.ENTRIES_FOLD))
                 Spacer(Modifier.height(Space.cardGap))
             }
 
-            if (entriesOpen) {
-                // On the trail's own spine, so a month opened from the trail
-                // still looks like the trail rather than like a second answer
-                // to the same shape. `DESIGN.md` section 7's "a spine for
-                // anything sequential."
-                review.entries.forEachIndexed { index, entry ->
-                    item(key = "e_${entry.id}") {
-                        SpineRow(
-                            continuesAbove = index > 0,
-                            continuesBelow = index < review.entries.lastIndex,
-                            node = colors.gold,
-                            routeColor = colors.gold,
-                            dash = RouteDash.TRAIL,
-                        ) {
-                            Column {
-                                EntryLine(entry = entry, onOpen = { onOpenEntry(entry) })
-                                Spacer(Modifier.height(Space.cardGap))
-                            }
+            // On the trail's own spine, so a month opened from the trail
+            // still looks like the trail rather than like a second answer
+            // to the same shape. `DESIGN.md` section 7's "a spine for
+            // anything sequential."
+            review.entries.forEachIndexed { index, entry ->
+                item(key = "e_${entry.id}") {
+                    SpineRow(
+                        continuesAbove = index > 0,
+                        continuesBelow = index < review.entries.lastIndex,
+                        node = colors.gold,
+                        routeColor = colors.gold,
+                        dash = RouteDash.TRAIL,
+                    ) {
+                        Column {
+                            EntryLine(entry = entry, onOpen = { onOpenEntry(entry) })
+                            Spacer(Modifier.height(Space.cardGap))
                         }
                     }
                 }

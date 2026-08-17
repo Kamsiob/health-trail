@@ -32,7 +32,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.Disclosure
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -49,6 +48,7 @@ import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 
 object AddPersonTags {
     const val EMAIL = "add_person_email"
@@ -356,9 +356,14 @@ fun AddPersonScreen(
                 // whole point of `startOpen`: a form correcting a saved record
                 // must not fold away words somebody typed last week behind a
                 // control that reads "Add more".
-                Disclosure(
-                    testTag = AddPersonTags.MORE,
-                    startOpen = where.isNotBlank() || notes.isNotBlank(),
+                // **The rest of the form is a group with a label, not a fold.**
+                // D185: nothing sits behind a fold that a label and a scroll can
+                // carry, and the sentence that used to explain the fold is the
+                // group's own line now. Nothing here was ever required.
+                FieldBlock(
+                    label = strings["capture.more"],
+                    aside = strings["capture.more.aside"],
+                    modifier = Modifier.testTag(AddPersonTags.MORE),
                 ) {
                 // **Fields sit on the canvas, never in a block.** A field is
                 // already a container with its own outline and its own label, so a

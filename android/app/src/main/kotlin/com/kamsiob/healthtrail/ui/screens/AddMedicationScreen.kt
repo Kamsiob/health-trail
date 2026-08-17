@@ -25,7 +25,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.ToggleRow
-import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -36,6 +35,7 @@ import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 
 object AddMedTags {
     const val ROOT = "add_med_root"
@@ -214,9 +214,14 @@ fun AddMedicationScreen(
                 // matter are the name and what she actually takes. Neither of
                 // these is ever required, and the disclosure opens by itself
                 // when one of them already says something.
-                Disclosure(
-                    testTag = AddMedTags.MORE,
-                    startOpen = draft.purpose.isNotBlank() || draft.notes.isNotBlank(),
+                // **The rest of the form is a group with a label, not a fold.**
+                // D185: nothing sits behind a fold that a label and a scroll can
+                // carry, and the sentence that used to explain the fold is the
+                // group's own line now. Nothing here was ever required.
+                FieldBlock(
+                    label = strings["capture.more"],
+                    aside = strings["capture.more.aside"],
+                    modifier = Modifier.testTag(AddMedTags.MORE),
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         DictatableField(

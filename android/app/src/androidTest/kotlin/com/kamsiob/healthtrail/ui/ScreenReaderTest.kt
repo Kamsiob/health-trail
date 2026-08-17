@@ -593,7 +593,7 @@ class ScreenReaderTest {
                 ),
             )
         }
-        compose.onNodeWithTag(ViolationTags.ABOUT).performScrollTo().performClick()
+        compose.onNodeWithTag(ViolationTags.ABOUT).performScrollTo()
         assertEverythingIsLabeled("writing down a time it was not followed")
     }
 
@@ -2448,7 +2448,7 @@ class ScreenReaderTest {
         // Asserting on the sheet as it lands would have checked everything
         // except the card that opens an entry, which is the one control here
         // that was announcing the wrong verb until 2026-08-04.
-        compose.onNodeWithTag(PrepTags.CHANGES_FOLD).performClick()
+        compose.onNodeWithTag(PrepTags.CHANGES_FOLD).performScrollTo()
         assertEverythingIsLabeled("a prep sheet")
     }
 
@@ -2610,7 +2610,7 @@ class ScreenReaderTest {
         // Asserting on the screen as it lands would check the step that is
         // still to do and never the one behind the fold, and putting a step
         // back is as ordinary as marking it done.
-        compose.onNodeWithTag(ProjectDetailTags.DONE_FOLD).performClick()
+        compose.onNodeWithTag(ProjectDetailTags.DONE_FOLD).performScrollTo()
         assertEverythingIsLabeled("a project")
     }
 

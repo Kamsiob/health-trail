@@ -43,7 +43,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
-import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
@@ -113,7 +112,6 @@ fun UnfiledTrayScreen(
     // stored state: it is about this sitting, and it must not become a quiet
     // second inbox the record knows about.
     var passed by rememberSaveable { mutableStateOf(emptySet<String>()) }
-    var behindOpen by rememberSaveable { mutableStateOf(false) }
     val colors = HealthTrail.colors
 
     Surface(
@@ -232,50 +230,43 @@ fun UnfiledTrayScreen(
                 val behind = entries.filter { it.id != current?.id }
                 if (behind.isNotEmpty()) {
                     item(key = "behind") {
-                        FoldRow(
-                            labelKey = "unfiled.behind",
-                            expanded = behindOpen,
-                            onToggle = { behindOpen = !behindOpen },
-                            count = behind.size.toString(),
-                        )
+                        Eyebrow(text = Bidi.join(strings["unfiled.behind"], behind.size.toString()))
                         Spacer(Modifier.height(Space.cardGap))
                     }
 
-                    if (behindOpen) {
-                        item(key = "behind_list") {
-                            Block(padding = Space.none) {
-                                behind.forEachIndexed { index, entry ->
-                                    ListRow(
-                                        title = Bidi.isolate(
-                                            entry.title?.takeIf { it.isNotBlank() }
-                                                ?: strings[kindKey(entry.kind)],
-                                        ),
-                                        value = EventDateText.render(
-                                            strings, entry.occurredEdtf,
-                                        ),
-                                        // Tapping one brings it to the front,
-                                        // which is the only thing this list can
-                                        // usefully do: it is a queue, and the
-                                        // person is choosing what to answer next.
-                                        // **Brings this one to the front.** The
-                                        // list is a queue and the only useful
-                                        // thing a person can do with it is
-                                        // choose what to answer next, so
-                                        // everything currently ahead of it steps
-                                        // aside and it is no longer passed over.
-                                        onClick = {
-                                            passed = entries
-                                                .map { it.id }
-                                                .filterNot { it == entry.id }
-                                                .toSet()
-                                        },
-                                        modifier = Modifier.testTag(UnfiledTags.behind(entry.id)),
-                                    )
-                                    if (index < behind.size - 1) RowDivider(inset = false)
-                                }
+                    item(key = "behind_list") {
+                        Block(padding = Space.none) {
+                            behind.forEachIndexed { index, entry ->
+                                ListRow(
+                                    title = Bidi.isolate(
+                                        entry.title?.takeIf { it.isNotBlank() }
+                                            ?: strings[kindKey(entry.kind)],
+                                    ),
+                                    value = EventDateText.render(
+                                        strings, entry.occurredEdtf,
+                                    ),
+                                    // Tapping one brings it to the front,
+                                    // which is the only thing this list can
+                                    // usefully do: it is a queue, and the
+                                    // person is choosing what to answer next.
+                                    // **Brings this one to the front.** The
+                                    // list is a queue and the only useful
+                                    // thing a person can do with it is
+                                    // choose what to answer next, so
+                                    // everything currently ahead of it steps
+                                    // aside and it is no longer passed over.
+                                    onClick = {
+                                        passed = entries
+                                            .map { it.id }
+                                            .filterNot { it == entry.id }
+                                            .toSet()
+                                    },
+                                    modifier = Modifier.testTag(UnfiledTags.behind(entry.id)),
+                                )
+                                if (index < behind.size - 1) RowDivider(inset = false)
                             }
-                            Spacer(Modifier.height(Space.cardGap))
                         }
+                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
 

@@ -3,17 +3,21 @@ package com.kamsiob.healthtrail.ui
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
+import com.kamsiob.healthtrail.ui.screens.AddDocTags
 import com.kamsiob.healthtrail.ui.screens.AddDocumentScreen
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import java.util.Locale
@@ -116,17 +120,18 @@ class AddDocumentScreenTest {
     }
 
     /**
-     * **The folder and the note are behind "Add more"**, and nothing there is
-     * ever required. `Disclosure` says so once in the aside.
+     * **The folder and the note are a named group, not a fold.** D185: nothing
+     * sits behind a fold that a label and a scroll can carry, and the line
+     * under the label still says none of it is needed to save.
      */
     @Test
-    fun theFolderAndTheNoteWaitBehindAddMore() {
+    fun theFolderAndTheNoteAreUnderTheirOwnLabel() {
         show()
         compose.onNodeWithText(strings["capture.skip"]).performClick()
         compose.onNodeWithText(strings["capture.skip"]).performClick()
 
-        compose.onNodeWithText(strings["docs.folder"]).assertDoesNotExist()
-        compose.onNodeWithText(strings["capture.more"]).performClick()
+        compose.onNodeWithTag(AddDocTags.ROOT)
+            .performScrollToNode(hasText(strings["docs.folder"]))
         compose.onNodeWithText(strings["docs.folder"]).assertIsDisplayed()
     }
 
@@ -170,16 +175,16 @@ class AddDocumentScreenTest {
     }
 
     /**
-     * **A disclosure never hides what is already written.** Folding a note
-     * somebody typed last week behind a control that offers to add more would
-     * be the app hiding their own words from them.
+     * **A correction shows what is already written.** This used to be about a
+     * fold opening itself over a saved note; there is no fold now, and the
+     * property it was protecting is the one that matters: somebody's own words
+     * are on the screen when they come back to them. D185.
      */
     @Test
-    fun aCorrectionOpensTheDisclosureOverWhatIsAlreadyThere() {
+    fun aCorrectionShowsWhatIsAlreadyThere() {
         show(existing = saved)
         compose.onNodeWithText(strings["docs.folder"]).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Ask about the follow up").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText(strings["capture.more"]).assertDoesNotExist()
     }
 
     /**

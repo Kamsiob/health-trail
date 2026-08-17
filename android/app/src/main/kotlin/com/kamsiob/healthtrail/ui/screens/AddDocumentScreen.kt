@@ -51,7 +51,6 @@ import com.kamsiob.healthtrail.ui.components.FormHeader
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.CARD_SIZE
 import com.kamsiob.healthtrail.ui.components.IconTile
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
@@ -71,6 +70,7 @@ import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 
 object AddDocTags {
     const val ROOT = "add_doc_root"
@@ -506,11 +506,14 @@ fun AddDocumentScreen(
                 // the capture form's third stage already does. A folder and a
                 // note are what somebody adds when they are sitting down, and
                 // this form is used standing up with a letter in one hand.
-                Disclosure(
-                    testTag = AddDocTags.MORE,
-                    // A correction shows what is already written rather than
-                    // folding the person's own note behind "Add more".
-                    startOpen = existing != null,
+                // **The rest of the form is a group with a label, not a fold.**
+                // D185: nothing sits behind a fold that a label and a scroll can
+                // carry, and the sentence that used to explain the fold is the
+                // group's own line now. Nothing here was ever required.
+                FieldBlock(
+                    label = strings["capture.more"],
+                    aside = strings["capture.more.aside"],
+                    modifier = Modifier.testTag(AddDocTags.MORE),
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
 

@@ -22,7 +22,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.i18n.Strings
-import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -92,9 +91,6 @@ fun TemplateLibraryScreen(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-
-    var openCategories by rememberSaveable { mutableStateOf(emptySet<String>()) }
-    var unusedOwnOpen by rememberSaveable { mutableStateOf(false) }
 
     fun startedFrom(templateId: String) = projects.filter { it.templateId == templateId }
 
@@ -178,28 +174,20 @@ fun TemplateLibraryScreen(
             item(key = "own_unused") {
                 Eyebrow(text = strings["library.own"])
                 Spacer(Modifier.height(Space.headerGap))
-                FoldRowText(
-                    label = strings["library.unused"],
-                    expanded = unusedOwnOpen,
-                    onToggle = { unusedOwnOpen = !unusedOwnOpen },
-                    count = ownUnused.size.toString(),
-                    modifier = Modifier.testTag(LibraryTags.category("own")),
-                )
+                Eyebrow(text = Bidi.join(strings["library.unused"], ownUnused.size.toString()), modifier = Modifier.testTag(LibraryTags.category("own")), fixed = false)
                 Spacer(Modifier.height(Space.cardGap))
-                if (unusedOwnOpen) {
-                    Block(padding = Space.none) {
-                        ownUnused.forEachIndexed { index, template ->
-                            ListRow(
-                                title = Bidi.isolate(template.name),
-                                support = ownProvenance(template, strings),
-                                value = strings(
-                                    "projects.step_count",
-                                    "count" to template.steps.size,
-                                ),
-                                modifier = Modifier.testTag(LibraryTags.own(template.id)),
-                            )
-                            if (index < ownUnused.lastIndex) RowDivider(inset = false)
-                        }
+                Block(padding = Space.none) {
+                    ownUnused.forEachIndexed { index, template ->
+                        ListRow(
+                            title = Bidi.isolate(template.name),
+                            support = ownProvenance(template, strings),
+                            value = strings(
+                                "projects.step_count",
+                                "count" to template.steps.size,
+                            ),
+                            modifier = Modifier.testTag(LibraryTags.own(template.id)),
+                        )
+                        if (index < ownUnused.lastIndex) RowDivider(inset = false)
                     }
                 }
                 Spacer(Modifier.height(Space.sectionGap))
@@ -217,21 +205,16 @@ fun TemplateLibraryScreen(
             val inCategory = shippedUnused.filter { it.category == key }
             if (inCategory.isEmpty()) return@forEach
             item(key = "cat_$key") {
-                FoldRowText(
-                    label = strings["projects.category.$key"],
-                    expanded = key in openCategories,
-                    onToggle = {
-                        openCategories = if (key in openCategories) {
-                            openCategories - key
-                        } else {
-                            openCategories + key
-                        }
-                    },
-                    count = inCategory.size.toString(),
+                Eyebrow(
+                    text = Bidi.join(
+                        strings["projects.category.$key"],
+                        inCategory.size.toString(),
+                    ),
                     modifier = Modifier.testTag(LibraryTags.category(key)),
+                    fixed = false,
                 )
                 Spacer(Modifier.height(Space.cardGap))
-                if (key in openCategories) {
+                run {
                     Block(padding = Space.none) {
                         inCategory.forEachIndexed { index, template ->
                             // **No chevron and no handler.** These have started

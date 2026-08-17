@@ -187,7 +187,8 @@ class MedicationQuestionJourneyTest {
                 compose.waitForIdle()
             }
         }
-        compose.onNodeWithTag(CaptureFormTags.MORE).performScrollTo().performClick()
+        // The rest of the form is a labeled group now, D185, so there is
+        // nothing to open: scrolling is what reaches it.
 
         // **And the full set when the chip is not among the five**, which is
         // the other half of 5.11.1 and is the ordinary case for somebody on

@@ -24,7 +24,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Avatar
-import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -88,7 +87,6 @@ fun EmergencyCardScreen(
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
-    var medsOpen by rememberSaveable { mutableStateOf(false) }
 
     SectionScaffold(
         name = EmergencyTags.NAME,
@@ -179,45 +177,30 @@ fun EmergencyCardScreen(
             // comes from, because a medication puts itself here through its
             // own flag and somebody correcting it should know where to go.
             item {
-                FoldRow(
-                    labelKey = "emergency.group.meds",
-                    expanded = medsOpen,
-                    onToggle = { medsOpen = !medsOpen },
-                    // **The count is a quantity and nothing else.** The grid
-                    // writes "3 · from Medications" in this slot; in this app
-                    // the pill is mono, tabular and round, and a phrase in it
-                    // wraps to three lines and gets clipped by its own shape
-                    // at font scale 2.0. Seen on the phone rather than
-                    // reasoned about. Where the list comes from is said in the
-                    // group instead. `DESIGN.md` 15.1.
-                    count = medications.size.toString(),
-                    modifier = Modifier.testTag(EmergencyTags.MEDS_FOLD),
-                )
+                Eyebrow(text = Bidi.join(strings["emergency.group.meds"], medications.size.toString()), modifier = Modifier.testTag(EmergencyTags.MEDS_FOLD))
                 Spacer(Modifier.height(Space.cardGap))
             }
-            if (medsOpen) {
-                item {
-                    // **Where the list comes from, said once, when it is
-                    // open.** A medication puts itself on this card through
-                    // its own flag, so somebody correcting one needs to know
-                    // where to go, and the fold's own label is not the place
-                    // for a sentence.
-                    Text(
-                        text = strings["emergency.meds.source"],
-                        style = HealthTrail.type.bodyS,
-                        color = HealthTrail.colors.ink2,
-                        modifier = Modifier.padding(bottom = Space.xs),
-                    )
-                    Block(padding = Space.none) {
-                        medications.forEachIndexed { index, medication ->
-                            MedicationCardRow(
-                                medication = medication,
-                                isLast = index == medications.lastIndex,
-                            )
-                        }
+            item {
+                // **Where the list comes from, said once, when it is
+                // open.** A medication puts itself on this card through
+                // its own flag, so somebody correcting one needs to know
+                // where to go, and the fold's own label is not the place
+                // for a sentence.
+                Text(
+                    text = strings["emergency.meds.source"],
+                    style = HealthTrail.type.bodyS,
+                    color = HealthTrail.colors.ink2,
+                    modifier = Modifier.padding(bottom = Space.xs),
+                )
+                Block(padding = Space.none) {
+                    medications.forEachIndexed { index, medication ->
+                        MedicationCardRow(
+                            medication = medication,
+                            isLast = index == medications.lastIndex,
+                        )
                     }
-                    Spacer(Modifier.height(Space.s))
                 }
+                Spacer(Modifier.height(Space.s))
             }
         }
 

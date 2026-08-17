@@ -97,17 +97,21 @@ class StartProjectScreenTest {
         compose.onNodeWithTag(StartProjectTags.category("challenge")).assertIsDisplayed()
     }
 
+    /**
+     * **Every category is named, and none of them hides anything.** D185 took
+     * the folds out: the label and the count say what is under each one and
+     * the scroll does the rest, so somebody comparing templates is comparing
+     * them rather than opening eight doors.
+     */
     @Test
-    fun theLeadingCategoryHasNoFoldBecauseItIsAlreadyOpen() {
+    fun everyCategoryIsNamedAndOpen() {
         show()
-        compose.onNodeWithTag(StartProjectTags.category("paying")).assertDoesNotExist()
+        compose.onNodeWithTag(StartProjectTags.category("paying")).assertIsDisplayed()
     }
 
     @Test
-    fun aFoldedCategoryOpensAndShowsItsTemplates() {
+    fun aCategoryFurtherDownIsThereForTheScrolling() {
         show()
-        compose.onNodeWithTag(StartProjectTags.template("records_request")).assertDoesNotExist()
-        compose.onNodeWithTag(StartProjectTags.category("papers")).performClick()
         // **Scrolled to, because the rows are taller than they were.** D183
         // gave every row the drawing's 13dp of air and raised the display end
         // of the ladder, so the template that used to open into the viewport
@@ -120,13 +124,12 @@ class StartProjectScreenTest {
     }
 
     @Test
-    fun theirOwnLeadAndEveryCategoryFoldsBehindThem() {
+    fun theirOwnLeadsAndTheCategoriesFollowIt() {
         show(own = listOf(ownTemplate("mine", "The one I wrote")))
         compose.onNodeWithTag(StartProjectTags.ownTemplate("mine")).assertIsDisplayed()
-        // With something of their own at the top, nothing else is open: the
-        // first category becomes a fold like the rest.
+        // What they wrote leads, and the shipped categories are still named
+        // under it rather than hidden behind it.
         compose.onNodeWithTag(StartProjectTags.category("paying")).assertIsDisplayed()
-        compose.onNodeWithTag(StartProjectTags.template("medicaid_ltc")).assertDoesNotExist()
     }
 
     @Test
@@ -140,7 +143,7 @@ class StartProjectScreenTest {
     }
 
     @Test
-    fun searchFlattensSoTheAnswerIsNotBehindAFold() {
+    fun searchFlattensSoOnlyWhatMatchedIsLeft() {
         show()
         compose.onNodeWithTag(StartProjectTags.SEARCH).performTextInput("records")
         compose.onNodeWithTag(StartProjectTags.category("papers")).assertDoesNotExist()

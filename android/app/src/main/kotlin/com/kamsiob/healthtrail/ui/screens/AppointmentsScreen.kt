@@ -27,6 +27,7 @@ import com.kamsiob.healthtrail.ui.components.ViewToggle
 import com.kamsiob.healthtrail.ui.components.rememberViewChoice
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.Instant
@@ -34,7 +35,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.temporal.WeekFields
-import com.kamsiob.healthtrail.ui.components.FoldRow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -121,8 +121,6 @@ fun AppointmentsScreen(
         it.scheduledStart != null && it.scheduledStart < todayMillis
     }
 
-    var pastOpen by rememberSaveable { mutableStateOf(false) }
-
     SectionScaffold(
         name = ApptTags.NAME,
         title = strings["notebook.section.appointments"],
@@ -206,31 +204,23 @@ fun AppointmentsScreen(
 
         if (past.isNotEmpty()) {
             item {
-                FoldRow(
-                    labelKey = "appts.group.past",
-                    expanded = pastOpen,
-                    onToggle = { pastOpen = !pastOpen },
-                    count = past.size.toString(),
-                    modifier = Modifier.testTag(ApptTags.PAST_FOLD),
-                )
+                Eyebrow(text = Bidi.join(strings["appts.group.past"], past.size.toString()), modifier = Modifier.testTag(ApptTags.PAST_FOLD))
                 Spacer(Modifier.height(Space.cardGap))
             }
-            if (pastOpen) {
-                item {
-                    Block(padding = Space.none) {
-                        // Most recent first, which is the reverse of upcoming
-                        // and is what somebody looking back actually wants.
-                        val recent = past.reversed()
-                        recent.forEachIndexed { index, appointment ->
-                            AppointmentRow(
-                                appointment = appointment,
-                                onOpen = { onOpen(appointment) },
-                                isLast = index == recent.lastIndex,
-                            )
-                        }
+            item {
+                Block(padding = Space.none) {
+                    // Most recent first, which is the reverse of upcoming
+                    // and is what somebody looking back actually wants.
+                    val recent = past.reversed()
+                    recent.forEachIndexed { index, appointment ->
+                        AppointmentRow(
+                            appointment = appointment,
+                            onOpen = { onOpen(appointment) },
+                            isLast = index == recent.lastIndex,
+                        )
                     }
-                    Spacer(Modifier.height(Space.cardGap))
                 }
+                Spacer(Modifier.height(Space.cardGap))
             }
         }
 

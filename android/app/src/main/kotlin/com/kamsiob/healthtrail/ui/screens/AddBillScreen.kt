@@ -25,7 +25,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -39,6 +38,7 @@ import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 
 object AddBillTags {
     const val ROOT = "add_bill_root"
@@ -170,9 +170,14 @@ fun AddBillScreen(
                 // screen somebody opens holding an envelope: what it is, how
                 // much, and where it stands are the bill, and the rest is what
                 // gets added later when somebody rings about it.
-                Disclosure(
-                    testTag = AddBillTags.MORE,
-                    startOpen = draft.notes.isNotBlank(),
+                // **The rest of the form is a group with a label, not a fold.**
+                // D185: nothing sits behind a fold that a label and a scroll can
+                // carry, and the sentence that used to explain the fold is the
+                // group's own line now. Nothing here was ever required.
+                FieldBlock(
+                    label = strings["capture.more"],
+                    aside = strings["capture.more.aside"],
+                    modifier = Modifier.testTag(AddBillTags.MORE),
                 ) {
                     DictatableField(
                         label = strings["appts.notes"],

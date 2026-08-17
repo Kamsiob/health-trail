@@ -273,7 +273,7 @@ class InstructionViolationTest {
         var saved: ViolationDraft? = null
         showForm(onSave = { saved = it })
 
-        compose.onNodeWithTag(ViolationTags.ABOUT).performScrollTo().performClick()
+        compose.onNodeWithTag(ViolationTags.ABOUT).performScrollTo()
         compose.onNodeWithTag(ViolationTags.incident(fall.id)).performScrollTo().performClick()
         compose.onNodeWithTag(ViolationTags.bill(ambulance.id)).performScrollTo().performClick()
         compose.onNodeWithTag(ViolationTags.SAVE).performScrollTo().performClick()
@@ -292,7 +292,7 @@ class InstructionViolationTest {
         var saved: ViolationDraft? = null
         showForm(onSave = { saved = it })
 
-        compose.onNodeWithTag(ViolationTags.ABOUT).performScrollTo().performClick()
+        compose.onNodeWithTag(ViolationTags.ABOUT).performScrollTo()
         compose.onNodeWithTag(ViolationTags.incident(fall.id)).performScrollTo().performClick()
         compose.onNodeWithTag(ViolationTags.incident(fall.id)).performScrollTo().performClick()
         compose.onNodeWithTag(ViolationTags.SAVE).performScrollTo().performClick()
@@ -323,7 +323,7 @@ class InstructionViolationTest {
         var saved: ViolationDraft? = null
         showForm(direction = LayoutDirection.Rtl, onSave = { saved = it })
 
-        compose.onNodeWithTag(ViolationTags.ABOUT).performScrollTo().performClick()
+        compose.onNodeWithTag(ViolationTags.ABOUT).performScrollTo()
         compose.onNodeWithTag(ViolationTags.bill(ambulance.id)).performScrollTo().performClick()
         compose.onNodeWithTag(ViolationTags.SAVE).performScrollTo().performClick()
 

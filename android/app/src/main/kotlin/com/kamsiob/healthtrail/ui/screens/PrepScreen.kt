@@ -24,8 +24,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.CalendarHandoff
-import com.kamsiob.healthtrail.ui.components.FoldRow
-import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
@@ -137,12 +135,8 @@ fun PrepScreen(
     val colors = HealthTrail.colors
     val context = LocalContext.current
     val appointment = prep.appointment
-
-    var changesOpen by rememberSaveable { mutableStateOf(false) }
     // Which folded roles are open, kept by label so it survives rotation and
     // the list being scrolled away and back.
-    var openRoles by rememberSaveable { mutableStateOf(emptySet<String>()) }
-    var askedOpen by rememberSaveable { mutableStateOf(false) }
 
     // **Resolved once and used to decide whether the action exists at all.**
     // A phone with no calendar app would otherwise get a button that throws,
@@ -272,59 +266,42 @@ fun PrepScreen(
 
                 if (!leads) {
                     item(key = "prep_fold_${role ?: "anyone"}") {
-                        FoldRowText(
-                            // The role is a word somebody typed, and it sits on
-                            // a line beside a count, so it is isolated exactly
-                            // as the heading above the leading group is.
-                            label = Bidi.isolate(label),
-                            expanded = openRoles.contains(label),
-                            onToggle = {
-                                openRoles = if (openRoles.contains(label)) {
-                                    openRoles - label
-                                } else {
-                                    openRoles + label
-                                }
-                            },
-                            count = inRole.size.toString(),
-                            modifier = Modifier.testTag(PrepTags.roleFold(label)),
-                        )
+                        Eyebrow(text = Bidi.join(Bidi.isolate(label), inRole.size.toString()), modifier = Modifier.testTag(PrepTags.roleFold(label)), fixed = false)
                         Spacer(Modifier.height(Space.cardGap))
                     }
                 }
 
-                if (leads || openRoles.contains(label)) {
-                    item(key = "prep_group_${role ?: "anyone"}") {
-                        if (leads) {
-                            Eyebrow(text = Bidi.isolate(label), fixed = false)
-                            Spacer(Modifier.height(Space.s))
-                        }
-                        Block(padding = Space.none) {
-                            inRole.forEachIndexed { row, question ->
-                                ListRow(
-                                    // The question itself carries the row,
-                                    // because it is the thing being read out
-                                    // loud. Its role is the heading above it
-                                    // and is not repeated here, per 17.
-                                    title = Bidi.isolate(question.text),
-                                    // **It opens, because this is the screen
-                                    // somebody is holding in the room.** The
-                                    // rows were the only ones on this sheet
-                                    // that did not: the changes below them
-                                    // opened all along, so half the sheet
-                                    // answered a tap and half of it did not,
-                                    // and ticking off the question just asked
-                                    // meant leaving the prep sheet and finding
-                                    // it again in Ask next time. #360.
-                                    onClick = { onOpenQuestion(question) },
-                                    clickLabel = strings["open.action"],
-                                    modifier = Modifier
-                                        .testTag(PrepTags.question(question.id)),
-                                )
-                                if (row < inRole.lastIndex) RowDivider(inset = false)
-                            }
-                        }
-                        Spacer(Modifier.height(Space.cardGap))
+                item(key = "prep_group_${role ?: "anyone"}") {
+                    if (leads) {
+                        Eyebrow(text = Bidi.isolate(label), fixed = false)
+                        Spacer(Modifier.height(Space.s))
                     }
+                    Block(padding = Space.none) {
+                        inRole.forEachIndexed { row, question ->
+                            ListRow(
+                                // The question itself carries the row,
+                                // because it is the thing being read out
+                                // loud. Its role is the heading above it
+                                // and is not repeated here, per 17.
+                                title = Bidi.isolate(question.text),
+                                // **It opens, because this is the screen
+                                // somebody is holding in the room.** The
+                                // rows were the only ones on this sheet
+                                // that did not: the changes below them
+                                // opened all along, so half the sheet
+                                // answered a tap and half of it did not,
+                                // and ticking off the question just asked
+                                // meant leaving the prep sheet and finding
+                                // it again in Ask next time. #360.
+                                onClick = { onOpenQuestion(question) },
+                                clickLabel = strings["open.action"],
+                                modifier = Modifier
+                                    .testTag(PrepTags.question(question.id)),
+                            )
+                            if (row < inRole.lastIndex) RowDivider(inset = false)
+                        }
+                    }
+                    Spacer(Modifier.height(Space.cardGap))
                 }
             }
 
@@ -346,37 +323,29 @@ fun PrepScreen(
         // draws nothing at all rather than a heading over a sentence saying so.
         if (prep.asked.isNotEmpty()) {
             item(key = "asked_here") {
-                FoldRow(
-                    labelKey = "prep.asked.here",
-                    expanded = askedOpen,
-                    onToggle = { askedOpen = !askedOpen },
-                    count = prep.asked.size.toString(),
-                    modifier = Modifier.testTag(PrepTags.ASKED_FOLD),
-                )
+                Eyebrow(text = Bidi.join(strings["prep.asked.here"], prep.asked.size.toString()), modifier = Modifier.testTag(PrepTags.ASKED_FOLD))
                 Spacer(Modifier.height(Space.cardGap))
             }
-            if (askedOpen) {
-                item(key = "asked_here_rows") {
-                    Block(padding = Space.none) {
-                        prep.asked.forEachIndexed { row, question ->
-                            ListRow(
-                                title = Bidi.isolate(question.text),
-                                // What came back, where somebody wrote it down.
-                                // Absent rather than empty when they did not:
-                                // being told nothing and not having written it
-                                // down are different things.
-                                support = question.answerText
-                                    ?.takeIf { it.isNotBlank() }
-                                    ?.let { Bidi.isolate(it) },
-                                onClick = { onOpenQuestion(question) },
-                                clickLabel = strings["open.action"],
-                                modifier = Modifier.testTag(PrepTags.asked(question.id)),
-                            )
-                            if (row < prep.asked.lastIndex) RowDivider(inset = false)
-                        }
+            item(key = "asked_here_rows") {
+                Block(padding = Space.none) {
+                    prep.asked.forEachIndexed { row, question ->
+                        ListRow(
+                            title = Bidi.isolate(question.text),
+                            // What came back, where somebody wrote it down.
+                            // Absent rather than empty when they did not:
+                            // being told nothing and not having written it
+                            // down are different things.
+                            support = question.answerText
+                                ?.takeIf { it.isNotBlank() }
+                                ?.let { Bidi.isolate(it) },
+                            onClick = { onOpenQuestion(question) },
+                            clickLabel = strings["open.action"],
+                            modifier = Modifier.testTag(PrepTags.asked(question.id)),
+                        )
+                        if (row < prep.asked.lastIndex) RowDivider(inset = false)
                     }
-                    Spacer(Modifier.height(Space.sectionGap))
                 }
+                Spacer(Modifier.height(Space.sectionGap))
             }
         }
 
@@ -408,93 +377,85 @@ fun PrepScreen(
             }
         } else {
             item {
-                FoldRow(
-                    labelKey = "prep.changes",
-                    expanded = changesOpen,
-                    onToggle = { changesOpen = !changesOpen },
-                    count = prep.changes.size.toString(),
-                    modifier = Modifier.testTag(PrepTags.CHANGES_FOLD),
-                )
+                Eyebrow(text = Bidi.join(strings["prep.changes"], prep.changes.size.toString()), modifier = Modifier.testTag(PrepTags.CHANGES_FOLD))
                 Spacer(Modifier.height(Space.cardGap))
             }
 
-            if (changesOpen) {
-                item {
-                    // **Says what window it is showing**, rather than leaving
-                    // somebody to work out whether something is missing.
-                    Text(
-                        text = prep.sinceEdtf?.takeIf { it.isNotBlank() }
-                            ?.let {
-                                strings(
-                                    "prep.changes.since",
-                                    "date" to EventDateText.render(strings, it),
-                                )
-                            }
-                            ?: strings["prep.changes.all"],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.ink2,
-                    )
-                    Spacer(Modifier.height(Space.m))
-                }
+            item {
+                // **Says what window it is showing**, rather than leaving
+                // somebody to work out whether something is missing.
+                Text(
+                    text = prep.sinceEdtf?.takeIf { it.isNotBlank() }
+                        ?.let {
+                            strings(
+                                "prep.changes.since",
+                                "date" to EventDateText.render(strings, it),
+                            )
+                        }
+                        ?: strings["prep.changes.all"],
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
+                Spacer(Modifier.height(Space.m))
+            }
 
-                prep.changes.forEachIndexed { index, entry ->
-                    item(key = "c_${entry.id}") {
-                        SpineRow(
-                            continuesAbove = index > 0,
-                            continuesBelow = index < prep.changes.lastIndex,
-                            node = colors.gold,
-                            routeColor = colors.gold,
-                            dash = RouteDash.TRAIL,
-                        ) {
-                            Column {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .semantics(mergeDescendants = true) { }
-                                        .clip(Radius.cardLarge)
-                                        // **It opens the entry and it says so.**
-                                        // This carried the removal treatment
-                                        // before, which told a reader user that
-                                        // tapping would remove the entry and
-                                        // offered them a long press labeled
-                                        // "remove" that did nothing at all.
-                                        // Nothing is removed from a prep sheet:
-                                        // it is a view of the trail.
-                                        .openableByTap(
-                                            label = strings["prep.change.open"],
-                                            onTap = { onOpenEntry(entry) },
-                                        )
-                                        .testTag(PrepTags.change(entry.id))
-                                        .padding(Space.cardPadding),
-                                ) {
-                                    entry.occurredEdtf?.takeIf { it.isNotBlank() }?.let {
-                                        Text(
-                                            text = EventDateText.render(strings, it),
-                                            style = HealthTrail.type.bodyS,
-                                            color = colors.ink2,
-                                        )
-                                        Spacer(Modifier.height(Space.xs))
-                                    }
-                                    Text(
-                                        text = entry.title?.takeIf { it.isNotBlank() }
-                                            ?.let { Bidi.isolate(it) }
-                                            ?: strings[kindNameKey(entry.kind)],
-                                        style = HealthTrail.type.displayS,
-                                        color = colors.ink,
+            prep.changes.forEachIndexed { index, entry ->
+                item(key = "c_${entry.id}") {
+                    SpineRow(
+                        continuesAbove = index > 0,
+                        continuesBelow = index < prep.changes.lastIndex,
+                        node = colors.gold,
+                        routeColor = colors.gold,
+                        dash = RouteDash.TRAIL,
+                    ) {
+                        Column {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics(mergeDescendants = true) { }
+                                    .clip(Radius.cardLarge)
+                                    // **It opens the entry and it says so.**
+                                    // This carried the removal treatment
+                                    // before, which told a reader user that
+                                    // tapping would remove the entry and
+                                    // offered them a long press labeled
+                                    // "remove" that did nothing at all.
+                                    // Nothing is removed from a prep sheet:
+                                    // it is a view of the trail.
+                                    .openableByTap(
+                                        label = strings["prep.change.open"],
+                                        onTap = { onOpenEntry(entry) },
                                     )
-                                    entry.body?.takeIf { it.isNotBlank() }?.let {
-                                        Spacer(Modifier.height(Space.xs))
-                                        Text(
-                                            text = Bidi.isolate(it),
-                                            style = HealthTrail.type.bodyM,
-                                            color = colors.ink2,
-                                            maxLines = 3,
-                                            overflow = TextOverflow.Ellipsis,
-                                        )
-                                    }
+                                    .testTag(PrepTags.change(entry.id))
+                                    .padding(Space.cardPadding),
+                            ) {
+                                entry.occurredEdtf?.takeIf { it.isNotBlank() }?.let {
+                                    Text(
+                                        text = EventDateText.render(strings, it),
+                                        style = HealthTrail.type.bodyS,
+                                        color = colors.ink2,
+                                    )
+                                    Spacer(Modifier.height(Space.xs))
                                 }
-                                Spacer(Modifier.height(Space.cardGap))
+                                Text(
+                                    text = entry.title?.takeIf { it.isNotBlank() }
+                                        ?.let { Bidi.isolate(it) }
+                                        ?: strings[kindNameKey(entry.kind)],
+                                    style = HealthTrail.type.displayS,
+                                    color = colors.ink,
+                                )
+                                entry.body?.takeIf { it.isNotBlank() }?.let {
+                                    Spacer(Modifier.height(Space.xs))
+                                    Text(
+                                        text = Bidi.isolate(it),
+                                        style = HealthTrail.type.bodyM,
+                                        color = colors.ink2,
+                                        maxLines = 3,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
                             }
+                            Spacer(Modifier.height(Space.cardGap))
                         }
                     }
                 }

@@ -29,7 +29,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
-import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
@@ -40,6 +39,7 @@ import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Field
 
 object SearchTags {
@@ -102,7 +102,6 @@ fun SearchScreen(
     backLabelKey: String = "section.back.more",
 ) {
     val strings = LocalStrings.current
-    var openSections by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val colors = HealthTrail.colors
 
     // Grouped here rather than in the query, because the query returns them in
@@ -242,25 +241,17 @@ fun SearchScreen(
         // opening it is worth the tap.
         val rest = results.drop(1).groupBy { it.section }
         for ((section, hits) in rest) {
-            val open = section.name in openSections
             item(key = "group_${section.name}") {
-                FoldRowText(
-                    label = strings[sectionKey(section)],
-                    expanded = open,
-                    onToggle = {
-                        openSections = if (open) {
-                            openSections - section.name
-                        } else {
-                            openSections + section.name
-                        }
-                    },
-                    count = hits.size.toString(),
+                // **A result nobody can see is not a result.** D185, and it
+                // matters most here: somebody searching has already said what
+                // they are looking for, so putting the answer behind a second
+                // tap is the app asking them to say it twice.
+                Eyebrow(
+                    text = Bidi.join(strings[sectionKey(section)], hits.size.toString()),
                     modifier = Modifier.testTag(SearchTags.group(section)),
                 )
                 Spacer(Modifier.height(Space.cardGap))
             }
-
-            if (!open) continue
 
             hits.forEachIndexed { index, hit ->
                 item(key = hit.id) {

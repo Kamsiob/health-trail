@@ -90,14 +90,16 @@ class CaptureProjectTest {
         compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
 
     /**
-     * Walks to the stage that holds the disclosure rather than counting taps,
-     * which is the lesson #308 cost: a hard coded number of stages fails after
-     * a redesign with a message about the wrong thing.
+     * Walks to the stage that holds the rest of the form rather than counting
+     * taps, which is the lesson #308 cost: a hard coded number of stages fails
+     * after a redesign with a message about the wrong thing.
+     *
+     * **There is nothing to open**, D185: the group carries a label and the
+     * chips are on the screen. Arriving at the stage is the whole job.
      */
-    private fun openTheDisclosure() {
+    private fun walkToTheRestOfTheForm() {
         repeat(3) {
             if (showing(CaptureFormTags.MORE)) {
-                compose.onNodeWithTag(CaptureFormTags.MORE).performScrollTo().performClick()
                 return
             }
             // **Not scrolled to.** The way on and the save are pinned outside
@@ -113,7 +115,7 @@ class CaptureProjectTest {
         var saved: CaptureDraft? = null
         show(onSave = { saved = it })
 
-        openTheDisclosure()
+        walkToTheRestOfTheForm()
         compose.onNodeWithTag(CaptureFormTags.project(appeal.id)).performScrollTo().performClick()
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 
@@ -126,7 +128,7 @@ class CaptureProjectTest {
         var saved: CaptureDraft? = null
         show(onSave = { saved = it })
 
-        openTheDisclosure()
+        walkToTheRestOfTheForm()
         compose.onNodeWithTag(CaptureFormTags.project(appeal.id)).performScrollTo().performClick()
         compose.onNodeWithTag(CaptureFormTags.project(appeal.id)).performScrollTo().performClick()
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
@@ -144,7 +146,7 @@ class CaptureProjectTest {
         var saved: CaptureDraft? = null
         show(kind = CaptureKind.INCIDENT, onSave = { saved = it })
 
-        openTheDisclosure()
+        walkToTheRestOfTheForm()
         compose.onNodeWithTag(CaptureFormTags.project(appeal.id)).performScrollTo().performClick()
         compose.onNodeWithTag(CaptureFormTags.SAVE).performClick()
 

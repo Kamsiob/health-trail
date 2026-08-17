@@ -50,13 +50,13 @@ import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 import com.kamsiob.healthtrail.ui.v4.MoreChip
 import com.kamsiob.healthtrail.ui.v4.cappedChips
 import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Body
-import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.StageDots
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -625,7 +625,15 @@ fun CaptureFormScreen(
                 val hasProjects = projects.isNotEmpty()
 
                 if (hasThreads || hasMedications || hasProjects) {
-                    Disclosure(testTag = CaptureFormTags.MORE) {
+                    // **The rest of the form is a group with a label, not a fold.**
+                    // D185: nothing sits behind a fold that a label and a scroll can
+                    // carry, and the sentence that used to explain the fold is the
+                    // group's own line now. Nothing here was ever required.
+                    FieldBlock(
+                        label = strings["capture.more"],
+                        aside = strings["capture.more.aside"],
+                        modifier = Modifier.testTag(CaptureFormTags.MORE),
+                    ) {
                         Column {
                             if (hasThreads) {
                                 val chosenThread = threads.firstOrNull { it.id == threadId }

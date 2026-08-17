@@ -301,10 +301,8 @@ class CaptureTest {
 
         toStage(WHO_STAGE)
 
-        // **The thread question is behind "Add more" as of 2026-08-03**, per
-        // `DESIGN.md` 5.11.1 and the disclosure, so the test opens it the way a
-        // person does rather than reaching past the control.
-        compose.onNodeWithTag(CaptureFormTags.MORE).performScrollTo().performClick()
+        // **The thread question is under its own label rather than behind a
+        // fold**, D185, so the test scrolls to it the way a person does.
         compose.onNodeWithTag(CaptureFormTags.threadChip("t-discharge"))
             .performScrollTo()
             .performClick()

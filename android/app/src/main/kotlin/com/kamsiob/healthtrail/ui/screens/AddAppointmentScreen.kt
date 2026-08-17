@@ -29,7 +29,6 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.Symbols
@@ -44,6 +43,7 @@ import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 import com.kamsiob.healthtrail.ui.v4.MoreChip
 import com.kamsiob.healthtrail.ui.v4.cappedChips
 import java.time.LocalDate
@@ -251,9 +251,14 @@ fun AddAppointmentScreen(
                 //
                 // **Open already when either says something**, so correcting an
                 // appointment never hides the note somebody wrote last week.
-                Disclosure(
-                    testTag = AddApptTags.MORE,
-                    startOpen = draft.where.isNotBlank() || draft.notes.isNotBlank(),
+                // **The rest of the form is a group with a label, not a fold.**
+                // D185: nothing sits behind a fold that a label and a scroll can
+                // carry, and the sentence that used to explain the fold is the
+                // group's own line now. Nothing here was ever required.
+                FieldBlock(
+                    label = strings["capture.more"],
+                    aside = strings["capture.more.aside"],
+                    modifier = Modifier.testTag(AddApptTags.MORE),
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Field(

@@ -33,7 +33,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.PaddingValues
-import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.LatestWordCard
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage

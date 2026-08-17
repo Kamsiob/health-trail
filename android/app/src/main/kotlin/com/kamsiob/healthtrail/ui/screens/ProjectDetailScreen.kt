@@ -41,7 +41,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.ConfirmRemoveSheet
 import com.kamsiob.healthtrail.ui.components.EmptyDrawing
-import com.kamsiob.healthtrail.ui.components.FoldRow
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Waypoint
@@ -200,39 +199,31 @@ fun ProjectDetailScreen(
         // 13 rules out "2 of 5", and that is a different sentence.
         if (done.isNotEmpty()) {
             item {
-                FoldRow(
-                    labelKey = "projects.done_fold",
-                    expanded = doneOpen,
-                    onToggle = { doneOpen = !doneOpen },
-                    count = done.size.toString(),
-                    modifier = Modifier.testTag(ProjectDetailTags.DONE_FOLD),
-                )
+                Eyebrow(text = Bidi.join(strings["projects.done_fold"], done.size.toString()), modifier = Modifier.testTag(ProjectDetailTags.DONE_FOLD))
                 Spacer(Modifier.height(Space.cardGap))
             }
 
-            if (doneOpen) {
-                itemsIndexed(done, key = { _, step -> "done_${step.id}" }) { index, step ->
-                    SpineRow(
-                        continuesAbove = index > 0,
-                        continuesBelow = index < done.lastIndex,
-                        node = colors.blue,
-                        // Filled, per 5.2.1: the shape carries the state, and a
-                        // step that happened is a waypoint that happened.
-                        state = Waypoint.HAPPENED,
-                        dash = null,
-                    ) {
-                        Column(modifier = Modifier.padding(bottom = Space.s)) {
-                            StepRow(
-                                step = step,
-                                onToggle = { onToggleStep(step) },
-                                onEdit = { editing = Editing.Existing(step) },
-                                onRemove = { removing = step },
-                            )
-                        }
+            itemsIndexed(done, key = { _, step -> "done_${step.id}" }) { index, step ->
+                SpineRow(
+                    continuesAbove = index > 0,
+                    continuesBelow = index < done.lastIndex,
+                    node = colors.blue,
+                    // Filled, per 5.2.1: the shape carries the state, and a
+                    // step that happened is a waypoint that happened.
+                    state = Waypoint.HAPPENED,
+                    dash = null,
+                ) {
+                    Column(modifier = Modifier.padding(bottom = Space.s)) {
+                        StepRow(
+                            step = step,
+                            onToggle = { onToggleStep(step) },
+                            onEdit = { editing = Editing.Existing(step) },
+                            onRemove = { removing = step },
+                        )
                     }
                 }
-                item { Spacer(Modifier.height(Space.s)) }
             }
+            item { Spacer(Modifier.height(Space.s)) }
         }
 
         // **The next step is the one thing, and it is the first one left.** It

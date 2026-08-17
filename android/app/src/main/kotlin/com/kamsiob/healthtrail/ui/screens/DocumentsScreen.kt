@@ -30,7 +30,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.CARD_SIZE
 import com.kamsiob.healthtrail.ui.components.FILL
-import com.kamsiob.healthtrail.ui.components.FoldRowText
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.ViewOption
 import com.kamsiob.healthtrail.ui.components.ViewToggle
@@ -44,6 +43,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
@@ -97,7 +97,6 @@ fun DocumentsScreen(
     val columns = tileColumns(compact = true)
 
     val view = rememberViewChoice(section = DocTags.NAME, fallback = VIEW_PICTURES)
-    var openFolders by rememberSaveable { mutableStateOf(emptySet<String>()) }
 
     // **The two most recently received, as the one thing.** The grid calls them
     // the two the person reaches for most, and the app has no way to know that:
@@ -229,21 +228,19 @@ fun DocumentsScreen(
 
         for ((category, inFolder) in folders) {
             val label = category ?: strings["docs.other"]
-            val open = label in openFolders
 
             item(key = "folder_$label") {
-                FoldRowText(
-                    label = label,
-                    expanded = open,
-                    onToggle = {
-                        openFolders = if (open) openFolders - label else openFolders + label
-                    },
-                    count = inFolder.size.toString(),
+                // **The folder is a label, not a fold.** D185: a name and a
+                // count over the papers in it, and the scroll does the rest.
+                // A folder that hides its contents behind a tap is a filing
+                // cabinet somebody has to open twice.
+                Eyebrow(
+                    // The folder's name is usually the person's own word for it.
+                    text = Bidi.join(label, inFolder.size.toString()),
+                    fixed = false,
                 )
                 Spacer(Modifier.height(Space.cardGap))
             }
-
-            if (!open) continue
 
             if (view.value == VIEW_LIST) {
                 item(key = "list_$label") {

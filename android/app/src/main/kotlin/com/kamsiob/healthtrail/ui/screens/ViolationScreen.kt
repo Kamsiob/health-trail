@@ -27,10 +27,10 @@ import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.DictatableField
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 import com.kamsiob.healthtrail.ui.v4.MoreChip
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -227,15 +227,14 @@ fun ViolationScreen(
             // to the rest are 5.11.1, the same set the capture form offers.
             if (incidents.isNotEmpty() || bills.isNotEmpty()) {
                 Spacer(Modifier.height(Space.sectionGap))
-                Disclosure(
-                    labelKey = "violation.about",
-                    asideKey = "violation.about.aside",
-                    testTag = ViolationTags.ABOUT,
-                    // **A correction never hides what is already written down**,
-                    // D147 and the disclosure's own rule: folding away a link
-                    // somebody chose last week behind a control that says "Say
-                    // what this was about" is the app hiding their own answer.
-                    startOpen = existing?.incidentId != null || existing?.billId != null,
+                // **The rest of the form is a group with a label, not a fold.**
+                // D185: nothing sits behind a fold that a label and a scroll can
+                // carry, and the sentence that used to explain the fold is the
+                // group's own line now. Nothing here was ever required.
+                FieldBlock(
+                    label = strings["violation.about"],
+                    aside = strings["violation.about.aside"],
+                    modifier = Modifier.testTag(ViolationTags.ABOUT),
                 ) {
                     if (incidents.isNotEmpty()) {
                         val chosenIncident = incidents.firstOrNull { it.id == incidentId }
