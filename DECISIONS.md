@@ -2990,6 +2990,32 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D189. The hint comes out of the field, because placeholders are harmful
+
+**Date:** 2026-08-17. **Phase 4, #386.** The owner, on a field: "when you use the same font and same style it looks like more text. there needs to be a way to indicate that this is a field that you type in beyond just the oval around it." Then, on the first attempt at fixing it: "it just reads like it's part of the sentence below it. this is horrible design."
+
+**Both attempts before this one were treatments of the wrong thing.** First the placeholder was set in italic, which is a costume on a pattern that should not exist. Then it was moved under the field at body size, which is where prose lives, in the same ink and on the same left edge as the paragraph below it, so it read as prose.
+
+**Nielsen Norman Group's form research is unambiguous and it is about this exact thing.** Placeholders inside fields are harmful, and hints belong "persistent and placed outside of the field". Two of the seven problems they list are what the owner saw: people read placeholder text as content already filled in and skip the field, and an empty field draws the eye better than one that looks full. The others are worse. The hint vanishes the moment somebody types, so it is gone when it is needed most; it comes back only by deleting what they wrote; and screen readers do not announce it reliably.
+
+**Material says the same thing from the other side.** The label carries the meaning and stays; supporting text under the field gives context about the input and is persistent.
+
+**So, app wide, in one component:** the field is empty when it is empty, which is the strongest signal there is that it is a place to type. The example lives under the field, and it is still there while somebody types.
+
+**Three things make it read as part of the control rather than as the next sentence**, and it took all three:
+
+- **Size.** A `Support` role in the ladder at **12sp**, which is Material's own supporting text size and one step below any prose it could sit beside. `DESIGN.md` 5.1 and `check_type_ladder.py` both carry it.
+- **Proximity.** 4dp under the field, not the 8dp that separates one thing from another.
+- **Alignment.** Indented to the text inside the field rather than to the screen margin, so it lines up with the label above it and not with the paragraph below it.
+
+**One supporting line per field, never two.** The capture form had the field's own line and the chips' line stacked, which is the same blending under a different name.
+
+**What this cost.** `tools/seed.sh` focused the passphrase field by tapping its hint, which only ever worked because the hint was inside the field. It taps the field by its own label now, and `tools/walk.sh` grew an exact match, `=Password`, because that screen's heading contains the word and came first in the tree.
+
+**Sources.** `nngroup.com/articles/form-design-placeholders/`, `m3.material.io/components/text-fields`.
+
+---
+
 ### D188. Three gaps and no more, taken from Material's own research rather than judged
 
 **Date:** 2026-08-17. **Phase 4, #386.** The owner, twice in one hour: "it's still crammed. it needs to be able to breathe and some visual structure", and: "there really shouldn't be much guesswork here."

@@ -67,6 +67,21 @@ data class HealthTrailTypography(
     val bodyM: TextStyle,
     /** Tertiary detail. The floor. */
     val bodyS: TextStyle,
+
+    /**
+     * What a field wants, said under the field.
+     *
+     * **Material's own supporting text, at its size**: 12sp, one step below any
+     * prose it could sit beside, tight to the field and aligned with the text
+     * inside it. That combination is what makes it read as part of the control
+     * rather than as the next sentence. The owner, 2026-08-17: "it just reads
+     * like it's part of the sentence below it."
+     *
+     * **Nielsen Norman Group's form research is why it is under the field at
+     * all** rather than inside it: a hint inside a field is read as content
+     * already filled in, and it disappears exactly when it is needed. D189.
+     */
+    val support: TextStyle,
     /** Buttons, chips, emphasis inside body text. */
     val label: TextStyle,
     /** Bottom navigation only. Exempt from the 13sp floor. */
@@ -257,6 +272,13 @@ val HealthTrailType = HealthTrailTypography(
         fontSize = 14.sp,
         lineHeight = 21.sp,
         fontWeight = FontWeight.Normal,
+    ),
+    support = TextStyle(
+        fontFamily = BodyFamily,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.01.em,
     ),
     label = TextStyle(
         fontFamily = BodyFamily,

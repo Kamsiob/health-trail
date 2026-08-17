@@ -309,6 +309,7 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 | Body S | Roboto | **14sp** / 21 | 400 | Folded rows on sand, row subtitles |
 | Label | Roboto | **15sp** / 20 | 700 | Buttons and chips |
 | Nav label | Roboto | **12sp** / 15 | 700 | Bottom navigation only. Exempt from the floor |
+| Support | Roboto | **12sp** / 16 | 400, tracking 0.01em | What a field wants, under the field. Material's own supporting text size, and deliberately smaller than any prose beside it. D189 |
 | Eyebrow | Roboto | **12sp** / 17 | 700, tracking 0.14em | The quiet line naming a group, rule 15. Exempt from the floor |
 | Mono | JetBrains Mono | **12sp** / 17 | 400, tracking 0.12em, uppercase | Figures that line up in a column only, D173. **Never a date**, see below. Exempt from the floor |
 | Mono L | JetBrains Mono | **24sp** / 28 | 700, tracking 0, tabular | A number at display size, in the big-number component and nowhere else |

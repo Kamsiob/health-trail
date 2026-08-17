@@ -132,7 +132,13 @@ print('selected seed.htx')
 PY
 
 sleep 5
-walk "The one you chose when you saved this file" 1
+# **The field itself, by its whole label.** This used to tap the hint sentence,
+# which worked only because the hint was drawn inside the field. D189 moved
+# hints under their fields, where tapping one focuses nothing, and the wording
+# changed with it. `=` is an exact match, because the screen's own heading
+# contains the word "password" and comes first in the tree. 2026-08-17.
+"$ROOT/tools/walk.sh" tap "=Password" >/dev/null 2>&1 || true
+sleep 1
 "$ADB" shell input text "$PASSPHRASE"
 sleep 2
 "$ADB" shell input keyevent 111

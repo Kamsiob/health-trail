@@ -8,6 +8,7 @@
 #
 #   tools/walk.sh see                 every piece of text on screen, in order
 #   tools/walk.sh tap "Medications"   tap the first node whose text matches
+#   tools/walk.sh tap "=Password"     tap the node whose whole label is that
 #   tools/walk.sh fields              the editable fields and their bounds
 #   tools/walk.sh goto "X" "Y"        tap X, then prove Y is on the far side
 #
@@ -87,13 +88,29 @@ import subprocess
 import sys
 
 want, adb = sys.argv[1], sys.argv[2]
+
+# **`=` in front of the word means the whole label, not a substring.** The
+# ordinary match is first hit on a substring, which is what a person's eye does
+# and is right for walking; it is wrong for a script that has to land on one
+# exact control. The restore screen is the case: its heading contains the word
+# "password" and so does the field's own description, the heading comes first in
+# the tree, and every tap went to the heading. 2026-08-17.
+exact = want.startswith('=')
+if exact:
+    want = want[1:]
+
 xml = open('/tmp/health-trail-walk.xml', encoding='utf-8', errors='replace').read()
+
+def hit(label, desc):
+    if exact:
+        return want.lower() == label.lower() or (desc and want.lower() == desc.lower())
+    return want.lower() in label.lower() or (desc and want.lower() in desc.lower())
 
 for match in re.finditer(r'<node[^>]*>', xml):
     node = match.group(0)
     label = (re.search(r'text="([^"]*)"', node) or [None, ''])[1]
     desc = (re.search(r'content-desc="([^"]*)"', node) or [None, ''])[1]
-    if want.lower() in label.lower() or (desc and want.lower() in desc.lower()):
+    if hit(label, desc):
         bounds = re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', node)
         x = (int(bounds.group(1)) + int(bounds.group(3))) // 2
         y = (int(bounds.group(2)) + int(bounds.group(4))) // 2

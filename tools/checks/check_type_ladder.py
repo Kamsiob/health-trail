@@ -58,6 +58,7 @@ ROLES = {
     "Body L": "bodyL",
     "Body": "bodyM",
     "Body S": "bodyS",
+    "Support": "support",
     "Label": "label",
     "Nav label": "navLabel",
     "Eyebrow": "eyebrow",

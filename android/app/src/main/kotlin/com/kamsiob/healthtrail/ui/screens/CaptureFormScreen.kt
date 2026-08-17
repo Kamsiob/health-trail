@@ -561,7 +561,11 @@ fun CaptureFormScreen(
                     // in the semantics.
                     ChoiceChipGroup(
                         label = strings["capture.who.known"],
-                        aside = strings["capture.who.known.aside"],
+                        // **One supporting line, not two.** The field's own
+                        // says what to type; a second gray line under it
+                        // saying the chips can be tapped is the blending the
+                        // owner named, and a row of names beside a field
+                        // already says what tapping one does. D189.
                         showLabel = false,
                     ) {
                         shownPeople.forEach { person ->

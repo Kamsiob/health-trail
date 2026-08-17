@@ -24,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
@@ -248,26 +247,7 @@ fun HealthTrailTextField(
                             .semantics { contentDescription = label },
                     )
 
-                    if (value.isEmpty() && hint != null) {
-                        Text(
-                            text = hint,
-                            // **Italic, so it does not read as content.** The
-                            // owner, 2026-08-17: "when you use the same font
-                            // and same style it looks like more text. there
-                            // needs to be a way to indicate that this is a
-                            // field that you type in beyond just the oval
-                            // around it."
-                            //
-                            // **Slant rather than a paler ink**, because paler
-                            // is the one thing this cannot be: D92 keeps text
-                            // at two levels and `ink3` is 2.37:1 on paper,
-                            // which `check_ink3_is_not_text.py` refuses. Slant
-                            // says "not yet typed" at full contrast, which is
-                            // what a hint somebody has to read needs.
-                            style = type.bodyL.copy(fontStyle = FontStyle.Italic),
-                            color = colors.ink2,
-                        )
-                    }
+
                 }
 
                 if (trailing != null) {
@@ -287,12 +267,47 @@ fun HealthTrailTextField(
             }
         }
 
+        // **The hint lives under the field, not inside it.** Nielsen Norman
+        // Group's research on form design is unambiguous: placeholders inside
+        // fields are harmful, and hints belong "persistent and placed outside
+        // of the field". Two of the seven problems they list are exactly what
+        // the owner saw, 2026-08-17: people read placeholder text as content
+        // already filled in and skip the field, and an empty field draws the
+        // eye better than one that looks full. The others are worse: the hint
+        // vanishes the moment somebody types, so it is gone when it is needed
+        // most, and it comes back only by deleting what they wrote.
+        //
+        // **Material says the same thing from the other side.** The label
+        // carries the meaning and stays; supporting text under the field gives
+        // context about the input and is persistent. So the field is empty when
+        // it is empty, which is the strongest signal there is that it is a
+        // place to type, and the example is still there while they type.
+        //
+        // D189, and it replaced an italic placeholder that was an improvement
+        // to the wrong thing.
+        if (hint != null) {
+            Text(
+                text = hint,
+                // **Material's supporting text, exactly**: its own size, one
+                // step below any prose beside it, four points under the field
+                // and aligned with the text inside the field rather than with
+                // the screen margin. The owner, 2026-08-17: "it just reads like
+                // it's part of the sentence below it", and it did, because it
+                // was the same size, the same ink and the same left edge as the
+                // paragraph under it. Size, proximity and alignment are the
+                // three things that say "this belongs to the control above".
+                style = type.support,
+                color = colors.ink2,
+                modifier = Modifier.padding(top = Space.xs, start = Space.m),
+            )
+        }
+
         if (note != null) {
-            Spacer(Modifier.height(Space.s))
             Text(
                 text = note,
-                style = type.bodyS,
+                style = type.support,
                 color = colors.ink2,
+                modifier = Modifier.padding(top = Space.xs, start = Space.m),
             )
         }
     }
@@ -392,21 +407,7 @@ fun FieldRow(
                             .semantics { contentDescription = label },
                     )
 
-                    if (value.isEmpty() && hint != null) {
-                        // **`ink2`, never `ink3`.** D92: this app has two text
-                        // levels and `ink3` is non-text only, at 2.37:1 on
-                        // paper. A hint is text somebody has to read to know
-                        // what the row wants. `check_ink3_is_not_text.py`
-                        // caught this one the same minute it was written.
-                        Text(
-                            text = hint,
-                            // Italic for the same reason as the field above:
-                            // slant says "this is where you type" without
-                            // spending contrast a hint cannot spare.
-                            style = type.bodyL.copy(fontStyle = FontStyle.Italic),
-                            color = colors.ink2,
-                        )
-                    }
+
                 }
             }
 
@@ -430,6 +431,21 @@ fun FieldRow(
             )
         } else if (divider) {
             Hairline(inset = Space.cardPadding, end = Space.cardPadding)
+        }
+
+        // The same as the field above: the hint is supporting text under the
+        // row rather than a placeholder inside it. D189.
+        if (hint != null) {
+            Text(
+                text = hint,
+                style = type.support,
+                color = colors.ink2,
+                modifier = Modifier.padding(
+                    start = Space.cardPadding,
+                    end = Space.cardPadding,
+                    top = Space.xs,
+                ),
+            )
         }
     }
 }
