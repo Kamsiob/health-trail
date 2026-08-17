@@ -208,11 +208,28 @@ fun LazyListScope.labeledBlock(
      * result is their own words cut off. D183.
      */
     fixedLabel: Boolean = true,
+    /**
+     * The ink the label takes, where a group's own state has something to say.
+     *
+     * Money's leading group wears the alert ink, so the one wanting a decision
+     * reads as that rather than as an arbitrary first group. #345. Everything
+     * else is the quiet ink, because a label is furniture.
+     */
+    labelColor: Color? = null,
+    /** A tag on the label itself, for a caller whose test asserts on it. */
+    labelTag: String? = null,
 ) {
     if (rows.isEmpty()) return
     item {
         Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
-            label?.let { Eyebrow(text = it, fixed = fixedLabel) }
+            label?.let {
+                Eyebrow(
+                    text = it,
+                    fixed = fixedLabel,
+                    color = labelColor ?: HealthTrail.colors.ink2,
+                    modifier = labelTag?.let { tag -> Modifier.testTag(tag) } ?: Modifier,
+                )
+            }
             Block(padding = Space.none) {
                 rows.forEachIndexed { index, row ->
                     row()

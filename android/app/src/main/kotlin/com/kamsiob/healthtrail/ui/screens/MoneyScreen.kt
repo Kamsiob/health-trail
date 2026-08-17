@@ -1,50 +1,40 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.i18n.formatMoney
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupHeaderText
-import com.kamsiob.healthtrail.ui.theme.hueFor
-import com.kamsiob.healthtrail.ui.components.WashBand
-import com.kamsiob.healthtrail.ui.components.GroupedSurface
-import com.kamsiob.healthtrail.ui.components.FoldRowText
-import com.kamsiob.healthtrail.ui.components.DenseRow
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import com.kamsiob.healthtrail.ui.components.QuietButton
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
-import java.text.NumberFormat
-import java.util.Currency
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.BigNumber
+import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.Body
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
+import com.kamsiob.healthtrail.ui.v4.labeledBlock
 
 object MoneyTags {
     const val NAME = "money"
     const val ADD = "money_add"
     const val TOTAL = "money_total"
     const val LEAD_HEADER = "money_lead_header"
-    fun fold(state: String) = "money_fold_$state"
     fun row(id: String) = "bill_$id"
+
+    /** The tag the old scaffold produced, kept so a journey still finds this screen. */
+    const val ROOT = "section_root_money"
 }
 
 /** The order bills are grouped in, most pressing first. */
@@ -57,30 +47,27 @@ private val STATE_ORDER = listOf(
 )
 
 /**
- * Money: the bills, and where each one stands.
+ * Money: the bills, and where each one stands. Rewritten onto `ui/v4`, #386.
  *
  * **The app adds them up and decides nothing about them.** A total is counting,
  * which this app does. What it never does is say whether an amount is
  * reasonable, whether a bill should be disputed, or what somebody ought to do
- * next, all of which would be advice.
+ * next, all of which would be advice. Rule 2.
  *
  * **The total is of what is not settled**, because that is the number somebody
- * actually carries around. Paid and closed are excluded not because they do not
+ * actually carries around. Paid and closed are left out not because they do not
  * matter but because "what is still hanging over me" is the question a
- * caregiver is asking when they open this.
+ * caregiver opens this screen with.
  *
  * **A bill with no amount is a real bill.** They arrive constantly saying "this
- * is not a bill" or with the amount pending, and a record that will not hold
- * one until a number exists loses the thing at the moment it appears. Null is
- * not zero, and the total says so by leaving it out rather than adding nothing.
+ * is not a bill" or with the amount pending, and a record that will not hold one
+ * until a number exists loses the thing at the moment it appears. Null is not
+ * zero, and the total says so by leaving it out rather than adding nothing.
  *
- * **Money is stored in minor units as an integer**, per the schema, because
- * floating point money is a defect waiting for a rounding boundary and this
- * record may be read out in a dispute.
- *
- * The links `MASTER_SPEC.md` section 4.3 wants, a bill knowing its chapter, the
- * call where it was disputed, and the standing instruction it broke, are not
- * built. This is the list underneath them.
+ * **Every state is on the screen under its own label.** The one that wants a
+ * decision leads and wears the alert ink; the rest follow in order. They used to
+ * fold, each carrying its count and sum so the person could see what was behind
+ * the door: a list that simply carries them says it without the door. D185.
  */
 @Composable
 fun MoneyScreen(
@@ -96,194 +83,139 @@ fun MoneyScreen(
     onAdd: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    backLabelKey: String = LocalSectionBackKey.current,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
+    val hue = hueFor(Repository.Section.MONEY)
     val open = bills.filter { it.isOpen }
     val openTotal = open.mapNotNull { it.amountMinor }.sum()
-    var openStates by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val currency = bills.firstOrNull()?.currency ?: "USD"
 
-    SectionScaffold(
-        name = MoneyTags.NAME,
-        title = strings["notebook.section.money"],
+    // **The first state that has anything in it leads**, rather than the first
+    // state in the order. Bound to the index, a notebook with three disputed
+    // bills and nothing needing attention opened on a total and a stack of
+    // labels with no bill visible at all.
+    val leadState = STATE_ORDER.firstOrNull { state -> bills.any { it.state == state } }
+
+    Page(
+        eyebrow = strings["notebook.section.money"],
+        eyebrowColor = hue.ink,
+        title = strings["money.heading"],
         subtitle = strings["money.subtitle"],
         onBack = onBack,
-        modifier = modifier,
-        section = Repository.Section.MONEY,
-        headingKey = "money.heading",
+        backLabel = strings[backLabelKey],
+        modifier = modifier.testTag(MoneyTags.ROOT),
     ) {
         if (bills.isEmpty()) {
             item {
-                SectionEmpty(name = MoneyTags.NAME, text = strings["money.empty"], section = Repository.Section.MONEY, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
-                Spacer(Modifier.height(Space.l))
+                Block {
+                    // bidi-ok: the app's own sentence about an empty list.
+                    Body(
+                        text = strings["money.empty"],
+                        color = colors.ink,
+                        style = HealthTrail.type.bodyL,
+                    )
+                }
             }
         }
 
-        // The total sits above the list, per section 4.3, and only appears when
-        // there is something unsettled to total. A zero total on a settled
-        // notebook would be a number with nothing behind it.
-        // **The total is a wash band**, per grid screen 14: a section-colored
-        // strip carrying one summary figure above the detail rather than inside
-        // it. Only when there is something unsettled to total, because a zero
-        // on a settled notebook is a number with nothing behind it.
+        // **The figure the person carries around, raised into its own block**,
+        // and only when there is something unsettled to total: a zero on a
+        // settled notebook is a number with nothing behind it.
         //
         // **It states the figure and stops.** No arrow, no comparison to last
         // month, no color that changes with the amount. Whether fifteen
-        // thousand dollars is a lot is the person's to judge, per rule 2.
+        // thousand dollars is a lot is the person's to judge, rule 2.
         if (open.isNotEmpty() && openTotal > 0) {
             item {
-                WashBand(
-                    label = strings["money.open_total"],
-                    value = formatMoney(strings, openTotal, currency),
-                    hue = hueFor(Repository.Section.MONEY),
-                    // **One catalog sentence rather than two pieces glued
-                    // together.** A label, a comma and a number is an English
-                    // sentence built in Kotlin: the order, the separator and
-                    // the spacing all differ by language, and in Arabic the
-                    // pieces would also have run in the wrong direction. #13,
-                    // and `check_concatenation.py` refuses the shape now.
-                    description = strings(
-                        "money.open_total.said",
-                        "amount" to formatMoney(strings, openTotal, currency),
-                    ),
-                    modifier = Modifier.testTag(MoneyTags.TOTAL),
-                )
-                Spacer(Modifier.height(Space.cardGap))
+                Block(
+                    tone = BlockTone.Section,
+                    hue = hue,
+                    modifier = Modifier
+                        .semantics {
+                            // **One catalog sentence rather than two pieces
+                            // glued together.** A label, a comma and a number is
+                            // an English sentence built in Kotlin: the order,
+                            // the separator and the spacing all differ by
+                            // language. #13, and `check_concatenation.py`
+                            // refuses the shape now.
+                            contentDescription = strings(
+                                "money.open_total.said",
+                                "amount" to formatMoney(strings, openTotal, currency),
+                            )
+                        }
+                        .testTag(MoneyTags.TOTAL),
+                ) {
+                    Eyebrow(text = strings["money.open_total"], color = hue.ink)
+                    BigNumber(value = formatMoney(strings, openTotal, currency))
+                }
             }
         }
 
-        // **The one that needs a decision leads; every other state folds**,
-        // per grid screen 14 and law 1. A person opens this screen because
-        // something wants an answer, and four groups at one weight makes them
-        // read all of it to find which.
-        //
-        // **A fold carries its count and its own sum**, so the person can see
-        // what is behind it without opening it.
-        // **The first state that has anything in it leads**, rather than the
-        // first state in the order. Bound to the index, a notebook with three
-        // disputed bills and nothing needing attention opened on a wash band
-        // and a stack of closed folds with no bill visible at all, and disputed
-        // and waiting on insurance are where bills sit for weeks. Law 1, and it
-        // is the many-item state rather than an edge case.
-        val leadState = STATE_ORDER.firstOrNull { state -> bills.any { it.state == state } }
         STATE_ORDER.forEach { state ->
             val inState = bills.filter { it.state == state }
             if (inState.isEmpty()) return@forEach
 
-            val leads = state == leadState
-            if (leads) {
-                item(key = "lead_$state") {
-                    // **The eyebrow says why this one is up here**, per grid
-                    // screen 14, which draws it in alert ink over the bill
-                    // that wants a decision. Without it the lead group reads
-                    // as an arbitrary first row and the hierarchy the screen
-                    // is built on says nothing out loud. #345.
-                    GroupHeaderText(
-                        label = strings["money.state.$state"],
-                        tint = HealthTrail.colors.alertInk,
-                        modifier = Modifier.testTag(MoneyTags.LEAD_HEADER),
-                    )
-                    Spacer(Modifier.height(Space.headerGap))
-                    GroupedSurface {
-                        inState.forEachIndexed { row, bill ->
-                            BillRow(
-                                bill = bill,
-                                onOpen = { onOpen(bill) },
-                                isLast = row == inState.lastIndex,
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(Space.cardGap))
-                }
-            } else {
-                val sum = inState.mapNotNull { it.amountMinor }.sum()
-                item(key = "fold_$state") {
-                    FoldRowText(
-                        label = strings["money.state.$state"],
-                        expanded = openStates.contains(state),
-                        onToggle = {
-                            openStates = if (openStates.contains(state)) {
-                                openStates - state
-                            } else {
-                                openStates + state
-                            }
-                        },
-                        count = if (sum > 0) {
-                            Bidi.join(inState.size.toString(), formatMoney(strings, sum, currency))
-                        } else {
-                            inState.size.toString()
-                        },
-                        modifier = Modifier.testTag(MoneyTags.fold(state)),
-                    )
-                    Spacer(Modifier.height(Space.cardGap))
-                }
-                if (openStates.contains(state)) {
-                    item(key = "open_$state") {
-                        GroupedSurface {
-                            inState.forEachIndexed { row, bill ->
-                                BillRow(
-                                    bill = bill,
-                                    onOpen = { onOpen(bill) },
-                                    isLast = row == inState.lastIndex,
-                                )
-                            }
-                        }
-                        Spacer(Modifier.height(Space.cardGap))
-                    }
-                }
-            }
+            labeledBlock(
+                label = strings["money.state.$state"],
+                // **The label says why the first group is up here**, in the
+                // alert ink, so the lead reads as the one wanting a decision
+                // rather than as an arbitrary first row. #345.
+                labelColor = if (state == leadState) colors.alertInk else colors.ink2,
+                labelTag = MoneyTags.LEAD_HEADER.takeIf { state == leadState },
+                rows = inState.map { bill -> { BillRow(bill, hue, onOpen) } },
+            )
         }
 
         item {
-            QuietButton(
+            Spacer(Modifier.height(Space.s))
+            Action(
                 label = strings["money.add"],
                 onClick = onAdd,
+                mark = Symbols.add,
                 modifier = Modifier.testTag(MoneyTags.ADD),
             )
         }
     }
 }
 
+/**
+ * One bill: what it is, when it came, and how much.
+ *
+ * **The amount is the row's value, tabular, so a column of them reads down.**
+ * `DESIGN.md` 15. **One ink for every amount**: a large bill is not colored
+ * differently from a small one, which would be the app saying something about
+ * it. Rule 2.
+ */
 @Composable
 private fun BillRow(
     bill: Repository.Bill,
-    onOpen: () -> Unit,
-    isLast: Boolean,
+    hue: com.kamsiob.healthtrail.ui.theme.TabHue,
+    onOpen: (Repository.Bill) -> Unit,
 ) {
     val strings = LocalStrings.current
 
-    // **The amount is the trailing value, right aligned and tabular**, per
-    // `DESIGN.md` 15: amounts right-align so a column of them can be read down.
-    //
-    // **One ink for every amount.** A large bill is not colored differently
-    // from a small one, which would be the app saying something about it.
-    DenseRow(
-        // **A bill's own words can be long.** "Monthly room and board" wraps at
-        // this width and the date sits under it, so the amount starts level
-        // with the name rather than floating beside the wrap.
-        trailingAtTop = true,
+    ListRow(
         title = Bidi.isolate(bill.description),
-        subtitle = listOfNotNull(
+        support = listOfNotNull(
             bill.receivedEdtf?.takeIf { it.isNotBlank() }
                 ?.let { EventDateText.render(strings, it) },
             bill.stateNote?.takeIf { it.isNotBlank() },
             bill.notes?.takeIf { it.isNotBlank() },
         ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
-        // **Isolated, like the same amount in the fold above it.** The row
-        // rendered it raw while the fold's summary went through `Bidi.join`,
-        // which is one amount wearing two treatments on one screen. Seen in
-        // Arabic on the phone, where a number beside a currency beside a
-        // right to left heading is three runs and the app should say which is
-        // which rather than leaving it to the algorithm.
-        trailing = bill.amountMinor
+        mark = Symbols.money,
+        markTint = hue.ink,
+        markWash = hue.wash,
+        // **Isolated, like every other amount on the screen.** A number beside
+        // a currency beside a right to left heading is three runs, and the app
+        // says which is which rather than leaving it to the algorithm. Seen in
+        // Arabic on the phone.
+        value = bill.amountMinor
             ?.let { Bidi.isolate(formatMoney(strings, it, bill.currency)) }
             ?: strings["money.no_amount"],
-        chevron = true,
-        divider = !isLast,
-        onClick = onOpen,
+        onClick = { onOpen(bill) },
         clickLabel = strings["open.action"],
         modifier = Modifier.testTag(MoneyTags.row(bill.id)),
     )
 }
-
