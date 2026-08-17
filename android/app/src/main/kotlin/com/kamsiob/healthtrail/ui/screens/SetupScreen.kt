@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.FilledButton
 import com.kamsiob.healthtrail.ui.components.FieldGroup
+import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.components.FieldGroupGap
 import com.kamsiob.healthtrail.ui.components.HealthTrailTextField
 import com.kamsiob.healthtrail.ui.components.TextAction
@@ -222,9 +223,17 @@ fun SetupScreen(
             // edge sits directly against the button, and on the phone that read
             // as the button overlapping the field rather than as content
             // scrolling behind it. Invisible in the resting screenshot and
-            // obvious in a hand, which is why section 10.6 line 1 exists.
+            // obvious in a hand.
+            //
+            // **And the actions stand on their own tonal band**, which is what
+            // `m3v4-4` draws under Save: the questions scroll behind it and the
+            // band says where the screen stops asking and starts offering. The
+            // owner, 2026-08-17: it needs to be more polished, and the content
+            // used to be sliced mid field by the edge of the viewport with
+            // nothing marking it.
             Spacer(Modifier.height(Space.m))
 
+            Block {
             FilledButton(
                 label = strings["setup.continue"],
                 onClick = {
@@ -255,6 +264,7 @@ fun SetupScreen(
                 onClick = onSkip,
                 modifier = Modifier.testTag(SetupTags.SKIP),
             )
+            }
         }
     }
 }

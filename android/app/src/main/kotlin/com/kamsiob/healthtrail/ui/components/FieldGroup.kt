@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.v4.FieldBlock
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -53,26 +53,12 @@ fun FieldGroup(
     content: @Composable () -> Unit,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = strings[titleKey],
-            style = HealthTrail.type.bodyS,
-            color = colors.ink2,
-            modifier = Modifier.padding(start = Space.cardPadding),
-        )
-        Spacer(Modifier.height(Space.s))
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(Radius.cardLarge)
-                .background(colors.sand)
-                .padding(horizontal = Space.cardPadding, vertical = Space.cardPadding),
-        ) {
-            content()
-        }
-    }
+    // **It is the v4 field block now**, which fixes every form in the app at
+    // once rather than waiting for each to be rewritten. The label was a gray
+    // sentence above a block of gray sentences and the owner said so: "the text
+    // just kind of gets lost and it seems like clutter." #386.
+    FieldBlock(label = strings[titleKey], modifier = modifier) { content() }
 }
 
 /** The gap between one group and the next. Bigger than the gap inside one. */

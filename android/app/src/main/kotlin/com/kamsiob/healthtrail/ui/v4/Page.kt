@@ -60,7 +60,15 @@ import com.kamsiob.healthtrail.ui.theme.Space
 @Composable
 fun Page(
     title: String,
-    onBack: () -> Unit,
+    /**
+     * The way back, or null where there is none.
+     *
+     * **A destination has no back arrow**, because it is where back lands: the
+     * bottom bar is how somebody got there and how they leave. Every interior
+     * page passes one, and rule 18 forbids a page that can only be left by a
+     * gesture.
+     */
+    onBack: (() -> Unit)?,
     backLabel: String,
     modifier: Modifier = Modifier,
     /** The section or place this page belongs to, drawn as the quiet label. */
@@ -114,12 +122,14 @@ fun Page(
                     .padding(horizontal = Space.screenHorizontal),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = onBack, modifier = Modifier.testTag(PageTags.BACK)) {
-                    Symbol(
-                        symbol = Symbols.back,
-                        contentDescription = backLabel,
-                        tint = colors.ink,
-                    )
+                onBack?.let { back ->
+                    IconButton(onClick = back, modifier = Modifier.testTag(PageTags.BACK)) {
+                        Symbol(
+                            symbol = Symbols.back,
+                            contentDescription = backLabel,
+                            tint = colors.ink,
+                        )
+                    }
                 }
                 Spacer(Modifier.weight(1f))
                 badge?.let { state ->

@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.ui.v4
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -198,5 +199,61 @@ fun SearchDoor(
             style = HealthTrail.type.bodyM,
             color = HealthTrail.colors.ink2,
         )
+    }
+}
+
+/**
+ * One answer to a question that has two or three of them. #386.
+ *
+ * **A row rather than a chip**, because each option carries a line explaining
+ * what it does, and a chip that needs a sentence under it is a row. Three
+ * separate blocks for one question would be three answers pretending to be
+ * three subjects: it is one question, so it is one block.
+ *
+ * **The chosen one announces as chosen**, through `selected` in the semantics
+ * rather than only through the mark. Somebody who cannot see the mark gets the
+ * same information, which is the difference between a label and a state.
+ * `DESIGN.md` 12.
+ */
+@Composable
+fun ChoiceRow(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    detail: String? = null,
+) {
+    val colors = HealthTrail.colors
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = Space.touchTarget)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = Space.ml, vertical = Space.rowVertical),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = HealthTrail.type.rowTitle,
+                color = colors.ink,
+            )
+            if (!detail.isNullOrBlank()) {
+                // bidi-ok: a choice's own explanation is the app's sentence
+                // about what the choice does, never anything somebody typed.
+                Text(text = detail, style = HealthTrail.type.bodyM, color = colors.ink2)
+            }
+        }
+        // **The mark only where it is chosen**, and never a control of its own:
+        // the whole row is the target, so a radio button beside it would be a
+        // second thing to press that does the same job.
+        if (selected) {
+            Symbol(
+                symbol = com.kamsiob.healthtrail.ui.components.Symbols.check,
+                contentDescription = null,
+                tint = colors.blue,
+            )
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,10 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Body
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.ShellTags
-import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.GroupedRows
-import com.kamsiob.healthtrail.ui.components.DenseRow
 import com.kamsiob.healthtrail.ui.components.QuietButton
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -89,10 +93,6 @@ fun MoreScreen(
         // The More page says what it is for, like every other page. #379.
         tipsKey = "more",
         subtitleKey = "more.subtitle",
-        // **No eyebrow chip on a tab root**, D163: it repeated the title word
-        // for word, and the bottom bar already says where you are. The last
-        // of the four roots to lose it.
-        tab = {},
         // **Above the theme, because these are what somebody opens More to
         // reach.** The theme is changed once; search and export are not.
         header = {
@@ -136,68 +136,104 @@ private fun MoreDestinations(
 ) {
     val strings = LocalStrings.current
 
-    // **Destinations, so rows with chevrons rather than outlined pills.**
+    // **Destinations, so rows with a mark and a chevron rather than pills.**
     //
-    // These were five full width outlined buttons, and every one of them opens
-    // a screen. Law 2 gives that costume to a row ending in a chevron, and
-    // gives the outlined pill to a smaller action that does something now,
-    // "always a verb or a dialable number". Five pills that all navigate taught
-    // the person the wrong thing about what a pill does, on the one screen
-    // whose whole content is places to go.
+    // These were five full width outlined buttons and every one of them opens a
+    // screen. A container with a chevron is what this app gives a door; the
+    // action shape belongs to a verb that does something now.
     //
-    // `DESIGN.md` section 14 says More follows the notebook, and this is what
-    // that means: a grouped surface of doors.
+    // **Grouped by what somebody came for**, owner, 2026-08-17: eight doors in
+    // one block is a list to read rather than a place to look. Finding things,
+    // the notebook itself, keeping a copy, and what this app is. Four short
+    // groups, each with its own quiet label, which is rule 15 applied to a
+    // screen that is nothing but destinations.
     //
-    // **The order is by how often somebody reaches for it**, which is why
-    // search leads: `MASTER_SPEC.md` 4.8 puts it here and at the top of Today,
-    // and of these it is the one reached weekly rather than once.
-    val destinations = listOf(
-        Destination(strings["more.search"], onSearch, MoreTags.SEARCH),
-        Destination(strings["more.library"], onLibrary, MoreTags.LIBRARY),
+    // **Search leads its group**, because `MASTER_SPEC.md` 4.8 puts it here and
+    // at the top of Today, and of these it is the one reached weekly rather
+    // than once.
+    val groups = listOfNotNull(
+        strings["more.group.find"] to listOf(
+            Destination(strings["more.search"], onSearch, MoreTags.SEARCH, Symbols.search),
+            Destination(strings["more.library"], onLibrary, MoreTags.LIBRARY, Symbols.notebook),
+        ),
         // **How the notebook is set up, which had no door at all.** The
         // situation picker ran once during setup and was then unreachable
-        // forever, so a family whose care moved could not tell the app, and
-        // could not even see which setting they had chosen. 13.5 calls a
-        // capability only its author can find not finished, and law 5 promises
-        // this is "all of it changeable afterward from one screen, without
-        // penalty". This is that screen's door.
-        Destination(strings["more.situation"], onSituation, MoreTags.SITUATION),
+        // forever, so a family whose care moved could not tell the app. Law 5
+        // promises this is "all of it changeable afterward from one screen,
+        // without penalty". This is that screen's door.
+        //
         // **Who the notebook is about, which had no door either.** #371: the
         // name was typed once at setup, appears on no screen inside the app,
         // and is printed on everything shared out of it, so a typo was
         // invisible until a clinician was holding it. Beside the situation,
-        // because both are "how this notebook was set up".
-        Destination(strings["more.subject"], onSubject, MoreTags.SUBJECT),
-        // **More than one person, #379.** Beside who this is about, because
-        // they are the same question one step apart: who, and who else.
-        Destination(strings["people.open"], onPeople, MoreTags.PEOPLE),
-        Destination(strings["more.export"], onExport, MoreTags.EXPORT),
-        Destination(strings["more.restore"], onRestore, MoreTags.RESTORE),
-        Destination(strings["more.about"], onAbout, MoreTags.ABOUT),
-    ) + if (conflicts > 0) {
-        // **Beside restore, because that is where it came from.** Rule 18: if
-        // the merge points at this, this belongs where the merge lives.
-        listOf(Destination(strings["more.conflicts"], onConflicts, MoreTags.CONFLICTS))
-    } else {
-        emptyList()
-    }
+        // because both are how this notebook was set up, and **more than one
+        // person**, #379, because that is the same question one step on.
+        strings["more.group.notebook"] to listOf(
+            Destination(
+                strings["more.situation"],
+                onSituation,
+                MoreTags.SITUATION,
+                Symbols.standingInstructions,
+            ),
+            Destination(strings["more.subject"], onSubject, MoreTags.SUBJECT, Symbols.careTeam),
+            Destination(strings["people.open"], onPeople, MoreTags.PEOPLE, Symbols.addPerson),
+        ),
+        strings["more.group.copy"] to (
+            listOf(
+                Destination(strings["more.export"], onExport, MoreTags.EXPORT, Symbols.download),
+                Destination(
+                    strings["more.restore"],
+                    onRestore,
+                    MoreTags.RESTORE,
+                    Symbols.documents,
+                ),
+            ) + if (conflicts > 0) {
+                // **Beside restore, because that is where it came from.** Rule
+                // 18: if the merge points at this, this belongs where the merge
+                // lives.
+                listOf(
+                    Destination(
+                        strings["more.conflicts"],
+                        onConflicts,
+                        MoreTags.CONFLICTS,
+                        Symbols.incidents,
+                    ),
+                )
+            } else {
+                emptyList()
+            }
+            ),
+        strings["more.group.app"] to listOf(
+            Destination(strings["more.about"], onAbout, MoreTags.ABOUT, Symbols.tips),
+        ),
+    )
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(Space.sectionGap))
-        GroupedRows(items = destinations) { destination, isLast ->
-            DenseRow(
-                // bidi-ok: a catalog label, in the app's own words rather than the person's.
-                title = destination.label,
-                chevron = true,
-                divider = !isLast,
-                onClick = destination.onOpen,
-                // **A reader is told the tap opens the place**, rather than
-                // "double tap to activate", which names no act at all. The row
-                // already says where it goes, so the label is the verb and not
-                // the destination said twice.
-                clickLabel = strings["open.action"],
-                modifier = Modifier.testTag(destination.testTag),
-            )
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        Spacer(Modifier.height(Space.s))
+        groups.forEach { (label, destinations) ->
+            Eyebrow(text = label)
+            Block(padding = Space.none) {
+                destinations.forEachIndexed { index, destination ->
+                    ListRow(
+                        // bidi-ok: a catalog label, in the app's own words
+                        // rather than the person's.
+                        title = destination.label,
+                        mark = destination.mark,
+                        isDoor = true,
+                        onClick = destination.onOpen,
+                        // **A reader is told the tap opens the place**, rather
+                        // than "double tap to activate", which names no act at
+                        // all. The row already says where it goes, so the label
+                        // is the verb and not the destination said twice.
+                        clickLabel = strings["open.action"],
+                        modifier = Modifier.testTag(destination.testTag),
+                    )
+                    if (index != destinations.lastIndex) RowDivider()
+                }
+            }
         }
     }
 }
@@ -207,26 +243,25 @@ private data class Destination(
     val label: String,
     val onOpen: () -> Unit,
     val testTag: String,
+    @androidx.annotation.DrawableRes val mark: Int,
 )
 
 @Composable
 private fun ComingHere() {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .testTag(MoreTags.COMING)
             .testTag(ShellTags.NOT_BUILT),
+        verticalArrangement = Arrangement.spacedBy(Space.s),
     ) {
         Spacer(Modifier.height(Space.sectionGap))
-        GroupHeader(labelKey = "more.coming.group")
-        Spacer(Modifier.height(Space.m))
-        Text(
-            text = strings["more.coming.body"],
-            style = HealthTrail.type.bodyM,
-            color = colors.ink2,
-        )
+        Eyebrow(text = strings["more.coming.group"])
+        Block {
+            // bidi-ok: the app's own sentence about what it has not built yet.
+            Body(text = strings["more.coming.body"])
+        }
     }
 }
