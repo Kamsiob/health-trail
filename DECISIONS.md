@@ -2990,6 +2990,38 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D179. Material 3 Expressive is not in a stable material3, so the build takes one alpha and pins it
+
+**Date:** 2026-08-16. **Decided under rule 10**, working #385, step 1 of the rebuild. **Corrects the central factual claim of [D178], of `docs/V4.md` 1, and of #385 itself.**
+
+**The claim, and it is wrong.** All three say the Expressive foundation is already on the classpath, unused: that `compose-bom 2026.06.01` resolves material3 to 1.4.0 and that 1.4.0 carries `MaterialExpressiveTheme`, `MotionScheme` and tokens for `ButtonGroup`, `SplitButton`, `FloatingToolbar` and `LoadingIndicator`. The bom does resolve 1.4.0. **1.4.0 does not carry any of it in a form this app can call.**
+
+**Measured by compiling against it, which is the only test that answers the question:**
+
+- `MaterialExpressiveTheme`: exists, and is `internal`. "Cannot access: it is internal in file."
+- `MotionScheme`: exists, and is `internal`. So is `MotionScheme.expressive()`.
+- `ButtonGroup`, `SplitButtonLayout`, `HorizontalFloatingToolbar`, `LoadingIndicator`, `MaterialShapes`: **unresolved reference.** Not internal, absent.
+
+**Why the classfiles said otherwise.** They are all in the aar, and `javap` shows them as public JVM members, because Kotlin's `internal` is a compiler visibility that lives in the metadata rather than in the bytecode. **A file listing is not an API**, and every previous record here was written from one.
+
+**The decision.** `material3` is pinned to **1.5.0-alpha26**, past the bom, and the bom moves to **2026.08.00**. Every other Compose artifact stays on the bom.
+
+**The bom moves for a specific reason rather than for currency.** material3 1.5.0-alpha26 asks for Compose UI 1.12.0-beta01. Under the old bom, which pinned 1.11.4, the alpha would have dragged the whole UI stack onto a beta as a side effect of one line. Bom 2026.08.00 pins UI 1.12.0 stable, which is higher than the beta and wins, so **one artifact is off the stable channel instead of seven.**
+
+**Checked against dl.google.com on the day**, not against a document: 1.4.0 is the newest stable material3, 1.5.0-alpha26 the newest release of any kind, and nothing sits between them. So this is not "an alpha instead of waiting for the stable one", it is **the only shelf the design language is on**.
+
+**Why an alpha is acceptable here, against the three filters in rule 23.** Safe: it is a drawing library, and D178 puts the entire back end out of scope, so the schema, the change log, the export container and the decryptor cannot be reached by it. Private: it is offline code with no network path, exactly like the stable one. Compatible: verified before it was kept, with `tools/verify.sh` green, 218 unit tests green and the instrumented suite compiling and running.
+
+**What it costs.** `rememberModalBottomSheetState` is deprecated in the alpha, at 18 call sites, in favor of `rememberBottomSheetState`. Warnings, not errors, and the sheet is one of the six shared surfaces step 2 rewrites, so they are fixed there rather than churned twice.
+
+**One thing gets cheaper.** `MaterialShapes`, the 35 shape library, is inside material3 1.5.0. `HANDOFF.md` and V4 both said it needed `androidx.graphics:graphics-shapes` added by hand. **No extra dependency**, and shape variety is what `docs/V4.md` 2 leans on hardest.
+
+**What would reopen it:** material3 1.5.0 going stable, which is a version bump and nothing else. **Before any release build**, this pin is checked against what is stable then. The owner holds delivery until the design is approved, so no alpha reaches a person's phone on this schedule.
+
+**The lesson, which is the reusable part.** Three documents and an issue all repeated one unverified sentence, each citing the one before it, and the sentence was the load bearing premise of a plan for the whole interface. **The compiler was the cheapest possible check and nobody had run it.**
+
+---
+
 ### D178. The interface is replaced on Material 3 Expressive, and the back end is not touched
 
 **Date:** 2026-08-16. **The owner, after looking at the materials pass:** "this is like 60 percent the old design ... old headers, old page titles, old accordions, old buttons, old projects, and the list goes on." Then: "at the foundation of the design is using Google's Material 3 Expressive design elements and assets. from there we enhance it. we're not tweaking what we have now or updating what the old code is. we are replacing completely. that means all of the old user interface disappears and is gone and is written from the ground up." And: "the underlying back end is not changing."
@@ -2999,6 +3031,8 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **This supersedes the app's own-vocabulary habit.** Until now the app imported almost nothing from Material beyond `Text` and drew its own switch, chevron and buttons. That was a defensible position and it is not the one wanted. Google's components are the foundation and this app's character sits on top of them. **D175's no-ripple rule and the hand-drawn controls it protected are superseded where they conflict**, because they were arguments for a vocabulary that is being replaced.
 
 **The foundation is already on the classpath and was never used.** `compose-bom 2026.06.01` resolves material3 to 1.4.0, which carries `MaterialExpressiveTheme`, `ExperimentalMaterial3ExpressiveApi`, `MotionScheme` with the expressive scheme, `ShapeDefaults`, and tokens for `ButtonGroup`, `ConnectedButtonGroup`, `SplitButton`, `FloatingToolbar` and `LoadingIndicator`. `Theme.kt` still wraps the app in plain `MaterialTheme`. **Verified against the resolved artifact rather than assumed**, because the whole plan rests on it. `MaterialShapes` is the one thing not in there and comes from `androidx.graphics:graphics-shapes`.
+
+**2026-08-16, and this paragraph is wrong: see [D179].** The verification was a listing of the classfiles in the aar, and Kotlin's `internal` does not show up in one. The expressive theme and the motion scheme are internal in 1.4.0 and the expressive components are absent from it entirely. **Nothing else in this entry changes**, because the direction never depended on which artifact carried the components; the build now pins material3 1.5.0-alpha26, where they are public, and `MaterialShapes` needs no extra dependency after all.
 
 **Why the previous attempt produced this.** It converted materials: press states, one radius, the typeface, the field, the eyebrow. **D170 had already written the reason that could not work**, in its own words, that a token layer cannot produce a masthead, a saturated hero or a tinted grid, because those are arrangements. The attempt repeated exactly the failure D170 describes and then reported it as finished.
 

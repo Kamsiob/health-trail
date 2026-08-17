@@ -6,6 +6,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.MotionScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -173,6 +174,35 @@ object ReducedMotion : Motion {
     override val pressScale: Float = 1f
 
     override val isReduced: Boolean = true
+}
+
+/**
+ * Material's own motion, turned off. #385.
+ *
+ * **Every Material component below the theme reads its motion from a
+ * [MotionScheme] rather than from [Motion]**, so [ReducedMotion] alone leaves
+ * the platform's springs running: a sheet still slides, a switch still travels,
+ * a button still bounces under a finger. Reduced motion is a promise about the
+ * whole screen, and half of one is worse than none, because the person who
+ * turned the setting on is the one who finds out.
+ *
+ * The two families split the same way [ReducedMotion] does. Spatial specs move
+ * a thing across the screen and become instant. Effects specs are color and
+ * opacity, and keep the 100ms fade, so a press still acknowledges itself.
+ *
+ * **Material 3 Expressive's own scheme is what runs when motion is not
+ * reduced**, and it is not named here: `MotionScheme.expressive()` is internal
+ * to material3, so the way to ask for it is to let
+ * `MaterialExpressiveTheme` default to it. `HealthTrailTheme` therefore passes
+ * this scheme or passes nothing.
+ */
+object StillMotionScheme : MotionScheme {
+    override fun <T> defaultSpatialSpec(): FiniteAnimationSpec<T> = snap()
+    override fun <T> fastSpatialSpec(): FiniteAnimationSpec<T> = snap()
+    override fun <T> slowSpatialSpec(): FiniteAnimationSpec<T> = snap()
+    override fun <T> defaultEffectsSpec(): FiniteAnimationSpec<T> = tween(REDUCED_FADE_MILLIS)
+    override fun <T> fastEffectsSpec(): FiniteAnimationSpec<T> = tween(REDUCED_FADE_MILLIS)
+    override fun <T> slowEffectsSpec(): FiniteAnimationSpec<T> = tween(REDUCED_FADE_MILLIS)
 }
 
 val LocalMotion = staticCompositionLocalOf<Motion> { FullMotion }

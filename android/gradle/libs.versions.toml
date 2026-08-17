@@ -7,7 +7,22 @@
 [versions]
 agp = "9.3.1"
 kotlin = "2.4.10"  # For the Compose compiler plugin only. AGP 9 brings its own Kotlin support.
-composeBom = "2026.06.01"
+# 2026.08.00 rather than 2026.06.01, and the reason is the line below it.
+# material3 1.5.0-alpha26 asks for Compose UI 1.12.0-beta01, and the older bom
+# pinned 1.11.4, so the alpha would have pulled the whole UI stack onto a beta
+# behind the bom's back. This bom pins 1.12.0 stable, which is higher, so
+# **one artifact is off the stable channel rather than seven.** D179.
+composeBom = "2026.08.00"
+# **Material 3 Expressive is not in a stable material3 yet, and this is the
+# whole reason for an alpha in this build.** The bom resolves material3 to
+# 1.4.0, where `MaterialExpressiveTheme` and `MotionScheme` are `internal` and
+# `ButtonGroup`, `SplitButton`, `FloatingToolbar`, `LoadingIndicator` and
+# `MaterialShapes` do not exist at all. Verified by compiling against it on
+# 2026-08-16, not by reading a release note. D179.
+#
+# Checked against dl.google.com the same day: 1.4.0 is the newest stable and
+# 1.5.0-alpha26 the newest release of any kind. Nothing between them.
+material3 = "1.5.0-alpha26"
 coreKtx = "1.19.0"
 activityCompose = "1.13.0"
 lifecycle = "2.11.0"
@@ -37,7 +52,11 @@ compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+# **The one library that names its own version against the bom.** The bom is
+# still the source of truth for every other Compose artifact; this one is
+# pinned past it because the interface is being built on Material 3 Expressive
+# and the bom's material3 does not carry it. D179.
+compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 # The database. androidx.sqlite gives the SupportSQLite interfaces, SQLCipher
 # provides the encrypted implementation behind them. There is deliberately no
