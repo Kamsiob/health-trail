@@ -182,7 +182,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | B4 | The emulator. Resolved by dropping it, 2026-07-31 |
 | D146 | The welcome is remembered by the phone as well as by the notebook |
 
-**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field.
+**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field, **D190** white is the third reserved surface and the only one with an edge, **D191** `m3v4-0` draws the arranged Today and there are two of them.
 
 ---
 
@@ -2989,6 +2989,42 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **There was a third record, found after the fix, and it changes nothing but is worth the paragraph.** `DESIGN.md` section 14's row for this screen also said the role belongs behind "Add more", **and it gave the reason**: the role and up to six chips sat *between* the name and the number, so the number, which is why anybody adds a person, was the field furthest down. **That is a layout complaint, not an argument for hiding the role**, and putting the three fields in one group with the chips underneath answers it without hiding anything. So two records asked for the role to be folded, one recorded folding it being reverted, and the built screen now satisfies all three. Section 14 is corrected to say so.
 
 **Three records, one screen, and the only way to see it was to read all three.** The check that would have caught it does not exist and probably cannot: they were not contradictory statements, they were one statement, one reason, and one exception, written months apart in three files.
+
+---
+
+### D191. `m3v4-0` draws the arranged Today, not the fallback one, and both exist
+
+**Date:** 2026-08-17. **Phase 4, #386, #387.** Found while building, not while planning, and it cost a screen's worth of work aimed at the wrong file.
+
+**There are two Today screens and nothing said which one the drawing is.** `NotebookShell` reads `todayLayout` and renders `TodayFieldScreen` when there is one and `TodayScreen` when there is not. `HANDOFF.md` and `gh issue view 321` both said "Today, `m3v4-0`" and neither named a file.
+
+**The shell's own comment said the fallback was what ships, and it is stale.** It reads "nothing applies one yet: the situation template's hand belongs to onboarding and is #305". #305 has since landed: `AppRoot.kt` calls `applySituation` when somebody picks a setting and `applyDefaultStartingHand` when they skip it, so **every notebook created through the app's own setup has a layout from its first minute** and every person sees the card surface. The comment was true when it was written and has been wrong since.
+
+**Three things settle which screen the drawing is**, and none of them is the file name:
+
+1. **D183 was applied to the card surface.** Its own text weighs the eyebrow against "the Today card", whose label is written by the person, and `TodayFieldScreen` carries the masthead measurements that entry records. The drawing's masthead was built there.
+2. **The seeded phone shows the drawing's content on that screen.** Walking the semantics tree gives the gold date, "Margaret Ellison's day", the next appointment at "Tomorrow 10:15 AM" and "Tracking, Weight, 131.2 lb, 12 readings". That is `m3v4-0`'s content, card for card.
+3. **The fixture writes a layout whether or not `--arranged` is passed.** `generate.py` says why: "nobody ever sees a blank Today, so a fixture that writes no layout is a fixture that cannot show the surface at all." So no seed can show the fallback, which is why nobody had looked at it.
+
+**The fallback is still live and was still owed the rewrite.** It is what a notebook restored from an archive with no `today_card` rows falls back to, and it was the last screen in the app carrying the old hero, dense row and fold. It is rewritten onto `ui/v4` and the four surfaces that rewrite needed, `Trace`, `Chip`, `StatBlock` and `NextBlock`, are exactly what the card surface needs to draw its own lead appointment and its own measure card. **Nothing is thrown away by having built it first**, but the order was wrong and the record now says so.
+
+**What has to change for this to be revisited.** If #305 is ever reversed, or if a setting ships that leaves somebody with no starting hand, the fallback becomes the front door again and this entry's premise goes with it.
+
+**What this leaves open, and it is the next unit of work.** `TodayFieldScreen`, `TodayCard` and `TodayLead` are 3,291 lines still in the old language, and rule 12's "rewritten or left alone" forbids editing the card bodies in place. They are rewritten whole, on the surfaces already written, and `HANDOFF.md` says so rather than leaving the next session to find this the same way.
+
+---
+
+### D190. White is the third reserved surface, and it is the only one in the app with an edge
+
+**Date:** 2026-08-17. **Phase 4, #386.**
+
+**`docs/V4.md` 2.1 reserved `card` for two things**, the person's own paper and the actions band at the foot of a form, and said nothing else earns it. **`m3v4-0` puts a tracked measurement on it too.**
+
+**The reason the reservation gives extends to it.** White is where the app holds the person's own record of something rather than its own summary of one: a photograph of a discharge letter, and a column of numbers they wrote down themselves. A measure's readings are theirs in exactly that sense. So the list becomes three rather than the drawing being overruled.
+
+**It carries a hairline, and that is a departure worth naming.** `paper` is `#FBFAF8` and `card` is `#FFFFFF`, four values apart, so a white card on the canvas has no boundary at all. The drawing separates them with a one point edge, measured off the PNG at `#E9EAEC`, which is `hairline` over white. **The only shadow in the app is still under the paper card**: this is an edge, not a raise. And 2.1's "no outlines" is about a control claiming to be tappable, which this is not.
+
+**The card wears `hueFor(PROGRESS)` rather than the green the drawing is painted in.** A section hue is identity and the mapping is the owner's and lives in one place. Somebody who learned which color Progress is from the notebook has to find the same color on the front door, and a card painted to match a mockup swatch would teach them two answers. The drawing's rule is "the card wears its section", and `hueFor` is where that rule already lives.
 
 ---
 

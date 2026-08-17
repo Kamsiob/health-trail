@@ -27,15 +27,21 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 - **Step 1, the theme: done.** #385. `MaterialExpressiveTheme`, 48 color roles, the type ladder, five corners, reduced motion through `StillMotionScheme`.
 - **Step 2, the shared surfaces: done.** #386. Face, icons, nav bar, blocks, rows, buttons, switch, sheet, forms. The accordion was closed rather than replaced, D185.
-- **Phase 4, the screens: 20 of 85.** The notebook, the document, the care team, the person, medications, the questions, money, the milestones, the chapters, the care threads, the bill, the medication, the thread, the chapter, More, Appearance, the people, the paper picker, the violation, About.
+- **Phase 4, the screens: 21 of 85.** The notebook, the document, the care team, the person, medications, the questions, money, the milestones, the chapters, the care threads, the bill, the medication, the thread, the chapter, More, Appearance, the people, the paper picker, the violation, About, and **the fallback Today**.
 
 **`ui/v4` holds:** `Page` + `labeledBlock`, `Block`/`BlockTone`, `FactBlock`, `Eyebrow`, `Lead`, `BigNumber`, `Body`, `ListRow`/`RowDivider`/`ChoiceRow`, `SearchDoor`, `PaperCard`, `Action`/`ActionEmphasis`/`IconAction`, `Sheet`/`SheetBody`/`rememberSheet`, `Avatar`/`PersonHero`/`PersonRow`, `Segments`, `Road`/`Stop`/`RouteMark`, `FieldBlock`.
 
-**Still to write:** the stat block, the chips, the switch row, the chart, and a grid cell for the documents pictures view.
+**Also in `ui/v4` now:** `Trace` (+ `TraceHeight`), `Chip`, `StatBlock`, `NextBlock`/`InsetDoor`/`Face`.
+
+**Still to write:** the switch row, and a grid cell for the documents pictures view.
 
 ### Next, in this order
 
-1. **Today**, `m3v4-0`. Drawn, and nothing like what ships: a gold date eyebrow and "<name>'s day" over a **saturated blue hero holding the next appointment** with an inset white card of questions ready to ask, then "What you track" over a white card with a value, a readings chip and a line chart. Needs the appointment's location, the count of questions ready for it, and one tracked measurement.
+1. **The arranged Today**, `m3v4-0`, and **read D191 before touching it**. **There are two Today screens.** `NotebookShell` draws `TodayFieldScreen` when the subject has a `todayLayout` and `TodayScreen` when it does not, and **onboarding always writes one** (`AppRoot.kt` calls `applySituation` or `applyDefaultStartingHand`), so **every real notebook and every seed shows the card surface**. The shell's own comment saying otherwise is stale. The fallback is done. **What is left is `TodayFieldScreen` 2,643 lines, `TodayCard` 458, `TodayLead` 190**, all still in the old language, rewritten whole per rule 12 rather than edited.
+
+   What the drawing wants that the card surface does not yet have: the next appointment as a **saturated blue lead** carrying its **location** and an **inset white card counting the questions ready for it**, and the measure card as a **white card** with the measure's name as its eyebrow, the value at display size, a **readings chip**, the **`Trace`** and the month it starts in. All five surfaces are written and waiting.
+
+   **No seed can show the fallback**: `generate.py` writes a layout whether or not `--arranged` is passed, deliberately. To see the fallback, set a notebook up through the app rather than seeding one.
 2. **The project screen**, `m3v4-2`. The owner has ruled: "it's absolutely horrid and so far away from the mock-ups." Gold decision block, status pill, one filled action beside two tonal, "The road" over the spine.
 3. **The rest of the lists and detail screens.** All one shape: `Page` + `labeledBlock` + `ListRow`.
 4. **Appointments and the documents list last of the lists**: each drags an old component in, `MonthGrid` and the thumbnail grid.
@@ -60,6 +66,8 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 - **`tools/seed.sh` taps the password field by `=Password`**, an exact match added to `walk.sh` on 2026-08-17. Layout changes to the restore screen break the seed; its last line says "Restored." or it did not finish.
 - **A `SlotWriter` `ArrayIndexOutOfBoundsException` mid suite is the Compose alpha**, not the change under test. Re-run the class alone.
 - **An eyebrow's words are capitals on screen and natural in the description.** Assert on the description.
+- **A name inside a sentence is isolated, so the test expectation carries the marks too.** `today.masthead` renders `⁨Ruth⁩'s day`, and asserting on "Ruth's day" fails on a screen that is drawing it correctly.
+- **A screen's own file name is not evidence of which screen ships.** Two Todays, one board entry, and the shell comment naming the live one was a year out of date. D191.
 
 ## 3. Reading ladder
 
