@@ -93,6 +93,53 @@ fun Page(
 ) {
     val colors = HealthTrail.colors
     Surface(modifier = Modifier.fillMaxSize(), color = colors.paper) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                // **The page owns its insets**, because a page opens over the
+                // shell rather than inside it: without this the back arrow sits
+                // under the status bar and the first thing the person sees is
+                // their own paper with a clock on top of it. Seen on the phone,
+                // which is the only place it was visible. Rule 21.
+                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.ime)),
+        ) {
+            // **The way back is pinned, not scrolled.** It used to be the first
+            // item of the list, so on a long screen it scrolled away and the
+            // only way out was a gesture some people do not know, which is the
+            // dead end rule 18 forbids. Found by a journey that saved something
+            // from the foot of a list and then could not leave.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Space.screenHorizontal),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = onBack, modifier = Modifier.testTag(PageTags.BACK)) {
+                    Symbol(
+                        symbol = Symbols.back,
+                        contentDescription = backLabel,
+                        tint = colors.ink,
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+                badge?.let { state ->
+                    Text(
+                        text = state.uppercase(LocalConfiguration.current.locales[0]),
+                        style = HealthTrail.type.eyebrow,
+                        color = colors.goldInk,
+                        modifier = Modifier
+                            .clip(Radius.pill)
+                            .background(colors.goldWash)
+                            .padding(horizontal = Space.sm, vertical = Space.xs)
+                            // Capitals are for the eye; a reader gets the words
+                            // as they were written. D183.
+                            .semantics { contentDescription = state },
+                    )
+                    Spacer(Modifier.width(Space.s))
+                }
+                actions?.invoke()
+            }
+
         LazyColumn(
             // **The caller's modifier lands on the list, not on the surface
             // around it.** A test that scrolls to a control does
@@ -102,44 +149,9 @@ fun Page(
             // sitting at the foot of the list. #386.
             modifier = modifier
                 .fillMaxSize()
-                // **The page owns its insets**, because a page opens over the
-                // shell rather than inside it: without this the back arrow sits
-                // under the status bar and the first thing the person sees is
-                // their own paper with a clock on top of it. Seen on the phone,
-                // which is the only place it was visible. Rule 21.
-                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.ime))
                 .padding(horizontal = Space.screenHorizontal),
             verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
-            item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onBack, modifier = Modifier.testTag(PageTags.BACK)) {
-                        Symbol(
-                            symbol = Symbols.back,
-                            contentDescription = backLabel,
-                            tint = colors.ink,
-                        )
-                    }
-                    Spacer(Modifier.weight(1f))
-                    badge?.let { state ->
-                        Text(
-                            text = state.uppercase(LocalConfiguration.current.locales[0]),
-                            style = HealthTrail.type.eyebrow,
-                            color = colors.goldInk,
-                            modifier = Modifier
-                                .clip(Radius.pill)
-                                .background(colors.goldWash)
-                                .padding(horizontal = Space.sm, vertical = Space.xs)
-                                // Capitals are for the eye; a reader gets the
-                                // words as they were written. D183.
-                                .semantics { contentDescription = state },
-                        )
-                        Spacer(Modifier.width(Space.s))
-                    }
-                    actions?.invoke()
-                }
-            }
-
             hero?.let { lead -> item { lead() } }
 
             item {
@@ -175,6 +187,7 @@ fun Page(
             content()
 
             item { Spacer(Modifier.height(Space.xxl)) }
+            }
         }
     }
 }

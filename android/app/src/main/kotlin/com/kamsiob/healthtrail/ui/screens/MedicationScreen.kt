@@ -1,29 +1,34 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.clickable
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.GroupHeader
-import com.kamsiob.healthtrail.ui.components.QuietButton
-import com.kamsiob.healthtrail.ui.components.openableByTap
-import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.Waypoint
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.Body
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.IconAction
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
+import com.kamsiob.healthtrail.ui.v4.Road
+import com.kamsiob.healthtrail.ui.v4.Stop
+import com.kamsiob.healthtrail.ui.v4.labeledBlock
 
 object MedicationTags {
     const val NAME = "medication"
@@ -32,10 +37,13 @@ object MedicationTags {
     const val REMOVE = "medication_remove"
     fun question(id: String) = "medication_question_$id"
     fun event(id: String) = "medication_event_$id"
+
+    /** The tag the old scaffold produced, kept so a journey still finds this screen. */
+    const val ROOT = "section_root_medication"
 }
 
 /**
- * One medication, and how it changed.
+ * One medication, and how it changed. Rewritten onto `ui/v4`, #386.
  *
  * `MASTER_SPEC.md` 4.6: a medication's journey crosses chapters and keeps its
  * concern flags attached forever. **That journey is what makes this a record
@@ -45,13 +53,12 @@ object MedicationTags {
  *
  * **This app records medications and does not track them.** No reminders, no
  * doses taken, no adherence, and nothing here says whether any of it was right.
- * Rule 2, and the medications screen says so in its own subtitle.
+ * Rule 2.
  *
- * **The spine is continuous**, because a medication's history is the thing
- * itself rather than a filter over the record, which is the same reason an
- * incident thread and a chapter both get one.
- *
- * **Oldest first**, because it is a story about how something changed.
+ * **The history is a road and the questions are a list.** D187: what happened to
+ * this medication is a path, oldest first, because it is a story about how
+ * something changed; what is still to ask about it is not a sequence and does
+ * not get a line drawn down it.
  */
 @Composable
 fun MedicationScreen(
@@ -60,10 +67,10 @@ fun MedicationScreen(
     /**
      * Questions waiting to be asked about this one.
      *
-     * `MASTER_SPEC.md` section 3 promises exactly this and it had no data
-     * behind it: `question.medication_id` sat in the schema with no writer and
-     * no reader, so a question about a dose change lived only in the questions
-     * section as a sentence with a drug name in it.
+     * `MASTER_SPEC.md` 3 promises exactly this and it had no data behind it:
+     * `question.medication_id` sat in the schema with no writer and no reader,
+     * so a question about a dose change lived only in the questions section as a
+     * sentence with a drug name in it.
      */
     questions: List<Repository.Question>,
     onOpenQuestion: (Repository.Question) -> Unit,
@@ -80,201 +87,151 @@ fun MedicationScreen(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
+    val hue = hueFor(Repository.Section.MEDICATIONS)
 
-    SectionScaffold(
-        onEdit = onEdit,
-        editTag = MedicationTags.EDIT,
-        editLabel = strings["medication.edit"],
-        name = MedicationTags.NAME,
-        // **The chip says where you are, the heading says what you came for.**
-        // This passed the record's own words as the title, which put them in an
-        // 11sp mono chip and again underneath at display weight: the same label
-        // in two slots, which section 1 bans. #189 gave the scaffold a heading
-        // for exactly this, and every detail screen inherits it.
-        title = strings["notebook.section.medications"],
-        heading = Bidi.isolate(medication.name),
-        section = Repository.Section.MEDICATIONS,
+    Page(
+        eyebrow = strings["notebook.section.medications"],
+        eyebrowColor = hue.ink,
+        title = Bidi.isolate(medication.name),
         subtitle = medication.doseText?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) }
             ?: strings["medication.nodose"],
         onBack = onBack,
-        backLabelKey = backLabelKey,
-        modifier = modifier,
+        backLabel = strings[backLabelKey],
+        actions = {
+            IconAction(
+                symbol = Symbols.edit,
+                label = strings["medication.edit"],
+                onClick = onEdit,
+                modifier = Modifier.testTag(MedicationTags.EDIT),
+            )
+        },
+        modifier = modifier.testTag(MedicationTags.ROOT),
     ) {
         item {
-            medication.purposeText?.takeIf { it.isNotBlank() }?.let {
-                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
-                Spacer(Modifier.height(Space.m))
-            }
-
-            // **Both facts stated in words**, per 2.2, so neither depends on
-            // noticing a color or a mark.
-            val facts = listOfNotNull(
-                if (medication.isStopped) {
-                    medication.stoppedEdtf?.takeIf { it.isNotBlank() }?.let {
-                        strings("medication.stopped.on", "date" to EventDateText.render(strings, it))
-                    } ?: strings["medication.stopped"]
-                } else {
-                    null
-                },
-                // Same as the list: the flag is stored, but a stopped
-                // medication is not on the card, so saying it is would be the
-                // record lying about itself.
-                if (medication.showsOnEmergencyCard) {
-                    strings["medication.on.card"]
-                } else {
-                    null
-                },
-            )
-            facts.forEach {
-                // bidi-ok: a catalog label, in the app's own words rather than the person's.
-                Text(text = it, style = HealthTrail.type.bodyS, color = colors.ink2)
-                Spacer(Modifier.height(Space.xs))
-            }
-
-            medication.notes?.takeIf { it.isNotBlank() }?.let {
-                Spacer(Modifier.height(Space.s))
-                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyM, color = colors.ink2)
-            }
-
-            Spacer(Modifier.height(Space.sectionGap))
-            // **Writing down a change comes before correcting the record**,
-            // because a dose changing is the ordinary event and a typo is the
-            // rare one.
-            QuietButton(
-                label = strings["medication.record"],
-                onClick = onRecordChange,
-                modifier = Modifier.testTag(MedicationTags.RECORD),
-            )
-            Spacer(Modifier.height(Space.cardGap))
-            Spacer(Modifier.height(Space.sectionGap))
-        }
-
-        // **Before the history, because it is the thing to act on.** The
-        // history is what happened; these are what to do about it, and somebody
-        // opening this screen on the way into a room needs them first.
-        if (questions.isNotEmpty()) {
-            item {
-                GroupHeader(labelKey = "medication.questions")
-                Spacer(Modifier.height(Space.headerGap))
-            }
-            questions.forEachIndexed { index, question ->
-                item(key = "q_${question.id}") {
-                    SpineRow(
-                        continuesAbove = index > 0,
-                        continuesBelow = index < questions.lastIndex,
-                        node = colors.blue,
-                        // Hollow: nobody has asked it yet. Same shape the prep
-                        // sheet uses for the same state, per DESIGN.md 5.2.1.
-                        state = Waypoint.UPCOMING,
-                        routeColor = colors.blue,
-                    ) {
-                        Column {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .semantics(mergeDescendants = true) { }
-                                    .clip(Radius.cardLarge)
-                                    // #231: the tap opens the question's own
-                                    // entry, and now says so.
-                                    .openableByTap(
-                                        label = strings["prep.change.open"],
-                                        onTap = { onOpenQuestion(question) },
-                                        resting = colors.card,
-                                    )
-                                    .testTag(MedicationTags.question(question.id))
-                                    .padding(Space.cardPadding),
-                            ) {
-                                question.roleLabel?.takeIf { it.isNotBlank() }?.let {
-                                    Text(
-                                        text = Bidi.isolate(it),
-                                        style = HealthTrail.type.eyebrow,
-                                        color = colors.ink2,
-                                    )
-                                    Spacer(Modifier.height(Space.xs))
-                                }
-                                Text(
-                                    text = Bidi.isolate(question.text),
-                                    style = HealthTrail.type.bodyL,
-                                    color = colors.ink,
-                                )
-                            }
-                            Spacer(Modifier.height(Space.cardGap))
-                        }
-                    }
+            Block(tone = BlockTone.Section, hue = hue) {
+                medication.purposeText?.takeIf { it.isNotBlank() }?.let {
+                    Body(text = Bidi.isolate(it), color = colors.ink, style = HealthTrail.type.bodyL)
                 }
+
+                // **Both facts stated in words**, so neither depends on
+                // noticing a color or a mark. `DESIGN.md` 9.
+                listOfNotNull(
+                    if (medication.isStopped) {
+                        medication.stoppedEdtf?.takeIf { it.isNotBlank() }?.let {
+                            strings(
+                                "medication.stopped.on",
+                                "date" to EventDateText.render(strings, it),
+                            )
+                        } ?: strings["medication.stopped"]
+                    } else {
+                        null
+                    },
+                    // Same as the list: the flag is stored, but a stopped
+                    // medication is not on the card, so saying it is would be
+                    // the record lying about itself.
+                    strings["medication.on.card"].takeIf { medication.showsOnEmergencyCard },
+                ).forEach {
+                    // bidi-ok: a catalog label, in the app's own words rather
+                    // than the person's.
+                    Body(text = it, color = hue.ink)
+                }
+
+                medication.notes?.takeIf { it.isNotBlank() }?.let {
+                    Body(text = Bidi.isolate(it))
+                }
+
+                // **Writing down a change comes before correcting the record**,
+                // because a dose changing is the ordinary event and a typo is
+                // the rare one.
+                Action(
+                    label = strings["medication.record"],
+                    onClick = onRecordChange,
+                    mark = Symbols.add,
+                    modifier = Modifier.testTag(MedicationTags.RECORD),
+                )
             }
-            item { Spacer(Modifier.height(Space.sectionGap)) }
         }
 
-        item {
-            GroupHeader(labelKey = "medication.history")
-            Spacer(Modifier.height(Space.headerGap))
-        }
+        // **Before the history, because it is the thing to act on.** The history
+        // is what happened; these are what to do about it, and somebody opening
+        // this screen on the way into a room needs them first.
+        labeledBlock(
+            label = strings["medication.questions"],
+            rows = questions.map { question ->
+                {
+                    ListRow(
+                        title = Bidi.isolate(question.text),
+                        support = question.roleLabel?.takeIf { it.isNotBlank() }
+                            ?.let { Bidi.isolate(it) },
+                        mark = Symbols.askNextTime,
+                        markTint = colors.blueDeep,
+                        markWash = colors.blueWash,
+                        isDoor = true,
+                        onClick = { onOpenQuestion(question) },
+                        clickLabel = strings["prep.change.open"],
+                        modifier = Modifier.testTag(MedicationTags.question(question.id)),
+                    )
+                }
+            },
+        )
+
+        item { Eyebrow(text = strings["medication.history"]) }
 
         if (history.isEmpty()) {
             item {
-                Text(
-                    text = strings["medication.history.empty"],
-                    style = HealthTrail.type.bodyM,
-                    color = colors.ink2,
-                )
-                Spacer(Modifier.height(Space.l))
+                Block {
+                    // bidi-ok: the app's own sentence about a medication with
+                    // nothing written about it yet.
+                    Body(text = strings["medication.history.empty"])
+                }
             }
         }
 
-        history.forEachIndexed { index, event ->
-            item(key = event.id) {
-                SpineRow(
-                    continuesAbove = index > 0,
-                    continuesBelow = index < history.lastIndex,
-                    node = colors.blue,
-                    // The first thing that happened to it is where it started.
-                    state = if (index == 0) Waypoint.MILESTONE else Waypoint.HAPPENED,
-                    routeColor = colors.blue,
-                    dash = null,
-                ) {
-                    Column {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .semantics(mergeDescendants = true) { }
-                                .clip(Radius.cardLarge)
-                                .background(colors.card)
-                                .testTag(MedicationTags.event(event.id))
-                                .padding(Space.cardPadding),
+        // **One item for the whole road**, because a page puts air between its
+        // items and air between two stops is a road with gaps in it.
+        if (history.isNotEmpty()) {
+            item {
+                Column {
+                    history.forEachIndexed { index, event ->
+                        Road(
+                            // Oldest first, so the road reads forward: the first
+                            // thing that happened to it is where it started, and
+                            // everything since has happened too.
+                            stop = Stop.Done,
+                            continuesAbove = index > 0,
+                            continuesBelow = index < history.lastIndex,
                         ) {
-                            // Same as the incident's, and for the same
-                            // reason: a date and a chapter name are two runs.
-                            val eyebrow = Bidi.join(
-                                listOfNotNull(
-                                    event.occurredEdtf?.takeIf { it.isNotBlank() }
-                                        ?.let { EventDateText.render(strings, it) },
-                                    event.chapterName?.takeIf { it.isNotBlank() },
-                                ),
-                            )
-                            if (eyebrow.isNotEmpty()) {
-                                Text(
-                                    text = eyebrow,
-                                    style = HealthTrail.type.bodyS,
-                                    color = colors.ink2,
-                                )
-                                Spacer(Modifier.height(Space.xs))
-                            }
-                            Text(
-                                text = strings[medicationEventKey(event.kind)],
-                                style = HealthTrail.type.displayS,
-                                color = colors.ink,
-                            )
-                            event.doseText?.takeIf { it.isNotBlank() }?.let {
-                                Spacer(Modifier.height(Space.xs))
-                                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyM, color = colors.ink2)
-                            }
-                            event.note?.takeIf { it.isNotBlank() }?.let {
-                                Spacer(Modifier.height(Space.xs))
-                                Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyM, color = colors.ink2)
+                            Column(modifier = Modifier.padding(bottom = Space.sm)) {
+                                Block(modifier = Modifier
+                                    .semantics(mergeDescendants = true) { }
+                                    .testTag(MedicationTags.event(event.id))) {
+                                    // Same as the incident's, and for the same
+                                    // reason: a date and a chapter name are two
+                                    // runs.
+                                    val eyebrow = Bidi.join(
+                                        listOfNotNull(
+                                            event.occurredEdtf?.takeIf { it.isNotBlank() }
+                                                ?.let { EventDateText.render(strings, it) },
+                                            event.chapterName?.takeIf { it.isNotBlank() },
+                                        ),
+                                    )
+                                    if (eyebrow.isNotEmpty()) {
+                                        Eyebrow(text = eyebrow, fixed = false)
+                                    }
+                                    Body(
+                                        text = strings[medicationEventKey(event.kind)],
+                                        color = colors.ink,
+                                        style = HealthTrail.type.displayS,
+                                    )
+                                    event.doseText?.takeIf { it.isNotBlank() }?.let {
+                                        Body(text = Bidi.isolate(it))
+                                    }
+                                    event.note?.takeIf { it.isNotBlank() }?.let {
+                                        Body(text = Bidi.isolate(it))
+                                    }
+                                }
                             }
                         }
-                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
             }
@@ -284,13 +241,12 @@ fun MedicationScreen(
         // per #218. Last, because it is the rarest errand here and because the
         // history above it is what somebody came to read.
         item {
-            Spacer(Modifier.height(Space.sectionGap))
-            QuietButton(
+            Spacer(Modifier.height(Space.s))
+            Action(
                 label = strings["remove.action"],
                 onClick = onRemove,
                 modifier = Modifier.testTag(MedicationTags.REMOVE),
             )
-            Spacer(Modifier.height(Space.l))
         }
     }
 }
