@@ -1,22 +1,14 @@
 package com.kamsiob.healthtrail.ui.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
@@ -49,9 +41,9 @@ fun IconTile(
     tint: Color,
     background: Color,
     modifier: Modifier = Modifier,
-    tileSize: Dp = 36.dp,
-    iconSize: Dp = 20.dp,
-) = IconTile(SectionIconPaths.of(section), tint, background, modifier, tileSize, iconSize)
+    tileSize: Dp = TILE,
+    iconSize: Dp = DRAWING,
+) = SymbolTile(Symbols.of(section), tint, background, modifier, tileSize, iconSize)
 
 /**
  * The same tile, carrying one of the six capture drawings.
@@ -66,60 +58,56 @@ fun IconTile(
     tint: Color,
     background: Color,
     modifier: Modifier = Modifier,
-    tileSize: Dp = 36.dp,
-    iconSize: Dp = 20.dp,
-) = IconTile(SectionIconPaths.of(kind), tint, background, modifier, tileSize, iconSize)
+    tileSize: Dp = TILE,
+    iconSize: Dp = DRAWING,
+) = SymbolTile(Symbols.of(kind), tint, background, modifier, tileSize, iconSize)
 
 /**
- * The tile itself, given its drawing.
+ * The tile itself, given its symbol.
  *
- * Private, so that a caller reaches it through one of the typed overloads above
- * and cannot pass a path this app did not author.
+ * Private, so a caller reaches it through one of the typed overloads above and
+ * a screen never picks the drawing for a section by hand.
  */
 @Composable
-private fun IconTile(
-    paths: List<String>,
+private fun SymbolTile(
+    @DrawableRes symbol: Int,
     tint: Color,
     background: Color,
     modifier: Modifier = Modifier,
-    tileSize: Dp = 36.dp,
-    iconSize: Dp = 20.dp,
+    tileSize: Dp = TILE,
+    iconSize: Dp = DRAWING,
 ) {
-    val drawing = remember(paths) {
-        Path().apply {
-            paths.forEach { data ->
-                addPath(PathParser().parsePathString(data).toPath())
-            }
-        }
-    }
-
     Box(
         modifier = modifier
             .size(tileSize)
-            .clip(Radius.tile)
+            .clip(Radius.iconTile)
             .background(background),
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(modifier = Modifier.size(iconSize)) {
-            // The paths are authored on the reference file's 24 unit grid, so
-            // they scale to whatever the tile is rather than being redrawn per
-            // size. The stroke is specified on that same grid, which is why it
-            // is not converted to pixels here: the scale carries it.
-            val factor = size.minDimension / VIEWPORT
-            scale(factor, pivot = Offset.Zero) {
-                drawPath(
-                    path = drawing,
-                    color = tint,
-                    style = Stroke(
-                        width = STROKE,
-                        cap = StrokeCap.Round,
-                        join = StrokeJoin.Round,
-                    ),
-                )
-            }
-        }
+        Symbol(
+            symbol = symbol,
+            // The row's own words name it. A reader that says the section twice
+            // is worse than one that says it once.
+            contentDescription = null,
+            modifier = Modifier.size(iconSize),
+            tint = tint,
+        )
     }
 }
+
+/**
+ * The tile and its mark, at the size the mockups draw them.
+ *
+ * **The tile was 36dp at a 16dp corner, which is within two points of a
+ * circle**, so every section row in the app read as a bubble. `m3v4-1` draws a
+ * rounded square that is clearly a square: larger, with a corner well under
+ * half its size.
+ *
+ * Here rather than on a screen, because a measurement typed into a screen is
+ * invisible to every check in this repository. D142.
+ */
+private val TILE: Dp = 44.dp
+private val DRAWING: Dp = 24.dp
 
 private const val VIEWPORT = 24f
 private const val STROKE = 1.7f

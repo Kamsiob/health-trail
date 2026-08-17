@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.kamsiob.healthtrail.R
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.ui.screens.CaptureKind
 
 /**
  * The icon vocabulary. Material Symbols Rounded, filled, at 24dp. D182.
@@ -41,7 +42,8 @@ object Symbols {
     @DrawableRes val careTeam = R.drawable.ic_groups
     @DrawableRes val medications = R.drawable.ic_medication
     @DrawableRes val appointments = R.drawable.ic_event
-    @DrawableRes val chapters = R.drawable.ic_bookmark
+    // A place, which is what a chapter is: `m3v4-1` draws the pin.
+    @DrawableRes val chapters = R.drawable.ic_location_on
     @DrawableRes val careThreads = R.drawable.ic_route
     @DrawableRes val trail = R.drawable.ic_show_chart
     @DrawableRes val progress = R.drawable.ic_monitoring
@@ -93,6 +95,28 @@ object Symbols {
         Repository.Section.EMERGENCY_CARD -> emergencyCard
         Repository.Section.PROJECTS -> projects
     }
+
+    /**
+     * The mark for one thing a person can capture.
+     *
+     * **The same alphabet as everything else**, which is the point of doing the
+     * capture sheet in the same pass as the notebook: `docs/V4.md` 3 says the
+     * build never carries two design languages at once, and hand-stroked marks
+     * in one sheet beside Material Symbols everywhere else is exactly that.
+     */
+    @DrawableRes
+    fun of(kind: CaptureKind): Int = when (kind) {
+        CaptureKind.CALL -> call
+        CaptureKind.VISIT -> stethoscope
+        CaptureKind.INCIDENT -> incidents
+        CaptureKind.MEASUREMENT -> monitorWeight
+        CaptureKind.QUESTION -> askNextTime
+        CaptureKind.DOCUMENT -> documents
+    }
+
+    @DrawableRes val stethoscope = R.drawable.ic_stethoscope
+    @DrawableRes val monitorWeight = R.drawable.ic_monitor_weight
+    @DrawableRes val noteStack = R.drawable.ic_note_stack
 
     /** The mark for one destination. */
     @DrawableRes

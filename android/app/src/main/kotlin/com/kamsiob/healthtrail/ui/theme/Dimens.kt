@@ -256,8 +256,19 @@ object Radius {
         topEnd = 24.dp, bottomEnd = 24.dp, topStart = 8.dp, bottomStart = 8.dp,
     )
 
-    /** Inset tile, icon in its wash, chip container, the search bar's siblings. */
+    /** Inset tile, chip container, the search bar's siblings. */
     val tile = RoundedCornerShape(16.dp)
+
+    /**
+     * The squircle behind a section's mark, and **it is not [tile].**
+     *
+     * At 16dp on a 36dp box the corner was within two points of half the box,
+     * so the icon tile on every section row rendered as a circle. The approved
+     * mockups draw a rounded square that reads as a square: `m3v4-1`'s notebook
+     * rows and `m3v4-3`'s care team. A separate token because the two shapes
+     * are now different sizes as well as different jobs. D182.
+     */
+    val iconTile = RoundedCornerShape(14.dp)
 
     /** A fold, `.fold` in both grids at 14px. `FoldRow` drew its own before. */
     val fold = RoundedCornerShape(18.dp)

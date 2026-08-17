@@ -422,8 +422,6 @@ private fun SectionRow(
                 section = row.section,
                 tint = hue.ink,
                 background = hue.wash,
-                tileSize = SectionIconSize,
-                iconSize = SectionDrawingSize,
             )
         },
         chevron = true,
@@ -432,9 +430,6 @@ private fun SectionRow(
         modifier = Modifier.testTag(NotebookTags.row(row.section)),
     )
 }
-
-private val SectionIconSize = 32.dp
-private val SectionDrawingSize = 18.dp
 
 /**
  * One section, as a tile at one of three weights.
