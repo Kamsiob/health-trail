@@ -16,11 +16,15 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 /**
  * A heading over a run of rows: an eyebrow, and nothing else.
  *
- * **The hairline is gone and the words are uppercase**, which is what the
- * approved v4 mockups draw. `m3v4-1` heads two groups with "PEOPLE AND CARE"
- * and "THE RECORD", tracked and quiet, with clear space to the end edge;
- * `m3v4-3` heads a list with "EVERYONE ELSE ON THE UNIT" the same way. D173:
- * where the mockup and `DESIGN.md` 5.13 disagree, the mockup wins.
+ * **The hairline is gone**, and **the app's own group names are uppercase
+ * while the person's are not.** `m3v4-1` heads two groups with "PEOPLE AND
+ * CARE" and "THE RECORD", tracked and quiet, with clear space to the end edge.
+ * D173: where the mockup and `DESIGN.md` 5.13 disagree, the mockup wins.
+ *
+ * **The split is the whole point and it is not decoration.** [GroupHeader]
+ * takes a catalog key, which is copy this app wrote, and shouts it.
+ * [GroupHeaderText] takes whatever it is handed, which on the project steps
+ * screen is a cluster the person named themselves, and leaves it alone. D171.
  *
  * **The rule was decorative by this file's own account**, "remove it and
  * nothing becomes unreadable, because the words carry the heading alone", and
@@ -39,11 +43,11 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
  * appearing in two forms, where the fix is always to correct the earlier one
  * rather than leave both standing.
  *
- * The label is uppercased against the catalog's own locale rather than the
- * device's, so a Turkish phone showing the English catalog cannot turn an "i"
- * into a dotted capital. In Arabic and Chinese it is a no-op, which is correct:
- * neither script has case, and the eyebrow reads as an eyebrow there through
- * its size and tracking.
+ * Where it does uppercase, it does so against the catalog's own locale rather
+ * than the device's, so a Turkish phone showing the English catalog cannot turn
+ * an "i" into a dotted capital. In Arabic and Chinese it is a no-op, which is
+ * correct: neither script has case, and the eyebrow reads as an eyebrow there
+ * through its size and tracking.
  *
  * The label carries no layout weight, so it takes exactly the width it needs
  * and a label long enough to fill the row, which is what the longest language
@@ -51,7 +55,15 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
  */
 @Composable
 fun GroupHeader(labelKey: String, modifier: Modifier = Modifier) {
-    GroupHeaderText(label = LocalStrings.current[labelKey], modifier = modifier)
+    // **Uppercase here and nowhere else, because this is the app's own words.**
+    // A catalog key is a name this app chose: "People and care", "The record".
+    // Shouting those is a typographic decision about the app's own copy, and
+    // it is what the approved mockups draw.
+    GroupHeaderText(
+        label = LocalStrings.current[labelKey],
+        modifier = modifier,
+        shout = true,
+    )
 }
 
 /**
@@ -92,6 +104,25 @@ fun GroupHeaderText(
      * it and the color only agrees with them.
      */
     tint: Color? = null,
+    /**
+     * Whether to uppercase the label. **False, and the default matters.**
+     *
+     * D171 removed uppercasing from this component and the reason is the one
+     * that must not be lost: this overload is handed arbitrary text, including
+     * **the person's own words for their own groups**, like a project cluster
+     * they named "The paperwork". Shouting somebody's own words back at them
+     * was never the app's decision to make.
+     *
+     * [GroupHeader] passes true because a catalog key is the app's own copy.
+     * A month heading is app-formatted data and still passes false, because
+     * nothing in the mockups asks for it and the quiet register is correct.
+     *
+     * **This was re-broken on 2026-08-16 and caught by a test.** The KDoc on
+     * this file still described uppercasing that D171 had deleted, and the
+     * stale sentence was believed over the code. `ProjectStepsScreenTest`
+     * carried the reason in a comment and failed the moment it came back.
+     */
+    shout: Boolean = false,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -113,14 +144,10 @@ fun GroupHeaderText(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            // **Uppercased here, which this file has claimed since it was
-            // written and never did.** The KDoc above described the locale
-            // rule in detail and the code passed the label through untouched,
-            // so every group heading in the app read as a sentence in the
-            // caption ink. Against `strings.locale` rather than the device's,
-            // so a Turkish phone showing the English catalog cannot turn an
-            // "i" into a dotted capital.
-            text = shown.uppercase(strings.locale),
+            // Against `strings.locale` rather than the device's, so a Turkish
+            // phone showing the English catalog cannot turn an "i" into a
+            // dotted capital.
+            text = if (shout) shown.uppercase(strings.locale) else shown,
             style = HealthTrail.type.eyebrow,
             color = tint ?: colors.ink2,
         )

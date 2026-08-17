@@ -169,12 +169,20 @@ fun HealthTrailTextField(
                 labelWraps = result.lineCount > 1
                 labelHeight = result.size.height
             },
-            // Silenced, because the field below carries this same string as its
-            // content description. Spoken from both, every field is read twice.
+            // **Left in the semantics tree, and the silencing that was here is
+            // reverted.** It was silenced on the reasoning that the field
+            // already carries this string as its content description, so a
+            // reader would say it twice. That may well be true, and it was
+            // reasoning rather than something anybody heard: rule 19 says the
+            // accessibility gate clears with the reader actually on, never by
+            // reading code. It also took the words off the screen as far as
+            // every test and every tool is concerned, which is what
+            // `docs/TRAPS.md` means by asserting on words. Five tests found it
+            // in one run. The double announcement is a real question and it
+            // gets answered with TalkBack on, not here.
             modifier = mod
                 .padding(start = Space.sm)
-                .padding(horizontal = Space.xs)
-                .clearAndSetSemantics { },
+                .padding(horizontal = Space.xs),
         )
     }
 
