@@ -25,7 +25,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.ToggleRow
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -36,11 +35,11 @@ import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.FieldBlock
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object AddMedTags {
     const val ROOT = "add_med_root"
     const val SAVE = "add_med_save"
-    const val CANCEL = "add_med_cancel"
     const val ON_CARD = "add_med_on_card"
     const val MORE = "add_med_more"
     fun field(key: String) = "add_med_$key"
@@ -107,170 +106,148 @@ fun AddMedicationScreen(
         )
     }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
-                .testTag(AddMedTags.ROOT),
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                FormHeader(
-                    title = if (existing == null) {
+    Page(
+        title = if (existing == null) {
                         strings["meds.add.title"]
                     } else {
                         strings["meds.edit.title"]
                     },
-                    // **The lead moves out of the header and into an aside**,
-                    // which is what the approved mockup draws: the sentence
-                    // that sets the terms for the whole form sits on the
-                    // section's wash with its own icon, rather than as the
-                    // smallest gray line under the title. D172.
-                    lead = null,
-                    section = Repository.Section.MEDICATIONS,
-                )
-                Spacer(Modifier.height(Space.m))
-
-                FactBlock(
-                    label = null,
-                    text = strings["meds.add.lead"],
-                    tone = BlockTone.Section,
-                    mark = Symbols.of(Repository.Section.MEDICATIONS),
-                    hue = hueFor(Repository.Section.MEDICATIONS),
-                )
-                Spacer(Modifier.height(Space.l))
-
-                Field(
-                    label = strings["meds.name"],
-                    value = draft.name,
-                    onValueChange = { draft = draft.copy(name = it) },
-                    fieldTestTag = AddMedTags.field("name"),
-                    support = strings["meds.name.hint"],
-                )
-                Spacer(Modifier.height(Space.m))
-
-                DictatableField(
-                    label = strings["meds.dose"],
-                    value = draft.dose,
-                    onValueChange = { draft = draft.copy(dose = it) },
-                    support = strings["meds.dose.hint"],
-                    singleLine = false,
-                    fieldTestTag = AddMedTags.field("dose"),
-                )
-                Spacer(Modifier.height(Space.m))
-
-                // **How often, up front with the name and the dose**, the
-                // owner's direction on #379. It is the third thing anybody is
-                // told at a bedside and the form asked for two of the three,
-                // which sent the frequency into a note or nowhere.
-                //
-                // **Text, and never parsed**, for the same reason the dose is:
-                // "every other morning" and "with meals, but not on dialysis
-                // days" are real answers, and a schedule picker that could not
-                // hold the second would make somebody write something less
-                // true.
-                DictatableField(
-                    label = strings["meds.frequency"],
-                    value = draft.frequency,
-                    onValueChange = { draft = draft.copy(frequency = it) },
-                    support = strings["meds.frequency.hint"],
-                    singleLine = false,
-                    fieldTestTag = AddMedTags.field("frequency"),
-                )
-                Spacer(Modifier.height(Space.l))
-
-                // **A switch, because the question has two answers and one of
-                // them is what happens if nobody touches it.** The approved
-                // mockup asks it this way and the form asked it with a single
-                // chip, which reads as a filter everywhere else in this app.
-                // The note that sat underneath in the caption ink is the
-                // switch's own subtitle now, so the question and the reason
-                // for it are one object.
-                //
-                // **It stays above the disclosure**, unlike the two fields
-                // below it: the moment somebody writes a medication down is the
-                // moment they know whether it matters in an emergency, and a
-                // question folded away is a question nobody answers.
-                ToggleRow(
-                    title = strings["meds.on_card.badge"],
-                    subtitle = strings["meds.on_card.note"],
-                    checked = draft.onEmergencyCard,
-                    onCheckedChange = { draft = draft.copy(onEmergencyCard = it) },
-                    section = Repository.Section.EMERGENCY_CARD,
-                    modifier = Modifier.testTag(AddMedTags.ON_CARD),
-                )
-
-                Spacer(Modifier.height(Space.sectionGap))
-
-                // **What it is for and anything else, behind "Add more"**, per
-                // law 3 and 10.8. #361: this form put four multi line fields
-                // down one scroll, each with a label above it, and the two that
-                // matter are the name and what she actually takes. Neither of
-                // these is ever required, and the disclosure opens by itself
-                // when one of them already says something.
-                // **The rest of the form is a group with a label, not a fold.**
-                // D185: nothing sits behind a fold that a label and a scroll can
-                // carry, and the sentence that used to explain the fold is the
-                // group's own line now. Nothing here was ever required.
-                FieldBlock(
-                    label = strings["capture.more"],
-                    aside = strings["capture.more.aside"],
-                    modifier = Modifier.testTag(AddMedTags.MORE),
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        DictatableField(
-                            label = strings["meds.purpose"],
-                            value = draft.purpose,
-                            onValueChange = { draft = draft.copy(purpose = it) },
-                            support = strings["meds.purpose.hint"],
-                            singleLine = false,
-                            fieldTestTag = AddMedTags.field("purpose"),
-                        )
-                        Spacer(Modifier.height(Space.m))
-
-                        DictatableField(
-                            label = strings["meds.notes"],
-                            value = draft.notes,
-                            onValueChange = { draft = draft.copy(notes = it) },
-                            support = strings["meds.notes.hint"],
-                            singleLine = false,
-                            imeAction = ImeAction.Done,
-                            fieldTestTag = AddMedTags.field("notes"),
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(Space.xl))
-            }
-
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier.testTag(AddMedTags.ROOT),
+        eyebrow = strings[labelKey(Repository.Section.MEDICATIONS)],
+        section = Repository.Section.MEDICATIONS,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        Action(
+            label = strings["capture.save"],
+            onClick = { onSave(draft) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Space.screenHorizontal)
+                .testTag(AddMedTags.SAVE), emphasis = ActionEmphasis.Main,
+        )
+        Spacer(Modifier.height(Space.s))
+        },
+    ) {
+        item {
+            Column {
             Spacer(Modifier.height(Space.m))
 
-            Action(
-                label = strings["capture.save"],
-                onClick = { onSave(draft) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddMedTags.SAVE), emphasis = ActionEmphasis.Main,
+            FactBlock(
+                label = null,
+                text = strings["meds.add.lead"],
+                tone = BlockTone.Section,
+                mark = Symbols.of(Repository.Section.MEDICATIONS),
+                hue = hueFor(Repository.Section.MEDICATIONS),
             )
-
-            Spacer(Modifier.height(Space.s))
-
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddMedTags.CANCEL),
-            )
-
             Spacer(Modifier.height(Space.l))
+
+            Field(
+                label = strings["meds.name"],
+                value = draft.name,
+                onValueChange = { draft = draft.copy(name = it) },
+                fieldTestTag = AddMedTags.field("name"),
+                support = strings["meds.name.hint"],
+            )
+            Spacer(Modifier.height(Space.m))
+
+            DictatableField(
+                label = strings["meds.dose"],
+                value = draft.dose,
+                onValueChange = { draft = draft.copy(dose = it) },
+                support = strings["meds.dose.hint"],
+                singleLine = false,
+                fieldTestTag = AddMedTags.field("dose"),
+            )
+            Spacer(Modifier.height(Space.m))
+
+            // **How often, up front with the name and the dose**, the
+            // owner's direction on #379. It is the third thing anybody is
+            // told at a bedside and the form asked for two of the three,
+            // which sent the frequency into a note or nowhere.
+            //
+            // **Text, and never parsed**, for the same reason the dose is:
+            // "every other morning" and "with meals, but not on dialysis
+            // days" are real answers, and a schedule picker that could not
+            // hold the second would make somebody write something less
+            // true.
+            DictatableField(
+                label = strings["meds.frequency"],
+                value = draft.frequency,
+                onValueChange = { draft = draft.copy(frequency = it) },
+                support = strings["meds.frequency.hint"],
+                singleLine = false,
+                fieldTestTag = AddMedTags.field("frequency"),
+            )
+            Spacer(Modifier.height(Space.l))
+
+            // **A switch, because the question has two answers and one of
+            // them is what happens if nobody touches it.** The approved
+            // mockup asks it this way and the form asked it with a single
+            // chip, which reads as a filter everywhere else in this app.
+            // The note that sat underneath in the caption ink is the
+            // switch's own subtitle now, so the question and the reason
+            // for it are one object.
+            //
+            // **It stays above the disclosure**, unlike the two fields
+            // below it: the moment somebody writes a medication down is the
+            // moment they know whether it matters in an emergency, and a
+            // question folded away is a question nobody answers.
+            ToggleRow(
+                title = strings["meds.on_card.badge"],
+                subtitle = strings["meds.on_card.note"],
+                checked = draft.onEmergencyCard,
+                onCheckedChange = { draft = draft.copy(onEmergencyCard = it) },
+                section = Repository.Section.EMERGENCY_CARD,
+                modifier = Modifier.testTag(AddMedTags.ON_CARD),
+            )
+
+            Spacer(Modifier.height(Space.sectionGap))
+
+            // **What it is for and anything else, behind "Add more"**, per
+            // law 3 and 10.8. #361: this form put four multi line fields
+            // down one scroll, each with a label above it, and the two that
+            // matter are the name and what she actually takes. Neither of
+            // these is ever required, and the disclosure opens by itself
+            // when one of them already says something.
+            // **The rest of the form is a group with a label, not a fold.**
+            // D185: nothing sits behind a fold that a label and a scroll can
+            // carry, and the sentence that used to explain the fold is the
+            // group's own line now. Nothing here was ever required.
+            FieldBlock(
+                label = strings["capture.more"],
+                aside = strings["capture.more.aside"],
+                modifier = Modifier.testTag(AddMedTags.MORE),
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    DictatableField(
+                        label = strings["meds.purpose"],
+                        value = draft.purpose,
+                        onValueChange = { draft = draft.copy(purpose = it) },
+                        support = strings["meds.purpose.hint"],
+                        singleLine = false,
+                        fieldTestTag = AddMedTags.field("purpose"),
+                    )
+                    Spacer(Modifier.height(Space.m))
+
+                    DictatableField(
+                        label = strings["meds.notes"],
+                        value = draft.notes,
+                        onValueChange = { draft = draft.copy(notes = it) },
+                        support = strings["meds.notes.hint"],
+                        singleLine = false,
+                        imeAction = ImeAction.Done,
+                        fieldTestTag = AddMedTags.field("notes"),
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(Space.xl))
+            }
         }
     }
 }

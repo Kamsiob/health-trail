@@ -29,7 +29,6 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -45,13 +44,13 @@ import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.FieldBlock
 import com.kamsiob.healthtrail.ui.v4.MoreChip
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.cappedChips
 import java.time.LocalDate
 
 object AddApptTags {
     const val ROOT = "add_appt_root"
     const val SAVE = "add_appt_save"
-    const val CANCEL = "add_appt_cancel"
     const val PICK_DATE = "add_appt_pick_date"
     const val MORE = "add_appt_more"
     const val MORE_PEOPLE = "add_appt_more_people"
@@ -130,183 +129,163 @@ fun AddAppointmentScreen(
     var picking by remember { mutableStateOf(false) }
     var pickingPerson by remember { mutableStateOf(false) }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(
+    Page(
+        title = if (existing == null) strings["appts.add"] else strings["appts.edit.title"],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier.testTag(AddApptTags.ROOT),
+        eyebrow = strings[labelKey(Repository.Section.APPOINTMENTS)],
+        section = Repository.Section.APPOINTMENTS,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        Action(
+            label = strings["capture.save"],
+            onClick = { onSave(draft) },
             modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
-                .testTag(AddApptTags.ROOT),
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                FormHeader(
-                    title = if (existing == null) strings["appts.add"] else strings["appts.edit.title"],
-                    // The lead is an Aside now, on the section's wash with
-                    // its own icon, rather than the smallest gray line under the
-                    // title. D172, and the approved medication mockup.
-                    lead = null,
-                    section = Repository.Section.APPOINTMENTS,
-                )
-                    Spacer(Modifier.height(Space.m))
-                    FactBlock(
-                        label = null,
-                        text = strings["appts.add.lead"],
-                        tone = BlockTone.Section,
-                        mark = Symbols.of(Repository.Section.APPOINTMENTS),
-                        hue = hueFor(Repository.Section.APPOINTMENTS),
-                    )
-                Spacer(Modifier.height(Space.l))
-
-                Field(
-                    label = strings["appts.title"],
-                    value = draft.title,
-                    onValueChange = { draft = draft.copy(title = it) },
-                    fieldTestTag = AddApptTags.field("title"),
-                    support = strings["appts.title.hint"],
-                )
+                .fillMaxWidth()
+                .padding(horizontal = Space.screenHorizontal)
+                .testTag(AddApptTags.SAVE), emphasis = ActionEmphasis.Main,
+        )
+        Spacer(Modifier.height(Space.s))
+        },
+    ) {
+        item {
+            Column {
                 Spacer(Modifier.height(Space.m))
+                FactBlock(
+                    label = null,
+                    text = strings["appts.add.lead"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.APPOINTMENTS),
+                    hue = hueFor(Repository.Section.APPOINTMENTS),
+                )
+            Spacer(Modifier.height(Space.l))
 
-                // **The capture form's rough chips are not reused here, and
-                // that is deliberate.** They are today, yesterday, this week,
-                // and not sure, which are the answers to "when did this
-                // happen". An appointment is usually ahead, so every one of
-                // them except the last would be wrong. The picker and "not
-                // sure" carry it, in the words the rest of the app already
-                // uses for both.
-                ChoiceChipGroup(label = strings["appts.when"]) {
-                    ChoiceChip(
-                        label = strings["capture.when.exact"],
-                        selected = draft.scheduled != null &&
-                            draft.scheduled?.precision != Edtf.Precision.UNKNOWN,
-                        onClick = { picking = true },
-                        modifier = Modifier.testTag(AddApptTags.PICK_DATE),
-                    )
-                    ChoiceChip(
-                        label = strings["date.pick.clear"],
-                        selected = draft.scheduled?.precision == Edtf.Precision.UNKNOWN,
-                        onClick = { draft = draft.copy(scheduled = Edtf.unknown()) },
-                    )
-                }
-
-                draft.scheduled?.let { chosen ->
-                    Spacer(Modifier.height(Space.s))
-                    Text(
-                        text = EventDateText.render(strings, chosen),
-                        style = HealthTrail.type.bodyL,
-                        color = colors.ink,
-                    )
-                }
-
-                // **Who it is with**, five chips and a way to the rest, per
-                // 5.11.1 and the same set the capture form offers. Tapping the
-                // chosen one clears it, because a link somebody cannot take off
-                // again is one they hesitate to put on.
-                if (people.isNotEmpty()) {
-                    val chosen = people.firstOrNull { it.id == draft.personId }
-                    val shown = cappedChips(people, chosen)
-                    Spacer(Modifier.height(Space.sectionGap))
-                    ChoiceChipGroup(
-                        label = strings["appts.who"],
-                        aside = strings["appts.who.aside"],
-                    ) {
-                        shown.forEach { person ->
-                            ChoiceChip(
-                                // A name is the person's own words. #226.
-                                label = Bidi.isolate(person.displayName),
-                                selected = draft.personId == person.id,
-                                onClick = {
-                                    draft = draft.copy(
-                                        personId = if (draft.personId == person.id) {
-                                            null
-                                        } else {
-                                            person.id
-                                        },
-                                    )
-                                },
-                                modifier = Modifier.testTag(AddApptTags.person(person.id)),
-                            )
-                        }
-                        if (people.size > shown.size) {
-                            MoreChip(
-                                label = strings("chips.all", "count" to people.size),
-                                onClick = { pickingPerson = true },
-                                modifier = Modifier.testTag(AddApptTags.MORE_PEOPLE),
-                            )
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(Space.sectionGap))
-
-                // **Where it is and anything else, behind "Add more"**, per law
-                // 3 and 10.8. #361. What somebody knows when they hang up is
-                // what the appointment is and roughly when; the address usually
-                // arrives on a letter later, and asking for it in the same
-                // breath is what made this read as a data entry form.
-                //
-                // **Open already when either says something**, so correcting an
-                // appointment never hides the note somebody wrote last week.
-                // **The rest of the form is a group with a label, not a fold.**
-                // D185: nothing sits behind a fold that a label and a scroll can
-                // carry, and the sentence that used to explain the fold is the
-                // group's own line now. Nothing here was ever required.
-                FieldBlock(
-                    label = strings["capture.more"],
-                    aside = strings["capture.more.aside"],
-                    modifier = Modifier.testTag(AddApptTags.MORE),
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Field(
-                            label = strings["appts.where"],
-                            value = draft.where,
-                            onValueChange = { draft = draft.copy(where = it) },
-                            fieldTestTag = AddApptTags.field("where"),
-                            support = strings["appts.where.hint"],
-                        )
-                        Spacer(Modifier.height(Space.m))
-
-                        DictatableField(
-                            label = strings["appts.notes"],
-                            value = draft.notes,
-                            onValueChange = { draft = draft.copy(notes = it) },
-                            support = strings["appts.notes.hint"],
-                            singleLine = false,
-                            imeAction = ImeAction.Done,
-                            fieldTestTag = AddApptTags.field("notes"),
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(Space.xl))
-            }
-
+            Field(
+                label = strings["appts.title"],
+                value = draft.title,
+                onValueChange = { draft = draft.copy(title = it) },
+                fieldTestTag = AddApptTags.field("title"),
+                support = strings["appts.title.hint"],
+            )
             Spacer(Modifier.height(Space.m))
 
-            Action(
-                label = strings["capture.save"],
-                onClick = { onSave(draft) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddApptTags.SAVE), emphasis = ActionEmphasis.Main,
-            )
+            // **The capture form's rough chips are not reused here, and
+            // that is deliberate.** They are today, yesterday, this week,
+            // and not sure, which are the answers to "when did this
+            // happen". An appointment is usually ahead, so every one of
+            // them except the last would be wrong. The picker and "not
+            // sure" carry it, in the words the rest of the app already
+            // uses for both.
+            ChoiceChipGroup(label = strings["appts.when"]) {
+                ChoiceChip(
+                    label = strings["capture.when.exact"],
+                    selected = draft.scheduled != null &&
+                        draft.scheduled?.precision != Edtf.Precision.UNKNOWN,
+                    onClick = { picking = true },
+                    modifier = Modifier.testTag(AddApptTags.PICK_DATE),
+                )
+                ChoiceChip(
+                    label = strings["date.pick.clear"],
+                    selected = draft.scheduled?.precision == Edtf.Precision.UNKNOWN,
+                    onClick = { draft = draft.copy(scheduled = Edtf.unknown()) },
+                )
+            }
 
-            Spacer(Modifier.height(Space.s))
+            draft.scheduled?.let { chosen ->
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = EventDateText.render(strings, chosen),
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink,
+                )
+            }
 
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddApptTags.CANCEL),
-            )
+            // **Who it is with**, five chips and a way to the rest, per
+            // 5.11.1 and the same set the capture form offers. Tapping the
+            // chosen one clears it, because a link somebody cannot take off
+            // again is one they hesitate to put on.
+            if (people.isNotEmpty()) {
+                val chosen = people.firstOrNull { it.id == draft.personId }
+                val shown = cappedChips(people, chosen)
+                Spacer(Modifier.height(Space.sectionGap))
+                ChoiceChipGroup(
+                    label = strings["appts.who"],
+                    aside = strings["appts.who.aside"],
+                ) {
+                    shown.forEach { person ->
+                        ChoiceChip(
+                            // A name is the person's own words. #226.
+                            label = Bidi.isolate(person.displayName),
+                            selected = draft.personId == person.id,
+                            onClick = {
+                                draft = draft.copy(
+                                    personId = if (draft.personId == person.id) {
+                                        null
+                                    } else {
+                                        person.id
+                                    },
+                                )
+                            },
+                            modifier = Modifier.testTag(AddApptTags.person(person.id)),
+                        )
+                    }
+                    if (people.size > shown.size) {
+                        MoreChip(
+                            label = strings("chips.all", "count" to people.size),
+                            onClick = { pickingPerson = true },
+                            modifier = Modifier.testTag(AddApptTags.MORE_PEOPLE),
+                        )
+                    }
+                }
+            }
 
-            Spacer(Modifier.height(Space.l))
+            Spacer(Modifier.height(Space.sectionGap))
+
+            // **Where it is and anything else, behind "Add more"**, per law
+            // 3 and 10.8. #361. What somebody knows when they hang up is
+            // what the appointment is and roughly when; the address usually
+            // arrives on a letter later, and asking for it in the same
+            // breath is what made this read as a data entry form.
+            //
+            // **Open already when either says something**, so correcting an
+            // appointment never hides the note somebody wrote last week.
+            // **The rest of the form is a group with a label, not a fold.**
+            // D185: nothing sits behind a fold that a label and a scroll can
+            // carry, and the sentence that used to explain the fold is the
+            // group's own line now. Nothing here was ever required.
+            FieldBlock(
+                label = strings["capture.more"],
+                aside = strings["capture.more.aside"],
+                modifier = Modifier.testTag(AddApptTags.MORE),
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Field(
+                        label = strings["appts.where"],
+                        value = draft.where,
+                        onValueChange = { draft = draft.copy(where = it) },
+                        fieldTestTag = AddApptTags.field("where"),
+                        support = strings["appts.where.hint"],
+                    )
+                    Spacer(Modifier.height(Space.m))
+
+                    DictatableField(
+                        label = strings["appts.notes"],
+                        value = draft.notes,
+                        onValueChange = { draft = draft.copy(notes = it) },
+                        support = strings["appts.notes.hint"],
+                        singleLine = false,
+                        imeAction = ImeAction.Done,
+                        fieldTestTag = AddApptTags.field("notes"),
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(Space.xl))
+            }
         }
     }
 

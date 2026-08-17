@@ -39,7 +39,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -48,9 +47,11 @@ import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.DictatableField
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.FieldBlock
+import com.kamsiob.healthtrail.ui.v4.Lead
 import com.kamsiob.healthtrail.ui.v4.MoreChip
 import com.kamsiob.healthtrail.ui.v4.cappedChips
 import java.time.LocalDate
@@ -377,13 +378,18 @@ fun CaptureFormScreen(
                 // the word Optional in a mono eyebrow. Section 5.9 asks for it
                 // once per screen rather than beside every field, and a sentence
                 // does more of the work than a label does.
-                FormHeader(
-                    title = strings[key(kind, "title")],
-                    // The lead is an Aside now, on the section's wash with
-                    // its own icon, rather than the smallest gray line under the
-                    // title. D172, and the approved medication mockup.
-                    lead = null,
-                    section = Repository.Section.TRAIL,
+                // **The page's own header, drawn here rather than framed.**
+                // The capture form is staged and its bar overlays the
+                // questions, so it keeps its own frame; the header it carries
+                // is the one every other page draws, which is what retiring
+                // `FormHeader` means. #387.
+                Eyebrow(
+                    text = strings[labelKey(Repository.Section.TRAIL)],
+                    color = hueFor(Repository.Section.TRAIL).ink,
+                )
+                Lead(
+                    text = strings[key(kind, "title")],
+                    modifier = Modifier.semantics { heading() },
                 )
                     // The title and the terms are one thing: what this screen
                     // is. They sit at the within value.

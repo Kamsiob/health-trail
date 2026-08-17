@@ -28,7 +28,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -41,13 +40,13 @@ import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 import java.time.LocalDate
 
 object AddMilestoneTags {
     const val REMOVE = "milestone_remove"
     const val ROOT = "add_milestone_root"
     const val SAVE = "add_milestone_save"
-    const val CANCEL = "add_milestone_cancel"
     const val PICK_DATE = "add_milestone_pick_date"
     fun field(key: String) = "add_milestone_$key"
     fun chapter(id: String) = "add_milestone_chapter_$id"
@@ -119,145 +118,128 @@ fun AddMilestoneScreen(
     }
     var picking by remember { mutableStateOf(false) }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(
+    Page(
+        title = strings[ if (existing == null) "milestones.add" else "milestones.edit.title" ],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier.testTag(AddMilestoneTags.ROOT),
+        eyebrow = strings[labelKey(Repository.Section.CHAPTERS)],
+        section = Repository.Section.CHAPTERS,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        // **Saves what is there.** A milestone with no date is a milestone,
+        // and the save never waits for the rest of it. Rule 13.
+        Action(
+            label = strings["capture.save"],
+            onClick = { onSave(draft) },
             modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
-                .testTag(AddMilestoneTags.ROOT),
-        ) {
-            Column(
+                .fillMaxWidth()
+                .padding(horizontal = Space.screenHorizontal)
+                .testTag(AddMilestoneTags.SAVE), emphasis = ActionEmphasis.Main,
+        )
+        Spacer(Modifier.height(Space.s))
+        // **Only on one that already exists.** Anything added can be
+        // removed, 2026-08-16; a form for a new milestone has nothing to
+        // take out yet.
+        if (existing != null) {
+            Spacer(Modifier.height(Space.cardGap))
+            Action(
+                label = strings["remove.action"],
+                onClick = onRemove,
                 modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                FormHeader(
-                    title = strings[ if (existing == null) "milestones.add" else "milestones.edit.title" ],
-                    // The lead is an Aside now, on the section's wash with
-                    // its own icon, rather than the smallest gray line under the
-                    // title. D172, and the approved medication mockup.
-                    lead = null,
-                    section = Repository.Section.CHAPTERS,
-                )
-                    Spacer(Modifier.height(Space.m))
-                    FactBlock(
-                        label = null,
-                        text = strings["milestones.add.lead"],
-                        tone = BlockTone.Section,
-                        mark = Symbols.of(Repository.Section.CHAPTERS),
-                        hue = hueFor(Repository.Section.CHAPTERS),
-                    )
-                Spacer(Modifier.height(Space.l))
-
-                Field(
-                    label = strings["milestones.label"],
-                    value = draft.label,
-                    onValueChange = { draft = draft.copy(label = it) },
-                    fieldTestTag = AddMilestoneTags.field("label"),
-                    support = strings["milestones.label.hint"],
-                )
+                    .padding(horizontal = Space.screenHorizontal)
+                    .testTag(AddMilestoneTags.REMOVE),
+            )
+        }
+        },
+    ) {
+        item {
+            Column {
                 Spacer(Modifier.height(Space.m))
+                FactBlock(
+                    label = null,
+                    text = strings["milestones.add.lead"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.CHAPTERS),
+                    hue = hueFor(Repository.Section.CHAPTERS),
+                )
+            Spacer(Modifier.height(Space.l))
 
-                ChoiceChipGroup(label = strings["milestones.when"]) {
-                    ChoiceChip(
-                        label = strings["capture.when.exact"],
-                        selected = draft.occurred != null &&
-                            draft.occurred?.precision != Edtf.Precision.UNKNOWN,
-                        onClick = { picking = true },
-                        modifier = Modifier.testTag(AddMilestoneTags.PICK_DATE),
-                    )
-                    ChoiceChip(
-                        label = strings["date.pick.clear"],
-                        selected = draft.occurred?.precision == Edtf.Precision.UNKNOWN,
-                        onClick = { draft = draft.copy(occurred = Edtf.unknown()) },
-                    )
-                }
+            Field(
+                label = strings["milestones.label"],
+                value = draft.label,
+                onValueChange = { draft = draft.copy(label = it) },
+                fieldTestTag = AddMilestoneTags.field("label"),
+                support = strings["milestones.label.hint"],
+            )
+            Spacer(Modifier.height(Space.m))
 
-                draft.occurred?.let { chosen ->
-                    Spacer(Modifier.height(Space.s))
-                    Text(
-                        text = EventDateText.render(strings, chosen),
-                        style = HealthTrail.type.bodyL,
-                        color = colors.ink,
-                    )
-                }
+            ChoiceChipGroup(label = strings["milestones.when"]) {
+                ChoiceChip(
+                    label = strings["capture.when.exact"],
+                    selected = draft.occurred != null &&
+                        draft.occurred?.precision != Edtf.Precision.UNKNOWN,
+                    onClick = { picking = true },
+                    modifier = Modifier.testTag(AddMilestoneTags.PICK_DATE),
+                )
+                ChoiceChip(
+                    label = strings["date.pick.clear"],
+                    selected = draft.occurred?.precision == Edtf.Precision.UNKNOWN,
+                    onClick = { draft = draft.copy(occurred = Edtf.unknown()) },
+                )
+            }
 
-                if (chapters.isNotEmpty()) {
-                    Spacer(Modifier.height(Space.m))
-                    ChoiceChipGroup(label = strings["milestones.where"]) {
-                        chapters.forEach { chapter ->
-                            ChoiceChip(
-                                label = Bidi.isolate(chapter.name),
-                                selected = draft.chapterId == chapter.id,
-                                // Tapping the chosen one again clears it,
-                                // because "actually I do not know where they
-                                // were" has to be sayable after saying they
-                                // were somewhere.
-                                onClick = {
-                                    draft = draft.copy(
-                                        chapterId = chapter.id
-                                            .takeIf { it != draft.chapterId },
-                                    )
-                                },
-                                modifier = Modifier.testTag(
-                                    AddMilestoneTags.chapter(chapter.id),
-                                ),
-                            )
-                        }
+            draft.occurred?.let { chosen ->
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = EventDateText.render(strings, chosen),
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink,
+                )
+            }
+
+            if (chapters.isNotEmpty()) {
+                Spacer(Modifier.height(Space.m))
+                ChoiceChipGroup(label = strings["milestones.where"]) {
+                    chapters.forEach { chapter ->
+                        ChoiceChip(
+                            label = Bidi.isolate(chapter.name),
+                            selected = draft.chapterId == chapter.id,
+                            // Tapping the chosen one again clears it,
+                            // because "actually I do not know where they
+                            // were" has to be sayable after saying they
+                            // were somewhere.
+                            onClick = {
+                                draft = draft.copy(
+                                    chapterId = chapter.id
+                                        .takeIf { it != draft.chapterId },
+                                )
+                            },
+                            modifier = Modifier.testTag(
+                                AddMilestoneTags.chapter(chapter.id),
+                            ),
+                        )
                     }
                 }
-
-                Spacer(Modifier.height(Space.m))
-
-                DictatableField(
-                    label = strings["milestones.note"],
-                    value = draft.note,
-                    onValueChange = { draft = draft.copy(note = it) },
-                    support = strings["milestones.note.hint"],
-                    singleLine = false,
-                    imeAction = ImeAction.Done,
-                    fieldTestTag = AddMilestoneTags.field("note"),
-                )
-
-                Spacer(Modifier.height(Space.xl))
             }
 
             Spacer(Modifier.height(Space.m))
 
-            // **Saves what is there.** A milestone with no date is a milestone,
-            // and the save never waits for the rest of it. Rule 13.
-            Action(
-                label = strings["capture.save"],
-                onClick = { onSave(draft) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddMilestoneTags.SAVE), emphasis = ActionEmphasis.Main,
+            DictatableField(
+                label = strings["milestones.note"],
+                value = draft.note,
+                onValueChange = { draft = draft.copy(note = it) },
+                support = strings["milestones.note.hint"],
+                singleLine = false,
+                imeAction = ImeAction.Done,
+                fieldTestTag = AddMilestoneTags.field("note"),
             )
-            Spacer(Modifier.height(Space.s))
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddMilestoneTags.CANCEL),
-            )
-            // **Only on one that already exists.** Anything added can be
-            // removed, 2026-08-16; a form for a new milestone has nothing to
-            // take out yet.
-            if (existing != null) {
-                Spacer(Modifier.height(Space.cardGap))
-                Action(
-                    label = strings["remove.action"],
-                    onClick = onRemove,
-                    modifier = Modifier
-                        .padding(horizontal = Space.screenHorizontal)
-                        .testTag(AddMilestoneTags.REMOVE),
-                )
+
+            Spacer(Modifier.height(Space.xl))
             }
-            Spacer(Modifier.height(Space.l))
         }
     }
 

@@ -193,6 +193,16 @@ fun Page(
      * be put on the three gaps.
      */
     itemSpacing: androidx.compose.ui.unit.Dp = Space.betweenGroups,
+    /**
+     * The actions of a form, pinned under the list rather than scrolled with it.
+     *
+     * **`docs/V4.md` 2.1: the actions go last, sized to their labels, one
+     * filled at most, on the band if the screen is a form.** Pinned, because a
+     * form's save is the one control the person is looking for and a control
+     * that scrolls away is a control somebody has to hunt for. A page that is
+     * not a form passes nothing and there is no band at all.
+     */
+    band: (@Composable () -> Unit)? = null,
     content: LazyListScope.() -> Unit,
 ) {
     val colors = HealthTrail.colors
@@ -433,6 +443,14 @@ fun Page(
                         .padding(end = Space.xs),
                     contentAlignment = Alignment.Center,
                 ) { strip() }
+            }
+        }
+
+        band?.let {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Spacer(Modifier.height(Space.m))
+                it()
+                Spacer(Modifier.height(Space.m))
             }
         }
         }

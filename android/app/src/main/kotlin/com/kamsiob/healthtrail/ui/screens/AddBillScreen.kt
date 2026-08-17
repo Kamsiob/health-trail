@@ -25,7 +25,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -39,11 +38,11 @@ import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.FieldBlock
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object AddBillTags {
     const val ROOT = "add_bill_root"
     const val SAVE = "add_bill_save"
-    const val CANCEL = "add_bill_cancel"
     const val MORE = "add_bill_more"
     fun field(key: String) = "add_bill_$key"
     fun state(key: String) = "add_bill_state_$key"
@@ -96,125 +95,105 @@ fun AddBillScreen(
         )
     }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(
+    Page(
+        title = if (existing == null) strings["money.add"] else strings["money.edit.title"],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier.testTag(AddBillTags.ROOT),
+        eyebrow = strings[labelKey(Repository.Section.MONEY)],
+        section = Repository.Section.MONEY,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        Action(
+            label = strings["capture.save"],
+            onClick = { onSave(draft) },
             modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
-                .testTag(AddBillTags.ROOT),
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                FormHeader(
-                    title = if (existing == null) strings["money.add"] else strings["money.edit.title"],
-                    // The lead is an Aside now, on the section's wash with
-                    // its own icon, rather than the smallest gray line under the
-                    // title. D172, and the approved medication mockup.
-                    lead = null,
-                    section = Repository.Section.MONEY,
-                )
-                    Spacer(Modifier.height(Space.m))
-                    FactBlock(
-                        label = null,
-                        text = strings["money.add.lead"],
-                        tone = BlockTone.Section,
-                        mark = Symbols.of(Repository.Section.MONEY),
-                        hue = hueFor(Repository.Section.MONEY),
-                    )
-                Spacer(Modifier.height(Space.l))
-
-                Field(
-                    label = strings["money.what"],
-                    value = draft.description,
-                    onValueChange = { draft = draft.copy(description = it) },
-                    fieldTestTag = AddBillTags.field("what"),
-                    support = strings["money.what.hint"],
-                )
+                .fillMaxWidth()
+                .padding(horizontal = Space.screenHorizontal)
+                .testTag(AddBillTags.SAVE), emphasis = ActionEmphasis.Main,
+        )
+        Spacer(Modifier.height(Space.s))
+        },
+    ) {
+        item {
+            Column {
                 Spacer(Modifier.height(Space.m))
-
-                Field(
-                    label = strings["money.amount"],
-                    value = draft.amount,
-                    onValueChange = { draft = draft.copy(amount = it) },
-                    keyboardType = KeyboardType.Decimal,
-                    fieldTestTag = AddBillTags.field("amount"),
-                    support = strings["money.amount.hint"],
+                FactBlock(
+                    label = null,
+                    text = strings["money.add.lead"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.MONEY),
+                    hue = hueFor(Repository.Section.MONEY),
                 )
-                Spacer(Modifier.height(Space.m))
+            Spacer(Modifier.height(Space.l))
 
-                ChoiceChipGroup(label = strings["money.state"]) {
-                    listOf(
-                        "needs_attention",
-                        "disputed",
-                        "waiting_on_insurance",
-                        "paid",
-                    ).forEach { state ->
-                        ChoiceChip(
-                            label = strings["money.state.$state"],
-                            selected = draft.state == state,
-                            onClick = { draft = draft.copy(state = state) },
-                            modifier = Modifier.testTag(AddBillTags.state(state)),
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(Space.sectionGap))
-
-                // **The note is behind "Add more"**, per law 3 and 10.8. #361.
-                // Three questions and an open box was one box too many for a
-                // screen somebody opens holding an envelope: what it is, how
-                // much, and where it stands are the bill, and the rest is what
-                // gets added later when somebody rings about it.
-                // **The rest of the form is a group with a label, not a fold.**
-                // D185: nothing sits behind a fold that a label and a scroll can
-                // carry, and the sentence that used to explain the fold is the
-                // group's own line now. Nothing here was ever required.
-                FieldBlock(
-                    label = strings["capture.more"],
-                    aside = strings["capture.more.aside"],
-                    modifier = Modifier.testTag(AddBillTags.MORE),
-                ) {
-                    DictatableField(
-                        label = strings["appts.notes"],
-                        value = draft.notes,
-                        onValueChange = { draft = draft.copy(notes = it) },
-                        support = strings["appts.notes.hint"],
-                        singleLine = false,
-                        imeAction = ImeAction.Done,
-                        fieldTestTag = AddBillTags.field("notes"),
-                    )
-                }
-
-                Spacer(Modifier.height(Space.xl))
-            }
-
+            Field(
+                label = strings["money.what"],
+                value = draft.description,
+                onValueChange = { draft = draft.copy(description = it) },
+                fieldTestTag = AddBillTags.field("what"),
+                support = strings["money.what.hint"],
+            )
             Spacer(Modifier.height(Space.m))
 
-            Action(
-                label = strings["capture.save"],
-                onClick = { onSave(draft) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddBillTags.SAVE), emphasis = ActionEmphasis.Main,
+            Field(
+                label = strings["money.amount"],
+                value = draft.amount,
+                onValueChange = { draft = draft.copy(amount = it) },
+                keyboardType = KeyboardType.Decimal,
+                fieldTestTag = AddBillTags.field("amount"),
+                support = strings["money.amount.hint"],
             )
+            Spacer(Modifier.height(Space.m))
 
-            Spacer(Modifier.height(Space.s))
+            ChoiceChipGroup(label = strings["money.state"]) {
+                listOf(
+                    "needs_attention",
+                    "disputed",
+                    "waiting_on_insurance",
+                    "paid",
+                ).forEach { state ->
+                    ChoiceChip(
+                        label = strings["money.state.$state"],
+                        selected = draft.state == state,
+                        onClick = { draft = draft.copy(state = state) },
+                        modifier = Modifier.testTag(AddBillTags.state(state)),
+                    )
+                }
+            }
 
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddBillTags.CANCEL),
-            )
+            Spacer(Modifier.height(Space.sectionGap))
 
-            Spacer(Modifier.height(Space.l))
+            // **The note is behind "Add more"**, per law 3 and 10.8. #361.
+            // Three questions and an open box was one box too many for a
+            // screen somebody opens holding an envelope: what it is, how
+            // much, and where it stands are the bill, and the rest is what
+            // gets added later when somebody rings about it.
+            // **The rest of the form is a group with a label, not a fold.**
+            // D185: nothing sits behind a fold that a label and a scroll can
+            // carry, and the sentence that used to explain the fold is the
+            // group's own line now. Nothing here was ever required.
+            FieldBlock(
+                label = strings["capture.more"],
+                aside = strings["capture.more.aside"],
+                modifier = Modifier.testTag(AddBillTags.MORE),
+            ) {
+                DictatableField(
+                    label = strings["appts.notes"],
+                    value = draft.notes,
+                    onValueChange = { draft = draft.copy(notes = it) },
+                    support = strings["appts.notes.hint"],
+                    singleLine = false,
+                    imeAction = ImeAction.Done,
+                    fieldTestTag = AddBillTags.field("notes"),
+                )
+            }
+
+            Spacer(Modifier.height(Space.xl))
+            }
         }
     }
 }

@@ -25,7 +25,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.ScopedSearch
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -43,6 +42,7 @@ import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object StartProjectTags {
@@ -51,7 +51,6 @@ object StartProjectTags {
     const val OWN_NAME = "start_project_own_name"
     const val OWN_START = "start_project_own_start"
     const val ROOT = "start_project_root"
-    const val CANCEL = "start_project_cancel"
     const val SEARCH = "start_project_search"
     fun template(id: String) = "start_project_$id"
     fun category(key: String) = "start_project_category_$key"
@@ -151,168 +150,146 @@ fun StartProjectScreen(
         CATEGORY_ORDER.firstOrNull { byCategory[it].orEmpty().isNotEmpty() }
     }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        // **`imePadding` because this screen has a text field.** Without it the
-        // keyboard covers the very control the person has just typed a name
-        // for: type, dismiss, scroll, tap. D38, and it is invisible at rest,
-        // which is why 16.4 step 1 requires looking at a screen with a field
-        // with the keyboard actually up.
-        Column(modifier = Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .testTag(StartProjectTags.ROOT)
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                item(key = "head") {
-                    Spacer(Modifier.height(Space.l))
-                    FormHeader(
-                        title = strings["projects.start.title"],
-                        // The lead is an Aside now, on the section's wash with
-                        // its own icon, rather than the smallest gray line under the
-                        // title. D172, and the approved medication mockup.
-                        lead = null,
-                        section = Repository.Section.PROJECTS,
-                    )
-                        Spacer(Modifier.height(Space.m))
-                        FactBlock(
-                            label = null,
-                            text = strings["projects.start.lead"],
-                            tone = BlockTone.Section,
-                            mark = Symbols.of(Repository.Section.PROJECTS),
-                            hue = hueFor(Repository.Section.PROJECTS),
-                        )
-                    Spacer(Modifier.height(Space.xs))
-                    // **Where they are in the flow**, 20.5 screens 03 and 04.
-                    // The preview said "2 of 2" while this said nothing, so
-                    // the second stage announced a first one nobody had been
-                    // shown. Law 3: staged, and the stages say so.
-                    //
-                    // **Under the lead rather than above the title**, since
-                    // #371 item 5: the eyebrow slot above now holds the tab
-                    // chip, and a mono line stacked over a chip is two
-                    // eyebrows arguing about which one says where you are.
+    Page(
+        title = strings["projects.start.title"],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier,
+        eyebrow = strings[labelKey(Repository.Section.PROJECTS)],
+        section = Repository.Section.PROJECTS,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        // **Sized to its label, not the width of the screen.** D137: a
+        // full width outlined bar is the way back and nothing else, and
+        // under a full width filled action it is a second bar of which
+        // only one leaves. #371 item 5, and it is retroactive per rule 14.
+        },
+    ) {
+        item(key = "head") {
+            Spacer(Modifier.height(Space.l))
+                Spacer(Modifier.height(Space.m))
+                FactBlock(
+                    label = null,
+                    text = strings["projects.start.lead"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.PROJECTS),
+                    hue = hueFor(Repository.Section.PROJECTS),
+                )
+            Spacer(Modifier.height(Space.xs))
+            // **Where they are in the flow**, 20.5 screens 03 and 04.
+            // The preview said "2 of 2" while this said nothing, so
+            // the second stage announced a first one nobody had been
+            // shown. Law 3: staged, and the stages say so.
+            //
+            // **Under the lead rather than above the title**, since
+            // #371 item 5: the eyebrow slot above now holds the tab
+            // chip, and a mono line stacked over a chip is two
+            // eyebrows arguing about which one says where you are.
+            Text(
+                text = strings["projects.start.stage"],
+                style = HealthTrail.type.eyebrow,
+                color = colors.ink2,
+            )
+            Spacer(Modifier.height(Space.l))
+            ScopedSearch(
+                value = query,
+                onValueChange = { query = it },
+                hint = strings("projects.search.hint", "count" to templates.size),
+                clearLabel = strings["projects.search.clear"],
+                testTag = StartProjectTags.SEARCH,
+            )
+            Spacer(Modifier.height(Space.m))
+        }
+
+        if (term.isNotEmpty()) {
+            // **Flat, and no folds**, the trail's own answer to the same
+            // problem. What matched is the whole point; putting it back
+            // under a heading would be answering a search with a door.
+            if (matchingOwn.isNotEmpty()) {
+                item(key = "found_own") {
+                    OwnTemplates(own = matchingOwn, onChoose = onChooseOwn)
+                    Spacer(Modifier.height(Space.sectionGap))
+                }
+            }
+            if (matching.isNotEmpty()) {
+                item(key = "found") {
+                    Templates(templates = matching, onChoose = onChoose)
+                    Spacer(Modifier.height(Space.sectionGap))
+                }
+            }
+            if (matching.isEmpty() && matchingOwn.isEmpty()) {
+                item(key = "found_none") {
                     Text(
-                        text = strings["projects.start.stage"],
-                        style = HealthTrail.type.eyebrow,
+                        text = strings["projects.search.none"],
+                        style = HealthTrail.type.bodyM,
                         color = colors.ink2,
+                        modifier = Modifier.padding(vertical = Space.l),
                     )
+                    // **A search that matches nothing is exactly when
+                    // starting from nothing is the answer**, and
+                    // moving this block to the browse branch took it
+                    // away from the one screen state that needs it
+                    // most. A test caught it, and the test was right:
+                    // somebody whose process is not in the catalog
+                    // searches for it first, finds nothing, and must
+                    // not be left staring at a sentence. #379.
+                    OwnProject(onStart = onStartOwn)
                     Spacer(Modifier.height(Space.l))
-                    ScopedSearch(
-                        value = query,
-                        onValueChange = { query = it },
-                        hint = strings("projects.search.hint", "count" to templates.size),
-                        clearLabel = strings["projects.search.clear"],
-                        testTag = StartProjectTags.SEARCH,
-                    )
-                    Spacer(Modifier.height(Space.m))
                 }
-
-                if (term.isNotEmpty()) {
-                    // **Flat, and no folds**, the trail's own answer to the same
-                    // problem. What matched is the whole point; putting it back
-                    // under a heading would be answering a search with a door.
-                    if (matchingOwn.isNotEmpty()) {
-                        item(key = "found_own") {
-                            OwnTemplates(own = matchingOwn, onChoose = onChooseOwn)
-                            Spacer(Modifier.height(Space.sectionGap))
-                        }
-                    }
-                    if (matching.isNotEmpty()) {
-                        item(key = "found") {
-                            Templates(templates = matching, onChoose = onChoose)
-                            Spacer(Modifier.height(Space.sectionGap))
-                        }
-                    }
-                    if (matching.isEmpty() && matchingOwn.isEmpty()) {
-                        item(key = "found_none") {
-                            Text(
-                                text = strings["projects.search.none"],
-                                style = HealthTrail.type.bodyM,
-                                color = colors.ink2,
-                                modifier = Modifier.padding(vertical = Space.l),
-                            )
-                            // **A search that matches nothing is exactly when
-                            // starting from nothing is the answer**, and
-                            // moving this block to the browse branch took it
-                            // away from the one screen state that needs it
-                            // most. A test caught it, and the test was right:
-                            // somebody whose process is not in the catalog
-                            // searches for it first, finds nothing, and must
-                            // not be left staring at a sentence. #379.
-                            OwnProject(onStart = onStartOwn)
-                            Spacer(Modifier.height(Space.l))
-                        }
-                    }
-                } else {
-                    // **Starting from nothing leads, on the owner's direction,
-                    // #379.** It sat last, on the argument that most people
-                    // want one of the sixteen and should not be asked to write
-                    // from a blank page first. He watched it and disagreed:
-                    // the option was invisible down there, and somebody whose
-                    // process is not in the catalog concluded the app could
-                    // not hold it. It leads now, and it is raised so it reads
-                    // as an offer rather than as a form left open.
-                    item(key = "own_project") {
-                        OwnProject(onStart = onStartOwn)
-                        Spacer(Modifier.height(Space.sectionGap))
-                    }
-
-                    // **Theirs first and open.** Somebody who has made one has
-                    // learned something the catalog did not know, and putting
-                    // the sixteen shipped ones above it would say the opposite.
-                    if (own.isNotEmpty()) {
-                        item(key = "own") {
-                            Eyebrow(text = strings["library.own"])
-                            Spacer(Modifier.height(Space.headerGap))
-                            OwnTemplates(own = own, onChoose = onChooseOwn)
-                            Spacer(Modifier.height(Space.sectionGap))
-                        }
-                    }
-
-                    CATEGORY_ORDER.forEach { key ->
-                        val inCategory = byCategory[key].orEmpty()
-                        if (inCategory.isEmpty()) return@forEach
-                        item(key = "cat_$key") {
-                            // **Every category is open, and the label is what
-                            // tells them apart.** D185: somebody choosing a
-                            // template is comparing them, and a comparison
-                            // behind eight taps is not one. The count says how
-                            // many are under each name.
-                            Eyebrow(
-                                text = Bidi.join(
-                                    strings["projects.category.$key"],
-                                    inCategory.size.toString(),
-                                ),
-                                modifier = Modifier.testTag(StartProjectTags.category(key)),
-                                fixed = false,
-                            )
-                            Spacer(Modifier.height(Space.headerGap))
-                            Templates(templates = inCategory, onChoose = onChoose)
-                            Spacer(Modifier.height(Space.sectionGap))
-                        }
-                    }
-                }
-
+            }
+        } else {
+            // **Starting from nothing leads, on the owner's direction,
+            // #379.** It sat last, on the argument that most people
+            // want one of the sixteen and should not be asked to write
+            // from a blank page first. He watched it and disagreed:
+            // the option was invisible down there, and somebody whose
+            // process is not in the catalog concluded the app could
+            // not hold it. It leads now, and it is raised so it reads
+            // as an offer rather than as a form left open.
+            item(key = "own_project") {
+                OwnProject(onStart = onStartOwn)
+                Spacer(Modifier.height(Space.sectionGap))
             }
 
-            Spacer(Modifier.height(Space.m))
+            // **Theirs first and open.** Somebody who has made one has
+            // learned something the catalog did not know, and putting
+            // the sixteen shipped ones above it would say the opposite.
+            if (own.isNotEmpty()) {
+                item(key = "own") {
+                    Eyebrow(text = strings["library.own"])
+                    Spacer(Modifier.height(Space.headerGap))
+                    OwnTemplates(own = own, onChoose = onChooseOwn)
+                    Spacer(Modifier.height(Space.sectionGap))
+                }
+            }
 
-            // **Sized to its label, not the width of the screen.** D137: a
-            // full width outlined bar is the way back and nothing else, and
-            // under a full width filled action it is a second bar of which
-            // only one leaves. #371 item 5, and it is retroactive per rule 14.
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(StartProjectTags.CANCEL),
-            )
-
-            Spacer(Modifier.height(Space.l))
+            CATEGORY_ORDER.forEach { key ->
+                val inCategory = byCategory[key].orEmpty()
+                if (inCategory.isEmpty()) return@forEach
+                item(key = "cat_$key") {
+                    // **Every category is open, and the label is what
+                    // tells them apart.** D185: somebody choosing a
+                    // template is comparing them, and a comparison
+                    // behind eight taps is not one. The count says how
+                    // many are under each name.
+                    Eyebrow(
+                        text = Bidi.join(
+                            strings["projects.category.$key"],
+                            inCategory.size.toString(),
+                        ),
+                        modifier = Modifier.testTag(StartProjectTags.category(key)),
+                        fixed = false,
+                    )
+                    Spacer(Modifier.height(Space.headerGap))
+                    Templates(templates = inCategory, onChoose = onChoose)
+                    Spacer(Modifier.height(Space.sectionGap))
+                }
+            }
         }
+
     }
 }
 

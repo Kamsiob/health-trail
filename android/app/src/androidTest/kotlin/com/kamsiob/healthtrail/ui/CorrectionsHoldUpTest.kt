@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import com.kamsiob.healthtrail.ui.v4.PageTags
 import org.junit.Assert.assertTrue
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -101,7 +102,9 @@ class CorrectionsHoldUpTest {
 
         compose.onNodeWithText("Maplewood Care Center").assertIsDisplayed()
         compose.onNodeWithTag(AddThreadTags.START).assertIsDisplayed()
-        compose.onNodeWithTag(AddThreadTags.CANCEL).assertIsDisplayed()
+        // The way out is the arrow in the corner now: a cancel action beside
+        // a back arrow was two controls that leave. #387.
+        compose.onNodeWithTag(PageTags.BACK).assertIsDisplayed()
     }
 
     @Test

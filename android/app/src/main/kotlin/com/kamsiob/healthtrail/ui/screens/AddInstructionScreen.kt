@@ -25,7 +25,6 @@ import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -36,10 +35,10 @@ import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object AddInstructionTags {
     const val ROOT = "add_instruction_root"
-    const val CANCEL = "add_instruction_cancel"
     fun starter(id: String) = "add_instruction_$id"
 }
 
@@ -83,74 +82,57 @@ fun AddInstructionScreen(
             .sortedBy { (tag, _) -> if (tag == "federal") 0 else 1 }
     }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .testTag(AddInstructionTags.ROOT)
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                item {
-                    FormHeader(
-                        title = strings["instructions.add"],
-                        // The lead is an Aside now, on the section's wash with
-                        // its own icon, rather than the smallest gray line under the
-                        // title. D172, and the approved medication mockup.
-                        lead = null,
-                        section = Repository.Section.STANDING_INSTRUCTIONS,
-                    )
-                        Spacer(Modifier.height(Space.m))
-                        FactBlock(
-                            label = null,
-                            text = strings["instructions.add.lead"],
-                            tone = BlockTone.Section,
-                            mark = Symbols.of(Repository.Section.STANDING_INSTRUCTIONS),
-                            hue = hueFor(Repository.Section.STANDING_INSTRUCTIONS),
-                        )
-                    Spacer(Modifier.height(Space.l))
-                }
-
-                for ((tagKey, starters) in grouped) {
-                    val tag = catalog.tags[tagKey]
-                    item(key = "tag_$tagKey") {
-                        // bidi-ok: a catalog label, in the app's own words rather than the person's.
-                        Eyebrow(text = tag?.label ?: tagKey, fixed = false)
-                        Spacer(Modifier.height(Space.xs))
-                        if (tag != null) {
-                            Text(
-                                text = tag.explainer,
-                                style = HealthTrail.type.bodyS,
-                                color = colors.ink2,
-                            )
-                        }
-                        Spacer(Modifier.height(Space.headerGap))
-                    }
-                    for (starter in starters) {
-                        item(key = starter.id) {
-                            StarterCard(starter = starter, onChoose = { onChoose(starter) })
-                            Spacer(Modifier.height(Space.cardGap))
-                        }
-                    }
-                    item { Spacer(Modifier.height(Space.s)) }
-                }
-
-                item { Spacer(Modifier.height(Space.l)) }
-            }
-
-            Spacer(Modifier.height(Space.m))
-
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddInstructionTags.CANCEL),
-            )
-
+    Page(
+        title = strings["instructions.add"],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier,
+        eyebrow = strings[labelKey(Repository.Section.STANDING_INSTRUCTIONS)],
+        section = Repository.Section.STANDING_INSTRUCTIONS,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        },
+    ) {
+        item {
+                Spacer(Modifier.height(Space.m))
+                FactBlock(
+                    label = null,
+                    text = strings["instructions.add.lead"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.STANDING_INSTRUCTIONS),
+                    hue = hueFor(Repository.Section.STANDING_INSTRUCTIONS),
+                )
             Spacer(Modifier.height(Space.l))
         }
+
+        for ((tagKey, starters) in grouped) {
+            val tag = catalog.tags[tagKey]
+            item(key = "tag_$tagKey") {
+                // bidi-ok: a catalog label, in the app's own words rather than the person's.
+                Eyebrow(text = tag?.label ?: tagKey, fixed = false)
+                Spacer(Modifier.height(Space.xs))
+                if (tag != null) {
+                    Text(
+                        text = tag.explainer,
+                        style = HealthTrail.type.bodyS,
+                        color = colors.ink2,
+                    )
+                }
+                Spacer(Modifier.height(Space.headerGap))
+            }
+            for (starter in starters) {
+                item(key = starter.id) {
+                    StarterCard(starter = starter, onChoose = { onChoose(starter) })
+                    Spacer(Modifier.height(Space.cardGap))
+                }
+            }
+            item { Spacer(Modifier.height(Space.s)) }
+        }
+
+        item { Spacer(Modifier.height(Space.l)) }
     }
 }
 

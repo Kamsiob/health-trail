@@ -26,7 +26,6 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -40,12 +39,12 @@ import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.MoreChip
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.cappedChips
 
 object EmergencyEditTags {
     const val ROOT = "emergency_edit_root"
     const val SAVE = "emergency_edit_save"
-    const val CANCEL = "emergency_edit_cancel"
     const val MORE_PEOPLE = "emergency_edit_more_people"
     fun field(key: String) = "emergency_edit_$key"
 }
@@ -116,206 +115,186 @@ fun EmergencyCardEditScreen(
         )
     }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(
+    Page(
+        title = strings["emergency.edit.title"],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier.testTag(EmergencyEditTags.ROOT),
+        eyebrow = strings[labelKey(Repository.Section.EMERGENCY_CARD)],
+        section = Repository.Section.EMERGENCY_CARD,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        Action(
+            label = strings["capture.save"],
+            onClick = { onSave(draft) },
             modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
-                .testTag(EmergencyEditTags.ROOT),
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                FormHeader(
-                    title = strings["emergency.edit.title"],
-                    // The lead is an Aside now, on the section's wash with
-                    // its own icon, rather than the smallest gray line under the
-                    // title. D172, and the approved medication mockup.
-                    lead = null,
-                    section = Repository.Section.EMERGENCY_CARD,
+                .fillMaxWidth()
+                .padding(horizontal = Space.screenHorizontal)
+                .testTag(EmergencyEditTags.SAVE), emphasis = ActionEmphasis.Main,
+        )
+        Spacer(Modifier.height(Space.s))
+        },
+    ) {
+        item {
+            Column {
+                Spacer(Modifier.height(Space.m))
+                FactBlock(
+                    label = null,
+                    text = strings["emergency.edit.lead"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.EMERGENCY_CARD),
+                    hue = hueFor(Repository.Section.EMERGENCY_CARD),
                 )
-                    Spacer(Modifier.height(Space.m))
-                    FactBlock(
-                        label = null,
-                        text = strings["emergency.edit.lead"],
-                        tone = BlockTone.Section,
-                        mark = Symbols.of(Repository.Section.EMERGENCY_CARD),
-                        hue = hueFor(Repository.Section.EMERGENCY_CARD),
-                    )
 
-                // **Who to call is chosen, never typed again.** Everybody on
-                // the care team already has a name and a number in this
-                // notebook, and asking for them a second time would be the
-                // interface making the person do the app's filing, which rule
-                // 20 forbids. One tap puts somebody on the card, one tap takes
-                // them off.
-                Spacer(Modifier.height(Space.l))
-                Eyebrow(text = strings["emergency.group.who"])
-                Spacer(Modifier.height(Space.headerGap))
+            // **Who to call is chosen, never typed again.** Everybody on
+            // the care team already has a name and a number in this
+            // notebook, and asking for them a second time would be the
+            // interface making the person do the app's filing, which rule
+            // 20 forbids. One tap puts somebody on the card, one tap takes
+            // them off.
+            Spacer(Modifier.height(Space.l))
+            Eyebrow(text = strings["emergency.group.who"])
+            Spacer(Modifier.height(Space.headerGap))
 
-                if (people.isEmpty()) {
-                    Text(
-                        text = strings["emergency.who.empty_team"],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.ink2,
-                    )
+            if (people.isEmpty()) {
+                Text(
+                    text = strings["emergency.who.empty_team"],
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
+            } else {
+                Text(
+                    text = strings["emergency.who.lead"],
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
+                Spacer(Modifier.height(Space.sm))
+                // **Named once.** The `GroupHeader` above says "Who to
+                // call first" and this said it again in body text directly
+                // under the sentence explaining the tap, so the same four
+                // words appeared twice within three lines. Seen on the
+                // phone. The label stays for a reader.
+                // **Five, plus everybody already on the card**, per 5.11.1
+                // and the cap every other chip set in the app uses. This
+                // one drew the whole care team: fifteen names filling the
+                // first screen, so allergies and the rest of what this card
+                // exists for started below the fold. Seen on the phone.
+                //
+                // **Nothing chosen ever disappears into the fold**, which
+                // is what the multi select cap is for: a chip that vanished
+                // when the list was capped would hide a choice somebody
+                // made.
+                val onCard = people.filter { it.id in onTheCard }.toSet()
+                val shownPeople = if (allPeopleShown) {
+                    people
                 } else {
-                    Text(
-                        text = strings["emergency.who.lead"],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.ink2,
-                    )
-                    Spacer(Modifier.height(Space.sm))
-                    // **Named once.** The `GroupHeader` above says "Who to
-                    // call first" and this said it again in body text directly
-                    // under the sentence explaining the tap, so the same four
-                    // words appeared twice within three lines. Seen on the
-                    // phone. The label stays for a reader.
-                    // **Five, plus everybody already on the card**, per 5.11.1
-                    // and the cap every other chip set in the app uses. This
-                    // one drew the whole care team: fifteen names filling the
-                    // first screen, so allergies and the rest of what this card
-                    // exists for started below the fold. Seen on the phone.
-                    //
-                    // **Nothing chosen ever disappears into the fold**, which
-                    // is what the multi select cap is for: a chip that vanished
-                    // when the list was capped would hide a choice somebody
-                    // made.
-                    val onCard = people.filter { it.id in onTheCard }.toSet()
-                    val shownPeople = if (allPeopleShown) {
-                        people
-                    } else {
-                        cappedChips(people, onCard)
+                    cappedChips(people, onCard)
+                }
+                ChoiceChipGroup(
+                    label = strings["emergency.group.who"],
+                    showLabel = false,
+                ) {
+                    shownPeople.forEach { person ->
+                        ChoiceChip(
+                            label = Bidi.isolate(
+                                person.displayName.ifBlank {
+                                    person.phone.orEmpty().ifBlank {
+                                        person.roleLabel.orEmpty()
+                                    }
+                                },
+                            ),
+                            selected = person.id in onTheCard,
+                            onClick = { onToggleContact(person) },
+                        )
                     }
-                    ChoiceChipGroup(
-                        label = strings["emergency.group.who"],
-                        showLabel = false,
-                    ) {
-                        shownPeople.forEach { person ->
-                            ChoiceChip(
-                                label = Bidi.isolate(
-                                    person.displayName.ifBlank {
-                                        person.phone.orEmpty().ifBlank {
-                                            person.roleLabel.orEmpty()
-                                        }
-                                    },
-                                ),
-                                selected = person.id in onTheCard,
-                                onClick = { onToggleContact(person) },
-                            )
-                        }
-                        // **Opens in place rather than into a picker.** The
-                        // appointment form sends this to a sheet because it is
-                        // choosing one person and the sheet can search; here
-                        // several people belong on the card and the choosing is
-                        // the screen's own work, so the rest arrive under the
-                        // ones already there.
-                        if (people.size > shownPeople.size) {
-                            MoreChip(
-                                label = strings("chips.all", "count" to people.size),
-                                onClick = { allPeopleShown = true },
-                                modifier = Modifier.testTag(EmergencyEditTags.MORE_PEOPLE),
-                            )
-                        }
+                    // **Opens in place rather than into a picker.** The
+                    // appointment form sends this to a sheet because it is
+                    // choosing one person and the sheet can search; here
+                    // several people belong on the card and the choosing is
+                    // the screen's own work, so the rest arrive under the
+                    // ones already there.
+                    if (people.size > shownPeople.size) {
+                        MoreChip(
+                            label = strings("chips.all", "count" to people.size),
+                            onClick = { allPeopleShown = true },
+                            modifier = Modifier.testTag(EmergencyEditTags.MORE_PEOPLE),
+                        )
                     }
                 }
-
-                Spacer(Modifier.height(Space.m))
-                Eyebrow(text = strings["emergency.group.medical"])
-                Spacer(Modifier.height(Space.headerGap))
-
-                CardLine(
-                    key = "allergies",
-                    label = strings["emergency.allergies"],
-                    hint = strings["emergency.allergies.hint"],
-                    value = draft.allergies,
-                    onChange = { draft = draft.copy(allergies = it) },
-                )
-                CardLine(
-                    key = "blood_type",
-                    label = strings["emergency.blood_type"],
-                    hint = strings["emergency.blood_type.hint"],
-                    value = draft.bloodType,
-                    onChange = { draft = draft.copy(bloodType = it) },
-                )
-                CardLine(
-                    key = "conditions",
-                    label = strings["emergency.conditions"],
-                    hint = strings["emergency.conditions.hint"],
-                    value = draft.conditions,
-                    onChange = { draft = draft.copy(conditions = it) },
-                )
-
-                Spacer(Modifier.height(Space.m))
-                Eyebrow(text = strings["emergency.group.paperwork"])
-                Spacer(Modifier.height(Space.headerGap))
-
-                CardLine(
-                    key = "resuscitation",
-                    label = strings["emergency.resuscitation"],
-                    hint = strings["emergency.resuscitation.hint"],
-                    value = draft.resuscitationStatus,
-                    onChange = { draft = draft.copy(resuscitationStatus = it) },
-                )
-                CardLine(
-                    key = "resuscitation_where",
-                    label = strings["emergency.resuscitation.where"],
-                    hint = strings["emergency.resuscitation.where.hint"],
-                    value = draft.resuscitationWhere,
-                    onChange = { draft = draft.copy(resuscitationWhere = it) },
-                )
-                CardLine(
-                    key = "decision_maker_where",
-                    label = strings["emergency.decision_maker.where"],
-                    hint = strings["emergency.decision_maker.where.hint"],
-                    value = draft.decisionMakerWhere,
-                    onChange = { draft = draft.copy(decisionMakerWhere = it) },
-                )
-                CardLine(
-                    key = "insurance",
-                    label = strings["emergency.insurance"],
-                    hint = strings["emergency.insurance.hint"],
-                    value = draft.insurance,
-                    onChange = { draft = draft.copy(insurance = it) },
-                )
-                CardLine(
-                    key = "other",
-                    label = strings["emergency.other"],
-                    hint = strings["emergency.other.hint"],
-                    value = draft.other,
-                    onChange = { draft = draft.copy(other = it) },
-                    imeAction = ImeAction.Done,
-                )
-
-                Spacer(Modifier.height(Space.xl))
             }
 
             Spacer(Modifier.height(Space.m))
+            Eyebrow(text = strings["emergency.group.medical"])
+            Spacer(Modifier.height(Space.headerGap))
 
-            Action(
-                label = strings["capture.save"],
-                onClick = { onSave(draft) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(EmergencyEditTags.SAVE), emphasis = ActionEmphasis.Main,
+            CardLine(
+                key = "allergies",
+                label = strings["emergency.allergies"],
+                hint = strings["emergency.allergies.hint"],
+                value = draft.allergies,
+                onChange = { draft = draft.copy(allergies = it) },
+            )
+            CardLine(
+                key = "blood_type",
+                label = strings["emergency.blood_type"],
+                hint = strings["emergency.blood_type.hint"],
+                value = draft.bloodType,
+                onChange = { draft = draft.copy(bloodType = it) },
+            )
+            CardLine(
+                key = "conditions",
+                label = strings["emergency.conditions"],
+                hint = strings["emergency.conditions.hint"],
+                value = draft.conditions,
+                onChange = { draft = draft.copy(conditions = it) },
             )
 
-            Spacer(Modifier.height(Space.s))
+            Spacer(Modifier.height(Space.m))
+            Eyebrow(text = strings["emergency.group.paperwork"])
+            Spacer(Modifier.height(Space.headerGap))
 
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(EmergencyEditTags.CANCEL),
+            CardLine(
+                key = "resuscitation",
+                label = strings["emergency.resuscitation"],
+                hint = strings["emergency.resuscitation.hint"],
+                value = draft.resuscitationStatus,
+                onChange = { draft = draft.copy(resuscitationStatus = it) },
+            )
+            CardLine(
+                key = "resuscitation_where",
+                label = strings["emergency.resuscitation.where"],
+                hint = strings["emergency.resuscitation.where.hint"],
+                value = draft.resuscitationWhere,
+                onChange = { draft = draft.copy(resuscitationWhere = it) },
+            )
+            CardLine(
+                key = "decision_maker_where",
+                label = strings["emergency.decision_maker.where"],
+                hint = strings["emergency.decision_maker.where.hint"],
+                value = draft.decisionMakerWhere,
+                onChange = { draft = draft.copy(decisionMakerWhere = it) },
+            )
+            CardLine(
+                key = "insurance",
+                label = strings["emergency.insurance"],
+                hint = strings["emergency.insurance.hint"],
+                value = draft.insurance,
+                onChange = { draft = draft.copy(insurance = it) },
+            )
+            CardLine(
+                key = "other",
+                label = strings["emergency.other"],
+                hint = strings["emergency.other.hint"],
+                value = draft.other,
+                onChange = { draft = draft.copy(other = it) },
+                imeAction = ImeAction.Done,
             )
 
-            Spacer(Modifier.height(Space.l))
+            Spacer(Modifier.height(Space.xl))
+            }
         }
     }
 }

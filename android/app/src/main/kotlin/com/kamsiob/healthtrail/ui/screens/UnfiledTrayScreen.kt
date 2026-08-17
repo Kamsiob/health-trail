@@ -43,7 +43,6 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.Symbols
@@ -59,6 +58,7 @@ import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 
 object UnfiledTags {
@@ -114,179 +114,155 @@ fun UnfiledTrayScreen(
     var passed by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val colors = HealthTrail.colors
 
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = colors.paper,
+    Page(
+        title = strings["unfiled.title"],
+        onBack = onClose,
+        backLabel = strings["common.cancel"],
+        modifier = modifier,
+        eyebrow = strings[labelKey(Repository.Section.TRAIL)],
+        section = Repository.Section.TRAIL,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        // The pinned action footer, per 5.15, with its required gap.
+        Spacer(Modifier.height(Space.m))
+        },
     ) {
-        // **Its own system bar padding.** This screen renders over the shell
-        // rather than inside it, so it does not inherit the padding the four
-        // destinations get. Without it the title sat on top of the clock, which
-        // the screenshot showed immediately and the code did not.
-        Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .testTag(UnfiledTags.ROOT)
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                item {
-                    // The lead says plainly that nothing was filed for them,
-                    // which is the promise underneath this whole screen.
-                    FormHeader(
-                        title = strings["unfiled.title"],
-                        // The lead is an Aside now, on the section's wash with
-                        // its own icon, rather than the smallest gray line under the
-                        // title. D172, and the approved medication mockup.
-                        lead = null,
-                        section = Repository.Section.TRAIL,
-                    )
-                        Spacer(Modifier.height(Space.m))
-                        FactBlock(
-                            label = null,
-                            text = strings["unfiled.subtitle"],
-                            tone = BlockTone.Section,
-                            mark = Symbols.of(Repository.Section.TRAIL),
-                            hue = hueFor(Repository.Section.TRAIL),
-                        )
-                    Spacer(Modifier.height(Space.l))
-                }
-
-                if (entries.isEmpty()) {
-                    item {
-                        Text(
-                            text = strings["unfiled.empty"],
-                            style = HealthTrail.type.bodyL,
-                            color = colors.ink2,
-                            modifier = Modifier.testTag(UnfiledTags.EMPTY),
-                        )
-                    }
-                } else if (threads.isEmpty()) {
-                    // A notebook with no situation template has no threads, so
-                    // there is nowhere to file anything. Said plainly rather
-                    // than shown as an empty chip row, which would read as a
-                    // question with no answers.
-                    item {
-                        Text(
-                            text = strings["unfiled.no_threads"],
-                            style = HealthTrail.type.bodyM,
-                            color = colors.ink2,
-                        )
-                        Spacer(Modifier.height(Space.l))
-                    }
-                }
-
-                // **One at a time, and this screen was showing eighty six.**
-                // Law 1: the one thing is where *this* one lives. A wall of
-                // items each asking the same question is the pile the person
-                // came here to get out from under, reproduced on a screen.
-                //
-                // Everything else is counted behind one fold, so nothing is
-                // hidden and the number is honest.
-                val waiting = entries.filter { it.id !in passed }
-                val current = waiting.firstOrNull()
-
-                if (current != null) {
-                    item(key = current.id) {
-                        UnfiledRow(
-                            entry = current,
-                            threads = threads,
-                            onFile = { threadId -> onFile(current.id, threadId) },
-                        )
-                        Spacer(Modifier.height(Space.m))
-                        // **Leaving it is a real answer, not a failure.** Rule
-                        // 13: partial is a finished state. Somebody who does not
-                        // know where this belongs should be able to say so and
-                        // move on, and the thing stays exactly where it was.
-                        // Sized to its label, D137: this screen already ends
-                        // in a full width outlined bar and that one is the way
-                        // out. #371 item 5.
-                        Action(
-                            label = strings["unfiled.later"],
-                            onClick = { passed = passed + current.id },
-                            modifier = Modifier.testTag(UnfiledTags.LATER),
-                        )
-                        Spacer(Modifier.height(Space.sectionGap))
-                    }
-                } else if (entries.isNotEmpty()) {
-                    // Everything has been passed over at least once. Said
-                    // plainly, with the way to go round again, rather than an
-                    // empty screen that looks like the work is gone.
-                    item(key = "passed") {
-                        Text(
-                            text = strings["unfiled.all_passed"],
-                            style = HealthTrail.type.bodyL,
-                            color = colors.ink2,
-                        )
-                        Spacer(Modifier.height(Space.m))
-                        Action(
-                            label = strings["unfiled.title"],
-                            onClick = { passed = emptySet() },
-                        )
-                        Spacer(Modifier.height(Space.sectionGap))
-                    }
-                }
-
-                val behind = entries.filter { it.id != current?.id }
-                if (behind.isNotEmpty()) {
-                    item(key = "behind") {
-                        Eyebrow(text = Bidi.join(strings["unfiled.behind"], behind.size.toString()))
-                        Spacer(Modifier.height(Space.cardGap))
-                    }
-
-                    item(key = "behind_list") {
-                        Block(padding = Space.none) {
-                            behind.forEachIndexed { index, entry ->
-                                ListRow(
-                                    title = Bidi.isolate(
-                                        entry.title?.takeIf { it.isNotBlank() }
-                                            ?: strings[kindKey(entry.kind)],
-                                    ),
-                                    value = EventDateText.render(
-                                        strings, entry.occurredEdtf,
-                                    ),
-                                    // Tapping one brings it to the front,
-                                    // which is the only thing this list can
-                                    // usefully do: it is a queue, and the
-                                    // person is choosing what to answer next.
-                                    // **Brings this one to the front.** The
-                                    // list is a queue and the only useful
-                                    // thing a person can do with it is
-                                    // choose what to answer next, so
-                                    // everything currently ahead of it steps
-                                    // aside and it is no longer passed over.
-                                    onClick = {
-                                        passed = entries
-                                            .map { it.id }
-                                            .filterNot { it == entry.id }
-                                            .toSet()
-                                    },
-                                    modifier = Modifier.testTag(UnfiledTags.behind(entry.id)),
-                                )
-                                if (index < behind.size - 1) RowDivider(inset = false)
-                            }
-                        }
-                        Spacer(Modifier.height(Space.cardGap))
-                    }
-                }
-
-                item { Spacer(Modifier.height(Space.l)) }
-            }
-
-            // The pinned action footer, per 5.15, with its required gap.
-            Spacer(Modifier.height(Space.m))
-
-            Action(
-                label = strings["common.close"],
-                onClick = onClose,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(UnfiledTags.CLOSE),
-            )
-
+        item {
+            // The lead says plainly that nothing was filed for them,
+            // which is the promise underneath this whole screen.
+                Spacer(Modifier.height(Space.m))
+                FactBlock(
+                    label = null,
+                    text = strings["unfiled.subtitle"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.TRAIL),
+                    hue = hueFor(Repository.Section.TRAIL),
+                )
             Spacer(Modifier.height(Space.l))
         }
+
+        if (entries.isEmpty()) {
+            item {
+                Text(
+                    text = strings["unfiled.empty"],
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink2,
+                    modifier = Modifier.testTag(UnfiledTags.EMPTY),
+                )
+            }
+        } else if (threads.isEmpty()) {
+            // A notebook with no situation template has no threads, so
+            // there is nowhere to file anything. Said plainly rather
+            // than shown as an empty chip row, which would read as a
+            // question with no answers.
+            item {
+                Text(
+                    text = strings["unfiled.no_threads"],
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                )
+                Spacer(Modifier.height(Space.l))
+            }
+        }
+
+        // **One at a time, and this screen was showing eighty six.**
+        // Law 1: the one thing is where *this* one lives. A wall of
+        // items each asking the same question is the pile the person
+        // came here to get out from under, reproduced on a screen.
+        //
+        // Everything else is counted behind one fold, so nothing is
+        // hidden and the number is honest.
+        val waiting = entries.filter { it.id !in passed }
+        val current = waiting.firstOrNull()
+
+        if (current != null) {
+            item(key = current.id) {
+                UnfiledRow(
+                    entry = current,
+                    threads = threads,
+                    onFile = { threadId -> onFile(current.id, threadId) },
+                )
+                Spacer(Modifier.height(Space.m))
+                // **Leaving it is a real answer, not a failure.** Rule
+                // 13: partial is a finished state. Somebody who does not
+                // know where this belongs should be able to say so and
+                // move on, and the thing stays exactly where it was.
+                // Sized to its label, D137: this screen already ends
+                // in a full width outlined bar and that one is the way
+                // out. #371 item 5.
+                Action(
+                    label = strings["unfiled.later"],
+                    onClick = { passed = passed + current.id },
+                    modifier = Modifier.testTag(UnfiledTags.LATER),
+                )
+                Spacer(Modifier.height(Space.sectionGap))
+            }
+        } else if (entries.isNotEmpty()) {
+            // Everything has been passed over at least once. Said
+            // plainly, with the way to go round again, rather than an
+            // empty screen that looks like the work is gone.
+            item(key = "passed") {
+                Text(
+                    text = strings["unfiled.all_passed"],
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink2,
+                )
+                Spacer(Modifier.height(Space.m))
+                Action(
+                    label = strings["unfiled.title"],
+                    onClick = { passed = emptySet() },
+                )
+                Spacer(Modifier.height(Space.sectionGap))
+            }
+        }
+
+        val behind = entries.filter { it.id != current?.id }
+        if (behind.isNotEmpty()) {
+            item(key = "behind") {
+                Eyebrow(text = Bidi.join(strings["unfiled.behind"], behind.size.toString()))
+                Spacer(Modifier.height(Space.cardGap))
+            }
+
+            item(key = "behind_list") {
+                Block(padding = Space.none) {
+                    behind.forEachIndexed { index, entry ->
+                        ListRow(
+                            title = Bidi.isolate(
+                                entry.title?.takeIf { it.isNotBlank() }
+                                    ?: strings[kindKey(entry.kind)],
+                            ),
+                            value = EventDateText.render(
+                                strings, entry.occurredEdtf,
+                            ),
+                            // Tapping one brings it to the front,
+                            // which is the only thing this list can
+                            // usefully do: it is a queue, and the
+                            // person is choosing what to answer next.
+                            // **Brings this one to the front.** The
+                            // list is a queue and the only useful
+                            // thing a person can do with it is
+                            // choose what to answer next, so
+                            // everything currently ahead of it steps
+                            // aside and it is no longer passed over.
+                            onClick = {
+                                passed = entries
+                                    .map { it.id }
+                                    .filterNot { it == entry.id }
+                                    .toSet()
+                            },
+                            modifier = Modifier.testTag(UnfiledTags.behind(entry.id)),
+                        )
+                        if (index < behind.size - 1) RowDivider(inset = false)
+                    }
+                }
+                Spacer(Modifier.height(Space.cardGap))
+            }
+        }
+
+        item { Spacer(Modifier.height(Space.l)) }
     }
 }
 

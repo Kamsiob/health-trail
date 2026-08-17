@@ -27,7 +27,6 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -40,6 +39,7 @@ import com.kamsiob.healthtrail.ui.v4.ChoiceChipGroup
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 import java.time.LocalDate
 
 object CorrectIncidentTags {
@@ -49,7 +49,6 @@ object CorrectIncidentTags {
     const val PICK_DATE = "correct_incident_date"
     const val UNKNOWN_DATE = "correct_incident_date_unknown"
     const val SAVE = "correct_incident_save"
-    const val CANCEL = "correct_incident_cancel"
 }
 
 /** What a correction carries back, so the screen holds no repository of its own. */
@@ -101,124 +100,104 @@ fun CorrectIncidentScreen(
     }
     var picking by remember { mutableStateOf(false) }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(
+    Page(
+        title = strings["incident.correct.title"],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier.testTag(CorrectIncidentTags.ROOT),
+        eyebrow = strings[labelKey(Repository.Section.THREADS)],
+        section = Repository.Section.THREADS,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        Action(
+            label = strings["capture.save"],
+            onClick = {
+                onSave(
+                    IncidentCorrection(
+                        title = title.trim(),
+                        description = description,
+                        reported = reported,
+                    ),
+                )
+            },
+            // **The words are the one thing it cannot do without**, since
+            // the schema requires a title and an incident with none is not
+            // a record of anything. Everything else can be emptied.
+            enabled = title.isNotBlank(),
             modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
-                .testTag(CorrectIncidentTags.ROOT),
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                FormHeader(
-                    title = strings["incident.correct.title"],
-                    // The lead is an Aside now, on the section's wash with
-                    // its own icon, rather than the smallest gray line under the
-                    // title. D172, and the approved medication mockup.
-                    lead = null,
-                    section = Repository.Section.THREADS,
-                )
-                    Spacer(Modifier.height(Space.m))
-                    FactBlock(
-                        label = null,
-                        text = strings["incident.correct.lead"],
-                        tone = BlockTone.Section,
-                        mark = Symbols.of(Repository.Section.THREADS),
-                        hue = hueFor(Repository.Section.THREADS),
-                    )
-                Spacer(Modifier.height(Space.l))
-
-                Field(
-                    label = strings["incident.correct.what"],
-                    value = title,
-                    onValueChange = { title = it },
-                    fieldTestTag = CorrectIncidentTags.TITLE,
-                    support = strings["incident.correct.what.hint"],
-                )
+                .fillMaxWidth()
+                .padding(horizontal = Space.screenHorizontal)
+                .testTag(CorrectIncidentTags.SAVE), emphasis = ActionEmphasis.Main,
+        )
+        Spacer(Modifier.height(Space.s))
+        },
+    ) {
+        item {
+            Column {
                 Spacer(Modifier.height(Space.m))
-
-                // **The same two answers the rest of the app gives a date**: a
-                // day from the picker, or "not sure", which saves and appears
-                // rather than being refused. Rule 17.
-                ChoiceChipGroup(label = strings["incident.correct.when"]) {
-                    ChoiceChip(
-                        label = strings["capture.when.exact"],
-                        selected = reported != null &&
-                            reported?.precision != Edtf.Precision.UNKNOWN,
-                        onClick = { picking = true },
-                        modifier = Modifier.testTag(CorrectIncidentTags.PICK_DATE),
-                    )
-                    ChoiceChip(
-                        label = strings["date.pick.clear"],
-                        selected = reported?.precision == Edtf.Precision.UNKNOWN,
-                        onClick = { reported = Edtf.unknown() },
-                        modifier = Modifier.testTag(CorrectIncidentTags.UNKNOWN_DATE),
-                    )
-                }
-
-                reported?.let { chosen ->
-                    Spacer(Modifier.height(Space.s))
-                    Text(
-                        text = EventDateText.render(strings, chosen),
-                        style = HealthTrail.type.bodyL,
-                        color = colors.ink,
-                    )
-                }
-
-                Spacer(Modifier.height(Space.m))
-
-                DictatableField(
-                    label = strings["incident.correct.note"],
-                    value = description,
-                    onValueChange = { description = it },
-                    support = strings["incident.correct.note.hint"],
-                    singleLine = false,
-                    imeAction = ImeAction.Done,
-                    fieldTestTag = CorrectIncidentTags.DESCRIPTION,
+                FactBlock(
+                    label = null,
+                    text = strings["incident.correct.lead"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.THREADS),
+                    hue = hueFor(Repository.Section.THREADS),
                 )
+            Spacer(Modifier.height(Space.l))
 
-                Spacer(Modifier.height(Space.xl))
+            Field(
+                label = strings["incident.correct.what"],
+                value = title,
+                onValueChange = { title = it },
+                fieldTestTag = CorrectIncidentTags.TITLE,
+                support = strings["incident.correct.what.hint"],
+            )
+            Spacer(Modifier.height(Space.m))
+
+            // **The same two answers the rest of the app gives a date**: a
+            // day from the picker, or "not sure", which saves and appears
+            // rather than being refused. Rule 17.
+            ChoiceChipGroup(label = strings["incident.correct.when"]) {
+                ChoiceChip(
+                    label = strings["capture.when.exact"],
+                    selected = reported != null &&
+                        reported?.precision != Edtf.Precision.UNKNOWN,
+                    onClick = { picking = true },
+                    modifier = Modifier.testTag(CorrectIncidentTags.PICK_DATE),
+                )
+                ChoiceChip(
+                    label = strings["date.pick.clear"],
+                    selected = reported?.precision == Edtf.Precision.UNKNOWN,
+                    onClick = { reported = Edtf.unknown() },
+                    modifier = Modifier.testTag(CorrectIncidentTags.UNKNOWN_DATE),
+                )
+            }
+
+            reported?.let { chosen ->
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = EventDateText.render(strings, chosen),
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink,
+                )
             }
 
             Spacer(Modifier.height(Space.m))
 
-            Action(
-                label = strings["capture.save"],
-                onClick = {
-                    onSave(
-                        IncidentCorrection(
-                            title = title.trim(),
-                            description = description,
-                            reported = reported,
-                        ),
-                    )
-                },
-                // **The words are the one thing it cannot do without**, since
-                // the schema requires a title and an incident with none is not
-                // a record of anything. Everything else can be emptied.
-                enabled = title.isNotBlank(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(CorrectIncidentTags.SAVE), emphasis = ActionEmphasis.Main,
+            DictatableField(
+                label = strings["incident.correct.note"],
+                value = description,
+                onValueChange = { description = it },
+                support = strings["incident.correct.note.hint"],
+                singleLine = false,
+                imeAction = ImeAction.Done,
+                fieldTestTag = CorrectIncidentTags.DESCRIPTION,
             )
 
-            Spacer(Modifier.height(Space.s))
-
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(CorrectIncidentTags.CANCEL),
-            )
-
-            Spacer(Modifier.height(Space.l))
+            Spacer(Modifier.height(Space.xl))
+            }
         }
     }
 

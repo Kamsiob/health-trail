@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -31,12 +30,12 @@ import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object AddThreadTags {
     const val STAGE = "add_thread"
     const val NAME = "add_thread_name"
     const val START = "add_thread_start"
-    const val CANCEL = "add_thread_cancel"
 }
 
 /**
@@ -129,84 +128,64 @@ fun AddThreadScreen(
         mutableStateOf(existing?.label ?: initialName.orEmpty())
     }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(
+    Page(
+        title = strings[
+            titleKey ?: if (existing == null) "threads.new" else "threads.rename",
+        ],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier.testTag(AddThreadTags.STAGE),
+        eyebrow = strings[labelKey(section)],
+        section = section,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        Action(
+            label = strings[
+                saveKey
+                    ?: if (existing == null) "threads.new.start" else "threads.rename.save",
+            ],
+            onClick = { onStart(name.trim()) },
+            // **A name is the one thing this cannot do without**, because a
+            // thread with no name is a spine with nothing written on it and
+            // the schema requires the label. Nothing else is asked at all.
+            enabled = name.isNotBlank(),
             modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
-                .testTag(AddThreadTags.STAGE),
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                FormHeader(
-                    title = strings[
-                        titleKey ?: if (existing == null) "threads.new" else "threads.rename",
-                    ],
-                    // The lead is an Aside now, on the section's wash with
-                    // its own icon, rather than the smallest gray line under the
-                    // title. D172, and the approved medication mockup.
-                    lead = null,
-                    section = section,
+                .fillMaxWidth()
+                .padding(horizontal = Space.screenHorizontal)
+                .testTag(AddThreadTags.START), emphasis = ActionEmphasis.Main,
+        )
+        Spacer(Modifier.height(Space.sm))
+        },
+    ) {
+        item {
+            Column {
+                Spacer(Modifier.height(Space.m))
+                FactBlock(
+                    label = null,
+                    text = strings[leadKey],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(section),
+                    hue = hueFor(section),
                 )
-                    Spacer(Modifier.height(Space.m))
-                    FactBlock(
-                        label = null,
-                        text = strings[leadKey],
-                        tone = BlockTone.Section,
-                        mark = Symbols.of(section),
-                        hue = hueFor(section),
-                    )
-
-                Spacer(Modifier.height(Space.l))
-                // **The field's label is not the heading again**, which is the
-                // defect #341 took out of four screens. The heading asks what
-                // keeps coming up; the field says what to type.
-                Field(
-                    label = strings[labelKey],
-                    value = name,
-                    onValueChange = { name = it },
-                    singleLine = singleLine,
-                    fieldTestTag = AddThreadTags.NAME,
-                    support = hintKey?.let { strings[it] },
-                )
-
-                Spacer(Modifier.height(Space.xl))
-            }
-
-            Spacer(Modifier.height(Space.m))
-
-            Action(
-                label = strings[
-                    saveKey
-                        ?: if (existing == null) "threads.new.start" else "threads.rename.save",
-                ],
-                onClick = { onStart(name.trim()) },
-                // **A name is the one thing this cannot do without**, because a
-                // thread with no name is a spine with nothing written on it and
-                // the schema requires the label. Nothing else is asked at all.
-                enabled = name.isNotBlank(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddThreadTags.START), emphasis = ActionEmphasis.Main,
-            )
-
-            Spacer(Modifier.height(Space.sm))
-
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddThreadTags.CANCEL),
-            )
 
             Spacer(Modifier.height(Space.l))
+            // **The field's label is not the heading again**, which is the
+            // defect #341 took out of four screens. The heading asks what
+            // keeps coming up; the field says what to type.
+            Field(
+                label = strings[labelKey],
+                value = name,
+                onValueChange = { name = it },
+                singleLine = singleLine,
+                fieldTestTag = AddThreadTags.NAME,
+                support = hintKey?.let { strings[it] },
+            )
+
+            Spacer(Modifier.height(Space.xl))
+            }
         }
     }
 }

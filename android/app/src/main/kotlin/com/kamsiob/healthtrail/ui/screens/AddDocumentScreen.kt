@@ -47,7 +47,6 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
@@ -71,12 +70,12 @@ import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.FieldBlock
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object AddDocTags {
     const val ROOT = "add_doc_root"
     const val PICK = "add_doc_pick"
     const val SAVE = "add_doc_save"
-    const val CANCEL = "add_doc_cancel"
     const val FOLDERS = "add_doc_folders"
     const val PICK_DATE = "add_doc_pick_date"
     const val STAGE_DOTS = "add_doc_stage_dots"
@@ -265,396 +264,374 @@ fun AddDocumentScreen(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri -> if (uri != null) draft = draft.copy(picked = uri) }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
-                .testTag(AddDocTags.ROOT),
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                FormHeader(
-                    title = if (existing == null) strings["docs.add"] else strings["docs.edit.title"],
-                    // The lead is an Aside now, on the section's wash with
-                    // its own icon, rather than the smallest gray line under the
-                    // title. D172, and the approved medication mockup.
-                    lead = null,
-                    section = Repository.Section.DOCUMENTS,
-                )
-                    Spacer(Modifier.height(Space.m))
-                    FactBlock(
-                        label = null,
-                        text = strings["docs.add.lead"],
-                        tone = BlockTone.Section,
-                        mark = Symbols.of(Repository.Section.DOCUMENTS),
-                        hue = hueFor(Repository.Section.DOCUMENTS),
-                    )
-
-                // Said only when it happened, and it says plainly that nothing
-                // was saved, because the worst version of this is somebody
-                // believing a document went in when it did not. **Above the
-                // stages rather than inside one**: save is live from the first
-                // question, so the refusal has to be visible from wherever the
-                // person was standing when they tapped it.
-                if (error != null) {
-                    Spacer(Modifier.height(Space.sm))
-                    Text(
-                        text = error,
-                        style = HealthTrail.type.bodyM,
-                        color = colors.alertInk,
-                    )
-                }
-
-                Spacer(Modifier.height(Space.l))
-
-                val preview = rememberPickedPreview(draft.picked)
-
-                // **The paper stays in front of the person while they describe
-                // it**, on every question after the one that chose it. Rule 18:
-                // carry the context forward rather than asking somebody to
-                // remember which letter they photographed thirty seconds ago.
-                // It is also what fills these two screens, which without it are
-                // two short questions and a great deal of nothing.
-                if (staged && stage > 0) {
-                    preview?.let { image ->
-                        Image(
-                            bitmap = image,
-                            // Decorative: the questions beside it are what name
-                            // this paper, and a reader hearing "image" before
-                            // every question would be told nothing twice.
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(CarriedAspect)
-                                .raisedSlightly(Radius.thumbnail)
-                                .clip(Radius.thumbnail),
-                        )
-                        Spacer(Modifier.height(Space.l))
-                    }
-                }
-
-                if (showing(0)) {
-
-                // **The paper is the screen, and it used to be a button on an
-                // empty field.** #361, 2026-08-12, found by looking rather than
-                // by reading: the first question was a title, one outlined
-                // button, one small line, and then two thirds of the phone
-                // doing nothing, which rule 11 rules out as plainly as it rules
-                // out a placeholder.
-                //
-                // **Rule 22 already named the component**: a thumbnail is where
-                // the app holds the person's own paper. This is that at the
-                // size of the question, an empty sheet waiting for a
-                // photograph, in the same `sand` field and at the same corner
-                // as every other thumbnail in the app.
-                //
-                // **The sheet is the control**, so the obvious tap does the
-                // obvious thing. It is one stop for a reader, named by what the
-                // tap does rather than by what is drawn inside it.
-                val pickLabel = if (draft.picked == null) {
-                    strings["docs.pick"]
-                } else {
-                    strings["docs.replace"]
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(PaperAspect)
-                        .raisedSlightly(Radius.thumbnail)
-                        .clip(Radius.thumbnail)
-                        .openableByTap(
-                            label = pickLabel,
-                            onTap = {
-                                picker.launch(
-                                    PickVisualMediaRequest(
-                                        ActivityResultContracts.PickVisualMedia.ImageOnly,
-                                    ),
-                                )
-                            },
-                            resting = colors.sand,
-                            shape = Radius.thumbnail,
-                        )
-                        .semantics { contentDescription = pickLabel }
-                        .testTag(AddDocTags.PICK),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (preview != null) {
-                        Image(
-                            bitmap = preview,
-                            // The sheet around it already says what the tap
-                            // does, and the fields on the next question name
-                            // the paper, so describing the picture too would
-                            // make a reader hear the same thing twice.
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    } else {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            // The sheet is one stop and says the whole thing.
-                            modifier = Modifier.clearAndSetSemantics { },
-                        ) {
-                            // **Sized from the thumbnail vocabulary rather
-                            // than from two numbers typed here**, per D142: the
-                            // mark on an empty sheet is the same mark the
-                            // documents list draws when it has no picture, one
-                            // step up.
-                            IconTile(
-                                section = Repository.Section.DOCUMENTS,
-                                tint = colors.ink3,
-                                background = Color.Transparent,
-                                tileSize = CARD_SIZE,
-                                iconSize = ROW_SIZE,
-                            )
-                            Spacer(Modifier.height(Space.s))
-                            Text(
-                                text = pickLabel,
-                                style = HealthTrail.type.bodyL,
-                                color = colors.blue,
-                            )
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(Space.s))
-                Text(
-                    text = strings["docs.limit_note"],
-                    style = HealthTrail.type.bodyS,
-                    color = colors.ink2,
-                )
-
-                }
-
-                if (showing(1)) {
-
-                if (!staged) Spacer(Modifier.height(Space.sectionGap))
-
-                Field(
-                    label = strings["docs.title"],
-                    value = draft.title,
-                    onValueChange = { draft = draft.copy(title = it) },
-                    fieldTestTag = AddDocTags.field("title"),
-                    support = strings["docs.title.hint"],
-                )
-                Spacer(Modifier.height(Space.m))
-
-                // **When the paper is from, and the person says or does not.**
-                // This form had no date and the shell stamped today into every
-                // document, so a letter from three weeks ago was recorded as
-                // arriving on the day it was photographed and nothing could
-                // correct it. #339.
-                //
-                // **Not sure is a real answer that saves**, per rule 17, and
-                // leaving both chips alone saves as unknown rather than as
-                // today: the app never quietly fills a date in.
-                ChoiceChipGroup(label = strings["docs.received"]) {
-                    ChoiceChip(
-                        label = strings["capture.when.exact"],
-                        selected = draft.received != null &&
-                            draft.received?.precision != Edtf.Precision.UNKNOWN,
-                        onClick = { picking = true },
-                        modifier = Modifier.testTag(AddDocTags.PICK_DATE),
-                    )
-                    ChoiceChip(
-                        label = strings["date.pick.clear"],
-                        selected = draft.received?.precision == Edtf.Precision.UNKNOWN,
-                        onClick = { draft = draft.copy(received = Edtf.unknown()) },
-                    )
-                }
-
-                // **Shown back at exactly the precision it was given**, which
-                // is the whole point: "sometime in March" stays a month.
-                draft.received?.let { chosen ->
-                    Spacer(Modifier.height(Space.s))
-                    Text(
-                        text = EventDateText.render(strings, chosen),
-                        style = HealthTrail.type.bodyL,
-                        color = colors.ink,
-                    )
-                }
-
-                }
-
-                if (showing(2)) {
-
-                if (!staged) Spacer(Modifier.height(Space.sectionGap))
-
-                // **The field this screen exists for**, per the schema's own
-                // comment: the digital copy is rarely the one a clerk will
-                // accept. It leads its stage rather than sitting behind the
-                // disclosure with the folder and the notes.
-                Field(
-                    label = strings["docs.original"],
-                    value = draft.originalLocation,
-                    onValueChange = { draft = draft.copy(originalLocation = it) },
-                    fieldTestTag = AddDocTags.field("original"),
-                    support = strings["docs.original.hint"],
-                )
-
-                Spacer(Modifier.height(Space.sectionGap))
-
-                // **The last two are behind one control nobody has to touch**,
-                // per 10.8 and the disclosure in `Disclosure.kt`, which is what
-                // the capture form's third stage already does. A folder and a
-                // note are what somebody adds when they are sitting down, and
-                // this form is used standing up with a letter in one hand.
-                // **The rest of the form is a group with a label, not a fold.**
-                // D185: nothing sits behind a fold that a label and a scroll can
-                // carry, and the sentence that used to explain the fold is the
-                // group's own line now. Nothing here was ever required.
-                FieldBlock(
-                    label = strings["capture.more"],
-                    aside = strings["capture.more.aside"],
-                    modifier = Modifier.testTag(AddDocTags.MORE),
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-
-                // **The folder, which the screen has always folded by and no
-                // form ever wrote.** Every document a person saved landed in
-                // "Everything else", and the folds were visible only because
-                // the fixture invented categories. #221.
-                //
-                // **A field with suggestions rather than a picker**, because
-                // the folder is the person's own word for a pile of paper. The
-                // chips are what this notebook already has, so the second
-                // insurance letter goes where the first one went with one tap
-                // and the first one was free to be called anything.
-                //
-                // **Tapping the chip that is already chosen clears it**, which
-                // is how a document comes back out of a folder without the
-                // person having to select the text and delete it.
-                Field(
-                    label = strings["docs.folder"],
-                    value = draft.category,
-                    onValueChange = { draft = draft.copy(category = it) },
-                    fieldTestTag = AddDocTags.field("folder"),
-                    support = strings["docs.folder.hint"],
-                )
-                if (folders.isNotEmpty()) {
-                    Spacer(Modifier.height(Space.s))
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(Space.xs),
-                        verticalArrangement = Arrangement.spacedBy(Space.xs),
-                        modifier = Modifier.fillMaxWidth().testTag(AddDocTags.FOLDERS),
-                    ) {
-                        folders.forEach { folder ->
-                            val chosen = draft.category.trim().equals(folder, ignoreCase = true)
-                            ChoiceChip(
-                                label = folder,
-                                selected = chosen,
-                                onClick = {
-                                    draft = draft.copy(category = if (chosen) "" else folder)
-                                },
-                            )
-                        }
-                    }
-                }
-                Spacer(Modifier.height(Space.m))
-
-                DictatableField(
-                    label = strings["appts.notes"],
-                    value = draft.notes,
-                    onValueChange = { draft = draft.copy(notes = it) },
-                    support = strings["appts.notes.hint"],
-                    singleLine = false,
-                    imeAction = ImeAction.Done,
-                    fieldTestTag = AddDocTags.field("notes"),
-                )
-
-                    }
-                }
-
-                }
-
-                Spacer(Modifier.height(Space.xl))
-            }
-
-            // The gap the pinned action footer requires, per DESIGN.md 5.15.
-            Spacer(Modifier.height(Space.m))
-
-            // **Where you are, and the way on, on one line**, exactly as the
-            // capture form draws it. The dots say where somebody is and never
-            // how much is left, per rule 13, and the way on is worded as
-            // skipping while the question is untouched because none of these
-            // is required.
-            if (staged) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = Space.screenHorizontal),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    StageDots(
-                        count = DOC_STAGES,
-                        current = stage,
-                        description = strings(
-                            "capture.stage",
-                            "current" to stage + 1,
-                            "total" to DOC_STAGES,
-                        ),
-                        modifier = Modifier.testTag(AddDocTags.STAGE_DOTS),
-                    )
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (stage > 0) {
-                            Action(
-                                label = strings["capture.back"],
-                                onClick = { stage -= 1 },
-                                modifier = Modifier.testTag(AddDocTags.BACK),
-                            )
-                            Spacer(Modifier.width(Space.m))
-                        }
-                        if (stage < DOC_STAGES - 1) {
-                            val filled = when (stage) {
-                                0 -> draft.picked != null
-                                else -> draft.title.isNotBlank() || draft.received != null
-                            }
-                            Action(
-                                label = strings[
-                                    if (filled) "capture.next" else "capture.skip",
-                                ],
-                                onClick = { stage += 1 },
-                                modifier = Modifier.testTag(AddDocTags.NEXT),
-                            )
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(Space.s))
-            }
-
-            // **Live from the first question.** Somebody who photographs a
-            // letter and taps save never sees the other two, and what they
-            // have is saved from wherever they are standing.
-            Action(
-                label = strings["capture.save"],
-                onClick = { onSave(draft) },
+    Page(
+        title = if (existing == null) strings["docs.add"] else strings["docs.edit.title"],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier.testTag(AddDocTags.ROOT),
+        eyebrow = strings[labelKey(Repository.Section.DOCUMENTS)],
+        section = Repository.Section.DOCUMENTS,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        // The gap the pinned action footer requires, per DESIGN.md 5.15.
+        Spacer(Modifier.height(Space.m))
+        // **Where you are, and the way on, on one line**, exactly as the
+        // capture form draws it. The dots say where somebody is and never
+        // how much is left, per rule 13, and the way on is worded as
+        // skipping while the question is untouched because none of these
+        // is required.
+        if (staged) {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddDocTags.SAVE), emphasis = ActionEmphasis.Main,
-            )
-
+                    .padding(horizontal = Space.screenHorizontal),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                StageDots(
+                    count = DOC_STAGES,
+                    current = stage,
+                    description = strings(
+                        "capture.stage",
+                        "current" to stage + 1,
+                        "total" to DOC_STAGES,
+                    ),
+                    modifier = Modifier.testTag(AddDocTags.STAGE_DOTS),
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (stage > 0) {
+                        Action(
+                            label = strings["capture.back"],
+                            onClick = { stage -= 1 },
+                            modifier = Modifier.testTag(AddDocTags.BACK),
+                        )
+                        Spacer(Modifier.width(Space.m))
+                    }
+                    if (stage < DOC_STAGES - 1) {
+                        val filled = when (stage) {
+                            0 -> draft.picked != null
+                            else -> draft.title.isNotBlank() || draft.received != null
+                        }
+                        Action(
+                            label = strings[
+                                if (filled) "capture.next" else "capture.skip",
+                            ],
+                            onClick = { stage += 1 },
+                            modifier = Modifier.testTag(AddDocTags.NEXT),
+                        )
+                    }
+                }
+            }
             Spacer(Modifier.height(Space.s))
+        }
+        // **Live from the first question.** Somebody who photographs a
+        // letter and taps save never sees the other two, and what they
+        // have is saved from wherever they are standing.
+        Action(
+            label = strings["capture.save"],
+            onClick = { onSave(draft) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Space.screenHorizontal)
+                .testTag(AddDocTags.SAVE), emphasis = ActionEmphasis.Main,
+        )
+        Spacer(Modifier.height(Space.s))
+        },
+    ) {
+        item {
+            Column {
+                Spacer(Modifier.height(Space.m))
+                FactBlock(
+                    label = null,
+                    text = strings["docs.add.lead"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.DOCUMENTS),
+                    hue = hueFor(Repository.Section.DOCUMENTS),
+                )
 
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(AddDocTags.CANCEL),
-            )
+            // Said only when it happened, and it says plainly that nothing
+            // was saved, because the worst version of this is somebody
+            // believing a document went in when it did not. **Above the
+            // stages rather than inside one**: save is live from the first
+            // question, so the refusal has to be visible from wherever the
+            // person was standing when they tapped it.
+            if (error != null) {
+                Spacer(Modifier.height(Space.sm))
+                Text(
+                    text = error,
+                    style = HealthTrail.type.bodyM,
+                    color = colors.alertInk,
+                )
+            }
 
             Spacer(Modifier.height(Space.l))
+
+            val preview = rememberPickedPreview(draft.picked)
+
+            // **The paper stays in front of the person while they describe
+            // it**, on every question after the one that chose it. Rule 18:
+            // carry the context forward rather than asking somebody to
+            // remember which letter they photographed thirty seconds ago.
+            // It is also what fills these two screens, which without it are
+            // two short questions and a great deal of nothing.
+            if (staged && stage > 0) {
+                preview?.let { image ->
+                    Image(
+                        bitmap = image,
+                        // Decorative: the questions beside it are what name
+                        // this paper, and a reader hearing "image" before
+                        // every question would be told nothing twice.
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(CarriedAspect)
+                            .raisedSlightly(Radius.thumbnail)
+                            .clip(Radius.thumbnail),
+                    )
+                    Spacer(Modifier.height(Space.l))
+                }
+            }
+
+            if (showing(0)) {
+
+            // **The paper is the screen, and it used to be a button on an
+            // empty field.** #361, 2026-08-12, found by looking rather than
+            // by reading: the first question was a title, one outlined
+            // button, one small line, and then two thirds of the phone
+            // doing nothing, which rule 11 rules out as plainly as it rules
+            // out a placeholder.
+            //
+            // **Rule 22 already named the component**: a thumbnail is where
+            // the app holds the person's own paper. This is that at the
+            // size of the question, an empty sheet waiting for a
+            // photograph, in the same `sand` field and at the same corner
+            // as every other thumbnail in the app.
+            //
+            // **The sheet is the control**, so the obvious tap does the
+            // obvious thing. It is one stop for a reader, named by what the
+            // tap does rather than by what is drawn inside it.
+            val pickLabel = if (draft.picked == null) {
+                strings["docs.pick"]
+            } else {
+                strings["docs.replace"]
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(PaperAspect)
+                    .raisedSlightly(Radius.thumbnail)
+                    .clip(Radius.thumbnail)
+                    .openableByTap(
+                        label = pickLabel,
+                        onTap = {
+                            picker.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly,
+                                ),
+                            )
+                        },
+                        resting = colors.sand,
+                        shape = Radius.thumbnail,
+                    )
+                    .semantics { contentDescription = pickLabel }
+                    .testTag(AddDocTags.PICK),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (preview != null) {
+                    Image(
+                        bitmap = preview,
+                        // The sheet around it already says what the tap
+                        // does, and the fields on the next question name
+                        // the paper, so describing the picture too would
+                        // make a reader hear the same thing twice.
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        // The sheet is one stop and says the whole thing.
+                        modifier = Modifier.clearAndSetSemantics { },
+                    ) {
+                        // **Sized from the thumbnail vocabulary rather
+                        // than from two numbers typed here**, per D142: the
+                        // mark on an empty sheet is the same mark the
+                        // documents list draws when it has no picture, one
+                        // step up.
+                        IconTile(
+                            section = Repository.Section.DOCUMENTS,
+                            tint = colors.ink3,
+                            background = Color.Transparent,
+                            tileSize = CARD_SIZE,
+                            iconSize = ROW_SIZE,
+                        )
+                        Spacer(Modifier.height(Space.s))
+                        Text(
+                            text = pickLabel,
+                            style = HealthTrail.type.bodyL,
+                            color = colors.blue,
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = strings["docs.limit_note"],
+                style = HealthTrail.type.bodyS,
+                color = colors.ink2,
+            )
+
+            }
+
+            if (showing(1)) {
+
+            if (!staged) Spacer(Modifier.height(Space.sectionGap))
+
+            Field(
+                label = strings["docs.title"],
+                value = draft.title,
+                onValueChange = { draft = draft.copy(title = it) },
+                fieldTestTag = AddDocTags.field("title"),
+                support = strings["docs.title.hint"],
+            )
+            Spacer(Modifier.height(Space.m))
+
+            // **When the paper is from, and the person says or does not.**
+            // This form had no date and the shell stamped today into every
+            // document, so a letter from three weeks ago was recorded as
+            // arriving on the day it was photographed and nothing could
+            // correct it. #339.
+            //
+            // **Not sure is a real answer that saves**, per rule 17, and
+            // leaving both chips alone saves as unknown rather than as
+            // today: the app never quietly fills a date in.
+            ChoiceChipGroup(label = strings["docs.received"]) {
+                ChoiceChip(
+                    label = strings["capture.when.exact"],
+                    selected = draft.received != null &&
+                        draft.received?.precision != Edtf.Precision.UNKNOWN,
+                    onClick = { picking = true },
+                    modifier = Modifier.testTag(AddDocTags.PICK_DATE),
+                )
+                ChoiceChip(
+                    label = strings["date.pick.clear"],
+                    selected = draft.received?.precision == Edtf.Precision.UNKNOWN,
+                    onClick = { draft = draft.copy(received = Edtf.unknown()) },
+                )
+            }
+
+            // **Shown back at exactly the precision it was given**, which
+            // is the whole point: "sometime in March" stays a month.
+            draft.received?.let { chosen ->
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = EventDateText.render(strings, chosen),
+                    style = HealthTrail.type.bodyL,
+                    color = colors.ink,
+                )
+            }
+
+            }
+
+            if (showing(2)) {
+
+            if (!staged) Spacer(Modifier.height(Space.sectionGap))
+
+            // **The field this screen exists for**, per the schema's own
+            // comment: the digital copy is rarely the one a clerk will
+            // accept. It leads its stage rather than sitting behind the
+            // disclosure with the folder and the notes.
+            Field(
+                label = strings["docs.original"],
+                value = draft.originalLocation,
+                onValueChange = { draft = draft.copy(originalLocation = it) },
+                fieldTestTag = AddDocTags.field("original"),
+                support = strings["docs.original.hint"],
+            )
+
+            Spacer(Modifier.height(Space.sectionGap))
+
+            // **The last two are behind one control nobody has to touch**,
+            // per 10.8 and the disclosure in `Disclosure.kt`, which is what
+            // the capture form's third stage already does. A folder and a
+            // note are what somebody adds when they are sitting down, and
+            // this form is used standing up with a letter in one hand.
+            // **The rest of the form is a group with a label, not a fold.**
+            // D185: nothing sits behind a fold that a label and a scroll can
+            // carry, and the sentence that used to explain the fold is the
+            // group's own line now. Nothing here was ever required.
+            FieldBlock(
+                label = strings["capture.more"],
+                aside = strings["capture.more.aside"],
+                modifier = Modifier.testTag(AddDocTags.MORE),
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+
+            // **The folder, which the screen has always folded by and no
+            // form ever wrote.** Every document a person saved landed in
+            // "Everything else", and the folds were visible only because
+            // the fixture invented categories. #221.
+            //
+            // **A field with suggestions rather than a picker**, because
+            // the folder is the person's own word for a pile of paper. The
+            // chips are what this notebook already has, so the second
+            // insurance letter goes where the first one went with one tap
+            // and the first one was free to be called anything.
+            //
+            // **Tapping the chip that is already chosen clears it**, which
+            // is how a document comes back out of a folder without the
+            // person having to select the text and delete it.
+            Field(
+                label = strings["docs.folder"],
+                value = draft.category,
+                onValueChange = { draft = draft.copy(category = it) },
+                fieldTestTag = AddDocTags.field("folder"),
+                support = strings["docs.folder.hint"],
+            )
+            if (folders.isNotEmpty()) {
+                Spacer(Modifier.height(Space.s))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(Space.xs),
+                    verticalArrangement = Arrangement.spacedBy(Space.xs),
+                    modifier = Modifier.fillMaxWidth().testTag(AddDocTags.FOLDERS),
+                ) {
+                    folders.forEach { folder ->
+                        val chosen = draft.category.trim().equals(folder, ignoreCase = true)
+                        ChoiceChip(
+                            label = folder,
+                            selected = chosen,
+                            onClick = {
+                                draft = draft.copy(category = if (chosen) "" else folder)
+                            },
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(Space.m))
+
+            DictatableField(
+                label = strings["appts.notes"],
+                value = draft.notes,
+                onValueChange = { draft = draft.copy(notes = it) },
+                support = strings["appts.notes.hint"],
+                singleLine = false,
+                imeAction = ImeAction.Done,
+                fieldTestTag = AddDocTags.field("notes"),
+            )
+
+                }
+            }
+
+            }
+
+            Spacer(Modifier.height(Space.xl))
+            }
         }
     }
 

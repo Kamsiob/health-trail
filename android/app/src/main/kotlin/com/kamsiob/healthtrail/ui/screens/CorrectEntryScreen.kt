@@ -26,7 +26,6 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DictateAction
-import com.kamsiob.healthtrail.ui.components.FormHeader
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -37,13 +36,13 @@ import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.BlockTone
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
+import com.kamsiob.healthtrail.ui.v4.Page
 
 object CorrectEntryTags {
     const val ROOT = "correct_entry"
     const val TITLE = "correct_entry_title"
     const val BODY = "correct_entry_body"
     const val SAVE = "correct_entry_save"
-    const val CANCEL = "correct_entry_cancel"
 }
 
 /** What a correction carries back, so the screen holds no repository of its own. */
@@ -92,107 +91,87 @@ fun CorrectEntryScreen(
     var title by remember(entry.id) { mutableStateOf(entry.title.orEmpty()) }
     var body by remember(entry.id) { mutableStateOf(entry.body.orEmpty()) }
 
-    Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
-        Column(
+    Page(
+        title = strings["entry.correct"],
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = modifier.testTag(CorrectEntryTags.ROOT),
+        eyebrow = strings[labelKey(Repository.Section.TRAIL)],
+        section = Repository.Section.TRAIL,
+        // **The form's own gaps, not the page's.** A form is one
+        // question after another rather than a column of groups, and
+        // it spaces itself inside its single item.
+        itemSpacing = Space.none,
+        band = {
+        // **It never disables.** Emptying a title is a correction like any
+        // other, and a greyed out Save would be the app deciding what the
+        // person meant. Rule 13.
+        Action(
+            label = strings["capture.save"],
+            onClick = { onSave(EntryCorrection(title = title, body = body)) },
             modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .imePadding()
-                .testTag(CorrectEntryTags.ROOT),
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                FormHeader(
-                    title = strings["entry.correct"],
-                    // The lead is an Aside now, on the section's wash with
-                    // its own icon, rather than the smallest gray line under the
-                    // title. D172, and the approved medication mockup.
-                    lead = null,
-                    section = Repository.Section.TRAIL,
+                .fillMaxWidth()
+                .padding(horizontal = Space.screenHorizontal)
+                .testTag(CorrectEntryTags.SAVE), emphasis = ActionEmphasis.Main,
+        )
+        Spacer(Modifier.height(Space.s))
+        },
+    ) {
+        item {
+            Column {
+                Spacer(Modifier.height(Space.m))
+                FactBlock(
+                    label = null,
+                    text = strings["entry.correct.lead"],
+                    tone = BlockTone.Section,
+                    mark = Symbols.of(Repository.Section.TRAIL),
+                    hue = hueFor(Repository.Section.TRAIL),
                 )
-                    Spacer(Modifier.height(Space.m))
-                    FactBlock(
-                        label = null,
-                        text = strings["entry.correct.lead"],
-                        tone = BlockTone.Section,
-                        mark = Symbols.of(Repository.Section.TRAIL),
-                        hue = hueFor(Repository.Section.TRAIL),
-                    )
-
-                Spacer(Modifier.height(Space.l))
-
-                // **Fields sit on the canvas, never in a block.** A field is
-                // already a container with its own outline and its own label, so a
-                // second one around it is two edges on one thing, which is the
-                // clutter D183 took out of the forms. `docs/V4.md` 2.1, `m3v4-4`.
-                Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
-                    Field(
-                        label = strings[kindNameKey(entry.kind)],
-                        value = title,
-                        onValueChange = { title = it },
-                        support = strings["entry.untitled"],
-                        imeAction = ImeAction.Next,
-                        fieldTestTag = CorrectEntryTags.TITLE,
-                    )
-
-                    Field(
-                        label = strings["capture.call.note"],
-                        value = body,
-                        onValueChange = { body = it },
-                        support = strings["capture.call.note.hint"],
-                        singleLine = false,
-                        imeAction = ImeAction.Done,
-                        fieldTestTag = CorrectEntryTags.BODY,
-                        // The microphone in the field, per #361. This is the
-                        // screen somebody reaches because dictation heard a name
-                        // wrong, so it has to offer dictation again.
-                        trailing = {
-                            DictateAction(
-                                inField = true,
-                                onText = { spoken ->
-                                    body = if (body.isBlank()) {
-                                        spoken
-                                    } else {
-                                        "${body.trimEnd()} $spoken"
-                                    }
-                                },
-                            )
-                        },
-                    )
-                }
-
-                Spacer(Modifier.height(Space.xl))
-            }
-
-            Spacer(Modifier.height(Space.m))
-
-            // **It never disables.** Emptying a title is a correction like any
-            // other, and a greyed out Save would be the app deciding what the
-            // person meant. Rule 13.
-            Action(
-                label = strings["capture.save"],
-                onClick = { onSave(EntryCorrection(title = title, body = body)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(CorrectEntryTags.SAVE), emphasis = ActionEmphasis.Main,
-            )
-
-            Spacer(Modifier.height(Space.s))
-
-            Action(
-                label = strings["common.cancel"],
-                onClick = onCancel,
-                modifier = Modifier
-                    .padding(horizontal = Space.screenHorizontal)
-                    .testTag(CorrectEntryTags.CANCEL),
-            )
 
             Spacer(Modifier.height(Space.l))
+
+            // **Fields sit on the canvas, never in a block.** A field is
+            // already a container with its own outline and its own label, so a
+            // second one around it is two edges on one thing, which is the
+            // clutter D183 took out of the forms. `docs/V4.md` 2.1, `m3v4-4`.
+            Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
+                Field(
+                    label = strings[kindNameKey(entry.kind)],
+                    value = title,
+                    onValueChange = { title = it },
+                    support = strings["entry.untitled"],
+                    imeAction = ImeAction.Next,
+                    fieldTestTag = CorrectEntryTags.TITLE,
+                )
+
+                Field(
+                    label = strings["capture.call.note"],
+                    value = body,
+                    onValueChange = { body = it },
+                    support = strings["capture.call.note.hint"],
+                    singleLine = false,
+                    imeAction = ImeAction.Done,
+                    fieldTestTag = CorrectEntryTags.BODY,
+                    // The microphone in the field, per #361. This is the
+                    // screen somebody reaches because dictation heard a name
+                    // wrong, so it has to offer dictation again.
+                    trailing = {
+                        DictateAction(
+                            inField = true,
+                            onText = { spoken ->
+                                body = if (body.isBlank()) {
+                                    spoken
+                                } else {
+                                    "${body.trimEnd()} $spoken"
+                                }
+                            },
+                        )
+                    },
+                )
+            }
+
+            Spacer(Modifier.height(Space.xl))
+            }
         }
     }
 }
