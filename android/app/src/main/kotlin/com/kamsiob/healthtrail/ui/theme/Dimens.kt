@@ -58,6 +58,14 @@ object Space {
      */
     val rowVertical: Dp = 13.dp
 
+    /**
+     * The squircle a row's mark sits in, and the drawing inside it.
+     *
+     * Measured off `m3v4-1` and `m3v4-3`: a rounded square that reads as a
+     * square, not the near-circle the old tile drew at 16dp on a 36dp box.
+     */
+    val markTile: Dp = 44.dp
+
     /** Between stacked elements. */
     val cardGap: Dp = 10.dp
 

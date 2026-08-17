@@ -6,6 +6,19 @@
 
 ---
 
+## The method, which is not negotiable
+
+**Nothing old is edited. Everything is written from scratch.** The owner, 2026-08-17: "no old design language at all. get rid of it so it doesn't influence. there's no reason to change it or update it. you're building from scratch."
+
+**This corrects how the run was going.** Components were being recolored in place: a raised card became a tonal one, a chevron became a symbol, a button became Material's. **That is exactly what [D178] forbids and what `docs/V4.md` 3 calls half converted.** A recolored old component is still the old arrangement, and the old arrangement is what the owner keeps recognizing.
+
+**So:**
+
+1. **The new component set lives in `ui/v4/`** and is written from Material 3 Expressive primitives and the language in `docs/V4.md` 2.1. Nothing is copied from the old files.
+2. **A screen is rewritten onto the new set**, never adapted. `docs/V4.md` 3: rewritten or left alone.
+3. **An old component is deleted the moment its last call site is gone.** Not deprecated, not left for later, deleted, so it cannot influence anything.
+4. **The old package is empty when this is finished.** That is the test of whether the language was replaced rather than repainted.
+
 ## The phases, in order
 
 **1. The drawn screens.** Apply the mockups' design to the screens `docs/screenshots/m3v4-{0..5}-light.png` draw: Today, the notebook, a project, the care team, a form, a document. Top to bottom, left to right, fully.

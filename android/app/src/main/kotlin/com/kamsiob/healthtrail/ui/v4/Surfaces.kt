@@ -1,0 +1,189 @@
+package com.kamsiob.healthtrail.ui.v4
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.TextUnit
+import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.theme.Space
+
+/**
+ * The surfaces of the rebuilt interface. Written from scratch, #386.
+ *
+ * **Nothing in this package descends from the old components.** The owner,
+ * after a pass that recolored them in place: "no old design language at all.
+ * get rid of it so it doesn't influence. there's no reason to change it or
+ * update it. you're building from scratch." [D178] said the same thing before
+ * the work started and the previous pass drifted back into converting, which
+ * is what `docs/V4.md` 3 calls half converted.
+ *
+ * **Every rule these obey is in `docs/V4.md` 2.1**, and every number in it was
+ * measured off the approved drawings rather than judged.
+ */
+
+/**
+ * A block: the container this interface is made of.
+ *
+ * **Flat and tonal on a quiet canvas.** Depth is `paper` against the block's
+ * own color, never elevation, because the drawings carry no shadow anywhere and
+ * two separations at once is what made the old screens feel busy.
+ *
+ * [tone] is the block's job rather than its color: [BlockTone.Quiet] for the
+ * ordinary group, [BlockTone.Raised] for the one thing on a screen that has to
+ * be found first, and the section tones for a block that belongs to a section.
+ */
+@Composable
+fun Block(
+    modifier: Modifier = Modifier,
+    tone: BlockTone = BlockTone.Quiet,
+    shape: Shape = Radius.cardLarge,
+    padding: androidx.compose.ui.unit.Dp = Space.ml,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(tone.container())
+            .padding(padding),
+        verticalArrangement = Arrangement.spacedBy(Space.s),
+        content = content,
+    )
+}
+
+/**
+ * What a block is for, which decides its color.
+ *
+ * **A tone rather than a color at the call site.** A screen says what the block
+ * does and the language decides how that looks, which is the whole reason the
+ * old set drifted: sixty call sites each chose `card` or `sand` for themselves.
+ */
+enum class BlockTone {
+    /** The ordinary group. Most blocks. */
+    Quiet,
+
+    /** A single fact worth raising: the decision date, the count that matters. */
+    Gold,
+
+    /** Resolved, done, arrived. */
+    Leaf,
+
+    /** The emergency card, an open incident. Never a measurement, rule 2. */
+    Alert,
+    ;
+
+    @Composable
+    fun container(): Color = when (this) {
+        Quiet -> HealthTrail.colors.sand
+        Gold -> HealthTrail.colors.goldWash
+        Leaf -> HealthTrail.colors.leafWash
+        Alert -> HealthTrail.colors.alertWash
+    }
+
+    /** The ink a label takes inside this block. */
+    @Composable
+    fun label(): Color = when (this) {
+        Quiet -> HealthTrail.colors.ink2
+        Gold -> HealthTrail.colors.goldInk
+        Leaf -> HealthTrail.colors.leafInk
+        Alert -> HealthTrail.colors.alertInk
+    }
+}
+
+/**
+ * The quiet line that names what follows.
+ *
+ * **Capitals only when the words are fixed and short**, which is what every
+ * eyebrow in the drawings is: WEIGHT, PART OF, DECISION EXPECTED. A label the
+ * person wrote keeps its own case and loses the tracking, because capitals cost
+ * about fifteen percent of the width and 0.14em costs about fifty points on a
+ * thirty character string, and the result was their own project name cut off.
+ * D183.
+ *
+ * **Capitals are for the eye.** Compose has no text transform, so the node
+ * carries the natural words for a reader.
+ */
+@Composable
+fun Eyebrow(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = HealthTrail.colors.ink2,
+    fixed: Boolean = true,
+) {
+    val shown = if (fixed) text.uppercase(LocalConfiguration.current.locales[0]) else text
+    Text(
+        text = shown,
+        style = if (fixed) {
+            HealthTrail.type.eyebrow
+        } else {
+            HealthTrail.type.eyebrow.copy(letterSpacing = TextUnit.Unspecified)
+        },
+        color = color,
+        modifier = modifier.semantics { contentDescription = text },
+    )
+}
+
+/**
+ * The one thing a screen leads with, at display size.
+ *
+ * Rule 15 and law 1: a screen leads with something, and the jump from this to
+ * the rows under it is the drawing's 2.3, not the 1.5 the app used to carry.
+ */
+@Composable
+fun Lead(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = HealthTrail.colors.ink,
+) {
+    Text(text = text, style = HealthTrail.type.displayM, color = color, modifier = modifier)
+}
+
+/**
+ * A big number with its unit, as the drawings set one.
+ *
+ * `m3v4-0` puts the weight this way and `m3v4-2` the days remaining: the figure
+ * at display size in the reading face, the unit beside it quiet. **Not the mono
+ * face**, which D173 left to figures that line up in a column; a number a screen
+ * leads with is a headline rather than a column.
+ */
+@Composable
+fun BigNumber(
+    value: String,
+    modifier: Modifier = Modifier,
+    unit: String? = null,
+    color: Color = HealthTrail.colors.ink,
+) {
+    Box(modifier = modifier) {
+        Text(
+            text = if (unit == null) value else "$value $unit",
+            style = HealthTrail.type.displayM,
+            color = color,
+        )
+    }
+}
+
+/** The app's own type, so a v4 screen never reaches for Material's defaults. */
+@Composable
+fun Body(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = HealthTrail.colors.ink2,
+    style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyMedium,
+) {
+    Text(text = text, style = style, color = color, modifier = modifier)
+}
