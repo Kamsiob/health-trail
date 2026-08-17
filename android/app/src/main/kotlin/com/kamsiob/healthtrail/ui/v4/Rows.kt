@@ -22,6 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.ui.semantics.stateDescription
+import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.components.Symbol
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -317,5 +323,77 @@ fun ChoiceRow(
                 tint = colors.blue,
             )
         }
+    }
+}
+
+/**
+ * A row that is a switch, which is the one control this app asks a yes or no
+ * with. #386, and the last shape `ui/v4` was missing.
+ *
+ * **The whole row is the target**, not the switch beside it: a 52dp track at
+ * the far end of a row is a small thing to hit with a thumb while holding a
+ * phone in the other hand, and rule 16 says everything the person touches
+ * responds. The switch draws the state and the row takes the press.
+ *
+ * **It says on or off in words for a reader**, because a switch that only
+ * announces "switch" has told somebody who cannot see it half of what it knows.
+ *
+ * **Material's own switch, themed.** `docs/V4.md` 2.1 and the replace table:
+ * this app drew its own track and thumb once, and the platform's is the one
+ * people already know.
+ */
+@Composable
+fun SwitchRow(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    support: String? = null,
+    @DrawableRes mark: Int? = null,
+    /** Which section this question belongs to, drawn as the row's own wash. */
+    hue: TabHue? = null,
+) {
+    val colors = HealthTrail.colors
+    val strings = LocalStrings.current
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(Radius.cardLarge)
+            .background(hue?.wash ?: colors.sand)
+            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+            .semantics {
+                stateDescription = if (checked) strings["state.on"] else strings["state.off"]
+            }
+            .sizeIn(minHeight = Space.touchTarget)
+            .padding(horizontal = Space.ml, vertical = Space.rowVertical),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        mark?.let {
+            Symbol(symbol = it, contentDescription = null, tint = hue?.ink ?: colors.ink2)
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            // bidi-ok: the app's own question.
+            Text(text = title, style = HealthTrail.type.rowTitle, color = colors.ink)
+            if (!support.isNullOrBlank()) {
+                // bidi-ok: the app's own sentence about what answering does.
+                Text(text = support, style = HealthTrail.type.bodyM, color = colors.ink2)
+            }
+        }
+        // **Null `onCheckedChange`, because the row is the control.** A switch
+        // with its own handler is a second target inside the first, and a
+        // reader would meet two things that do one job.
+        Switch(
+            checked = checked,
+            onCheckedChange = null,
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = colors.blue,
+                checkedThumbColor = colors.paper,
+                checkedBorderColor = colors.blue,
+                uncheckedTrackColor = colors.card,
+                uncheckedThumbColor = colors.paper,
+                uncheckedBorderColor = colors.ink3,
+            ),
+        )
     }
 }

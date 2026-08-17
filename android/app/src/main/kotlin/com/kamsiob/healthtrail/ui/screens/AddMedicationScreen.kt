@@ -24,7 +24,6 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.ToggleRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -36,6 +35,7 @@ import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.FieldBlock
 import com.kamsiob.healthtrail.ui.v4.Page
+import com.kamsiob.healthtrail.ui.v4.SwitchRow
 
 object AddMedTags {
     const val ROOT = "add_med_root"
@@ -197,13 +197,14 @@ fun AddMedicationScreen(
             // below it: the moment somebody writes a medication down is the
             // moment they know whether it matters in an emergency, and a
             // question folded away is a question nobody answers.
-            ToggleRow(
+            SwitchRow(
                 title = strings["meds.on_card.badge"],
-                subtitle = strings["meds.on_card.note"],
                 checked = draft.onEmergencyCard,
                 onCheckedChange = { draft = draft.copy(onEmergencyCard = it) },
-                section = Repository.Section.EMERGENCY_CARD,
                 modifier = Modifier.testTag(AddMedTags.ON_CARD),
+                support = strings["meds.on_card.note"],
+                mark = Symbols.of(Repository.Section.EMERGENCY_CARD),
+                hue = hueFor(Repository.Section.EMERGENCY_CARD),
             )
 
             Spacer(Modifier.height(Space.sectionGap))
