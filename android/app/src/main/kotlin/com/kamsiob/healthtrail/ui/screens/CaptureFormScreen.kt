@@ -15,6 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +45,8 @@ import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.ChoiceChip
 import com.kamsiob.healthtrail.ui.components.ChoiceChipGroup
+import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.components.Disclosure
 import com.kamsiob.healthtrail.ui.components.StageDots
 import com.kamsiob.healthtrail.ui.components.FilledButton
@@ -353,8 +359,16 @@ fun CaptureFormScreen(
                 .imePadding()
                 .padding(horizontal = Space.screenHorizontal, vertical = Space.l),
         ) {
+            // **The questions fade into the actions rather than being cut by
+            // them.** Content scrolling behind a surface is correct and a line
+            // sliced in half at the fold is not: it reads as broken rather than
+            // as "there is more". The fade is the canvas color over itself, so
+            // it adds no surface and no color, and it is what says the screen
+            // continues. The owner, 2026-08-17, on this screen: things pushing
+            // up against each other with no structure.
+            Box(modifier = Modifier.weight(1f)) {
             Column(
-                modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
             ) {
                 // Says once, in a full sentence, what the old screen said with
                 // the word Optional in a mono eyebrow. Section 5.9 asks for it
@@ -523,7 +537,12 @@ fun CaptureFormScreen(
                 if (people.isNotEmpty()) {
                     val chosenPerson = people.firstOrNull { it.id == state.personId }
                     val shownPeople = cappedChips(people, chosenPerson)
-                    Spacer(Modifier.height(Space.m))
+                    // **Closer to the field than to whatever follows**, because
+                    // these are a way of answering that field rather than a
+                    // second question. Air is what says which things belong
+                    // together, and at the same gap as everything else it read
+                    // as a new section. Rule 15.
+                    Spacer(Modifier.height(Space.s))
                     ChoiceChipGroup(
                         label = strings["capture.who.known"],
                         aside = strings["capture.who.known.aside"],
@@ -726,17 +745,41 @@ fun CaptureFormScreen(
                 // is going, and it sits directly under the control that would
                 // let them change it.
                 if (threads.isNotEmpty() && threadId == null) {
-                    Spacer(Modifier.height(Space.m))
-                    Text(
+                    Spacer(Modifier.height(Space.s))
+                    // **A footnote to the control above it, not a block of its
+                    // own.** It was tried as a block and that made three sand
+                    // surfaces stacked down one screen, which is the blending
+                    // the owner named rather than a fix for it: two of them
+                    // were content and one was the actions, and they all
+                    // weighed the same. At the smallest size directly under the
+                    // disclosure it reads as a note about that control, which
+                    // is what it is. Rule 15, and seen on the phone twice.
+                    // bidi-ok: the app's own sentence about its own filing.
+                    Body(
                         text = strings["capture.unfiled.note"],
                         style = HealthTrail.type.bodyS,
-                        color = colors.ink2,
                         modifier = Modifier.testTag(CaptureFormTags.UNFILED_NOTE),
                     )
                 }
                 }
 
-                Spacer(Modifier.height(Space.l))
+                // **Room under the last thing, so the band cuts empty canvas
+                // rather than a sentence.** Content scrolling behind a surface
+                // is correct; content sliced mid word by it reads as broken.
+                Spacer(Modifier.height(Space.xl))
+            }
+
+            Spacer(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(Space.l)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color.Transparent, HealthTrail.colors.paper),
+                        ),
+                    ),
+            )
             }
 
             // The gap the pinned action footer requires, per DESIGN.md 5.15.
@@ -744,6 +787,15 @@ fun CaptureFormScreen(
             // and reads as an overlap, which is what it did here at the largest
             // system font.
             Spacer(Modifier.height(Space.m))
+
+            // **The actions stand on their own tonal band**, which is what
+            // `m3v4-4` draws under Save and what the owner asked for on this
+            // screen, 2026-08-17: "it's hard to know where to look or what to
+            // focus on at any given time." The band splits the screen into the
+            // part that asks and the part that acts, so the questions scroll
+            // behind a surface rather than running into the buttons. It is the
+            // language's own container, not a new costume.
+            Block {
 
             // **Where you are, and the way on, on one line.** Law 3 asks for
             // progress dots and a skip that is always visible. The dots say
@@ -805,8 +857,6 @@ fun CaptureFormScreen(
                 }
             }
 
-            Spacer(Modifier.height(Space.s))
-
             // **Live from stage one.** Somebody who types one sentence and taps
             // save never sees the other two questions, which is the fifteen
             // second path law 3 is written around. It saves whatever is filled
@@ -846,8 +896,6 @@ fun CaptureFormScreen(
                 modifier = Modifier.fillMaxWidth().testTag(CaptureFormTags.SAVE),
             )
 
-            Spacer(Modifier.height(Space.s))
-
             // **Sized to its label, not the width of the screen.** D137: a
             // full width outlined bar is the way back and nothing else, and
             // under a full width filled action it is a second bar of which
@@ -857,6 +905,7 @@ fun CaptureFormScreen(
                 onClick = onCancel,
                 modifier = Modifier.testTag(CaptureFormTags.CANCEL),
             )
+            }
         }
     }
 
