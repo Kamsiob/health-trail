@@ -1254,6 +1254,10 @@ internal fun ProjectStepOverlays(
                     // permission it does not need, and placing a call on somebody's
                     // behalf is not a thing it should be able to do silently.
                     onCall = { person -> dial(context, person.phone) },
+                    // **Writing to them, where they gave an address.** `m3v4-3`
+                    // draws it beside calling on the person the screen leads
+                    // with, and the column has been there since the form asked.
+                    onEmail = { person -> email(context, person.email) },
                     onOpen = { person -> openPerson = person },
                     onAdd = { editingPerson = null; addingPerson = true },
                     onBack = { openSection = null },

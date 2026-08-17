@@ -2990,6 +2990,28 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+### D186. A person's mark is their own color, and the care team splits by a toggle rather than by folds
+
+**Date:** 2026-08-17. **Phase 4, #386.** The care team rewritten onto `ui/v4` from `m3v4-3`.
+
+**The drawing gives each person a different pale circle**, and `DESIGN.md` 7 said it must not: "the circle is tonal and the tone is the section's, not the person's. A per-person color would be a second accent system and would imply a categorization this app does not have." `m3v4-3` draws a mint, a slate and a manila down one unit list. **The approved drawing wins**, per the precedence in `HANDOFF.md` 3, and the objection is answered rather than ignored: a hue picked from an id carries no category, because there is nothing to read off it. It is not sorted by, filtered by, or explained anywhere. What it does is make fifteen names in a column scannable, which is the one job an avatar has.
+
+**From the id, not the name**, so correcting a spelling does not change somebody's color, and two people with the same initials get different circles. **The person the notebook is about keeps blue**, which is the one exception that was already recorded and is unaffected.
+
+**The folds are replaced by a toggle, and the split is where they are against everywhere else.** #353 folded the roster by workplace and #379 made the current facility lead. The drawing has no accordion on it: it puts two named views at the top and shows one. So the screen now asks the question once, in a control that says both answers at the same time, and the second side is one tap away whether or not it is showing. **The toggle only exists when both sides have somebody in them**, because a control that filters a list into itself and an empty one is furniture, and a notebook where nobody has a place is one plain list exactly as it always was.
+
+**What was given up, deliberately.** With more than two workplaces the drawing's shape cannot name them all, so everywhere that is not the current facility is one side, and each row carries its own place on its support line. Nothing is lost, and the person no longer has to open two doors to find somebody.
+
+**The number comes off the row.** #361 and D174 fought to make a full United States number fit beside a name, with non-breaking spaces so it never split across two lines. `m3v4-3` does not put it there at all: the name, what they do, and a gold mark carrying the phone. **A reader still hears whose number it is**, which is what those issues were protecting, and the number itself is one tap away on the person's own screen.
+
+**Email arrives with it**, because the drawing draws it beside calling and the column has been in the schema since the person form asked for it. `ACTION_SENDTO`, no permission, nothing sent by this app. It shows only where somebody gave an address.
+
+**Two defects came off the phone rather than the source**, rule 21. The back label defaulted to a key no catalog defines and the app crashed the moment the screen opened, which the string check cannot see because a default is a plain literal rather than a lookup. And with no split, the list wore the "Outside the facility" label over everybody, including the staff at the facility.
+
+**What would change this:** a mockup that draws three or more places at once, or an owner ruling that the number belongs back on the row.
+
+---
+
 ### D185. The sand accordion is not swapped for a new accordion. It is what each screen stops needing
 
 **Date:** 2026-08-17. **Step 2, #386.** The last row of `docs/V4.md` 4's replace table.

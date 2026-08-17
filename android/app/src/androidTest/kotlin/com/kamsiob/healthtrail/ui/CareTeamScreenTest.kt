@@ -2,12 +2,11 @@ package com.kamsiob.healthtrail.ui
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
@@ -22,16 +21,17 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * The care team leads with the people somebody actually calls. #351.
+ * The care team leads with the person somebody actually calls. #351, rewritten
+ * for the `ui/v4` screen, #386.
  *
- * **The screen drew every name at one weight**, where grid screen 11 draws a
- * short group of the ones you call and folds the rest. Fifteen rows and fifteen
- * identical call pills is the uniform weight rule 15 names, on the screen a
- * person reaches for when they need a number in the next ten seconds.
+ * **The screen drew every name at one weight**, and `m3v4-3` draws one person
+ * raised into a block of their own with the two things you do about them, then
+ * everyone else as a row with the one. Fifteen rows and fifteen identical call
+ * pills is the uniform weight rule 15 names, on the screen a person reaches for
+ * when they need a number in the next ten seconds.
  *
- * **`Repository.peopleByRecentUse` already answered this** and this list was
- * the only one not asking it, which is why the fix is an ordering rather than a
- * new column.
+ * **`Repository.peopleByRecentUse` already answered who that is**, and a pin
+ * beats it outright, because a pin is the person overriding the guess. #361.
  */
 @RunWith(AndroidJUnit4::class)
 class CareTeamScreenTest {
@@ -74,87 +74,87 @@ class CareTeamScreenTest {
         }
     }
 
+    /** The most recently used leads, in a block rather than in the list. */
     @Test
-    fun theThreeMostRecentlyUsedLeadAndTheRestAreFolded() {
+    fun themostRecentlyUsedIsTheOneRaised() {
         show(everybody, byRecentUse = everybody.reversed())
 
-        // The three most recently used, which here are the last three added.
-        compose.onNodeWithTag(CareTeamTags.person("p8")).assertIsDisplayed()
-        compose.onNodeWithTag(CareTeamTags.person("p7")).assertIsDisplayed()
-        compose.onNodeWithTag(CareTeamTags.person("p6")).assertIsDisplayed()
-
-        // Everyone else is behind the fold, counted rather than hidden.
-        // The fold says how many it holds, so nothing is hidden without a
-        // number on it. Asserted on the fold rather than on the digit, since
-        // the phone numbers on the rows above contain digits too.
-        compose.onNodeWithTag(CareTeamTags.REST_FOLD)
-            .assertIsDisplayed()
-            .assertTextContains("5", substring = true)
-        compose.onNodeWithTag(CareTeamTags.person("p1")).assertDoesNotExist()
-    }
-
-    @Test
-    fun openingTheFoldReachesEveryone() {
-        show(everybody, byRecentUse = everybody.reversed())
-        compose.onNodeWithTag(CareTeamTags.REST_FOLD).performClick()
-
-        compose.onNodeWithTag(CareTeamTags.person("p1")).assertIsDisplayed()
+        compose.onNodeWithTag(CareTeamTags.LEAD).assertIsDisplayed()
+        compose.onNodeWithText("Person 8", substring = true).assertIsDisplayed()
+        // Raised means raised out of the list, not shown twice.
+        compose.onNodeWithTag(CareTeamTags.person("p8")).assertDoesNotExist()
     }
 
     /**
-     * **A short roster is not split**, because folding one or two people behind
-     * a tap to make a list look organized is furniture, and four names fit on
-     * the screen with room to spare.
+     * **Nothing is folded any more, so everybody is on the screen.** D185: the
+     * accordion's count said how many were waiting behind a tap, and a list that
+     * simply carries them says it better.
      */
     @Test
-    fun aShortRosterStaysWhole() {
+    fun everybodyElseIsARowAndNobodyIsBehindADoor() {
+        show(everybody, byRecentUse = everybody.reversed())
+
+        listOf("p1", "p2", "p7").forEach {
+            compose.onNodeWithTag(CareTeamTags.person(it)).performScrollTo().assertIsDisplayed()
+        }
+    }
+
+    /** A short roster is the same screen with fewer rows on it. */
+    @Test
+    fun ashortRosterIsTheSameScreen() {
         val four = everybody.take(4)
         show(four, byRecentUse = four.reversed())
 
-        four.forEach { compose.onNodeWithTag(CareTeamTags.person(it.id)).assertIsDisplayed() }
-        compose.onNodeWithTag(CareTeamTags.REST_FOLD).assertDoesNotExist()
+        compose.onNodeWithTag(CareTeamTags.LEAD).assertIsDisplayed()
+        // The most recently used leads, so p4 is the block and p1 to p3 are rows.
+        four.dropLast(1).forEach {
+            compose.onNodeWithTag(CareTeamTags.person(it.id)).performScrollTo().assertIsDisplayed()
+        }
     }
 
     /**
      * **A notebook with no history still has an order**, the one people were
-     * added in, and it degrades to that rather than to an empty lead group.
+     * added in, and it degrades to that rather than to an empty block.
      */
     @Test
     fun withNoHistoryTheOrderTheyWereAddedInLeads() {
         show(everybody)
 
-        compose.onNodeWithTag(CareTeamTags.person("p1")).assertIsDisplayed()
-        compose.onNodeWithTag(CareTeamTags.person("p8")).assertDoesNotExist()
+        compose.onNodeWithText("Person 1", substring = true).assertIsDisplayed()
+        compose.onNodeWithTag(CareTeamTags.person("p1")).assertDoesNotExist()
+    }
+
+    /** A pin is the person overriding the guess, so it wins outright. #361. */
+    @Test
+    fun apinBeatsRecentUse() {
+        val pinned = everybody.map { if (it.id == "p3") it.copy(pinnedAt = 1_000L) else it }
+        show(pinned, byRecentUse = pinned.reversed())
+
+        compose.onNodeWithText("Person 3", substring = true).assertIsDisplayed()
+        compose.onNodeWithTag(CareTeamTags.person("p3")).assertDoesNotExist()
     }
 
     /**
      * **A real United States number is fourteen characters and it must not cost
-     * the person their name.** The owner's words on #361: it needs to fit. The
-     * fixture used "555 0142", seven characters, which hid for the life of this
-     * screen that the trailing control was unweighted and that the number was
-     * inside the button. Both are fixed; this is what stops them coming back.
+     * the person their name.** The owner's words on #361: it needs to fit.
+     *
+     * **`m3v4-3` keeps the number off the row entirely**: the name, what they
+     * do, and a gold mark carrying the phone. So what has to stay true is that a
+     * reader still hears whose number it is, because "Call" fifteen times is the
+     * ambiguity `DESIGN.md` 5.12 exists to prevent.
      */
     @Test
-    fun aFullUnitedStatesNumberDoesNotCostThePersonTheirName() {
-        show(listOf(person("p1", "Marguerite Boateng")))
+    fun afullUnitedStatesNumberIsCarriedByTheMarkAndNamedForAReader() {
+        // **Two different numbers**, because both the block and the row name
+        // theirs, and one number on both is a description that matches twice.
+        val row = person("p2", "Ada Lovelace").copy(phone = "(555) 555-0177")
+        show(listOf(person("p1", "Marguerite Boateng"), row))
 
-        compose.onNodeWithText("Marguerite Boateng").assertIsDisplayed()
-        // **The number is on the row's own line, and its spaces are
-        // non-breaking.** D174: on the phone a number split across two lines,
-        // "(555)" above and "555-0100" below, which is two fragments to
-        // reassemble rather than something you can read and dial. The space in
-        // the expected string is U+00A0 for that reason, and a test that looks
-        // for an ordinary space is asking for the version that wrapped.
-        compose.onNodeWithText("(555)\u00A0555-0100", substring = true).assertIsDisplayed()
-        // **The action is a mark now, not the word.** #386: `m3v4-3` draws a
-        // gold circular button carrying a phone on every row of the unit list,
-        // and the word "Call" in blue was the bare text link law 2 bans. What
-        // must stay true is that a reader still hears whose number it is,
-        // which the description below asserts, so this line goes rather than
-        // being weakened to a substring match on something invisible.
-        // And a reader still hears whose number it is.
+        compose.onNodeWithText("Ada Lovelace", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
         compose.onNodeWithContentDescription(
-            strings("careteam.call.number", "number" to "(555) 555-0100"),
+            strings("careteam.call.number", "number" to "(555) 555-0177"),
         ).assertExists()
     }
 }

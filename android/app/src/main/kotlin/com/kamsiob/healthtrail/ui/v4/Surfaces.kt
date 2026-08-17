@@ -26,6 +26,7 @@ import com.kamsiob.healthtrail.ui.components.Symbol
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.TabHue
 
 /**
  * The surfaces of the rebuilt interface. Written from scratch, #386.
@@ -58,13 +59,21 @@ fun Block(
     tone: BlockTone = BlockTone.Quiet,
     shape: Shape = Radius.cardLarge,
     padding: androidx.compose.ui.unit.Dp = Space.ml,
+    /**
+     * Which section's colors [BlockTone.Section] means, and nothing otherwise.
+     *
+     * **A section hue is identity, never state**, `docs/V4.md` 2.1, so it is
+     * passed rather than chosen here: the block does not know which screen it
+     * is on and must not guess.
+     */
+    hue: TabHue? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(tone.container())
+            .background(tone.container(hue))
             .padding(padding),
         verticalArrangement = Arrangement.spacedBy(Space.s),
         content = content,
@@ -90,23 +99,36 @@ enum class BlockTone {
 
     /** The emergency card, an open incident. Never a measurement, rule 2. */
     Alert,
+
+    /**
+     * The one thing on a section's screen that belongs to that section.
+     *
+     * `m3v4-3` raises the person you call most into the care team's own wash.
+     * **Identity, never state**: it says which part of the notebook this is,
+     * and it never says anything about how the thing inside it is going.
+     */
+    Section,
     ;
 
     @Composable
-    fun container(): Color = when (this) {
+    fun container(hue: TabHue? = null): Color = when (this) {
         Quiet -> HealthTrail.colors.sand
         Gold -> HealthTrail.colors.goldWash
         Leaf -> HealthTrail.colors.leafWash
         Alert -> HealthTrail.colors.alertWash
+        // A section block with no section is the ordinary quiet one rather than
+        // a crash: the tone is a request, and the hue is what answers it.
+        Section -> hue?.wash ?: HealthTrail.colors.sand
     }
 
     /** The ink a label takes inside this block. */
     @Composable
-    fun label(): Color = when (this) {
+    fun label(hue: TabHue? = null): Color = when (this) {
         Quiet -> HealthTrail.colors.ink2
         Gold -> HealthTrail.colors.goldInk
         Leaf -> HealthTrail.colors.leafInk
         Alert -> HealthTrail.colors.alertInk
+        Section -> hue?.ink ?: HealthTrail.colors.ink2
     }
 }
 

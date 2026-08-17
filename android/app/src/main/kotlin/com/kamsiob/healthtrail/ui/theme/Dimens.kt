@@ -76,6 +76,17 @@ object Space {
      */
     val markInline: Dp = 20.dp
 
+    /**
+     * A person's mark, at the two sizes the drawings set.
+     *
+     * `m3v4-3` puts a 42dp circle in a 59dp row and raises the one you call to
+     * 56dp in a block of their own. **Fixed rather than scaled with the type**,
+     * because a circle of initials is a mark and not words: every real word
+     * beside it grows with the person's font. D183, D186.
+     */
+    val avatarRow: Dp = 42.dp
+    val avatarLead: Dp = 56.dp
+
     /** Between stacked elements. */
     val cardGap: Dp = 10.dp
 

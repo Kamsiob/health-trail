@@ -21,7 +21,7 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 **The back end does not change.** Repository, schema, change log, export container, decryptor, fixtures, `contract/DATA-CONTRACT.md`: all stay. This is a user interface replacement. Anything needing a schema change is out of scope and goes to the owner.
 
-**Where it stands: step 1 is done and step 2 is under way.**
+**Where it stands: steps 1 and 2 are done, and phase 4, the screens, is under way.**
 
 Step 1, #385. `Theme.kt` is `MaterialExpressiveTheme`, with all 48 Material color roles named in both themes, all 15 type roles, five different corners on the shape scale, and reduced motion reaching Material's own components through `StillMotionScheme`.
 
@@ -33,15 +33,17 @@ Step 2, #386, done so far: **the face, the icons, the navigation bar, the group 
 
 **Step 2 is finished.** The accordion was the last row of the replace table and it is not being swapped for another accordion: it already carries the spring, Material's chevron and the one container corner, and `m3v4-3` draws the care team with no fold on it at all. It dies per screen, in phase 4. **D185.**
 
-**Next is phase 4, the screens**, 83 of them, each rewritten onto `ui/v4` with the components it needs written as it needs them.
+**Phase 4 is under way: 3 of 85 screens are rewritten**, the notebook, the document and the care team. Each is rewritten onto `ui/v4` with the components it needs written as it needs them.
+
+**The care team, 2026-08-17.** `m3v4-3` measured: one person raised into a block in the section's wash with calling and writing to them inside it, everyone else a separated tonal row with a gold call mark, and **a toggle where the accordions were**. Per-person avatar hues, the number off the row, email through `ACTION_SENDTO`. **D186**, which also records what it gave up.
 
 **The sheet is done and it is app wide.** `ui/v4/Sheet.kt` carries the container, the corner, the scrim and the missing handle, `SheetBody` carries the insets and the screen margin, and `rememberSheet` replaces the deprecated `rememberModalBottomSheetState` at **all 18 call sites**: the build has no deprecation warnings left. The call sites keep their own contents until their screens are rewritten, so this changed no layout; the tips sheet is the one visible difference, since it alone had Material's light veil and a drag handle.
 
 **Phase 1 of `docs/ACCEPTANCE.md` is finished: all six drawn screens carry the drawing.** The document screen was the last, rewritten onto `ui/v4` on 2026-08-17. `ui/v4` gained `PaperCard`, `FactBlock`, `Action` and `IconAction`, and `Page` gained a hero slot, a subtitle mark, and **its own window insets**: a page opens over the shell rather than inside it, so without them the back arrow sits under the status bar. Any screen built on `Page` inherits that fix.
 
-**Two of 85 screens are rewritten** and the old set still stands: `QuietButton` 153 callers, `GroupedSurface` 101, `DenseRow` 99, `GroupHeader` 90, `SectionScaffold` 70, `Thumbnail` 12. Each goes as its last caller goes, and the old package being empty is the test.
+**The old set still stands:** `QuietButton` 153 callers, `GroupedSurface` 101, `DenseRow` 99, `GroupHeader` 90, `SectionScaffold` 70, `Thumbnail` 12. Each goes as its last caller goes, and the old package being empty is the test.
 
-**Step 3 starts with the project screen, and the owner has already ruled on it:** "it's absolutely horrid and so far away from the mock-ups." Against `m3v4-2` it needs a gold "decision expected" tonal block where a white date row is now, a status pill in the top corner, one filled action beside two tonal ones with their icons above the labels rather than three white tiles, and a "The road" heading over the spine. Today's card grid is the other one he has named: a lone small card leaves half a row empty beside it.
+**The project screen is the one the owner has ruled on, and it is not rewritten yet:** "it's absolutely horrid and so far away from the mock-ups." Against `m3v4-2` it needs a gold "decision expected" tonal block where a white date row is now, a status pill in the top corner, one filled action beside two tonal ones with their icons above the labels rather than three white tiles, and a "The road" heading over the spine. Today's card grid is the other one he has named: a lone small card leaves half a row empty beside it.
 
 **Six of today's fixes were found by measuring the approved PNG in pixels** and comparing it against a capture off the phone: the typeface, the tile's near-circle corner, the 54dp row pitch against the drawing's 64, the 13dp screen margin against 16, the card's 12dp padding against 21, and a type ladder whose jump was 1.5 where the drawing's is 2.3. **Do that before forming an impression**, `docs/V4.md` 6. D183.
 

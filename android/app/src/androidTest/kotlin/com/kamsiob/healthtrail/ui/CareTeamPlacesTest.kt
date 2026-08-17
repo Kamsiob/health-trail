@@ -21,16 +21,17 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * The care team folds by where people work. #353.
+ * Where somebody is, against everywhere else. #353, #379, rewritten for the
+ * `ui/v4` care team, #386.
  *
- * **Grid screen 11 has always drawn this** as "At Maplewood, 4 more" and
- * "Outside, billing, ombudsman, 2", and it could not be built: the column and
- * its index shipped in Phase 0 and nothing ever wrote either, so grouping by it
- * gave one fold holding everybody, labeled with nothing.
+ * **The folds are gone and the question they answered is not.** `m3v4-3` draws
+ * a toggle rather than accordions, so the split is now two views of one list:
+ * the staff where the person actually is, and everybody outside. D185.
  *
  * **The notebook with no places matters as much as the one with them.** That is
- * every notebook until somebody says where somebody works, and it must look
- * exactly as it did.
+ * every notebook until somebody says where somebody works, and it must show one
+ * plain list with no control on it: a toggle that filters a list into itself and
+ * an empty one is furniture.
  */
 @RunWith(AndroidJUnit4::class)
 class CareTeamPlacesTest {
@@ -52,7 +53,6 @@ class CareTeamPlacesTest {
         organizationName = place,
     )
 
-    /** Eight, so the lead group takes three and five are left to fold. */
     private val roster = listOf(
         person("Angela Reyes", "Maplewood Care Center"),
         person("Marcus Bell", "Maplewood Care Center"),
@@ -64,12 +64,13 @@ class CareTeamPlacesTest {
         person("Jerome Whitfield", null),
     )
 
-    private fun show(people: List<Repository.Person>) {
+    private fun show(people: List<Repository.Person>, place: String? = "Maplewood Care Center") {
         compose.setContent {
             CompositionLocalProvider(LocalStrings provides strings) {
                 HealthTrailTheme {
                     CareTeamScreen(
                         people = people,
+                        currentPlace = place,
                         onCall = {},
                         onOpen = {},
                         onAdd = {},
@@ -80,45 +81,61 @@ class CareTeamPlacesTest {
         }
     }
 
+    /** **Where they are leads**, and the other side is named rather than counted. */
     @Test
-    fun therestIsFoldedByWhereTheyWork() {
+    fun thetoggleNamesWhereTheyAreAndEverywhereElse() {
         show(roster)
-        compose.onNodeWithTag(CareTeamTags.placeFold("Maplewood Care Center"))
-            .performScrollTo()
-            .assertIsDisplayed()
-        compose.onNodeWithTag(CareTeamTags.placeFold("Northside Medical Group"))
+        compose.onNodeWithTag(CareTeamTags.segment(0)).assertIsDisplayed()
+        compose.onNodeWithTag(CareTeamTags.segment(1)).assertIsDisplayed()
+        compose.onNodeWithText("Marcus Bell", substring = true)
             .performScrollTo()
             .assertIsDisplayed()
     }
 
-    /** **People with no place keep the fold they always had**, and it goes last. */
+    /** **Nothing is hidden behind a door**: the other side is one tap, not two. */
     @Test
-    fun peopleWithNoPlaceAreStillEveryoneElse() {
+    fun theothersideIsOneTapAway() {
         show(roster)
-        compose.onNodeWithTag(CareTeamTags.REST_FOLD).performScrollTo().assertIsDisplayed()
-    }
-
-    @Test
-    fun afoldOpensOntoThePeopleInIt() {
-        show(roster)
-        compose.onNodeWithTag(CareTeamTags.placeFold("Northside Medical Group"))
-            .performScrollTo()
-            .performClick()
+        compose.onNodeWithTag(CareTeamTags.segment(1)).performClick()
         compose.onNodeWithText("Ruth Ann Pierce", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText("Jerome Whitfield", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    /** People with no place at all are outside the facility, which is where they are. */
+    @Test
+    fun peopleWithNoPlaceAreOutsideTheFacility() {
+        show(roster)
+        compose.onNodeWithTag(CareTeamTags.segment(1)).performClick()
+        compose.onNodeWithText("Tonya K.", substring = true)
             .performScrollTo()
             .assertIsDisplayed()
     }
 
     /**
-     * **A notebook where nobody has a place looks exactly as it did**, which is
-     * this issue's own acceptance and is the ordinary case: one fold, the same
-     * words, no empty groups.
+     * **A notebook where nobody has a place is one list and no control.** That is
+     * the ordinary case and it must not grow a toggle because a feature exists.
      */
     @Test
-    fun anotebookWithNoPlacesLooksAsItAlwaysDid() {
-        show(roster.map { it.copy(organizationId = null, organizationName = null) })
-        compose.onNodeWithTag(CareTeamTags.REST_FOLD).performScrollTo().assertIsDisplayed()
-        compose.onNodeWithTag(CareTeamTags.placeFold("Maplewood Care Center"))
-            .assertDoesNotExist()
+    fun anotebookWithNoPlacesIsOneList() {
+        show(roster.map { it.copy(organizationId = null, organizationName = null) }, place = null)
+        compose.onNodeWithTag(CareTeamTags.segment(0)).assertDoesNotExist()
+        compose.onNodeWithText("Wesley Obi", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    /** Everybody is reachable from one side or the other, and nobody is on both. */
+    @Test
+    fun everybodyIsOnExactlyOneSide() {
+        show(roster)
+        compose.onNodeWithText("Angela Reyes", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithTag(CareTeamTags.segment(1)).performClick()
+        compose.onNodeWithText("Angela Reyes", substring = true).assertDoesNotExist()
     }
 }

@@ -2919,6 +2919,30 @@ private suspend fun emphasisFor(
  * person wrote. An international number keeps its plus, which was checked the
  * same way.
  */
+/**
+ * Opens whatever the phone uses for email, with the address filled in.
+ *
+ * **`ACTION_SENDTO` with a `mailto:` address, which needs no permission** and
+ * asks for nothing: the message is composed in their own mail app and sent by
+ * them. The same shape as [dial], and for the same reason. `m3v4-3` draws
+ * writing to somebody beside calling them, and the address has been in the
+ * schema since the person form asked for it.
+ *
+ * **Nothing happens when no mail app is installed**, which is the honest
+ * outcome: the address is still on the person's own screen to copy.
+ */
+internal fun email(context: android.content.Context, address: String?) {
+    address?.takeIf { it.isNotBlank() }?.let { to ->
+        val intent = android.content.Intent(
+            android.content.Intent.ACTION_SENDTO,
+            ("mailto:" + android.net.Uri.encode(to)).toUri(),
+        )
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
+        }
+    }
+}
+
 internal fun dial(context: android.content.Context, phone: String?) {
     phone?.takeIf { it.isNotBlank() }?.let { number ->
         context.startActivity(

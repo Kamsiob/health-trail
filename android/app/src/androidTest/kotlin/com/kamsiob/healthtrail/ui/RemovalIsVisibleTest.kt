@@ -220,16 +220,21 @@ class RemovalIsVisibleTest {
 
     @Test
     fun noCareTeamRowOffersALongPress() {
+        // **Two people, because one is the block the screen leads with.** #386:
+        // `m3v4-3` raises the person you call most out of the list, so a roster
+        // of one has no rows in it at all and the assertion would pass on an
+        // absent node, which is exactly the merged-node trap in `docs/TRAPS.md`.
+        val second = person.copy(id = "p_second", displayName = "Wesley Obi")
         show {
             CareTeamScreen(
-                people = listOf(person),
+                people = listOf(person, second),
                 onCall = {},
                 onOpen = {},
                 onAdd = {},
                 onBack = {},
             )
         }
-        assertNoLongPress(CareTeamTags.person(person.id))
+        assertNoLongPress(CareTeamTags.person(second.id))
     }
 
     @Test
