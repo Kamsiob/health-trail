@@ -28,13 +28,13 @@ Worked examples, best first: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
 | | | |
 |---|---|---|
 | Step 3 | #387 | **Done.** No live file imports from `ui/components`. Eight files left, all frozen tail or `Symbols`/`DatePicker`, each with a `docs/REMOVAL-LEDGER.md` row. |
-| Step 4 | #392 | **The mechanism half is done.** Every screen is on Material's own state layer through `Surface`, `Card`, `FilterChip` or `opensOnTap`. No screen animates a resting color by hand, animates a focus border, or passes `indication = null`. The arrangement tail is what is left and it belongs to #388. |
+| Step 4 | #392 | **Done and closed.** Every screen is on Material's own state layer through `Surface`, `Card`, `FilterChip` or `opensOnTap`. No screen animates a resting color by hand, animates a focus border, or passes `indication = null`. The arrangement tail it handed to #388 is what that phase spent its day on. |
 | Step 5 | #390 | **Done.** All three callbacks wired, `KNOWN` in `check_uncalled_callbacks.py` is empty. |
 | Step 6 | #393 | **Done and verified end to end.** Three people in one notebook, no leakage. Every table has carried `subject_id` since Phase 0, so nothing in the schema changed. |
 | Step 7 | #394 | **Measured twice.** 750 tests, 14 failed on 2026-08-18 after the polish phase, every one a class #394 already names: the 13 pre-existing plus #391. Nothing new. |
 | Step 8 | #389 | **Done.** All six items proved on the phone with three people. |
 | Step 9 | #388 | **Done.** The bar is separated, the selected destination is the app's own mark, every empty state is one designed block, and findings 2 through 8 are answered or resolved. D201, D202. |
-| Step 10 | #395 | **The release build works and is signed.** The APK is the next thing to deliver. |
+| Step 10 | #395 | **Every precondition is met and it is the next thing to do.** The release build works and is signed; it needs rebuilding from current `main`, installing, and walking. |
 
 **"Multiple users and profiles" in #389 means people inside one notebook**, which
 is #393. It does not mean a second Android user on the device. Owner, 2026-08-18.
@@ -52,7 +52,6 @@ projects and progress**:
 | **#399** | **The projects section is reimagined, not repainted.** The one place the "enhance, do not replace" rule does not apply, and the owner said so himself. Eleven project screens is the finding before any of them is looked at, rule 20. `ProjectDetailScreen` is frozen and gets replaced rather than extended. |
 | **#398** | **Every tracked thing gets its own screen.** Progress is one page trying to be every measure at once: the hero gets a plot, every other measure gets a number, and one flat list mixes every measure's readings together. A measure card becomes a door. Rule 2 is the whole risk here. |
 | **#397** | **Notes, general and attached.** A note with no target, a note attached to an incident, a question, a visit or a person, and light rich text. Rule 18 both ways is the hard half, and the storage is a `contract/DATA-CONTRACT.md` decision before it is a screen. |
-
 | **#400** | **The archive carries everything, with two people in one notebook.** The gate on #397 and #398 rather than a task after them: notes, every tracked thing, a mother and a father each fully used, export, wipe, restore, and a merge with a conflict, on the signed minified build. D24 calls the export the only way back. |
 
 **#396** is the dictation rule, split out of #388 finding 4: 34 `Field` call
@@ -237,6 +236,7 @@ Read on demand, never in bulk.
 | Need | Read |
 |---|---|
 | What each tracked thing is, before drawing its screen | **`docs/TRACKED-THINGS.md`**. Researched, with sources, and it is mostly about what rule 2 rules out |
+| The prompt that starts a cleared session | **`docs/COLD-START.md`**. Kept so it can be corrected rather than rewritten from memory |
 | What to do next | `gh issue view 321`, then this file. Then `gh issue list --milestone "FINISH THE APP"` |
 | The design and the polish bar | **`docs/V4.md`** |
 | What the approved design looks like | `docs/screenshots/m3v4-{0..5}-light.png`. **Open them** |
