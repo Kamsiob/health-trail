@@ -20,8 +20,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
-import com.kamsiob.healthtrail.ui.components.MonthDay
-import com.kamsiob.healthtrail.ui.components.MonthGrid
+import com.kamsiob.healthtrail.ui.v4.MonthDay
+import com.kamsiob.healthtrail.ui.v4.MonthGrid
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.v4.rememberViewChoice
 import com.kamsiob.healthtrail.ui.theme.hueFor
