@@ -20,11 +20,43 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 ## 2. The work
 
-**The interface is being replaced on Material 3 Expressive.** `docs/V4.md` is the design authority and **its section 2.1 is the complete build manual**: a screen nobody drew is built from there, not guessed at. `docs/ACCEPTANCE.md` is the run, nine phases, and the run does not stop until every one is finished.
+**The interface is being rebuilt on Material 3 Expressive, and the rule that
+matters is this one:** the owner, 2026-08-17, after a day of me measuring PNGs
+with a pixel probe, "you're not actually doing what I'm telling you. develop the
+language and understanding of the components and use Google assets. get rid of
+the old stuff and build it from the ground up."
 
-**The back end does not change.** Repository, schema, change log, export container, decryptor, fixtures, `contract/DATA-CONTRACT.md`. Anything needing a schema change is out of scope and goes to the owner.
+**So: use Material's components. Do not draw copies of them and do not trace the
+mockups.** The drawings are a reference for arrangement and color, never a thing
+to reproduce pixel by pixel. An audit on 2026-08-17 found 102 raw `Text` and 27
+`Surface` against Material's own components used once each: no `Card`, no
+`ListItem`, no `FilterChip`, no app bar, no `Scaffold`. That is why it read as an
+imitation.
 
-**The method, owner ruling, not negotiable.** "No old design language at all. get rid of it so it doesn't influence." Nothing old is edited. A screen is **rewritten onto `ui/v4`** or left alone. An old component is deleted the moment its last caller goes. **The old package being empty is the test.**
+**The `ColorScheme` is fully mapped already**, roles and the `surfaceContainer`
+ladder included, `ui/theme/Theme.kt`. Anything built on Material's components
+themes correctly the moment it is used. Read the scheme, not the hex.
+
+**The back end does not change.** Repository, schema, change log, export
+container, decryptor, fixtures, `contract/DATA-CONTRACT.md`.
+
+### What is already on Material's own components
+
+`ListItem` (the row), `Card` (the block), `FilterChip` and `AssistChip`,
+`Scaffold` with `LargeFlexibleTopAppBar`, `SegmentedButton`, `OutlinedTextField`,
+`Switch`, `ShortNavigationBar`, `ModalBottomSheet`, `PullToRefreshBox`.
+
+### What is still hand drawn and is the next work
+
+| Hand drawn | Material's own |
+|---|---|
+| `Symbol` wrapper, 100+ call sites | `Icon` with `painterResource`. The `Symbols` catalog stays: it is the asset source |
+| `CaptureFab` | `FloatingActionButton`, or the Expressive `MediumFloatingActionButton` |
+| `HealthTrail.type` ladder | `MaterialTheme.typography` roles |
+| `Radius` object | `MaterialTheme.shapes` |
+| `TodayCard`, `TodayLead` | `Card` variants |
+| `SwitchRow`'s own `Row` | `ListItem` with a `Switch` in `trailingContent` |
+| `Trace`, `Road`, `Spine` | **stay hand drawn.** A care trail is this app's own drawing and Material has no such component |
 
 ### Where it stands
 
