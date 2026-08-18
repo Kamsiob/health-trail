@@ -4,15 +4,15 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-18, end of the FINISH THE APP session.
+**Last rewritten:** 2026-08-18, end of the visual polish session.
 
 ---
 
 ## 0. Cold start
 
 1. `gh issue view 321`, then this file. Nothing else.
-2. **One phase is left and it is the visual one: `gh issue view 388`.** Everything
-   before it is done and verified. Do not re-audit it.
+2. **The visual polish phase is done and the owner opened a new one.**
+   `gh issue view 321` says the order. Do not re-audit anything before it.
 3. Check the phone is unlocked before planning device work:
    `adb shell dumpsys window | grep isKeyguardShowing`. **Never switch Android
    user profiles**; it re-locks the phone and there is no way past a secure
@@ -33,24 +33,36 @@ Worked examples, best first: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
 | Step 6 | #393 | **Done and verified end to end.** Three people in one notebook, no leakage. Every table has carried `subject_id` since Phase 0, so nothing in the schema changed. |
 | Step 7 | #394 | **Measured.** 750 tests, 15 failed. **13 are pre-existing**, proved against a worktree at `0f560b14`; 1 is #391; 1 was this session's and is fixed. |
 | Step 8 | #389 | **Done.** All six items proved on the phone with three people. |
-| Step 9 | #388 | **The one phase left.** Motion and the mechanical polish are done; the visual craft is not. |
-| Step 10 | #395 | **The release build works and is signed.** Not delivered: #388 first. |
+| Step 9 | #388 | **Done.** The bar is separated, the selected destination is the app's own mark, every empty state is one designed block, and findings 2 through 8 are answered or resolved. D201, D202. |
+| Step 10 | #395 | **The release build works and is signed.** The APK is the next thing to deliver. |
 
 **"Multiple users and profiles" in #389 means people inside one notebook**, which
 is #393. It does not mean a second Android user on the device. Owner, 2026-08-18.
 Reading it literally cost a locked phone and proved nothing.
 
-## 2. What is left. One phase, and `gh issue view 388` is the plan
+## 2. What is left, and the owner opened it on 2026-08-18
 
-**Nothing but visual craft.** The app is correct, the suite is measured, the
-archive is proved, the release path works. What is missing is the difference
-between good and great, and #388 carries the findings with the capture each was
-seen on.
+**`FINISH THE APP` is finished except for delivering the APK, #395.** The
+visual polish phase closed the same day it started, and the owner then named
+three bodies of new work in his own words. They are milestone **8. Notes,
+projects and progress**:
 
-**The owner's own words, 2026-08-18:** "we're almost there but we're not there
-yet"; "the attention is in the details. the difference between good and great is
-in the details"; "we are not deconstructing or replacing anything that's here
-now, we are enhancing and improving."
+| | |
+|---|---|
+| **#399** | **The projects section is reimagined, not repainted.** The one place the "enhance, do not replace" rule does not apply, and the owner said so himself. Eleven project screens is the finding before any of them is looked at, rule 20. `ProjectDetailScreen` is frozen and gets replaced rather than extended. |
+| **#398** | **Every tracked thing gets its own screen.** Progress is one page trying to be every measure at once: the hero gets a plot, every other measure gets a number, and one flat list mixes every measure's readings together. A measure card becomes a door. Rule 2 is the whole risk here. |
+| **#397** | **Notes, general and attached.** A note with no target, a note attached to an incident, a question, a visit or a person, and light rich text. Rule 18 both ways is the hard half, and the storage is a `contract/DATA-CONTRACT.md` decision before it is a screen. |
+
+**#396** is the dictation rule, split out of #388 finding 4: 34 `Field` call
+sites, a rule that is checkable, three of them inside a frozen file.
+
+**The owner's own words, 2026-08-18**, in order: "I don't want the taskbar
+area ... to blend into any content above it"; "the little yellow oval
+highlight for the active tab in the taskbar looks ugly and lazy. not polished
+and premium"; "one style across all empty pages with the button inside the
+card"; "'nothing here is worked out by the app'? remove that from anywhere it
+appears"; "the whole project thing needs to be revisualized and reimagined".
+The first four are done. The last is #399.
 
 ## 3. Blocked
 
@@ -89,20 +101,27 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
 
 ## 5. What this session added that the next one builds on
 
-- **`ui/v4/Arrival.kt`.** Every page arrives rather than cutting: a rise and a
-  fade from `Motion` tokens, on the list itself. **Read its note before touching
-  it**: a per-item version was built twice and broke two screens.
-- **`ui/v4/Press.kt`.** One modifier, `opensOnTap`, over Material's `ripple`.
-  Use `Surface` where the tappable thing is a container; this is for modifier
-  chains only.
-- **The destination transition.** `AnimatedContent` in `NotebookShell`, shared
-  axis, a tenth of the width, direction from the bar's ordinal order.
-- **`listGroupShape`** in `ui/v4/Surfaces.kt`: a run of rows is Material's
-  medium step, a card is large. Three visible corners instead of one.
-- **The hairline.** Every `Block`, every Today card and the search door carry
-  `outlineVariant` at `Space.hairlineWidth`. Item 4 in both themes.
-- **`check_token_drift.py` skips frozen files**, read from the ledger. Baseline
-  53.
+- **`navSurface` and `Radius.navBar`, D201.** The navigation bar is its own
+  surface, deeper than the page, with a 24dp top corner and the hairline. In
+  light this palette has no step above `sand`, which is why it is a token
+  rather than a Material role. **White was built first and rejected by
+  looking**, `nav-after-notebook-light-light.png`.
+- **`NavMark` in `BottomNav.kt`, D202.** Material's stadium indicator is off
+  and the current destination wears the app's own mark tile in `ink`. Gold
+  was ruled out: gold means the way things enter the notebook, and the
+  capture button floats a thumb's width above the bar.
+- **`SectionEmpty` is one designed block**, in the flow rather than centered
+  in a void, carrying the section's saturated mark at 64dp, an edge, the
+  sentence in `ink`, and the way in. `EMPTY_HEIGHT_FRACTION` and
+  `EMPTY_HEIGHT_TALL` are gone with the centering. **While a section is empty
+  its floating add is null**, because the block carries the verb.
+- **`SearchDoor` has callers.** It was built to `m3v4-1`'s drawing and never
+  placed. It is the lead on the notebook and on More, and the notebook's
+  top-bar search icon is gone rather than duplicated.
+- **`ListRow` takes `markSize`.** A single-kind list carries the kind's color
+  at the card size; the row size is for a screen showing several kinds.
+- **Four strings in the app's disclaimer voice are gone** from all four
+  catalogs, and `medications.record_only` is deleted.
 
 ## 6. Blocked, and section 3 is the live one
 
@@ -225,4 +244,13 @@ Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` >
 
 **Reachable only from a test, not from any seed** (each on its own issue): paperwork an incident produced; the care team card's sparse rung and the trail spine's gap markers; the digest's corrected and removed counts; #273's two template hands; **the month review's `Hero` block**, which draws only when a month holds a milestone, and no month in the `year2` fixture does. Checked June, April and March on 2026-08-18 rather than assumed.
 
-**Not yet seen on a phone**: the empty-screen mark (`EmptyDrawing`), because neither fixture has an empty section. Look at it on the next fresh-notebook walk.
+**`EmptyDrawing` has no live drawing caller left.** `SectionEmpty` draws the
+section's own saturated mark now, and the three remaining callers all pass
+`section = null`, which draws nothing. The one file that still draws it is
+`ProjectDetailScreen`, which is frozen.
+
+**A second person is the cheapest empty notebook there is.** More, people in
+this notebook, add another person, start their notebook: every section is
+empty behind it and nothing in the first person's notebook is touched. That
+is how every `empty3-*` and `empty4-*` capture in `docs/screenshots` was
+taken.

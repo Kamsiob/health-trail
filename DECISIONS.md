@@ -212,6 +212,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D199 | `ui/components` empties of the live path, and what stays is the frozen tail |
 | D200 | A section's add control floats on the scaffold, because the capture button is not on a section screen |
 | D201 | The navigation bar is its own surface, deeper than the page, so it never blends into the content above it |
+| D202 | The current destination wears the app's own mark tile, not Material's oval, and it is ink rather than gold |
 
 ---
 
@@ -3114,6 +3115,40 @@ live path on the old design language.
 frozen file, and it does not make a second live copy of anything. If a frozen
 screen is ever retired for real, its components go with it in the same commit
 and the ledger says so.
+
+### D202. The current destination wears the app's own mark tile, not Material's oval, and it is ink rather than gold
+
+**2026-08-18.** The owner, on the bar that had just been separated: "the
+little yellow oval highlight for the active tab in the taskbar looks ugly and
+lazy. not polished and premium."
+
+**Both halves of that are named and both were true.**
+
+**The shape.** Material's `ShortNavigationBarItem` draws its indicator as a
+stadium. A stadium is a shape this app draws nowhere else: every mark in the
+interface sits in a rounded square at `Radius.iconTile`, the section rows, the
+capture kinds, Today's card heads, the capture button. One oval at the bottom
+of every screen is the generic component showing through, which is
+`docs/V4.md` 6.1 item 11 exactly. `selectedIndicatorColor` is transparent now
+and `NavMark` draws the tile.
+
+**The color.** `goldWash` is a pale tint that measured 1.07:1 against the old
+bar and read as a smudge rather than as a decision. #385 pointed
+`secondaryContainer` at it because the approved mockups draw a gold pill, and
+the owner's words are newer than the drawing, the same way they are in D201.
+
+**Ink rather than gold, and that is the part worth writing down.** Gold in
+this app means the way things enter the notebook: the capture button is gold
+and it floats a thumb's width above this bar. A second saturated gold object
+beside it would spend the one color the app reserves for one job on a second
+job. `ink` measures 9.3:1 on `navSurface`, it is the app's own darkest value,
+and a dark key pressed out of a warm surface is what it reads as. Dark theme
+inverts it correctly with no branch: a near-white key with a dark mark.
+
+**Selection is still carried by three things**, `DESIGN.md` 4.4: the tile,
+the mark's own color, and the label, which is `ink` where the others are
+`ink2`. It survives grayscale. The unselected mark keeps the tile's footprint
+and not its fill, so nothing moves or resizes when the destination changes.
 
 ### D201. The navigation bar is its own surface, deeper than the page, so it never blends into the content above it
 
