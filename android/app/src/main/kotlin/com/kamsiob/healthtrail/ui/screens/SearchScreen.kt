@@ -35,6 +35,7 @@ import com.kamsiob.healthtrail.ui.v4.EmptyDrawing
 import com.kamsiob.healthtrail.ui.v4.RouteDash
 import com.kamsiob.healthtrail.ui.v4.SpineRow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.v4.RichText
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Field
@@ -332,7 +333,12 @@ private fun ResultRow(
         hit.detail?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(Space.xs))
             Text(
-                        text = Bidi.isolate(it),
+                        // **The marks are drawn, never shown.** #397 and D207:
+                        // a note's body carries `**bold**` and `_italic_` as
+                        // characters, and a search result that prints them is
+                        // showing somebody the storage rather than their own
+                        // sentence, which is rule 20.
+                        text = RichText.annotated(Bidi.isolate(it)),
                         style = HealthTrail.type.bodyM,
                         color = colors.ink2,
                         // **Three lines and then a mark**, never three lines

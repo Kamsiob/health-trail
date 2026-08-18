@@ -17,6 +17,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.kamsiob.healthtrail.ui.v4.Field
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -42,6 +47,8 @@ object NotesTags {
     const val NAME = "notes"
     const val ADD = "notes_add"
     const val TOGGLE = "notes_view"
+    const val SEARCH = "notes_search"
+    const val NO_MATCH = "notes_no_match"
     const val PINNED = "notes_pinned"
     fun note(id: String) = "notes_note_$id"
     fun pin(id: String) = "notes_pin_$id"
@@ -100,11 +107,31 @@ fun NotesScreen(
     val strings = LocalStrings.current
     val view = rememberViewChoice(section = NotesTags.NAME, fallback = VIEW_GRID)
 
+    // **Searched here as well as in the universal search**, because a person
+    // already looking at their notes should not have to leave them to find one.
+    // The universal search still finds notes, and a hit now says Notes rather
+    // than The trail. #397.
+    //
+    // **The name and the words, and the marks are not searched.** Somebody
+    // looking for "glasses" means the word; the asterisks around it are how the
+    // app draws emphasis and are nobody's search term, so `RichText.plain`
+    // strips them before the match.
+    var term by rememberSaveable { mutableStateOf("") }
+    val needle = term.trim().lowercase()
+    val found = if (needle.isEmpty()) {
+        notes
+    } else {
+        notes.filter { note ->
+            note.title.orEmpty().lowercase().contains(needle) ||
+                RichText.plain(note.body.orEmpty()).lowercase().contains(needle)
+        }
+    }
+
     // **Kept in view first, then by when they happened.** The pin is the
     // person's own answer to "which of these do I need in front of me", so it
     // outranks the date, and everything else stays in the order the trail uses.
-    val pinned = notes.filter { it.pinnedAt != null }
-    val rest = notes.filter { it.pinnedAt == null }
+    val pinned = found.filter { it.pinnedAt != null }
+    val rest = found.filter { it.pinnedAt == null }
 
     Page(
         title = strings["notes.heading"],
@@ -149,6 +176,18 @@ fun NotesScreen(
         }
 
         item {
+            Field(
+                label = strings["notes.search.label"],
+                value = term,
+                onValueChange = { term = it },
+                support = strings("notes.search.hint", "count" to notes.size),
+                singleLine = true,
+                fieldTestTag = NotesTags.SEARCH,
+            )
+            Spacer(Modifier.height(Space.betweenGroups))
+        }
+
+        item {
             val views = listOf(VIEW_GRID, VIEW_LIST)
             Segments(
                 options = listOf(strings["notes.view.grid"], strings["notes.view.list"]),
@@ -157,6 +196,20 @@ fun NotesScreen(
                 modifier = Modifier.testTag(NotesTags.TOGGLE),
             )
             Spacer(Modifier.height(Space.betweenGroups))
+        }
+
+        // **Nothing matching is a real state and says so**, rule 11, and it
+        // never suggests the person searched wrong.
+        if (found.isEmpty()) {
+            item {
+                Text(
+                    text = strings["notes.search.none"],
+                    style = HealthTrail.type.bodyL,
+                    color = HealthTrail.colors.ink2,
+                    modifier = Modifier.testTag(NotesTags.NO_MATCH),
+                )
+            }
+            return@Page
         }
 
         if (pinned.isNotEmpty()) {

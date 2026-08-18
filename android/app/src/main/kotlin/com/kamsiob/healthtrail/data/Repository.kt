@@ -4601,15 +4601,26 @@ class Repository private constructor(
                 arrayOf(subjectId) + Array(searched.size) { pattern } + arrayOf(limit.toString()),
             ).use { cursor ->
                 while (cursor.moveToNext()) {
+                    val kind = cursor.getString(6)
                     hits += SearchHit(
                         id = cursor.getString(0),
-                        section = section,
+                        // **A note says Notes, not The trail.** #397: notes are
+                        // entries and are searched with them, so without this a
+                        // hit landed under the section the row's table belongs
+                        // to rather than under the one the person opened it
+                        // from. The kind is the only thing that separates them
+                        // and it is already read here.
+                        section = if (section == Section.TRAIL && kind == "note") {
+                            Section.NOTES
+                        } else {
+                            section
+                        },
                         title = cursor.getString(1) ?: "",
                         detail = cursor.getString(2),
                         chapterName = cursor.getString(3),
                         occurredEdtf = cursor.getString(4),
                         occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
-                        kind = cursor.getString(6),
+                        kind = kind,
                     )
                 }
             }
