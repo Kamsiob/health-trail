@@ -31,7 +31,7 @@ import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DateRow
-import com.kamsiob.healthtrail.ui.components.LatestWordCard
+import com.kamsiob.healthtrail.ui.v4.LatestWordCard
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
 import com.kamsiob.healthtrail.ui.components.RoadStrip
