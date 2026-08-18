@@ -3102,11 +3102,19 @@ appearing beside it.
 twelve times, and the list reserves `Space.fabScrollClearance` when it is set so
 the last row is never underneath the button.
 
-**The empty state keeps its in-list action and does not get a floating one.**
-On a screen with nothing on it the add action is the content, not an overlay: a
-sentence saying nothing is written down yet, with the way to start under it. A
-bare floating button in the corner of an empty screen is the opposite of rule
-13, which says an unfilled slot reads as "not yet" rather than as an error.
+**Where a screen draws a separate empty-state action, that one stays in the
+list.** `AppointmentsScreen` and `DocumentsScreen` each branch on an empty list,
+draw their own way to start and `return@Page`; on a screen with nothing on it
+the add action is the content rather than an overlay, and rule 13 asks that an
+unfilled slot read as "not yet" rather than as an error.
+
+**Most of the twelve have one shared action rather than two**, so their empty
+state becomes the section's sentence with the floating button over it. That is
+what `MedicationList.kt` already ships, and it is the same shape Material uses:
+the message says what is not there yet and the button says what to do about it.
+This paragraph was written the other way round first, claiming every empty state
+kept an in-list action. It was checked against the screens afterward and only
+two of them have one.
 
 **What D118 actually settled stays settled.** In-content actions are pills
 sized to their label rather than full width buttons, and that is untouched: this

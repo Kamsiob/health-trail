@@ -22,6 +22,10 @@ import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.labeledBlock
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExtendedFloatingActionButton
 
 object QuestionTags {
     const val NAME = "questions"
@@ -104,6 +108,22 @@ fun QuestionsScreen(
         onBack = onBack,
         backLabel = strings[backLabelKey],
         modifier = modifier.testTag(QuestionTags.ROOT),
+        // **The way in floats over the list rather than sitting under it.**
+        // D200: it was the last `item` in the `LazyColumn`, and a section
+        // screen has no capture button in that corner to compete with.
+        fab = {
+            ExtendedFloatingActionButton(
+                onClick = onAdd,
+                icon = {
+                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                },
+                text = { Text(text = strings["questions.add"]) },
+                // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                modifier = Modifier
+                    .testTag(QuestionTags.ADD)
+                    .semantics { contentDescription = strings["questions.add"] },
+            )
+        },
     ) {
         if (questions.isEmpty()) {
             item {
@@ -156,17 +176,6 @@ fun QuestionsScreen(
             },
         )
 
-        // **The way in, under the list**, sized to its label per D118, the same
-        // as every other section screen.
-        item {
-            Spacer(Modifier.height(Space.s))
-            Action(
-                label = strings["questions.add"],
-                onClick = onAdd,
-                mark = Symbols.add,
-                modifier = Modifier.testTag(QuestionTags.ADD),
-            )
-        }
     }
 }
 

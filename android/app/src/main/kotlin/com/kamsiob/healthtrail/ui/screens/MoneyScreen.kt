@@ -25,6 +25,10 @@ import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.labeledBlock
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExtendedFloatingActionButton
 
 object MoneyTags {
     const val NAME = "money"
@@ -106,6 +110,22 @@ fun MoneyScreen(
         onBack = onBack,
         backLabel = strings[backLabelKey],
         modifier = modifier.testTag(MoneyTags.ROOT),
+        // **The way in floats over the list rather than sitting under it.**
+        // D200: it was the last `item` in the `LazyColumn`, and a section
+        // screen has no capture button in that corner to compete with.
+        fab = {
+            ExtendedFloatingActionButton(
+                onClick = onAdd,
+                icon = {
+                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                },
+                text = { Text(text = strings["money.add"]) },
+                // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                modifier = Modifier
+                    .testTag(MoneyTags.ADD)
+                    .semantics { contentDescription = strings["money.add"] },
+            )
+        },
     ) {
         if (bills.isEmpty()) {
             item {
@@ -168,15 +188,6 @@ fun MoneyScreen(
             )
         }
 
-        item {
-            Spacer(Modifier.height(Space.s))
-            Action(
-                label = strings["money.add"],
-                onClick = onAdd,
-                mark = Symbols.add,
-                modifier = Modifier.testTag(MoneyTags.ADD),
-            )
-        }
     }
 }
 

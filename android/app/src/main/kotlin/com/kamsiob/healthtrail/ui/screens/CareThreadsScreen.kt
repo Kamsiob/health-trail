@@ -29,6 +29,11 @@ import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RouteMark
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExtendedFloatingActionButton
 
 object ThreadTags {
     const val NAME = "care_threads"
@@ -103,6 +108,22 @@ fun CareThreadsScreen(
         onBack = onBack,
         backLabel = strings[backLabelKey],
         modifier = modifier.testTag(ThreadTags.ROOT),
+        // **The way in floats over the list rather than sitting under it.**
+        // D200: it was the last `item` in the `LazyColumn`, and a section
+        // screen has no capture button in that corner to compete with.
+        fab = {
+            ExtendedFloatingActionButton(
+                onClick = onAdd,
+                icon = {
+                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                },
+                text = { Text(text = strings["threads.add"]) },
+                // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                modifier = Modifier
+                    .testTag(ThreadTags.ADD)
+                    .semantics { contentDescription = strings["threads.add"] },
+            )
+        },
     ) {
         if (threads.isEmpty()) {
             item {
@@ -151,19 +172,6 @@ fun CareThreadsScreen(
             }
         }
 
-        // **Under the list rather than in the header**, because the common
-        // errand is opening one of the threads already running and this is the
-        // rarer one. It is not hidden: a capability only its author can find is
-        // unfinished, and fourteen situations with no way past them was that.
-        item {
-            Spacer(Modifier.height(Space.s))
-            Action(
-                label = strings["threads.add"],
-                onClick = onAdd,
-                mark = Symbols.add,
-                modifier = Modifier.testTag(ThreadTags.ADD),
-            )
-        }
     }
 }
 
