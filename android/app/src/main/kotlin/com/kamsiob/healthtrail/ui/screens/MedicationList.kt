@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -174,11 +175,15 @@ fun MedicationsScreen(
 
             if (current.isNotEmpty()) {
                 item {
-                    // **The section's own container**, which is this screen's
-                    // one colored thing: identity, never a judgment about any
-                    // medication on the list. Rule 2.
+                    // **The surface stays neutral and the color is a mark.**
+                    // A first attempt put the section's wash on the whole list
+                    // and the owner's reply was that it had become a green
+                    // wall, which it had: a container that tall is not an
+                    // accent, it is the screen. Material keeps surfaces neutral
+                    // and spends color in small places that mean something, and
+                    // so does every approved drawing.
                     MedicationGroup(
-                        container = hue.wash,
+                        container = scheme.surfaceContainerLow,
                         medications = current,
                         openQuestions = openQuestions,
                         hue = hue,
@@ -287,10 +292,14 @@ private fun MedicationRow(
             }
         },
         leadingContent = {
+            // **This is where the section's color belongs**: a 44dp mark, one
+            // per row, which says which part of the notebook this is and
+            // leaves the reading surface alone.
             Box(
                 modifier = Modifier
                     .size(Space.markTile)
-                    .clip(CircleShape),
+                    .clip(CircleShape)
+                    .background(hue.wash),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(

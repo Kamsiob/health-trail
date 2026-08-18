@@ -477,15 +477,13 @@ fun LazyListScope.labeledBlock(
                     modifier = labelTag?.let { tag -> Modifier.testTag(tag) } ?: Modifier,
                 )
             }
-            // **The leading group wears its section**, which is the one
-            // colored group `docs/V4.md` 2.1 allows a screen, and what stops a
-            // section page being a column of identical neutrals.
-            val section = LocalPageSection.current
-            Block(
-                tone = if (leading && section != null) BlockTone.Section else BlockTone.Quiet,
-                padding = Space.none,
-                hue = section?.let { hueFor(it) },
-            ) {
+            // **The surface stays neutral.** An earlier pass today put the
+            // section's wash on a whole leading group and the result was a wall
+            // of one color: a container that tall is not an accent, it is the
+            // screen. Color belongs in the marks, the chips and the one small
+            // thing a screen leads with, which is what Material does and what
+            // every approved drawing does.
+            Block(padding = Space.none) {
                 rows.forEachIndexed { index, row ->
                     row()
                     if (index != rows.lastIndex) RowDivider()
