@@ -20,6 +20,11 @@ import com.kamsiob.healthtrail.ui.ShellTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
+import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.ui.theme.alertHue
+import com.kamsiob.healthtrail.ui.theme.goldHue
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.theme.TabHue
 
 object MoreTags {
     const val PEOPLE = "more_people"
@@ -150,10 +155,12 @@ private fun MoreDestinations(
     // **Search leads its group**, because `MASTER_SPEC.md` 4.8 puts it here and
     // at the top of Today, and of these it is the one reached weekly rather
     // than once.
+    // Gold is what `hueFor` gives a surface belonging to no section.
+    val gold = goldHue()
     val groups = listOfNotNull(
         strings["more.group.find"] to listOf(
-            Destination(strings["more.search"], onSearch, MoreTags.SEARCH, Symbols.search),
-            Destination(strings["more.library"], onLibrary, MoreTags.LIBRARY, Symbols.notebook),
+            Destination(strings["more.search"], onSearch, MoreTags.SEARCH, Symbols.search, gold),
+            Destination(strings["more.library"], onLibrary, MoreTags.LIBRARY, Symbols.notebook, gold),
         ),
         // **How the notebook is set up, which had no door at all.** The
         // situation picker ran once during setup and was then unreachable
@@ -173,18 +180,38 @@ private fun MoreDestinations(
                 onSituation,
                 MoreTags.SITUATION,
                 Symbols.standingInstructions,
+                hueFor(Repository.Section.STANDING_INSTRUCTIONS),
             ),
-            Destination(strings["more.subject"], onSubject, MoreTags.SUBJECT, Symbols.careTeam),
-            Destination(strings["people.open"], onPeople, MoreTags.PEOPLE, Symbols.addPerson),
+            Destination(
+                strings["more.subject"],
+                onSubject,
+                MoreTags.SUBJECT,
+                Symbols.careTeam,
+                hueFor(Repository.Section.CARE_TEAM),
+            ),
+            Destination(
+                strings["people.open"],
+                onPeople,
+                MoreTags.PEOPLE,
+                Symbols.addPerson,
+                hueFor(Repository.Section.CARE_TEAM),
+            ),
         ),
         strings["more.group.copy"] to (
             listOf(
-                Destination(strings["more.export"], onExport, MoreTags.EXPORT, Symbols.download),
+                Destination(
+                    strings["more.export"],
+                    onExport,
+                    MoreTags.EXPORT,
+                    Symbols.download,
+                    hueFor(Repository.Section.DOCUMENTS),
+                ),
                 Destination(
                     strings["more.restore"],
                     onRestore,
                     MoreTags.RESTORE,
                     Symbols.documents,
+                    hueFor(Repository.Section.DOCUMENTS),
                 ),
             ) + if (conflicts > 0) {
                 // **Beside restore, because that is where it came from.** Rule
@@ -196,6 +223,7 @@ private fun MoreDestinations(
                         onConflicts,
                         MoreTags.CONFLICTS,
                         Symbols.incidents,
+                        alertHue(),
                     ),
                 )
             } else {
@@ -203,7 +231,7 @@ private fun MoreDestinations(
             }
             ),
         strings["more.group.app"] to listOf(
-            Destination(strings["more.about"], onAbout, MoreTags.ABOUT, Symbols.tips),
+            Destination(strings["more.about"], onAbout, MoreTags.ABOUT, Symbols.tips, gold),
         ),
     )
 
@@ -221,6 +249,12 @@ private fun MoreDestinations(
                         // rather than the person's.
                         title = destination.label,
                         mark = destination.mark,
+                        // **The disc every mark in this app wears.** D198: a
+                        // mark is `TabHue.base` with `onBase` on top. These ten
+                        // rows passed a bare drawable, so More was the one list
+                        // in the notebook drawn in gray while every other list
+                        // carried its kind's color.
+                        markHue = destination.hue,
                         isDoor = true,
                         onClick = destination.onOpen,
                         // **A reader is told the tap opens the place**, rather
@@ -238,11 +272,19 @@ private fun MoreDestinations(
 }
 
 /** One place More can take you. */
+/**
+ * One door on the More screen, and the color the door's mark wears.
+ *
+ * **The hue is the hue of what it leads to**, taken from `hueFor`, which D198
+ * calls the owner's mapping and forbids re-deriving. A row that leads to no
+ * section takes gold, which is what `hueFor` gives every whole-app surface.
+ */
 private data class Destination(
     val label: String,
     val onOpen: () -> Unit,
     val testTag: String,
     @androidx.annotation.DrawableRes val mark: Int,
+    val hue: TabHue,
 )
 
 @Composable

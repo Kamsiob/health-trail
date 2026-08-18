@@ -53,6 +53,7 @@ import java.time.ZoneId
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.material3.MaterialTheme
+import com.kamsiob.healthtrail.ui.theme.hueFor
 
 object ProjectHomeTags {
     const val NAME = "project-home"
@@ -526,12 +527,24 @@ fun ProjectHomeScreen(
         // under one header: every one navigates, every one says what it
         // holds, none of them moves.
         item {
+            val projectHue = hueFor(Repository.Section.PROJECTS)
             Eyebrow(text = strings["project.file"])
             Spacer(Modifier.height(Space.headerGap))
+            // **Every row wears the mark and the color of what it opens.**
+            // D198: a mark is `TabHue.base` with `onBase` on top, and every
+            // other list in the notebook draws one. These five passed neither,
+            // so the file under a project was five bare titles and a number in
+            // a gray box while the notebook two taps away was full of color.
+            // **The hues are `hueFor`'s**, the owner's mapping: the papers are
+            // the documents' manila, the people are the care team's rose, the
+            // setup is the standing instructions' stone, and what belongs to
+            // the project itself takes the gold every whole-app surface takes.
             Block(padding = Space.none) {
                 ListRow(
                     title = strings["project.fold.steps"],
                     value = strings("projects.step_count", "count" to steps.size),
+                    mark = Symbols.standingInstructions,
+                    markHue = projectHue,
                     isDoor = true,
                     onClick = onOpenSteps,
                     modifier = Modifier.testTag(ProjectHomeTags.STEPS),
@@ -540,6 +553,8 @@ fun ProjectHomeScreen(
                 ListRow(
                     title = strings["project.fold.trail"],
                     value = trailCount.toString(),
+                    mark = Symbols.trail,
+                    markHue = projectHue,
                     isDoor = true,
                     onClick = onOpenTrail,
                     modifier = Modifier.testTag(ProjectHomeTags.TRAIL),
@@ -550,6 +565,8 @@ fun ProjectHomeScreen(
                     // bidi-ok: a bare count with no direction of its own, the
                     // same shape every fold in the app has always carried.
                     value = papers.size.toString(),
+                    mark = Symbols.documents,
+                    markHue = hueFor(Repository.Section.DOCUMENTS),
                     isDoor = true,
                     onClick = onOpenPaperwork,
                     modifier = Modifier.testTag(ProjectHomeTags.PAPERS),
@@ -558,6 +575,8 @@ fun ProjectHomeScreen(
                 ListRow(
                     title = strings["project.fold.people"],
                     value = peopleCount.toString(),
+                    mark = Symbols.careTeam,
+                    markHue = hueFor(Repository.Section.CARE_TEAM),
                     isDoor = true,
                     onClick = onOpenPeople,
                     modifier = Modifier.testTag(ProjectHomeTags.PEOPLE),
@@ -565,6 +584,8 @@ fun ProjectHomeScreen(
                 RowDivider(inset = false)
                 ListRow(
                     title = strings["project.setup.open"],
+                    mark = Symbols.edit,
+                    markHue = hueFor(Repository.Section.STANDING_INSTRUCTIONS),
                     isDoor = true,
                     onClick = onOpenSetup,
                     modifier = Modifier.testTag(ProjectHomeTags.SETUP),
