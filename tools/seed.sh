@@ -63,7 +63,25 @@ walk "I understand"
 walk "Skip for now"
 walk "Not sure yet" 4
 walk "More"
-walk "Restore from a file"
+# **Reach for it, and scroll only if it is not there.** `walk.sh tap` matches
+# what is on screen, and this row sits at the foot of a list that grows whenever
+# the type does: the 36sp correction on 2026-08-17 pushed it under the fold and
+# the seed failed silently, because a missed tap here is `|| true` and every
+# capture afterward is of an empty notebook. A fixed scroll is the same bug
+# upside down, since it overshoots on a shorter list. `docs/TRAPS.md`.
+reach() {
+  for _ in 1 2 3 4 5; do
+    if "$ROOT/tools/walk.sh" tap "$1" 2>&1 | grep -q "^tapped"; then
+      sleep "${2:-3}"
+      return 0
+    fi
+    "$ADB" shell input swipe 540 1700 540 1100 250
+    sleep 1
+  done
+  echo "seed: never found \"$1\" after scrolling" >&2
+  return 1
+}
+reach "Restore from a file"
 walk "Choose a file" 5
 
 # The system file picker is not the app, so it is not in the app's semantics

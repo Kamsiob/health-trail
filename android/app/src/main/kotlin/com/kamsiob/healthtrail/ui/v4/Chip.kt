@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.v4
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import com.kamsiob.healthtrail.ui.components.Symbol
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -82,11 +85,17 @@ fun Chip(
  * counted fact that reports and cannot be touched. This is a control: it answers
  * a question, and rule 16 says everything touchable responds.
  *
- * **Tonal when open, filled when chosen.** `docs/V4.md` 2.1: no outlines, so the
- * difference between an answered and an unanswered chip is how much ink is on
- * the screen rather than whether it has an edge. The label inverts and goes to
- * the label weight with it, so selection survives a grayscale screen and any
- * color vision difference. Never hue alone.
+ * **Measured off `m3v4-4` rather than reasoned about.** The drawing sets an
+ * unanswered chip in the canvas color with a hairline edge and an answered one
+ * in `goldWash` with `goldInk`, a check before the label, and the label at
+ * weight. 31.6dp tall. An earlier pass made them tonal and edgeless by reading
+ * 2.1's "no outlines" as covering everything; that rule is about a control
+ * claiming to be tappable by its edge alone, and the drawing plainly outlines
+ * its chips, so the drawing wins. D183.
+ *
+ * **Selection is never hue alone**: the fill changes, the label goes to weight,
+ * and a check appears, so it survives a grayscale screen and any color vision
+ * difference.
  *
  * **It is never shaped like an action.** A chip sits in a wrapping row of its
  * siblings and answers a question; an action sits alone at `Radius.button` and
@@ -117,11 +126,12 @@ fun ChoiceChip(
             .minimumInteractiveComponentSize()
             .defaultMinSize(minHeight = CHIP_HEIGHT)
             .clip(Radius.pill)
-            .background(
-                when {
-                    !enabled -> colors.sand
-                    selected -> colors.blue
-                    else -> colors.sand
+            .background(if (selected) colors.goldWash else colors.paper)
+            .then(
+                if (selected) {
+                    Modifier
+                } else {
+                    Modifier.border(Space.hairlineWidth, colors.hairlineHeavy, Radius.pill)
                 },
             )
             .selectable(
@@ -130,9 +140,20 @@ fun ChoiceChip(
                 role = Role.RadioButton,
                 onClick = onClick,
             )
-            .padding(horizontal = Space.m),
+            .padding(horizontal = Space.sm),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
     ) {
+        // **The check, which is how the drawing says chosen** before any color
+        // is read at all.
+        if (selected) {
+            Symbol(
+                symbol = Symbols.check,
+                contentDescription = null,
+                tint = colors.goldInk,
+                modifier = Modifier.size(Space.markInline),
+            )
+        }
         if (dotColor != null) {
             Box(
                 modifier = Modifier
@@ -179,9 +200,10 @@ fun MoreChip(
             .minimumInteractiveComponentSize()
             .defaultMinSize(minHeight = CHIP_HEIGHT)
             .clip(Radius.pill)
-            .background(colors.sand)
+            .background(colors.paper)
+            .border(Space.hairlineWidth, colors.hairlineHeavy, Radius.pill)
             .clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
-            .padding(horizontal = Space.m),
+            .padding(horizontal = Space.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // bidi-ok: the app's own words for the way to the rest of the set,
@@ -294,5 +316,6 @@ fun <T> cappedChips(all: List<T>, selected: Set<T>, limit: Int = CHIP_CAP): List
 /** Five answers in front of the person, and a way to the rest. */
 const val CHIP_CAP = 5
 
-private val CHIP_HEIGHT = Space.xxl
+/** 31.6dp on `m3v4-4`, which is the touch target's own 32 rather than 40. */
+private val CHIP_HEIGHT = Space.xl
 private val CHIP_DOT = Space.s
