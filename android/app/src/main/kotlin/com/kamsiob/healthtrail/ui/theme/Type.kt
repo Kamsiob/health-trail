@@ -230,8 +230,14 @@ val HealthTrailType = HealthTrailTypography(
     ),
     displayM = TextStyle(
         fontFamily = DisplayFamily,
-        fontSize = 32.sp,
-        lineHeight = 37.sp,
+        // **36, measured off the drawings rather than chosen.** `m3v4-1`'s
+        // "Notebook" and `m3v4-3`'s "Who you call" carry 27.4dp of ascender
+        // where 32sp draws 24.4dp, so every page title and every masthead in
+        // the app was about twelve percent short of the drawing it was built
+        // from. The owner, 2026-08-17, on the captures: font issues. Measured
+        // on the PNGs, per D183.
+        fontSize = 36.sp,
+        lineHeight = 41.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = (-0.022).em,
     ),

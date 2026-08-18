@@ -361,7 +361,14 @@ fun Page(
                     hero?.let { lead -> item { lead() } }
 
                     item {
-                        Column(modifier = Modifier.fillMaxWidth()) {
+                        // **Four points between the eyebrow and the name.**
+                        // Measured on `m3v4-3`: 13.3dp of air where the app's
+                        // line boxes alone gave 9.1dp, so the label sat closer
+                        // to its title than the drawing sets it. D183.
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(Space.xs),
+                        ) {
                             eyebrow?.let {
                                 Eyebrow(
                                     text = it,

@@ -301,7 +301,7 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 |---|---|---|---|---|
 | Hero | Roboto | **30sp** / 35 | 800, tracking -0.022em | The one thing, section 2 law 1 |
 | Display L | Roboto | **40sp** / 44 | 800, -0.028em | The heading of a thing's own screen, above a section title |
-| Display M | Roboto | **32sp** / 37 | 800, -0.022em | Screen titles, the current chapter, a round's reason |
+| Display M | Roboto | **36sp** / 41 | 800, -0.022em | Screen titles, the current chapter, a round's reason |
 | Display S | Roboto | **22sp** / 28 | 800 | A card's own title, and the title line of a row where a row title is too quiet |
 | Row title | Roboto | **17sp** / 23 | 700, -0.01em | The title line of a group row |
 | Body L | Roboto | **17sp** / 26 | 400 | The lead sentence under a screen title |
@@ -317,6 +317,8 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 **This ladder was lifted on 2026-08-13, at the owner's instruction, and it is D142's recorded accessibility exception rather than drift.** The owner used the build and said the text is hard to read. It was: body sat at 14sp and the row under it at 13, against a platform whose own body text is 14 to 16, in an app whose reader is exhausted, often not young, and often reading in a corridor in bad light. Every role moved up one to three points and every line height moved with it. **The jumps between roles were preserved rather than flattened**, because the hierarchy is what law 1 is made of and closing it to make a screen look balanced is the most common way to lose it.
 
 **What this costs and where it gets checked.** Every screen is now carrying more text in the same width, which is section 16.2's overflow audit and rule 11's longest language, both retroactive per rule 14. A lift verified only in English at scale 1.0 is not verified.
+
+**Display M was corrected again on 2026-08-17, and it was measured rather than argued.** `m3v4-1`'s "Notebook" and `m3v4-3`'s "Who you call" carry 27.4dp of ascender on the approved PNGs; 32sp draws 24.4dp, so every page title and every masthead in the app stood about twelve percent short of the drawing it was built from. The eyebrow measured identical in both, which is what isolated it to this row. D183: where the drawing and this document disagree, the drawing wins and this document changes.
 
 **The ladder was corrected once before, on 2026-08-11, and that correction is the point of D142.** It said Display M was 19 to 20sp while the app had been 22sp all along, so the prose was the only one of the three that was wrong, and a session building a new screen from that table would have set its title two steps under both. Display L and Display S were missing from it entirely while being used across the app. **Both corrections have the same lesson: this table is read by somebody building a screen, so a stale row here becomes a built screen tomorrow.**
 

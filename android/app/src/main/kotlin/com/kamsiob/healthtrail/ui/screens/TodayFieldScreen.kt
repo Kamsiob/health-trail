@@ -1383,9 +1383,23 @@ private fun ColumnScope.AnswerBody(
         }
     }
     answer?.title?.takeIf { !spine }?.let {
+        // **A figure is the loudest thing on its card, and a sentence is not.**
+        // `m3v4-0` sets the tracked measure's "138.8" at 32.4dp of digit, and
+        // the app was drawing 16.8dp: half the drawing, because a value and a
+        // sentence were sharing one size. A short answer with a line under it
+        // is a figure and takes the display size; anything longer is words and
+        // stays where it was, because forty points of a wrapped sentence in a
+        // half width cell is a card that has stopped being readable. Measured
+        // on the PNG, D183.
+        val figure = !lead && it.length <= FIGURE_MAX && (answer.series.isNotEmpty() ||
+            answer.count != null)
         Text(
             text = Bidi.isolate(it),
-            style = if (lead) type.hero else type.displayS,
+            style = when {
+                lead -> type.hero
+                figure -> type.displayL
+                else -> type.displayS
+            },
             color = colors.ink,
             // **The lead wraps freely and a card does not.** D105: a fixed cap
             // is a cap at the smallest type size and a truncation at the
@@ -2818,3 +2832,13 @@ private const val LIFT_SCALE = 1.04f
  * and no third size.
  */
 private const val LISTED_ON_A_CARD = 2
+
+/**
+ * How short an answer has to be to read as a figure rather than as words.
+ *
+ * "131.2 lb" and "6 readings" are figures; "Brighter than yesterday. Ate most
+ * of her lunch." is a sentence. Twelve characters is the widest thing in the
+ * fixture that still sets at display size inside a half width card without
+ * wrapping, measured on the phone.
+ */
+private const val FIGURE_MAX = 12
