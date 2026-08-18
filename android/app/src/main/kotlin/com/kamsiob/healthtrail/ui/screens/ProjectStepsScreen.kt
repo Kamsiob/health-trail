@@ -190,6 +190,15 @@ private fun StepEditRow(
             title = Bidi.isolate(step.text),
             support = step.note?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) }
                 ?: step.handlerLabel?.let { strings("project.step.handled_by", "who" to it) },
+            // **A step that has been taken says so, and one that has not says
+            // nothing.** Rule 13: an unfilled slot reads as "not yet" rather
+            // than as an error, so there is no empty box down the list and
+            // nothing counts how many of them are ticked. The state is set in
+            // the sheet the row opens, and `project_step.is_done` had been in
+            // the schema with nothing in the app able to write it. #390.
+            //
+            // bidi-ok: the app's own word for the state, from the catalog.
+            value = strings["project.step.done"].takeIf { step.isDone },
             isDoor = true,
             onClick = onOpen,
             modifier = Modifier.testTag(ProjectStepsTags.step(step.id)),

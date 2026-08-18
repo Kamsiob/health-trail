@@ -254,6 +254,29 @@ fun TodayScreen(
                 }
             }
 
+            // **What changed while you were away**, and every count is a door.
+            // Rule 18: a number that leads nowhere is a dead end, and this
+            // screen took an `onOpenSection` for two months and never called
+            // it, so the whole group existed as a parameter, a tag and a set of
+            // catalog strings and drew nothing. #390.
+            //
+            // **Absent on a quiet week rather than saying so twice.** The
+            // card surface says "nothing new" in its own digest card because a
+            // card the person placed has to hold its place; this surface is a
+            // column that closes up, and a heading over the sentence "nothing
+            // new" is two lines to say nothing happened.
+            //
+            // **Sections in the notebook's own order**, which `Digest` already
+            // guarantees, so a section never moves between visits.
+            if (!digest.isEmpty) {
+                DigestGroup(
+                    digest = digest,
+                    lastVisitMillis = lastVisitMillis,
+                    today = today,
+                    onOpenSection = onOpenSection,
+                )
+            }
+
             // **What you track**, the second half of the drawing.
             tracked?.let { measure ->
                 WhatYouTrack(tracked = measure, onOpenProgress = onOpenProgress)
@@ -282,6 +305,89 @@ fun TodayScreen(
             // Clearance for the capture button, which overlaps the navigation
             // bar and would otherwise sit on the last line.
             Spacer(Modifier.height(fabScrollClearance))
+        }
+    }
+}
+
+/**
+ * What changed since the last visit, one row per section. #390.
+ *
+ * **Counting, never judging.** `Digest` is arithmetic on the change log and
+ * this is its rendering: it says how many things landed where, and it never
+ * says whether that is a lot, never orders by how much happened, and never
+ * remarks on a quiet week. Rule 2, and `Digest`'s own note says the same thing
+ * about the order.
+ *
+ * **Corrections and removals are one quiet line under the rows, not rows.**
+ * A correction is usually somebody fixing their own typing, and giving it a
+ * row of its own would put their tidying up at the same weight as the care.
+ * Rule 13: it is never framed as a deficiency either.
+ *
+ * **The last visit date is the point of the whole group.** After four months
+ * away, "47 new" without a date says nothing. It sits under the rows because
+ * it is the context for them rather than the heading.
+ */
+@Composable
+private fun DigestGroup(
+    digest: Digest.Summary,
+    lastVisitMillis: Long?,
+    today: LocalDate,
+    onOpenSection: (Repository.Section) -> Unit,
+) {
+    val strings = LocalStrings.current
+    val colors = HealthTrail.colors
+
+    Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
+        Eyebrow(
+            text = strings["today.digest.heading"],
+            modifier = Modifier.testTag(TodayTags.DIGEST),
+        )
+        Block(padding = Space.none) {
+            digest.added.forEachIndexed { index, added ->
+                ListRow(
+                    // bidi-ok: the notebook's own name for a section, from the
+                    // catalog, never anything the person typed.
+                    title = strings["notebook.section." + added.section.name.lowercase()],
+                    // bidi-ok: a count the app composed from a catalog template.
+                    value = strings("today.digest.new", "count" to added.count),
+                    mark = Symbols.of(added.section),
+                    // The section's own hue, D198: the same color this part of
+                    // the notebook wears everywhere else.
+                    markHue = hueFor(added.section),
+                    isDoor = true,
+                    onClick = { onOpenSection(added.section) },
+                    modifier = Modifier.testTag(TodayTags.digestRow(added.section)),
+                )
+                if (index != digest.added.lastIndex) RowDivider()
+            }
+        }
+
+        val aside = listOfNotNull(
+            lastVisitMillis?.let {
+                strings(
+                    "today.digest.lastvisit",
+                    "date" to EventDateText.render(
+                        strings,
+                        Instant.ofEpochMilli(it)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                            .toString(),
+                    ),
+                )
+            },
+            digest.corrected.takeIf { it > 0 }
+                ?.let { strings("today.digest.corrected", "count" to it) },
+            digest.removed.takeIf { it > 0 }
+                ?.let { strings("today.digest.removed", "count" to it) },
+        )
+        if (aside.isNotEmpty()) {
+            // bidi-ok: every part is a catalog sentence the app composed, and
+            // Bidi.join isolates each one before joining them.
+            Body(
+                text = Bidi.join(aside),
+                style = HealthTrail.type.bodyS,
+                color = colors.ink2,
+            )
         }
     }
 }

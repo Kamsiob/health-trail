@@ -815,6 +815,7 @@ class ScreenReaderTest {
                 canMoveLater = true,
                 onSave = { _, _ -> },
                 onMove = {},
+                onSetDone = {},
                 onRemove = {},
                 onDismiss = {},
             )
@@ -2600,9 +2601,9 @@ class ScreenReaderTest {
                     Repository.ProjectStep("s1", "Get the right form", "2026-08-01", null),
                     Repository.ProjectStep("s2", "Gather proof of income", null, null),
                 ),
-                onToggleStep = {},
                 onSetStatus = {},
                 onSetWaitingOn = {},
+                onToggleStep = {},
                 onBack = {},
             )
         }

@@ -38,11 +38,13 @@ FROZEN = {"ProjectDetailScreen.kt", "CaptureSheet.kt", "PinnedGroup.kt"}
 # **Known, each on #390, and this list only ever shrinks.** A number here is
 # a control somebody can reach for and not get, so it is written down by name
 # rather than counted: a baseline of "three" would let the next one in silently.
-KNOWN = {
-    ("screens/ProjectHomeScreen.kt", "ProjectHomeScreen", "onOpenEntryById"),
-    ("screens/ProjectHomeScreen.kt", "ProjectHomeScreen", "onToggleStep"),
-    ("screens/TodayScreen.kt", "TodayScreen", "onOpenSection"),
-}
+# **Empty, and the list can only shrink.** All three went on 2026-08-18, #390:
+# the project home's latest word card promised a door and its tap ran an empty
+# default; the same screen's step toggle was the only path to
+# `project_step.is_done` and reached nothing, so the switch moved to the sheet
+# that is documented as everything a step can do; and Today's fallback surface
+# took an `onOpenSection` while drawing no digest at all, which is now built.
+KNOWN: set[tuple[str, str, str]] = set()
 
 FUN = re.compile(r"^(?:private )?fun (\w+)\(", re.M)
 CALLBACK = re.compile(r"^\s{4}(on[A-Z]\w*):\s*\(([^)]*)\)\s*->\s*Unit", re.M)

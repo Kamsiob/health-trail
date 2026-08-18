@@ -118,7 +118,6 @@ fun ProjectHomeScreen(
     /** When it was said, already rendered at its own precision. Raw. */
     attributionWhen: String? = null,
     onOpenDate: () -> Unit = {},
-    onOpenEntry: () -> Unit = {},
     /** Opens the sheet that records where it stands. 20.5 screen 8. */
     onUpdateStanding: () -> Unit = {},
     /** Opens the sheet that writes down a date, with where it came from. */
@@ -147,6 +146,15 @@ fun ProjectHomeScreen(
      * rather than a record.
      */
     entries: List<Repository.TrailEntry> = emptyList(),
+    /**
+     * Opens one entry by id, which on this screen is the latest word.
+     *
+     * **The card said it was a door and there was nothing behind it.** It took
+     * a separate `onOpenEntry` that no caller ever passed, so its tap ran an
+     * empty default while the shell was passing this one and nothing read it.
+     * #390, and it is exactly the shape `docs/TRAPS.md` warns about: a row that
+     * promises a door may not have one.
+     */
     onOpenEntryById: (String) -> Unit = {},
     /** How many things are on this project's trail, entries and stages and dates. */
     trailCount: Int = 0,
@@ -165,7 +173,6 @@ fun ProjectHomeScreen(
     onOpenPeople: () -> Unit = {},
     /** How many people this process has involved. Never a score. */
     peopleCount: Int = 0,
-    onToggleStep: (Repository.ProjectStep) -> Unit = {},
     /**
      * Puts a closed project back to work. 20.5 screen 17.
      *
@@ -489,7 +496,7 @@ fun ProjectHomeScreen(
                         attributionWho,
                         attributionWhen,
                     ),
-                    onOpen = onOpenEntry,
+                    onOpen = { onOpenEntryById(latestWord.id) },
                     openLabel = strings["project.open_entry"],
                     modifier = Modifier.testTag(ProjectHomeTags.LATEST),
                 )

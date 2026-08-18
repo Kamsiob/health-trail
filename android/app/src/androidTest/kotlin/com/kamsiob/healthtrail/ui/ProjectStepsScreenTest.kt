@@ -141,6 +141,7 @@ class ProjectStepsScreenTest {
     private var saved: Pair<String, String?>? = null
     private var moved: Boolean? = null
     private var removed = 0
+    private var done: Boolean? = null
 
     private fun showSheet(
         target: Repository.ProjectStep,
@@ -156,6 +157,7 @@ class ProjectStepsScreenTest {
                         canMoveLater = canMoveLater,
                         onSave = { text, note -> saved = text to note },
                         onMove = { moved = it },
+                        onSetDone = { done = it },
                         onRemove = { removed++ },
                         onDismiss = {},
                     )

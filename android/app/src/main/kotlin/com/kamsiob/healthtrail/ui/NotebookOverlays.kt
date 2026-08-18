@@ -1608,8 +1608,15 @@ internal fun ProjectOverlays(
                 onBack = { stepsOpen = false },
             )
 
-            stepUnderEdit?.let { step ->
-                val index = projectSteps.indexOfFirst { it.id == step.id }
+            stepUnderEdit?.let { opened ->
+                val index = projectSteps.indexOfFirst { it.id == opened.id }
+                // **The sheet reads the list, not the row it was opened from.**
+                // `stepUnderEdit` is the step as it was at the moment of the
+                // tap, so a switch inside the sheet wrote the change, reloaded
+                // the list behind it and left the control showing the old
+                // state: the one thing rule 16 says a control must never do.
+                // Seen on the phone.
+                val step = projectSteps.getOrNull(index) ?: opened
                 StepEditSheet(
                     step = step,
                     canMoveEarlier = index > 0,
@@ -1622,6 +1629,11 @@ internal fun ProjectOverlays(
                         movingStep = step.id to earlier
                         stepUnderEdit = null
                     },
+                    // **The sheet stays open.** Marking a step taken is not
+                    // leaving the step, and closing under somebody's finger
+                    // would make the switch read as a way out rather than a
+                    // state. The list under it is what shows the change.
+                    onSetDone = { togglingStep = step },
                     onRemove = {
                         removingStep = step.id
                         stepUnderEdit = null
@@ -1737,7 +1749,6 @@ internal fun ProjectOverlays(
                 attributionWhen = attributionWhen,
                 steps = projectSteps,
                 papers = projectPapers,
-                onToggleStep = { togglingStep = it },
                 onUpdateStanding = { updatingStanding = currentProject },
                 onAddDate = { addingDateTo = currentProject },
                 onLogCall = { loggingCallOn = currentProject },
