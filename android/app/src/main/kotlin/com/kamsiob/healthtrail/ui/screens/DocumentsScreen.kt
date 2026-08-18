@@ -1,6 +1,8 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -40,6 +42,7 @@ import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.raisedCard
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
@@ -234,8 +237,10 @@ fun DocumentsScreen(
                 // A folder that hides its contents behind a tap is a filing
                 // cabinet somebody has to open twice.
                 Eyebrow(
-                    // The folder's name is usually the person's own word for it.
-                    text = Bidi.join(label, inFolder.size.toString()),
+                    // The folder's name is usually the person's own word for
+                    // it, so it keeps its case. No count: nothing is hidden,
+                    // and no group label in any approved drawing carries one.
+                    text = label,
                     fixed = false,
                 )
             }
@@ -414,14 +419,28 @@ private fun DocumentCell(
 
     if (stacked) {
         Column(modifier = body) {
-            Thumbnail(
-                sha256 = document.sha256,
-                attachments = attachments,
-                section = Repository.Section.DOCUMENTS,
-                size = FILL,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(Space.xs))
+            // **The picture sits on the person's own paper**, which is what
+            // `m3v4-5` draws and what D190 reserves white for: a photograph of
+            // their letter is theirs, and it is the one thing in this app that
+            // casts a shadow. The pictures view drew it bare on the canvas, so
+            // a wall of gray placeholders read as a page that had not loaded.
+            // Seen on the phone, rule 21.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .raisedCard(Radius.thumbnail)
+                    .clip(Radius.thumbnail)
+                    .background(colors.card),
+            ) {
+                Thumbnail(
+                    sha256 = document.sha256,
+                    attachments = attachments,
+                    section = Repository.Section.DOCUMENTS,
+                    size = FILL,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            Spacer(Modifier.height(Space.s))
             // **An optical inset against the cell's own clip.** A caption whose
             // line lands exactly on the cell width had its last letter shaved
             // off by the rounded clip above: "the county" became "the countv"
