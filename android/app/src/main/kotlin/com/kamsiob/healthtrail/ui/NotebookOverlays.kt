@@ -47,6 +47,7 @@ import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.MeasureScreen
 import com.kamsiob.healthtrail.ui.screens.NoteScreen
+import com.kamsiob.healthtrail.ui.screens.NotesScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectSetupScreen
@@ -1101,6 +1102,27 @@ internal fun ProjectStepOverlays(
         ) {
             when (openSection) {
                 null -> Unit
+
+                // **Notes, which are entries of one kind.** #397, D207: this
+                // is a lens on the trail rather than a second record, so the
+                // rows come from the same table and nothing here is stored
+                // twice.
+                Repository.Section.NOTES -> NotesScreen(
+                    notes = trail.filter { it.kind == "note" },
+                    onOpen = { openEntry = it.id },
+                    onAdd = { writingNote = NoteTarget(null, null, null) },
+                    onPin = { note, keep -> pinningEntry = note.id to keep },
+                    // **The confirmation removes it, never this screen**, which
+                    // is the shape every other removal in the app has.
+                    onRemove = {
+                        removing = Removal(
+                            Repository.Section.NOTES,
+                            it.id,
+                            it.title.orEmpty().ifBlank { it.body.orEmpty() },
+                        )
+                    },
+                    onBack = { openSection = null },
+                )
 
                 Repository.Section.TRAIL -> TrailScreen(
                     entries = trail,

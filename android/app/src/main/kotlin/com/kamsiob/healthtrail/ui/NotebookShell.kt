@@ -3214,6 +3214,10 @@ internal val SECTION_ORDER = listOf(
     Repository.Section.CHAPTERS,
     Repository.Section.THREADS,
     Repository.Section.TRAIL,
+    // **Counted like every other section**, #397: `Section.NOTES` reads the
+    // entry view with the kind as its predicate, which is what `hiddenWhen`
+    // exists for, so the number on the row is the number of notes.
+    Repository.Section.NOTES,
     Repository.Section.PROGRESS,
     Repository.Section.DOCUMENTS,
     Repository.Section.MONEY,

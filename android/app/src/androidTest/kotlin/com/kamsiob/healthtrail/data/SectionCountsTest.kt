@@ -118,6 +118,11 @@ class SectionCountsTest {
             Repository.Section.CHAPTERS -> repository.chapters(subjectId).size
             Repository.Section.THREADS -> repository.threadsWithCounts(subjectId).size
             Repository.Section.TRAIL -> repository.trail(subjectId).size
+            // **Notes are entries of one kind**, D207, so what the screen is
+            // handed is the trail filtered the way the section's own predicate
+            // filters it.
+            Repository.Section.NOTES ->
+                repository.trail(subjectId).count { it.kind == "note" }
             Repository.Section.PROGRESS -> repository.measures(subjectId).size
             Repository.Section.DOCUMENTS -> repository.documents(subjectId).size
             Repository.Section.MONEY -> repository.bills(subjectId).size

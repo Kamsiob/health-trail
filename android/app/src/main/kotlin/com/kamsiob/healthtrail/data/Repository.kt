@@ -4449,6 +4449,16 @@ class Repository private constructor(
         ASK_NEXT_TIME("live_question"),
         EMERGENCY_CARD("live_emergency_card"),
         PROJECTS("live_project"),
+
+        /**
+         * Notes, which are entries and are counted as the ones that are notes.
+         *
+         * **The view is the entry view and the predicate is the kind**, which is
+         * exactly what `hiddenWhen` is for: a note is not a table of its own,
+         * D207, and giving it one would have been a second answer to a question
+         * the schema settled in Phase 0.
+         */
+        NOTES("live_entry", hiddenWhen = " AND kind = 'note'"),
         ;
 
         /**

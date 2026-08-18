@@ -61,6 +61,7 @@ import com.kamsiob.healthtrail.ui.screens.PaperViewerTags
 import com.kamsiob.healthtrail.ui.screens.PaperViewerScreen
 import com.kamsiob.healthtrail.ui.screens.MeasureScreen
 import com.kamsiob.healthtrail.ui.screens.NoteScreen
+import com.kamsiob.healthtrail.ui.screens.NotesScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailTags
@@ -1531,6 +1532,52 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("note-about")
+    }
+
+    /**
+     * Every note, with the states that matter here: one kept in view, one with
+     * marks in its body, one with no name at all, and one long enough to be cut
+     * short on a card. #397.
+     */
+    @Test
+    fun theNotesListLabelsEverything() {
+        compose.show {
+            NotesScreen(
+                notes = listOf(
+                    Repository.TrailEntry(
+                        id = "n1", kind = "note", title = "Visit on Tuesday",
+                        body = "Bring her **reading glasses** and _the blue cardigan_.",
+                        occurredEdtf = "2026-08-18", occurredStart = 3L, createdAt = 3L,
+                        isUnfiled = false, threads = emptyList(), pinnedAt = 1L,
+                    ),
+                    Repository.TrailEntry(
+                        id = "n2", kind = "note", title = null,
+                        body = "- her glasses\n- the blue cardigan",
+                        occurredEdtf = "2026-08-17", occurredStart = 2L, createdAt = 2L,
+                        isUnfiled = false, threads = emptyList(), pinnedAt = null,
+                    ),
+                    Repository.TrailEntry(
+                        id = "n3", kind = "note", title = "The long one",
+                        body = "She had a hard night and the aide wrote nothing down. ".repeat(6),
+                        occurredEdtf = "2026-08-16", occurredStart = 1L, createdAt = 1L,
+                        isUnfiled = false, threads = emptyList(), pinnedAt = null,
+                    ),
+                ),
+                onOpen = {},
+                onAdd = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("notes")
+    }
+
+    /** Nothing written down yet, which is a finished screen and not a broken one. */
+    @Test
+    fun theEmptyNotesListLabelsEverything() {
+        compose.show {
+            NotesScreen(notes = emptyList(), onOpen = {}, onAdd = {}, onBack = {})
+        }
+        assertEverythingIsLabeled("notes-empty")
     }
 
     /**

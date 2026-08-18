@@ -65,8 +65,14 @@ fun hueFor(section: Repository.Section): TabHue {
         // the emergency card is the one screen that is neither a section nor
         // gold: it is alert, because that is what it is for, and alert is the
         // only semantic color allowed to act as an identity anywhere in the app.
+        // **Notes take gold with the trail and projects**, and the rule in
+        // this file's own comment is why: a whole-app surface belongs to no one
+        // section. A note can be about a medication, an appointment, a project
+        // or nothing at all, so borrowing any single section's hue would say
+        // something about it that is not true. D207, #397.
         Repository.Section.TRAIL,
         Repository.Section.PROJECTS,
+        Repository.Section.NOTES,
         -> TabHue(base = colors.gold, ink = colors.goldInk, wash = colors.goldWash)
 
         Repository.Section.EMERGENCY_CARD ->

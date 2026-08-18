@@ -129,6 +129,7 @@ class SectionsReachableJourneyTest {
         Repository.Section.CHAPTERS -> "chapters"
         Repository.Section.THREADS -> "care_threads"
         Repository.Section.TRAIL -> "trail"
+        Repository.Section.NOTES -> "notes"
         Repository.Section.PROGRESS -> "progress"
         Repository.Section.DOCUMENTS -> "documents"
         Repository.Section.MONEY -> "money"

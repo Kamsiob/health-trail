@@ -153,6 +153,10 @@ enum class NotebookGroup(val labelKey: String, val sections: List<Repository.Sec
             Repository.Section.CHAPTERS,
             Repository.Section.THREADS,
             Repository.Section.TRAIL,
+            // **Beside the trail, because that is what they are part of.** A
+            // note is an entry, D207, so it belongs with the record rather than
+            // in a section of its own invention. #397.
+            Repository.Section.NOTES,
             Repository.Section.PROGRESS,
         ),
     ),
@@ -388,6 +392,7 @@ private fun SectionRow(
 }
 
 internal fun labelKey(section: Repository.Section): String = when (section) {
+    Repository.Section.NOTES -> "notebook.section.notes"
     Repository.Section.CARE_TEAM -> "notebook.section.care_team"
     Repository.Section.MEDICATIONS -> "notebook.section.medications"
     Repository.Section.APPOINTMENTS -> "notebook.section.appointments"

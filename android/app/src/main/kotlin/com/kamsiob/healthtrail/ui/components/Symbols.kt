@@ -40,6 +40,24 @@ object Symbols {
     @DrawableRes val italic = R.drawable.ic_format_italic
     @DrawableRes val bullet = R.drawable.ic_format_list_bulleted
 
+    /**
+     * Kept in view, which is `entry.pinned_at` and is the person's own decision.
+     *
+     * **Never a badge and never a count**, rule 13: it says "I want this in
+     * front of me" and nothing about how many there are or how well anybody is
+     * doing.
+     */
+    @DrawableRes val pin = R.drawable.ic_keep
+
+    /**
+     * Taking something out, which is always a tombstone. Rule 3.
+     *
+     * **A bin rather than a minus.** A minus reads as "subtract one" and this
+     * is not arithmetic; a bin also says where the thing goes, which is the
+     * point once there is somewhere to get it back from, #405.
+     */
+    @DrawableRes val bin = R.drawable.ic_delete
+
     // The notebook's sections.
     @DrawableRes val careTeam = R.drawable.ic_groups
     @DrawableRes val medications = R.drawable.ic_medication
@@ -116,6 +134,9 @@ object Symbols {
      */
     @DrawableRes
     fun of(section: Repository.Section): Int = when (section) {
+        // **A note takes the notebook's own mark**, because it belongs to no
+        // one section and the notebook is what it is a page of. #397.
+        Repository.Section.NOTES -> notebook
         Repository.Section.CARE_TEAM -> careTeam
         Repository.Section.MEDICATIONS -> medications
         Repository.Section.APPOINTMENTS -> appointments
