@@ -4,135 +4,109 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-18, the FINISH THE APP session.
+**Last rewritten:** 2026-08-18, end of the FINISH THE APP session.
 
 ---
 
 ## 0. Cold start
 
 1. `gh issue view 321`, then this file. Nothing else.
-   `gh issue list --milestone "FINISH THE APP"`. Steps 3 to 10, in order.
-2. **Check the phone is unlocked before planning device work**:
-   `adb shell dumpsys window | grep isKeyguardShowing`. A secure keyguard
-   stops the seed, the sweep, `walk.sh` and every instrumented class, #316.
-3. `tools/sweep.sh audit`, **look at the captures**.
-4. Take the next thing. **New file from Material's components outward, old
-   file deleted in the same commit.** One unit per commit: `tools/verify.sh`,
-   install, look on the phone, commit, push.
-5. Do **not** read the old design docs first. Do **not** re-measure the mockups.
+2. **One phase is left and it is the visual one: `gh issue view 388`.** Everything
+   before it is done and verified. Do not re-audit it.
+3. Check the phone is unlocked before planning device work:
+   `adb shell dumpsys window | grep isKeyguardShowing`. **Never switch Android
+   user profiles**; it re-locks the phone and there is no way past a secure
+   keyguard from here, #316.
+4. `tools/sweep.sh audit`, and **look at the captures**.
+5. One unit per commit: `tools/verify.sh`, install, look on the phone, commit, push.
 
-Worked examples, in order of quality: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
+Worked examples, best first: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
 `ui/v4/MonthGrid.kt`, `screens/MedicationList.kt`, `screens/Notebook.kt`.
 
-## 1. State
+## 1. What is done, and do not redo any of it
 
-- Tree clean, all on `origin/main`. 218 unit, **30 checks**, lint green,
-  `tools/verify.sh` exit 0.
-- **Steps 3, 5, 6 and 8 are done. Step 4 is done as far as `Press` reaches.
-  Step 9 has its motion half. Steps 7 and 10 are blocked on the phone.**
-- **`ui/components` is 8 files and none of them has a live caller.** #387's
-  test is "does any live file import from it", D199, and the answer is no.
-  What is left: `Symbols` (the catalog, live and staying), `DatePicker`
-  (staying, D197), and the frozen tail `Confirm`, `PinnedGroup`, `Press`,
-  `Spine`, `StepRow`, `Tile`. Every one has a `docs/REMOVAL-LEDGER.md` row.
-- **Retired this session**: `HeaderAction` and `RoadStrip` moved with nothing
-  to redraw; `Thumbnail`, `MonthGrid` and `Tips` rewritten on Material's
-  `Surface`; `Spine` moved to `ui/v4/Route.kt`; `Press` replaced by
-  `ui/v4/Press.kt`, which is one modifier over Material's `ripple`.
-- **Every screen is on Material's own state layer.** `Surface`, `Card`,
-  `FilterChip` or `opensOnTap`. No screen animates a resting color by hand,
-  animates a focus border's alpha, or passes `indication = null` any more.
-- **Every page arrives.** `ui/v4/Arrival.kt`, applied inside `Page` through a
-  delegating `LazyListScope`, so it reaches every page rather than the ones
-  somebody remembered. Rise and stagger are `Motion` tokens; both are zero
-  under `ReducedMotion`.
-- **Three subjects live on the phone**: Margaret Ellison with 669 entries,
-  Harold Ellison, Ruth. Put there for #389 and worth keeping.
-- **The release APK builds and is signed.** `assembleRelease` exit 0,
-  13,058,170 bytes, `CN=Health Trail, O=Kamsiob, C=US`. #395 says it ships
-  only after step 9, so it is proof the path works rather than the delivery.
-- **Instrumented: not run this session.** The phone locked before it could be.
-  Read counts from the XML, never a gradle exit code.
-- **#391 stands**: `ReaderStopsTest` expects 12 notebook rows carrying their
-  purpose in one stop and finds 10. Pre-existing.
-- **Known failure**: `MedicationQuestionJourneyTest` dies at
-  `capture_form_more_medications`. Predates the Material work.
-- Phone: font 1.0, animator 1.0, no reader, night mode was `no` and the
-  screenshot tool reported `custom_bedtime` late in the session. **Locked.**
+| | | |
+|---|---|---|
+| Step 3 | #387 | **Done.** No live file imports from `ui/components`. Eight files left, all frozen tail or `Symbols`/`DatePicker`, each with a `docs/REMOVAL-LEDGER.md` row. |
+| Step 4 | #392 | **The mechanism half is done.** Every screen is on Material's own state layer through `Surface`, `Card`, `FilterChip` or `opensOnTap`. No screen animates a resting color by hand, animates a focus border, or passes `indication = null`. The arrangement tail is what is left and it belongs to #388. |
+| Step 5 | #390 | **Done.** All three callbacks wired, `KNOWN` in `check_uncalled_callbacks.py` is empty. |
+| Step 6 | #393 | **Done and verified end to end.** Three people in one notebook, no leakage. Every table has carried `subject_id` since Phase 0, so nothing in the schema changed. |
+| Step 7 | #394 | **Measured.** 750 tests, 15 failed. **13 are pre-existing**, proved against a worktree at `0f560b14`; 1 is #391; 1 was this session's and is fixed. |
+| Step 8 | #389 | **Done.** All six items proved on the phone with three people. |
+| Step 9 | #388 | **The one phase left.** Motion and the mechanical polish are done; the visual craft is not. |
+| Step 10 | #395 | **The release build works and is signed.** Not delivered: #388 first. |
 
-## 2. What is left, in the order to do it
+**"Multiple users and profiles" in #389 means people inside one notebook**, which
+is #393. It does not mean a second Android user on the device. Owner, 2026-08-18.
+Reading it literally cost a locked phone and proved nothing.
 
-1. **Unlock the phone.** Everything below needs it except the last line.
-2. **Step 9, `gh issue view 388`.** The motion half is done. Six visual
-   findings are on the issue with the capture each was seen on: the care team
-   drawing fifteen cards for a scanned list, its sparse row, the notebook and
-   More having no lead, Today's incidents card void, the floating button
-   covering content on two screens, and two ways to add on the appointments
-   month view. **None of them is fixed, and none was fixed blind on purpose:**
-   rule 21 says look at it on the phone, and the phone was locked.
-   Then the three deliberate passes: dark through the app's own Appearance
-   setting, font scale 2.0 with the longest catalog, the screen reader. Rule
-   19: record the prior value before changing it and restore it exactly.
-3. **Step 7, `gh issue view 394`.** The full instrumented suite, counts read
-   from the XML. #391 is inside it.
-4. **Step 10, `gh issue view 395`.** The APK, after step 9.
-5. Still open on motion: the container transform between a row and the screen
-   it opens, and a transition between the four destinations. The second is
-   the most-felt motion in the app and is one `AnimatedContent` in
-   `NotebookShell`.
+## 2. What is left. One phase, and `gh issue view 388` is the plan
+
+**Nothing but visual craft.** The app is correct, the suite is measured, the
+archive is proved, the release path works. What is missing is the difference
+between good and great, and #388 carries the findings with the capture each was
+seen on.
+
+**The owner's own words, 2026-08-18:** "we're almost there but we're not there
+yet"; "the attention is in the details. the difference between good and great is
+in the details"; "we are not deconstructing or replacing anything that's here
+now, we are enhancing and improving."
 
 ## 3. Blocked
 
-**Nothing is blocked.** B6 is resolved: the phone is unlocked.
-
-**Do not repeat the mistake that opened it.** #389's "multiple users and
-profiles" means **people inside one notebook**, which is #393. It does not
-mean a second Android user on the device. Reading it literally cost a locked
-phone and proved nothing the app is about. Owner, 2026-08-18.
+**Nothing is blocked.** The phone is unlocked and at baseline: font 1.0,
+animator 1.0, no reader, night mode `no`, appearance "Follow the phone".
 
 ## 4. The direction, and it is not negotiable
 
-**The old design is deleted. The new one is built out of Material 3 Expressive's own components and Google's assets. D196.**
-
-**Material 3 Expressive is the baseline, not the finish.** Owner, 2026-08-18: the design is "a 7 out of 10, we need a 10 out of 10... it doesn't have that extra love and care and attention to detail and polish and visual components that represent a top tier app worthy of recognition for design and functionality and creativity." A screen that is correct, on Material's components, and plain **is not done**. `docs/V4.md` section 6 is the bar.
+**Material 3 Expressive is the floor, not the finish.** Built out of Material's
+own components and Google's own assets, D196, with our polish on top: color
+identity, copy, arrangement, motion, what leads. **Nothing here is being
+replaced.** The rebuild is finished; #388 enhances it.
 
 | This | Not this |
 |---|---|
-| `ListItem`, `Card`, `Scaffold`, `LargeFlexibleTopAppBar`, `FilterChip`, `AssistChip`, `SegmentedButton`, `OutlinedTextField`, `Switch`, `ShortNavigationBar`, `ModalBottomSheet`, `FloatingActionButton`, `IconButton`, `Icon` | a hand built `Row`/`Box` that looks like one |
-| `MaterialTheme.colorScheme`, `typography`, `shapes` | a hex or a second ladder |
-| Material Symbols through `Symbols` | an authored glyph |
-| **Our polish on top**: color identity, copy, arrangement, motion, what leads | re-deriving the control |
+| `ListItem`, `Card`, `Scaffold`, `LargeFlexibleTopAppBar`, `FilterChip`, `AssistChip`, `SegmentedButton`, `OutlinedTextField`, `Switch`, `ShortNavigationBar`, `ModalBottomSheet`, `FloatingActionButton`, `IconButton`, `Surface`, `HorizontalDivider` | a hand built `Row`/`Box` that looks like one |
+| `MaterialTheme.colorScheme`, `typography`, `shapes` | a hex, or `HealthTrail.type` / `Radius.` where a Material role exists |
+| Material Symbols through `Symbols` | an authored glyph or a `Canvas` |
 
-**Do not patch an old screen. Delete the file and write a new one.** Swapping innards under a file written for the old language keeps the old bones.
+**material3 is 1.5.0-alpha26**: no `ButtonGroup`, no `SplitButton`, no
+`ToggleButton`. Expressive components need
+`@OptIn(ExperimentalMaterial3ExpressiveApi::class)`.
 
-**Do not trace the mockups.** `docs/screenshots/m3v4-*` are arrangement and hierarchy only. **If a component has to be measured against a picture, replace it with Material's.**
+**Four things stay hand drawn**: the trail's route (`ui/v4/Route.kt`), a
+project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
+`DatePicker` (D197). `StageDots` is a fifth and is not a progress bar.
 
-**The back end does not change.** Repository, schema, change log, export, decryptor, fixtures, `contract/DATA-CONTRACT.md`.
+### Color, D198, app-wide
 
-### Color, D198, and it is app-wide
-
-1. A mark is `TabHue.base` with `TabHue.onBase` on top. Pass `markHue` / use `HueMark`, never a loose ink and wash.
-2. Surfaces stay neutral. **No page is overwhelmingly one color** (owner, 2026-08-18).
+1. A mark is `TabHue.base` with `TabHue.onBase` on top. Never a faded base.
+2. Surfaces stay neutral. **No page is overwhelmingly one color.**
 3. One tonal block per page, never full height.
-4. Entry lists carry the kind's mark in the kind's color: `entryHue` / `entryMark`.
+4. Entry lists carry the kind's color. **Never a second mapping.**
 5. Identity, never state. Rule 2. `hueFor` is the owner's mapping.
-6. A color never carries meaning alone: mark plus words.
+6. A color never carries meaning alone: the mark and the words together.
 
-### Stays hand drawn, four exceptions
+## 5. What this session added that the next one builds on
 
-The trail's route, a project's road, a measure's line (`Trace`), and `DatePicker` (D197: Material's cannot express EDTF precision or unknown, rule 17).
-
-## 5. Superseded: what was left, and it is section 2 now
-
-The component ledger, the screen counts and the polish list that used to sit
-here were the state before the FINISH THE APP session. **Section 2 is the live
-list.** `gh issue view 387` carries what happened to each component and
-`gh issue view 388` carries the six visual findings with the capture each was
-seen on.
+- **`ui/v4/Arrival.kt`.** Every page arrives rather than cutting: a rise and a
+  fade from `Motion` tokens, on the list itself. **Read its note before touching
+  it**: a per-item version was built twice and broke two screens.
+- **`ui/v4/Press.kt`.** One modifier, `opensOnTap`, over Material's `ripple`.
+  Use `Surface` where the tappable thing is a container; this is for modifier
+  chains only.
+- **The destination transition.** `AnimatedContent` in `NotebookShell`, shared
+  axis, a tenth of the width, direction from the bar's ordinal order.
+- **`listGroupShape`** in `ui/v4/Surfaces.kt`: a run of rows is Material's
+  medium step, a card is large. Three visible corners instead of one.
+- **The hairline.** Every `Block`, every Today card and the search door carry
+  `outlineVariant` at `Space.hairlineWidth`. Item 4 in both themes.
+- **`check_token_drift.py` skips frozen files**, read from the ledger. Baseline
+  53.
 
 ## 6. Blocked, and section 3 is the live one
 
-**Section 3.** One thing is blocked and it is the phone.
+**Section 3.** Nothing is blocked.
 
 ## 7. Rules that get broken
 
