@@ -51,7 +51,6 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import com.kamsiob.healthtrail.data.Repository
-import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipFor
 import com.kamsiob.healthtrail.ui.theme.hueFor

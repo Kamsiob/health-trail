@@ -93,7 +93,7 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
-import com.kamsiob.healthtrail.ui.components.HeaderActionTags
+import com.kamsiob.healthtrail.ui.v4.HeaderActionTags
 import com.kamsiob.healthtrail.ui.v4.PickerOption
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.RouteDash

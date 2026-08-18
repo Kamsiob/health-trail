@@ -29,7 +29,7 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.screens.CardOptionsTags
 import com.kamsiob.healthtrail.ui.screens.TodayFieldScreen
-import com.kamsiob.healthtrail.ui.components.HeaderActionTags
+import com.kamsiob.healthtrail.ui.v4.HeaderActionTags
 import com.kamsiob.healthtrail.ui.screens.TodayFieldTags
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import androidx.compose.ui.unit.Density
