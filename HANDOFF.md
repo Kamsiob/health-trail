@@ -63,10 +63,10 @@ The trail's route, a project's road, a measure's line (`Trace`), and `DatePicker
 
 1. **The rest of `ui/components`**, `gh issue view 387`. 36 files. Biggest hand-built first: `ScopedSearch` 222, `EdgeScrubber` 224, `Dictate` 244, `MonthGrid` 201, `RoadStrip` 372, `Spine` 401 (route, stays), `StepRow`, `StickyHeader`, `PinnedGroup`, `Tile`, `Hero`, `TabChip`, `Stages`, `ViewPreference`, `StandingCard`, `Confirm`, `Share`, `CalendarHandoff`, `DateRow`, `LatestWordCard`, `Thumbnail`, `ChipPicker`, `Chevron`, `ReferenceLine`, `SectionIcon`, `DraftSavers`, `FabClearance`, `Press` (infrastructure, move to `ui/v4`), `BottomNav` (move, do not redraw), `Symbols` (stays: it is the catalog).
 2. **The remaining screens still on old bones**, found by grepping for `HealthTrail.type`, `HealthTrail.colors`, `Radius.`, `openableByTap`, `pressedSurface`.
-3. **The polish pass**, `docs/V4.md` 6. Every screen, against the 10/10 bar.
+3. **The polish pass**, `docs/V4.md` 6, every screen against the 10/10 bar. #388.
 4. **More than one person per notebook.**
 5. **The full instrumented suite clean**, read from the XML.
-6. **Backup and restore across multiple people and profiles.**
+6. **Backup and restore across multiple people and profiles.** #389.
 7. **The APK.** Last.
 
 ## 4. Blocked
