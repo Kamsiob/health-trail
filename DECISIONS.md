@@ -209,6 +209,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D196 | The old design is deleted and the new one is Material's own components, with our polish on top |
 | D197 | The date picker stays hand drawn, and it is the fourth exception |
 | D198 | Color lives in the marks, saturated, and no page is one color |
+| D199 | `ui/components` empties of the live path, and what stays is the frozen tail |
 
 ---
 
@@ -3039,6 +3040,39 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 ---
 
+
+### D199. `ui/components` empties of the live path, and what stays is the frozen tail
+
+**2026-08-18.** `gh issue view 387` asks that `ui/components` empty as each
+component is retired onto Material's own. [D112] and `docs/REMOVAL-LEDGER.md`
+say that superseded code is frozen rather than deleted, and that a frozen file
+is never called, never extended and never fixed. **Three frozen files import
+components**, so those two rules cannot both be satisfied by an empty folder.
+
+**The test is not "is the folder empty", it is "does any live file import from
+it".** A component with no live caller is retired the moment the last live
+caller stops importing it, whether or not a frozen screen still holds a copy.
+What remains in `ui/components` after the pass is exactly what the three frozen
+screens need, and `docs/REMOVAL-LEDGER.md` names each one.
+
+**This costs a duplicate and the duplicate is the point.** `ConfirmRemoveSheet`
+now exists twice: the live one in `ui/v4` on Material's `Button`, and the old
+one in `ui/components` because the frozen project detail screen still calls it.
+Two copies of a thing that can drift is normally a defect. Here the second copy
+is history by definition and is never fixed, which is the whole freeze
+contract, and the alternative was worse both ways: deleting the frozen screen
+loses the reasoning [D112] exists to keep, and editing it to point at the new
+file is extending a frozen screen through the back door.
+
+**Rejected: leaving the component alone until the frozen screens are resolved.**
+That makes the freeze rule a veto on the rebuild, and the rebuild is the work
+the owner asked for. A frozen screen is history; it does not get to hold the
+live path on the old design language.
+
+**What this does not do.** It does not delete anything, it does not touch a
+frozen file, and it does not make a second live copy of anything. If a frozen
+screen is ever retired for real, its components go with it in the same commit
+and the ledger says so.
 ### D197. The date picker stays hand drawn, and it is the fourth exception
 
 **Date:** 2026-08-18. **Decided under rule 10** while working the `ui/components` ledger, #387, which listed "DatePicker to Material's own date picker".

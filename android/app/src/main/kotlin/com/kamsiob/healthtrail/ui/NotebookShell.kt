@@ -163,7 +163,7 @@ import com.kamsiob.healthtrail.ui.screens.EntryCorrection
 import com.kamsiob.healthtrail.ui.screens.PersonDraft
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.TrailScreen
-import com.kamsiob.healthtrail.ui.components.ConfirmRemoveSheet
+import com.kamsiob.healthtrail.ui.v4.ConfirmRemoveSheet
 import com.kamsiob.healthtrail.ui.screens.labelKey
 import com.kamsiob.healthtrail.ui.screens.kindNameKey
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
