@@ -397,6 +397,28 @@ object Radius {
     val navContainer = RoundedCornerShape(24.dp)
 
     /**
+     * **The navigation bar's own corner, so it reads as an object rather than
+     * as where the page happens to stop.** #388 section 2.
+     *
+     * The owner, 2026-08-18: "I don't want the taskbar area with the today
+     * button and notebook button, project button and more button to blend into
+     * any content above it. so maybe we need to give it a different shape".
+     * `m3v4-1` draws the bar and every block in the same `#F3F1EC`, and on the
+     * notebook the last group and the bar met with nothing between them.
+     *
+     * **The sheet's 24dp, and the same value on purpose.** Both are surfaces
+     * that meet the bottom of the screen and rise off it, and the shape scale
+     * says the same thing twice rather than inventing a fourth value for the
+     * second one. At 20 the corner was there and did no work; measured off the
+     * capture, 24 is where it starts reading as an object.
+     *
+     * Square at the bottom, because the bar's surface runs to the bottom edge
+     * of the screen: rounding there would put a strip of canvas under it and
+     * end the screen twice, which is what the owner objected to on 2026-08-17.
+     */
+    val navBar = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+
+    /**
      * The tab chip, DESIGN.md section 7.
      *
      * Rounded at the top and square at the bottom, because it is an index tab

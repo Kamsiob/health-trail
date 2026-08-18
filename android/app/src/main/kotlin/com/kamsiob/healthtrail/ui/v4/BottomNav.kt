@@ -1,19 +1,25 @@
 package com.kamsiob.healthtrail.ui.v4
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.ShortNavigationBarItemDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.theme.Space
 import kotlin.math.min
 import com.kamsiob.healthtrail.ui.components.Symbols
 
@@ -70,33 +76,75 @@ fun BottomNav(
     labels: (Destination) -> String,
     modifier: Modifier = Modifier,
 ) {
-    ShortNavigationBar(modifier = modifier.testTag(NavTags.BAR)) {
-        Destination.entries.forEach { destination ->
-            val selected = destination == current
-            ShortNavigationBarItem(
-                selected = selected,
-                onClick = { onSelect(destination) },
-                icon = {
-                    Icon(
-                        painter = painterResource(Symbols.of(destination)),
-                        // **Null, because the label beside it says the same
-                        // word.** A reader that announces "Notebook, Notebook"
-                        // is worse than one that announces it once, and the
-                        // item itself carries the selected state.
-                        contentDescription = null,
-                    )
-                },
-                label = { NavLabel(labels(destination)) },
-                modifier = Modifier.testTag(NavTags.tab(destination)),
-                colors = ShortNavigationBarItemDefaults.colors(
-                    // Unselected items are the app's secondary ink rather than
-                    // Material's, which is the one place this bar overrides the
-                    // component: `ink2` is the value measured against these
-                    // surfaces in `check_contrast.py`.
-                    unselectedIconColor = HealthTrail.colors.ink2,
-                    unselectedTextColor = HealthTrail.colors.ink2,
-                ),
-            )
+    // **The bar is a separate object, and that is a named requirement rather
+    // than a finding.** #388 section 2, the owner on 2026-08-18: "I don't want
+    // the taskbar area ... to blend into any content above it. so maybe we need
+    // to give it a different shape and make it a little bit transparent? or
+    // maybe we need to give it a different color?"
+    //
+    // **Why it blended.** `ShortNavigationBar` with no `containerColor` takes
+    // `surfaceContainer`, which in this palette is `sand`, which is the color
+    // every `Block` and every group of rows is drawn in. On the notebook the
+    // last group and the bar met with no boundary at all, and `m3v4-1` draws
+    // them the same `#F3F1EC` deliberately. The owner's words are newer than
+    // the drawing and this follows them. D201.
+    //
+    // **Three separations rather than one, because no single one is enough
+    // here.** M3's own elevation guidance says an overlapping element may take
+    // a container change, a tonal step or a scrim to keep it from blending, and
+    // this palette has no step above `sand` in light:
+    //
+    // 1. **A surface of its own**, `navSurface`, deeper than the page rather
+    //    than brighter. White was tried first and separates, but it made the
+    //    bottom of every screen the brightest thing on it; furniture should be
+    //    the ground the content sits on. See the token's own note.
+    // 2. **A corner**, [Radius.navBar], so the canvas shows at both top corners
+    //    and the bar reads as an object rather than as where the page stops.
+    // 3. **The hairline every other surface in the app carries**, in
+    //    `outlineVariant` at `Space.hairlineWidth`, following that corner.
+    //
+    // **No shadow.** `Surfaces.kt` and `docs/V4.md` 2.1: this language is flat
+    // and tonal, depth is color against color, and one exception at the bottom
+    // of every screen is how a language stops being one.
+    Surface(
+        modifier = modifier.testTag(NavTags.BAR),
+        color = HealthTrail.colors.navSurface,
+        shape = Radius.navBar,
+        border = BorderStroke(Space.hairlineWidth, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        ShortNavigationBar(
+            // **Transparent, because the surface above already painted it.**
+            // Letting the bar paint its own default here would put `sand` back on
+            // top of the separation this component exists to make.
+            containerColor = Color.Transparent,
+        ) {
+            Destination.entries.forEach { destination ->
+                val selected = destination == current
+                ShortNavigationBarItem(
+                    selected = selected,
+                    onClick = { onSelect(destination) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(Symbols.of(destination)),
+                            // **Null, because the label beside it says the same
+                            // word.** A reader that announces "Notebook, Notebook"
+                            // is worse than one that announces it once, and the
+                            // item itself carries the selected state.
+                            contentDescription = null,
+                        )
+                    },
+                    label = { NavLabel(labels(destination)) },
+                    modifier = Modifier.testTag(NavTags.tab(destination)),
+                    colors = ShortNavigationBarItemDefaults.colors(
+                        // Unselected items are the app's secondary ink rather than
+                        // Material's, which is the one place this bar overrides the
+                        // component: `ink2` is the value measured against these
+                        // surfaces in `check_contrast.py`.
+                        unselectedIconColor = HealthTrail.colors.ink2,
+                        unselectedTextColor = HealthTrail.colors.ink2,
+                    ),
+                )
+            }
         }
     }
 }

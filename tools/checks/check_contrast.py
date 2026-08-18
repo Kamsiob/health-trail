@@ -125,6 +125,9 @@ def pairs_for(theme: dict) -> list:
         # A fold row's label. foldSurface is sand in light and a darker value in
         # dark, so it is measured separately rather than assumed to equal sand.
         ("ink2", "foldSurface", TEXT_FLOOR, "a fold row's label"),
+        # A navigation label. navSurface is the one surface deeper than the
+        # page, D201, so it is measured rather than assumed to equal sand.
+        ("ink2", "navSurface", TEXT_FLOOR, "a navigation label"),
         # The single accent, as a link and as a filled button.
         ("blue", "paper", TEXT_FLOOR, "a link on the app background"),
         ("blue", "card", TEXT_FLOOR, "a link on a card"),

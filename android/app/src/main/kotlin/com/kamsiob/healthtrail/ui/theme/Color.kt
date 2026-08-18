@@ -75,6 +75,39 @@ data class HealthTrailColors(
      */
     val foldSurface: Color,
 
+    /**
+     * **The navigation bar's own surface, and it is the one surface in the app
+     * that is deeper than the page rather than lighter.** #388 section 2, D201.
+     *
+     * The owner, 2026-08-18: "I don't want the taskbar area with the today
+     * button and notebook button, project button and more button to blend into
+     * any content above it."
+     *
+     * **A token rather than a Material role, because in light this palette has
+     * no step to reach for.** `surfaceContainer`, `surfaceContainerHigh` and
+     * `surfaceContainerHighest` are all [sand] on light, which is the color
+     * every block and every group of rows is drawn in, so the bar and the last
+     * group on the notebook met with nothing between them. `m3v4-1` draws them
+     * the same `#F3F1EC` on purpose and the owner's words are newer than the
+     * drawing.
+     *
+     * **Deeper rather than brighter.** White separates too, and was tried
+     * first: it made the bottom of every screen the brightest thing on it,
+     * which is the opposite of what furniture should do. A surface a step
+     * *under* the page reads as the ground the content sits on.
+     *
+     * **Warm, and on the paper's own axis.** It is [sand] carried two steps
+     * further from white, not a gray: a neutral bar under a warm page reads as
+     * dirty rather than as deep.
+     *
+     * Measured, not judged: `ink2` on this clears the small-text floor at
+     * 4.6:1, which `check_contrast.py` now holds.
+     *
+     * Dark takes [sand], because there elevation is lightness and the lifted
+     * direction is up.
+     */
+    val navSurface: Color,
+
     /** Row separators inside a group. */
     val hairline: Color,
     /** Chip borders, the view toggle's container. */
@@ -231,6 +264,7 @@ val LightColors = HealthTrailColors(
     ink3 = Color(0xFF94A0A9),
 
     foldSurface = Color(0xFFF1EEE7),
+    navSurface = Color(0xFFEAE6DC),
     hairline = Color(0x1A233240),
     hairlineHeavy = Color(0x33233240),
 
@@ -335,6 +369,10 @@ val DarkColors = HealthTrailColors(
     // Between paper and card, so a fold recedes in dark exactly as it does in
     // light. ink2 measures 8.39:1 on it.
     foldSurface = Color(0xFF18212A),
+    // The bar lifts in dark rather than sinking: elevation here is lightness,
+    // so `sand` is both a real step above the canvas and a step above `card`,
+    // which is what every group of rows is drawn in.
+    navSurface = Color(0xFF25313A),
     hairline = Color(0x1AFFFFFF),
     hairlineHeavy = Color(0x33FFFFFF),
 
