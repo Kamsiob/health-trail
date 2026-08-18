@@ -215,6 +215,8 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D202 | The current destination wears the app's own mark tile, not Material's oval, and it is ink rather than gold |
 | D203 | A tonal action is drawn in the blue wash, and the one that records a failure is drawn in the alert wash |
 | D204 | Each tracked thing keeps its own hue, from the six identity colors, derived from its id and never from a reading |
+| D205 | The projects list leads with the nearest date and scans as rows, because five identical cards have no lead and a road at card width is a decoration |
+| D206 | Inside a project the order is the answer, the date, the verbs, the road, the latest word, then four tiles, and housekeeping leaves the page for the top bar |
 
 ---
 
@@ -3117,6 +3119,151 @@ live path on the old design language.
 frozen file, and it does not make a second live copy of anything. If a frozen
 screen is ever retired for real, its components go with it in the same commit
 and the ledger says so.
+
+### D206. Inside a project the order is the answer, the date, the verbs, the road, the latest word, then four tiles, and housekeeping leaves the page
+
+**2026-08-18.** The owner, after looking at it: "I kind of like the design the
+way it is now when you're inside of a specific project so that part doesn't
+need as much of an overhaul ... my primary issue when you're inside of a
+project is the organization of it in the workflow and the user pathways ...
+right now I feel like we kind of just took everything and threw it on there."
+
+**So this is an organization decision, not a visual one.** The blocks keep
+their drawing. What changes is what is on the page, in what order, and how many
+doors leave it.
+
+**What was on it, top to bottom.** A paragraph of template chatter, the date
+block, a "while you were away" card, a "where it stands" block, three verbs,
+the road, the latest word, a five row menu called THE FILE, and two loose tonal
+pills. That is eleven things, two of which say the same sentence and three of
+which are housekeeping.
+
+**The new order, and every project has it.**
+
+1. **Where it stands.** The answer, one block, first.
+2. **The date**, when there is one.
+3. **The three verbs**, in one row, unchanged.
+4. **The road**, full width, with the move control on the stage it is on.
+5. **The latest word**, which reads as the road's continuation.
+6. **The file**, four tiles: steps, the trail, papers, people.
+
+**Four changes make it that.**
+
+**The template paragraph goes.** "Started from a template. The steps are a
+starting point, and this one is yours to change" sat above everything, said
+nothing about this project, and is the app explaining its own organizing scheme
+in the most valuable space on the screen, which is rule 20. It moves to setup,
+where somebody who wants to know where the steps came from is already looking.
+
+**"While you were away" merges into "where it stands".** They were two blocks
+one gap apart saying the same thing: one said "it has been a month, last
+written down June 29", the other said "the county, waiting on the bank
+statements, March 21". One block carries the holder, what they are waiting on,
+how long it has stood, and, only when it has gone quiet, the question that
+offers to update it. Rule 13 is untouched: the sentence is about the file, not
+about the person, and there is no prompt to finish anything.
+
+**The five row menu becomes four tiles.** Rule 22 is explicit: a tile is for a
+fixed set of destinations, and a dense row is for a long scanned list. Five
+menu rows for four destinations plus one settings door is the shape the owner
+called "menus and sub menus". Steps, the trail, papers and people are four
+destinations that never change, so they are four tiles, each carrying its
+mark, its name and its count.
+
+**Housekeeping leaves the page.** Setup, edit the name and remove were a menu
+row and two loose tonal pills at the foot of the scroll. They go into an
+overflow on the top bar, which is Material's own answer and where a person
+looks for them. That is three things off the page and one door fewer.
+
+**Eleven screens is now what it should have been.** The section's screens are
+the list, the project, four the project opens, the two that start one, and the
+sheets. Nothing was deleted: `ProjectSetupScreen` and the rest are still there,
+reached from the overflow instead of from a menu row in the middle of the
+record.
+
+**Rejected: folding the trail into the project screen.** It is 7 entries on a
+two year project and 669 on the notebook's own trail. A record that long is a
+destination, and inlining it puts the file's housekeeping below several
+screens of history.
+
+**Rejected: a tab strip across the project.** Tabs would put the four
+destinations at the top and push the answer below them, which inverts the one
+thing the screen is for. The owner's complaint already named tabs as part of
+the mess.
+
+### D205. The projects list leads with the nearest date and scans as rows
+
+**2026-08-18.** The owner: "the whole project thing needs to be revisualized
+and reimagined ... a fresh approach that's more user-friendly and more
+intuitive and easier interface to navigate", and then, narrowing it: "the page
+when you load the projects tab and see all the projects that you have open" is
+the primary issue.
+
+**What was there.** A count line, then one card per project, every card built
+the same way: the same gold flag mark, an uppercase status eyebrow, the name,
+a mini road with its labels on, and a support line. Four cards of equal weight
+and identical construction.
+
+**Three findings, and the third is the owner's own.**
+
+**Nothing leads.** Item 1 of `docs/V4.md` 6.1 wants one thing with its own
+container, air, and a 2x scale jump to whatever is second. Five identical
+cards have no lead, and the eye lands nowhere.
+
+**The uppercase status tag is the wrong component, and there is research.**
+GOV.UK spent two years and three services iterating exactly this pattern and
+came out at plain sentence case rather than uppercase colored tags: uppercase
+was found hard to read, colored boxes had no findings behind them, and users
+tried to click the tag instead of the row because it looked like a button.
+Sources on #399. Our card put an uppercase status above the project's name, so
+the loudest word on every card was the state rather than the thing.
+
+**The road at card width is a decoration.** Three of the four visible roads had
+their stage labels overlapping or cut. The owner named it. A road is a map on a
+screen wide enough to read it and noise in a list.
+
+**What it becomes.**
+
+**One lead, and it is the nearest date somebody else set.** The project whose
+next date is soonest is drawn as the screen's hero: the countdown at hero size,
+the kind of date and the date itself, the project's name, and **the road full
+width with its labels, which is the one place on this screen it can be read**.
+The date is a fact from outside, not a judgment about how the person is doing,
+so leading with it breaks neither rule 2 nor rule 13. With no dated project the
+lead is the one most recently written in, and it leads with its standing
+instead of a countdown.
+
+**Everything else is a row, not a card.** Rule 22: a card is for three or more
+lines actually read, a dense row is for a long scanned list. A project in a
+list is a name and one line of fact, so it is a row: the mark, the name, and
+`holder · stage n of m · status` in sentence case.
+
+**The road's information survives in the rows without the drawing.** "In review
+· 2 of 3" is what the mini road was trying to say and could not at that width.
+
+**Two group eyebrows, not five.** Under way and finished. The status is a
+sentence-case fact on the row rather than an uppercase tag above the name, so
+the group label and the row's status are no longer two treatments of one thing
+an inch apart.
+
+**Two stored statuses get better words, and the schema does not move.** The
+five values stay exactly as `contract/DATA-CONTRACT.md` has them, per rule 3.
+Only the English changes: "Stalled" becomes "Nothing moving" and "Left alone"
+becomes "Set aside". Both old words are one reading away from a verdict on the
+person keeping track, which is what rule 13 forbids, and the person chose the
+value themselves in setup, so the app has no business amplifying it into a
+judgment. Health UX research says the same thing in general terms: state the
+fact, never evaluate. The other three catalogs get the same change, per rule
+24's requirement that they stay complete.
+
+**Rejected: a board with columns per status.** It is the pattern every job
+tracker reaches for, and it is wrong here. Columns force a horizontal gesture
+on a phone, they make the status the organizing fact when the date is, and
+there are rarely more than five projects, so the columns would be mostly empty.
+
+**Rejected: keeping the mini road and shrinking its labels.** The labels are
+the reason it is not a progress bar. Smaller labels is a less readable version
+of a thing that was already unreadable.
 
 ### D204. Each tracked thing keeps its own hue, from the six identity colors, derived from its id and never from a reading
 
