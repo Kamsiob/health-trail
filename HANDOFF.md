@@ -53,8 +53,24 @@ projects and progress**:
 | **#398** | **Every tracked thing gets its own screen.** Progress is one page trying to be every measure at once: the hero gets a plot, every other measure gets a number, and one flat list mixes every measure's readings together. A measure card becomes a door. Rule 2 is the whole risk here. |
 | **#397** | **Notes, general and attached.** A note with no target, a note attached to an incident, a question, a visit or a person, and light rich text. Rule 18 both ways is the hard half, and the storage is a `contract/DATA-CONTRACT.md` decision before it is a screen. |
 
+| **#400** | **The archive carries everything, with two people in one notebook.** The gate on #397 and #398 rather than a task after them: notes, every tracked thing, a mother and a father each fully used, export, wipe, restore, and a merge with a conflict, on the signed minified build. D24 calls the export the only way back. |
+
 **#396** is the dictation rule, split out of #388 finding 4: 34 `Field` call
 sites, a rule that is checkable, three of them inside a frozen file.
+
+**Two conditions the owner set on all of milestone 8**, and both are on each
+issue:
+
+1. **The archive is a gate.** Nothing closes until its rows are in the
+   container, the standalone decryptor reads them, and two people in one
+   notebook with every area populated survive the round trip. #400.
+2. **Material 3 Expressive first, then the same polish pass.** Each screen is
+   built on Material's own components, D196, then taken through `docs/V4.md`
+   6.1's eleven items with 6.2's pass on a real capture, which is the loop #388
+   just ran. **Consistent where appropriate**: D198 color, D201 the bar, D202
+   the selected destination, D203 actions, D204 a tracked thing's hue, and
+   `SectionEmpty` for every empty state. A new screen inventing its own version
+   of any of those is what rule 16 calls two answers to one question.
 
 **The owner's own words, 2026-08-18**, in order: "I don't want the taskbar
 area ... to blend into any content above it"; "the little yellow oval
