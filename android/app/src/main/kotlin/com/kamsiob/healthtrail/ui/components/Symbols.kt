@@ -58,6 +58,16 @@ object Symbols {
      */
     @DrawableRes val bin = R.drawable.ic_delete
 
+    /**
+     * Notes, as a destination and as a section.
+     *
+     * **A kept note with its corner turned, not a book.** The notebook beside
+     * it in the bar is a book, and two destinations drawn as the same object is
+     * a bar somebody navigates by reading rather than by shape. Material
+     * Symbols Rounded, filled, from Google's own repository, D182 and D196.
+     */
+    @DrawableRes val notes = R.drawable.ic_sticky_note
+
     // The notebook's sections.
     @DrawableRes val careTeam = R.drawable.ic_groups
     @DrawableRes val medications = R.drawable.ic_medication
@@ -136,7 +146,7 @@ object Symbols {
     fun of(section: Repository.Section): Int = when (section) {
         // **A note takes the notebook's own mark**, because it belongs to no
         // one section and the notebook is what it is a page of. #397.
-        Repository.Section.NOTES -> notebook
+        Repository.Section.NOTES -> notes
         Repository.Section.CARE_TEAM -> careTeam
         Repository.Section.MEDICATIONS -> medications
         Repository.Section.APPOINTMENTS -> appointments
@@ -180,6 +190,7 @@ object Symbols {
         Destination.TODAY -> today
         Destination.NOTEBOOK -> notebook
         Destination.PROJECTS -> projects
+        Destination.NOTES -> notes
         Destination.MORE -> more
     }
 }

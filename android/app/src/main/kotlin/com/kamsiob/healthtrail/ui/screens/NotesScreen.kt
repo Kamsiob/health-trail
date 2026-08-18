@@ -97,7 +97,14 @@ fun NotesScreen(
     notes: List<Repository.TrailEntry>,
     onOpen: (Repository.TrailEntry) -> Unit,
     onAdd: () -> Unit,
-    onBack: () -> Unit,
+    /**
+     * The way back, or null when this is a destination.
+     *
+     * **A destination has no back arrow**, `Page`: the bottom bar is where
+     * somebody came from and how they leave. It is still reachable as a section
+     * from search, and that route passes one.
+     */
+    onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
     /** Keeps one in view, or stops. The caller writes it; this only asks. */
     onPin: (Repository.TrailEntry, Boolean) -> Unit = { _, _ -> },
@@ -141,10 +148,18 @@ fun NotesScreen(
         eyebrow = strings["notebook.section.notes"],
         subtitle = strings["notes.subtitle"],
         section = Repository.Section.NOTES,
-        // **Null while the screen is empty**, D200, because the empty block
-        // carries the verb itself and two ways to do one thing on a screen with
-        // nothing on it is the same control twice.
-        fab = if (notes.isEmpty()) {
+        // **Null on the destination, because the capture button is already
+        // there.** Looked at on the phone the moment notes joined the bar: this
+        // screen's own extended button and the gold capture button overlapped
+        // in the same corner, which is two floating controls on one screen and
+        // one of them sitting on the other. D200 gives the floating add to a
+        // *section* screen precisely because a section has no capture button in
+        // that corner to compete with; a destination does, and the bloom's
+        // seventh choice is "Write a note".
+        //
+        // **Null while the screen is empty too**, D200, because the empty block
+        // carries the verb itself.
+        fab = if (notes.isEmpty() || onBack == null) {
             null
         } else {
             {

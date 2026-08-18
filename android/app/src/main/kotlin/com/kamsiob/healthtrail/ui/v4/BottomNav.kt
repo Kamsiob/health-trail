@@ -33,18 +33,23 @@ object NavTags {
 }
 
 /**
- * The four destinations, always in this order. DESIGN.md section 5.5.
+ * The five destinations, always in this order. DESIGN.md section 5.5.
  *
  * They never reorder and none is ever hidden, because a person who learned where
  * something was must find it there next month.
+ *
+ * **Notes was added on 2026-08-18 at the owner's word**, #397, and it went in
+ * fourth rather than beside the notebook for exactly the reason above: the
+ * first three keep the positions they have had, and More stays last, which is
+ * where every bar in every app puts it. Only one thing moved.
  */
-enum class Destination { TODAY, NOTEBOOK, PROJECTS, MORE }
+enum class Destination { TODAY, NOTEBOOK, PROJECTS, NOTES, MORE }
 
 /**
  * How far the navigation label is allowed to grow with the system font.
  *
  * 1.4 rather than unbounded. Everything else in the app scales without limit;
- * this bar cannot, because four labels and a fixed clearance for the capture
+ * this bar cannot, because five labels and a fixed clearance for the capture
  * button share one row.
  */
 private const val NavLabelMaxScale = 1.4f

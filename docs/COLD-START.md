@@ -206,8 +206,10 @@ BLOCKED, say so in the final report, and take the next item.
 - A weighted child of a column with no bounded height measures to zero.
 - material3 1.5.0-alpha26: no ButtonGroup, SplitButton or ToggleButton.
   Expressive components need @OptIn(ExperimentalMaterial3ExpressiveApi::class).
-- adb: /home/Kamsiob/Android/Sdk/platform-tools/adb. Nav bar y=2252,
-  x=133/400/670/940. Screenshots crop 132px of status bar; add it back before
+- adb: /home/Kamsiob/Android/Sdk/platform-tools/adb. Nav bar y=2302,
+  x=107/323/540/755/971, which is Today, Notebook, Projects, Notes, More. Five
+  destinations since 2026-08-18 and all five moved.
+  Screenshots crop 132px of status bar; add it back before
   tapping.
 - tools/sweep.sh's closing list globs its prefix and will print a capture hours
   older than the run. Check the timestamp.

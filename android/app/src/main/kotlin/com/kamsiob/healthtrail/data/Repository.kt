@@ -4451,7 +4451,16 @@ class Repository private constructor(
         PROJECTS("live_project"),
 
         /**
-         * Notes, which are entries and are counted as the ones that are notes.
+         * Memos, which are entries and are counted as the ones that are memos.
+         *
+         * **The person reads "Memo"; the record says `note`.** The owner,
+         * 2026-08-18: "the name is problematic since we have Notebook. let's
+         * call it Memo." **Only the words changed.** `entry.kind` is `'note'`
+         * in the schema's `CHECK` constraint and stays there, because rule 3
+         * fixes the schema and because renaming a stored value would make every
+         * archive written before today unreadable by the app that wrote it. The
+         * catalogs carry the word somebody sees, which is what catalogs are
+         * for.
          *
          * **The view is the entry view and the predicate is the kind**, which is
          * exactly what `hiddenWhen` is for: a note is not a table of its own,

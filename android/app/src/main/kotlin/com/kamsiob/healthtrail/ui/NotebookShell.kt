@@ -129,6 +129,7 @@ import com.kamsiob.healthtrail.ui.screens.StageSheet
 import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
+import com.kamsiob.healthtrail.ui.screens.NotesScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectPaperworkScreen
@@ -949,6 +950,27 @@ fun NotebookShell(
                                 }
                             },
                         )
+                        // **Notes, which the owner moved into the bar on
+                        // 2026-08-18.** #397. A destination rather than a row on
+                        // the notebook, which is the shape Projects already has:
+                        // one door, not two.
+                        Destination.NOTES -> NotesScreen(
+                            notes = trail.filter { it.kind == "note" },
+                            onOpen = { openEntry = it.id },
+                            onAdd = { writingNote = NoteTarget(null, null, null) },
+                            onPin = { note, keep -> pinningEntry = note.id to keep },
+                            onRemove = {
+                                removing = Removal(
+                                    Repository.Section.NOTES,
+                                    it.id,
+                                    it.title.orEmpty().ifBlank { it.body.orEmpty() },
+                                )
+                            },
+                            // **A destination has no way back**, which is what
+                            // the bottom bar is for. `Page` draws no arrow when
+                            // this is null.
+                            onBack = null,
+                        )
                         // More is no longer entirely unbuilt. Appearance is
                         // real; everything else in it still says so plainly.
                         Destination.MORE -> MoreScreen(
@@ -997,6 +1019,7 @@ fun NotebookShell(
                             Destination.TODAY -> strings["nav.today"]
                             Destination.NOTEBOOK -> strings["nav.notebook"]
                             Destination.PROJECTS -> strings["nav.projects"]
+                            Destination.NOTES -> strings["nav.notes"]
                             Destination.MORE -> strings["nav.more"]
                         }
                     },
@@ -1328,6 +1351,7 @@ fun NotebookShell(
                         Destination.TODAY -> "section.back.today"
                         Destination.MORE -> "section.back.more"
                         Destination.PROJECTS -> "section.back.projects"
+                        Destination.NOTES -> "section.back.notes"
                         Destination.NOTEBOOK -> "section.back"
                     },
                     query = searchQuery,
@@ -3214,10 +3238,11 @@ internal val SECTION_ORDER = listOf(
     Repository.Section.CHAPTERS,
     Repository.Section.THREADS,
     Repository.Section.TRAIL,
-    // **Counted like every other section**, #397: `Section.NOTES` reads the
-    // entry view with the kind as its predicate, which is what `hiddenWhen`
-    // exists for, so the number on the row is the number of notes.
-    Repository.Section.NOTES,
+    // **Notes are not counted here**, because they are a destination rather
+    // than a notebook row since 2026-08-18, #397. `Section.NOTES` still exists
+    // and still reads the entry view with the kind as its predicate: it is what
+    // gives the screen its hue, its mark and its back, and what lets a search
+    // hit say Notes.
     Repository.Section.PROGRESS,
     Repository.Section.DOCUMENTS,
     Repository.Section.MONEY,

@@ -153,10 +153,12 @@ enum class NotebookGroup(val labelKey: String, val sections: List<Repository.Sec
             Repository.Section.CHAPTERS,
             Repository.Section.THREADS,
             Repository.Section.TRAIL,
-            // **Beside the trail, because that is what they are part of.** A
-            // note is an entry, D207, so it belongs with the record rather than
-            // in a section of its own invention. #397.
-            Repository.Section.NOTES,
+            // **Notes are not here, and that is deliberate.** They were a row
+            // in this group until the owner moved them into the bottom bar on
+            // 2026-08-18, #397. **A destination is not also a notebook row**,
+            // which is the shape Projects has had all along: two doors to one
+            // place is rule 16's two answers to one question, and the one a
+            // person learns is whichever they found first.
             Repository.Section.PROGRESS,
         ),
     ),

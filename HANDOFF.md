@@ -52,7 +52,7 @@ projects and progress**:
 |---|---|
 | ~~#399~~ | **Done, 2026-08-18.** D205 and D206, and the owner corrected it three times while it was being built: the mark did not align with the words, the rows had no container and no arrival, and three controls all looked like "update". The doors out of a project went from five rows and two loose pills to four tiles and a corner. `ProjectDetailScreen` needed no removal: it has had no live caller since 2026-08-05 and its ledger row was already written. |
 | ~~#398~~ | **Done, 2026-08-18.** `MeasureScreen` per tracked thing, Progress is a lead plus rows, the flat mixed list is gone. **Three of the five shapes in `docs/TRACKED-THINGS.md` 7 need schema the contract does not have and are on #403**, blood pressure being the sharpest: the form has one field called "The number". |
-| **#397** | **In progress.** **Storage decided and it changed nothing**, D207 and contract 8.8. **Built**: `RichText` and its 11 tests; `Repository.addNote` / `notesAbout`; `NoteScreen` with the marks as the field's own toolbar, no microphone, and a filled save beside a quiet cancel; the bloom's seventh choice; `Section.NOTES` in the notebook beside the trail; `NotesScreen` as a grid or a list with keep-in-view and a bin on every card; local search on that page; and a note hit in the universal search saying Notes rather than The trail. **Left**: the attachment shown on both sides for each target kind, pin and delete from *inside* a note, the readable archive and the decryptor rendering the marks, the eight states, and the archive gate. |
+| **#397** | **In progress.** **Storage decided and it changed nothing**, D207 and contract 8.8. **Built**: `RichText` and its 11 tests; `Repository.addNote` / `notesAbout`; the memo screen with the marks as the field's own toolbar, no microphone, and a filled save beside a quiet cancel; the bloom's seventh choice; **Memos as the fourth destination in the bottom bar**, with Google's own sticky-note symbol and D202's ink mark tile when it is current; the memos screen as a grid or a list with keep-in-view and a bin on every card; local search there; and a memo hit in the universal search saying Memos rather than The trail. **Left**: the attachment shown on both sides for each target kind, pin and delete from *inside* a memo, the readable archive and the decryptor rendering the marks, the eight states, and the archive gate. |
 | **#400** | **The archive carries everything, with two people in one notebook.** The gate on #397 and #398 rather than a task after them: notes, every tracked thing, a mother and a father each fully used, export, wipe, restore, and a merge with a conflict, on the signed minified build. D24 calls the export the only way back. |
 
 **The order now: #397, then #396, then #395 a second time.** #400 is the gate
@@ -65,6 +65,14 @@ viewable as a grid or a list, pin and delete from both places, and **a universal
 trash can in More that restores anything deleted anywhere back to its own place
 on the timeline**, which is **#405** and is buildable today because deletion is
 always a tombstone, rule 3.
+
+**The person reads "Memos"; the record says `note`.** The owner, 2026-08-18:
+"the name is problematic since we have Notebook. let's call it Memo", then
+"memos, plural please". **Only the catalogs changed.** `entry.kind` is `'note'`
+in the schema's `CHECK` constraint and stays, rule 3, and so do
+`Section.NOTES`, `Destination.NOTES` and `NotesScreen`: renaming a stored value
+would make every archive written before today unreadable by the app that wrote
+it.
 
 **A trap #397 hit and the next session will hit again.** `CaptureKind` cannot
 grow: `CaptureSheet.kt` is frozen and switches on it exhaustively, so adding a
@@ -212,7 +220,7 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
   older run with the same name left behind.** `after-setup-light.png` was
   printed by a sweep that never visited setup and was four hours old. Check
   the timestamp before reading a capture as today's.
-- **`tools/walk.sh tap` matches the first node containing the word.** Navigate the four destinations by nav bar position: x = 133 / 400 / 670 / 940, y = 2252.
+- **`tools/walk.sh tap` matches the first node containing the word.** Navigate the five destinations by nav bar position: **x = 107 / 323 / 540 / 755 / 971, y = 2302**, which is Today, Notebook, Projects, Notes, More. **These changed on 2026-08-18** when notes joined the bar, #397: five items share the width four had, so every one of them moved. The old 133 / 400 / 670 / 940 at y=2252 taps the wrong tab now.
 - **Screenshot coordinates are not device coordinates.** `tools/screenshot.sh` crops 132px of status bar; add it back before `adb shell input tap`.
 - `onNodeWithText` does not see a `contentDescription`. Use `onNodeWithContentDescription`.
 - **A `SlotWriter` `ArrayIndexOutOfBoundsException` mid-suite is the Compose alpha.** Re-run the class alone.

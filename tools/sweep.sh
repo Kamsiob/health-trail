@@ -49,14 +49,21 @@ fi
 # matches the first node containing the word**, and the capture button is
 # described "Add something to the notebook", so tapping "Notebook" opens the
 # capture sheet instead. `docs/TRAPS.md`.
+#
+# **Five destinations since 2026-08-18**, when notes joined the bar, #397. The
+# four that were there kept their order and every one of them moved, because
+# five items share the width that four did. Measured off the phone rather than
+# divided out: 1080 / 5 is 216, and the bar's own padding does not put the
+# centers on those boundaries.
 nav() {
   case "$1" in
-    today)    X=133 ;;
-    notebook) X=400 ;;
-    projects) X=670 ;;
-    more)     X=940 ;;
+    today)    X=107 ;;
+    notebook) X=323 ;;
+    projects) X=540 ;;
+    notes)    X=755 ;;
+    more)     X=971 ;;
   esac
-  "$ADB" shell input tap "$X" 2252
+  "$ADB" shell input tap "$X" 2302
   sleep 2
 }
 
@@ -82,7 +89,7 @@ showing() {
 #
 # **Every tap on the bar assumes the bar is there**, and the four destinations
 # are tapped by position rather than by word. Start the sweep on a detail screen
-# and x=133,y=2252 is not the Today tab, it is whatever row of the open list
+# and x=107,y=2302 is not the Today tab, it is whatever row of the open list
 # happens to sit there: one run opened a trail entry, pressed back into the
 # trail, opened the same entry again, and reported all four destinations lost.
 # **A position is only a destination once the bar is under it.**
