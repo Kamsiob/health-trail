@@ -68,29 +68,123 @@ shot() {
   fi
 }
 
+# Is this word on the screen right now? **The only honest way to ask where the
+# phone is.** Everything below used to assume that a tap on the navigation bar
+# had landed, and when it had not the sweep captured thirteen screenshots of
+# whatever was actually in front of it and named them after the screens it
+# meant to visit. A capture under the wrong name is worse than a missing one.
+showing() {
+  "$ADB" shell uiautomator dump /sdcard/sweep.xml >/dev/null 2>&1 || return 1
+  "$ADB" shell cat /sdcard/sweep.xml 2>/dev/null | grep -qi -- "$1"
+}
+
+# Put the list back where a search can start from, because **`KEYCODE_BACK`
+# returns the notebook at the top**. That is what made this tool lie: the route
+# scrolled once, captured the one section that came into view, went back, and
+# then reported the remaining seven as missing because they were below the fold
+# again. One scroll for thirteen rows only ever finds the first of them.
+#
+# **Inside the list and slowly.** Five fast flings that ended level with the
+# navigation bar put the phone on a screen nobody asked for, and the sweep after
+# it captured the restore screen four times under four different names. A scroll
+# that reaches the edge of the list has nothing left to do, so three gentle ones
+# are as good as five hard ones and cannot be read as anything but a scroll.
+to_top() {
+  for _ in 1 2 3; do
+    "$ADB" shell input swipe 540 900 540 1900 400
+    sleep 1
+  done
+}
+
+# Stand on the notebook, whatever happened on the way here. Returns 1 rather
+# than capturing a lie.
+on_notebook() {
+  for _ in 1 2 3; do
+    showing 'Search everything' && return 0
+    "$ADB" shell input keyevent KEYCODE_BACK
+    sleep 1
+    nav notebook
+    to_top
+  done
+  showing 'Search everything'
+}
+
 # Tap a row by its words and prove we arrived, so a route that drifts says so
 # rather than capturing the same screen eleven times under eleven names.
+#
+# **It scrolls until it finds the row rather than assuming where the fold is.**
+# The fold moves with the fixture, the font scale and the number of sections,
+# so a fixed number of swipes is a number that is right today and wrong the
+# next time somebody adds a section.
 into() {
-  "$ROOT/tools/walk.sh" tap "$1" >/dev/null 2>&1 || { echo "  $2  NOT FOUND: $1"; return 1; }
-  sleep 2
-  shot "$2"
-  "$ADB" shell input keyevent KEYCODE_BACK
-  sleep 2
+  local word="$1" name="$2" tries=0
+  if ! on_notebook; then
+    echo "  $name  LOST: not on the notebook"
+    return 1
+  fi
+  while [ "$tries" -lt 6 ]; do
+    if "$ROOT/tools/walk.sh" tap "$word" >/dev/null 2>&1; then
+      sleep 2
+      # **Prove we left the notebook before calling this a capture.** A tap
+      # that matched a word and opened nothing used to produce a screenshot of
+      # the notebook filed under the section's name.
+      if showing 'Search everything'; then
+        # **Found but not opened, which is what a row half behind the floating
+        # button does.** uiautomator reports a partly visible node with real
+        # bounds, and the tap on its center lands on the button or off the
+        # screen. Scrolling it into the clear and trying again is the fix;
+        # giving up here is what filed a screenshot of the notebook under the
+        # name of the care threads.
+        "$ADB" shell input swipe 540 1800 540 1200 300
+        sleep 1
+        tries=$((tries + 1))
+        continue
+      fi
+      shot "$name"
+      "$ADB" shell input keyevent KEYCODE_BACK
+      sleep 2
+      to_top
+      return 0
+    fi
+    "$ADB" shell input swipe 540 1800 540 900 300
+    sleep 1
+    tries=$((tries + 1))
+  done
+  echo "  $name  NOT FOUND: $word"
+  to_top
+  return 1
 }
 
 echo "Capturing as $PREFIX-*"
 
-nav today;    shot today
-nav projects; shot projects
-nav more;     shot more
+# **Each destination proves it arrived before it is captured.** The words are
+# the ones only that screen carries.
+dest() {
+  local tab="$1" name="$2" proof="$3"
+  nav "$tab"
+  if ! showing "$proof"; then
+    "$ADB" shell input keyevent KEYCODE_BACK
+    sleep 1
+    nav "$tab"
+  fi
+  if showing "$proof"; then
+    shot "$name"
+  else
+    echo "  $name  LOST: $tab did not open"
+  fi
+}
 
-nav notebook; shot notebook
+dest today    today    's day'
+dest projects projects 'under way'
+dest more     more     'what this app is'
+
+dest notebook notebook 'Search everything'
+to_top
 for pair in \
   "Care team:careteam" \
   "Medications:medications" \
   "Appointments:appointments" \
   "Chapters:chapters" \
-  "SCROLL:SCROLL" \
   "Care threads:threads" \
   "The trail:trail" \
   "Progress:progress" \
@@ -100,14 +194,6 @@ for pair in \
   "Ask next time:questions" \
   "Emergency card:emergency"
 do
-  # **Half the sections are below the fold on a real notebook**, so the route
-  # scrolls once rather than reporting six screens as missing. Found the first
-  # time this ran.
-  if [ "$pair" = "SCROLL:SCROLL" ]; then
-    "$ADB" shell input swipe 540 1800 540 700 300
-    sleep 1
-    continue
-  fi
   into "${pair%%:*}" "${pair##*:}" || true
 done
 
