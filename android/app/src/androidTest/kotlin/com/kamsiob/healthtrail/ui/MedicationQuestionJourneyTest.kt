@@ -16,7 +16,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.v4.Destination
 import com.kamsiob.healthtrail.ui.v4.NavTags
 import com.kamsiob.healthtrail.ui.screens.AddMedTags
-import com.kamsiob.healthtrail.ui.components.ChipPickerTags
+import com.kamsiob.healthtrail.ui.v4.ChipPickerTags
 import com.kamsiob.healthtrail.ui.screens.CaptureFormTags
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.screens.CaptureTags
