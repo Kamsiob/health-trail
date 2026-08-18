@@ -1,4 +1,4 @@
-package com.kamsiob.healthtrail.ui.components
+package com.kamsiob.healthtrail.ui.v4
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -100,7 +101,6 @@ fun RoadStrip(
     }
 
     val colors = HealthTrail.colors
-    val type = HealthTrail.type
 
     val waypoint: Dp = if (size == RoadSize.FULL) 13.dp else 9.dp
     val here: Dp = if (size == RoadSize.FULL) 15.dp else 11.dp
@@ -204,8 +204,8 @@ private fun LabelsOrList(
     mirrored: Boolean,
     size: RoadSize,
 ) {
-    val colors = HealthTrail.colors
-    val type = HealthTrail.type
+    val scheme = MaterialTheme.colorScheme
+    val label = MaterialTheme.typography.bodySmall
     val measurer = rememberTextMeasurer()
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
@@ -215,8 +215,8 @@ private fun LabelsOrList(
         // everything a person reads as words left it. Three stage names in a
         // typewriter face across every project card was the loudest place
         // that rule was still being broken. #386.
-        val widest = remember(stages, type.bodyS, perStage) {
-            stages.maxOf { measurer.measure(it.name, type.bodyS).size.width }
+        val widest = remember(stages, label, perStage) {
+            stages.maxOf { measurer.measure(it.name, label).size.width }
         }
 
         // **A word wider than its column is a word Compose breaks in half.**
@@ -242,8 +242,9 @@ private fun LabelsOrList(
                         // node up, which is the test disagreeing with the
                         // comment and being right.
                         text = Bidi.isolate(stage.name),
-                        style = type.bodyS,
-                        // **ink2 and not ink3 for a stage not yet reached.**
+                        style = label,
+                        // **onSurfaceVariant and not outline for a stage not
+                        // yet reached.**
                         // The grid draws it in the faintest tone it has, and on
                         // a bright monitor that reads as pleasantly quiet. ink3
                         // is 2.37:1, which is unreadable on a phone in bad light
@@ -251,9 +252,9 @@ private fun LabelsOrList(
                         // A stage the project has not reached still has to be
                         // legible: it is where this is going.
                         color = when {
-                            index == current -> colors.ink
-                            stage.reached -> colors.goldInk
-                            else -> colors.ink2
+                            index == current -> scheme.onSurface
+                            stage.reached -> scheme.secondary
+                            else -> scheme.onSurfaceVariant
                         },
                         // Two lines, because a stage name in the longest
                         // language does not fit on one at this width and a name
@@ -285,8 +286,8 @@ private fun LabelsOrList(
             // both halves of that are covered.
             Text(
                 text = Bidi.isolate(stages.getOrNull(current)?.name ?: stages.first().name),
-                style = type.bodyS,
-                color = colors.ink,
+                style = label,
+                color = scheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth().padding(top = Space.xs),
@@ -294,8 +295,8 @@ private fun LabelsOrList(
         } else {
             Text(
                 text = stageNamesLine(stages),
-                style = type.bodyS,
-                color = colors.ink2,
+                style = label,
+                color = scheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth().padding(top = Space.xs),
             )
         }

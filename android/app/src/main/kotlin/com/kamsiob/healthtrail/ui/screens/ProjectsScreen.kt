@@ -24,9 +24,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import com.kamsiob.healthtrail.ui.v4.fabSafeActionBar
 import com.kamsiob.healthtrail.ui.v4.fabScrollClearance
-import com.kamsiob.healthtrail.ui.components.RoadSize
-import com.kamsiob.healthtrail.ui.components.RoadStage
-import com.kamsiob.healthtrail.ui.components.RoadStrip
+import com.kamsiob.healthtrail.ui.v4.RoadSize
+import com.kamsiob.healthtrail.ui.v4.RoadStage
+import com.kamsiob.healthtrail.ui.v4.RoadStrip
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf

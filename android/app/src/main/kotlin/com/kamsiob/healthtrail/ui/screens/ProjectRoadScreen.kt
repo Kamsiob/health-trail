@@ -25,9 +25,9 @@ import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.RoadSize
-import com.kamsiob.healthtrail.ui.components.RoadStage
-import com.kamsiob.healthtrail.ui.components.RoadStrip
+import com.kamsiob.healthtrail.ui.v4.RoadSize
+import com.kamsiob.healthtrail.ui.v4.RoadStage
+import com.kamsiob.healthtrail.ui.v4.RoadStrip
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action

@@ -3,9 +3,9 @@ package com.kamsiob.healthtrail.ui
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kamsiob.healthtrail.i18n.Bidi
-import com.kamsiob.healthtrail.ui.components.RoadStage
-import com.kamsiob.healthtrail.ui.components.RoadStrip
-import com.kamsiob.healthtrail.ui.components.stageNamesLine
+import com.kamsiob.healthtrail.ui.v4.RoadStage
+import com.kamsiob.healthtrail.ui.v4.RoadStrip
+import com.kamsiob.healthtrail.ui.v4.stageNamesLine
 import com.kamsiob.healthtrail.ui.theme.HealthTrailTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
