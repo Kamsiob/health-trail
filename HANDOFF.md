@@ -236,7 +236,7 @@ Read on demand, never in bulk.
 | Need | Read |
 |---|---|
 | What each tracked thing is, before drawing its screen | **`docs/TRACKED-THINGS.md`**. Researched, with sources, and it is mostly about what rule 2 rules out |
-| The prompt that starts a cleared session | **`docs/COLD-START.md`**. Kept so it can be corrected rather than rewritten from memory |
+| The prompt that starts a cleared session | **`docs/COLD-START.md`**. Written to run unattended to a finish line, and kept so it can be corrected rather than rewritten from memory |
 | What to do next | `gh issue view 321`, then this file. Then `gh issue list --milestone "FINISH THE APP"` |
 | The design and the polish bar | **`docs/V4.md`** |
 | What the approved design looks like | `docs/screenshots/m3v4-{0..5}-light.png`. **Open them** |
