@@ -163,10 +163,9 @@ fun ScopedSearch(
  * right handed person holds it, which is the other way around in a right to
  * left layout.
  *
- * **Shared with [UniversalSearchDoor] rather than drawn twice.** Two magnifiers
- * in one app are two magnifiers that drift the moment either is touched, and
- * the mirroring rule above is exactly the sort of thing the second copy would
- * be missing.
+ * **One magnifier, drawn once.** Two in one app are two that drift the moment
+ * either is touched, and the mirroring rule above is exactly the sort of thing
+ * the second copy would be missing.
  */
 @Composable
 internal fun MagnifierMark(modifier: Modifier = Modifier, size: Dp = 15.dp) {
