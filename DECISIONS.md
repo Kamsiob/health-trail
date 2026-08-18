@@ -3186,6 +3186,26 @@ two year project and 669 on the notebook's own trail. A record that long is a
 destination, and inlining it puts the file's housekeeping below several
 screens of history.
 
+**Amended the same day, by the owner looking at it.** "I don't understand why
+there are three places to update. one of them is 'is that still where it
+stands?' another one is 'update where it stands' and another is 'move it
+along'. it's confusing. it's redundant. it's not natural wording."
+
+He is right and two of the three were literally one action. The lapse block's
+"Is that still where it stands?" and the verb row's "Update where it stands"
+both opened the standing sheet, an inch apart on one screen, which is what rule
+16 calls two answers to one question. **The lapse block loses its button and
+keeps its sentence**, because the verb row is in the same place on every project
+forever and because rule 13 makes the sentence the point: somebody coming back
+after a month meets a file that kept everything, never a prompt to catch up.
+
+**The remaining two are named for what they actually open.** The standing sheet
+asks "Whose hands is it in?" and the stage sheet asks "Where has it got to?",
+which are two different questions that were wearing almost the same words. The
+verb becomes **"Who has it now"**, in all four catalogs, and the road keeps
+"Move it along", which sits on the road under the stage names where nothing else
+could be meant.
+
 **Rejected: a tab strip across the project.** Tabs would put the four
 destinations at the top and push the answer below them, which inverts the one
 thing the screen is for. The owner's complaint already named tabs as part of

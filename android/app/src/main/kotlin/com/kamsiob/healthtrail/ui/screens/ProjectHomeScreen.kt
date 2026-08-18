@@ -16,6 +16,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.CardDefaults
@@ -413,20 +414,26 @@ fun ProjectHomeScreen(
                             Spacer(Modifier.height(Space.xs))
                             Text(text = it, style = type.bodyM, color = colors.ink2)
                         }
+                    // **The sentence, and no button under it.** The owner,
+                    // 2026-08-18: "I don't understand why there are three
+                    // places to update ... it's confusing, it's redundant,
+                    // it's not natural wording." Two of the three opened the
+                    // same sheet: this one and the verb in the row below, an
+                    // inch apart. Rule 16 calls that two answers to one
+                    // question, and the verb row is the answer, because it is
+                    // in the same place on every project forever.
+                    //
+                    // **The sentence stays, because lapse tolerance is law.**
+                    // Rule 13: coming back after a month meets a file that
+                    // kept everything, never a prompt to catch up.
                     away?.let { lapse ->
                         Spacer(Modifier.height(Space.sm))
-                        Column(modifier = Modifier.testTag(ProjectHomeTags.RETURN)) {
-                            Text(
-                                text = strings(returnKey(lapse), "count" to lapse.count),
-                                style = type.bodyM,
-                                color = colors.ink2,
-                            )
-                            Spacer(Modifier.height(Space.s))
-                            Action(
-                                label = strings["project.return.confirm"],
-                                onClick = onUpdateStanding,
-                            )
-                        }
+                        Text(
+                            text = strings(returnKey(lapse), "count" to lapse.count),
+                            style = type.bodyM,
+                            color = colors.ink2,
+                            modifier = Modifier.testTag(ProjectHomeTags.RETURN),
+                        )
                     }
                     // **The date is the second line of the answer, not a rival
                     // to it.** A hairline separates the two questions inside
@@ -666,7 +673,7 @@ fun ProjectHomeScreen(
                 )
                 FileTile(
                     label = strings["project.fold.trail"],
-                    count = trailCount.toString(),
+                    count = strings("project.count.trail", "count" to trailCount),
                     symbol = Symbols.trail,
                     hue = projectHue,
                     onClick = onOpenTrail,
@@ -683,8 +690,7 @@ fun ProjectHomeScreen(
             ) {
                 FileTile(
                     label = strings["project.fold.papers"],
-                    // bidi-ok: a bare count with no direction of its own.
-                    count = papers.size.toString(),
+                    count = strings("project.count.papers", "count" to papers.size),
                     symbol = Symbols.documents,
                     hue = hueFor(Repository.Section.DOCUMENTS),
                     onClick = onOpenPaperwork,
@@ -695,7 +701,7 @@ fun ProjectHomeScreen(
                 )
                 FileTile(
                     label = strings["project.fold.people"],
-                    count = peopleCount.toString(),
+                    count = strings("project.count.people", "count" to peopleCount),
                     symbol = Symbols.careTeam,
                     hue = hueFor(Repository.Section.CARE_TEAM),
                     onClick = onOpenPeople,
@@ -739,6 +745,12 @@ private fun FileTile(
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+        // **An edge the eye can find**, `docs/V4.md` 6.1 item 4, and the same
+        // hairline `Block` puts on every other group in the app. With no
+        // shadow and no elevation a container is only as visible as the step
+        // between its color and the canvas, and in light this palette keeps
+        // that step deliberately small.
+        border = BorderStroke(Space.hairlineWidth, MaterialTheme.colorScheme.outlineVariant),
         // **One stop for a reader, on the node that takes the tap.**
         modifier = modifier.semantics(mergeDescendants = true) { },
     ) {
