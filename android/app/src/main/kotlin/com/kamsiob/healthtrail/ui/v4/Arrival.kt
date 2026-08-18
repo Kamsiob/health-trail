@@ -1,7 +1,7 @@
 package com.kamsiob.healthtrail.ui.v4
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
@@ -99,7 +99,13 @@ internal class ArrivingScope(private val inner: LazyListScope) : LazyListScope b
         val index = declared++
         inner.item(key, contentType) {
             val scope = this
-            Box(modifier = Modifier.arrives(index)) { with(scope) { content() } }
+            // **A `Column`, and a `Box` here was a defect.** A page's `item`
+            // may emit several composables side by side and rely on the lazy
+            // list stacking them; a `Box` lays them on top of each other
+            // instead, so the restore screen drew its unlock button over its
+            // own password field. Seen on the phone the moment the seed
+            // stalled on it.
+            Column(modifier = Modifier.arrives(index)) { with(scope) { content() } }
         }
     }
 
@@ -113,7 +119,7 @@ internal class ArrivingScope(private val inner: LazyListScope) : LazyListScope b
         declared += count
         inner.items(count, key, contentType) { index ->
             val scope = this
-            Box(modifier = Modifier.arrives(first + index)) { with(scope) { itemContent(index) } }
+            Column(modifier = Modifier.arrives(first + index)) { with(scope) { itemContent(index) } }
         }
     }
 }
