@@ -115,20 +115,26 @@ fun ChaptersScreen(
                 // answers to one question is the same as none. `SectionEmpty`
                 // is the answer now, and it carries the section's own mark.
                 // bidi-ok: the app's own sentence about an empty list.
+                //
+                // **The way in is inside the block**, which is the one style
+                // every empty page in the app wears. The owner, 2026-08-18:
+                // "why is the where they have been page the only one different
+                // from other places... one style across all empty pages with
+                // the button inside the card." It was an `Action` in its own
+                // `item` under the block, which is what made this screen the
+                // odd one out.
+                //
+                // **The tag stays `ChapterTags.MOVED`**, because #377 is what
+                // put a way out of an empty Chapters screen here at all and its
+                // test walks that tag.
                 SectionEmpty(
                     name = ChapterTags.NAME,
                     text = strings["chapters.empty"],
                     section = Repository.Section.CHAPTERS,
-                )
-            }
-            // The one thing to do from an empty Chapters screen, and the whole
-            // of #377: without it, zero taps lead anywhere.
-            item {
-                Action(
-                    label = strings["chapters.moved"],
-                    onClick = onMoved,
-                    mark = Symbols.chapters,
-                    modifier = Modifier.testTag(ChapterTags.MOVED),
+                    actionLabel = strings["chapters.moved"],
+                    onAction = onMoved,
+                    actionTag = ChapterTags.MOVED,
+                    actionMark = Symbols.chapters,
                 )
             }
         }

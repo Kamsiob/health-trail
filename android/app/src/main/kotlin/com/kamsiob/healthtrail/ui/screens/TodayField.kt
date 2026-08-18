@@ -1406,19 +1406,48 @@ private fun ColumnScope.AnswerBody(
     // thing twice and, at that weight, reads as a score on somebody who has just
     // started.
     val count = answer?.count?.takeIf { it > 0 }
+    // **Nothing under it and nothing beside it**: no rows, no plot, no spine,
+    // and not the lead, whose own sentence is already the largest thing on the
+    // screen. Anything else on the card is what the smaller rung exists for.
+    //
+    // **What is drawn, not what the answer holds.** The first version asked
+    // whether `items` was empty and the incidents card kept the small rung: it
+    // carries the open incident in `items` and never draws it, because every
+    // list, every plot and the row of faces is gated on [showDetail], which a
+    // half width card does not have. A card is only as full as what reaches the
+    // screen.
+    val countIsTheAnswer = !lead && !spine &&
+        !(tall && answer != null && answer.series.size > 1) &&
+        (!showDetail || answer == null || answer.items.isEmpty())
     if (count != null && answer.title == null) {
         Text(
             // **The reading face, not the mono one.** D173: mono is for figures
             // that line up in a column, and a number a card leads with is a
             // headline.
             text = Bidi.isolate(count.toString()),
-            // **One size on both, and not the largest.** The lead is a fixed
-            // height like every other widget, D192, and a count at
-            // `displayMedium` with its noun, two rows and an "and 3 more" under
-            // it ran past the bottom edge and cut the last line off. Rule 11
-            // bans truncation, and the figure is already the loudest thing on
-            // the card at this rung. Measured on the phone.
-            style = fonts.displaySmall,
+            // **The rung is the card's, and it depends on what else is on it.**
+            //
+            // `displayMedium` everywhere was measured and rejected: a count at
+            // that size with its noun, two rows and an "and 3 more" under it ran
+            // past the bottom edge and cut the last line off, and rule 11 bans
+            // truncation. So a card carrying a list keeps `displaySmall`.
+            //
+            // **A card whose whole answer is a figure and its noun takes the
+            // rung up.** #388 finding 2, the owner on `today-now-light.png`: the
+            // incidents card is a label, then a hand's width of nothing, then "1
+            // open", and item 1 asks where the eye lands. It landed in the hole.
+            // The card's height is the field's grid, D192, and the arrangement
+            // is the person's, `a6a86f8b`, so **neither may change**: what was
+            // left was a figure two rungs smaller than the room it had. Filling
+            // it with the thing the card exists to say is the component fix.
+            //
+            // **`displayLarge`, and the Material role names are inverted here.**
+            // `Theme.kt` maps `displayMedium` to `type.hero` at 30sp and
+            // `displaySmall` to `type.displayM` at 36sp, so the role that sounds
+            // bigger is smaller. Reaching for `displayMedium` made the figure
+            // *shrink*, which is the opposite of the finding. 40sp is the rung
+            // above 36 in this app's own ladder.
+            style = if (countIsTheAnswer) fonts.displayLarge else fonts.displaySmall,
             color = scheme.onSurface,
         )
         // **A number with no noun is not an answer.** 21.3 gives every size one

@@ -200,6 +200,16 @@ fun SectionEmpty(
      */
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
+    /**
+     * The tag the action carries, where a screen's own test already names it.
+     *
+     * Defaults to this block's own tag. Chapters passes `ChapterTags.MOVED`,
+     * because #377 is what put a way out of an empty Chapters screen there and
+     * its test walks that tag.
+     */
+    actionTag: String? = null,
+    /** The mark beside the action's label, where the screen draws one. */
+    @DrawableRes actionMark: Int? = null,
 ) {
     val hue: TabHue? = section?.let { hueFor(it) }
     Block(
@@ -235,7 +245,8 @@ fun SectionEmpty(
             Action(
                 label = actionLabel,
                 onClick = onAction,
-                modifier = Modifier.testTag(SectionTags.emptyAction(name)),
+                mark = actionMark,
+                modifier = Modifier.testTag(actionTag ?: SectionTags.emptyAction(name)),
             )
         }
     }
