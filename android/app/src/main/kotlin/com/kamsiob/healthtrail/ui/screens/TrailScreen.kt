@@ -47,7 +47,7 @@ import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.RouteSwatch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
-import com.kamsiob.healthtrail.ui.components.ScopedSearch
+import com.kamsiob.healthtrail.ui.v4.ScopedSearch
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.StickySectionHeader
 import com.kamsiob.healthtrail.ui.components.pressedSurface
