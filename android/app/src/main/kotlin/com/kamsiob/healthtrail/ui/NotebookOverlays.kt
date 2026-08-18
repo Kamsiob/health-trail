@@ -1612,6 +1612,9 @@ internal fun ProjectOverlays(
                 steps = projectSteps,
                 onAdd = { addingStep = currentProject.id to it },
                 onOpen = { stepUnderEdit = it },
+                // **Whichever door was used.** Setup can still open this, so
+                // the label follows the path rather than asserting one of them.
+                backKey = if (setupOpen) "section.back.setup" else "section.back.project",
                 onBack = { stepsOpen = false },
             )
 

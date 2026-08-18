@@ -1089,7 +1089,7 @@
   "project.steps.add.hint": "您平时会怎么说它",
   "project.steps.lead": "这是模板一开始给的，加上您后来添加的。您可以随意更改，原来的模板不会跟着变。",
   "project.steps.new": "新的一步",
-  "project.steps.title": "起始步骤",
+  "project.steps.title": "步骤",
   "project.steps.ungrouped": "其余全部",
   "project.story": "整件事的经过",
   "project.story.calls": "{count, plural, other {# 通电话}}",

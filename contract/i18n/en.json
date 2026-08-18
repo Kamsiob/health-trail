@@ -1089,7 +1089,7 @@
   "project.steps.add.hint": "Whatever you would call it out loud",
   "project.steps.lead": "What the template started this with, and whatever you have added since. Change any of it. The template it came from stays as it was.",
   "project.steps.new": "A new step",
-  "project.steps.title": "Starting steps",
+  "project.steps.title": "The steps",
   "project.steps.ungrouped": "Everything else",
   "project.story": "The whole story",
   "project.story.calls": "{count, plural, one {1 call} other {# calls}}",

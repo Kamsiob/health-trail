@@ -20,6 +20,8 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
@@ -29,6 +31,7 @@ import com.kamsiob.healthtrail.ui.v4.RowDivider
 object ProjectStepsTags {
     const val NAME = "project-steps"
     const val ADD_FIELD = "project-steps-add-field"
+    const val DONE_FOLD = "project-steps-done"
     const val ADD = "project-steps-add"
     fun step(id: String) = "project-steps-$id"
 }
@@ -62,6 +65,16 @@ fun ProjectStepsScreen(
     onOpen: (Repository.ProjectStep) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * What the way back is called, because there are two ways in.
+     *
+     * **D164 gave the steps a door on the project itself** and the label stayed
+     * "Back to setup", so a screen reached from the project's own file promised
+     * to return somebody to a settings screen they had never opened. Back
+     * always went to the right place; the words did not, and for a reader the
+     * words are the whole of it, rule 19.
+     */
+    backKey: String = "section.back.project",
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -72,23 +85,30 @@ fun ProjectStepsScreen(
     Page(
         title = strings["project.steps.title"],
         onBack = onBack,
-        backLabel = strings["section.back.setup"],
+        backLabel = strings[backKey],
         modifier = modifier.testTag(SectionTags.root(ProjectStepsTags.NAME)),
         eyebrow = strings["notebook.section.projects"],
         subtitle = Bidi.isolate(projectName),
     ) {
-        item {
-            Text(
-                text = strings["project.steps.lead"],
-                style = type.bodyM,
-                color = colors.ink2,
-            )
-        }
+        // **No paragraph about where the steps came from.** "What the template
+        // started this with, and whatever you have added since" sat above the
+        // steps themselves, said nothing about this project, and is the app
+        // explaining its own organizing scheme in the space the content should
+        // have, which is rule 20. It is the same sentence D206 took off the
+        // project's own screen, and it goes for the same reason.
 
         // **Clustered here too where the steps carry areas**, so the list a
         // person edits is the list they read on the project. Two orders for
         // one set of steps is two mental models for one thing.
-        val clustered = steps.groupBy { it.cluster?.takeIf { c -> c.isNotBlank() } }
+        //
+        // **What is done sits under its own quiet label**, which is the grammar
+        // the medications list and the projects list already use for what is
+        // finished, and it means the steps somebody still has in front of them
+        // are the ones at the top. **It is not a count and never a meter**,
+        // rule 13: nothing here says how many of somebody's steps are ticked.
+        val live = steps.filterNot { it.isDone }
+        val done = steps.filter { it.isDone }
+        val clustered = live.groupBy { it.cluster?.takeIf { c -> c.isNotBlank() } }
         val named = clustered.filterKeys { it != null }
         val loose = clustered[null].orEmpty()
 
@@ -123,6 +143,26 @@ fun ProjectStepsScreen(
                             step = step,
                             onOpen = { onOpen(step) },
                             divider = index != loose.lastIndex,
+                        )
+                    }
+                }
+            }
+        }
+
+        if (done.isNotEmpty()) {
+            item {
+                Spacer(Modifier.height(Space.m))
+                Eyebrow(
+                    text = strings["projects.done_fold"],
+                    modifier = Modifier.testTag(ProjectStepsTags.DONE_FOLD),
+                )
+                Spacer(Modifier.height(Space.xs))
+                Block(padding = Space.none) {
+                    done.forEachIndexed { index, step ->
+                        StepEditRow(
+                            step = step,
+                            onOpen = { onOpen(step) },
+                            divider = index != done.lastIndex,
                         )
                     }
                 }
@@ -187,6 +227,14 @@ private fun StepEditRow(
     val strings = LocalStrings.current
     Column {
         ListRow(
+            // **The mark every other list in the notebook carries.** D198 item
+            // 4: this screen was the one list drawn with no color in it at all,
+            // which is what rule 15's "no page is overwhelmingly one color"
+            // rules out from the other direction. The card size, not the row
+            // size, because every row here is the same kind. #388 finding 8.
+            mark = Symbols.standingInstructions,
+            markSize = Space.markCard,
+            markHue = hueFor(Repository.Section.PROJECTS),
             title = Bidi.isolate(step.text),
             support = step.note?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) }
                 ?: step.handlerLabel?.let { strings("project.step.handled_by", "who" to it) },

@@ -1089,7 +1089,7 @@
   "project.steps.add.hint": "كما تسميها بصوتك",
   "project.steps.lead": "ما بدأ به القالب هذه المعاملة، وما أضفته أنت بعد ذلك. غيّر منها ما شئت. القالب الذي جاءت منه يبقى كما هو.",
   "project.steps.new": "خطوة جديدة",
-  "project.steps.title": "الخطوات الأولى",
+  "project.steps.title": "الخطوات",
   "project.steps.ungrouped": "كل ما تبقى",
   "project.story": "الحكاية كاملة",
   "project.story.calls": "{count, plural, zero {لا مكالمات} one {مكالمة واحدة} two {مكالمتان} few {# مكالمات} many {# مكالمة} other {# مكالمة}}",

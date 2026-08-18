@@ -1089,7 +1089,7 @@
   "project.steps.add.hint": "Como lo diría en voz alta",
   "project.steps.lead": "Con lo que la plantilla empezó esto, y lo que usted haya añadido después. Puede cambiar cualquier cosa. La plantilla de la que salió se queda como estaba.",
   "project.steps.new": "Un paso nuevo",
-  "project.steps.title": "Pasos iniciales",
+  "project.steps.title": "Los pasos",
   "project.steps.ungrouped": "Todo lo demás",
   "project.story": "Toda la historia",
   "project.story.calls": "{count, plural, one {1 llamada} other {# llamadas}}",
