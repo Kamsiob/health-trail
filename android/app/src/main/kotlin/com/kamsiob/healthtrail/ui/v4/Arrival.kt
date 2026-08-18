@@ -1,9 +1,6 @@
 package com.kamsiob.healthtrail.ui.v4
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,60 +71,33 @@ fun Modifier.arrives(index: Int = 0): Modifier = composed {
 }
 
 /**
- * The same, for every item a page declares, without each page asking.
+ * Why there is no per-item version of this, and why there must not be.
  *
- * **A page describes its content as lazy items and the arrival belongs to the
- * language rather than to the page.** Wrapping this by hand at every call site
- * is how a treatment ends up on eleven screens out of eighty six, which is what
- * happened to the press state before [opensOnTap]. The wrapper counts the items
- * as they are declared, so the order on screen is the order they land in.
+ * **It was tried and it broke two screens.** Wrapping every lazy item in a
+ * container so each could arrive on its own changed the scope its content is
+ * composed in: a `Box` laid an item's children on top of each other and the
+ * restore screen drew its unlock button over its own password field, and a
+ * `Column` fixed the drawing but still put a second layout between a caller and
+ * the list, which broke `performScrollTo` and `performScrollToNode` on the
+ * document form and the capture form. `docs/TRAPS.md` names the second one
+ * already: a weighted child of a column with no bounded height measures to
+ * zero.
  *
- * Delegation rather than reimplementation: everything a caller can put in a
- * lazy list keeps working, and only the two forms that produce visible items
- * are intercepted.
+ * **And it was wrong even where it worked.** A lazy list composes a row when it
+ * scrolls into view, so a per-item arrival animates every row of a six hundred
+ * entry trail as the thumb moves. That is not a screen arriving, it is a list
+ * that will not settle.
+ *
+ * **The page arrives as one thing**, which is what item 8 is about: the quarter
+ * second after a screen opens. [arrives] goes on the list itself, in [Page].
  */
-internal class ArrivingScope(private val inner: LazyListScope) : LazyListScope by inner {
-
-    /** How many items have been declared, which is the order they arrive in. */
-    private var declared = 0
-
-    override fun item(
-        key: Any?,
-        contentType: Any?,
-        content: @Composable LazyItemScope.() -> Unit,
-    ) {
-        val index = declared++
-        inner.item(key, contentType) {
-            val scope = this
-            // **A `Column`, and a `Box` here was a defect.** A page's `item`
-            // may emit several composables side by side and rely on the lazy
-            // list stacking them; a `Box` lays them on top of each other
-            // instead, so the restore screen drew its unlock button over its
-            // own password field. Seen on the phone the moment the seed
-            // stalled on it.
-            Column(modifier = Modifier.arrives(index)) { with(scope) { content() } }
-        }
-    }
-
-    override fun items(
-        count: Int,
-        key: ((index: Int) -> Any)?,
-        contentType: (index: Int) -> Any?,
-        itemContent: @Composable LazyItemScope.(index: Int) -> Unit,
-    ) {
-        val first = declared
-        declared += count
-        inner.items(count, key, contentType) { index ->
-            val scope = this
-            Column(modifier = Modifier.arrives(first + index)) { with(scope) { itemContent(index) } }
-        }
-    }
-}
+private const val ARRIVAL_IS_PER_PAGE = true
 
 /**
- * How many parts are staggered before the rest simply land.
+ * How many steps of stagger there are between a page's own parts.
  *
- * About a screenful. Past this the delay stops growing, so the bottom of a long
- * list is never waiting on the arithmetic of everything above it.
+ * The list arrives as one thing and the parts above it, the top bar and the
+ * band, arrive fractionally after, so the page reads as being laid down rather
+ * than as one block sliding.
  */
-private const val STAGGERED = 7
+private const val STAGGERED = 3

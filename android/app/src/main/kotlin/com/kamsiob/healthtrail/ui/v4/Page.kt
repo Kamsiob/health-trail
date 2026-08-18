@@ -366,6 +366,16 @@ fun Page(
                     // surface around it: a test that scrolls to a control needs
                     // the tagged node to be the scrolling one.
                     modifier = modifier
+                        // **The page arrives rather than cutting into place**,
+                        // `docs/V4.md` 6.1 item 8. On the list itself and not
+                        // on each item: a lazy list composes a row when it
+                        // scrolls into view, so a per-item arrival animates
+                        // every row of a six hundred entry trail as the thumb
+                        // moves, and the wrapper it needs changes the scope an
+                        // item's content is composed in. `ui/v4/Arrival.kt`
+                        // records both, because both were built and both broke
+                        // a screen.
+                        .arrives(ARRIVAL_LIST)
                         .fillMaxSize()
                         .padding(horizontal = Space.screenHorizontal)
                         .padding(end = if (rail != null) railWidth() + Space.s else Space.none),
@@ -378,17 +388,10 @@ fun Page(
                     ),
                     verticalArrangement = Arrangement.spacedBy(itemSpacing),
                 ) {
-                    // **Every part of every page arrives rather than being
-                    // there already.** `docs/V4.md` 6.1 item 8, and it is the
-                    // half of the bar that had been deferred every session.
-                    // Here rather than at eighty six call sites, for the same
-                    // reason the press state is on the components: a treatment
-                    // applied by hand reaches the screens somebody remembered.
-                    val arriving = ArrivingScope(this)
-                    hero?.let { lead -> arriving.item { lead() } }
+                    hero?.let { lead -> item { lead() } }
 
                     subtitle?.let { line ->
-                        arriving.item {
+                        item {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(Space.s),
@@ -413,7 +416,7 @@ fun Page(
                         }
                     }
 
-                    arriving.content()
+                    content()
 
                     item { Spacer(Modifier.height(Space.xxl)) }
                 }
@@ -530,3 +533,11 @@ fun LazyListScope.labeledBlock(
 
 /** Isolated where a page's own name is somebody's words. */
 fun personsOwnWords(text: String): String = Bidi.isolate(text)
+
+/**
+ * Where the list sits in the order a page's parts land.
+ *
+ * After the bar and before the band, so the page reads as being laid down from
+ * the top rather than as one block sliding.
+ */
+private const val ARRIVAL_LIST = 1

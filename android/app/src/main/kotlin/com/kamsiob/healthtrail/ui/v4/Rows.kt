@@ -1,5 +1,8 @@
 package com.kamsiob.healthtrail.ui.v4
 
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.BorderStroke
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -254,27 +257,39 @@ fun SearchDoor(
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    val scheme = MaterialTheme.colorScheme
+    // **Material's surface owns the pill, the press and the edge.** #392. This
+    // was a clip, a background and a bare `clickable`, so the state layer was
+    // painted as a rectangle behind a pill. `CircleShape` is the pill, and the
+    // hairline is the same edge every group in the app wears, `docs/V4.md` 6.1
+    // item 4: this sits directly under a page title on the two most used
+    // screens and had nothing saying where it began.
+    Surface(
+        onClick = onOpen,
         modifier = modifier
             .fillMaxWidth()
             .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.pill)
-            .background(HealthTrail.colors.sand)
-            .clickable(role = Role.Button, onClickLabel = label, onClick = onOpen)
-            .padding(horizontal = Space.ml, vertical = Space.sm),
+            .semantics { onClick(label = label) { onOpen(); true } },
+        shape = CircleShape,
+        color = scheme.surfaceContainer,
+        border = BorderStroke(Space.hairlineWidth, scheme.outlineVariant),
+    ) {
+    Row(
+        modifier = Modifier.padding(horizontal = Space.ml, vertical = Space.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
         Icon(
             painter = painterResource(com.kamsiob.healthtrail.ui.components.Symbols.search),
             contentDescription = null,
-            tint = HealthTrail.colors.ink2,
+            tint = scheme.onSurfaceVariant,
         )
         Text(
             text = label,
-            style = HealthTrail.type.bodyM,
-            color = HealthTrail.colors.ink2,
+            style = MaterialTheme.typography.bodyMedium,
+            color = scheme.onSurfaceVariant,
         )
+    }
     }
 }
 

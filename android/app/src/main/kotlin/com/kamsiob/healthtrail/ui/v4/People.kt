@@ -1,5 +1,10 @@
 package com.kamsiob.healthtrail.ui.v4
 
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -366,19 +371,26 @@ fun PersonRow(
     openLabel: String? = null,
     /** The one action a row offers, drawn at its end. */
     action: (@Composable () -> Unit)? = null,
+    /**
+     * The row's own container, or transparent inside a group that carries one.
+     *
+     * **A list that is scanned is one surface, not one surface per row**, rule
+     * 22. The care team drew fifteen separate cards with the between-groups gap
+     * between each, which is the shape for three or more lines actually read,
+     * and a care team row is two lines glanced at while somebody is looking for
+     * a phone number. Grouped, the rows share a container and a hairline and
+     * the eye runs straight down them.
+     *
+     * A caller that genuinely has one person, or two, keeps the card.
+     */
+    container: Color = MaterialTheme.colorScheme.surfaceContainer,
+    /** The corner, so a grouped row is square inside the block that rounds it. */
+    shape: Shape = MaterialTheme.shapes.large,
 ) {
+    val body: @Composable () -> Unit = {
     Row(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.cardLarge)
-            .background(HealthTrail.colors.sand)
-            .then(
-                if (onOpen == null) {
-                    Modifier
-                } else {
-                    Modifier.clickable(role = Role.Button, onClickLabel = openLabel, onClick = onOpen)
-                },
-            )
             .sizeIn(minHeight = Space.touchTarget)
             .padding(horizontal = Space.sm, vertical = Space.s),
         verticalAlignment = Alignment.CenterVertically,
@@ -404,5 +416,29 @@ fun PersonRow(
             }
         }
         action?.invoke()
+    }
+    }
+
+    // **Material's surface owns the container and the press.** #392. This was a
+    // clip, a background and a bare `clickable`, so the row answered a finger
+    // with nothing at all while the components beside it used Material's state
+    // layer.
+    if (onOpen == null) {
+        Surface(modifier = modifier.fillMaxWidth(), shape = shape, color = container) { body() }
+    } else {
+        Surface(
+            onClick = onOpen,
+            modifier = modifier
+                .fillMaxWidth()
+                .semantics {
+                    // What the tap does, in the person's words. `Surface` takes
+                    // no click label of its own, so the verb is named here
+                    // rather than left as "button".
+                    val spoken = openLabel
+                    if (spoken != null) onClick(label = spoken) { onOpen(); true }
+                },
+            shape = shape,
+            color = container,
+        ) { body() }
     }
 }

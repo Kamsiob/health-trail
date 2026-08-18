@@ -1,5 +1,11 @@
 package com.kamsiob.healthtrail.ui
 
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedContent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -86,6 +92,7 @@ import com.kamsiob.healthtrail.data.MergeApply
 import com.kamsiob.healthtrail.ui.screens.ExportState
 import com.kamsiob.healthtrail.data.Backup
 import com.kamsiob.healthtrail.ui.screens.MoreScreen
+import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.ThemeChoice
 import androidx.compose.foundation.background
 import com.kamsiob.healthtrail.ui.screens.CaptureDraft
@@ -591,7 +598,44 @@ fun NotebookShell(
                 // the bottom of any scrolling list and `fabSafeActionBar` on any
                 // bottom-anchored action.
                 Box(modifier = Modifier.weight(1f)) {
-                    when (destination) {
+                    val motion = LocalMotion.current
+                    // **The four destinations move, they do not cut.**
+                    // `docs/V4.md` 6.1 item 8, and this is the motion the app
+                    // is felt through: every other transition happens once in a
+                    // while and this one happens every time somebody puts their
+                    // thumb on the bar. The whole app cut between them.
+                    //
+                    // **Along the axis of the bar.** Material calls it a shared
+                    // axis: the destination you are going to comes in from the
+                    // side it sits on, and the one you are leaving goes out the
+                    // other way, so the four destinations feel laid out in a
+                    // row rather than stacked. Ordinal order is the bar's own
+                    // order, so the direction is never guessed.
+                    //
+                    // **A tenth of the width, not a full slide.** A screen that
+                    // travels its whole width reads as a page turn and takes
+                    // long enough to be waited on. This is a nudge that says
+                    // which way you went.
+                    //
+                    // **Reduced motion is a plain crossfade** and needs no case
+                    // here: `standard()` is a snap and `quick()` is the 100ms
+                    // fade, so the slide collapses to nothing and the fade
+                    // stays. `DESIGN.md` 10.
+                    AnimatedContent(
+                        targetState = destination,
+                        transitionSpec = {
+                            val forward = targetState.ordinal > initialState.ordinal
+                            val enter = slideInHorizontally(motion.standard()) { width ->
+                                if (forward) width / DESTINATION_SHIFT else -width / DESTINATION_SHIFT
+                            } + fadeIn(motion.quick())
+                            val exit = slideOutHorizontally(motion.standard()) { width ->
+                                if (forward) -width / DESTINATION_SHIFT else width / DESTINATION_SHIFT
+                            } + fadeOut(motion.quick())
+                            enter togetherWith exit
+                        },
+                        label = "destination",
+                    ) { showing ->
+                    when (showing) {
                         Destination.NOTEBOOK -> {
                             val loaded = counts
                             when {
@@ -912,6 +956,8 @@ fun NotebookShell(
                             onConflicts = { conflictsOpen = true },
                             conflicts = unseenConflicts,
                         )
+                    }
+
                     }
 
                     // **Not while Today is being arranged.** The button sits
@@ -3343,3 +3389,11 @@ internal data class StandingWrite(
     val since: com.kamsiob.healthtrail.time.Edtf.Date,
 )
 
+/**
+ * How far a destination slides on its way in, as a fraction of the width.
+ *
+ * A tenth. Enough to say which way the thumb went and not enough to read as a
+ * page turning, which is the difference between a transition somebody feels and
+ * one they wait for.
+ */
+private const val DESTINATION_SHIFT = 10

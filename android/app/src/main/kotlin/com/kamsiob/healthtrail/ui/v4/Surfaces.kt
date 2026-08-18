@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.v4
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -86,6 +87,21 @@ fun Block(
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+        // **An edge the eye can find.** `docs/V4.md` 6.1 item 4, and it is the
+        // one item on the list that a flat tonal language has to work at: with
+        // no shadow and no elevation, a container is only as visible as the
+        // step between its color and the canvas, and in light this palette
+        // deliberately keeps that step small. A hairline settles it without
+        // reintroducing depth.
+        //
+        // **The progress screen already proved it.** Its cards are the one
+        // place in the app drawn with a border, and they read as the most
+        // finished surface here. This puts the same edge on every group.
+        //
+        // **`outlineVariant`, which is the scheme's hairline.** Quiet enough
+        // that it is a boundary rather than a frame, and it inverts with the
+        // theme without a branch.
+        border = BorderStroke(Space.hairlineWidth, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier.padding(padding),

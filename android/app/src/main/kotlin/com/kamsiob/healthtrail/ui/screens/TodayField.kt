@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.StartOffset
@@ -1260,6 +1261,12 @@ fun TodayWidget(
         // `docs/V4.md` 2.1, and the only shadow in this app is under the person's
         // own paper, which casts one.
         elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+        // **An edge instead of a shadow**, `docs/V4.md` 6.1 item 4, and the same
+        // hairline every group in the app wears now. A field of cards on a
+        // canvas one tonal step below them needs the boundary stated: without
+        // it the cards and the page are the same surface at a glance, which is
+        // exactly what item 4 asks about.
+        border = BorderStroke(Space.hairlineWidth, scheme.outlineVariant),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(

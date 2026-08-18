@@ -1,5 +1,8 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import com.kamsiob.healthtrail.ui.v4.RowDivider
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.height
@@ -301,37 +304,55 @@ fun CareTeamScreen(
             }
         }
 
-        items(shown) { person ->
-            val phone = person.phone?.takeIf { it.isNotBlank() }
-            PersonRow(
-                name = heading(person),
-                hue = hueForPerson(person.id, hues),
-                support = support(person, showPlace = !split || side == 1),
-                onOpen = { onOpen(person) },
-                openLabel = strings["open.action"],
-                action = phone?.let {
-                    {
-                        // **A gold circular button carrying the phone**, which
-                        // `m3v4-3` draws on every row of the unit list. A reader
-                        // still hears whose number it is: fifteen controls all
-                        // called "Call" is the ambiguity 5.12 exists to prevent.
-                        BlockIconAction(
-                            mark = Symbols.call,
-                            // Whose number it is, as the label: fifteen
-                            // controls all called "Call" is the ambiguity 5.12
-                            // exists to prevent.
-                            label = strings("careteam.call.number", "number" to it),
-                            onClick = { onCall(person) },
-                            modifier = Modifier.testTag(CareTeamTags.call(person.id)),
-                            // Gold, wash and ink, which is what the drawing
-                            // puts on every row of the unit.
-                            container = HealthTrail.colors.goldWash,
-                            tint = HealthTrail.colors.goldInk,
-                        )
-                    }
-                },
-                modifier = Modifier.testTag(CareTeamTags.person(person.id)),
-            )
+        // **One list, not fifteen cards.** Rule 22: a card is for three or more
+        // lines actually read, and a care team row is two lines glanced at
+        // while somebody is looking for a phone number. Fifteen separate cards
+        // with the between-groups gap between each is the shape that makes a
+        // scanned list slow, and it was the loudest thing on this screen.
+        //
+        // **One lazy item, because a care team is not a long list.** The trail
+        // is six hundred rows and pays for laziness; this is fifteen people and
+        // grouping them costs nothing.
+        item {
+            Block(padding = Space.none) {
+                shown.forEachIndexed { index, person ->
+                    val phone = person.phone?.takeIf { it.isNotBlank() }
+                    PersonRow(
+                        name = heading(person),
+                        hue = hueForPerson(person.id, hues),
+                        support = support(person, showPlace = !split || side == 1),
+                        onOpen = { onOpen(person) },
+                        openLabel = strings["open.action"],
+                        action = phone?.let {
+                            {
+                                // **A gold circular button carrying the phone**, which
+                                // `m3v4-3` draws on every row of the unit list. A reader
+                                // still hears whose number it is: fifteen controls all
+                                // called "Call" is the ambiguity 5.12 exists to prevent.
+                                BlockIconAction(
+                                    mark = Symbols.call,
+                                    // Whose number it is, as the label: fifteen
+                                    // controls all called "Call" is the ambiguity 5.12
+                                    // exists to prevent.
+                                    label = strings("careteam.call.number", "number" to it),
+                                    onClick = { onCall(person) },
+                                    modifier = Modifier.testTag(CareTeamTags.call(person.id)),
+                                    // Gold, wash and ink, which is what the drawing
+                                    // puts on every row of the unit.
+                                    container = HealthTrail.colors.goldWash,
+                                    tint = HealthTrail.colors.goldInk,
+                                )
+                            }
+                        },
+                        modifier = Modifier.testTag(CareTeamTags.person(person.id)),
+                        // The block carries the surface, so a row inside it painting
+                        // its own would be a second container on top of the first.
+                        container = Color.Transparent,
+                        shape = RectangleShape,
+                    )
+                    if (index != shown.lastIndex) RowDivider()
+                }
+            }
         }
 
     }
