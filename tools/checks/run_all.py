@@ -40,6 +40,10 @@ CHECKS = [
         "no control announces an action it does not perform",
     ),
     (
+        "check_uncalled_callbacks.py",
+        "no composable takes a callback and then never calls it",
+    ),
+    (
         "check_reader_coverage.py",
         "every screen is walked by the reader check, so the claim cannot drift",
     ),
