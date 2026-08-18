@@ -195,6 +195,15 @@ enum class BlockTone {
  *
  * **Capitals are for the eye.** Compose has no text transform, so the node
  * carries the natural words for a reader.
+ *
+ * **The rule, stated once, because two styles for one job is what #388 finding
+ * 5 found**: an eyebrow whose words the app wrote is capitals, and an eyebrow
+ * whose words the person wrote is not. That is the whole test, and it is not a
+ * judgment about length: a person's project name, a role they typed, a place,
+ * a date they gave. Three call sites passing an app string with `fixed = false`
+ * were the inconsistency, and they are capitals now like every other app label.
+ * A label that wraps is fine; rule 11 bans truncation, and this component sets
+ * no line cap.
  */
 @Composable
 fun Eyebrow(

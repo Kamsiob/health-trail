@@ -336,7 +336,7 @@ fun AddPersonScreen(
                 // sentence at the top of the form already promises. On the
                 // phone those two lines plus six chips pushed "Add more"
                 // off the bottom of the screen.
-                Eyebrow(text = strings["careteam.add.role.suggestions"], fixed = false)
+                Eyebrow(text = strings["careteam.add.role.suggestions"])
                 Spacer(Modifier.height(Space.headerGap))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(Space.s),
@@ -461,7 +461,7 @@ fun AddPersonScreen(
             // filled can be edited or cleared like anything else typed.
             if (organizations.isNotEmpty()) {
                 Spacer(Modifier.height(Space.sectionGap))
-                Eyebrow(text = strings["careteam.add.where.known"], fixed = false)
+                Eyebrow(text = strings["careteam.add.where.known"])
                 Spacer(Modifier.height(Space.headerGap))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(Space.s),

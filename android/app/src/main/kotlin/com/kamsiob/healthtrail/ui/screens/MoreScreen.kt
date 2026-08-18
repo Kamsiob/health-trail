@@ -14,6 +14,7 @@ import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.v4.SearchDoor
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.ShellTags
@@ -159,7 +160,6 @@ private fun MoreDestinations(
     val gold = goldHue()
     val groups = listOfNotNull(
         strings["more.group.find"] to listOf(
-            Destination(strings["more.search"], onSearch, MoreTags.SEARCH, Symbols.search, gold),
             Destination(strings["more.library"], onLibrary, MoreTags.LIBRARY, Symbols.notebook, gold),
         ),
         // **How the notebook is set up, which had no door at all.** The
@@ -240,6 +240,19 @@ private fun MoreDestinations(
         verticalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
         Spacer(Modifier.height(Space.s))
+        // **Search is the door rather than a row.** #388 finding 3: this screen
+        // opened with a title and then rows of equal weight, and nothing on it
+        // led. `SearchDoor` is the component `m3v4-1` draws directly under a
+        // title, it was built for exactly this and had no caller anywhere in
+        // the app, and search is what `MASTER_SPEC.md` 4.8 puts first here.
+        //
+        // **It keeps `MoreTags.SEARCH`**, so the tag that names the way into
+        // search on this screen names it in its new shape rather than moving.
+        SearchDoor(
+            label = strings["more.search"],
+            onOpen = onSearch,
+            modifier = Modifier.testTag(MoreTags.SEARCH),
+        )
         groups.forEach { (label, destinations) ->
             Eyebrow(text = label)
             Block(padding = Space.none) {

@@ -292,7 +292,7 @@ fun ProjectHomeScreen(
                 )
             }
             item {
-                Eyebrow(text = strings["project.story"], fixed = false)
+                Eyebrow(text = strings["project.story"])
                 Column {
                     ListRow(
                         title = strings["project.story.line"],

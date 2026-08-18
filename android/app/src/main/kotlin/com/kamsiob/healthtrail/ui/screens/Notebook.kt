@@ -38,6 +38,7 @@ import com.kamsiob.healthtrail.ui.v4.TipsSheet
 import com.kamsiob.healthtrail.ui.v4.fabScrollClearance
 import com.kamsiob.healthtrail.ui.v4.tipForDestination
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.SearchDoor
 import com.kamsiob.healthtrail.ui.theme.alertHue
 import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -245,16 +246,14 @@ fun NotebookScreen(
                 // its first, which is the vocabulary the stranger test failed
                 // on. #376.
                 title = { Text(text = strings["notebook.title"]) },
+                // **Search left the top bar for the door under the title**,
+                // which is where `m3v4-1` draws it. #388 finding 3: this screen
+                // opened with a title and then rows of equal weight and nothing
+                // on it led, and the one thing every person does on a notebook
+                // this size was a 24dp glyph in a corner. Two ways into search
+                // on one screen would be the same defect the add controls had,
+                // so the icon is gone rather than duplicated.
                 actions = {
-                    IconButton(
-                        onClick = onSearch,
-                        modifier = Modifier.testTag(NotebookTags.SEARCH),
-                    ) {
-                        Icon(
-                            painter = painterResource(Symbols.search),
-                            contentDescription = strings["today.search.everything"],
-                        )
-                    }
                     com.kamsiob.healthtrail.ui.v4.TipsButton(
                         onOpen = { showTips = true },
                     )
@@ -279,6 +278,14 @@ fun NotebookScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(Space.cardGap),
         ) {
+            item(key = "notebook-search") {
+                SearchDoor(
+                    label = strings["today.search.everything"],
+                    onOpen = onSearch,
+                    modifier = Modifier.testTag(NotebookTags.SEARCH),
+                )
+            }
+
             if (waiting > 0 || openIncidents > 0) {
                 item(key = "notebook-attention") {
                     // **The one tonal block on the page**, `docs/V4.md` 2.1. It
