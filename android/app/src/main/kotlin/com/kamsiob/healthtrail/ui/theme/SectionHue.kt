@@ -33,16 +33,26 @@ fun hueFor(section: Repository.Section): TabHue {
 
         // Medications, tests, and questions. All three are things asked of, or
         // received from, the clinical side.
+        //
+        // **Green, measured off `m3v4-1`**: the drawing's medication tile is
+        // `#3B6C48` on `#E2EDE1`, which is `moss`. It was teal here, and teal
+        // is what the same drawing gives Progress.
         Repository.Section.MEDICATIONS,
         Repository.Section.ASK_NEXT_TIME,
-        -> colors.teal
+        -> colors.moss
 
         Repository.Section.APPOINTMENTS -> colors.slate
 
-        // Progress and care threads. Both are things followed over time.
-        Repository.Section.PROGRESS,
-        Repository.Section.THREADS,
-        -> colors.moss
+        // **Progress is teal, measured off `m3v4-0` and `m3v4-1`**: the
+        // tracked measure's card sets its name and its line in `#2D7166`, and
+        // the notebook's Progress tile is that ink on `#DEEBE6`.
+        Repository.Section.PROGRESS -> colors.teal
+
+        // **Care threads are green with the medications**, which is what
+        // `m3v4-1` draws: both tiles are the same `#3B6C48`. A thread is a
+        // clinical stream, and the drawing groups it with them rather than
+        // with the measure.
+        Repository.Section.THREADS -> colors.moss
 
         // Documents and money. Both are paper.
         Repository.Section.DOCUMENTS,

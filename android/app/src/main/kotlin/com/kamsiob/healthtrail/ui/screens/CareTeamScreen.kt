@@ -288,6 +288,10 @@ fun CareTeamScreen(
                             label = strings("careteam.call.number", "number" to it),
                             onClick = { onCall(person) },
                             modifier = Modifier.testTag(CareTeamTags.call(person.id)),
+                            // Gold, wash and ink, which is what the drawing
+                            // puts on every row of the unit.
+                            container = HealthTrail.colors.goldWash,
+                            tint = HealthTrail.colors.goldInk,
                         )
                     }
                 },

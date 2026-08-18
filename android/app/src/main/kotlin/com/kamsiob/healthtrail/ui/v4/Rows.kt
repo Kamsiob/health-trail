@@ -78,9 +78,12 @@ fun ListRow(
      * at whatever it wants and leaves the title its minimum: a dose reading
      * "500 mg, twice a day" left "Levothyroxine" rendering one letter per line.
      *
-     * **In the mono face and tabular**, `DESIGN.md` 5: a value is data, so it
-     * lines up down the column and two of them compare without being read
-     * twice.
+     * **Not the mono face**, and that is measured off the drawings rather than
+     * argued: `m3v4-0`, `m3v4-1`, `m3v4-3` and `m3v4-5` use mono for exactly
+     * two things, the date eyebrow and the time pill, both of them tracked
+     * capitals. **No row in any drawing sets its value in a typewriter.** A
+     * dose and a date read as the words they are, at reading size, and the
+     * primary ink is what separates a value from the quiet line above it.
      */
     value: String? = null,
     /**
@@ -188,7 +191,7 @@ fun ListRow(
             if (below) {
                 Text(
                     text = shown,
-                    style = HealthTrail.type.mono,
+                    style = HealthTrail.type.bodyM,
                     color = HealthTrail.colors.ink,
                 )
             }
@@ -196,7 +199,7 @@ fun ListRow(
         shown?.takeIf { !below }?.let {
             Text(
                 text = it,
-                style = HealthTrail.type.mono,
+                style = HealthTrail.type.bodyM,
                 color = HealthTrail.colors.ink,
                 modifier = Modifier
                     .weight(1f, fill = false)

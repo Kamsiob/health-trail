@@ -236,13 +236,22 @@ fun BlockIconAction(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * The circle's own colors.
+     *
+     * **`m3v4-3` draws the call on every row of the unit in gold**, wash and
+     * ink, which is what makes it findable down a column of names without
+     * being a second filled action beside the one in the block above. A caller
+     * with no such drawing takes the quiet card and the blue.
+     */
+    container: Color = HealthTrail.colors.card,
+    tint: Color = HealthTrail.colors.blue,
 ) {
-    val colors = HealthTrail.colors
     Box(
         modifier = modifier
             .size(Space.touchTarget)
             .clip(CircleShape)
-            .background(colors.card)
+            .background(container)
             .clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
@@ -250,7 +259,7 @@ fun BlockIconAction(
         Symbol(
             symbol = mark,
             contentDescription = null,
-            tint = colors.blue,
+            tint = tint,
             modifier = Modifier.size(Space.markInline),
         )
     }

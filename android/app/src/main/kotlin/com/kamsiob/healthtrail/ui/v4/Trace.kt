@@ -145,12 +145,17 @@ fun Trace(
             )
         }
 
-        // **A dot on every reading, because the dots are the data.** The line
-        // between them is connective tissue; these are the values somebody
-        // actually wrote down, and a chart that draws only the last one hides
-        // how much is behind it. Each carries a hairline ring in the card's own
-        // color so two close together stay countable.
-        spots.forEach { spot ->
+        // **A dot on every reading, until there are too many for dots to
+        // mean anything.** The dots are the data and the line between them is
+        // connective tissue, so a short series draws all of them. **Past a
+        // couple of dozen they stop being countable and start being noise**:
+        // fifty three readings across a card came out as a field of specks
+        // with a line lost inside it, which is what the owner was looking at
+        // when he said the Progress page was not right. Seen on the phone,
+        // rule 21. Beyond the cap the line carries the shape by itself and the
+        // newest reading keeps its ring, which is the drawing `m3v4-0` makes.
+        val countable = spots.size <= DOT_CAP
+        if (countable) spots.forEach { spot ->
             drawCircle(color = line, radius = DOT_RADIUS.toPx(), center = spot)
             drawCircle(
                 color = surface,
@@ -189,6 +194,15 @@ object TraceHeight {
 private val STROKE = 2.2.dp
 
 /** A dot on a reading. Smaller than the ring, because the newest one leads. */
+/**
+ * How many readings can be drawn as dots and still be counted by eye.
+ *
+ * **Measured on the phone rather than chosen**: a card's width divided by the
+ * dot and its ring is about this, and past it the dots touch and read as a
+ * dashed line rather than as values somebody wrote down.
+ */
+private const val DOT_CAP = 24
+
 private val DOT_RADIUS = 3.dp
 
 /** The dash that crosses a silence, and the space between dashes. */

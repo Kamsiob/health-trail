@@ -273,8 +273,14 @@ val LightColors = HealthTrailColors(
     teal = TabHue(Color(0xFF4D8980), Color(0xFF2D7166), Color(0xFFDEEBE6)),
     // Appointments.
     slate = TabHue(Color(0xFF4A5E73), Color(0xFF324E6C), Color(0xFFE3E9F0)),
-    // Progress, care threads.
-    moss = TabHue(Color(0xFF484D38), Color(0xFF23241E), Color(0xFFEAECD8)),
+    // **Medications, questions, care threads. Measured off `m3v4-1`**, whose
+    // medication tile and care thread tile are both `#3B6C48` on `#E2EDE1`.
+    // The olive this used to be appears nowhere in any approved drawing.
+    // **A section hue of its own rather than the `leaf` semantic**, which is
+    // the same green today and means "resolved, done, arrived": one token
+    // changing later must not repaint a section's identity. D171 keeps the
+    // semantic colors locked, and this is identity.
+    moss = TabHue(Color(0xFF4F8C60), Color(0xFF3B6C48), Color(0xFFE2EDE1)),
     // Documents, money.
     manila = TabHue(Color(0xFF825A17), Color(0xFF4A3107), Color(0xFFF1E6CC)),
     // Standing instructions. Added in v4 because the grid draws no such screen
@@ -350,7 +356,7 @@ val DarkColors = HealthTrailColors(
     rose = TabHue(Color(0xFFC79B8A), Color(0xFFB98E7E), Color(0xFF2F1D16)),
     teal = TabHue(Color(0xFFA0CFC8), Color(0xFF6CADA2), Color(0xFF172E2A)),
     slate = TabHue(Color(0xFF6789AD), Color(0xFF829BB5), Color(0xFF1B222A)),
-    moss = TabHue(Color(0xFFCFD8B6), Color(0xFF9BAA6E), Color(0xFF282D18)),
+    moss = TabHue(Color(0xFF74B383), Color(0xFF8CC79A), Color(0xFF16291C)),
     manila = TabHue(Color(0xFFD1A761), Color(0xFFC39A55), Color(0xFF312614)),
     stone = TabHue(Color(0xFF9F8856), Color(0xFFAA976E), Color(0xFF2A251B)),
 

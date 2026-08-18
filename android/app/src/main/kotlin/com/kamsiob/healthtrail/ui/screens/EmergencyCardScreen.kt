@@ -176,7 +176,7 @@ fun EmergencyCardScreen(
             // comes from, because a medication puts itself here through its
             // own flag and somebody correcting it should know where to go.
             item {
-                Eyebrow(text = Bidi.join(strings["emergency.group.meds"], medications.size.toString()), modifier = Modifier.testTag(EmergencyTags.MEDS_FOLD))
+                Eyebrow(text = strings["emergency.group.meds"], modifier = Modifier.testTag(EmergencyTags.MEDS_FOLD))
             }
             item {
                 // **Where the list comes from, said once, when it is

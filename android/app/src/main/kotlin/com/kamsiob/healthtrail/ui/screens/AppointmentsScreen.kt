@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.ui.components.MonthDay
 import com.kamsiob.healthtrail.ui.components.MonthGrid
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.ViewOption
 import com.kamsiob.healthtrail.ui.components.ViewToggle
 import com.kamsiob.healthtrail.ui.components.rememberViewChoice
@@ -201,7 +202,7 @@ fun AppointmentsScreen(
 
         if (past.isNotEmpty()) {
             item {
-                Eyebrow(text = Bidi.join(strings["appts.group.past"], past.size.toString()), modifier = Modifier.testTag(ApptTags.PAST_FOLD))
+                Eyebrow(text = strings["appts.group.past"], modifier = Modifier.testTag(ApptTags.PAST_FOLD))
             }
             item {
                 Block(padding = Space.none) {
@@ -248,6 +249,13 @@ private fun AppointmentRow(
                 appointment.locationNote?.takeIf { it.isNotBlank() },
                 appointment.notes?.takeIf { it.isNotBlank() },
             ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
+            // **The mark every row in `m3v4-1` has.** A list of rows with no
+            // marks reads as a block of text; the squircle in the section's
+            // wash is what makes one scannable and says which part of the
+            // notebook it belongs to.
+            mark = Symbols.of(Repository.Section.APPOINTMENTS),
+            markTint = hueFor(Repository.Section.APPOINTMENTS).ink,
+            markWash = hueFor(Repository.Section.APPOINTMENTS).wash,
             value = EventDateText.render(strings, appointment.scheduledEdtf),
             isDoor = true,
             onClick = onOpen,

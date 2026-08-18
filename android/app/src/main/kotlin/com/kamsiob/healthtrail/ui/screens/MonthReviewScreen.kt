@@ -276,7 +276,7 @@ fun MonthReviewScreen(
         // it, which is what a fold is for.
         if (review.entries.isNotEmpty()) {
             item(key = "entries_fold") {
-                Eyebrow(text = Bidi.join(strings["review.entries"], review.entries.size.toString()), modifier = Modifier.testTag(ReviewTags.ENTRIES_FOLD))
+                Eyebrow(text = strings["review.entries"], modifier = Modifier.testTag(ReviewTags.ENTRIES_FOLD))
             }
 
             // On the trail's own spine, so a month opened from the trail

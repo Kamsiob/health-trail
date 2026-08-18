@@ -211,7 +211,7 @@ fun ProjectsScreen(
 
             if (finished.isNotEmpty()) {
                 item {
-                    Eyebrow(text = Bidi.join(strings["projects.finished"], finished.size.toString()), modifier = Modifier.testTag(ProjectTags.FINISHED_FOLD))
+                    Eyebrow(text = strings["projects.finished"], modifier = Modifier.testTag(ProjectTags.FINISHED_FOLD))
                     Spacer(Modifier.height(Space.cardGap))
                 }
                 for (project in finished) {

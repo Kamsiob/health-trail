@@ -175,7 +175,7 @@ fun ProjectDetailScreen(
         // 13 rules out "2 of 5", and that is a different sentence.
         if (done.isNotEmpty()) {
             item {
-                Eyebrow(text = Bidi.join(strings["projects.done_fold"], done.size.toString()), modifier = Modifier.testTag(ProjectDetailTags.DONE_FOLD))
+                Eyebrow(text = strings["projects.done_fold"], modifier = Modifier.testTag(ProjectDetailTags.DONE_FOLD))
             }
 
             itemsIndexed(done, key = { _, step -> "done_${step.id}" }) { index, step ->

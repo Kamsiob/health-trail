@@ -222,7 +222,7 @@ fun UnfiledTrayScreen(
         val behind = entries.filter { it.id != current?.id }
         if (behind.isNotEmpty()) {
             item(key = "behind") {
-                Eyebrow(text = Bidi.join(strings["unfiled.behind"], behind.size.toString()))
+                Eyebrow(text = strings["unfiled.behind"])
                 Spacer(Modifier.height(Space.cardGap))
             }
 

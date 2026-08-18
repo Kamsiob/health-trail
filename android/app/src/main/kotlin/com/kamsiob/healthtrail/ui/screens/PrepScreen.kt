@@ -312,7 +312,7 @@ fun PrepScreen(
         // draws nothing at all rather than a heading over a sentence saying so.
         if (prep.asked.isNotEmpty()) {
             item(key = "asked_here") {
-                Eyebrow(text = Bidi.join(strings["prep.asked.here"], prep.asked.size.toString()), modifier = Modifier.testTag(PrepTags.ASKED_FOLD))
+                Eyebrow(text = strings["prep.asked.here"], modifier = Modifier.testTag(PrepTags.ASKED_FOLD))
             }
             item(key = "asked_here_rows") {
                 Block(padding = Space.none) {
@@ -363,7 +363,7 @@ fun PrepScreen(
             }
         } else {
             item {
-                Eyebrow(text = Bidi.join(strings["prep.changes"], prep.changes.size.toString()), modifier = Modifier.testTag(PrepTags.CHANGES_FOLD))
+                Eyebrow(text = strings["prep.changes"], modifier = Modifier.testTag(PrepTags.CHANGES_FOLD))
             }
 
             item {
